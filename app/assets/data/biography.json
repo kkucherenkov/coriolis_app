@@ -1,0 +1,25 @@
+{
+    "data": [
+        {
+            "title": "Плебей",
+            "description": "Вы родились в трущобах",
+            "attributes": 15,
+            "skills": 15,
+            "reputation": 2
+        },
+        {
+            "title": "Орбитал",
+            "description": "Вы родились на космической станции, астероиде, небольшом космопортовом городке",
+            "attributes": 13,
+            "skills": 12,
+            "reputation": 4
+        },
+        {
+            "title": "Аристократ",
+            "description": "Вы родились в семье высших слоев общества",
+            "attributes": 11,
+            "skills": 17,
+            "reputation": 6
+        }
+    ]
+}

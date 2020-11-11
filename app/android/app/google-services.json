@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "487984166745",
+    "firebase_url": "https://coriolis-app.firebaseio.com",
+    "project_id": "coriolis-app",
+    "storage_bucket": "coriolis-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:487984166745:android:5dc22fc24a3d2906",
+        "android_client_info": {
+          "package_name": "info.kkucherenkov.coriolis"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "487984166745-mobgms0ilribi2mu0gqgvtlmktg35dav.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "info.kkucherenkov.coriolis",
+            "certificate_hash": "7914e566f74f691ea26f47cb9b63aa7604f44f7f"
+          }
+        },
+        {
+          "client_id": "487984166745-bvljmek6484pd4nttkse825q5uvhn1jt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "info.kkucherenkov.coriolis",
+            "certificate_hash": "bf8603b8a86246d9ad94dbc2ade36131d08cc455"
+          }
+        },
+        {
+          "client_id": "487984166745-j5no4b28ejg9vnr55a3kr3ar7p94nnkt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzK6qq0qsUVxGgy7sDUAQFth-cxBW2wxo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "487984166745-j5no4b28ejg9vnr55a3kr3ar7p94nnkt.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "487984166745-k70s2ticicl9dl5f2gk3ht9dfdu461kc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "info.kkucherenkov.coriolis"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
