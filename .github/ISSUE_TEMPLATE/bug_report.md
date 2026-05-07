@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Something in the boilerplate itself is broken or misleading
+about: Something in the Coriolis Companion App is broken or misleading
 title: "bug: <short summary>"
 labels: bug
 ---

@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest a guardrail, default, or piece of scaffolding the template should ship
+about: Suggest a feature, guardrail, or improvement for the Coriolis Companion App
 title: "feat: <short summary>"
 labels: enhancement
 ---
@@ -11,9 +11,9 @@ labels: enhancement
 
 ## Proposed change
 
-<!-- What should the template do instead? Keep in mind this is a boilerplate —
-     it should ship opinionated defaults, not feature toggles for a specific
-     downstream product. -->
+<!-- What should the app do instead? If the change touches the product
+     surface, cite the relevant section of `docs/PRD.md`; if it's a visual
+     change, cite `docs/DESIGN.md`. -->
 
 ## Alternatives considered
 

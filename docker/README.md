@@ -6,7 +6,7 @@ Local dev stack. Launch from the repo root:
 docker compose -f docker/compose.yml up -d
 ```
 
-`compose.yml` is the base; `compose.override.yml` is picked up automatically. Replace `{{APP_SLUG}}` in `compose.yml` with your actual project slug before first run.
+`compose.yml` is the base; `compose.override.yml` is picked up automatically.
 
 ## Services
 
@@ -18,8 +18,7 @@ docker compose -f docker/compose.yml up -d
 | backend    | `apps/backend/Dockerfile.dev` | 3000 | Mounts repo, runs `nest start --watch`                         |
 | web        | `apps/web/Dockerfile.dev`     | 3001 | Mounts repo, runs `nuxt dev`                                   |
 
-## Customising for your project
+## Before deploying
 
-1. Replace `{{APP_SLUG}}` in `compose.yml` with your project name (e.g. `myapp`).
-2. Update `centrifugo/config.json` with your channel namespaces.
-3. Change `BETTER_AUTH_SECRET` and other secrets before deploying.
+- Update `centrifugo/config.json` with production channel namespaces.
+- Replace `BETTER_AUTH_SECRET`, `CENTRIFUGO_API_KEY`, `CENTRIFUGO_TOKEN_HMAC_SECRET`, and the postgres credentials with values issued for the target environment — the values in `compose.yml` are local-dev defaults only.

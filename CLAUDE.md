@@ -1,17 +1,17 @@
-# AGENTS.md
+# CLAUDE.md
 
-Universal rules file for AI coding agents. Works for Claude Code, Codex, Aider,
-Gemini CLI, and any other tool that reads an `AGENTS.md` at the repo root.
-
-**The canonical, deep rules live in [`.claude/CLAUDE.md`](.claude/CLAUDE.md).**
-This file is the short intro; `.claude/CLAUDE.md` + `.claude/docs/*` have the
-details.
+Short intro for Claude Code. The Coriolis-specific operating manual lives
+in [`AGENTS.md`](AGENTS.md); the canonical, deep rules live in
+[`.claude/CLAUDE.md`](.claude/CLAUDE.md). Read both.
 
 ---
 
 ## What this repo is
 
-Greenfield monorepo boilerplate for agent-driven product work.
+The **Coriolis Companion App** — fan-built character sheet, ship sheet,
+dice, and GM tools for *Coriolis: The Third Horizon* (Free League
+Publishing). Three first-class clients on day one served by a single
+backend.
 
 ```
 apps/backend    NestJS 11 + Prisma 7 + CQRS + Better Auth

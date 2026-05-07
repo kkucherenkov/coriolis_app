@@ -2,9 +2,9 @@
 
 ## Supported versions
 
-This is a boilerplate template, not a long-lived library. Only the `main`
-branch receives security updates. Downstream forks are the responsibility
-of the fork maintainer.
+This is a fan project under active development. Only the `main` branch
+receives security updates; tagged phase releases (`phase-N-complete`) are
+snapshots, not maintained branches.
 
 ## Reporting a vulnerability
 
@@ -30,8 +30,8 @@ Include:
 
 ## Out of scope
 
-The following are known properties of the template and are not treated as
-vulnerabilities in this repo (though they may be in your derived product):
+The following are known properties of the development build and are not
+treated as vulnerabilities in this repo:
 
 - Default credentials in `docker/compose.yml` — they exist only for local
   development and must be replaced before deployment.

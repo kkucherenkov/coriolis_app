@@ -1,8 +1,12 @@
 # Contributing
 
-This repo is the upstream boilerplate. Contributions here should keep the
-template small, opinionated, and spec-first — not add features for a specific
-downstream product.
+The Coriolis Companion App is a fan-built tool for *Coriolis: The Third
+Horizon* (Free League Publishing). The product spec is in
+[`docs/PRD.md`](docs/PRD.md), the visual language in
+[`docs/DESIGN.md`](docs/DESIGN.md), and the phased delivery plan in
+[`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md). The agent
+operating manual is [`AGENTS.md`](AGENTS.md). Read those before opening a
+PR — they are the contract this codebase enforces.
 
 ## Prerequisites
 
@@ -22,7 +26,7 @@ docker compose -f docker/compose.yml up -d
 ## Task discipline
 
 Every non-trivial change follows the task-stack convention enforced in
-[.claude/CLAUDE.md](.claude/CLAUDE.md):
+[`AGENTS.md`](AGENTS.md) and [`.claude/CLAUDE.md`](.claude/CLAUDE.md):
 
 1. Before coding, push an entry to `specs/tasks/active.md` (template in
    `specs/tasks/README.md`).
