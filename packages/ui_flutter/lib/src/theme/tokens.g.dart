@@ -6,120 +6,58 @@
 
 import 'package:flutter/widgets.dart';
 
-abstract final class AppColorsLight {
-  static const Color brandAccent = Color(0xFF3B82F6);
-  static const Color brandAccentHover = Color(0xFF2563EB);
-  static const Color brandAccentActive = Color(0xFF1D4ED8);
-  static const Color brandAccentFg = Color(0xFFFFFFFF);
-  static const Color brandAccentSubtle = Color(0xFFEFF6FF);
-  static const Color surfacePage = Color(0xFFFFFFFF);
-  static const Color surfaceSurface = Color(0xFFF8FAFC);
-  static const Color surfaceRaised = Color(0xFFFFFFFF);
-  static const Color surfaceOverlay = Color(0xFFFFFFFF);
-  static const Color borderDefault = Color(0xFFE2E8F0);
-  static const Color borderStrong = Color(0xFFCBD5E1);
-  static const Color borderFocus = Color(0xFF3B82F6);
-  static const Color textFg = Color(0xFF0F172A);
-  static const Color textSecondary = Color(0xFF475569);
-  static const Color textTertiary = Color(0xFF94A3B8);
-  static const Color textDisabled = Color(0xFFCBD5E1);
-  static const Color textInverse = Color(0xFFFFFFFF);
-  static const Color textLink = Color(0xFF3B82F6);
-  static const Color statusSuccessFg = Color(0xFF16A34A);
-  static const Color statusSuccessSubtle = Color(0xFFF0FDF4);
-  static const Color statusWarningFg = Color(0xFFD97706);
-  static const Color statusWarningSubtle = Color(0xFFFFFBEB);
-  static const Color statusErrorFg = Color(0xFFDC2626);
-  static const Color statusErrorSubtle = Color(0xFFFEF2F2);
-  static const Color statusInfoFg = Color(0xFF0EA5E9);
-  static const Color statusInfoSubtle = Color(0xFFF0F9FF);
+abstract final class AppColors {
+  static const Color surfaceVoid = Color(0xFF0B0E2C);
+  static const Color surfaceNight = Color(0xFF15193F);
+  static const Color surfaceDawn = Color(0xFF252B5C);
+  static const Color surfaceParchment = Color(0xFFF2E8D0);
+  static const Color brandBrassLight = Color(0xFFF4E4B8);
+  static const Color brandBrass = Color(0xFFD4A95C);
+  static const Color brandBrassDeep = Color(0xFFA67C28);
+  static const Color brandBrassShadow = Color(0xFF6B4E1A);
+  static const Color textPrimary = Color(0xFFF2E8D0);
+  static const Color textSecondary = Color(0xFFD9CDB0);
+  static const Color textInk = Color(0xFF1A1810);
+  static const Color textOnBrass = Color(0xFF0B0E2C);
+  static const Color stateCrimson = Color(0xFFA8324A);
+  static const Color stateCrimsonBright = Color(0xFFE54E6B);
+  static const Color stateMysticTeal = Color(0xFF2BA3A0);
+  static const Color stateSuccess = Color(0xFF5A8A3A);
+  static const Color stateDarkness = Color(0xFF5B2A78);
 }
 
-abstract final class AppColorsDark {
-  static const Color brandAccent = Color(0xFF60A5FA);
-  static const Color brandAccentHover = Color(0xFF93C5FD);
-  static const Color brandAccentActive = Color(0xFFBFDBFE);
-  static const Color brandAccentFg = Color(0xFF1E3A5F);
-  static const Color brandAccentSubtle = Color(0xFF1E3A5F);
-  static const Color surfacePage = Color(0xFF0F172A);
-  static const Color surfaceSurface = Color(0xFF1E293B);
-  static const Color surfaceRaised = Color(0xFF334155);
-  static const Color surfaceOverlay = Color(0xFF1E293B);
-  static const Color borderDefault = Color(0xFF334155);
-  static const Color borderStrong = Color(0xFF475569);
-  static const Color borderFocus = Color(0xFF60A5FA);
-  static const Color textFg = Color(0xFFF1F5F9);
-  static const Color textSecondary = Color(0xFF94A3B8);
-  static const Color textTertiary = Color(0xFF64748B);
-  static const Color textDisabled = Color(0xFF334155);
-  static const Color textInverse = Color(0xFF0F172A);
-  static const Color textLink = Color(0xFF60A5FA);
-  static const Color statusSuccessFg = Color(0xFF4ADE80);
-  static const Color statusSuccessSubtle = Color(0xFF14532D);
-  static const Color statusWarningFg = Color(0xFFFCD34D);
-  static const Color statusWarningSubtle = Color(0xFF451A03);
-  static const Color statusErrorFg = Color(0xFFF87171);
-  static const Color statusErrorSubtle = Color(0xFF450A0A);
-  static const Color statusInfoFg = Color(0xFF38BDF8);
-  static const Color statusInfoSubtle = Color(0xFF082F49);
-}
-
-abstract final class AppVerticalColors {
+abstract final class AppColorsHighContrast {
+  static const Color surfaceVoid = Color(0xFF000018);
+  static const Color brandBrass = Color(0xFFFFD773);
+  static const Color textPrimary = Color(0xFFFFFFFF);
 }
 
 abstract final class AppSpacing {
-  static const double s0 = 0.0;
   static const double s1 = 4.0;
   static const double s2 = 8.0;
   static const double s3 = 12.0;
   static const double s4 = 16.0;
   static const double s5 = 20.0;
   static const double s6 = 24.0;
-  static const double s7 = 28.0;
-  static const double s8 = 32.0;
-  static const double s9 = 36.0;
-  static const double s10 = 40.0;
-  static const double s11 = 44.0;
-  static const double s12 = 48.0;
-  static const double s14 = 56.0;
-  static const double s16 = 64.0;
-  static const double s18 = 72.0;
-  static const double s20 = 80.0;
-  static const double s24 = 96.0;
-  static const double s28 = 112.0;
-  static const double s32 = 128.0;
-  static const double px = 1.0;
-  static const double s0.5 = 2.0;
-  static const double s1.5 = 6.0;
-  static const double s2.5 = 10.0;
-  static const double s3.5 = 14.0;
+  static const double s7 = 32.0;
+  static const double s8 = 40.0;
+  static const double s9 = 48.0;
+  static const double s10 = 56.0;
+  static const double s11 = 64.0;
+  static const double s12 = 80.0;
 }
 
 abstract final class AppRadius {
-  static const double none = 0.0;
-  static const double xs = 2.0;
-  static const double sm = 4.0;
-  static const double md = 6.0;
+  static const double sm = 2.0;
+  static const double md = 4.0;
   static const double lg = 8.0;
-  static const double xl = 12.0;
-  static const double r2xl = 16.0;
-  static const double r3xl = 24.0;
   static const double pill = 9999.0;
 }
 
-abstract final class AppFontSize {
-  static const double xs = 11.0;
-  static const double sm = 12.0;
-  static const double md = 14.0;
-  static const double base = 16.0;
-  static const double lg = 18.0;
-  static const double xl = 20.0;
-  static const double s2xl = 24.0;
-  static const double s3xl = 30.0;
-  static const double s4xl = 36.0;
-  static const double s5xl = 48.0;
-  static const double s6xl = 60.0;
-  static const double s7xl = 72.0;
+abstract final class AppFontFamily {
+  static const String display = "Forum";
+  static const String body = "Inter";
+  static const String mono = "JetBrains Mono";
 }
 
 abstract final class AppFontWeight {
@@ -129,142 +67,112 @@ abstract final class AppFontWeight {
   static const FontWeight bold = FontWeight.w700;
 }
 
-abstract final class AppFontFamily {
-  static const String sans = "Inter";
-  static const String mono = "JetBrains Mono";
-}
-
-abstract final class AppLeading {
-  static const double none = 1.0;
-  static const double tight = 1.25;
-  static const double snug = 1.375;
-  static const double normal = 1.5;
-  static const double relaxed = 1.625;
-  static const double loose = 2.0;
-}
-
-abstract final class AppTracking {
-  static const double tight = -0.02;
-  static const double normal = 0.0;
-  static const double wide = 0.02;
-  static const double wider = 0.05;
-  static const double widest = 0.1;
-}
-
-abstract final class AppTextStyles {
-  static const TextStyle display = TextStyle(
-    fontSize: AppFontSize.s5xl,
-    fontWeight: AppFontWeight.bold,
-    letterSpacing: AppTracking.tight * AppFontSize.s5xl,
-    height: AppLeading.tight,
-  );
-  static const TextStyle h1 = TextStyle(
-    fontSize: AppFontSize.s4xl,
-    fontWeight: AppFontWeight.bold,
-    letterSpacing: AppTracking.tight * AppFontSize.s4xl,
-    height: AppLeading.tight,
-  );
-  static const TextStyle h2 = TextStyle(
-    fontSize: AppFontSize.s3xl,
-    fontWeight: AppFontWeight.semibold,
-    letterSpacing: AppTracking.tight * AppFontSize.s3xl,
-    height: AppLeading.snug,
-  );
-  static const TextStyle h3 = TextStyle(
-    fontSize: AppFontSize.s2xl,
-    fontWeight: AppFontWeight.semibold,
-    letterSpacing: AppTracking.normal * AppFontSize.s2xl,
-    height: AppLeading.snug,
-  );
-  static const TextStyle h4 = TextStyle(
-    fontSize: AppFontSize.xl,
-    fontWeight: AppFontWeight.semibold,
-    letterSpacing: AppTracking.normal * AppFontSize.xl,
-    height: AppLeading.normal,
-  );
-  static const TextStyle body = TextStyle(
-    fontSize: AppFontSize.base,
+abstract final class AppTypography {
+  static const TextStyle displayXl = TextStyle(
+    fontFamily: AppFontFamily.display,
+    fontSize: 48.0,
     fontWeight: AppFontWeight.regular,
-    letterSpacing: AppTracking.normal * AppFontSize.base,
-    height: AppLeading.normal,
+    height: 1.1666666666666667,
+    letterSpacing: 0.06 * 48.0,
   );
-  static const TextStyle small = TextStyle(
-    fontSize: AppFontSize.sm,
+  static const TextStyle displayLg = TextStyle(
+    fontFamily: AppFontFamily.display,
+    fontSize: 36.0,
     fontWeight: AppFontWeight.regular,
-    letterSpacing: AppTracking.normal * AppFontSize.sm,
-    height: AppLeading.normal,
+    height: 1.2222222222222223,
+    letterSpacing: 0.04 * 36.0,
   );
-  static const TextStyle meta = TextStyle(
-    fontSize: AppFontSize.xs,
+  static const TextStyle displayMd = TextStyle(
+    fontFamily: AppFontFamily.display,
+    fontSize: 28.0,
     fontWeight: AppFontWeight.regular,
-    letterSpacing: AppTracking.wide * AppFontSize.xs,
-    height: AppLeading.normal,
+    height: 1.2857142857142858,
+    letterSpacing: 0.04 * 28.0,
   );
-  static const TextStyle label = TextStyle(
-    fontSize: AppFontSize.sm,
+  static const TextStyle displaySm = TextStyle(
+    fontFamily: AppFontFamily.display,
+    fontSize: 20.0,
+    fontWeight: AppFontWeight.regular,
+    height: 1.4,
+    letterSpacing: 0.08 * 20.0,
+    // textCase: uppercase — apply via Text.toUpperCase() at the call site
+  );
+  static const TextStyle bodyLg = TextStyle(
+    fontFamily: AppFontFamily.body,
+    fontSize: 18.0,
+    fontWeight: AppFontWeight.regular,
+    height: 1.5555555555555556,
+    letterSpacing: 0.0,
+  );
+  static const TextStyle bodyMd = TextStyle(
+    fontFamily: AppFontFamily.body,
+    fontSize: 16.0,
+    fontWeight: AppFontWeight.regular,
+    height: 1.5,
+    letterSpacing: 0.0,
+  );
+  static const TextStyle bodySm = TextStyle(
+    fontFamily: AppFontFamily.body,
+    fontSize: 14.0,
     fontWeight: AppFontWeight.medium,
-    letterSpacing: AppTracking.normal * AppFontSize.sm,
-    height: AppLeading.none,
+    height: 1.4285714285714286,
+    letterSpacing: 0.0,
   );
-  static const TextStyle code = TextStyle(
+  static const TextStyle monoStatXl = TextStyle(
     fontFamily: AppFontFamily.mono,
-    fontSize: AppFontSize.sm,
-    fontWeight: AppFontWeight.regular,
-    letterSpacing: AppTracking.normal * AppFontSize.sm,
-    height: AppLeading.relaxed,
+    fontSize: 32.0,
+    fontWeight: AppFontWeight.bold,
+    height: 1.0,
+    letterSpacing: 0.0,
+  );
+  static const TextStyle monoStatMd = TextStyle(
+    fontFamily: AppFontFamily.mono,
+    fontSize: 20.0,
+    fontWeight: AppFontWeight.medium,
+    height: 1.2,
+    letterSpacing: 0.0,
   );
 }
 
 abstract final class AppDuration {
-  static const Duration fast = Duration(milliseconds: 120);
-  static const Duration base = Duration(milliseconds: 180);
-  static const Duration slow = Duration(milliseconds: 280);
-  static const Duration slower = Duration(milliseconds: 400);
+  static const Duration fast = Duration(milliseconds: 100);
+  static const Duration dDefault = Duration(milliseconds: 200);
+  static const Duration slow = Duration(milliseconds: 400);
+  static const Duration ceremony = Duration(milliseconds: 600);
 }
 
 abstract final class AppEasing {
-  static const Cubic easeDefault = Cubic(0.4, 0, 0.2, 1);
-  static const Cubic out = Cubic(0, 0, 0.2, 1);
-  static const Cubic easeIn = Cubic(0.4, 0, 1, 1);
-  static const Cubic spring = Cubic(0.34, 1.56, 0.64, 1);
-}
-
-abstract final class AppLift {
-  static const double sm = 2.0;
-  static const double md = 4.0;
-}
-
-abstract final class AppOpacity {
-  static const double disabled = 0.4;
-  static const double muted = 0.6;
-  static const double overlay = 0.4;
-  static const double scrim = 0.72;
-  static const double dangerHover = 0.92;
+  static const Cubic standard = Cubic(0.2, 0, 0.2, 1);
+  static const Cubic emphasis = Cubic(0.3, 0, 0, 1);
+  static const Cubic linear = Cubic(0, 0, 1, 1);
 }
 
 abstract final class AppZIndex {
   static const int base = 0;
-  static const int raised = 10;
-  static const int dropdown = 100;
-  static const int sticky = 200;
-  static const int overlay = 300;
-  static const int modal = 400;
-  static const int toast = 500;
-  static const int tooltip = 600;
+  static const int raised = 1;
+  static const int sticky = 10;
+  static const int dropdown = 20;
+  static const int overlay = 50;
+  static const int modal = 100;
+  static const int toast = 200;
+  static const int tooltip = 300;
+  static const int max = 999;
 }
 
-abstract final class AppShadowsLight {
-  static const List<BoxShadow> xs = <BoxShadow>[BoxShadow(color: Color(0x0D000000), offset: Offset(0, 1), blurRadius: 2, spreadRadius: 0)];
-  static const List<BoxShadow> sm = <BoxShadow>[BoxShadow(color: Color(0x1A000000), offset: Offset(0, 1), blurRadius: 3, spreadRadius: 0), BoxShadow(color: Color(0x0F000000), offset: Offset(0, 1), blurRadius: 2, spreadRadius: 0)];
-  static const List<BoxShadow> md = <BoxShadow>[BoxShadow(color: Color(0x12000000), offset: Offset(0, 4), blurRadius: 6, spreadRadius: 0), BoxShadow(color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 4, spreadRadius: 0)];
-  static const List<BoxShadow> lg = <BoxShadow>[BoxShadow(color: Color(0x1A000000), offset: Offset(0, 10), blurRadius: 15, spreadRadius: 0), BoxShadow(color: Color(0x0D000000), offset: Offset(0, 4), blurRadius: 6, spreadRadius: 0)];
-  static const List<BoxShadow> focus = <BoxShadow>[BoxShadow(color: Color(0x593B82F6), offset: Offset(0, 0), blurRadius: 0, spreadRadius: 3)];
+abstract final class AppOpacity {
+  static const double o0 = 0.0;
+  static const double o100 = 1.0;
+  static const double disabled = 0.4;
+  static const double muted = 0.5;
+  static const double subtle = 0.6;
+  static const double secondary = 0.7;
+  static const double elevated = 0.85;
 }
 
-abstract final class AppShadowsDark {
-  static const List<BoxShadow> xs = <BoxShadow>[BoxShadow(color: Color(0x4D000000), offset: Offset(0, 1), blurRadius: 2, spreadRadius: 0)];
-  static const List<BoxShadow> sm = <BoxShadow>[BoxShadow(color: Color(0x66000000), offset: Offset(0, 1), blurRadius: 3, spreadRadius: 0), BoxShadow(color: Color(0x4D000000), offset: Offset(0, 1), blurRadius: 2, spreadRadius: 0)];
-  static const List<BoxShadow> md = <BoxShadow>[BoxShadow(color: Color(0x66000000), offset: Offset(0, 4), blurRadius: 6, spreadRadius: 0), BoxShadow(color: Color(0x4D000000), offset: Offset(0, 2), blurRadius: 4, spreadRadius: 0)];
-  static const List<BoxShadow> lg = <BoxShadow>[BoxShadow(color: Color(0x80000000), offset: Offset(0, 10), blurRadius: 15, spreadRadius: 0), BoxShadow(color: Color(0x4D000000), offset: Offset(0, 4), blurRadius: 6, spreadRadius: 0)];
-  static const List<BoxShadow> focus = <BoxShadow>[BoxShadow(color: Color(0x6660A5FA), offset: Offset(0, 0), blurRadius: 0, spreadRadius: 3)];
+abstract final class AppShadows {
+  static const List<BoxShadow> cardFeatured = <BoxShadow>[];
+  static const List<BoxShadow> panelRise = <BoxShadow>[BoxShadow(color: Color(0x990B0E2C), offset: Offset(0.0, 8.0), blurRadius: 24.0, spreadRadius: 0.0)];
+  static const List<BoxShadow> iconGlow = <BoxShadow>[BoxShadow(color: Color(0x592BA3A0), offset: Offset(0.0, 0.0), blurRadius: 24.0, spreadRadius: 0.0)];
+  static const List<BoxShadow> brassBevel = <BoxShadow>[];
+  static const List<BoxShadow> dangerPulse = <BoxShadow>[BoxShadow(color: Color(0x73E54E6B), offset: Offset(0.0, 0.0), blurRadius: 16.0, spreadRadius: 0.0)];
 }
