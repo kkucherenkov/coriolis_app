@@ -2,6 +2,9 @@
 // non-default themes (high-contrast, parchment-mode share viewer) live in an
 // optional `theme.<name>` block on color.json and override only what changes.
 //
+// See docs/adr/0001-phase-0-design-pipeline-rewrite.md for why this schema
+// diverges from the upstream boilerplate's multi-theme shape.
+//
 // Conventions:
 // - Every leaf is a W3C Design Tokens DTCG node — `{ "$value": ..., "$type": ..., "$description"? }`.
 // - Composite typography tokens carry an object `$value` whose keys match the
