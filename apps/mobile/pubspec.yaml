@@ -1,5 +1,5 @@
-name: app_mobile
-description: "{{APP_DESCRIPTION}}"
+name: coriolis_companion
+description: "Coriolis Companion — Flutter mobile app"
 publish_to: "none"
 version: 0.1.0+1
 
