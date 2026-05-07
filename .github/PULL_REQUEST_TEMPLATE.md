@@ -55,7 +55,7 @@ All of these must be green for merge.
 - [ ] Storybook addon-a11y panel is clean for every variant
 - [ ] Light and dark mode both verified
 - [ ] Reduced-motion variant verified for any animated component
-- [ ] Matching `.jsx` mockup in `specs/design/source-bundle/` is consistent (or has been updated in the same PR)
+- [ ] Matching `.jsx` mockup in `specs/design/mockups/` is consistent (or has been updated in the same PR)
 
 ## After merge
 

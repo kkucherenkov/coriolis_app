@@ -26,7 +26,7 @@ Update `specs/design/README.md` — add the component under the right §11 bucke
 
 ## Mockup
 
-If the component appears in any screen mockup, ensure the matching `.jsx` in `specs/design/source-bundle/project/components/` references it with the same prop shape. Per DESIGN §12, the JSX wins over the `.md` on conflict — keep them honest.
+If the component appears in any screen mockup, ensure the matching `.jsx` in `specs/design/mockups/` references it with the same prop shape. Per DESIGN §12, the JSX wins over the `.md` on conflict — keep them honest.
 
 ## Verify
 

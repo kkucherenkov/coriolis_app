@@ -1,6 +1,6 @@
 # AGENTS.md — Coriolis Companion App
 
-> Read this once at the start of every session. `PRD.md` and `DESIGN.md` are the source of truth; this file is the operating manual that turns them into PRs.
+> Read this once at the start of every session. `docs/PRD.md` and `docs/DESIGN.md` are the source of truth; this file is the operating manual that turns them into PRs.
 >
 > Claude Code reads both `AGENTS.md` and `CLAUDE.md`. This repo uses `AGENTS.md` (cross-vendor convention). If you need a project-local override, add `CLAUDE.md` next to this file.
 
@@ -22,15 +22,15 @@ Built on the `claude-driven-nest-nuxt-flutter-monorepo` boilerplate. The boilerp
 
 | Question | Source of truth |
 |---|---|
-| What does this feature do? | `PRD.md` (numbered sections) |
-| What does it look like? | `DESIGN.md` + `specs/design/source-bundle/project/components/*.jsx` |
+| What does this feature do? | `docs/PRD.md` (numbered sections) |
+| What does it look like? | `docs/DESIGN.md` + `specs/design/mockups/*.jsx` |
 | What's the API contract? | `packages/specs/openapi/openapi.yaml` |
 | What's the realtime contract? | `packages/specs/asyncapi/centrifugo.yaml` |
 | What's a design token's value? | `specs/design/tokens/*.json` (NEVER edit `tokens.generated.*`) |
 | What's been shipped? | `docs/done/*.md` |
 | Why was X decided that way? | `docs/adr/*.md` |
 
-**Conflict resolution:** if `DESIGN.md` and a `.jsx` mockup disagree, the JSX wins (per DESIGN §12). If the JSX and `tokens.generated.css` disagree, the JSON token wins.
+**Conflict resolution:** if `docs/DESIGN.md` and a `.jsx` mockup disagree, the JSX wins (per DESIGN §12). If the JSX and `tokens.generated.css` disagree, the JSON token wins.
 
 ---
 
@@ -68,7 +68,7 @@ Per PRD §7.2 — this is the one workflow you cannot skip.
 1. Token? Edit `specs/design/tokens/*.json` → `pnpm design:build` regenerates `tokens.generated.css`, `design-tokens.generated.ts`, `tokens.g.dart`.
 2. New token? Add it to `specs/design/README.md` inventory in the same PR — `pnpm design:audit` fails otherwise.
 3. New component? Folder under `packages/ui/src/components/<Name>/` with all four files. Mirror the Flutter widget under `packages/ui_flutter/lib/src/widgets/`. Add to `specs/design/README.md`.
-4. Reference mockup? Add or update the `.jsx` in `specs/design/source-bundle/project/components/`.
+4. Reference mockup? Add or update the `.jsx` in `specs/design/mockups/`.
 
 **Renaming or removing a token requires an ADR** — it's a breaking change for every consumer.
 
@@ -97,7 +97,7 @@ packages/
   config/                        Shared eslint/stylelint/tsconfig
 specs/design/
   tokens/*.json                  Edit these
-  source-bundle/project/components/*.jsx   Pixel-precise references
+  mockups/*.jsx                            Pixel-precise references
   README.md                      Component + token inventory
 docker/compose.yml               Local stack
 docs/
@@ -185,7 +185,7 @@ Feature folders are `domain/` + `data/` + `presentation/`. State via `flutter_bl
 ## 11. When unsure
 
 1. Re-read the relevant numbered section of `PRD.md` or `DESIGN.md`.
-2. If it's a UI question, look at the matching `.jsx` mockup in `specs/design/source-bundle/`.
+2. If it's a UI question, look at the matching `.jsx` mockup in `specs/design/mockups/`.
 3. Check `docs/done/` for prior precedent on similar features.
 4. For a user-visible product trade-off, ask in the PR description — don't guess.
 
