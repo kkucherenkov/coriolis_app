@@ -6,63 +6,41 @@
 @import "./tokens.generated.css";
 
 @theme inline {
-  --color-bg: var(--surface-bg);
-  --color-bg-subtle: var(--surface-bg-subtle);
-  --color-bg-muted: var(--surface-bg-muted);
-  --color-surface: var(--surface-surface);
-  --color-surface-alt: var(--surface-surface-alt);
-  --color-overlay: var(--surface-overlay);
+  /* Semantic surfaces */
+  --color-bg: var(--surface-void);
+  --color-bg-subtle: var(--surface-night);
+  --color-surface: var(--surface-night);
+  --color-surface-alt: var(--surface-dawn);
+  --color-overlay: var(--surface-dawn);
 
-  --color-fg: var(--text-fg);
-  --color-fg-muted: var(--text-fg-muted);
-  --color-fg-subtle: var(--text-fg-subtle);
-  --color-fg-disabled: var(--text-fg-disabled);
-  --color-fg-inverse: var(--text-fg-inverse);
+  /* Text */
+  --color-fg: var(--text-primary);
+  --color-fg-muted: var(--text-secondary);
 
-  --color-border: var(--border-default);
-  --color-border-strong: var(--border-strong);
-  --color-border-soft: var(--border-soft);
+  /* Primary scale (Nuxt UI primary='accent') — see apps/web/app/assets/css/main.css */
+  --color-accent-50: #FFFEF8;
+  --color-accent-100: #FCF6E5;
+  --color-accent-200: var(--brand-brass-light);
+  --color-accent-300: #ECD49E;
+  --color-accent-400: #DEBB72;
+  --color-accent-500: var(--brand-brass);
+  --color-accent-600: var(--brand-brass-deep);
+  --color-accent-700: var(--brand-brass-shadow);
+  --color-accent-800: #4A3712;
+  --color-accent-900: #2D2208;
+  --color-accent-950: #1A1306;
 
-  --color-accent: var(--brand-accent);
-  --color-accent-hover: var(--brand-accent-hover);
-  --color-accent-active: var(--brand-accent-active);
-  --color-accent-soft: var(--brand-accent-soft);
-  --color-accent-soft-hover: var(--brand-accent-soft-hover);
-  --color-accent-fg: var(--brand-accent-fg);
-  --color-accent-border: var(--brand-accent-border);
+  --color-success-500: var(--state-success);
+  --color-error-500: var(--state-crimson);
+  --color-warning-500: var(--brand-brass-deep);
+  --color-info-500: var(--state-mystic-teal);
 
-  --color-success: var(--status-success);
-  --color-success-soft: var(--status-success-soft);
-  --color-warning: var(--status-warning);
-  --color-warning-soft: var(--status-warning-soft);
-  --color-danger: var(--status-danger);
-  --color-danger-soft: var(--status-danger-soft);
-  --color-info: var(--status-info);
-  --color-info-soft: var(--status-info-soft);
-
-  --radius-xs: var(--radius-xs);
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
-  --radius-xl: var(--radius-xl);
-  --radius-2xl: var(--radius-2xl);
   --radius-pill: var(--radius-pill);
-
-  --shadow-xs: var(--shadow-xs);
-  --shadow-sm: var(--shadow-sm);
-  --shadow-md: var(--shadow-md);
-  --shadow-lg: var(--shadow-lg);
-  --shadow-focus: var(--shadow-focus);
 }
 
 :root {
-  color-scheme: light dark;
-}
-
-html[data-theme='light'] {
-  color-scheme: light;
-}
-
-html[data-theme='dark'] {
   color-scheme: dark;
 }
