@@ -1,10 +1,12 @@
 {
-  "$description": "Opacity tokens for interactive and decorative states.",
+  "$schema": "https://design-tokens.github.io/community-group/format/",
   "opacity": {
-    "disabled":   { "$value": 0.4,  "$type": "number", "$description": "Disabled interactive elements" },
-    "muted":      { "$value": 0.6,  "$type": "number", "$description": "De-emphasised content" },
-    "overlay":    { "$value": 0.4,  "$type": "number", "$description": "Modal backdrop" },
-    "scrim":      { "$value": 0.72, "$type": "number", "$description": "Full-screen scrim" },
-    "dangerHover":{ "$value": 0.92, "$type": "number", "$description": "Danger button hover state" }
+    "0":         { "$value": 0,    "$type": "number", "$description": "Fully transparent." },
+    "disabled":  { "$value": 0.4,  "$type": "number", "$description": "Disabled controls and muted elements." },
+    "muted":     { "$value": 0.5,  "$type": "number", "$description": "Inactive step labels, future states." },
+    "subtle":    { "$value": 0.6,  "$type": "number", "$description": "Hairline rules, soft dividers." },
+    "secondary": { "$value": 0.7,  "$type": "number", "$description": "Secondary chrome and helper hints." },
+    "elevated":  { "$value": 0.85, "$type": "number", "$description": "Backdrop overlays and scrims." },
+    "100":       { "$value": 1,    "$type": "number", "$description": "Fully opaque." }
   }
 }

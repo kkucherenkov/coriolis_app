@@ -1,25 +1,75 @@
 {
-  "$description": "Box-shadow tokens with light and dark variants.",
+  "$schema": "https://design-tokens.github.io/community-group/format/",
   "shadow": {
-    "xs": {
-      "light": { "$value": "0 1px 2px rgba(0,0,0,0.05)",  "$type": "shadow" },
-      "dark":  { "$value": "0 1px 2px rgba(0,0,0,0.3)",   "$type": "shadow" }
+    "card-featured": {
+      "$type": "shadow",
+      "$description": "Inset brass shadow — featured / selected card.",
+      "$value": {
+        "color": "#6B4E1A",
+        "offsetX": "0px",
+        "offsetY": "0px",
+        "blur": "0px",
+        "spread": "1px",
+        "inset": true
+      }
     },
-    "sm": {
-      "light": { "$value": "0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)", "$type": "shadow" },
-      "dark":  { "$value": "0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3)",  "$type": "shadow" }
+    "panel-rise": {
+      "$type": "shadow",
+      "$description": "Subtle indigo lift for elevated panels and modals.",
+      "$value": {
+        "color": "rgba(11,14,44,0.6)",
+        "offsetX": "0px",
+        "offsetY": "8px",
+        "blur": "24px",
+        "spread": "0px",
+        "inset": false
+      }
     },
-    "md": {
-      "light": { "$value": "0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06)", "$type": "shadow" },
-      "dark":  { "$value": "0 4px 6px rgba(0,0,0,0.4),  0 2px 4px rgba(0,0,0,0.3)",  "$type": "shadow" }
+    "icon-glow": {
+      "$type": "shadow",
+      "$description": "Mystic teal halo for chosen Icons and active mystic elements.",
+      "$value": {
+        "color": "rgba(43,163,160,0.35)",
+        "offsetX": "0px",
+        "offsetY": "0px",
+        "blur": "24px",
+        "spread": "0px",
+        "inset": false
+      }
     },
-    "lg": {
-      "light": { "$value": "0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05)", "$type": "shadow" },
-      "dark":  { "$value": "0 10px 15px rgba(0,0,0,0.5), 0 4px 6px rgba(0,0,0,0.3)",  "$type": "shadow" }
+    "brass-bevel": {
+      "$type": "shadow",
+      "$description": "Pressed bevel for brass buttons and medallions.",
+      "$value": [
+        {
+          "color": "rgba(244,228,184,0.4)",
+          "offsetX": "0px",
+          "offsetY": "1px",
+          "blur": "0px",
+          "spread": "0px",
+          "inset": true
+        },
+        {
+          "color": "rgba(107,78,26,0.6)",
+          "offsetX": "0px",
+          "offsetY": "-1px",
+          "blur": "0px",
+          "spread": "0px",
+          "inset": true
+        }
+      ]
     },
-    "focus": {
-      "light": { "$value": "0 0 0 3px rgba(59,130,246,0.35)", "$type": "shadow" },
-      "dark":  { "$value": "0 0 0 3px rgba(96,165,250,0.4)",  "$type": "shadow" }
+    "danger-pulse": {
+      "$type": "shadow",
+      "$description": "Crimson glow for crit-fail and destructive states.",
+      "$value": {
+        "color": "rgba(229,78,107,0.45)",
+        "offsetX": "0px",
+        "offsetY": "0px",
+        "blur": "16px",
+        "spread": "0px",
+        "inset": false
+      }
     }
   }
 }

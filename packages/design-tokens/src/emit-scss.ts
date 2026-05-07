@@ -1,4 +1,23 @@
-import { BANNER, type TokenBundle } from './types.ts';
+import {
+  BANNER,
+  type ColorFile,
+  type ColorGroup,
+  type CubicBezierValue,
+  type ShadowPart,
+  type ShadowValue,
+  type TokenBundle,
+  type TypographyFile,
+  type TypographyValue,
+} from './types.ts';
+
+const COLOR_GROUPS: readonly ColorGroup[] = ['surface', 'brand', 'text', 'state'];
+
+function* leafEntries<T>(record: Record<string, T>): Iterable<[string, T]> {
+  for (const [key, value] of Object.entries(record)) {
+    if (key.startsWith('$')) continue;
+    yield [key, value];
+  }
+}
 
 function kebab(name: string): string {
   return name
@@ -7,136 +26,130 @@ function kebab(name: string): string {
     .toLowerCase();
 }
 
-type ThemeName = 'light' | 'dark' | 'sepia' | 'forest';
+function familyValue(value: string | string[]): string {
+  const list = Array.isArray(value) ? value : [value];
+  return list.map((name) => (name.includes(' ') ? `"${name}"` : name)).join(', ');
+}
 
-function themedBlock(themeName: ThemeName, tokens: TokenBundle): string {
-  // Light doubles as the default — emit it under `:root` as well so semantic
-  // tokens (--text-fg, --surface-surface, --brand-accent-*, …) resolve even
-  // when no `data-theme` attribute is set on <html>. Other themes override via
-  // their own selectors only.
-  // dark theme responds to both our data-theme attr and Nuxt UI's class strategy.
-  const selector =
-    themeName === 'light'
-      ? `:root, [data-theme='light']`
-      : themeName === 'dark'
-        ? `[data-theme='dark'], .dark`
-        : `[data-theme='${themeName}']`;
-  const lines: string[] = [`${selector} {`];
+function bezierToCss(value: CubicBezierValue | string): string {
+  if (typeof value === 'string') return value;
+  return `cubic-bezier(${value.x1}, ${value.y1}, ${value.x2}, ${value.y2})`;
+}
 
-  const { color, shadow } = tokens;
-  const groups = ['brand', 'surface', 'border', 'text', 'status'] as const;
-  for (const group of groups) {
-    const entries = color.color[group];
-    for (const [key, leaf] of Object.entries(entries)) {
-      // Fall back to light values when a theme-specific key is absent.
-      const value = (leaf[themeName] ?? leaf.light).$value.toString();
-      lines.push(`  --${kebab(group)}-${kebab(key)}: ${value};`);
+function shadowPartToCss(part: ShadowPart): string {
+  const tokens = [part.offsetX, part.offsetY, part.blur];
+  if (part.spread !== '0px' && part.spread !== '0') tokens.push(part.spread);
+  tokens.push(part.color);
+  return [part.inset === true ? 'inset' : '', ...tokens].filter(Boolean).join(' ');
+}
+
+function shadowsToCss(value: ShadowValue): string {
+  const parts = Array.isArray(value) ? value : [value];
+  return parts.map(shadowPartToCss).join(', ');
+}
+
+function familyRef(typography: TypographyFile, key: string): string {
+  if (key in typography.font.family) return `var(--font-${kebab(key)})`;
+  return key;
+}
+
+function weightRef(typography: TypographyFile, key: string | number): string {
+  if (typeof key === 'number') return key.toString();
+  if (key in typography.font.weight) return `var(--fw-${kebab(key)})`;
+  return key;
+}
+
+function lineHeight(value: string | number): string {
+  return typeof value === 'number' ? value.toString() : value;
+}
+
+function emitTypeRole(role: string, value: TypographyValue, typography: TypographyFile): string[] {
+  const prefix = `--type-${kebab(role)}`;
+  const lines = [
+    `  ${prefix}-font-family: ${familyRef(typography, value.fontFamily)};`,
+    `  ${prefix}-font-size: ${value.fontSize};`,
+    `  ${prefix}-line-height: ${lineHeight(value.lineHeight)};`,
+    `  ${prefix}-font-weight: ${weightRef(typography, value.fontWeight)};`,
+    `  ${prefix}-letter-spacing: ${value.letterSpacing ?? 'normal'};`,
+  ];
+  if (value.textCase !== undefined && value.textCase !== 'none') {
+    lines.push(`  ${prefix}-text-transform: ${value.textCase};`);
+  }
+  return lines;
+}
+
+function emitColorBlock(
+  color: ColorFile['color'] | NonNullable<ColorFile['theme']>[string]['color'],
+): string[] {
+  const lines: string[] = [];
+  if (!color) return lines;
+  for (const group of COLOR_GROUPS) {
+    const entries = color[group];
+    if (!entries) continue;
+    for (const [key, leaf] of leafEntries(entries)) {
+      lines.push(`  --${group}-${kebab(key)}: ${leaf.$value};`);
     }
   }
+  return lines;
+}
 
-  for (const [key, leaf] of Object.entries(shadow.shadow)) {
-    const value = (leaf[themeName] ?? leaf.light).$value.toString();
-    lines.push(`  --shadow-${kebab(key)}: ${value};`);
-  }
-
-  lines.push('}');
-  return lines.join('\n');
+function durationKey(name: string): string {
+  return name === 'default' ? '--motion-duration' : `--motion-duration-${kebab(name)}`;
 }
 
 export function emitScss(tokens: TokenBundle): string {
-  const sections: string[] = [BANNER, '', ':root {'];
+  const lines: string[] = [BANNER, '', ':root {'];
 
-
-  const { typography, spacing, radius, motion, color } = tokens;
-
-  for (const [key, leaf] of Object.entries(typography.typography.font.family)) {
-    sections.push(`  --font-${kebab(key)}: ${leaf.$value.toString()};`);
+  for (const [key, leaf] of leafEntries(tokens.typography.font.family)) {
+    lines.push(`  --font-${kebab(key)}: ${familyValue(leaf.$value)};`);
   }
-  for (const [key, leaf] of Object.entries(typography.typography.font.weight)) {
-    sections.push(`  --fw-${kebab(key)}: ${leaf.$value.toString()};`);
-  }
-  for (const [key, leaf] of Object.entries(typography.typography.font.size)) {
-    sections.push(`  --text-${kebab(key)}: ${leaf.$value.toString()};`);
-  }
-  for (const [key, leaf] of Object.entries(typography.typography.font.tracking)) {
-    sections.push(`  --tracking-${kebab(key)}: ${leaf.$value.toString()};`);
-  }
-  for (const [key, leaf] of Object.entries(typography.typography.font.leading)) {
-    sections.push(`  --leading-${kebab(key)}: ${leaf.$value.toString()};`);
+  for (const [key, leaf] of leafEntries(tokens.typography.font.weight)) {
+    lines.push(`  --fw-${kebab(key)}: ${leaf.$value};`);
   }
 
-  for (const [key, leaf] of Object.entries(spacing.space)) {
-    sections.push(`  --space-${kebab(key)}: ${leaf.$value.toString()};`);
+  for (const [role, leaf] of leafEntries(tokens.typography.type)) {
+    lines.push(...emitTypeRole(role, leaf.$value, tokens.typography));
   }
 
-  for (const [key, leaf] of Object.entries(radius.radius)) {
-    sections.push(`  --radius-${kebab(key)}: ${leaf.$value.toString()};`);
+  for (const [key, leaf] of leafEntries(tokens.spacing.spacing)) {
+    lines.push(`  --space-${kebab(key)}: ${leaf.$value};`);
   }
 
-  for (const [key, leaf] of Object.entries(motion.motion.duration)) {
-    sections.push(`  --dur-${kebab(key)}: ${leaf.$value.toString()};`);
-  }
-  const easingLines = Object.entries(motion.motion.easing).map(
-    ([key, leaf]) => `  --ease-${kebab(key)}: ${leaf.$value.toString()};`,
-  );
-  // Bare alias: source-bundle and components use `--ease` as shorthand for the default easing.
-  easingLines.push('  --ease: var(--ease-default);');
-  sections.push(...easingLines);
-  for (const [key, leaf] of Object.entries(motion.motion.lift)) {
-    if (key.startsWith('$')) continue;
-    sections.push(`  --lift-${kebab(key)}: ${leaf.$value.toString()};`);
+  for (const [key, leaf] of leafEntries(tokens.radius.radius)) {
+    lines.push(`  --radius-${kebab(key)}: ${leaf.$value};`);
   }
 
-  for (const [key, leaf] of Object.entries(tokens.opacity.opacity)) {
-    if (key.startsWith('$')) continue;
-    sections.push(`  --opacity-${kebab(key)}: ${leaf.$value.toString()};`);
+  for (const [key, leaf] of leafEntries(tokens.motion.motion.duration)) {
+    lines.push(`  ${durationKey(key)}: ${leaf.$value};`);
+  }
+  for (const [key, leaf] of leafEntries(tokens.motion.motion.ease)) {
+    lines.push(`  --motion-ease-${kebab(key)}: ${bezierToCss(leaf.$value)};`);
   }
 
-  for (const [roleKey, role] of Object.entries(tokens.typography.typography.role)) {
-    if (roleKey.startsWith('$')) continue;
-    const size = tokens.typography.typography.font.size[role.size]?.$value ?? '';
-    const weight = tokens.typography.typography.font.weight[role.weight]?.$value ?? '';
-    const tracking = tokens.typography.typography.font.tracking[role.tracking]?.$value ?? '';
-    const leading = tokens.typography.typography.font.leading[role.leading]?.$value ?? '';
-    const prefix = `--role-${kebab(roleKey)}`;
-    const roleLines = [
-      `  ${prefix}-font-size: ${size.toString()};`,
-      `  ${prefix}-font-weight: ${weight.toString()};`,
-      `  ${prefix}-letter-spacing: ${tracking.toString()};`,
-      `  ${prefix}-line-height: ${leading.toString()};`,
-    ];
-    if (role.mono === true) {
-      roleLines.push(`  ${prefix}-font-family: var(--font-mono);`);
-    }
-    sections.push(...roleLines);
+  for (const [key, leaf] of leafEntries(tokens.zIndex['z-index'])) {
+    lines.push(`  --z-${kebab(key)}: ${leaf.$value};`);
   }
 
-  for (const [key, leaf] of Object.entries(motion.zIndex)) {
-    if (key.startsWith('$')) continue;
-    sections.push(`  --z-${kebab(key)}: ${leaf.$value.toString()};`);
+  for (const [key, leaf] of leafEntries(tokens.opacity.opacity)) {
+    lines.push(`  --opacity-${kebab(key)}: ${leaf.$value};`);
   }
 
-  for (const [key, leaf] of Object.entries(color.color.vertical)) {
-    if (leaf.$value !== undefined) {
-      sections.push(`  --vertical-${kebab(key)}: ${leaf.$value};`);
-    }
-    if (leaf.bgTint !== undefined) {
-      sections.push(`  --vertical-${kebab(key)}-tint: ${leaf.bgTint};`);
+  lines.push(...emitColorBlock(tokens.color.color));
+
+  for (const [key, leaf] of leafEntries(tokens.shadow.shadow)) {
+    lines.push(`  --shadow-${kebab(key)}: ${shadowsToCss(leaf.$value)};`);
+  }
+
+  lines.push('}');
+
+  if (tokens.color.theme) {
+    for (const [themeName, theme] of leafEntries(tokens.color.theme)) {
+      const overrides = emitColorBlock(theme.color);
+      if (overrides.length === 0) continue;
+      lines.push('', `[data-theme='${themeName}'] {`, ...overrides, '}');
     }
   }
 
-  sections.push(
-    '}',
-    '',
-    themedBlock('light', tokens),
-    '',
-    themedBlock('dark', tokens),
-    '',
-    themedBlock('sepia', tokens),
-    '',
-    themedBlock('forest', tokens),
-    '',
-  );
-
-  return sections.join('\n');
+  lines.push('');
+  return lines.join('\n');
 }

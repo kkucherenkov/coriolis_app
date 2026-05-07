@@ -1,35 +1,18 @@
+import { colorToDart, parseCubicBezier, parseMs, stripPxForDart } from './parse.ts';
 import {
-  colorToDart,
-  parseCubicBezier,
-  parseMs,
-  shadowListToDart,
-  stripPxForDart,
-} from './parse.ts';
-import { DART_BANNER, type ThemedLeaf, type TokenBundle, type VerticalLeaf } from './types.ts';
+  DART_BANNER,
+  type ColorFile,
+  type ColorGroup,
+  type CubicBezierValue,
+  type ShadowPart,
+  type ShadowValue,
+  type TokenBundle,
+  type TypographyFile,
+  type TypographyValue,
+} from './types.ts';
 
-function camel(name: string): string {
-  // Keep numeric-leading keys (like "2xs") legible: prefix with 's' for sizes, 'v' for verticals.
-  return name.replaceAll(/[-_]([a-z])/g, (_, c: string) => c.toUpperCase());
-}
+const COLOR_GROUPS: readonly ColorGroup[] = ['surface', 'brand', 'text', 'state'];
 
-function dartDouble(value: number | string): string {
-  const s = typeof value === 'number' ? value.toString() : value.trim();
-  if (s === '0' || s === '0.0') return '0.0';
-  if (s.includes('.')) return s;
-  return `${s}.0`;
-}
-
-function stripEmForDart(input: string): string {
-  const trimmed = input.trim();
-  if (trimmed === '0') return '0.0';
-  if (trimmed.endsWith('em')) {
-    return dartDouble(trimmed.slice(0, -2));
-  }
-  return dartDouble(trimmed);
-}
-
-// Dart reserved words that can never be used as identifiers. We don't need the full
-// Dart keyword list here — only words that our token keys could realistically hit.
 const DART_RESERVED: ReadonlySet<string> = new Set([
   'default',
   'class',
@@ -63,179 +46,199 @@ const DART_RESERVED: ReadonlySet<string> = new Set([
   'enum',
 ]);
 
+function* leafEntries<T>(record: Record<string, T>): Iterable<[string, T]> {
+  for (const [key, value] of Object.entries(record)) {
+    if (key.startsWith('$')) continue;
+    yield [key, value];
+  }
+}
+
+function camel(name: string): string {
+  return name.replaceAll(/[-_]([a-z0-9])/g, (_, c: string) => c.toUpperCase());
+}
+
 function safeKey(prefix: string, raw: string): string {
   const key = camel(raw);
-  // Dart identifiers can't start with a digit.
-  if (/^[0-9]/.test(key)) return `${prefix}${key}`;
+  if (/^[0-9]/.test(key)) return `${prefix}${key.charAt(0).toUpperCase()}${key.slice(1)}`;
   if (DART_RESERVED.has(key)) return `${prefix}${key.charAt(0).toUpperCase()}${key.slice(1)}`;
   return key;
 }
 
-function colorsClass(
-  name: string,
-  theme: 'light' | 'dark',
-  entries: (readonly [string, Record<string, ThemedLeaf>])[],
-): string {
-  const lines: string[] = [`abstract final class ${name} {`];
-  for (const [group, tokens] of entries) {
-    for (const [key, leaf] of Object.entries(tokens)) {
-      const fieldName = camel(`${group}${key.charAt(0).toUpperCase()}${key.slice(1)}`);
-      lines.push(
-        `  static const Color ${fieldName} = ${colorToDart(leaf[theme].$value.toString())};`,
-      );
-    }
-  }
-  lines.push('}');
-  return lines.join('\n');
+function dartDouble(value: number | string): string {
+  const s = typeof value === 'number' ? value.toString() : value.trim();
+  if (s === '0' || s === '0.0') return '0.0';
+  if (s.includes('.')) return s;
+  return `${s}.0`;
 }
 
-function verticalClass(entries: Record<string, VerticalLeaf>): string {
-  const lines: string[] = ['abstract final class AppVerticalColors {'];
-  for (const [key, leaf] of Object.entries(entries)) {
-    if (leaf.$value !== undefined) {
-      lines.push(`  static const Color ${camel(key)} = ${colorToDart(leaf.$value)};`);
-    }
-    if (leaf.bgTint !== undefined) {
-      lines.push(`  static const Color ${camel(key)}Tint = ${colorToDart(leaf.bgTint)};`);
-    }
-  }
-  lines.push('}');
-  return lines.join('\n');
+function stripEmForDart(input: string): string {
+  const trimmed = input.trim();
+  if (trimmed === '0') return '0.0';
+  if (trimmed.endsWith('em')) return dartDouble(trimmed.slice(0, -2));
+  return dartDouble(trimmed);
 }
 
-function shadowsClass(
+function colorClass(
   name: string,
-  theme: 'light' | 'dark',
-  entries: Record<string, ThemedLeaf>,
-): string {
+  color: ColorFile['color'] | NonNullable<ColorFile['theme']>[string]['color'],
+): string[] {
   const lines: string[] = [`abstract final class ${name} {`];
-  for (const [key, leaf] of Object.entries(entries)) {
-    const list = shadowListToDart(leaf[theme].$value.toString());
-    lines.push(`  static const List<BoxShadow> ${camel(key)} = ${list};`);
+  if (color) {
+    for (const group of COLOR_GROUPS) {
+      const entries = color[group];
+      if (!entries) continue;
+      for (const [key, leaf] of leafEntries(entries)) {
+        const field = camel(`${group}-${key}`);
+        lines.push(`  static const Color ${field} = ${colorToDart(leaf.$value)};`);
+      }
+    }
   }
   lines.push('}');
-  return lines.join('\n');
+  return lines;
+}
+
+function bezierToDart(value: CubicBezierValue | string): string {
+  const tuple: [number, number, number, number] = typeof value === 'string'
+    ? parseCubicBezier(value)
+    : [value.x1, value.y1, value.x2, value.y2];
+  const [x1, y1, x2, y2] = tuple;
+  return `Cubic(${x1}, ${y1}, ${x2}, ${y2})`;
+}
+
+function shadowParts(value: ShadowValue): ShadowPart[] {
+  return Array.isArray(value) ? value : [value];
+}
+
+function boxShadowExpr(part: ShadowPart): string {
+  const color = colorToDart(part.color);
+  const offsetX = stripPxForDart(part.offsetX);
+  const offsetY = stripPxForDart(part.offsetY);
+  const blur = stripPxForDart(part.blur);
+  const spread = stripPxForDart(part.spread);
+  return `BoxShadow(color: ${color}, offset: Offset(${offsetX}, ${offsetY}), blurRadius: ${blur}, spreadRadius: ${spread})`;
+}
+
+function shadowExpr(value: ShadowValue): string {
+  const outer = shadowParts(value).filter((p) => p.inset !== true);
+  if (outer.length === 0) return '<BoxShadow>[]';
+  return `<BoxShadow>[${outer.map(boxShadowExpr).join(', ')}]`;
+}
+
+function familyValue(value: string | string[]): string {
+  const list = Array.isArray(value) ? value : [value];
+  const primary = list[0] ?? '';
+  return JSON.stringify(primary);
+}
+
+function typeRoleField(
+  role: string,
+  value: TypographyValue,
+  typography: TypographyFile,
+): string[] {
+  const fieldName = camel(role);
+  const familyKey = value.fontFamily;
+  const familyExpr = familyKey in typography.font.family
+    ? `AppFontFamily.${camel(familyKey)}`
+    : JSON.stringify(familyKey);
+  const weightKey = value.fontWeight;
+  const weightExpr = typeof weightKey === 'number'
+    ? `FontWeight.w${weightKey}`
+    : weightKey in typography.font.weight
+      ? `AppFontWeight.${camel(weightKey)}`
+      : weightKey;
+  const fontSizePx = stripPxForDart(value.fontSize);
+  const lineHeightSrc = typeof value.lineHeight === 'number'
+    ? value.lineHeight
+    : value.lineHeight.endsWith('px')
+      ? Number(value.lineHeight.slice(0, -2)) / Number(value.fontSize.slice(0, -2))
+      : Number(value.lineHeight);
+  const height = dartDouble(lineHeightSrc);
+  const letterSpacing = value.letterSpacing === undefined || value.letterSpacing === 'normal'
+    ? '0.0'
+    : `${stripEmForDart(value.letterSpacing)} * ${fontSizePx}`;
+  const lines = [
+    `  static const TextStyle ${fieldName} = TextStyle(`,
+    `    fontFamily: ${familyExpr},`,
+    `    fontSize: ${fontSizePx},`,
+    `    fontWeight: ${weightExpr},`,
+    `    height: ${height},`,
+    `    letterSpacing: ${letterSpacing},`,
+  ];
+  if (value.textCase !== undefined && value.textCase !== 'none') {
+    lines.push(`    // textCase: ${value.textCase} — apply via Text.toUpperCase() at the call site`);
+  }
+  lines.push('  );');
+  return lines;
 }
 
 export function emitDart(tokens: TokenBundle): string {
   const parts: string[] = [DART_BANNER, '', "import 'package:flutter/widgets.dart';", ''];
 
-  const colorEntries: (readonly [string, Record<string, ThemedLeaf>])[] = [
-    ['brand', tokens.color.color.brand],
-    ['surface', tokens.color.color.surface],
-    ['border', tokens.color.color.border],
-    ['text', tokens.color.color.text],
-    ['status', tokens.color.color.status],
-  ];
-  parts.push(
-    colorsClass('AppColorsLight', 'light', colorEntries),
-    '',
-    colorsClass('AppColorsDark', 'dark', colorEntries),
-    '',
-    verticalClass(tokens.color.color.vertical),
-    '',
-    'abstract final class AppSpacing {',
-  );
-  for (const [key, leaf] of Object.entries(tokens.spacing.space)) {
-    const field = safeKey('s', key);
-    parts.push(`  static const double ${field} = ${stripPxForDart(leaf.$value.toString())};`);
+  parts.push(...colorClass('AppColors', tokens.color.color), '');
+  if (tokens.color.theme) {
+    for (const [name, theme] of leafEntries(tokens.color.theme)) {
+      const className = `AppColors${camel(name).replace(/^./, (c) => c.toUpperCase())}`;
+      parts.push(...colorClass(className, theme.color), '');
+    }
   }
-  parts.push('}', '', 'abstract final class AppRadius {');
-  for (const [key, leaf] of Object.entries(tokens.radius.radius)) {
-    const field = safeKey('r', key);
-    parts.push(`  static const double ${field} = ${stripPxForDart(leaf.$value.toString())};`);
+
+  parts.push('abstract final class AppSpacing {');
+  for (const [key, leaf] of leafEntries(tokens.spacing.spacing)) {
+    parts.push(`  static const double ${safeKey('s', key)} = ${stripPxForDart(leaf.$value)};`);
   }
-  parts.push('}', '', 'abstract final class AppFontSize {');
-  for (const [key, leaf] of Object.entries(tokens.typography.typography.font.size)) {
-    const field = safeKey('s', key);
-    parts.push(`  static const double ${field} = ${stripPxForDart(leaf.$value.toString())};`);
+  parts.push('}', '');
+
+  parts.push('abstract final class AppRadius {');
+  for (const [key, leaf] of leafEntries(tokens.radius.radius)) {
+    parts.push(`  static const double ${safeKey('r', key)} = ${stripPxForDart(leaf.$value)};`);
+  }
+  parts.push('}', '');
+
+  parts.push('abstract final class AppFontFamily {');
+  for (const [key, leaf] of leafEntries(tokens.typography.font.family)) {
+    parts.push(`  static const String ${camel(key)} = ${familyValue(leaf.$value)};`);
   }
   parts.push('}', '', 'abstract final class AppFontWeight {');
-  for (const [key, leaf] of Object.entries(tokens.typography.typography.font.weight)) {
-    const field = camel(key);
-    parts.push(`  static const FontWeight ${field} = FontWeight.w${leaf.$value.toString()};`);
+  for (const [key, leaf] of leafEntries(tokens.typography.font.weight)) {
+    parts.push(`  static const FontWeight ${camel(key)} = FontWeight.w${leaf.$value};`);
   }
-  parts.push('}', '', 'abstract final class AppFontFamily {');
-  for (const [key, leaf] of Object.entries(tokens.typography.typography.font.family)) {
-    const primary =
-      leaf.$value
-        .toString()
-        .split(',')[0]
-        ?.trim()
-        .replaceAll(/^['"]|['"]$/g, '') ?? '';
-    parts.push(`  static const String ${camel(key)} = ${JSON.stringify(primary)};`);
+  parts.push('}', '');
+
+  parts.push('abstract final class AppTypography {');
+  for (const [role, leaf] of leafEntries(tokens.typography.type)) {
+    parts.push(...typeRoleField(role, leaf.$value, tokens.typography));
   }
-  parts.push('}', '', 'abstract final class AppLeading {');
-  for (const [key, leaf] of Object.entries(tokens.typography.typography.font.leading)) {
-    if (key.startsWith('$')) continue;
-    parts.push(`  static const double ${camel(key)} = ${dartDouble(leaf.$value)};`);
-  }
-  parts.push('}', '', 'abstract final class AppTracking {');
-  for (const [key, leaf] of Object.entries(tokens.typography.typography.font.tracking)) {
-    if (key.startsWith('$')) continue;
-    parts.push(`  static const double ${camel(key)} = ${stripEmForDart(leaf.$value.toString())};`);
-  }
-  parts.push('}', '', 'abstract final class AppTextStyles {');
-  for (const [roleKey, role] of Object.entries(tokens.typography.typography.role)) {
-    if (roleKey.startsWith('$')) continue;
-    const sizeField = safeKey('s', role.size);
-    const weightField = camel(role.weight);
-    const trackingField = camel(role.tracking);
-    const leadingField = camel(role.leading);
-    const fieldName = camel(roleKey);
-    const lines: string[] = [`  static const TextStyle ${fieldName} = TextStyle(`];
-    if (role.mono === true) {
-      lines.push(`    fontFamily: AppFontFamily.mono,`);
-    }
-    lines.push(
-      `    fontSize: AppFontSize.${sizeField},`,
-      `    fontWeight: AppFontWeight.${weightField},`,
-      `    letterSpacing: AppTracking.${trackingField} * AppFontSize.${sizeField},`,
-      `    height: AppLeading.${leadingField},`,
-      `  );`,
+  parts.push('}', '');
+
+  parts.push('abstract final class AppDuration {');
+  for (const [key, leaf] of leafEntries(tokens.motion.motion.duration)) {
+    parts.push(
+      `  static const Duration ${safeKey('d', key)} = Duration(milliseconds: ${parseMs(leaf.$value)});`,
     );
-    parts.push(lines.join('\n'));
-  }
-  parts.push('}', '', 'abstract final class AppDuration {');
-  for (const [key, leaf] of Object.entries(tokens.motion.motion.duration)) {
-    const ms = parseMs(leaf.$value.toString());
-    parts.push(`  static const Duration ${camel(key)} = Duration(milliseconds: ${ms.toString()});`);
   }
   parts.push('}', '', 'abstract final class AppEasing {');
-  for (const [key, leaf] of Object.entries(tokens.motion.motion.easing)) {
-    const value = leaf.$value.toString();
-    if (value.startsWith('cubic-bezier')) {
-      const [a, b, c, d] = parseCubicBezier(value);
-      // safeKey protects against Dart reserved words (e.g. key "default" → "easeDefault").
-      parts.push(
-        `  static const Cubic ${safeKey('ease', key)} = Cubic(${a.toString()}, ${b.toString()}, ${c.toString()}, ${d.toString()});`,
-      );
-    }
+  for (const [key, leaf] of leafEntries(tokens.motion.motion.ease)) {
+    parts.push(`  static const Cubic ${safeKey('ease', key)} = ${bezierToDart(leaf.$value)};`);
   }
-  parts.push('}', '', 'abstract final class AppLift {');
-  for (const [key, leaf] of Object.entries(tokens.motion.motion.lift)) {
-    if (key.startsWith('$')) continue;
-    parts.push(`  static const double ${camel(key)} = ${stripPxForDart(leaf.$value.toString())};`);
+  parts.push('}', '');
+
+  parts.push('abstract final class AppZIndex {');
+  for (const [key, leaf] of leafEntries(tokens.zIndex['z-index'])) {
+    parts.push(`  static const int ${safeKey('z', key)} = ${leaf.$value};`);
   }
-  parts.push('}', '', 'abstract final class AppOpacity {');
-  for (const [key, leaf] of Object.entries(tokens.opacity.opacity)) {
-    if (key.startsWith('$')) continue;
-    parts.push(`  static const double ${camel(key)} = ${dartDouble(leaf.$value)};`);
+  parts.push('}', '');
+
+  parts.push('abstract final class AppOpacity {');
+  for (const [key, leaf] of leafEntries(tokens.opacity.opacity)) {
+    parts.push(`  static const double ${safeKey('o', key)} = ${dartDouble(leaf.$value)};`);
   }
-  parts.push('}', '', 'abstract final class AppZIndex {');
-  for (const [key, leaf] of Object.entries(tokens.motion.zIndex)) {
-    if (key.startsWith('$')) continue;
-    parts.push(`  static const int ${camel(key)} = ${leaf.$value.toString()};`);
+  parts.push('}', '');
+
+  parts.push('abstract final class AppShadows {');
+  for (const [key, leaf] of leafEntries(tokens.shadow.shadow)) {
+    parts.push(`  static const List<BoxShadow> ${camel(key)} = ${shadowExpr(leaf.$value)};`);
   }
-  parts.push(
-    '}',
-    '',
-    // Shadows
-    shadowsClass('AppShadowsLight', 'light', tokens.shadow.shadow),
-    '',
-    shadowsClass('AppShadowsDark', 'dark', tokens.shadow.shadow),
-    '',
-  );
+  parts.push('}', '');
 
   return parts.join('\n');
 }

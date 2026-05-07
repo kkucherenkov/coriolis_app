@@ -1,19 +1,15 @@
-import type { TokenBundle, ThemedLeaf, DtcgLeaf, TypographyRole, VerticalLeaf } from './types.ts';
+import type {
+  ColorFile,
+  ColorGroup,
+  DtcgLeaf,
+  TokenBundle,
+  TypographyFile,
+} from './types.ts';
 
-function themedMap<T extends ThemedLeaf>(
-  entries: Record<string, T>,
-): { light: Record<string, string>; dark: Record<string, string> } {
-  const light: Record<string, string> = {};
-  const dark: Record<string, string> = {};
-  for (const [key, leaf] of Object.entries(entries)) {
-    light[key] = leaf.light.$value.toString();
-    dark[key] = leaf.dark.$value.toString();
-  }
-  return { light, dark };
-}
+const COLOR_GROUPS: readonly ColorGroup[] = ['surface', 'brand', 'text', 'state'];
 
-function plainMap(entries: Record<string, DtcgLeaf>): Record<string, string | number> {
-  const out: Record<string, string | number> = {};
+function colorMap(entries: Record<string, DtcgLeaf<string>>): Record<string, string> {
+  const out: Record<string, string> = {};
   for (const [key, leaf] of Object.entries(entries)) {
     if (key.startsWith('$')) continue;
     out[key] = leaf.$value;
@@ -21,56 +17,63 @@ function plainMap(entries: Record<string, DtcgLeaf>): Record<string, string | nu
   return out;
 }
 
-function roleMap(entries: Record<string, TypographyRole>): Record<string, TypographyRole> {
-  const out: Record<string, TypographyRole> = {};
-  for (const [key, value] of Object.entries(entries)) {
+function colorsBlock(
+  color: ColorFile['color'] | NonNullable<ColorFile['theme']>[string]['color'],
+): Partial<Record<ColorGroup, Record<string, string>>> {
+  const block: Partial<Record<ColorGroup, Record<string, string>>> = {};
+  if (!color) return block;
+  for (const group of COLOR_GROUPS) {
+    const entries = color[group];
+    if (entries) block[group] = colorMap(entries);
+  }
+  return block;
+}
+
+function plain<T>(entries: Record<string, DtcgLeaf<T>>): Record<string, T> {
+  const out: Record<string, T> = {};
+  for (const [key, leaf] of Object.entries(entries)) {
     if (key.startsWith('$')) continue;
-    out[key] = value;
+    out[key] = leaf.$value;
   }
   return out;
 }
 
-function verticalMap(
-  entries: Record<string, VerticalLeaf>,
-): Record<string, { value: string; tint: string | null }> {
-  const out: Record<string, { value: string; tint: string | null }> = {};
-  for (const [key, leaf] of Object.entries(entries)) {
-    out[key] = {
-      value: leaf.$value ?? '',
-      tint: leaf.bgTint ?? null,
-    };
-  }
-  return out;
+function fontBlock(typography: TypographyFile): {
+  family: Record<string, string | string[]>;
+  weight: Record<string, number>;
+} {
+  return {
+    family: plain(typography.font.family),
+    weight: plain(typography.font.weight),
+  };
 }
 
 export function emitTypescript(tokens: TokenBundle): string {
+  const themeOverrides: Record<
+    string,
+    { color: Partial<Record<ColorGroup, Record<string, string>>> }
+  > = {};
+  if (tokens.color.theme) {
+    for (const [name, theme] of Object.entries(tokens.color.theme)) {
+      if (name.startsWith('$')) continue;
+      themeOverrides[name] = { color: colorsBlock(theme.color) };
+    }
+  }
+
   const shape = {
-    color: {
-      brand: themedMap(tokens.color.color.brand),
-      surface: themedMap(tokens.color.color.surface),
-      border: themedMap(tokens.color.color.border),
-      text: themedMap(tokens.color.color.text),
-      status: themedMap(tokens.color.color.status),
-      vertical: verticalMap(tokens.color.color.vertical),
-    },
-    shadow: themedMap(tokens.shadow.shadow),
-    typography: {
-      family: plainMap(tokens.typography.typography.font.family),
-      weight: plainMap(tokens.typography.typography.font.weight),
-      size: plainMap(tokens.typography.typography.font.size),
-      tracking: plainMap(tokens.typography.typography.font.tracking),
-      leading: plainMap(tokens.typography.typography.font.leading),
-      role: roleMap(tokens.typography.typography.role),
-    },
-    spacing: plainMap(tokens.spacing.space),
-    radius: plainMap(tokens.radius.radius),
+    color: colorsBlock(tokens.color.color),
+    theme: themeOverrides,
+    font: fontBlock(tokens.typography),
+    type: plain(tokens.typography.type),
+    spacing: plain(tokens.spacing.spacing),
+    radius: plain(tokens.radius.radius),
     motion: {
-      duration: plainMap(tokens.motion.motion.duration),
-      easing: plainMap(tokens.motion.motion.easing),
-      lift: plainMap(tokens.motion.motion.lift),
+      duration: plain(tokens.motion.motion.duration),
+      ease: plain(tokens.motion.motion.ease),
     },
-    zIndex: plainMap(tokens.motion.zIndex),
-    opacity: plainMap(tokens.opacity.opacity),
+    zIndex: plain(tokens.zIndex['z-index']),
+    opacity: plain(tokens.opacity.opacity),
+    shadow: plain(tokens.shadow.shadow),
   };
 
   const body = JSON.stringify(shape, null, 2);

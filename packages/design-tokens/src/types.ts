@@ -1,85 +1,111 @@
-// Shape of the raw JSON in specs/design/tokens/*.json.
-// Kept permissive — the emitters know how to navigate it.
+// Token JSON shapes for Coriolis Companion. The design language is dark-first;
+// non-default themes (high-contrast, parchment-mode share viewer) live in an
+// optional `theme.<name>` block on color.json and override only what changes.
+//
+// Conventions:
+// - Every leaf is a W3C Design Tokens DTCG node — `{ "$value": ..., "$type": ..., "$description"? }`.
+// - Composite typography tokens carry an object `$value` whose keys match the
+//   CSS properties they map to.
+// - Cubic-bezier values are authored as `{ x1, y1, x2, y2 }` so consumers can
+//   parse them without a CSS string round-trip.
 
-export interface DtcgLeaf {
-  $value: string | number;
+export interface DtcgLeaf<V = string | number> {
+  $value: V;
   $type?: string;
   $description?: string;
 }
 
-export interface ThemedLeaf {
-  light: DtcgLeaf;
-  dark: DtcgLeaf;
-  sepia?: DtcgLeaf;
-  forest?: DtcgLeaf;
+export interface CubicBezierValue {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
 }
 
-export type ColorValue = ThemedLeaf | DtcgLeaf;
+export interface ShadowPart {
+  color: string;
+  offsetX: string;
+  offsetY: string;
+  blur: string;
+  spread: string;
+  inset?: boolean;
+}
+
+export type ShadowValue = ShadowPart | ShadowPart[];
+
+export interface TypographyValue {
+  fontFamily: string; // family key from font.family (e.g. "display"), not a literal stack
+  fontSize: string; // px
+  lineHeight: string | number; // unit-less ratio or px
+  fontWeight: string | number; // weight key from font.weight (e.g. "regular") or numeric
+  letterSpacing?: string; // em
+  textCase?: 'uppercase' | 'lowercase' | 'none';
+}
+
+export interface TransitionValue {
+  duration: string; // duration key (e.g. "default") or literal "200ms"
+  delay: string; // literal ms
+  timingFunction: string; // ease key (e.g. "standard") or literal cubic-bezier
+}
+
+export type ColorGroup = 'surface' | 'brand' | 'text' | 'state';
 
 export interface ColorFile {
-  description?: string;
-  color: {
-    brand: Record<string, ThemedLeaf>;
-    surface: Record<string, ThemedLeaf>;
-    border: Record<string, ThemedLeaf>;
-    text: Record<string, ThemedLeaf>;
-    status: Record<string, ThemedLeaf>;
-    vertical: Record<string, VerticalLeaf>;
-  };
-}
-
-export interface VerticalLeaf {
-  $value?: string;
-  $type?: string;
-  bgTint?: string;
-  $description?: string;
+  $schema?: string;
+  color: Record<ColorGroup, Record<string, DtcgLeaf<string>>>;
+  /**
+   * Optional theme overrides. Keys are theme names attached to `[data-theme=<name>]`
+   * in CSS. Each theme can override any subset of color groups/keys.
+   */
+  theme?: Record<
+    string,
+    {
+      color?: Partial<Record<ColorGroup, Record<string, DtcgLeaf<string>>>>;
+    }
+  >;
 }
 
 export interface TypographyFile {
-  typography: {
-    font: {
-      family: Record<string, DtcgLeaf>;
-      weight: Record<string, DtcgLeaf>;
-      size: Record<string, DtcgLeaf>;
-      tracking: Record<string, DtcgLeaf>;
-      leading: Record<string, DtcgLeaf>;
-    };
-    role: Record<string, TypographyRole>;
+  $schema?: string;
+  font: {
+    family: Record<string, DtcgLeaf<string | string[]>>;
+    weight: Record<string, DtcgLeaf<number>>;
   };
-}
-
-export interface TypographyRole {
-  size: string;
-  weight: string;
-  tracking: string;
-  leading: string;
-  mono?: boolean;
+  type: Record<string, DtcgLeaf<TypographyValue>>;
 }
 
 export interface SpacingFile {
-  space: Record<string, DtcgLeaf>;
+  $schema?: string;
+  spacing: Record<string, DtcgLeaf<string>>;
 }
 
 export interface RadiusFile {
-  radius: Record<string, DtcgLeaf>;
+  $schema?: string;
+  radius: Record<string, DtcgLeaf<string>>;
 }
 
 export interface ShadowFile {
-  shadow: Record<string, ThemedLeaf>;
+  $schema?: string;
+  shadow: Record<string, DtcgLeaf<ShadowValue>>;
 }
 
 export interface MotionFile {
+  $schema?: string;
   motion: {
-    duration: Record<string, DtcgLeaf>;
-    easing: Record<string, DtcgLeaf>;
-    lift: Record<string, DtcgLeaf>;
+    duration: Record<string, DtcgLeaf<string>>;
+    ease: Record<string, DtcgLeaf<CubicBezierValue | string>>;
+    transition?: Record<string, DtcgLeaf<TransitionValue>>;
   };
-  zIndex: Record<string, DtcgLeaf>;
 }
 
 export interface OpacityFile {
-  description?: string;
-  opacity: Record<string, DtcgLeaf>;
+  $schema?: string;
+  opacity: Record<string, DtcgLeaf<number>>;
+}
+
+export interface ZIndexFile {
+  $schema?: string;
+  'z-index': Record<string, DtcgLeaf<number>>;
 }
 
 export interface TokenBundle {
@@ -90,6 +116,7 @@ export interface TokenBundle {
   shadow: ShadowFile;
   motion: MotionFile;
   opacity: OpacityFile;
+  zIndex: ZIndexFile;
 }
 
 export const BANNER = [
