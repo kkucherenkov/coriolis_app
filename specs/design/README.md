@@ -1,170 +1,134 @@
 # Design System — Tokens & Component Inventory
 
+The Coriolis Companion App design language is documented in
+[`docs/DESIGN.md`](../../docs/DESIGN.md). This README is the technical
+companion: token paths, the build pipeline, and the component inventory
+used by `pnpm design:audit`.
+
 ## Token pipeline
 
-Source of truth: `specs/design/tokens/*.json` (W3C DTCG format).
+Source of truth: `specs/design/tokens/*.json` (W3C DTCG format, with the
+Coriolis schema documented in
+[`packages/design-tokens/src/types.ts`](../../packages/design-tokens/src/types.ts)).
 
 ```
 specs/design/tokens/*.json
         │
         ▼  pnpm design:build  (@app/design-tokens)
-        ├── apps/web/app/assets/css/tokens.generated.css
-        ├── packages/ui/src/tokens.generated.css          (Storybook)
-        ├── apps/web/app/design-tokens.generated.ts
-        ├── packages/ui/src/design-tokens.generated.ts    (Storybook)
-        └── packages/ui_flutter/lib/src/theme/tokens.g.dart
+        ├── apps/web/app/assets/css/tokens.generated.css   (gitignored)
+        ├── packages/ui/src/tokens.generated.css           (gitignored)
+        ├── apps/web/app/design-tokens.generated.ts        (gitignored)
+        ├── packages/ui/src/design-tokens.generated.ts     (gitignored)
+        └── packages/ui_flutter/lib/src/theme/tokens.g.dart  (committed)
 ```
 
-All generated files are committed — never edit them by hand. Run
-`pnpm design:build` after changing any token JSON.
+The Flutter artefact is committed for review and CI determinism. The web /
+ui CSS+TS mirrors are regenerated on every install (`postinstall` hook on
+`@app/specs` triggers `pnpm spec:codegen`; `pnpm design:build` is run
+manually after editing tokens). They stay gitignored — see `.gitignore`.
 
-## Preparing a design in Claude for this repo
+**Rules:**
 
-If you're using **claude.ai / Claude Design** to draft the UI before coding,
-ask Claude to emit artefacts that drop straight into this repo — no manual
-reformatting. Use the prompt below as a starting brief; fill in the bracketed
-parts for your project.
+- Never edit the generated files. Edit JSON, run `pnpm design:build`.
+- Renaming or removing a token requires an ADR in `docs/adr/` (per DESIGN
+  §2.4). Adding a token does not.
+- `pnpm design:audit` cross-checks the component inventory below against
+  the actual `packages/ui/src/components/` and `packages/ui_flutter/lib/src/`
+  folders.
 
-<details>
-<summary>Copy-paste brief for Claude Design</summary>
+## Token inventory (DESIGN §2)
 
-```
-I'm designing the UI for [PRODUCT] in a greenfield repo that expects two
-kinds of design artefacts. Please produce both so they drop into the repo
-with no manual reformatting.
+Coriolis is dark-first. The base values below define the default theme
+emitted under `:root`; `[data-theme='high-contrast']` overrides only the
+deltas listed in `color.json` `theme.high-contrast`.
 
-### 1. Token JSON (W3C DTCG format)
+### Color (`color.json`)
 
-Output one JSON file per category, matching this layout exactly:
+| Group | Tokens |
+|---|---|
+| `surface` | `void`, `night`, `dawn`, `parchment` |
+| `brand` | `brass-light`, `brass`, `brass-deep`, `brass-shadow` |
+| `text` | `primary`, `secondary`, `ink`, `on-brass` |
+| `state` | `crimson`, `crimson-bright`, `mystic-teal`, `success`, `darkness` |
 
-- color.json       — brand (accent/accentHover/accentActive/accentFg/accentSubtle),
-                     surface (page/surface/raised/overlay), border (default/muted/strong),
-                     text (fg/muted/subtle/inverse), status (success/warning/danger/info),
-                     each as { light: {...}, dark: {...} }
-- typography.json  — font families, weights, sizes, tracking, leading, text roles
-                     (displayLg, headlineMd, titleSm, body, caption, …)
-- spacing.json     — 4 px grid scale (space.0 … space.24)
-- radius.json      — sm / md / lg / xl / full
-- shadow.json      — elevation presets, light + dark variants
-- motion.json      — duration (fast/base/slow), easing (standard/decelerate/accelerate),
-                     lift, z-index scale
-- opacity.json     — muted / subtle / disabled / scrim
+CSS custom properties: `--<group>-<name>` (e.g. `--surface-void`,
+`--brand-brass`).
 
-Token shape:
-  { "$value": "...", "$type": "color" | "dimension" | "duration" | ... }
-Themeable tokens wrap values:
-  { "light": { "$value": "#…", "$type": "color" }, "dark": { "$value": "#…", "$type": "color" } }
+### Typography (`typography.json`)
 
-Every colour MUST have both light and dark values. No hex literals outside
-token JSON. No Tailwind class names in tokens.
+Three families: **Forum** (display), **Inter** (body), **JetBrains Mono**
+(numeric). See DESIGN §3.
 
-### 2. JSX/TSX mockups — one file per screen
+Composite type roles emit decomposed CSS custom properties under
+`--type-<role>-{font-family,font-size,line-height,font-weight,letter-spacing}`
+(plus `--type-<role>-text-transform` when set):
 
-- File naming: kebab-case route — `home.tsx`, `sign-in.tsx`, `settings-profile.tsx`.
-- Self-contained React components — no external imports besides React.
-- Styling ONLY via CSS variables from the tokens:
-    color      → var(--brand-accent), var(--text-fg), var(--surface-page), …
-    spacing    → var(--space-4)
-    radius     → var(--radius-md)
-    shadow     → var(--shadow-md)
-    motion     → var(--duration-base), var(--easing-standard)
-  NO hex, NO px literals, NO Tailwind utility classes, NO inline style={{}}
-  with raw values.
-- Use BEM class names prefixed `app-<name>`: `.app-button`, `.app-button__icon`,
-  `.app-button--block`. Match the component names in the inventory below.
-- Include every state the screen needs: default / hover / focus-visible /
-  active / disabled / loading / empty / error.
-- Include both a light and a dark rendering of each screen (either two files
-  or a `[data-theme='dark']` variant in the same file).
+| Role | Family | Size / Line | Weight | Tracking |
+|---|---|---|---|---|
+| `display-xl` | Forum | 48 / 56 | 400 | 0.06em |
+| `display-lg` | Forum | 36 / 44 | 400 | 0.04em |
+| `display-md` | Forum | 28 / 36 | 400 | 0.04em |
+| `display-sm` | Forum | 20 / 28 | 400 | 0.08em uppercase |
+| `body-lg` | Inter | 18 / 28 | 400 | normal |
+| `body-md` | Inter | 16 / 24 | 400 | normal |
+| `body-sm` | Inter | 14 / 20 | 500 | normal |
+| `mono-stat-xl` | JetBrains Mono | 32 / 32 | 700 | normal |
+| `mono-stat-md` | JetBrains Mono | 20 / 24 | 500 | normal |
 
-### Component inventory to use
+### Spacing (`spacing.json`)
 
-Primitives: AppButton, AppBadge, AppChip, AppInput, AppSelect, AppSwitch,
-AppTextarea, AppField, AppLabel, AppCard, AppIcon.
-Compositions: page hero, pricing card, feature list, empty state, skeleton,
-master card, service row.
+`--space-1` … `--space-12` on a 4 px base: 4 / 8 / 12 / 16 / 20 / 24 / 32 /
+40 / 48 / 56 / 64 / 80.
 
-If a new primitive is needed, name it `App<Name>` and add a one-line entry to
-the inventory so it flows into the Storybook pipeline.
+### Radius (`radius.json`)
 
-### Output format
+`--radius-sm` 2px · `--radius-md` 4px · `--radius-lg` 8px · `--radius-pill`
+9999px (chips only).
 
-Return a single zip-ready bundle with this structure:
+### Motion (`motion.json`)
 
-  design-bundle/
-    tokens/
-      color.json
-      typography.json
-      spacing.json
-      radius.json
-      shadow.json
-      motion.json
-      opacity.json
-    mockups/
-      home.tsx
-      sign-in.tsx
-      …
-    README.md    # list of screens, design decisions, open questions
-```
+- Durations: `--motion-duration-fast` 100ms · `--motion-duration` 200ms ·
+  `--motion-duration-slow` 400ms · `--motion-duration-ceremony` 600ms.
+- Easings: `--motion-ease-standard` (default), `--motion-ease-emphasis`,
+  `--motion-ease-linear`.
 
-</details>
+### Z-index (`z-index.json`)
 
-### Loading the bundle into the repo
+`--z-base` 0 · `--z-raised` 1 · `--z-sticky` 10 · `--z-dropdown` 20 ·
+`--z-overlay` 50 · `--z-modal` 100 · `--z-toast` 200 · `--z-tooltip` 300 ·
+`--z-max` 999 (reserved).
 
-1. Unpack into `specs/design/`:
-   - `tokens/*.json` → `specs/design/tokens/` (overwrite, keep filenames).
-   - `mockups/*.tsx` → `specs/design/mockups/`.
-   - `README.md` → `specs/design/mockups/README.md` (append to existing).
-2. Regenerate artefacts:
-   ```sh
-   pnpm design:build
-   ```
-   This emits `tokens.generated.css`, `design-tokens.generated.ts`, and
-   `tokens.g.dart`. Commit the generated files alongside the source.
-3. Verify in Storybook (`pnpm storybook`) — every primitive should pick up
-   the new palette without code changes. If a component still renders old
-   colours, it's using a literal instead of a token — fix the component, not
-   the token.
-4. For each new screen, push a task to `specs/tasks/active.md` using the
-   template at `specs/tasks/templates/feature.md`.
+### Shadow (`shadow.json`)
 
-### If the design doesn't match the expected shape
+`--shadow-card-featured` (inset brass) · `--shadow-panel-rise` (indigo
+lift) · `--shadow-icon-glow` (mystic teal halo) · `--shadow-brass-bevel`
+(inset two-stop highlight/shadow) · `--shadow-danger-pulse` (crimson glow).
 
-Don't patch JSON by hand. Go back to Claude Design with the specific gap
-("tokens/shadow.json is missing the dark variants", "mockups use raw hex in
-the footer") and ask for a corrected bundle. The prompt above is the
-contract — any drift from it should be fixed at the source.
+### Opacity (`opacity.json`)
 
-## Extracting tokens from design files
+`--opacity-disabled` 0.4 · `--opacity-muted` 0.5 · `--opacity-subtle` 0.6 ·
+`--opacity-secondary` 0.7 · `--opacity-elevated` 0.85 · plus `0` and
+`100`.
 
-1. Export the Figma / Penpot tokens plugin output as JSON.
-2. Map each token to the correct file:
-   - `color.json` — semantic colour roles (brand, surface, border, text, status)
-   - `typography.json` — font families, weights, sizes, tracking, leading, text roles
-   - `spacing.json` — spacing scale (4 px grid)
-   - `radius.json` — border-radius scale
-   - `shadow.json` — box-shadow presets (light + dark variants)
-   - `motion.json` — duration, easing, lift, z-index
-   - `opacity.json` — opacity presets
-3. All values use the DTCG `{ "$value": ..., "$type": ... }` shape.
-   Themeable tokens use `{ "light": {...}, "dark": {...} }`.
-4. Run `pnpm design:build` and commit the generated artefacts.
+## High-contrast theme
+
+`[data-theme='high-contrast']` overrides three tokens for accessibility:
+
+| Token | Default | High-contrast |
+|---|---|---|
+| `--surface-void` | `#0B0E2C` | `#000018` |
+| `--brand-brass` | `#D4A95C` | `#FFD773` |
+| `--text-primary` | `#F2E8D0` | `#FFFFFF` |
+
+User preference is persisted in `AppConfig` on the backend so web + mobile
+stay in sync (DESIGN §2.2).
 
 ## Component inventory
 
-| Category | Component       | Vue (`@app/ui`) | Flutter (`app_ui`) |
-| -------- | --------------- | --------------- | ------------------ |
-| Feedback | `AppBadge`      | ✓               | —                  |
-| Forms    | `AppButton`     | ✓               | —                  |
-| Surface  | `AppCard`       | ✓               | —                  |
-| Feedback | `AppChip`       | ✓               | —                  |
-| Forms    | `AppField`      | ✓               | —                  |
-| Media    | `AppIcon`       | ✓               | —                  |
-| Forms    | `AppInput`      | ✓               | —                  |
-| Forms    | `AppLabel`      | ✓               | —                  |
-| Forms    | `AppSelect`     | ✓               | —                  |
-| Forms    | `AppSwitch`     | ✓               | —                  |
-| Forms    | `AppTextarea`   | ✓               | —                  |
+Populated as components ship. `pnpm design:audit` compares the rows below
+against the actual folders under `packages/ui/src/components/` (Vue) and
+`packages/ui_flutter/lib/src/` (Flutter), and fails CI on drift.
 
-> The `pnpm design:audit` script cross-checks this table against the actual
-> component folders. Run it before shipping new components.
+| Category | Component | Vue (`@app/ui`) | Flutter (`app_ui`) |
+| -------- | --------- | --------------- | ------------------ |
+| _none yet — Phase 0 ships tokens only; Phase 1 lands foundation primitives_ | | | |

@@ -1,90 +1,61 @@
 /* Tailwind + Nuxt UI, then our tokens, then Tailwind theme mapping. Order matters:
    tokens declare custom properties; the @theme block below aliases them to
-   Tailwind's `--color-*` / `--spacing-*` / `--radius-*` namespaces so utility
-   classes (e.g. `bg-surface`, `text-fg`) resolve to the token values. */
+   Tailwind's `--color-*` / `--radius-*` namespaces so utility classes resolve
+   to Coriolis values. */
 
 @import "tailwindcss";
 @import "@nuxt/ui";
 @import "./tokens.generated.css";
 
 @theme inline {
-  /* Semantic surfaces */
-  --color-bg: var(--surface-bg);
-  --color-bg-subtle: var(--surface-bg-subtle);
-  --color-bg-muted: var(--surface-bg-muted);
-  --color-surface: var(--surface-surface);
-  --color-surface-alt: var(--surface-surface-alt);
-  --color-overlay: var(--surface-overlay);
+  /* Semantic surfaces — Coriolis is dark-first; light only ships in the
+     parchment share viewer. Tailwind utilities like `bg-surface` / `bg-bg`
+     resolve here. */
+  --color-bg: var(--surface-void);
+  --color-bg-subtle: var(--surface-night);
+  --color-surface: var(--surface-night);
+  --color-surface-alt: var(--surface-dawn);
+  --color-overlay: var(--surface-dawn);
 
   /* Text */
-  --color-fg: var(--text-fg);
-  --color-fg-muted: var(--text-fg-muted);
-  --color-fg-subtle: var(--text-fg-subtle);
-  --color-fg-disabled: var(--text-fg-disabled);
-  --color-fg-inverse: var(--text-fg-inverse);
+  --color-fg: var(--text-primary);
+  --color-fg-muted: var(--text-secondary);
 
-  /* Borders */
-  --color-border: var(--border-default);
-  --color-border-strong: var(--border-strong);
-  --color-border-soft: var(--border-soft);
+  /* Primary color scale — Nuxt UI's `primary='accent'` (app.config.ts) consumes
+     50..950. Coriolis tokens cover the four canonical brass stops; the
+     intermediate levels are derived linearly from those so utilities like
+     `text-primary-300` render without breaking. Renaming the canonical four
+     requires an ADR; the intermediates do not. */
+  --color-accent-50: #FFFEF8;
+  --color-accent-100: #FCF6E5;
+  --color-accent-200: var(--brand-brass-light);
+  --color-accent-300: #ECD49E;
+  --color-accent-400: #DEBB72;
+  --color-accent-500: var(--brand-brass);
+  --color-accent-600: var(--brand-brass-deep);
+  --color-accent-700: var(--brand-brass-shadow);
+  --color-accent-800: #4A3712;
+  --color-accent-900: #2D2208;
+  --color-accent-950: #1A1306;
 
-  /* Brand accent — semantic aliases */
-  --color-accent: var(--brand-accent);
-  --color-accent-hover: var(--brand-accent-hover);
-  --color-accent-active: var(--brand-accent-active);
-  --color-accent-soft: var(--brand-accent-soft);
-  --color-accent-soft-hover: var(--brand-accent-soft-hover);
-  --color-accent-fg: var(--brand-accent-fg);
-  --color-accent-border: var(--brand-accent-border);
-
-  /* Brand accent scale — consumed by Nuxt UI as `primary.*` via app.config.ts */
-  --color-accent-50: var(--brand-accent-50);
-  --color-accent-100: var(--brand-accent-100);
-  --color-accent-200: var(--brand-accent-200);
-  --color-accent-300: var(--brand-accent-300);
-  --color-accent-400: var(--brand-accent-400);
-  --color-accent-500: var(--brand-accent-500);
-  --color-accent-600: var(--brand-accent-600);
-  --color-accent-700: var(--brand-accent-700);
-  --color-accent-800: var(--brand-accent-800);
-  --color-accent-900: var(--brand-accent-900);
-  --color-accent-950: var(--brand-accent-950);
-
-  /* Status */
-  --color-success: var(--status-success);
-  --color-success-soft: var(--status-success-soft);
-  --color-warning: var(--status-warning);
-  --color-warning-soft: var(--status-warning-soft);
-  --color-danger: var(--status-danger);
-  --color-danger-soft: var(--status-danger-soft);
-  --color-info: var(--status-info);
-  --color-info-soft: var(--status-info-soft);
+  /* Status — Nuxt UI maps `success`, `error`, `warning`, `info` to its own
+     scale. We only seed the 500 stop (the Tailwind default). */
+  --color-success-500: var(--state-success);
+  --color-error-500: var(--state-crimson);
+  --color-warning-500: var(--brand-brass-deep);
+  --color-info-500: var(--state-mystic-teal);
 
   /* Radius */
-  --radius-xs: var(--radius-xs);
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
-  --radius-xl: var(--radius-xl);
-  --radius-2xl: var(--radius-2xl);
   --radius-pill: var(--radius-pill);
-
-  /* Shadows — resolve per theme via the token cascade */
-  --shadow-xs: var(--shadow-xs);
-  --shadow-sm: var(--shadow-sm);
-  --shadow-md: var(--shadow-md);
-  --shadow-lg: var(--shadow-lg);
-  --shadow-focus: var(--shadow-focus);
 }
 
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
 }
 
-html[data-theme='light'] {
-  color-scheme: light;
-}
-
-html[data-theme='dark'] {
+html[data-theme='high-contrast'] {
   color-scheme: dark;
 }
