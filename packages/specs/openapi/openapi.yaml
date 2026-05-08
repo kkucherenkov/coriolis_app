@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 0.5.1
+  version: 0.6.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -68,6 +68,17 @@ paths:
             minimum: 1
             maximum: 100
             default: 20
+        - name: includeDrafts
+          in: query
+          required: false
+          description: |
+            When `false` (default), only `active` characters are returned —
+            draft wizard-in-progress characters are hidden from the dashboard.
+            When `true`, both `active` and `draft` characters are returned so
+            the wizard UI can display in-progress records.
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: Paginated character list
@@ -126,6 +137,7 @@ paths:
                         relationships: []
                         inventory: []
                         notes: null
+                        status: active
                         createdAt: "2026-01-15T09:30:00Z"
                         updatedAt: "2026-04-01T14:22:00Z"
                     nextCursor: null
@@ -228,6 +240,7 @@ paths:
                     relationships: []
                     inventory: []
                     notes: null
+                    status: active
                     createdAt: "2026-05-08T10:00:00Z"
                     updatedAt: "2026-05-08T10:00:00Z"
         "400":
@@ -369,6 +382,7 @@ paths:
                         features: []
                         equipped: true
                     notes: "Notes from the Far Quarter campaign."
+                    status: active
                     createdAt: "2026-01-15T09:30:00Z"
                     updatedAt: "2026-04-01T14:22:00Z"
         "401":
@@ -505,6 +519,7 @@ paths:
                     relationships: []
                     inventory: []
                     notes: null
+                    status: active
                     createdAt: "2026-01-15T09:30:00Z"
                     updatedAt: "2026-05-08T10:05:00Z"
         "400":
@@ -689,6 +704,7 @@ paths:
                     relationships: []
                     inventory: []
                     notes: null
+                    status: active
                     createdAt: "2026-05-08T11:00:00Z"
                     updatedAt: "2026-05-08T11:00:00Z"
         "401":
@@ -800,6 +816,7 @@ paths:
                     relationships: []
                     inventory: []
                     notes: "Notes from the Far Quarter campaign."
+                    status: active
                     createdAt: "2026-01-15T09:30:00Z"
                     updatedAt: "2026-04-01T14:22:00Z"
         "401":
@@ -3586,6 +3603,7 @@ components:
         - relationships
         - inventory
         - notes
+        - status
         - createdAt
         - updatedAt
       properties:
@@ -3680,6 +3698,21 @@ components:
           type: ["string", "null"]
           maxLength: 4096
           description: Free-form notes (Markdown; soft cap 4096 characters)
+        status:
+          type: string
+          enum: [draft, active]
+          description: |
+            Lifecycle state of the character.
+
+            - `draft` — character is a work-in-progress created by the wizard.
+              Draft characters are excluded from the default character list
+              (`GET /api/v1/characters`) unless `?includeDrafts=true` is passed.
+            - `active` — character is complete and visible on the dashboard.
+
+            Transitioning from `draft` to `active` (forging) is done by sending
+            `PATCH /api/v1/characters/{id}` with `{ "status": "active" }`.
+            The reverse transition (`active → draft`) is rejected with 422
+            `INVALID_STATUS_TRANSITION`.
         createdAt:
           type: string
           format: date-time
@@ -3699,6 +3732,9 @@ components:
         Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
         `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`)
         must not be included; they are rejected with 400.
+
+        Set `status: 'draft'` to create a wizard-in-progress character.
+        Omitting `status` defaults to `'active'`.
       required: [name]
       properties:
         name:
@@ -3738,6 +3774,13 @@ components:
         notes:
           type: ["string", "null"]
           maxLength: 4096
+        status:
+          type: string
+          enum: [draft, active]
+          default: active
+          description: |
+            Initial lifecycle state. Omit (or set `active`) for normal creation.
+            Set to `draft` when starting the character-creation wizard.
 
     CharacterUpdate:
       type: object
@@ -3749,6 +3792,14 @@ components:
 
         Derived stats (`hp.max`, `mp.max`, `encumbrance.max`) are
         recalculated automatically after each successful write.
+
+        **Status transitions:**
+        - `draft → draft` — no-op; the wizard continues editing.
+        - `draft → active` — forges the character (wizard complete).
+          Send `{ "status": "active" }` as a standalone PATCH or alongside
+          other field updates.
+        - `active → draft` — **rejected** with 422 `INVALID_STATUS_TRANSITION`.
+          Active characters cannot be reverted to draft state.
       properties:
         name:
           type: string
@@ -3794,6 +3845,13 @@ components:
         notes:
           type: ["string", "null"]
           maxLength: 4096
+        status:
+          type: string
+          enum: [draft, active]
+          description: |
+            Lifecycle state transition. Only `draft → active` (forge) is
+            permitted. Attempting `active → draft` returns 422
+            `INVALID_STATUS_TRANSITION`.
 
     CharacterList:
       type: object
