@@ -2,6 +2,27 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-08-003 — UsersModule backend (T-4.1.1.b)
+
+- Created: 2026-05-08
+- Completed: 2026-05-08
+- Owner: claude (backend-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md T-4.1.1.b
+- Result: PR #8 — merged. Branch `feat/phase-1/me-endpoint-backend`; final tip `995264e` (`feat(backend): UsersModule with GetMeQuery and UpdateMeCommand handlers`); preceded by `82bb772` (Prisma schema + Better Auth additionalFields).
+- Goal: Implement `UsersModule` under `apps/backend/src/modules/users/` with CQRS layout. Add `displayName` and `deletedAt` to Prisma `User` model, wire `additionalFields` in Better Auth config, expose `GET /api/v1/me` and `PATCH /api/v1/me` per the OpenAPI spec.
+- Acceptance — all met:
+  - [x] `pnpm --filter @app/backend prisma:generate` exits 0; client picks up `displayName` + `deletedAt`
+  - [x] `pnpm --filter @app/backend typecheck` exits 0
+  - [x] `pnpm --filter @app/backend test` 10 files / 44 tests pass (4 GetMeHandler + 10 UpdateMeHandler new)
+- Sub-steps:
+  - [x] Push entry to active.md
+  - [x] Add `displayName` and `deletedAt` to schema.prisma
+  - [x] Wire `additionalFields` in Better Auth config
+  - [x] Create domain/{ports,errors}, queries/get-me.{query,handler}, commands/update-me.{command,handler}, infra/user.repo, users.controller, users.module
+  - [x] Register UsersModule in app.module.ts
+  - [x] Write handler spec files
+  - [x] Verify prisma:generate + typecheck + test green
+
 ## T-2026-05-08-002 — implement AppCard Coriolis primitive
 
 - Created: 2026-05-08
