@@ -22,6 +22,8 @@ model User {
   updatedAt           DateTime
   phoneNumber         String?   @unique
   phoneNumberVerified Boolean?
+  displayName         String?
+  deletedAt           DateTime?
   sessions            Session[]
   accounts            Account[]
 

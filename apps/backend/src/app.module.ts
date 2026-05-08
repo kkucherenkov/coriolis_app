@@ -24,6 +24,7 @@ import { SmsModule } from './common/sms/sms.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { HealthModule } from './modules/health/health.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
+import { UsersModule } from './modules/users/users.module';
 
 type ImportableModule = DynamicModule | (new (...args: unknown[]) => unknown);
 
@@ -60,6 +61,7 @@ const devOnlyModules: ImportableModule[] = [];
     AuthModule,
     HealthModule,
     RealtimeModule,
+    UsersModule,
     ...devOnlyModules,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
