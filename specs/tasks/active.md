@@ -1,27 +1,39 @@
 # Active tasks
 
+## T-2026-05-08-011 — Implement CharactersModule backend (Story 3.2.1)
+
+- Created: 2026-05-08
+- Owner: claude
+- Spec: [docs/IMPLEMENTATION_PLAN.md Feature 3.2 Story 3.2.1](../../docs/IMPLEMENTATION_PLAN.md)
+- Goal: Stand up the full NestJS CharactersModule with CQRS commands, queries, ownership guards, nested ItemsModule and TalentsModule, and Prisma schema for Coriolis domain models so the `/api/v1/characters` contract is satisfied end-to-end.
+- Acceptance:
+  - POST /api/v1/characters creates a character owned by the authenticated user and returns the Character DTO with derived stats
+  - GET /api/v1/characters returns a paginated, owner-scoped list
+  - GET/PATCH/DELETE /api/v1/characters/:id works for the owner; non-owner gets 403
+  - POST /api/v1/characters/:id/duplicate creates a copy named "<original> (copy)" with zeroed experience
+  - GET /api/v1/characters/:id/export returns the same Character DTO
+  - POST /api/v1/characters/:id/items, PATCH /api/v1/items/:id, DELETE /api/v1/items/:id manage inventory
+  - POST /api/v1/characters/:id/talents, PATCH /api/v1/talents/:id, DELETE /api/v1/talents/:id manage talents
+  - All errors are RFC 9457 application/problem+json
+- Sub-steps:
+  - [x] Push task to active.md
+  - [x] Create branch feat/phase-1/characters-module
+  - [x] Add Prisma domain models (Character, Item, Talent, Relationship, CriticalInjury)
+  - [x] Implement CharactersModule (domain, commands, queries, events, infra, controller)
+  - [x] Implement nested ItemsModule and TalentsModule
+  - [x] Write vitest handler specs (105 tests, 20 files, all green)
+  - [x] Register CharactersModule in app.module.ts
+  - [x] Run typecheck and tests
+- Status: in-progress
+- Blockers: —
+- Notes: derived stats (hp.max/mp.max/encumbrance.max) returned as placeholders 14/10/5 with TODO(rules-engine, T-3.2.2) comments. Encumbrance current = 0 placeholder pending rules-engine. Item.data is a JSON column for the discriminated union.
+
 ## T-2026-05-08-013 — Implement AppChip Coriolis primitive
 
 - Created: 2026-05-08
 - Owner: claude
 - Spec: docs/IMPLEMENTATION_PLAN.md §Epic 2.1.c
-- Goal: Ship the interactive toggleable chip primitive for Coriolis condition tracking and ship-status pills.
-- Acceptance:
-  - AppChip renders as `<button type="button">` with `aria-pressed` reflecting modelValue
-  - Clicking toggles and emits `update:modelValue` with the negated value
-  - Removable variant renders a trailing × button; clicking it emits `remove` without toggling
-  - Disabled chip neither toggles nor fires events
-  - All five Coriolis variants (brass/mystic/crimson/success/darkness) have correct inactive (outline) and active (filled) visual states using design tokens only
-  - Typecheck, unit tests (28), and Stylelint all pass
-- Sub-steps:
-  - [x] Push task entry
-  - [x] Write AppChip.vue
-  - [x] Write AppChip.stories.ts
-  - [x] Write AppChip.spec.ts
-  - [x] Write index.ts barrel
-  - [x] Update specs/design/README.md inventory
-  - [x] typecheck + test + stylelint green
-  - [x] commit (3 commits)
+- Sub-steps: complete (28 specs, 14 stories, typecheck/test/stylelint green)
 - Status: in-progress
 - Blockers: —
 
@@ -29,19 +41,16 @@
 
 - Created: 2026-05-08
 - Owner: claude
-- Spec: docs/IMPLEMENTATION_PLAN.md T-2.1.1.f; docs/DESIGN.md §6.8, §10, §11.1
-- Goal: Ship a fully-tokenised, accessible progress bar primitive for HP/MP visualisation and wizard step progress.
-- Sub-steps: complete (linear variant only; circular deferred — see notes)
+- Spec: docs/IMPLEMENTATION_PLAN.md T-2.1.1.f
+- Sub-steps: complete (linear variant only; circular deferred)
 - Status: in-progress
 - Blockers: —
-- Notes: Circular variant deferred to v2; wizard-icon.jsx and sheet-desktop.jsx only need the linear bar.
 
 ## T-2026-05-08-012 — AppSwitch Coriolis primitive
 
 - Created: 2026-05-08
 - Owner: claude
 - Epic: 2.1.e
-- Goal: Rebuild AppSwitch to the Coriolis brass-on-night design with `<button role="switch">` root, `aria-checked`, sm/md sizes, slot+label fallback.
 - Sub-steps: complete
 - Status: in-progress
 - Blockers: —

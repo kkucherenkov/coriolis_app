@@ -13,19 +13,20 @@ datasource db {
 // ----- Better Auth -----
 
 model User {
-  id                  String    @id
+  id                  String      @id
   name                String
-  email               String    @unique
+  email               String      @unique
   emailVerified       Boolean
   image               String?
   createdAt           DateTime
   updatedAt           DateTime
-  phoneNumber         String?   @unique
+  phoneNumber         String?     @unique
   phoneNumberVerified Boolean?
   displayName         String?
   deletedAt           DateTime?
   sessions            Session[]
   accounts            Account[]
+  characters          Character[]
 
   @@map("user")
 }
@@ -75,13 +76,166 @@ model Verification {
 }
 
 // ----- Domain -----
-// Add your domain models here. Example:
-//
-// model Post {
-//   id        String   @id @default(uuid())
-//   title     String
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-//
-//   @@map("post")
-// }
+
+/// One of the nine Coriolis Icons (enum mirrors the OpenAPI IconId type).
+enum IconId {
+  lady_of_tears  @map("lady-of-tears")
+  traveler
+  messenger
+  merchant
+  dancer
+  gambler
+  judge
+  faceless_one   @map("faceless-one")
+  deckhand
+
+  @@map("icon_id")
+}
+
+/// A player character in the Coriolis campaign.
+///
+/// Design notes:
+/// - `attributes` and `skills` are stored as JSON columns (Prisma Json type)
+///   rather than separate Attributes/Skills tables. Rationale: both objects
+///   have a fixed, closed schema (8 attrs, 16 skills); they are always read and
+///   written as a unit; there is no foreign-key join benefit. A Json column
+///   gives us schema flexibility for future optional fields without a migration.
+/// - `conditions` is a JSON column holding the four boolean flags (exhausted,
+///   sleepless, thirsty, hungry) — same rationale as above.
+/// - `hpMax`, `mpMax`, `encumbranceMax` are NOT stored — they are derived by
+///   the RulesEngine from the stored attributes (Story 3.2.2). Storing them
+///   would create a synchronisation risk with no benefit.
+/// - `encumbranceCurrent` is also NOT stored — it is computed from item weights
+///   by the read mapper (sum of item.data.weight where applicable).
+/// - Character delete is a HARD delete; Prisma cascades to all children.
+model Character {
+  id                  String           @id @default(cuid())
+  ownerId             String
+  owner               User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name                String
+  concept             String?
+  iconId              IconId?
+  /// JSON column: { strength, agility, wits, empathy } — each 1–5.
+  attributes          Json
+  /// JSON column: { dexterity, force, infiltration, manipulation, meleeCombat,
+  ///   observation, rangedCombat, survival, command, culture, dataDjinn,
+  ///   medicurgy, mysticPowers, pilot, science, technology } — each 0–5.
+  skills              Json
+  hpCurrent           Int              @default(14)
+  mpCurrent           Int              @default(10)
+  experience          Int              @default(0)
+  /// JSON column: { exhausted, sleepless, thirsty, hungry } — all booleans.
+  conditions          Json
+  notes               String?
+  items               Item[]
+  talents             Talent[]
+  relationships       Relationship[]
+  criticalInjuries    CriticalInjury[]
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  @@index([ownerId])
+  @@map("character")
+}
+
+/// Discriminator values for the Item type column.
+/// Mirrors the OpenAPI discriminator and the ItemType used in generated types.
+enum ItemType {
+  WEAPON
+  ARMOR
+  GEAR
+  CYBERNETIC
+  SHIP_MODULE
+  OTHER
+
+  @@map("item_type")
+}
+
+/// An inventory item belonging to a character.
+///
+/// Design notes (reasoning):
+/// - A single `data Json` column holds the type-specific payload rather than
+///   one table per item type. Rationale: Coriolis v1 has six item types with
+///   overlapping but not identical fields; a discriminated-union JSON column
+///   avoids 6 nullable tables and matches the OpenAPI `oneOf` discriminator
+///   exactly. The `type` column serves as the discriminator. Type-specific
+///   validation is done at the application layer (command handler) because
+///   Postgres does not enforce JSON structure.
+/// - Cascade-delete is ON: deleting a character removes all its items.
+model Item {
+  id          String      @id @default(cuid())
+  characterId String
+  character   Character   @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  type        ItemType
+  /// Type-specific payload. Structure depends on `type`:
+  ///   WEAPON:      { name, damage, range, bonus, crit, weight, features, equipped }
+  ///   ARMOR:       { name, armorRating, weight, features, equipped }
+  ///   GEAR:        { name, weight, quantity, notes? }
+  ///   CYBERNETIC:  { name, bodyPoints, effect }
+  ///   SHIP_MODULE: { name, slot, effect }
+  ///   OTHER:       { name, weight, notes? }
+  data        Json
+
+  @@index([characterId])
+  @@map("item")
+}
+
+/// A talent (special ability) owned by a character.
+model Talent {
+  id          String    @id @default(cuid())
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  name        String
+  description String
+  rank        Int       @default(1)
+  acquiredAt  DateTime  @default(now())
+
+  @@index([characterId])
+  @@map("talent")
+}
+
+enum RelationshipKind {
+  ally
+  rival
+  family
+  mentor
+  debtor
+  creditor
+
+  @@map("relationship_kind")
+}
+
+/// A named relationship between a character and an NPC or other PC.
+model Relationship {
+  id          String           @id @default(cuid())
+  characterId String
+  character   Character        @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  targetName  String
+  kind        RelationshipKind
+  notes       String?
+
+  @@index([characterId])
+  @@map("relationship")
+}
+
+enum InjurySeverity {
+  LIGHT
+  SEVERE
+  CRITICAL
+
+  @@map("injury_severity")
+}
+
+/// A critical injury recorded on a character's sheet.
+model CriticalInjury {
+  id          String         @id @default(cuid())
+  characterId String
+  character   Character      @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  name        String
+  severity    InjurySeverity
+  effect      String
+  acquiredAt  DateTime       @default(now())
+
+  @@index([characterId])
+  @@map("critical_injury")
+}
