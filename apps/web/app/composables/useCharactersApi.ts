@@ -20,19 +20,17 @@ import {
 import type {
   Character,
   CharacterList,
+  CharacterUpdate,
   Problem,
 } from '@app/api-client-ts';
 
-export type { Character, CharacterList, Problem };
+export type { Character, CharacterList, CharacterUpdate, Problem };
 
 export interface CharactersApiClient {
   list(opts?: { limit?: number }): Promise<CharacterList>;
   get(id: string): Promise<Character>;
   create(body: { name: string }): Promise<Character>;
-  update(
-    id: string,
-    body: { name?: string; concept?: string | null },
-  ): Promise<Character>;
+  update(id: string, body: CharacterUpdate): Promise<Character>;
   delete(id: string): Promise<void>;
 }
 
