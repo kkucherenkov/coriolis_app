@@ -160,6 +160,44 @@
       return raw;
     }
   });
+
+  // ── Delete account ────────────────────────────────────────────────────────
+
+  const deleteDialogRef = ref<HTMLDialogElement | null>(null);
+  const deleteConfirmInput = ref('');
+  const deleteInProgress = ref(false);
+  const deleteError = ref('');
+
+  const deleteConfirmMatches = computed<boolean>(() => {
+    return deleteConfirmInput.value === t('deleteAccountConfirmPhrase');
+  });
+
+  function openDeleteDialog(): void {
+    deleteConfirmInput.value = '';
+    deleteError.value = '';
+    deleteDialogRef.value?.showModal();
+  }
+
+  function closeDeleteDialog(): void {
+    deleteConfirmInput.value = '';
+    deleteError.value = '';
+    deleteDialogRef.value?.close();
+  }
+
+  async function confirmDeleteAccount(): Promise<void> {
+    if (!deleteConfirmMatches.value) return;
+    deleteInProgress.value = true;
+    deleteError.value = '';
+    try {
+      await api.deleteMe();
+      localStorage.removeItem(THEME_KEY);
+      await navigateTo('/');
+    } catch (err) {
+      const problem = err as Problem;
+      deleteError.value = problem?.detail ?? t('deleteAccountError');
+      deleteInProgress.value = false;
+    }
+  }
 </script>
 
 <i18n lang="json">
@@ -185,8 +223,17 @@
     "highContrastLabel": "High contrast",
     "highContrastHelp": "Increases contrast for improved readability. Persists to this device only — server-side persistence arrives in a future release (T-6.5.d).",
     "sectionAccount": "Account",
-    "deleteAccountButton": "Delete account",
-    "deleteAccountHelp": "Account deletion lands in a future release (T-4.2.1). Your data remains safe until that feature ships.",
+    "deleteAccountButton": "Delete account…",
+    "deleteAccountHelp": "Your sessions revoke immediately. Characters, ships, and share links stay accessible for 30 days, then they're cascade-deleted. There's no undo.",
+    "deleteAccountTitle": "Delete account",
+    "deleteAccountModalTitle": "This is the end of the line",
+    "deleteAccountWarning": "Your sessions revoke immediately. Characters, ships, and share links stay accessible for 30 days, then they're cascade-deleted. There's no undo.",
+    "deleteAccountConfirmPrompt": "Type DELETE MY ACCOUNT to confirm:",
+    "deleteAccountConfirmPhrase": "DELETE MY ACCOUNT",
+    "deleteAccountCancel": "Cancel",
+    "deleteAccountConfirm": "Delete forever",
+    "deleteAccountInProgress": "Deleting…",
+    "deleteAccountError": "Could not delete the account. Please try again or contact support.",
     "loading": "Loading your profile…"
   },
   "ru": {
@@ -210,8 +257,17 @@
     "highContrastLabel": "Высокий контраст",
     "highContrastHelp": "Повышает контрастность для удобства чтения. Сохраняется только на этом устройстве — серверное сохранение появится в будущем релизе (T-6.5.d).",
     "sectionAccount": "Аккаунт",
-    "deleteAccountButton": "Удалить аккаунт",
-    "deleteAccountHelp": "Удаление аккаунта появится в будущем релизе (T-4.2.1). Ваши данные в безопасности до выхода этой функции.",
+    "deleteAccountButton": "Удалить аккаунт…",
+    "deleteAccountHelp": "Сессии отзываются немедленно. Персонажи, корабли и ссылки на шаринг остаются доступными 30 дней, после чего удаляются каскадно. Это необратимо.",
+    "deleteAccountTitle": "Удалить аккаунт",
+    "deleteAccountModalTitle": "Конец пути",
+    "deleteAccountWarning": "Сессии отзываются немедленно. Персонажи, корабли и ссылки на шаринг остаются доступными 30 дней, после чего удаляются каскадно. Это необратимо.",
+    "deleteAccountConfirmPrompt": "Введите УДАЛИТЬ МОЙ АККАУНТ для подтверждения:",
+    "deleteAccountConfirmPhrase": "УДАЛИТЬ МОЙ АККАУНТ",
+    "deleteAccountCancel": "Отмена",
+    "deleteAccountConfirm": "Удалить навсегда",
+    "deleteAccountInProgress": "Удаление…",
+    "deleteAccountError": "Не удалось удалить аккаунт. Попробуйте ещё раз или обратитесь в поддержку.",
     "loading": "Загрузка профиля…"
   },
   "uk": {
@@ -235,8 +291,17 @@
     "highContrastLabel": "[uk-todo] High contrast",
     "highContrastHelp": "[uk-todo] High contrast help text",
     "sectionAccount": "[uk-todo] Account",
-    "deleteAccountButton": "[uk-todo] Delete account",
-    "deleteAccountHelp": "[uk-todo] Account deletion future release",
+    "deleteAccountButton": "[uk-todo] Delete account…",
+    "deleteAccountHelp": "[uk-todo] Sessions revoke immediately. Data kept 30 days.",
+    "deleteAccountTitle": "[uk-todo] Delete account",
+    "deleteAccountModalTitle": "[uk-todo] This is the end of the line",
+    "deleteAccountWarning": "[uk-todo] Sessions revoke immediately. Characters, ships, and share links stay accessible for 30 days, then they're cascade-deleted. There's no undo.",
+    "deleteAccountConfirmPrompt": "[uk-todo] Type DELETE MY ACCOUNT to confirm:",
+    "deleteAccountConfirmPhrase": "DELETE MY ACCOUNT",
+    "deleteAccountCancel": "[uk-todo] Cancel",
+    "deleteAccountConfirm": "[uk-todo] Delete forever",
+    "deleteAccountInProgress": "[uk-todo] Deleting…",
+    "deleteAccountError": "[uk-todo] Could not delete the account.",
     "loading": "[uk-todo] Loading profile"
   },
   "el": {
@@ -260,8 +325,17 @@
     "highContrastLabel": "[el-todo] High contrast",
     "highContrastHelp": "[el-todo] High contrast help text",
     "sectionAccount": "[el-todo] Account",
-    "deleteAccountButton": "[el-todo] Delete account",
-    "deleteAccountHelp": "[el-todo] Account deletion future release",
+    "deleteAccountButton": "[el-todo] Delete account…",
+    "deleteAccountHelp": "[el-todo] Sessions revoke immediately. Data kept 30 days.",
+    "deleteAccountTitle": "[el-todo] Delete account",
+    "deleteAccountModalTitle": "[el-todo] This is the end of the line",
+    "deleteAccountWarning": "[el-todo] Sessions revoke immediately. Characters, ships, and share links stay accessible for 30 days, then they're cascade-deleted. There's no undo.",
+    "deleteAccountConfirmPrompt": "[el-todo] Type DELETE MY ACCOUNT to confirm:",
+    "deleteAccountConfirmPhrase": "DELETE MY ACCOUNT",
+    "deleteAccountCancel": "[el-todo] Cancel",
+    "deleteAccountConfirm": "[el-todo] Delete forever",
+    "deleteAccountInProgress": "[el-todo] Deleting…",
+    "deleteAccountError": "[el-todo] Could not delete the account.",
     "loading": "[el-todo] Loading profile"
   }
 }
@@ -438,7 +512,7 @@
           <AppButton
             variant="danger"
             size="md"
-            :disabled="true"
+            @click="openDeleteDialog"
           >
             {{ t('deleteAccountButton') }}
           </AppButton>
@@ -447,6 +521,70 @@
       </AppCard>
 
     </template>
+
+    <!-- Delete account confirmation dialog -->
+    <dialog
+      ref="deleteDialogRef"
+      class="page-settings__dialog"
+      :aria-label="t('deleteAccountModalTitle')"
+      @close="closeDeleteDialog"
+    >
+      <div class="page-settings__dialog-inner">
+        <AppLabel
+          tone="eyebrow"
+          :text="t('deleteAccountTitle')"
+        />
+        <p class="page-settings__dialog-heading">{{ t('deleteAccountModalTitle') }}</p>
+        <p class="page-settings__dialog-warning">{{ t('deleteAccountWarning') }}</p>
+
+        <div class="page-settings__dialog-confirm-field">
+          <label
+            class="page-settings__dialog-confirm-label"
+            for="delete-confirm-input"
+          >{{ t('deleteAccountConfirmPrompt') }}</label>
+          <AppInput
+            id="delete-confirm-input"
+            v-model="deleteConfirmInput"
+            size="md"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            autofocus
+            :disabled="deleteInProgress"
+            :placeholder="t('deleteAccountConfirmPhrase')"
+          />
+        </div>
+
+        <p
+          v-if="deleteError"
+          class="page-settings__dialog-error"
+          role="alert"
+        >
+          {{ deleteError }}
+        </p>
+
+        <div class="page-settings__dialog-actions">
+          <AppButton
+            variant="ghost"
+            size="md"
+            :disabled="deleteInProgress"
+            @click="closeDeleteDialog"
+          >
+            {{ t('deleteAccountCancel') }}
+          </AppButton>
+          <AppButton
+            variant="danger"
+            size="md"
+            :disabled="!deleteConfirmMatches || deleteInProgress"
+            :loading="deleteInProgress"
+            @click="confirmDeleteAccount"
+          >
+            {{ deleteInProgress ? t('deleteAccountInProgress') : t('deleteAccountConfirm') }}
+          </AppButton>
+        </div>
+      </div>
+    </dialog>
   </section>
 </template>
 
@@ -459,6 +597,8 @@
   // Stagger delay for skeleton shimmer — intentionally a fixed offset.
   $skeleton-stagger: 150ms;
   $skeleton-stagger-2: 300ms;
+  // Dialog max-width — layout cap, not a spacing token.
+  $dialog-max-width: 480px;
 
   .page-settings {
     display: flex;
@@ -611,6 +751,70 @@
       font-family: var(--font-body);
       font-size: var(--type-body-sm-font-size);
       color: var(--text-secondary);
+    }
+
+    // ── Delete account dialog ──────────────────────────────────────────────────
+
+    &__dialog {
+      max-width: $dialog-max-width;
+      width: 100%;
+      border: 1px solid var(--brand-brass-deep);
+      border-radius: var(--radius-lg);
+      background-color: var(--surface-night);
+      color: var(--text-primary);
+      padding: 0;
+
+      &::backdrop {
+        background-color: color-mix(in srgb, var(--surface-void) 80%, transparent);
+      }
+    }
+
+    &__dialog-inner {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      padding: var(--space-6);
+    }
+
+    &__dialog-heading {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--type-display-sm-font-size);
+      color: var(--brand-brass-light);
+    }
+
+    &__dialog-warning {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: var(--type-body-md-font-size);
+      color: var(--text-secondary);
+      line-height: var(--type-body-md-line-height);
+    }
+
+    &__dialog-confirm-field {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    &__dialog-confirm-label {
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--text-primary);
+    }
+
+    &__dialog-error {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--state-crimson-bright);
+    }
+
+    &__dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-3);
+      margin-top: var(--space-2);
     }
   }
 
