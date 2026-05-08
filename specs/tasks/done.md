@@ -2,6 +2,62 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## Storybook a11y CI smoke (Phase 2 follow-up)
+
+- Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent + parent session)
+- Spec: Phase 1 ledger follow-up "Storybook visual smoke + a11y panel CI".
+- Result: ff-merged to main as `4f352b0..ec99ba3` (2 commits).
+  - `ci(ui): wire Storybook a11y smoke via test-runner + axe-playwright` —
+    new `ui-storybook` CI job (build static Storybook → install Chromium →
+    run test-runner). `axe-playwright` injected via `preVisit` hook;
+    `postVisit` calls `checkA11y` against `#storybook-root`. Visual snapshot
+    block kept but gated behind `STORYBOOK_VISUAL=1` until baselines are
+    seeded from a Linux runner. preview.ts decorator themes aligned with
+    Coriolis (`dark` + `high-contrast`, dropping stale `light/sepia/forest`
+    that ADR-0001 retired). Two axe rules globally disabled with WHY
+    comments + Phase 2 follow-ups: `color-contrast` (design-intentional
+    dark palette; AA gate lives on `[data-theme='high-contrast']`) and
+    `nested-interactive` (AppChip-removable refactor needed).
+  - `fix(ui): a11y violations in 8 component stories (61 → 0)` — story-level
+    fixes for AppDots/AppProgress (`label` prop), AppInput/AppTextarea
+    (`aria-label` in meta render), AppSelect (paired `<label for>` +
+    `selectId`), AppSwitch (label default + bare-toggle aria-label), AppTab
+    (`<div role="tablist">` wrappers, `<nav>`→`<div>` to fix
+    `aria-allowed-role`). One component change: AppBanner.vue
+    `<aside>`→`<div>` (aside's implicit `complementary` role conflicts
+    with `role="status"`/`alert`).
+- Final state: 287 / 287 stories pass a11y smoke locally. CI job gates the
+  same on every push.
+- Open follow-ups (added to Phase 2 ledger):
+  - Visual snapshot baselines on Linux runner.
+  - `color-contrast` audit on `[data-theme='high-contrast']` and design
+    refresh for failing combos.
+  - AppChip-removable structural refactor (sibling buttons) to re-enable
+    `nested-interactive`.
+
+## Web typecheck unblock (Phase 1 tech-debt)
+
+- Completed: 2026-05-08
+- Owner: claude (parent session)
+- Spec: Phase 1 ledger follow-up "Web pnpm typecheck fix (oxc-parser native
+  binding)".
+- Result: ff-merged to main as `e24690b..96fe7a8` (1 commit).
+- Diagnosis: the previously-blocking `@oxc-parser/binding-darwin-universal`
+  binding error self-resolved under the current pnpm 10.33 / Node 24.15
+  toolchain. What remained were two real TypeScript errors blocking
+  `pnpm --filter @app/web typecheck`:
+  - `app/pages/app/settings.vue:137`: `setLocale` expected `LocaleCode`
+    union, got widened `string`. Fix: `SUPPORTED_LOCALES` const tuple +
+    `isLocaleCode()` type guard, narrowing happens at the call site.
+  - `app/pages/login.vue:176`: AppButton was being passed boilerplate
+    Nuxt UI props (`label`, `color`, `variant='solid'`, `block`). AppButton
+    has none of those. Fix: switch to default slot, `variant='primary'`,
+    page-scoped `&__submit { width: 100% }` for block-layout.
+- Verification: `pnpm --filter @app/web typecheck` exits 0 (only
+  pre-existing duplicate-import warnings remain — auto-import noise from
+  Nuxt, harmless).
+
 ## Flutter foundation tail — 8 deferred widgets (Epic 2.5)
 
 - Completed: 2026-05-08
