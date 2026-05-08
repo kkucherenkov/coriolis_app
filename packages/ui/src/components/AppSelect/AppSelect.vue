@@ -1,102 +1,113 @@
 <script lang="ts">
-  /** A single choice rendered inside the dropdown. */
+  /** A single option rendered inside the dropdown. */
   export interface AppSelectOption {
-    id: string;
+    value: string | number;
     label: string;
     disabled?: boolean;
   }
 
-  // Opt out of the default root-level $attrs merge so id / aria-* attrs from a
-  // parent (e.g. AppField's slot props) land on the inner <select> — that's
-  // where the assistive tech reads them.
+  // Opt out of the default root-level $attrs merge so props (aria-*, id, name)
+  // are forwarded only to the inner <select>, not the wrapper <div>.
   export default { inheritAttrs: false };
 </script>
 
 <script setup lang="ts">
-  import { computed, useAttrs } from 'vue';
+  import { computed } from 'vue';
 
   type Size = 'sm' | 'md' | 'lg';
 
   const props = withDefaults(
     defineProps<{
-      /** Id of the currently selected option. `null` means "no selection" (placeholder shown). */
-      modelValue: string | null;
-      /** Options to render. IDs must be unique. */
-      options: readonly AppSelectOption[];
-      /** Shown when `modelValue` is null. Translated by the consumer. */
+      /** Currently selected value. `null` = no selection (placeholder shown). */
+      modelValue: string | number | null;
+      /** Option list rendered as native `<option>` elements. */
+      options: AppSelectOption[];
+      /** Displayed when `modelValue` is null. Translated by the consumer. */
       placeholder?: string;
-      /** Size scale — drives padding + text-size tokens. */
+      /** Size scale — drives padding + font-size tokens. Same scale as AppInput. */
       size?: Size;
-      /** When true, the trigger is non-interactive and reads as disabled to assistive tech. */
       disabled?: boolean;
+      invalid?: boolean;
+      /** Forwarded as `id` on the native `<select>` for AppField `for=` binding. */
+      selectId?: string;
+      /** Forwarded as `name` on the native `<select>`. */
+      name?: string;
+      /** Native `required` for HTML form submission. */
+      required?: boolean;
     }>(),
-    { placeholder: undefined, size: 'md', disabled: false },
+    {
+      placeholder: undefined,
+      size: 'md',
+      disabled: false,
+      invalid: false,
+      selectId: undefined,
+      name: undefined,
+      required: false,
+    },
   );
 
   const emit = defineEmits<{
-    'update:modelValue': [value: string];
+    'update:modelValue': [value: string | number];
   }>();
-
-  // `$attrs` goes onto the inner <select> so id / aria-describedby / aria-invalid
-  // / aria-required forwarded by AppField's slot props land on the actual
-  // interactive element.
-  const attrs = useAttrs();
 
   const rootClasses = computed(() => [
     'app-select',
     `app-select--${props.size}`,
     { 'app-select--disabled': props.disabled },
+    { 'app-select--invalid': props.invalid },
   ]);
 
-  // A stable sentinel for the "no selection" <option> — keeps happy-dom from
-  // printing "__APP_SELECT_PLACEHOLDER__" anywhere it leaks, while letting the
-  // change handler recognise the non-real value and ignore it.
+  // Sentinel for the placeholder <option> — empty string is safe since real
+  // option values are enforced non-empty by the options type contract.
   const PLACEHOLDER_VALUE = '';
+
+  // Bind the native <select> value attribute. null → placeholder sentinel.
+  const boundValue = computed<string>(() =>
+    props.modelValue === null ? PLACEHOLDER_VALUE : String(props.modelValue),
+  );
 
   function onChange(event: Event): void {
     if (props.disabled) return;
     const target = event.target;
     if (!(target instanceof HTMLSelectElement)) return;
-    const next = target.value;
-    if (next === PLACEHOLDER_VALUE) return;
+    const raw = target.value;
+    if (raw === PLACEHOLDER_VALUE) return;
+    // Preserve number type when the matched option carries a numeric value.
+    const matched = props.options.find((o) => String(o.value) === raw);
+    const next: string | number =
+      matched !== undefined && typeof matched.value === 'number' ? matched.value : raw;
     if (next === props.modelValue) return;
     emit('update:modelValue', next);
   }
-
-  // Normalise `modelValue: null` to the placeholder sentinel so the underlying
-  // native <select> reflects the "no selection" state. A selected id always
-  // wins — even if it doesn't match a currently-known option id (the browser
-  // renders the trigger empty, consumer can reconcile upstream).
-  const boundValue = computed<string>(() => props.modelValue ?? PLACEHOLDER_VALUE);
 </script>
 
 <template>
   <div :class="rootClasses">
     <select
-      v-bind="attrs"
       class="app-select__control"
+      :id="selectId"
+      :name="name"
       :value="boundValue"
       :disabled="disabled"
+      :required="required"
       :aria-disabled="disabled ? 'true' : undefined"
+      :aria-invalid="invalid ? 'true' : undefined"
       @change="onChange"
     >
-      <!-- Placeholder sits as a disabled, hidden option so it shows on the
-           trigger until the user makes a real choice. -->
+      <!-- Placeholder: disabled + hidden so it shows on trigger but is never re-selectable. -->
       <option v-if="placeholder !== undefined" :value="PLACEHOLDER_VALUE" disabled hidden>
         {{ placeholder }}
       </option>
       <option
         v-for="option in options"
-        :key="option.id"
-        :value="option.id"
+        :key="String(option.value)"
+        :value="String(option.value)"
         :disabled="option.disabled"
       >
         {{ option.label }}
       </option>
     </select>
-    <!-- Decorative caret — real chevron token would live in tokens.generated.
-         Uses currentColor so it tracks the text colour, stays out of the a11y
-         tree via aria-hidden. -->
+    <!-- Decorative chevron. pointer-events:none so clicks fall through to the <select>. -->
     <span class="app-select__chevron" aria-hidden="true">
       <svg viewBox="0 0 12 12" width="12" height="12" fill="none">
         <path
@@ -117,46 +128,42 @@
     display: inline-flex;
     width: 100%;
 
+    // ── Control ──────────────────────────────────────────────────────────────
+
     &__control {
       flex: 1 1 auto;
       width: 100%;
-      padding-block: var(--space-3);
-      padding-inline: var(--space-4);
-      padding-inline-end: var(--space-12);
-      border: 1px solid var(--border-default);
-      border-radius: var(--radius-md);
-      background: var(--surface-surface);
-      color: var(--text-fg);
-      font-family: var(--font-sans);
-      font-size: var(--text-md);
-      font-weight: var(--fw-regular);
-      line-height: var(--leading-normal);
+      min-width: 0;
       appearance: none;
+      background-color: var(--surface-night);
+      border: 1px solid var(--brand-brass-shadow);
+      border-radius: var(--radius-md);
+      color: var(--brand-brass-light);
+      font-family: var(--type-body-md-font-family);
+      font-size: var(--type-body-md-font-size);
+      line-height: var(--type-body-md-line-height);
       cursor: pointer;
-      transition:
-        border-color var(--dur-fast) var(--ease-default),
-        box-shadow var(--dur-fast) var(--ease-default);
+      transition: border-color var(--motion-duration-fast) var(--motion-ease-standard);
+
+      // Right-side padding: leaves room for the chevron icon.
+      padding: var(--space-2) var(--space-10) var(--space-2) var(--space-4);
 
       &:hover:not(:disabled) {
-        border-color: var(--border-strong);
+        border-color: var(--brand-brass-deep);
       }
 
       &:focus-visible {
-        outline: none;
-        border-color: var(--brand-accent);
-        box-shadow: var(--shadow-focus);
-      }
-
-      &[aria-invalid='true'] {
-        border-color: var(--status-danger);
+        outline: 2px solid var(--brand-brass);
+        outline-offset: 2px;
+        border-color: var(--brand-brass);
       }
 
       &:disabled {
-        color: var(--text-fg-disabled);
         cursor: not-allowed;
-        background: var(--surface-bg-subtle);
       }
     }
+
+    // ── Chevron ───────────────────────────────────────────────────────────────
 
     &__chevron {
       position: absolute;
@@ -165,18 +172,18 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: var(--text-fg-muted);
+      color: var(--brand-brass);
       pointer-events: none;
       transform: translateY(-50%);
     }
 
-    /* ----- sizes ----- */
+    // ── Size modifiers ────────────────────────────────────────────────────────
+
     &--sm {
       .app-select__control {
-        padding-block: var(--space-2);
-        padding-inline: var(--space-3);
-        padding-inline-end: var(--space-10);
-        font-size: var(--text-sm);
+        padding: var(--space-1) var(--space-8) var(--space-1) var(--space-3);
+        font-size: var(--type-body-sm-font-size);
+        line-height: var(--type-body-sm-line-height);
       }
 
       .app-select__chevron {
@@ -186,27 +193,46 @@
 
     &--md {
       .app-select__control {
-        padding-block: var(--space-3);
-        padding-inline: var(--space-4);
-        padding-inline-end: var(--space-12);
-        font-size: var(--text-md);
+        padding: var(--space-2) var(--space-10) var(--space-2) var(--space-4);
+        font-size: var(--type-body-md-font-size);
+        line-height: var(--type-body-md-line-height);
       }
     }
 
     &--lg {
       .app-select__control {
-        padding-block: var(--space-4);
-        padding-inline: var(--space-6);
-        padding-inline-end: var(--space-14);
-        font-size: var(--text-lg);
+        padding: var(--space-3) var(--space-12) var(--space-3) var(--space-5);
+        font-size: var(--type-body-lg-font-size);
+        line-height: var(--type-body-lg-line-height);
       }
 
       .app-select__chevron {
-        inset-inline-end: var(--space-6);
+        inset-inline-end: var(--space-5);
       }
     }
 
+    // ── State: invalid ────────────────────────────────────────────────────────
+
+    &--invalid {
+      .app-select__control {
+        border-color: var(--state-crimson);
+
+        &:hover:not(:disabled) {
+          border-color: var(--state-crimson-bright);
+        }
+
+        &:focus-visible {
+          outline-color: var(--state-crimson-bright);
+          border-color: var(--state-crimson);
+        }
+      }
+    }
+
+    // ── State: disabled ───────────────────────────────────────────────────────
+
     &--disabled {
+      opacity: var(--opacity-disabled);
+      pointer-events: none;
       cursor: not-allowed;
     }
   }

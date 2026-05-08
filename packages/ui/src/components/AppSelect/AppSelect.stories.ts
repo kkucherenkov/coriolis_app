@@ -1,7 +1,5 @@
 import { ref } from 'vue';
 
-import AppField from '../AppField/AppField.vue';
-
 import AppSelect, { type AppSelectOption } from './AppSelect.vue';
 
 import type { Meta, StoryObj } from '@storybook/vue3';
@@ -15,18 +13,20 @@ const meta: Meta<typeof AppSelect> = {
     placeholder: { control: 'text' },
     size: { control: 'select', options: ['sm', 'md', 'lg'] },
     disabled: { control: 'boolean' },
+    invalid: { control: 'boolean' },
+    required: { control: 'boolean' },
   },
   parameters: {
     docs: {
       description: {
         component: [
-          'AppSelect is the brand dropdown primitive.',
+          'AppSelect is the brand dropdown primitive built on a native `<select>`.',
           '',
-          'It wraps a native `<select>` (styled via tokens) so it inherits the',
-          "browser's full accessibility contract: keyboard nav, focus,",
-          'screen-reader announcements, and native menu rendering on every platform.',
+          'Native select inherits the platform accessibility contract for free:',
+          'keyboard navigation, screen-reader announcements, and OS-native menus.',
           '',
-          'Translations come in as the `placeholder` prop and each option `label`.',
+          'Props drive styling (size, disabled, invalid) and the option list.',
+          'Translations come in via the `placeholder` prop and option `label` strings.',
           'Compose inside `AppField` to link label + help/error + ARIA wiring.',
         ].join('\n'),
       },
@@ -38,84 +38,200 @@ export default meta;
 
 type Story = StoryObj<typeof AppSelect>;
 
-const FRUITS: readonly AppSelectOption[] = [
-  { id: 'apple', label: 'Apple' },
-  { id: 'banana', label: 'Banana' },
-  { id: 'cherry', label: 'Cherry' },
-  { id: 'durian', label: 'Durian' },
+// ── Fixture data ──────────────────────────────────────────────────────────────
+
+const FRUITS: AppSelectOption[] = [
+  { value: 'apple', label: 'Apple' },
+  { value: 'banana', label: 'Banana' },
+  { value: 'cherry', label: 'Cherry' },
 ];
 
-const FRUITS_WITH_DISABLED: readonly AppSelectOption[] = [
-  { id: 'apple', label: 'Apple' },
-  { id: 'banana', label: 'Banana' },
-  { id: 'cherry', label: 'Cherry (seasonal)', disabled: true },
-  { id: 'durian', label: 'Durian' },
+const FRUITS_WITH_DISABLED: AppSelectOption[] = [
+  { value: 'apple', label: 'Apple' },
+  { value: 'banana', label: 'Banana' },
+  { value: 'cherry', label: 'Cherry (seasonal)', disabled: true },
+  { value: 'durian', label: 'Durian' },
 ];
 
-// Single-story bootstrap — the stories consume a local ref so the change
-// handler updates the rendered value like a real app would. `args` is typed
-// via Storybook as `Partial<typeof AppSelect.props>` which is too loose to be
-// useful here, so we narrow to the one field we read.
-interface SelectArgs {
-  modelValue?: string | null;
-}
-const singleSelectRender: Story['render'] = (rawArgs) => {
-  const args = rawArgs as SelectArgs;
-  return {
+const NUMBER_OPTIONS: AppSelectOption[] = [
+  { value: 1, label: 'One' },
+  { value: 2, label: 'Two' },
+  { value: 3, label: 'Three' },
+  { value: 4, label: 'Four' },
+  { value: 5, label: 'Five' },
+];
+
+const MANY_OPTIONS: AppSelectOption[] = [
+  { value: 'aether', label: 'Aether' },
+  { value: 'algol', label: 'Algol' },
+  { value: 'altair', label: 'Altair' },
+  { value: 'antares', label: 'Antares' },
+  { value: 'arcturus', label: 'Arcturus' },
+  { value: 'betelgeuse', label: 'Betelgeuse' },
+  { value: 'capella', label: 'Capella' },
+  { value: 'castor', label: 'Castor' },
+  { value: 'deneb', label: 'Deneb' },
+  { value: 'fomalhaut', label: 'Fomalhaut' },
+  { value: 'mintaka', label: 'Mintaka' },
+  { value: 'pollux', label: 'Pollux' },
+  { value: 'procyon', label: 'Procyon' },
+  { value: 'rigel', label: 'Rigel' },
+  { value: 'sirius', label: 'Sirius' },
+  { value: 'vega', label: 'Vega' },
+];
+
+// ── Stories ───────────────────────────────────────────────────────────────────
+
+export const Default: Story = {
+  name: 'Default (3 fruits)',
+  render: () => ({
     components: { AppSelect },
     setup() {
-      const value = ref<string | null>(args.modelValue ?? null);
-      return { args, value, options: FRUITS };
+      const value = ref<string | null>(null);
+      return { value, options: FRUITS };
     },
     template: `
-      <div style="width: 280px;">
-        <AppSelect v-bind="args" v-model="value" :options="options" />
-        <p style="margin-top: var(--space-4); color: var(--text-fg-muted); font-family: var(--font-mono); font-size: var(--text-xs);">
+      <div style="width:280px;">
+        <AppSelect v-model="value" :options="options" />
+        <p style="margin-top:var(--space-4);color:var(--text-secondary);font-size:var(--type-body-sm-font-size);">
           modelValue: {{ value ?? 'null' }}
         </p>
       </div>
     `,
-  };
-};
-
-export const Default: Story = {
-  args: { modelValue: null },
-  render: singleSelectRender,
+  }),
 };
 
 export const WithPlaceholder: Story = {
-  args: { modelValue: null, placeholder: 'Pick a fruit…' },
-  render: singleSelectRender,
-};
-
-export const WithValue: Story = {
-  args: { modelValue: 'banana', placeholder: 'Pick a fruit…' },
-  render: singleSelectRender,
-};
-
-export const Sizes: Story = {
+  name: 'With placeholder',
   render: () => ({
     components: { AppSelect },
     setup() {
-      const values = ref({ sm: null, md: null, lg: null } as Record<string, string | null>);
-      return { values, options: FRUITS };
+      const value = ref<string | null>(null);
+      return { value, options: FRUITS };
     },
     template: `
-      <div style="display:flex; flex-direction:column; gap: var(--space-8); width: 280px;">
-        <AppSelect size="sm" placeholder="Small" :options="options" v-model="values.sm" />
-        <AppSelect size="md" placeholder="Medium" :options="options" v-model="values.md" />
-        <AppSelect size="lg" placeholder="Large" :options="options" v-model="values.lg" />
+      <div style="width:280px;">
+        <AppSelect v-model="value" :options="options" placeholder="Choose a fruit…" />
+        <p style="margin-top:var(--space-4);color:var(--text-secondary);font-size:var(--type-body-sm-font-size);">
+          modelValue: {{ value ?? 'null' }}
+        </p>
+      </div>
+    `,
+  }),
+};
+
+export const Sizes: Story = {
+  name: 'Sizes (sm / md / lg)',
+  render: () => ({
+    components: { AppSelect },
+    setup() {
+      const sm = ref<string | null>(null);
+      const md = ref<string | null>(null);
+      const lg = ref<string | null>(null);
+      return { sm, md, lg, options: FRUITS };
+    },
+    template: `
+      <div style="display:flex;flex-direction:column;gap:var(--space-6);width:280px;">
+        <AppSelect size="sm" placeholder="Small (sm)" :options="options" v-model="sm" />
+        <AppSelect size="md" placeholder="Medium (md)" :options="options" v-model="md" />
+        <AppSelect size="lg" placeholder="Large (lg)" :options="options" v-model="lg" />
       </div>
     `,
   }),
 };
 
 export const Disabled: Story = {
-  args: { modelValue: 'apple', disabled: true },
-  render: singleSelectRender,
+  render: () => ({
+    components: { AppSelect },
+    setup() {
+      const value = ref<string>('banana');
+      return { value, options: FRUITS };
+    },
+    template: `<div style="width:280px;"><AppSelect v-model="value" :options="options" disabled /></div>`,
+  }),
 };
 
-export const WithDisabledOption: Story = {
+export const Invalid: Story = {
+  render: () => ({
+    components: { AppSelect },
+    setup() {
+      const value = ref<string | null>(null);
+      return { value, options: FRUITS };
+    },
+    template: `
+      <div style="width:280px;display:flex;flex-direction:column;gap:var(--space-2);">
+        <AppSelect v-model="value" :options="options" placeholder="Pick a fruit…" invalid />
+        <p style="margin:0;color:var(--state-crimson);font-size:var(--type-body-sm-font-size);">
+          Selection is required.
+        </p>
+      </div>
+    `,
+  }),
+};
+
+export const RequiredInForm: Story = {
+  name: 'Required in form',
+  render: () => ({
+    components: { AppSelect },
+    setup() {
+      const value = ref<string | null>(null);
+      return { value, options: FRUITS };
+    },
+    template: `
+      <form @submit.prevent style="width:280px;display:flex;flex-direction:column;gap:var(--space-4);">
+        <AppSelect
+          v-model="value"
+          :options="options"
+          placeholder="Required field…"
+          select-id="fruit-required"
+          name="fruit"
+          required
+        />
+        <button type="submit" style="padding:var(--space-2) var(--space-4);background:var(--brand-brass);color:var(--text-on-brass);border:none;border-radius:var(--radius-md);cursor:pointer;">
+          Submit
+        </button>
+      </form>
+    `,
+  }),
+};
+
+export const NumberValues: Story = {
+  name: 'Number values',
+  render: () => ({
+    components: { AppSelect },
+    setup() {
+      const value = ref<number | null>(null);
+      return { value, options: NUMBER_OPTIONS };
+    },
+    template: `
+      <div style="width:280px;">
+        <AppSelect v-model="value" :options="options" placeholder="Pick a number…" />
+        <p style="margin-top:var(--space-4);color:var(--text-secondary);font-size:var(--type-body-sm-font-size);">
+          modelValue: {{ value ?? 'null' }} (type: {{ typeof value }})
+        </p>
+      </div>
+    `,
+  }),
+};
+
+export const ManyOptions: Story = {
+  name: 'Many options (overflow)',
+  render: () => ({
+    components: { AppSelect },
+    setup() {
+      const value = ref<string | null>(null);
+      return { value, options: MANY_OPTIONS };
+    },
+    template: `
+      <div style="width:280px;">
+        <AppSelect v-model="value" :options="options" placeholder="Select a star system…" />
+      </div>
+    `,
+  }),
+};
+
+export const DisabledOption: Story = {
+  name: 'With disabled option',
   render: () => ({
     components: { AppSelect },
     setup() {
@@ -123,44 +239,36 @@ export const WithDisabledOption: Story = {
       return { value, options: FRUITS_WITH_DISABLED };
     },
     template: `
-      <div style="width: 280px;">
+      <div style="width:280px;">
         <AppSelect v-model="value" :options="options" placeholder="Pick a fruit…" />
+        <p style="margin-top:var(--space-4);color:var(--text-secondary);font-size:var(--type-body-sm-font-size);">
+          Cherry is disabled (out of season).
+        </p>
       </div>
     `,
   }),
 };
 
-export const ComposedWithAppField: Story = {
+export const SmInvalid: Story = {
+  name: 'Invalid / sm',
   render: () => ({
-    components: { AppField, AppSelect },
+    components: { AppSelect },
     setup() {
       const value = ref<string | null>(null);
-      const error = ref<string | undefined>(undefined);
-      const onChange = (): void => {
-        error.value = undefined;
-      };
-      const validate = (): void => {
-        error.value = value.value ? undefined : 'Please pick a fruit.';
-      };
-      return { value, error, onChange, validate, options: FRUITS };
+      return { value, options: FRUITS };
     },
-    template: `
-      <div style="display:flex; flex-direction:column; gap: var(--space-6); width: 320px;">
-        <AppField label="Favourite fruit" required :error="error" help="This ends up on your profile.">
-          <template #default="a">
-            <AppSelect
-              v-bind="a"
-              v-model="value"
-              :options="options"
-              placeholder="Pick a fruit…"
-              @update:model-value="onChange"
-            />
-          </template>
-        </AppField>
-        <button type="button" @click="validate" style="align-self:flex-start; padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); background: var(--brand-accent); color: var(--text-fg-inverse); border: 0; cursor: pointer;">
-          Validate
-        </button>
-      </div>
-    `,
+    template: `<div style="width:240px;"><AppSelect size="sm" v-model="value" :options="options" placeholder="Small invalid…" invalid /></div>`,
+  }),
+};
+
+export const LgInvalid: Story = {
+  name: 'Invalid / lg',
+  render: () => ({
+    components: { AppSelect },
+    setup() {
+      const value = ref<string | null>(null);
+      return { value, options: FRUITS };
+    },
+    template: `<div style="width:320px;"><AppSelect size="lg" v-model="value" :options="options" placeholder="Large invalid…" invalid /></div>`,
   }),
 };

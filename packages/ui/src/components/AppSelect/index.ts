@@ -1,1 +1,1 @@
-export { default as AppSelect } from './AppSelect.vue';
+export { default as AppSelect, type AppSelectOption } from './AppSelect.vue';
