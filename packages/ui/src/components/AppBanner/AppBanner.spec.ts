@@ -17,9 +17,9 @@ const TONE_DEFAULT_ICONS: Record<(typeof TONES)[number], string> = {
 describe('AppBanner', () => {
   // ── Root element ──────────────────────────────────────────────────────────
 
-  it('renders an <aside> root element', () => {
+  it('renders a <div> root element', () => {
     const wrapper = mount(AppBanner);
-    expect(wrapper.element.tagName).toBe('ASIDE');
+    expect(wrapper.element.tagName).toBe('DIV');
   });
 
   it('applies the app-banner base class', () => {
