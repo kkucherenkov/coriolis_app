@@ -5,6 +5,7 @@ import {
   CharacterNameEmptyError,
   CharacterNotFoundError,
   CharacterNotOwnedError,
+  ReadOnlyFieldError,
   SkillOutOfRangeError,
 } from '../domain/character.errors';
 import { DEFAULT_CONDITIONS, DEFAULT_SKILLS } from '../domain/character.ports';
@@ -164,5 +165,51 @@ describe('UpdateCharacterHandler', () => {
       'char-1',
       expect.not.objectContaining({ name: expect.anything() }),
     );
+  });
+
+  it('throws ReadOnlyFieldError when dto contains hp.max', async () => {
+    const dto = Object.assign(new UpdateCharacterDto(), { hp: { max: 99 } });
+    await expect(
+      handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+    ).rejects.toBeInstanceOf(ReadOnlyFieldError);
+    expect(repo.findActiveById).not.toHaveBeenCalled();
+  });
+
+  it('throws ReadOnlyFieldError with 422 status for hp.max', async () => {
+    const dto = Object.assign(new UpdateCharacterDto(), { hp: { max: 99 } });
+    await expect(
+      handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+    ).rejects.toMatchObject({ status: 422, code: 'READ_ONLY_FIELD' });
+  });
+
+  it('throws ReadOnlyFieldError when dto contains mp.max', async () => {
+    const dto = Object.assign(new UpdateCharacterDto(), { mp: { max: 99 } });
+    await expect(
+      handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+    ).rejects.toBeInstanceOf(ReadOnlyFieldError);
+  });
+
+  it('throws ReadOnlyFieldError when dto contains encumbrance.max', async () => {
+    const dto = Object.assign(new UpdateCharacterDto(), { encumbrance: { max: 99 } });
+    await expect(
+      handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+    ).rejects.toBeInstanceOf(ReadOnlyFieldError);
+  });
+
+  it('throws ReadOnlyFieldError when dto contains encumbrance.current', async () => {
+    const dto = Object.assign(new UpdateCharacterDto(), { encumbrance: { current: 5 } });
+    await expect(
+      handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+    ).rejects.toBeInstanceOf(ReadOnlyFieldError);
+  });
+
+  it('allows hp.current without throwing ReadOnlyFieldError', async () => {
+    vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter());
+    vi.mocked(repo.update).mockResolvedValue(makeCharacter({ hp: { current: 5, max: 6 } }));
+
+    const dto = Object.assign(new UpdateCharacterDto(), { hp: { current: 5 } });
+    await expect(
+      handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+    ).resolves.toBeDefined();
   });
 });
