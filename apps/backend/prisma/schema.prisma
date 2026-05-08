@@ -145,6 +145,7 @@ model Character {
   talents             Talent[]
   relationships       Relationship[]
   criticalInjuries    CriticalInjury[]
+  shareLinks          ShareLink[]
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
 
@@ -239,6 +240,36 @@ enum InjurySeverity {
   CRITICAL
 
   @@map("injury_severity")
+}
+
+/// A public read-only share link for a character.
+///
+/// Design notes (ADR 0003):
+/// - `slug` is a 24-character nanoid from an unambiguous alphabet — effectively
+///   unguessable and safe to print.
+/// - Revocation is soft: `revokedAt` is set; the row is never deleted so that
+///   historical view counts are preserved.
+/// - `viewCount` and `lastViewedAt` are updated asynchronously by the
+///   FlushViewTrackerJob every minute. The read path does not write to the DB.
+/// - `onDelete: Cascade` ensures share links are removed when the character is
+///   hard-deleted.
+model ShareLink {
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  characterId    String
+  character      Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  includeGmNotes Boolean   @default(false)
+  expiresAt      DateTime?
+  revokedAt      DateTime?
+  lastViewedAt   DateTime?
+  viewCount      Int       @default(0)
+  label          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([characterId])
+  @@index([revokedAt])
+  @@map("share_link")
 }
 
 /// A critical injury recorded on a character's sheet.
