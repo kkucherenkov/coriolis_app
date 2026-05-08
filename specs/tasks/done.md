@@ -2,6 +2,37 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## Character sheet — Inventory & gear (Epic 5 Feature 5.4)
+
+- Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent + parent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Epic 5 Feature 5.4, T-5.4.1.{a,b,d}.
+  T-5.4.1.c (backend item commands) was already shipped in Phase 1.
+  T-5.4.1.e (Flutter inventory) deferred.
+- Result: ff-merged to main as `<inventory range>` (4 commits).
+  - `14cdcf6` `feat(ui): AppModal primitive` — Teleport-to-body, focus
+    trap, Esc/backdrop close, sm/md/lg sizes, default+trigger+footer
+    slots, reduced-motion fade fallback. 14 specs, 4 stories.
+  - `0d4d15d` `feat(web): useItemsApi composable` — addItem / updateItem /
+    removeItem against existing backend endpoints.
+  - `3ceecc1` `feat(web): Gear tab + ItemEditor (6 types) + equipped
+    quick view + encumbrance warning` — adds the Gear tab to the sheet
+    tab row; ItemEditor handles WEAPON / ARMOR / GEAR / CYBERNETIC /
+    SHIP_MODULE / OTHER with per-type field sets; equipped right-column
+    panel replaces the placeholder; encumbrance warning ("warn, do not
+    block" per PRD §5.3) renders on `current > max`. TalentEditor
+    refactored from native `<dialog>` to AppModal in the same diff.
+  - `2fa8ada` `test(web): inventory orchestration specs + typecheck fix
+    in test union` — 11 new vitest specs (addItem, isEncumbered,
+    equippedItems, type-discriminated payload).
+- Verification: `@app/ui` 711 tests, a11y smoke 306/306 green;
+  `@app/web` 28 tests; typecheck/lint clean.
+- Open follow-ups (Phase 2):
+  - T-5.4.1.e Flutter mobile inventory (deferred with the Flutter sheet
+    tail).
+  - Type-specific summary columns are placeholders for slots/range
+    presentation; full polish lands during the Phase 3 share viewer pass.
+
 ## Character sheet — Talents, conditions, save-pulse (Epic 5 Features 5.2, 5.3, 5.5)
 
 - Completed: 2026-05-08
