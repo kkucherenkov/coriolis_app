@@ -99,7 +99,7 @@ const CHARACTER_LIST_SELECT = {
 
 // --------------- Mappers ---------------
 
-type PrismaCharacterFull = {
+interface PrismaCharacterFull {
   id: string;
   ownerId: string;
   name: string;
@@ -116,17 +116,17 @@ type PrismaCharacterFull = {
   status: string;
   createdAt: Date;
   updatedAt: Date;
-  items: Array<{ id: string; type: string; data: unknown }>;
-  talents: Array<{ id: string; name: string; description: string; rank: number; acquiredAt: Date }>;
-  relationships: Array<{ id: string; targetName: string; kind: string; notes: string | null }>;
-  criticalInjuries: Array<{
+  items: { id: string; type: string; data: unknown }[];
+  talents: { id: string; name: string; description: string; rank: number; acquiredAt: Date }[];
+  relationships: { id: string; targetName: string; kind: string; notes: string | null }[];
+  criticalInjuries: {
     id: string;
     name: string;
     severity: string;
     effect: string;
     acquiredAt: Date;
-  }>;
-};
+  }[];
+}
 
 /** Maps Prisma UPPERCASE enum to OpenAPI lowercase wire value. */
 function toCharacterStatus(s: string): CharacterStatus {
@@ -197,7 +197,7 @@ function toReadModel(row: PrismaCharacterFull): CharacterReadModel {
       max: computeEncumbranceMax(attrs.strength),
     },
     experience: row.experience,
-    conditions: row.conditions as unknown as ConditionFlags,
+    conditions: row.conditions as ConditionFlags,
     criticalInjuries: row.criticalInjuries.map(mapInjury),
     talents: row.talents.map(mapTalent),
     relationships: row.relationships.map(mapRelationship),
@@ -220,7 +220,7 @@ export class CharacterRepo implements ICharacterRepo {
       where: { id },
       select: CHARACTER_FULL_SELECT,
     });
-    return row ? toReadModel(row as unknown as PrismaCharacterFull) : null;
+    return row ? toReadModel(row) : null;
   }
 
   async findOwnerIdById(id: string): Promise<{ ownerId: string } | null> {
@@ -271,12 +271,12 @@ export class CharacterRepo implements ICharacterRepo {
             max: computeMpMax(attrs.wits, attrs.empathy),
           },
           conditions: row.conditions as unknown as ConditionFlags,
-          status: toCharacterStatus(row.status as string),
+          status: toCharacterStatus(row.status),
           createdAt: row.createdAt.toISOString(),
           updatedAt: row.updatedAt.toISOString(),
         };
       }),
-      nextCursor: hasNext ? (items[items.length - 1]?.id ?? null) : null,
+      nextCursor: hasNext ? (items.at(-1)?.id ?? null) : null,
     };
   }
 
@@ -303,17 +303,21 @@ export class CharacterRepo implements ICharacterRepo {
         name: data.name,
         concept: data.concept ?? null,
         iconId: data.iconId ? this.toIconIdEnum(data.iconId) : null,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Prisma Json fields require 'as object' cast
         attributes: data.attributes as object,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Prisma Json fields require 'as object' cast
         skills: data.skills as object,
         hpCurrent: data.hpCurrent,
         mpCurrent: data.mpCurrent,
         experience: data.experience,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Prisma Json fields require 'as object' cast
         conditions: data.conditions as object,
         notes: data.notes ?? null,
         status: statusEnum,
       },
       select: CHARACTER_FULL_SELECT,
     });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- Prisma select return type differs from our interface; shape is correct by construction
     return toReadModel(row as unknown as PrismaCharacterFull);
   }
 
@@ -329,12 +333,12 @@ export class CharacterRepo implements ICharacterRepo {
       mpCurrent: number;
       experience: number;
       conditions: ConditionFlags;
-      criticalInjuries: Array<{
+      criticalInjuries: {
         name: string;
         severity: CriticalInjurySeverity;
         effect: string;
         acquiredAt: string;
-      }>;
+      }[];
       notes: string | null;
       status: CharacterStatus;
     }>,
@@ -350,7 +354,7 @@ export class CharacterRepo implements ICharacterRepo {
             data: criticalInjuries.map((inj) => ({
               characterId: id,
               name: inj.name,
-              severity: inj.severity as 'LIGHT' | 'SEVERE' | 'CRITICAL',
+              severity: inj.severity,
               effect: inj.effect,
               acquiredAt: new Date(inj.acquiredAt),
             })),
@@ -362,12 +366,12 @@ export class CharacterRepo implements ICharacterRepo {
       if (iconId !== undefined) {
         updateData['iconId'] = iconId ? this.toIconIdEnum(iconId) : null;
       }
-      if (rest.attributes) updateData['attributes'] = rest.attributes as object;
-      if (rest.skills) updateData['skills'] = rest.skills as object;
-      if (rest.conditions) updateData['conditions'] = rest.conditions as object;
+      if (rest.attributes) updateData['attributes'] = rest.attributes;
+      if (rest.skills) updateData['skills'] = rest.skills;
+      if (rest.conditions) updateData['conditions'] = rest.conditions;
       // Map lowercase wire status to Prisma UPPERCASE enum on update.
       if (status !== undefined) {
-        updateData['status'] = status.toUpperCase() as 'ACTIVE' | 'DRAFT';
+        updateData['status'] = status.toUpperCase();
       }
 
       if (Object.keys(updateData).length > 0) {

@@ -48,5 +48,8 @@ import { TalentsModule } from './talents/talents.module';
     // Guards
     CharacterOwnershipGuard,
   ],
+  // Exported so SharingModule can verify character ownership without
+  // duplicating the CHARACTER_REPO provider.
+  exports: [{ provide: CHARACTER_REPO, useClass: CharacterRepo }],
 })
 export class CharactersModule {}
