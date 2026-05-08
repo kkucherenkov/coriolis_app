@@ -144,9 +144,12 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 | Primitive | `AppField` | ✓ | — |
 | Primitive | `AppIcon` | ✓ | — |
 | Primitive | `AppInput` | ✓ | — |
+| Primitive | `AppKbd` | ✓ | — |
 | Primitive | `AppLabel` | ✓ | — |
 | Primitive | `AppProgress` | ✓ | — |
+| Primitive | `AppSegControl` | ✓ | — |
 | Primitive | `AppSelect` | ✓ | — |
 | Primitive | `AppSwitch` | ✓ | — |
 | Primitive | `AppTab` | ✓ | — |
 | Primitive | `AppTextarea` | ✓ | — |
+| Primitive | `AppTooltip` | ✓ | — |

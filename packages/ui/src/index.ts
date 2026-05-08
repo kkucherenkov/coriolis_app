@@ -15,5 +15,8 @@ export { AppSwitch } from './components/AppSwitch';
 export { AppLabel } from './components/AppLabel';
 export { AppField } from './components/AppField';
 export { AppDivider } from './components/AppDivider';
+export { AppKbd } from './components/AppKbd';
 export { AppProgress } from './components/AppProgress';
+export { AppSegControl } from './components/AppSegControl';
 export { AppTab } from './components/AppTab';
+export { AppTooltip } from './components/AppTooltip';
