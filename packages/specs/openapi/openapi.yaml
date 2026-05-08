@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 0.3.0
+  version: 0.4.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -35,6 +35,8 @@ tags:
     description: Authenticated user profile
   - name: characters
     description: Player character CRUD and nested items / talents
+  - name: ships
+    description: Ship CRUD, nested modules, and crew assignment
 
 paths:
   /api/v1/characters:
@@ -1044,6 +1046,1057 @@ paths:
                     instance: /api/v1/characters/cuid_tariq01/talents
                     code: CHARACTER_NOT_FOUND
 
+  # ---------------------------------------------------------------------------
+  # Ships
+  # ---------------------------------------------------------------------------
+
+  /api/v1/ships:
+    get:
+      operationId: listShips
+      summary: List the authenticated user's ships
+      description: |
+        Returns a cursor-paginated list of ships owned by the authenticated
+        user. Pass `cursor` from a previous response's `nextCursor` to retrieve
+        the following page. Results are ordered newest-first by `createdAt`.
+      tags: [ships]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque pagination cursor returned by the previous page
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          description: Number of ships to return (1–100, default 20)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: Paginated ship list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShipList"
+              examples:
+                ok:
+                  value:
+                    items:
+                      - id: cuid_ship01
+                        ownerId: cuid_user01
+                        name: Madara
+                        class: light-freighter
+                        model: Helebian Class III freighter
+                        registry: KUA-7741-M
+                        hull:
+                          current: 6
+                          max: 6
+                        energy:
+                          current: 4
+                          max: 5
+                        armor: 5
+                        maneuverability: 0
+                        signature: 0
+                        speed: 2
+                        cargoCapacity: 50
+                        modules: []
+                        crew: []
+                        problems: []
+                        history: null
+                        notes: null
+                        createdAt: "2026-01-15T10:00:00Z"
+                        updatedAt: "2026-04-01T15:00:00Z"
+                    nextCursor: null
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+    post:
+      operationId: createShip
+      summary: Create a new ship
+      description: |
+        Creates a ship owned by the authenticated user. `name` and `class` are
+        required; all other fields default to class-appropriate values per
+        ST3001 ГЛАВА 7 Table 7.5. Server assigns `id`, `ownerId`, `createdAt`,
+        `updatedAt`.
+      tags: [ships]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShipCreate"
+            examples:
+              minimal:
+                value:
+                  name: Narzal
+                  class: courier-yacht
+              full:
+                value:
+                  name: Madara
+                  class: light-freighter
+                  model: Helebian Class III freighter
+                  registry: KUA-7741-M
+      responses:
+        "201":
+          description: Ship created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ship"
+              examples:
+                created:
+                  value:
+                    id: cuid_ship02
+                    ownerId: cuid_user01
+                    name: Narzal
+                    class: courier-yacht
+                    model: null
+                    registry: null
+                    hull:
+                      current: 6
+                      max: 6
+                    energy:
+                      current: 5
+                      max: 5
+                    armor: 5
+                    maneuverability: 0
+                    signature: 0
+                    speed: 2
+                    cargoCapacity: 50
+                    modules: []
+                    crew: []
+                    problems: []
+                    history: null
+                    notes: null
+                    createdAt: "2026-05-08T10:00:00Z"
+                    updatedAt: "2026-05-08T10:00:00Z"
+        "400":
+          description: |
+            Validation error. Possible codes:
+            - `SHIP_NAME_EMPTY` — name is an empty string.
+            - `SHIP_NAME_TOO_LONG` — name exceeds 80 characters.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                nameEmpty:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: name must be between 1 and 80 characters
+                    instance: /api/v1/ships
+                    code: SHIP_NAME_EMPTY
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /api/v1/ships/{id}:
+    get:
+      operationId: getShip
+      summary: Get a ship by ID
+      description: |
+        Returns the full Ship DTO. Returns 404 if the ship does not exist or
+        is not owned by the authenticated user. Owner-scoped: a ship owned by
+        another user returns 403.
+      tags: [ships]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ShipId"
+      responses:
+        "200":
+          description: Ship found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ship"
+              examples:
+                ok:
+                  value:
+                    id: cuid_ship01
+                    ownerId: cuid_user01
+                    name: Madara
+                    class: light-freighter
+                    model: Helebian Class III freighter
+                    registry: KUA-7741-M
+                    hull:
+                      current: 6
+                      max: 6
+                    energy:
+                      current: 4
+                      max: 5
+                    armor: 5
+                    maneuverability: 0
+                    signature: 0
+                    speed: 2
+                    cargoCapacity: 50
+                    modules:
+                      - id: cuid_mod01
+                        slot: WEAPON
+                        name: Graviton Projector
+                        energyUse: 2
+                        weaponBonus: 1
+                        weaponRange: medium
+                        weaponDamage: 2
+                        weaponCritThreshold: 2
+                        notes: Heavy weapon · Bay 1
+                    crew:
+                      - position: captain
+                        assignedCharacterId: cuid_tariq01
+                    problems: []
+                    history: null
+                    notes: null
+                    createdAt: "2026-01-15T10:00:00Z"
+                    updatedAt: "2026-04-01T15:00:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller is authenticated but does not own this ship
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this ship
+                    instance: /api/v1/ships/cuid_ship01
+                    code: SHIP_NOT_OWNED
+        "404":
+          description: Ship not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Ship cuid_ship01 does not exist
+                    instance: /api/v1/ships/cuid_ship01
+                    code: SHIP_NOT_FOUND
+
+    patch:
+      operationId: updateShip
+      summary: Partially update a ship
+      description: |
+        Applies PATCH semantics — omitted fields are left unchanged. Read-only
+        fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are rejected with
+        400 if included.
+      tags: [ships]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ShipId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShipUpdate"
+            examples:
+              updateName:
+                value:
+                  name: Madara (repaired)
+              updateStats:
+                value:
+                  hull:
+                    current: 4
+                  energy:
+                    current: 3
+              addProblem:
+                value:
+                  problems:
+                    - Auxiliary thrusters damaged — −1 Maneuverability
+      responses:
+        "200":
+          description: Updated ship
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ship"
+              examples:
+                ok:
+                  value:
+                    id: cuid_ship01
+                    ownerId: cuid_user01
+                    name: Madara (repaired)
+                    class: light-freighter
+                    model: Helebian Class III freighter
+                    registry: KUA-7741-M
+                    hull:
+                      current: 4
+                      max: 6
+                    energy:
+                      current: 3
+                      max: 5
+                    armor: 5
+                    maneuverability: 0
+                    signature: 0
+                    speed: 2
+                    cargoCapacity: 50
+                    modules: []
+                    crew: []
+                    problems: []
+                    history: null
+                    notes: null
+                    createdAt: "2026-01-15T10:00:00Z"
+                    updatedAt: "2026-05-08T10:05:00Z"
+        "400":
+          description: |
+            Validation error. Possible codes:
+            - `SHIP_NAME_EMPTY`
+            - `SHIP_NAME_TOO_LONG`
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                nameEmpty:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: name must be between 1 and 80 characters
+                    instance: /api/v1/ships/cuid_ship01
+                    code: SHIP_NAME_EMPTY
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this ship
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this ship
+                    instance: /api/v1/ships/cuid_ship01
+                    code: SHIP_NOT_OWNED
+        "404":
+          description: Ship not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Ship cuid_ship01 does not exist
+                    instance: /api/v1/ships/cuid_ship01
+                    code: SHIP_NOT_FOUND
+
+    delete:
+      operationId: deleteShip
+      summary: Delete a ship
+      description: |
+        Permanently deletes a ship and all its modules, crew assignments, and
+        share links. This action is irreversible.
+      tags: [ships]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ShipId"
+      responses:
+        "204":
+          description: Ship deleted
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this ship
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this ship
+                    instance: /api/v1/ships/cuid_ship01
+                    code: SHIP_NOT_OWNED
+        "404":
+          description: Ship not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Ship cuid_ship01 does not exist
+                    instance: /api/v1/ships/cuid_ship01
+                    code: SHIP_NOT_FOUND
+
+  /api/v1/ships/{id}/duplicate:
+    post:
+      operationId: duplicateShip
+      summary: Duplicate a ship
+      description: |
+        Creates a deep copy of the ship (including modules and problems) and
+        assigns it to the authenticated user. The copy receives a new `id` and
+        the name has " (copy)" appended. Crew assignments and share links are
+        not duplicated. The source ship must be owned by the caller.
+      tags: [ships]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ShipId"
+      responses:
+        "201":
+          description: Duplicated ship
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ship"
+              examples:
+                created:
+                  value:
+                    id: cuid_ship03
+                    ownerId: cuid_user01
+                    name: Madara (copy)
+                    class: light-freighter
+                    model: Helebian Class III freighter
+                    registry: null
+                    hull:
+                      current: 6
+                      max: 6
+                    energy:
+                      current: 5
+                      max: 5
+                    armor: 5
+                    maneuverability: 0
+                    signature: 0
+                    speed: 2
+                    cargoCapacity: 50
+                    modules: []
+                    crew: []
+                    problems: []
+                    history: null
+                    notes: null
+                    createdAt: "2026-05-08T11:00:00Z"
+                    updatedAt: "2026-05-08T11:00:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this ship
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this ship
+                    instance: /api/v1/ships/cuid_ship01/duplicate
+                    code: SHIP_NOT_OWNED
+        "404":
+          description: Ship not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Ship cuid_ship01 does not exist
+                    instance: /api/v1/ships/cuid_ship01/duplicate
+                    code: SHIP_NOT_FOUND
+
+  /api/v1/ships/{id}/export:
+    get:
+      operationId: exportShip
+      summary: Export a ship as JSON
+      description: |
+        Returns the full canonical Ship DTO as a downloadable JSON payload.
+        The response carries `Content-Disposition: attachment` so browsers
+        prompt a download.
+      tags: [ships]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ShipId"
+      responses:
+        "200":
+          description: Ship JSON export
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ship"
+              examples:
+                ok:
+                  value:
+                    id: cuid_ship01
+                    ownerId: cuid_user01
+                    name: Madara
+                    class: light-freighter
+                    model: Helebian Class III freighter
+                    registry: KUA-7741-M
+                    hull:
+                      current: 6
+                      max: 6
+                    energy:
+                      current: 5
+                      max: 5
+                    armor: 5
+                    maneuverability: 0
+                    signature: 0
+                    speed: 2
+                    cargoCapacity: 50
+                    modules: []
+                    crew: []
+                    problems: []
+                    history: null
+                    notes: Notes from the Far Quarter run.
+                    createdAt: "2026-01-15T10:00:00Z"
+                    updatedAt: "2026-04-01T15:00:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this ship
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this ship
+                    instance: /api/v1/ships/cuid_ship01/export
+                    code: SHIP_NOT_OWNED
+        "404":
+          description: Ship not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Ship cuid_ship01 does not exist
+                    instance: /api/v1/ships/cuid_ship01/export
+                    code: SHIP_NOT_FOUND
+
+  /api/v1/ships/{id}/modules:
+    post:
+      operationId: addShipModule
+      summary: Add a module to a ship
+      description: |
+        Installs a new module on the ship. The `slot` discriminator determines
+        which type-specific fields are accepted. Validates that the slot type
+        is appropriate for the requested module. The ship must be owned by the
+        caller.
+      tags: [ships]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ShipId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShipModuleCreate"
+            examples:
+              addWeapon:
+                value:
+                  slot: WEAPON
+                  name: Graviton Projector
+                  energyUse: 2
+                  weaponBonus: 1
+                  weaponRange: medium
+                  weaponDamage: 2
+                  weaponCritThreshold: 2
+              addHold:
+                value:
+                  slot: HOLD
+                  name: Smuggler hold
+                  energyUse: 0
+                  cargoTons: 5
+                  concealed: true
+      responses:
+        "201":
+          description: Module installed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShipModule"
+              examples:
+                created:
+                  value:
+                    id: cuid_mod02
+                    slot: WEAPON
+                    name: Graviton Projector
+                    energyUse: 2
+                    weaponBonus: 1
+                    weaponRange: medium
+                    weaponDamage: 2
+                    weaponCritThreshold: 2
+                    notes: null
+        "400":
+          description: |
+            Validation error. Possible codes:
+            - `MODULE_SLOT_INVALID` — slot value not recognised.
+            - `MODULE_TYPE_MISMATCH` — payload fields do not match the declared slot.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                slotInvalid:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: slot value UNKNOWN is not a valid ShipModuleSlot
+                    instance: /api/v1/ships/cuid_ship01/modules
+                    code: MODULE_SLOT_INVALID
+                typeMismatch:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: weaponBonus is not valid for slot HOLD
+                    instance: /api/v1/ships/cuid_ship01/modules
+                    code: MODULE_TYPE_MISMATCH
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this ship
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this ship
+                    instance: /api/v1/ships/cuid_ship01/modules
+                    code: SHIP_NOT_OWNED
+        "404":
+          description: Ship not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Ship cuid_ship01 does not exist
+                    instance: /api/v1/ships/cuid_ship01/modules
+                    code: SHIP_NOT_FOUND
+
+  /api/v1/ships/{id}/crew:
+    post:
+      operationId: assignCrew
+      summary: Assign a character to a crew position
+      description: |
+        Assigns one of the caller's own characters to a crew position on the
+        ship. The ship must be owned by the caller. The character must also
+        be owned by the caller (returns `CHARACTER_NOT_OWNED` otherwise).
+        Returns `CREW_POSITION_TAKEN` if that position is already filled.
+      tags: [ships]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ShipId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [position, characterId]
+              properties:
+                position:
+                  $ref: "#/components/schemas/CrewPosition"
+                characterId:
+                  type: string
+                  description: ID of the character to assign (must be owned by caller)
+            examples:
+              assignCaptain:
+                value:
+                  position: captain
+                  characterId: cuid_tariq01
+              assignEngineer:
+                value:
+                  position: engineer
+                  characterId: cuid_nox01
+      responses:
+        "201":
+          description: Crew member assigned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CrewSlot"
+              examples:
+                assigned:
+                  value:
+                    position: captain
+                    assignedCharacterId: cuid_tariq01
+        "400":
+          description: |
+            Validation error. Possible codes:
+            - `CREW_POSITION_TAKEN` — that position is already occupied.
+            - `CHARACTER_NOT_FOUND` — characterId does not exist.
+            - `CHARACTER_NOT_OWNED` — character is not owned by the caller.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                positionTaken:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: Position captain is already assigned on this ship
+                    instance: /api/v1/ships/cuid_ship01/crew
+                    code: CREW_POSITION_TAKEN
+                characterNotOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own character cuid_other01
+                    instance: /api/v1/ships/cuid_ship01/crew
+                    code: CHARACTER_NOT_OWNED
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this ship
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this ship
+                    instance: /api/v1/ships/cuid_ship01/crew
+                    code: SHIP_NOT_OWNED
+        "404":
+          description: Ship not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Ship cuid_ship01 does not exist
+                    instance: /api/v1/ships/cuid_ship01/crew
+                    code: SHIP_NOT_FOUND
+
+  /api/v1/ships/{id}/crew/{characterId}:
+    delete:
+      operationId: unassignCrew
+      summary: Remove a character from the crew
+      description: |
+        Removes the crew assignment for the given character ID on the ship.
+        Both the ship and the character must be owned by the caller.
+      tags: [ships]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ShipId"
+        - name: characterId
+          in: path
+          required: true
+          description: Character identifier to remove from the crew
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Crew member unassigned
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this ship
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this ship
+                    instance: /api/v1/ships/cuid_ship01/crew/cuid_tariq01
+                    code: SHIP_NOT_OWNED
+        "404":
+          description: Ship or crew assignment not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Ship cuid_ship01 does not exist
+                    instance: /api/v1/ships/cuid_ship01/crew/cuid_tariq01
+                    code: SHIP_NOT_FOUND
+
+  /api/v1/ship-modules/{id}:
+    patch:
+      operationId: updateShipModule
+      summary: Update a ship module
+      description: |
+        Applies PATCH semantics to a ship module. The `slot` discriminator may
+        not be changed after installation — attempting to do so returns 400
+        with code `MODULE_TYPE_MISMATCH`. Authorization: caller must own the
+        parent ship.
+      tags: [ships]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ShipModuleId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShipModuleUpdate"
+            examples:
+              updateWeapon:
+                value:
+                  name: EMP Cannon
+                  weaponDamage: 1
+                  notes: Systemed weapon — hits sensors
+              markDamaged:
+                value:
+                  notes: Damaged · −1 Maneuverability
+      responses:
+        "200":
+          description: Updated module
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShipModule"
+              examples:
+                ok:
+                  value:
+                    id: cuid_mod01
+                    slot: WEAPON
+                    name: EMP Cannon
+                    energyUse: 1
+                    weaponBonus: 0
+                    weaponRange: medium
+                    weaponDamage: 1
+                    weaponCritThreshold: 3
+                    notes: Systemed weapon — hits sensors
+        "400":
+          description: |
+            Validation error. Possible code:
+            - `MODULE_TYPE_MISMATCH` — slot discriminator changed.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                typeMismatch:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: Module slot cannot be changed after installation
+                    instance: /api/v1/ship-modules/cuid_mod01
+                    code: MODULE_TYPE_MISMATCH
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the parent ship
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this module
+                    instance: /api/v1/ship-modules/cuid_mod01
+                    code: MODULE_NOT_OWNED
+        "404":
+          description: Module not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Module cuid_mod01 does not exist
+                    instance: /api/v1/ship-modules/cuid_mod01
+                    code: MODULE_NOT_FOUND
+
+    delete:
+      operationId: deleteShipModule
+      summary: Remove a module from a ship
+      description: |
+        Permanently removes an installed module. Authorization: caller must
+        own the parent ship.
+      tags: [ships]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ShipModuleId"
+      responses:
+        "204":
+          description: Module removed
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the parent ship
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this module
+                    instance: /api/v1/ship-modules/cuid_mod01
+                    code: MODULE_NOT_OWNED
+        "404":
+          description: Module not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Module cuid_mod01 does not exist
+                    instance: /api/v1/ship-modules/cuid_mod01
+                    code: MODULE_NOT_FOUND
+
   /api/v1/health:
     get:
       operationId: getHealth
@@ -1557,6 +2610,22 @@ components:
       in: path
       required: true
       description: Talent identifier (cuid2)
+      schema:
+        type: string
+
+    ShipId:
+      name: id
+      in: path
+      required: true
+      description: Ship identifier (cuid2)
+      schema:
+        type: string
+
+    ShipModuleId:
+      name: id
+      in: path
+      required: true
+      description: Ship module identifier (cuid2)
       schema:
         type: string
 
@@ -2498,6 +3567,767 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Character"
+        nextCursor:
+          type: ["string", "null"]
+          description: Opaque cursor for the next page; null when this is the last page
+
+    # -------------------------------------------------------------------------
+    # Ship enumerations
+    # -------------------------------------------------------------------------
+
+    ShipClass:
+      type: string
+      enum:
+        - fighter
+        - shuttle
+        - torpedo-boat
+        - light-freighter
+        - light-passenger
+        - courier-yacht
+        - clipper
+        - patrol-boat
+        - gunboat
+        - assault-ship
+        - blockade-runner
+        - pleasure-yacht
+        - flying-circus
+        - prospector
+        - rescue-ship
+        - passenger-liner
+        - heavy-freighter
+        - cruiser
+        - destroyer
+        - heavy-cruiser
+      description: |
+        Ship hull class per ST3001 ГЛАВА 7 Table 7.4 (типы кораблей). The
+        class determines the base stat block (energy, hull, maneuverability,
+        signature, armor, speed, module slots) from Table 7.5. Kebab-case
+        values map to the Russian originals in the rulebook.
+
+        Class I examples: fighter, shuttle.
+        Class II examples: torpedo-boat.
+        Class III examples: light-freighter, light-passenger, courier-yacht,
+          clipper, patrol-boat, gunboat, assault-ship, blockade-runner, pleasure-yacht.
+        Class IV examples: flying-circus, prospector, rescue-ship, passenger-liner.
+        Class V examples: heavy-cruiser, passenger-liner (large).
+
+    ShipModuleSlot:
+      type: string
+      enum:
+        - BRIDGE
+        - REACTOR
+        - DRIVE
+        - HOLD
+        - WEAPON
+        - TORPEDO
+        - SENSOR
+        - COMMS
+        - HANGAR
+        - QUARTERS
+        - MEDICAL
+        - WORKSHOP
+        - CHAPEL
+        - ESCAPE-PODS
+        - CRYO
+        - DOCKING
+        - MINING
+        - REPAIR
+        - CONCEALED-HOLD
+        - PROXY-DECK
+        - OTHER
+      description: |
+        Ship module slot type per ST3001 ГЛАВА 7 mandatory and optional module
+        catalogue. `BRIDGE`, `REACTOR`, `DRIVE` are mandatory on every ship.
+        All others are optional and consume module slots. The existing
+        `ItemSlotType` enum covers character-inventory ship modules; this enum
+        covers actual installed ship modules and provides richer coverage of
+        the full ГЛАВА 7 catalogue.
+
+    ShipWeaponRange:
+      type: string
+      enum: [zero, close, medium, long, extreme]
+      description: |
+        Ship-combat range bands per ST3001 ГЛАВА 7 Table 7.9. Distinct from
+        the personal-scale `ItemRangeEnum`.
+        - `zero` — point-blank / boarding range.
+        - `close` — within a few hundred metres.
+        - `medium` — standard engagement distance.
+        - `long` — extended engagement.
+        - `extreme` — maximum sensor range.
+
+    CrewPosition:
+      type: string
+      enum:
+        - captain
+        - pilot
+        - sensorOp
+        - gunner
+        - engineer
+        - serviceCrew
+      description: |
+        Crew positions per ST3001 ГЛАВА 7 (crew roles). `sensorOp` is the
+        штурман-оператор (navigator/sensor operator) in the rulebook, also
+        responsible for combat-meme and info-impulse attacks. All positions
+        except `captain` may be filled by automation (усовершенствование
+        «Автоматика»).
+
+    # -------------------------------------------------------------------------
+    # Ship value objects
+    # -------------------------------------------------------------------------
+
+    CrewSlot:
+      type: object
+      description: |
+        A crew position on a ship. Positions without an assigned character are
+        vacant (open berth). Multiple characters may not share one position.
+      required: [position]
+      properties:
+        position:
+          $ref: "#/components/schemas/CrewPosition"
+        assignedCharacterId:
+          type: ["string", "null"]
+          description: |
+            ID of the assigned Character. Null when the berth is vacant.
+            The character must be owned by the same user as the ship.
+
+    # -------------------------------------------------------------------------
+    # Ship module discriminated union
+    # -------------------------------------------------------------------------
+
+    ShipModuleBase:
+      type: object
+      description: Fields common to every ship module variant
+      required: [id, slot, name, energyUse]
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: Opaque module identifier (cuid2)
+        slot:
+          $ref: "#/components/schemas/ShipModuleSlot"
+        name:
+          type: string
+          minLength: 1
+          description: Module name (e.g. "Graviton Projector", "Smuggler hold")
+        energyUse:
+          type: integer
+          minimum: 0
+          description: Energy points consumed by this module when active
+        notes:
+          type: ["string", "null"]
+          description: Free-text notes; used for damage state, special conditions, etc.
+
+    ShipModuleWeapon:
+      allOf:
+        - $ref: "#/components/schemas/ShipModuleBase"
+        - type: object
+          description: |
+            A ship weapon bay. Fields correspond to ST3001 ГЛАВА 7 Table 7.9.
+          required: [weaponBonus, weaponRange, weaponDamage, weaponCritThreshold]
+          properties:
+            slot:
+              type: string
+              enum: [WEAPON]
+            weaponBonus:
+              type: integer
+              minimum: 0
+              description: Modifier dice added to the attack pool (Мод. column in Table 7.9)
+            weaponRange:
+              $ref: "#/components/schemas/ShipWeaponRange"
+            weaponDamage:
+              type: integer
+              minimum: 0
+              description: Structural damage dealt on a hit
+            weaponCritThreshold:
+              type: integer
+              minimum: 1
+              description: Number of successes required to trigger a critical effect
+
+    ShipModuleTorpedo:
+      allOf:
+        - $ref: "#/components/schemas/ShipModuleBase"
+        - type: object
+          description: |
+            A torpedo/mine bay per ST3001 ГЛАВА 7. Stores up to 4 torpedoes
+            or 8 mines. Ammo is tracked separately.
+          properties:
+            slot:
+              type: string
+              enum: [TORPEDO]
+            torpedoCount:
+              type: integer
+              minimum: 0
+              description: Number of torpedoes currently loaded
+            mineCount:
+              type: integer
+              minimum: 0
+              description: Number of mines currently loaded
+
+    ShipModuleHold:
+      allOf:
+        - $ref: "#/components/schemas/ShipModuleBase"
+        - type: object
+          description: Cargo hold. Vented or concealed variant per ГЛАВА 7.
+          properties:
+            slot:
+              type: string
+              enum: [HOLD]
+            cargoTons:
+              type: integer
+              minimum: 0
+              description: Cargo capacity in tonnes (class-dependent per Table 7.6)
+            concealed:
+              type: boolean
+              default: false
+              description: True for a потайной грузовой отсек (concealed hold)
+
+    ShipModuleSensor:
+      allOf:
+        - $ref: "#/components/schemas/ShipModuleBase"
+        - type: object
+          description: Sensor tower upgrade. Provides +1 to sensor checks per ГЛАВА 7.
+          properties:
+            slot:
+              type: string
+              enum: [SENSOR]
+            detectionBonus:
+              type: integer
+              minimum: 0
+              default: 1
+              description: Modifier added to sensor / dataDjinn checks
+
+    ShipModuleOther:
+      allOf:
+        - $ref: "#/components/schemas/ShipModuleBase"
+        - type: object
+          description: |
+            Generic module for all other slot types (BRIDGE, REACTOR, DRIVE,
+            COMMS, HANGAR, QUARTERS, MEDICAL, WORKSHOP, CHAPEL, ESCAPE-PODS,
+            CRYO, DOCKING, MINING, REPAIR, CONCEALED-HOLD, PROXY-DECK, OTHER).
+            Stores descriptive data without additional structured fields.
+          properties:
+            slot:
+              $ref: "#/components/schemas/ShipModuleSlot"
+
+    ShipModule:
+      description: |
+        A discriminated union of all ship module variants. The `slot` field
+        determines which variant applies. Generated clients produce a
+        correctly-typed sum type from this schema.
+
+        Mandatory modules (BRIDGE, REACTOR, DRIVE) are always present on a
+        ship and are not individually manageable via the module CRUD endpoints.
+        They appear in the `modules` array for completeness and energy tracking.
+      oneOf:
+        - $ref: "#/components/schemas/ShipModuleWeapon"
+        - $ref: "#/components/schemas/ShipModuleTorpedo"
+        - $ref: "#/components/schemas/ShipModuleHold"
+        - $ref: "#/components/schemas/ShipModuleSensor"
+        - $ref: "#/components/schemas/ShipModuleOther"
+      discriminator:
+        propertyName: slot
+        mapping:
+          WEAPON: "#/components/schemas/ShipModuleWeapon"
+          TORPEDO: "#/components/schemas/ShipModuleTorpedo"
+          HOLD: "#/components/schemas/ShipModuleHold"
+          SENSOR: "#/components/schemas/ShipModuleSensor"
+          BRIDGE: "#/components/schemas/ShipModuleOther"
+          REACTOR: "#/components/schemas/ShipModuleOther"
+          DRIVE: "#/components/schemas/ShipModuleOther"
+          COMMS: "#/components/schemas/ShipModuleOther"
+          HANGAR: "#/components/schemas/ShipModuleOther"
+          QUARTERS: "#/components/schemas/ShipModuleOther"
+          MEDICAL: "#/components/schemas/ShipModuleOther"
+          WORKSHOP: "#/components/schemas/ShipModuleOther"
+          CHAPEL: "#/components/schemas/ShipModuleOther"
+          ESCAPE-PODS: "#/components/schemas/ShipModuleOther"
+          CRYO: "#/components/schemas/ShipModuleOther"
+          DOCKING: "#/components/schemas/ShipModuleOther"
+          MINING: "#/components/schemas/ShipModuleOther"
+          REPAIR: "#/components/schemas/ShipModuleOther"
+          CONCEALED-HOLD: "#/components/schemas/ShipModuleOther"
+          PROXY-DECK: "#/components/schemas/ShipModuleOther"
+          OTHER: "#/components/schemas/ShipModuleOther"
+
+    ShipModuleCreate:
+      description: |
+        Payload for `POST /api/v1/ships/{id}/modules`. Same discriminated
+        union as `ShipModule` but without `id` (server-assigned). The `slot`
+        discriminator must be present.
+
+        Note: BRIDGE, REACTOR, and DRIVE modules are created automatically
+        with the ship and cannot be added via this endpoint.
+      oneOf:
+        - allOf:
+            - type: object
+              required: [slot, name, energyUse, weaponBonus, weaponRange, weaponDamage, weaponCritThreshold]
+              properties:
+                slot:
+                  type: string
+                  enum: [WEAPON]
+                name:
+                  type: string
+                  minLength: 1
+                energyUse:
+                  type: integer
+                  minimum: 0
+                weaponBonus:
+                  type: integer
+                  minimum: 0
+                weaponRange:
+                  $ref: "#/components/schemas/ShipWeaponRange"
+                weaponDamage:
+                  type: integer
+                  minimum: 0
+                weaponCritThreshold:
+                  type: integer
+                  minimum: 1
+                notes:
+                  type: ["string", "null"]
+        - allOf:
+            - type: object
+              required: [slot, name, energyUse]
+              properties:
+                slot:
+                  type: string
+                  enum: [TORPEDO]
+                name:
+                  type: string
+                  minLength: 1
+                energyUse:
+                  type: integer
+                  minimum: 0
+                torpedoCount:
+                  type: integer
+                  minimum: 0
+                  default: 0
+                mineCount:
+                  type: integer
+                  minimum: 0
+                  default: 0
+                notes:
+                  type: ["string", "null"]
+        - allOf:
+            - type: object
+              required: [slot, name, energyUse]
+              properties:
+                slot:
+                  type: string
+                  enum: [HOLD]
+                name:
+                  type: string
+                  minLength: 1
+                energyUse:
+                  type: integer
+                  minimum: 0
+                cargoTons:
+                  type: integer
+                  minimum: 0
+                  default: 0
+                concealed:
+                  type: boolean
+                  default: false
+                notes:
+                  type: ["string", "null"]
+        - allOf:
+            - type: object
+              required: [slot, name, energyUse]
+              properties:
+                slot:
+                  type: string
+                  enum: [SENSOR]
+                name:
+                  type: string
+                  minLength: 1
+                energyUse:
+                  type: integer
+                  minimum: 0
+                detectionBonus:
+                  type: integer
+                  minimum: 0
+                  default: 1
+                notes:
+                  type: ["string", "null"]
+        - allOf:
+            - type: object
+              required: [slot, name, energyUse]
+              properties:
+                slot:
+                  type: string
+                  enum:
+                    - BRIDGE
+                    - REACTOR
+                    - DRIVE
+                    - COMMS
+                    - HANGAR
+                    - QUARTERS
+                    - MEDICAL
+                    - WORKSHOP
+                    - CHAPEL
+                    - ESCAPE-PODS
+                    - CRYO
+                    - DOCKING
+                    - MINING
+                    - REPAIR
+                    - CONCEALED-HOLD
+                    - PROXY-DECK
+                    - OTHER
+                name:
+                  type: string
+                  minLength: 1
+                energyUse:
+                  type: integer
+                  minimum: 0
+                notes:
+                  type: ["string", "null"]
+      discriminator:
+        propertyName: slot
+        mapping:
+          WEAPON: "#/components/schemas/ShipModuleCreate/oneOf/0"
+          TORPEDO: "#/components/schemas/ShipModuleCreate/oneOf/1"
+          HOLD: "#/components/schemas/ShipModuleCreate/oneOf/2"
+          SENSOR: "#/components/schemas/ShipModuleCreate/oneOf/3"
+          BRIDGE: "#/components/schemas/ShipModuleCreate/oneOf/4"
+          REACTOR: "#/components/schemas/ShipModuleCreate/oneOf/4"
+          DRIVE: "#/components/schemas/ShipModuleCreate/oneOf/4"
+          COMMS: "#/components/schemas/ShipModuleCreate/oneOf/4"
+          HANGAR: "#/components/schemas/ShipModuleCreate/oneOf/4"
+          QUARTERS: "#/components/schemas/ShipModuleCreate/oneOf/4"
+          MEDICAL: "#/components/schemas/ShipModuleCreate/oneOf/4"
+          WORKSHOP: "#/components/schemas/ShipModuleCreate/oneOf/4"
+          CHAPEL: "#/components/schemas/ShipModuleCreate/oneOf/4"
+          ESCAPE-PODS: "#/components/schemas/ShipModuleCreate/oneOf/4"
+          CRYO: "#/components/schemas/ShipModuleCreate/oneOf/4"
+          DOCKING: "#/components/schemas/ShipModuleCreate/oneOf/4"
+          MINING: "#/components/schemas/ShipModuleCreate/oneOf/4"
+          REPAIR: "#/components/schemas/ShipModuleCreate/oneOf/4"
+          CONCEALED-HOLD: "#/components/schemas/ShipModuleCreate/oneOf/4"
+          PROXY-DECK: "#/components/schemas/ShipModuleCreate/oneOf/4"
+          OTHER: "#/components/schemas/ShipModuleCreate/oneOf/4"
+
+    ShipModuleUpdate:
+      type: object
+      description: |
+        PATCH payload for `PATCH /api/v1/ship-modules/{id}`. The `slot`
+        discriminator may not be changed after installation. All fields
+        optional.
+      properties:
+        name:
+          type: string
+          minLength: 1
+        energyUse:
+          type: integer
+          minimum: 0
+        notes:
+          type: ["string", "null"]
+        weaponBonus:
+          type: integer
+          minimum: 0
+          description: WEAPON only
+        weaponRange:
+          $ref: "#/components/schemas/ShipWeaponRange"
+          description: WEAPON only
+        weaponDamage:
+          type: integer
+          minimum: 0
+          description: WEAPON only
+        weaponCritThreshold:
+          type: integer
+          minimum: 1
+          description: WEAPON only
+        torpedoCount:
+          type: integer
+          minimum: 0
+          description: TORPEDO only
+        mineCount:
+          type: integer
+          minimum: 0
+          description: TORPEDO only
+        cargoTons:
+          type: integer
+          minimum: 0
+          description: HOLD only
+        concealed:
+          type: boolean
+          description: HOLD only
+        detectionBonus:
+          type: integer
+          minimum: 0
+          description: SENSOR only
+
+    # -------------------------------------------------------------------------
+    # Ship schemas
+    # -------------------------------------------------------------------------
+
+    Ship:
+      type: object
+      description: |
+        Full Ship DTO as returned by the v1 API. Ship stats correspond to
+        ST3001 ГЛАВА 7 Table 7.5 base stats, modified by the installed
+        modules and upgrades.
+
+        `hull.max` and `energy.max` are tracked as explicit editable values
+        (not derived) because they can be altered by upgrades (Прочный корпус
+        +1 hull, Мощный реактор +1 energy). `maneuverability` and `signature`
+        are signed integers (negative values are valid per the class table).
+      required:
+        - id
+        - ownerId
+        - name
+        - class
+        - model
+        - registry
+        - hull
+        - energy
+        - armor
+        - maneuverability
+        - signature
+        - speed
+        - cargoCapacity
+        - modules
+        - crew
+        - problems
+        - history
+        - notes
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: Opaque ship identifier (cuid2)
+        ownerId:
+          type: string
+          readOnly: true
+          description: Identifier of the owning user (cuid2)
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Ship name (1–80 characters)
+        class:
+          $ref: "#/components/schemas/ShipClass"
+        model:
+          type: ["string", "null"]
+          maxLength: 120
+          description: Model / shipyard name (e.g. "Helebian Class III freighter")
+        registry:
+          type: ["string", "null"]
+          maxLength: 40
+          description: Registry number / transponder code (e.g. "KUA-7741-M")
+        hull:
+          type: object
+          description: Structural integrity (Прочность in ST3001 ГЛАВА 7)
+          required: [current, max]
+          properties:
+            current:
+              type: integer
+              minimum: 0
+              description: Current hull points
+            max:
+              type: integer
+              minimum: 0
+              description: Maximum hull points (base per class + Прочный корпус upgrades)
+        energy:
+          type: object
+          description: Reactor energy (Энергия in ST3001 ГЛАВА 7)
+          required: [current, max]
+          properties:
+            current:
+              type: integer
+              minimum: 0
+              description: Energy points currently available for allocation
+            max:
+              type: integer
+              minimum: 0
+              description: Maximum energy points (base per class + Мощный реактор upgrades)
+        armor:
+          type: integer
+          minimum: 0
+          description: Armor rating — number of dice rolled for the armor check (Броня)
+        maneuverability:
+          type: integer
+          description: |
+            Maneuverability modifier (Манёвренность). Signed integer — negative
+            for large classes (Class IV is −1, Class V is −2). Affects pilot
+            skill checks in ship combat per ST3001 ГЛАВА 7.
+        signature:
+          type: integer
+          description: |
+            Signature modifier (Заметность). Signed integer. Negative values
+            mean the ship is harder to detect; positive values mean it is more
+            visible. Applied to opponent sensor checks per ГЛАВА 7.
+        speed:
+          type: integer
+          minimum: 0
+          description: Speed in astronomical units per day (Скорость per ГЛАВА 7 Table 7.5)
+        cargoCapacity:
+          type: integer
+          minimum: 0
+          description: |
+            Total cargo capacity in tonnes across all hold modules
+            (Вместимость per ГЛАВА 7 Table 7.6: Class III = 50 tonnes).
+        modules:
+          type: array
+          items:
+            $ref: "#/components/schemas/ShipModule"
+          description: |
+            Installed modules including the three mandatory ones (BRIDGE,
+            REACTOR, DRIVE). Optional modules consume the class module-slot
+            budget.
+        crew:
+          type: array
+          items:
+            $ref: "#/components/schemas/CrewSlot"
+          description: Crew assignment roster
+        problems:
+          type: array
+          items:
+            type: string
+          description: |
+            List of active ship problems (free-text entries, e.g. damage
+            effects or wear-and-tear notes per ГЛАВА 7 wear table).
+        history:
+          type: ["string", "null"]
+          maxLength: 4096
+          description: Free-form ship history / background text (Markdown)
+        notes:
+          type: ["string", "null"]
+          maxLength: 4096
+          description: GM / player operational notes (Markdown)
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    ShipCreate:
+      type: object
+      description: |
+        Payload for `POST /api/v1/ships`. `name` and `class` are required.
+        Server populates base stats from the class table (ST3001 ГЛАВА 7
+        Table 7.5) when not explicitly provided. The three mandatory modules
+        (BRIDGE, REACTOR, DRIVE) are created automatically.
+      required: [name, class]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        class:
+          $ref: "#/components/schemas/ShipClass"
+        model:
+          type: ["string", "null"]
+          maxLength: 120
+        registry:
+          type: ["string", "null"]
+          maxLength: 40
+        hull:
+          type: object
+          description: Override base hull stats from class table
+          properties:
+            current:
+              type: integer
+              minimum: 0
+            max:
+              type: integer
+              minimum: 0
+        energy:
+          type: object
+          description: Override base energy from class table
+          properties:
+            current:
+              type: integer
+              minimum: 0
+            max:
+              type: integer
+              minimum: 0
+        armor:
+          type: integer
+          minimum: 0
+        maneuverability:
+          type: integer
+        signature:
+          type: integer
+        speed:
+          type: integer
+          minimum: 0
+        notes:
+          type: ["string", "null"]
+          maxLength: 4096
+        history:
+          type: ["string", "null"]
+          maxLength: 4096
+
+    ShipUpdate:
+      type: object
+      description: |
+        PATCH payload for `PATCH /api/v1/ships/{id}`. All fields optional.
+        Read-only fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are
+        rejected with 400 if present.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        model:
+          type: ["string", "null"]
+          maxLength: 120
+        registry:
+          type: ["string", "null"]
+          maxLength: 40
+        hull:
+          type: object
+          properties:
+            current:
+              type: integer
+              minimum: 0
+            max:
+              type: integer
+              minimum: 0
+        energy:
+          type: object
+          properties:
+            current:
+              type: integer
+              minimum: 0
+            max:
+              type: integer
+              minimum: 0
+        armor:
+          type: integer
+          minimum: 0
+        maneuverability:
+          type: integer
+        signature:
+          type: integer
+        speed:
+          type: integer
+          minimum: 0
+        problems:
+          type: array
+          items:
+            type: string
+          description: Replaces the entire problems list when provided
+        history:
+          type: ["string", "null"]
+          maxLength: 4096
+        notes:
+          type: ["string", "null"]
+          maxLength: 4096
+
+    ShipList:
+      type: object
+      description: Cursor-paginated list of ships
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Ship"
         nextCursor:
           type: ["string", "null"]
           description: Opaque cursor for the next page; null when this is the last page
