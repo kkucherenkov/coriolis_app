@@ -437,7 +437,28 @@ export interface paths {
     get: operations['getMe'];
     put?: never;
     post?: never;
-    delete?: never;
+    /**
+     * Soft-delete the authenticated user's account.
+     * @description Initiates a soft-delete of the authenticated user's account per PRD §4.2.
+     *
+     *     **Semantics:**
+     *     - All active Better Auth sessions for this account are revoked
+     *       immediately — the current request is the last one they will authorise.
+     *     - The user record's `deletedAt` timestamp is set to the current UTC time.
+     *     - Characters, ships, and share links owned by the user remain readable
+     *       (via existing share slugs) until a daily cron job hard-deletes them
+     *       30 days after `deletedAt`.
+     *
+     *     **Idempotency:** calling DELETE on an account whose `deletedAt` is
+     *     already set (i.e. an already soft-deleted account) returns `204` without
+     *     error. This prevents clients from treating a retry as a failure.
+     *
+     *     **No 404:** because the caller must be authenticated to reach this
+     *     endpoint, and sessions are revoked on deletion, there is no scenario
+     *     where a live session is attached to a non-existent account. A 404 path
+     *     does not exist for this operation.
+     */
+    delete: operations['deleteMe'];
     options?: never;
     head?: never;
     /**
@@ -3230,6 +3251,36 @@ export interface operations {
         content: {
           'application/json': components['schemas']['Me'];
         };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  deleteMe: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /**
+       * @description Account soft-deleted (or was already soft-deleted — idempotent).
+       *     Sessions revoked. No response body.
+       */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
       /** @description No active session */
       401: {

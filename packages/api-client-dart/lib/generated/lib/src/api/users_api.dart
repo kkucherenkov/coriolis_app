@@ -18,6 +18,62 @@ class UsersApi {
 
   const UsersApi(this._dio, this._serializers);
 
+  /// Soft-delete the authenticated user&#39;s account.
+  /// Initiates a soft-delete of the authenticated user&#39;s account per PRD §4.2.  **Semantics:** - All active Better Auth sessions for this account are revoked   immediately — the current request is the last one they will authorise. - The user record&#39;s &#x60;deletedAt&#x60; timestamp is set to the current UTC time. - Characters, ships, and share links owned by the user remain readable   (via existing share slugs) until a daily cron job hard-deletes them   30 days after &#x60;deletedAt&#x60;.  **Idempotency:** calling DELETE on an account whose &#x60;deletedAt&#x60; is already set (i.e. an already soft-deleted account) returns &#x60;204&#x60; without error. This prevents clients from treating a retry as a failure.  **No 404:** because the caller must be authenticated to reach this endpoint, and sessions are revoked on deletion, there is no scenario where a live session is attached to a non-existent account. A 404 path does not exist for this operation. 
+  ///
+  /// Parameters:
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future]
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<void>> deleteMe({ 
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/v1/me';
+    final _options = Options(
+      method: r'DELETE',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'apiKey',
+            'name': 'cookieAuth',
+            'keyName': 'better-auth.session_token',
+            'where': '',
+          },{
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    return _response;
+  }
+
   /// Get the authenticated user&#39;s profile.
   /// Returns the current user&#39;s profile fields sourced from the Better Auth &#x60;user&#x60; table. &#x60;email&#x60; and &#x60;createdAt&#x60; are read-only in this DTO — they are managed by Better Auth and cannot be changed via this endpoint.  See PRD §4.1 for full product context. Soft-deleted users receive a &#x60;404&#x60; because their sessions are revoked on deletion; this endpoint will therefore never return a user whose &#x60;deletedAt&#x60; is set (that field is an internal flag and is not exposed in this DTO). 
   ///

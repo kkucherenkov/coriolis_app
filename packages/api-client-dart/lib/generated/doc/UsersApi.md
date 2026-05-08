@@ -9,9 +9,52 @@ All URIs are relative to *http://localhost:3000*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**deleteMe**](UsersApi.md#deleteme) | **DELETE** /api/v1/me | Soft-delete the authenticated user&#39;s account.
 [**getMe**](UsersApi.md#getme) | **GET** /api/v1/me | Get the authenticated user&#39;s profile.
 [**updateMe**](UsersApi.md#updateme) | **PATCH** /api/v1/me | Update the authenticated user&#39;s mutable profile fields.
 
+
+# **deleteMe**
+> deleteMe()
+
+Soft-delete the authenticated user's account.
+
+Initiates a soft-delete of the authenticated user's account per PRD §4.2.  **Semantics:** - All active Better Auth sessions for this account are revoked   immediately — the current request is the last one they will authorise. - The user record's `deletedAt` timestamp is set to the current UTC time. - Characters, ships, and share links owned by the user remain readable   (via existing share slugs) until a daily cron job hard-deletes them   30 days after `deletedAt`.  **Idempotency:** calling DELETE on an account whose `deletedAt` is already set (i.e. an already soft-deleted account) returns `204` without error. This prevents clients from treating a retry as a failure.  **No 404:** because the caller must be authenticated to reach this endpoint, and sessions are revoked on deletion, there is no scenario where a live session is attached to a non-existent account. A 404 path does not exist for this operation. 
+
+### Example
+```dart
+import 'package:app_api_client/api.dart';
+// TODO Configure API key authorization: cookieAuth
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKeyPrefix = 'Bearer';
+
+final api = AppApiClient().getUsersApi();
+
+try {
+    api.deleteMe();
+} on DioException catch (e) {
+    print('Exception when calling UsersApi->deleteMe: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[cookieAuth](../README.md#cookieAuth), [bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/problem+json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getMe**
 > Me getMe()

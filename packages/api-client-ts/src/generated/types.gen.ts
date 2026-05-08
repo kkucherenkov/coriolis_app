@@ -2625,6 +2625,33 @@ export type UpdateItemResponses = {
 
 export type UpdateItemResponse = UpdateItemResponses[keyof UpdateItemResponses];
 
+export type DeleteMeData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/me';
+};
+
+export type DeleteMeErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+};
+
+export type DeleteMeError = DeleteMeErrors[keyof DeleteMeErrors];
+
+export type DeleteMeResponses = {
+    /**
+     * Account soft-deleted (or was already soft-deleted — idempotent).
+     * Sessions revoked. No response body.
+     *
+     */
+    204: void;
+};
+
+export type DeleteMeResponse = DeleteMeResponses[keyof DeleteMeResponses];
+
 export type GetMeData = {
     body?: never;
     path?: never;
