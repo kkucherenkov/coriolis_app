@@ -2,26 +2,24 @@ import AppButton from './AppButton.vue';
 
 import type { Meta, StoryObj } from '@storybook/vue3';
 
+// Inline placeholder SVG used in icon slot stories — no external icon dependency.
+const StarSvg = `<svg width="16" height="16" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5">
+  <rect x="6" y="6" width="20" height="20"/>
+  <rect x="6" y="6" width="20" height="20" transform="rotate(45 16 16)"/>
+  <circle cx="16" cy="16" r="2.2" fill="currentColor" stroke="none"/>
+</svg>`;
+
 const meta: Meta<typeof AppButton> = {
   title: 'Primitives/AppButton',
   component: AppButton,
   tags: ['autodocs'],
-  args: { label: 'Submit' },
+  args: {},
   argTypes: {
-    variant: { control: 'select', options: ['solid', 'outline', 'ghost', 'link'] },
-    color: { control: 'select', options: ['primary', 'neutral', 'success', 'warning', 'error'] },
+    variant: { control: 'select', options: ['primary', 'ghost', 'danger'] },
     size: { control: 'select', options: ['sm', 'md', 'lg'] },
-    loading: { control: 'boolean' },
     disabled: { control: 'boolean' },
-    block: { control: 'boolean' },
-    icon: {
-      control: 'text',
-      description: 'Iconify name rendered via AppIcon, aligned left of the label.',
-    },
-    iconTrailing: {
-      control: 'text',
-      description: 'Iconify name rendered via AppIcon, aligned right of the label.',
-    },
+    loading: { control: 'boolean' },
+    type: { control: 'select', options: ['button', 'submit', 'reset'] },
   },
 };
 
@@ -29,33 +27,199 @@ export default meta;
 
 type Story = StoryObj<typeof AppButton>;
 
-export const Primary: Story = {};
+// ── Variant × size matrix ─────────────────────────────────────────────────────
 
-export const Outline: Story = {
-  args: { variant: 'outline' },
-};
-
-export const Loading: Story = {
-  args: { loading: true },
-};
-
-export const WithLeadingIcon: Story = {
-  args: { icon: 'i-lucide-check', label: 'Confirm' },
-};
-
-export const WithTrailingIcon: Story = {
-  args: { iconTrailing: 'i-lucide-arrow-right', label: 'Next' },
-};
-
-export const Sizes: Story = {
+export const PrimarySm: Story = {
+  name: 'Primary / sm',
+  args: { variant: 'primary', size: 'sm' },
   render: (args) => ({
     components: { AppButton },
     setup: () => ({ args }),
+    template: `<AppButton v-bind="args">Submit</AppButton>`,
+  }),
+};
+
+export const PrimaryMd: Story = {
+  name: 'Primary / md',
+  args: { variant: 'primary', size: 'md' },
+  render: (args) => ({
+    components: { AppButton },
+    setup: () => ({ args }),
+    template: `<AppButton v-bind="args">Submit</AppButton>`,
+  }),
+};
+
+export const PrimaryLg: Story = {
+  name: 'Primary / lg',
+  args: { variant: 'primary', size: 'lg' },
+  render: (args) => ({
+    components: { AppButton },
+    setup: () => ({ args }),
+    template: `<AppButton v-bind="args">Submit</AppButton>`,
+  }),
+};
+
+export const GhostSm: Story = {
+  name: 'Ghost / sm',
+  args: { variant: 'ghost', size: 'sm' },
+  render: (args) => ({
+    components: { AppButton },
+    setup: () => ({ args }),
+    template: `<AppButton v-bind="args">Cancel</AppButton>`,
+  }),
+};
+
+export const GhostMd: Story = {
+  name: 'Ghost / md',
+  args: { variant: 'ghost', size: 'md' },
+  render: (args) => ({
+    components: { AppButton },
+    setup: () => ({ args }),
+    template: `<AppButton v-bind="args">Cancel</AppButton>`,
+  }),
+};
+
+export const GhostLg: Story = {
+  name: 'Ghost / lg',
+  args: { variant: 'ghost', size: 'lg' },
+  render: (args) => ({
+    components: { AppButton },
+    setup: () => ({ args }),
+    template: `<AppButton v-bind="args">Cancel</AppButton>`,
+  }),
+};
+
+export const DangerSm: Story = {
+  name: 'Danger / sm',
+  args: { variant: 'danger', size: 'sm' },
+  render: (args) => ({
+    components: { AppButton },
+    setup: () => ({ args }),
+    template: `<AppButton v-bind="args">Delete</AppButton>`,
+  }),
+};
+
+export const DangerMd: Story = {
+  name: 'Danger / md',
+  args: { variant: 'danger', size: 'md' },
+  render: (args) => ({
+    components: { AppButton },
+    setup: () => ({ args }),
+    template: `<AppButton v-bind="args">Delete</AppButton>`,
+  }),
+};
+
+export const DangerLg: Story = {
+  name: 'Danger / lg',
+  args: { variant: 'danger', size: 'lg' },
+  render: (args) => ({
+    components: { AppButton },
+    setup: () => ({ args }),
+    template: `<AppButton v-bind="args">Delete</AppButton>`,
+  }),
+};
+
+// ── Special states ────────────────────────────────────────────────────────────
+
+export const Disabled: Story = {
+  args: { variant: 'primary', size: 'md', disabled: true },
+  render: (args) => ({
+    components: { AppButton },
+    setup: () => ({ args }),
+    template: `<AppButton v-bind="args">Disabled</AppButton>`,
+  }),
+};
+
+export const Loading: Story = {
+  args: { variant: 'primary', size: 'md', loading: true },
+  render: (args) => ({
+    components: { AppButton },
+    setup: () => ({ args }),
+    template: `<AppButton v-bind="args">Saving…</AppButton>`,
+  }),
+};
+
+// ── Icon slots ────────────────────────────────────────────────────────────────
+
+export const WithLeadingIcon: Story = {
+  name: 'With leading icon',
+  render: () => ({
+    components: { AppButton },
+    setup: () => ({ star: StarSvg }),
     template: `
-      <div style="display:flex; gap: var(--space-8); align-items:center;">
-        <AppButton v-bind="args" size="sm" />
-        <AppButton v-bind="args" size="md" />
-        <AppButton v-bind="args" size="lg" />
+      <AppButton variant="primary" size="md">
+        <template #icon-leading>
+          <span v-html="star" style="display:inline-flex;align-items:center;" />
+        </template>
+        Confirm
+      </AppButton>
+    `,
+  }),
+};
+
+export const WithTrailingIcon: Story = {
+  name: 'With trailing icon',
+  render: () => ({
+    components: { AppButton },
+    setup: () => ({ star: StarSvg }),
+    template: `
+      <AppButton variant="ghost" size="md">
+        Next
+        <template #icon-trailing>
+          <span v-html="star" style="display:inline-flex;align-items:center;" />
+        </template>
+      </AppButton>
+    `,
+  }),
+};
+
+export const WithBothIcons: Story = {
+  name: 'With both icons',
+  render: () => ({
+    components: { AppButton },
+    setup: () => ({ star: StarSvg }),
+    template: `
+      <AppButton variant="primary" size="md">
+        <template #icon-leading>
+          <span v-html="star" style="display:inline-flex;align-items:center;" />
+        </template>
+        Roll Dice
+        <template #icon-trailing>
+          <span v-html="star" style="display:inline-flex;align-items:center;" />
+        </template>
+      </AppButton>
+    `,
+  }),
+};
+
+// ── Full matrix overview ──────────────────────────────────────────────────────
+
+export const AllVariants: Story = {
+  name: 'All variants',
+  render: () => ({
+    components: { AppButton },
+    template: `
+      <div style="display:flex; flex-direction:column; gap:var(--space-4);">
+        <div style="display:flex; gap:var(--space-3); align-items:center;">
+          <AppButton variant="primary" size="sm">Primary sm</AppButton>
+          <AppButton variant="primary" size="md">Primary md</AppButton>
+          <AppButton variant="primary" size="lg">Primary lg</AppButton>
+        </div>
+        <div style="display:flex; gap:var(--space-3); align-items:center;">
+          <AppButton variant="ghost" size="sm">Ghost sm</AppButton>
+          <AppButton variant="ghost" size="md">Ghost md</AppButton>
+          <AppButton variant="ghost" size="lg">Ghost lg</AppButton>
+        </div>
+        <div style="display:flex; gap:var(--space-3); align-items:center;">
+          <AppButton variant="danger" size="sm">Danger sm</AppButton>
+          <AppButton variant="danger" size="md">Danger md</AppButton>
+          <AppButton variant="danger" size="lg">Danger lg</AppButton>
+        </div>
+        <div style="display:flex; gap:var(--space-3); align-items:center;">
+          <AppButton variant="primary" size="md" disabled>Disabled</AppButton>
+          <AppButton variant="ghost" size="md" disabled>Disabled</AppButton>
+          <AppButton variant="danger" size="md" disabled>Disabled</AppButton>
+        </div>
       </div>
     `,
   }),
