@@ -2,6 +2,21 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-08-021 — Web sheet skeleton (Epic 3.3)
+
+- Created: 2026-05-08
+- Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Epic 3.3 Feature 3.3.1 (T-3.3.1.a–e)
+- Branch: feat/phase-1/web-sheet-skeleton
+- Result: 4 commits on branch, ready for PR.
+  - `auth-required.global.ts` — global middleware guards `/app/**`; redirects to `/login?redirect=…`
+  - `useCharactersApi.ts` — character CRUD composable wrapping `@app/api-client-ts` SDK
+  - `useDebounceFn.ts` — minimal local debounce composable (no @vueuse/core dependency)
+  - `pages/app/characters/index.vue` — grid + skeleton + empty + error states, en/ru/uk/el i18n
+  - `pages/app/characters/new.vue` — name form, inline validation, POST → redirect
+  - `pages/app/characters/[id].vue` — header with initials avatar + editable name/concept, 500ms debounced auto-save, saving/saved/error indicator, native `<dialog>` delete confirmation, body placeholder for Epic 5
+
 ## T-2026-05-08-018 — build AppSelect primitive
 
 - Created/Completed: 2026-05-08
