@@ -4,6 +4,167 @@
  */
 
 export interface paths {
+  '/api/v1/characters': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List the authenticated user's characters
+     * @description Returns a cursor-paginated list of characters owned by the
+     *     authenticated user. Pass `cursor` from a previous response's
+     *     `nextCursor` to retrieve the following page. Results are ordered
+     *     newest-first by `createdAt`.
+     */
+    get: operations['listCharacters'];
+    put?: never;
+    /**
+     * Create a new character
+     * @description Creates a character owned by the authenticated user. `name` is the
+     *     only required field; all other fields default to empty arrays, null,
+     *     or 0. Server-derived fields (`hp.max`, `mp.max`, `encumbrance.max`)
+     *     are populated from the provided attribute values or defaults.
+     *
+     *     Attribute defaults are 2 per attribute when not provided. Skills
+     *     default to 0.
+     */
+    post: operations['createCharacter'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/characters/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get a character by ID
+     * @description Returns the full character DTO. Returns 404 if the character does not
+     *     exist or is not owned by the authenticated user. Owner-scoped: a
+     *     character owned by another user returns 403 (not 404) when the caller
+     *     is authenticated, to aid debugging while preserving access boundaries.
+     */
+    get: operations['getCharacter'];
+    put?: never;
+    post?: never;
+    /**
+     * Delete a character
+     * @description Permanently deletes a character and all its nested items, talents,
+     *     relationships, and share links. This action is irreversible.
+     */
+    delete: operations['deleteCharacter'];
+    options?: never;
+    head?: never;
+    /**
+     * Partially update a character
+     * @description Applies PATCH semantics — omitted fields are left unchanged. Read-only
+     *     fields (`id`, `ownerId`, `hp.max`, `mp.max`, `encumbrance.max`,
+     *     `createdAt`, `updatedAt`) are rejected with 400 if included.
+     *
+     *     Server-derived fields (`hp.max`, `mp.max`, `encumbrance.max`) are
+     *     recalculated after each write and reflected in the response.
+     */
+    patch: operations['updateCharacter'];
+    trace?: never;
+  };
+  '/api/v1/characters/{id}/duplicate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Duplicate a character
+     * @description Creates a deep copy of the character (including items, talents,
+     *     relationships, and conditions) and assigns it to the authenticated
+     *     user. The copy receives a new `id` and the name has " (copy)"
+     *     appended. Share links are not duplicated. The source character must
+     *     be owned by the caller.
+     */
+    post: operations['duplicateCharacter'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/characters/{id}/export': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Export a character as JSON
+     * @description Returns the full canonical Character DTO as a downloadable JSON
+     *     payload. v1 ships JSON only; PDF and encounter-bundle exports are
+     *     post-v1. The response carries `Content-Disposition: attachment` so
+     *     browsers prompt a download.
+     */
+    get: operations['exportCharacter'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/characters/{id}/items': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Add an item to a character's inventory
+     * @description Creates an item of the specified `type` under the character. The
+     *     discriminator field `type` determines which additional fields are
+     *     accepted and required. `id` is assigned by the server.
+     */
+    post: operations['addCharacterItem'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/characters/{id}/talents': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Add a talent to a character
+     * @description Creates a talent record attached to the character. Talents are
+     *     free-form (name + description + rank); there is no server-side
+     *     talent library in v1.
+     */
+    post: operations['addCharacterTalent'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/health': {
     parameters: {
       query?: never;
@@ -23,6 +184,34 @@ export interface paths {
     options?: never;
     head?: never;
     patch?: never;
+    trace?: never;
+  };
+  '/api/v1/items/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Delete an item
+     * @description Permanently deletes an item from a character's inventory.
+     *     Authorization: caller must own the parent character.
+     */
+    delete: operations['deleteItem'];
+    options?: never;
+    head?: never;
+    /**
+     * Update an item
+     * @description Applies PATCH semantics to an item. The `type` discriminator may not
+     *     be changed after creation — attempting to do so returns 400 with code
+     *     `ITEM_TYPE_MISMATCH`. Authorization: caller must own the parent
+     *     character.
+     */
+    patch: operations['updateItem'];
     trace?: never;
   };
   '/api/v1/me': {
@@ -89,12 +278,620 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/talents/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Delete a talent
+     * @description Permanently removes a talent from a character. Authorization: caller
+     *     must own the parent character.
+     */
+    delete: operations['deleteTalent'];
+    options?: never;
+    head?: never;
+    /**
+     * Update a talent
+     * @description Applies PATCH semantics to a talent. Authorization: caller must own
+     *     the parent character.
+     */
+    patch: operations['updateTalent'];
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    0: {
+      /** @enum {string} */
+      type: 'WEAPON';
+      name: string;
+      damage: number;
+      range: components['schemas']['ItemRangeEnum'];
+      bonus: number;
+      crit: number;
+      weight: number;
+      features: string[];
+      equipped: boolean;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'WEAPON';
+    };
+    1: {
+      /** @enum {string} */
+      type: 'ARMOR';
+      name: string;
+      armorRating: number;
+      weight: number;
+      features: string[];
+      equipped: boolean;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'ARMOR';
+    };
+    2: {
+      /** @enum {string} */
+      type: 'GEAR';
+      name: string;
+      weight: number;
+      quantity: number;
+      notes?: string | null;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'GEAR';
+    };
+    3: {
+      /** @enum {string} */
+      type: 'CYBERNETIC';
+      name: string;
+      bodyPoints: number;
+      effect: string;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'CYBERNETIC';
+    };
+    4: {
+      /** @enum {string} */
+      type: 'SHIP_MODULE';
+      name: string;
+      slot: components['schemas']['ItemSlotType'];
+      effect: string;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'SHIP_MODULE';
+    };
+    5: {
+      /** @enum {string} */
+      type: 'OTHER';
+      name: string;
+      weight: number;
+      notes?: string | null;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'OTHER';
+    };
+    /**
+     * @description Severity tier of a critical injury per Coriolis core rules.
+     *     - `light` — minor wound, no long-term mechanical effect.
+     *     - `severe` — significant injury; may impose ongoing penalties.
+     *     - `critical` — life-threatening; requires urgent medicurgy.
+     * @enum {string}
+     */
+    CriticalInjurySeverity: 'light' | 'severe' | 'critical';
     /** @enum {string|null} */
     DependencyStatus: 'ok' | 'degraded' | 'down' | null;
+    /**
+     * @description One of the Nine Icons of the Third Horizon. Kebab-case names match
+     *     the asset filenames in `packages/ui/src/assets/icons/`.
+     * @enum {string}
+     */
+    IconId:
+      | 'lady-of-tears'
+      | 'traveler'
+      | 'messenger'
+      | 'merchant'
+      | 'dancer'
+      | 'gambler'
+      | 'judge'
+      | 'faceless-one'
+      | 'deckhand';
+    /**
+     * @description Effective range band for a weapon. Matches the Coriolis core book
+     *     range terminology:
+     *     - `arm` — Engaged / hand-to-hand.
+     *     - `near` — same room / close quarters.
+     *     - `short` — corridor / street distance.
+     *     - `long` — open ground / rooftop.
+     *     - `distant` — sniper range.
+     * @enum {string}
+     */
+    ItemRangeEnum: 'arm' | 'near' | 'short' | 'long' | 'distant';
+    /**
+     * @description Ship module slot type. Used only for SHIP_MODULE items. Matches the
+     *     slot categories from Coriolis core book ship construction rules.
+     * @enum {string}
+     */
+    ItemSlotType: 'bridge' | 'hull' | 'hold' | 'weapon' | 'drive' | 'sensor' | 'comms';
+    /**
+     * @description The nature of the relationship between a character and an NPC or PC.
+     * @enum {string}
+     */
+    RelationshipKind: 'ally' | 'rival' | 'family' | 'mentor' | 'debtor' | 'creditor';
+    /**
+     * @description The four primary attributes per Coriolis core rules (PRD §5.2). Each
+     *     is a 1–5 integer. All keys are required — missing attributes would
+     *     make derived-stat calculation impossible server-side.
+     */
+    Attributes: {
+      /** @description STR — governs Force, Melee Combat skills and HP max */
+      strength: number;
+      /** @description AGI — governs Dexterity, Infiltration, Ranged Combat, Pilot; contributes to HP max */
+      agility: number;
+      /** @description WIT — governs Observation, Survival, Technology, Data Djinn, Science, Medicurgy; contributes to MP max */
+      wits: number;
+      /** @description EMP — governs Manipulation, Command, Culture, Mystic Powers; contributes to MP max */
+      empathy: number;
+    };
+    /**
+     * @description The 16 skills per Coriolis core rules (PRD §5.2). General skills
+     *     range 0–5; advanced skills (command, culture, dataDjinn, medicurgy,
+     *     mysticPowers, pilot, science, technology) also range 0–5 in the
+     *     schema — the "0–3 typical" note in the PRD describes usual play,
+     *     not a hard cap, so the server accepts up to 5 for all skills.
+     *     All keys are required.
+     */
+    Skills: {
+      /** @description General skill (AGI) */
+      dexterity: number;
+      /** @description General skill (STR) */
+      force: number;
+      /** @description General skill (AGI) */
+      infiltration: number;
+      /** @description General skill (EMP) */
+      manipulation: number;
+      /** @description General skill (STR) */
+      meleeCombat: number;
+      /** @description General skill (WIT) */
+      observation: number;
+      /** @description General skill (AGI) */
+      rangedCombat: number;
+      /** @description General skill (WIT) */
+      survival: number;
+      /** @description Advanced skill (EMP) */
+      command: number;
+      /** @description Advanced skill (EMP) */
+      culture: number;
+      /** @description Advanced skill (WIT) */
+      dataDjinn: number;
+      /** @description Advanced skill (WIT) */
+      medicurgy: number;
+      /** @description Advanced skill (EMP) */
+      mysticPowers: number;
+      /** @description Advanced skill (AGI) */
+      pilot: number;
+      /** @description Advanced skill (WIT) */
+      science: number;
+      /** @description Advanced skill (WIT) */
+      technology: number;
+    };
+    /**
+     * @description Boolean flags for the four standard Coriolis conditions (PRD §5.2).
+     *     Each active condition imposes a −1 die penalty on all rolls (capped
+     *     at the character's pool size). Applied by the RulesEngine.
+     */
+    ConditionFlags: {
+      /** @description Exhausted condition — also blocks pushing rolls */
+      exhausted: boolean;
+      sleepless: boolean;
+      thirsty: boolean;
+      hungry: boolean;
+    };
+    /** @description A critical injury entry on a character's sheet */
+    CriticalInjury: {
+      /** @description Opaque identifier (cuid2) */
+      id: string;
+      /** @description Short name of the injury (e.g. "Broken arm") */
+      name: string;
+      severity: components['schemas']['CriticalInjurySeverity'];
+      /** @description Free-text description of the mechanical or narrative effect */
+      effect: string;
+      /**
+       * Format: date-time
+       * @description ISO-8601 instant when the injury was recorded
+       */
+      acquiredAt: string;
+    };
+    /** @description A talent owned by a character */
+    Talent: {
+      /** @description Opaque identifier (cuid2) */
+      id: string;
+      /** @description Talent name (e.g. "Wing-Mate", "Stunt Pilot") */
+      name: string;
+      /** @description Rules text or flavour description of the talent */
+      description: string;
+      /** @description Talent rank (1 = basic, 2 = journeyman, 3 = master) */
+      rank: number;
+      /**
+       * Format: date-time
+       * @description ISO-8601 instant when the talent was recorded on the sheet
+       */
+      acquiredAt: string;
+    };
+    /** @description Payload for creating a new talent */
+    TalentCreate: {
+      /** @description Talent name */
+      name: string;
+      /** @description Rules text or flavour description */
+      description: string;
+      /**
+       * @description Talent rank (defaults to 1 when not provided)
+       * @default 1
+       */
+      rank: number;
+    };
+    /** @description PATCH payload for updating a talent — all fields optional */
+    TalentUpdate: {
+      name?: string;
+      description?: string;
+      rank?: number;
+    };
+    /** @description A relationship between a character and another person (NPC or PC) */
+    Relationship: {
+      /** @description Opaque identifier (cuid2) */
+      id: string;
+      /** @description Name of the NPC or PC (free text) */
+      targetName: string;
+      kind: components['schemas']['RelationshipKind'];
+      /** @description Optional notes about the relationship */
+      notes?: string | null;
+    };
+    /** @description Fields common to every item type */
+    ItemBase: {
+      /** @description Opaque identifier (cuid2) */
+      id: string;
+      /** @description Discriminator — determines which type-specific fields are present */
+      type: string;
+      /** @description Item name */
+      name: string;
+    };
+    ItemWeapon: components['schemas']['ItemBase'] & {
+      /** @enum {string} */
+      type?: 'WEAPON';
+      /** @description Base damage dice */
+      damage: number;
+      range: components['schemas']['ItemRangeEnum'];
+      /** @description Bonus dice added to the attack pool */
+      bonus: number;
+      /** @description Critical threshold (roll this many successes to crit) */
+      crit: number;
+      /** @description Encumbrance weight in slots (0.5 increments) */
+      weight: number;
+      /** @description Feature tags (e.g. "Burst", "Explosive") */
+      features: string[];
+      /** @description Whether the item is currently equipped */
+      equipped: boolean;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'WEAPON';
+    };
+    ItemArmor: components['schemas']['ItemBase'] & {
+      /** @enum {string} */
+      type?: 'ARMOR';
+      /** @description Armor rating — reduces incoming damage */
+      armorRating: number;
+      /** @description Encumbrance weight in slots */
+      weight: number;
+      /** @description Feature tags (e.g. "Vacuum Sealed", "Exo-Skeleton") */
+      features: string[];
+      equipped: boolean;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'ARMOR';
+    };
+    ItemGear: components['schemas']['ItemBase'] & {
+      /** @enum {string} */
+      type?: 'GEAR';
+      /** @description Encumbrance weight in slots */
+      weight: number;
+      /** @description Number of units */
+      quantity: number;
+      /** @description Optional free-text notes */
+      notes?: string | null;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'GEAR';
+    };
+    ItemCybernetic: components['schemas']['ItemBase'] & {
+      /** @enum {string} */
+      type?: 'CYBERNETIC';
+      /** @description System strain points consumed (0–6) */
+      bodyPoints: number;
+      /** @description Description of the cybernetic's effect */
+      effect: string;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'CYBERNETIC';
+    };
+    ItemShipModule: components['schemas']['ItemBase'] & {
+      /** @enum {string} */
+      type?: 'SHIP_MODULE';
+      slot: components['schemas']['ItemSlotType'];
+      /** @description Description of the module's effect and energy use */
+      effect: string;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'SHIP_MODULE';
+    };
+    ItemOther: components['schemas']['ItemBase'] & {
+      /** @enum {string} */
+      type?: 'OTHER';
+      /** @description Encumbrance weight in slots */
+      weight: number;
+      /** @description Optional free-text notes */
+      notes?: string | null;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'OTHER';
+    };
+    /**
+     * @description A discriminated union of all item types. The `type` field determines
+     *     which variant applies. Generated clients produce a correctly-typed
+     *     sum type from this schema.
+     */
+    Item:
+      | components['schemas']['ItemWeapon']
+      | components['schemas']['ItemArmor']
+      | components['schemas']['ItemGear']
+      | components['schemas']['ItemCybernetic']
+      | components['schemas']['ItemShipModule']
+      | components['schemas']['ItemOther'];
+    /**
+     * @description Payload for creating a new item. Same discriminated union as `Item`
+     *     but without `id` (server-assigned). The `type` discriminator must
+     *     be present.
+     */
+    ItemCreate:
+      | {
+          /** @enum {string} */
+          type: 'WEAPON';
+          name: string;
+          damage: number;
+          range: components['schemas']['ItemRangeEnum'];
+          bonus: number;
+          crit: number;
+          weight: number;
+          features: string[];
+          equipped: boolean;
+        }
+      | {
+          /** @enum {string} */
+          type: 'ARMOR';
+          name: string;
+          armorRating: number;
+          weight: number;
+          features: string[];
+          equipped: boolean;
+        }
+      | {
+          /** @enum {string} */
+          type: 'GEAR';
+          name: string;
+          weight: number;
+          quantity: number;
+          notes?: string | null;
+        }
+      | {
+          /** @enum {string} */
+          type: 'CYBERNETIC';
+          name: string;
+          bodyPoints: number;
+          effect: string;
+        }
+      | {
+          /** @enum {string} */
+          type: 'SHIP_MODULE';
+          name: string;
+          slot: components['schemas']['ItemSlotType'];
+          effect: string;
+        }
+      | {
+          /** @enum {string} */
+          type: 'OTHER';
+          name: string;
+          weight: number;
+          notes?: string | null;
+        };
+    /**
+     * @description PATCH payload for updating an item. The `type` discriminator must
+     *     match the existing item type — changing it returns 400
+     *     `ITEM_TYPE_MISMATCH`. All fields are optional.
+     */
+    ItemUpdate: {
+      name?: string;
+      /** @description WEAPON only */
+      damage?: number;
+      /** @description WEAPON only */
+      range?: components['schemas']['ItemRangeEnum'];
+      /** @description WEAPON only */
+      bonus?: number;
+      /** @description WEAPON only */
+      crit?: number;
+      /** @description ARMOR only */
+      armorRating?: number;
+      weight?: number;
+      /** @description WEAPON or ARMOR */
+      features?: string[];
+      /** @description WEAPON or ARMOR */
+      equipped?: boolean;
+      /** @description GEAR only */
+      quantity?: number;
+      /** @description GEAR or OTHER */
+      notes?: string | null;
+      /** @description CYBERNETIC only */
+      bodyPoints?: number;
+      /** @description CYBERNETIC or SHIP_MODULE */
+      effect?: string;
+      /** @description SHIP_MODULE only */
+      slot?: components['schemas']['ItemSlotType'];
+    };
+    /**
+     * @description Full character DTO as returned by the v1 API. Server-derived fields
+     *     (`hp.max`, `mp.max`, `encumbrance.max`) are computed by the
+     *     RulesEngine on every write and are marked `readOnly`.
+     *
+     *     Formulas (PRD §5.2, §10):
+     *     - HP max = STR + AGI
+     *     - MP max = WIT + EMP
+     *     - Encumbrance max = STR × 2
+     */
+    Character: {
+      /** @description Opaque character identifier (cuid2) */
+      readonly id: string;
+      /** @description Identifier of the owning user (cuid2) */
+      readonly ownerId: string;
+      /** @description Character name (1–80 characters) */
+      name: string;
+      /** @description Short concept phrase — the role the character plays at the table (1–120 chars when non-null) */
+      concept: string | null;
+      /** @description One of the Nine Icons, or null if not chosen yet */
+      iconId: components['schemas']['IconId'] | null;
+      attributes: components['schemas']['Attributes'];
+      skills: components['schemas']['Skills'];
+      hp: {
+        current: number;
+        /** @description Derived from STR + AGI; set by the server */
+        readonly max: number;
+      };
+      mp: {
+        current: number;
+        /** @description Derived from WIT + EMP; set by the server */
+        readonly max: number;
+      };
+      encumbrance: {
+        /** @description Sum of non-stowed item weights; set by the server */
+        readonly current: number;
+        /** @description Derived from STR × 2; set by the server */
+        readonly max: number;
+      };
+      /** @description Total XP earned */
+      experience: number;
+      conditions: components['schemas']['ConditionFlags'];
+      criticalInjuries: components['schemas']['CriticalInjury'][];
+      talents: components['schemas']['Talent'][];
+      relationships: components['schemas']['Relationship'][];
+      inventory: components['schemas']['Item'][];
+      /** @description Free-form notes (Markdown; soft cap 4096 characters) */
+      notes: string | null;
+      /** Format: date-time */
+      readonly createdAt: string;
+      /** Format: date-time */
+      readonly updatedAt: string;
+    };
+    /**
+     * @description Payload for `POST /api/v1/characters`. Only `name` is required.
+     *     Attribute values default to 2 if the `attributes` object is omitted
+     *     or a key within it is missing. Skill values default to 0.
+     *
+     *     Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
+     *     `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`)
+     *     must not be included; they are rejected with 400.
+     */
+    CharacterCreate: {
+      name: string;
+      concept?: string | null;
+      iconId?: components['schemas']['IconId'] | null;
+      attributes?: components['schemas']['Attributes'];
+      skills?: components['schemas']['Skills'];
+      hp?: {
+        current?: number;
+      };
+      mp?: {
+        current?: number;
+      };
+      /** @default 0 */
+      experience: number;
+      conditions?: components['schemas']['ConditionFlags'];
+      notes?: string | null;
+    };
+    /**
+     * @description PATCH payload for `PATCH /api/v1/characters/{id}`. All fields are
+     *     optional. Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
+     *     `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`)
+     *     are rejected with 400 if present.
+     *
+     *     Derived stats (`hp.max`, `mp.max`, `encumbrance.max`) are
+     *     recalculated automatically after each successful write.
+     */
+    CharacterUpdate: {
+      name?: string;
+      concept?: string | null;
+      iconId?: components['schemas']['IconId'] | null;
+      attributes?: components['schemas']['Attributes'];
+      skills?: components['schemas']['Skills'];
+      hp?: {
+        current?: number;
+      };
+      mp?: {
+        current?: number;
+      };
+      experience?: number;
+      conditions?: components['schemas']['ConditionFlags'];
+      /**
+       * @description Replaces the entire critical injuries list when provided.
+       *     Use the dedicated nested-item pattern (POST/PATCH/DELETE on
+       *     individual injuries) once that surface is added in a later epic.
+       */
+      criticalInjuries?: components['schemas']['CriticalInjury'][];
+      notes?: string | null;
+    };
+    /** @description Cursor-paginated list of characters */
+    CharacterList: {
+      items: components['schemas']['Character'][];
+      /** @description Opaque cursor for the next page; null when this is the last page */
+      nextCursor: string | null;
+    };
     HealthStatus: {
       status: components['schemas']['DependencyStatus'];
       /** @description Semantic version of the running backend build */
@@ -169,13 +966,499 @@ export interface components {
     };
   };
   responses: never;
-  parameters: never;
+  parameters: {
+    /** @description Character identifier (cuid2) */
+    CharacterId: string;
+    /** @description Item identifier (cuid2) */
+    ItemId: string;
+    /** @description Talent identifier (cuid2) */
+    TalentId: string;
+  };
   requestBodies: never;
   headers: never;
   pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  listCharacters: {
+    parameters: {
+      query?: {
+        /** @description Opaque pagination cursor returned by the previous page */
+        cursor?: string;
+        /** @description Number of characters to return (1–100, default 20) */
+        limit?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Paginated character list */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CharacterList'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  createCharacter: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CharacterCreate'];
+      };
+    };
+    responses: {
+      /** @description Character created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Character'];
+        };
+      };
+      /**
+       * @description Validation error. Possible codes:
+       *     - `CHARACTER_NAME_EMPTY` — name is an empty string.
+       *     - `CHARACTER_NAME_TOO_LONG` — name exceeds 80 characters.
+       *     - `ATTRIBUTE_OUT_OF_RANGE` — an attribute value is outside 1–5.
+       *     - `SKILL_OUT_OF_RANGE` — a skill value is outside its allowed range.
+       */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  getCharacter: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Character identifier (cuid2) */
+        id: components['parameters']['CharacterId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Character found */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Character'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller is authenticated but does not own this character */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Character not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  deleteCharacter: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Character identifier (cuid2) */
+        id: components['parameters']['CharacterId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Character deleted */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this character */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Character not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  updateCharacter: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Character identifier (cuid2) */
+        id: components['parameters']['CharacterId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CharacterUpdate'];
+      };
+    };
+    responses: {
+      /** @description Updated character */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Character'];
+        };
+      };
+      /**
+       * @description Validation error. Possible codes:
+       *     - `CHARACTER_NAME_EMPTY`
+       *     - `CHARACTER_NAME_TOO_LONG`
+       *     - `ATTRIBUTE_OUT_OF_RANGE`
+       *     - `SKILL_OUT_OF_RANGE`
+       */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this character */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Character not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  duplicateCharacter: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Character identifier (cuid2) */
+        id: components['parameters']['CharacterId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Duplicated character */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Character'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this character */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Character not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  exportCharacter: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Character identifier (cuid2) */
+        id: components['parameters']['CharacterId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Character JSON export */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Character'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this character */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Character not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  addCharacterItem: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Character identifier (cuid2) */
+        id: components['parameters']['CharacterId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ItemCreate'];
+      };
+    };
+    responses: {
+      /** @description Item created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Item'];
+        };
+      };
+      /**
+       * @description Validation error. Possible codes:
+       *     - `CHARACTER_NAME_EMPTY` — item name is empty.
+       *     - `ITEM_TYPE_MISMATCH` — payload fields do not match the declared type.
+       */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this character */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Character not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  addCharacterTalent: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Character identifier (cuid2) */
+        id: components['parameters']['CharacterId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TalentCreate'];
+      };
+    };
+    responses: {
+      /** @description Talent created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Talent'];
+        };
+      };
+      /** @description Validation error (name empty, rank out of 1–3 range) */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this character */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Character not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
   getHealth: {
     parameters: {
       query?: never;
@@ -201,6 +1484,120 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['HealthStatus'];
+        };
+      };
+    };
+  };
+  deleteItem: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Item identifier (cuid2) */
+        id: components['parameters']['ItemId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Item deleted */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own the parent character */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Item not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  updateItem: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Item identifier (cuid2) */
+        id: components['parameters']['ItemId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ItemUpdate'];
+      };
+    };
+    responses: {
+      /** @description Updated item */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Item'];
+        };
+      };
+      /**
+       * @description Validation error. Possible code:
+       *     - `ITEM_TYPE_MISMATCH` — type discriminator changed.
+       */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own the parent character */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Item not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
         };
       };
     };
@@ -301,6 +1698,117 @@ export interface operations {
       };
       /** @description No active session */
       401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  deleteTalent: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Talent identifier (cuid2) */
+        id: components['parameters']['TalentId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Talent deleted */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own the parent character */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Talent not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  updateTalent: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Talent identifier (cuid2) */
+        id: components['parameters']['TalentId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TalentUpdate'];
+      };
+    };
+    responses: {
+      /** @description Updated talent */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Talent'];
+        };
+      };
+      /** @description Validation error (rank out of 1–3 range) */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own the parent character */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Talent not found */
+      404: {
         headers: {
           [name: string]: unknown;
         };

@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetHealthData, GetHealthErrors, GetHealthResponses, GetMeData, GetMeErrors, GetMeResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses } from './types.gen';
+import type { AddCharacterItemData, AddCharacterItemErrors, AddCharacterItemResponses, AddCharacterTalentData, AddCharacterTalentErrors, AddCharacterTalentResponses, CreateCharacterData, CreateCharacterErrors, CreateCharacterResponses, DeleteCharacterData, DeleteCharacterErrors, DeleteCharacterResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteTalentData, DeleteTalentErrors, DeleteTalentResponses, DuplicateCharacterData, DuplicateCharacterErrors, DuplicateCharacterResponses, ExportCharacterData, ExportCharacterErrors, ExportCharacterResponses, GetCharacterData, GetCharacterErrors, GetCharacterResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetMeData, GetMeErrors, GetMeResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, ListCharactersData, ListCharactersErrors, ListCharactersResponses, UpdateCharacterData, UpdateCharacterErrors, UpdateCharacterResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses, UpdateTalentData, UpdateTalentErrors, UpdateTalentResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -19,6 +19,195 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 };
 
 /**
+ * List the authenticated user's characters
+ *
+ * Returns a cursor-paginated list of characters owned by the
+ * authenticated user. Pass `cursor` from a previous response's
+ * `nextCursor` to retrieve the following page. Results are ordered
+ * newest-first by `createdAt`.
+ *
+ */
+export const listCharacters = <ThrowOnError extends boolean = false>(options?: Options<ListCharactersData, ThrowOnError>) => (options?.client ?? client).get<ListCharactersResponses, ListCharactersErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/characters',
+    ...options
+});
+
+/**
+ * Create a new character
+ *
+ * Creates a character owned by the authenticated user. `name` is the
+ * only required field; all other fields default to empty arrays, null,
+ * or 0. Server-derived fields (`hp.max`, `mp.max`, `encumbrance.max`)
+ * are populated from the provided attribute values or defaults.
+ *
+ * Attribute defaults are 2 per attribute when not provided. Skills
+ * default to 0.
+ *
+ */
+export const createCharacter = <ThrowOnError extends boolean = false>(options: Options<CreateCharacterData, ThrowOnError>) => (options.client ?? client).post<CreateCharacterResponses, CreateCharacterErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/characters',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a character
+ *
+ * Permanently deletes a character and all its nested items, talents,
+ * relationships, and share links. This action is irreversible.
+ *
+ */
+export const deleteCharacter = <ThrowOnError extends boolean = false>(options: Options<DeleteCharacterData, ThrowOnError>) => (options.client ?? client).delete<DeleteCharacterResponses, DeleteCharacterErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/characters/{id}',
+    ...options
+});
+
+/**
+ * Get a character by ID
+ *
+ * Returns the full character DTO. Returns 404 if the character does not
+ * exist or is not owned by the authenticated user. Owner-scoped: a
+ * character owned by another user returns 403 (not 404) when the caller
+ * is authenticated, to aid debugging while preserving access boundaries.
+ *
+ */
+export const getCharacter = <ThrowOnError extends boolean = false>(options: Options<GetCharacterData, ThrowOnError>) => (options.client ?? client).get<GetCharacterResponses, GetCharacterErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/characters/{id}',
+    ...options
+});
+
+/**
+ * Partially update a character
+ *
+ * Applies PATCH semantics — omitted fields are left unchanged. Read-only
+ * fields (`id`, `ownerId`, `hp.max`, `mp.max`, `encumbrance.max`,
+ * `createdAt`, `updatedAt`) are rejected with 400 if included.
+ *
+ * Server-derived fields (`hp.max`, `mp.max`, `encumbrance.max`) are
+ * recalculated after each write and reflected in the response.
+ *
+ */
+export const updateCharacter = <ThrowOnError extends boolean = false>(options: Options<UpdateCharacterData, ThrowOnError>) => (options.client ?? client).patch<UpdateCharacterResponses, UpdateCharacterErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/characters/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Duplicate a character
+ *
+ * Creates a deep copy of the character (including items, talents,
+ * relationships, and conditions) and assigns it to the authenticated
+ * user. The copy receives a new `id` and the name has " (copy)"
+ * appended. Share links are not duplicated. The source character must
+ * be owned by the caller.
+ *
+ */
+export const duplicateCharacter = <ThrowOnError extends boolean = false>(options: Options<DuplicateCharacterData, ThrowOnError>) => (options.client ?? client).post<DuplicateCharacterResponses, DuplicateCharacterErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/characters/{id}/duplicate',
+    ...options
+});
+
+/**
+ * Export a character as JSON
+ *
+ * Returns the full canonical Character DTO as a downloadable JSON
+ * payload. v1 ships JSON only; PDF and encounter-bundle exports are
+ * post-v1. The response carries `Content-Disposition: attachment` so
+ * browsers prompt a download.
+ *
+ */
+export const exportCharacter = <ThrowOnError extends boolean = false>(options: Options<ExportCharacterData, ThrowOnError>) => (options.client ?? client).get<ExportCharacterResponses, ExportCharacterErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/characters/{id}/export',
+    ...options
+});
+
+/**
+ * Add an item to a character's inventory
+ *
+ * Creates an item of the specified `type` under the character. The
+ * discriminator field `type` determines which additional fields are
+ * accepted and required. `id` is assigned by the server.
+ *
+ */
+export const addCharacterItem = <ThrowOnError extends boolean = false>(options: Options<AddCharacterItemData, ThrowOnError>) => (options.client ?? client).post<AddCharacterItemResponses, AddCharacterItemErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/characters/{id}/items',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Add a talent to a character
+ *
+ * Creates a talent record attached to the character. Talents are
+ * free-form (name + description + rank); there is no server-side
+ * talent library in v1.
+ *
+ */
+export const addCharacterTalent = <ThrowOnError extends boolean = false>(options: Options<AddCharacterTalentData, ThrowOnError>) => (options.client ?? client).post<AddCharacterTalentResponses, AddCharacterTalentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/characters/{id}/talents',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Service health probe
  *
  * Reports combined health status of the service and its runtime
@@ -26,6 +215,46 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  *
  */
 export const getHealth = <ThrowOnError extends boolean = false>(options?: Options<GetHealthData, ThrowOnError>) => (options?.client ?? client).get<GetHealthResponses, GetHealthErrors, ThrowOnError>({ url: '/api/v1/health', ...options });
+
+/**
+ * Delete an item
+ *
+ * Permanently deletes an item from a character's inventory.
+ * Authorization: caller must own the parent character.
+ *
+ */
+export const deleteItem = <ThrowOnError extends boolean = false>(options: Options<DeleteItemData, ThrowOnError>) => (options.client ?? client).delete<DeleteItemResponses, DeleteItemErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/items/{id}',
+    ...options
+});
+
+/**
+ * Update an item
+ *
+ * Applies PATCH semantics to an item. The `type` discriminator may not
+ * be changed after creation — attempting to do so returns 400 with code
+ * `ITEM_TYPE_MISMATCH`. Authorization: caller must own the parent
+ * character.
+ *
+ */
+export const updateItem = <ThrowOnError extends boolean = false>(options: Options<UpdateItemData, ThrowOnError>) => (options.client ?? client).patch<UpdateItemResponses, UpdateItemErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/items/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get the authenticated user's profile.
@@ -97,4 +326,42 @@ export const issueRealtimeToken = <ThrowOnError extends boolean = false>(options
         }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/realtime/token',
     ...options
+});
+
+/**
+ * Delete a talent
+ *
+ * Permanently removes a talent from a character. Authorization: caller
+ * must own the parent character.
+ *
+ */
+export const deleteTalent = <ThrowOnError extends boolean = false>(options: Options<DeleteTalentData, ThrowOnError>) => (options.client ?? client).delete<DeleteTalentResponses, DeleteTalentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/talents/{id}',
+    ...options
+});
+
+/**
+ * Update a talent
+ *
+ * Applies PATCH semantics to a talent. Authorization: caller must own
+ * the parent character.
+ *
+ */
+export const updateTalent = <ThrowOnError extends boolean = false>(options: Options<UpdateTalentData, ThrowOnError>) => (options.client ?? client).patch<UpdateTalentResponses, UpdateTalentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/talents/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });

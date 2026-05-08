@@ -4,7 +4,695 @@ export type ClientOptions = {
     baseUrl: 'http://localhost:3000' | 'https://api.example.com' | (string & {});
 };
 
+export type _0 = {
+    type: 'WEAPON';
+    name: string;
+    damage: number;
+    range: ItemRangeEnum;
+    bonus: number;
+    crit: number;
+    weight: number;
+    features: Array<string>;
+    equipped: boolean;
+};
+
+export type _1 = {
+    type: 'ARMOR';
+    name: string;
+    armorRating: number;
+    weight: number;
+    features: Array<string>;
+    equipped: boolean;
+};
+
+export type _2 = {
+    type: 'GEAR';
+    name: string;
+    weight: number;
+    quantity: number;
+    notes?: string | null;
+};
+
+export type _3 = {
+    type: 'CYBERNETIC';
+    name: string;
+    bodyPoints: number;
+    effect: string;
+};
+
+export type _4 = {
+    type: 'SHIP_MODULE';
+    name: string;
+    slot: ItemSlotType;
+    effect: string;
+};
+
+export type _5 = {
+    type: 'OTHER';
+    name: string;
+    weight: number;
+    notes?: string | null;
+};
+
+/**
+ * Severity tier of a critical injury per Coriolis core rules.
+ * - `light` — minor wound, no long-term mechanical effect.
+ * - `severe` — significant injury; may impose ongoing penalties.
+ * - `critical` — life-threatening; requires urgent medicurgy.
+ *
+ */
+export type CriticalInjurySeverity = 'light' | 'severe' | 'critical';
+
 export type DependencyStatus = 'ok' | 'degraded' | 'down';
+
+/**
+ * One of the Nine Icons of the Third Horizon. Kebab-case names match
+ * the asset filenames in `packages/ui/src/assets/icons/`.
+ *
+ */
+export type IconId = 'lady-of-tears' | 'traveler' | 'messenger' | 'merchant' | 'dancer' | 'gambler' | 'judge' | 'faceless-one' | 'deckhand';
+
+/**
+ * Effective range band for a weapon. Matches the Coriolis core book
+ * range terminology:
+ * - `arm` — Engaged / hand-to-hand.
+ * - `near` — same room / close quarters.
+ * - `short` — corridor / street distance.
+ * - `long` — open ground / rooftop.
+ * - `distant` — sniper range.
+ *
+ */
+export type ItemRangeEnum = 'arm' | 'near' | 'short' | 'long' | 'distant';
+
+/**
+ * Ship module slot type. Used only for SHIP_MODULE items. Matches the
+ * slot categories from Coriolis core book ship construction rules.
+ *
+ */
+export type ItemSlotType = 'bridge' | 'hull' | 'hold' | 'weapon' | 'drive' | 'sensor' | 'comms';
+
+/**
+ * The nature of the relationship between a character and an NPC or PC.
+ *
+ */
+export type RelationshipKind = 'ally' | 'rival' | 'family' | 'mentor' | 'debtor' | 'creditor';
+
+/**
+ * The four primary attributes per Coriolis core rules (PRD §5.2). Each
+ * is a 1–5 integer. All keys are required — missing attributes would
+ * make derived-stat calculation impossible server-side.
+ *
+ */
+export type Attributes = {
+    /**
+     * STR — governs Force, Melee Combat skills and HP max
+     */
+    strength: number;
+    /**
+     * AGI — governs Dexterity, Infiltration, Ranged Combat, Pilot; contributes to HP max
+     */
+    agility: number;
+    /**
+     * WIT — governs Observation, Survival, Technology, Data Djinn, Science, Medicurgy; contributes to MP max
+     */
+    wits: number;
+    /**
+     * EMP — governs Manipulation, Command, Culture, Mystic Powers; contributes to MP max
+     */
+    empathy: number;
+};
+
+/**
+ * The 16 skills per Coriolis core rules (PRD §5.2). General skills
+ * range 0–5; advanced skills (command, culture, dataDjinn, medicurgy,
+ * mysticPowers, pilot, science, technology) also range 0–5 in the
+ * schema — the "0–3 typical" note in the PRD describes usual play,
+ * not a hard cap, so the server accepts up to 5 for all skills.
+ * All keys are required.
+ *
+ */
+export type Skills = {
+    /**
+     * General skill (AGI)
+     */
+    dexterity: number;
+    /**
+     * General skill (STR)
+     */
+    force: number;
+    /**
+     * General skill (AGI)
+     */
+    infiltration: number;
+    /**
+     * General skill (EMP)
+     */
+    manipulation: number;
+    /**
+     * General skill (STR)
+     */
+    meleeCombat: number;
+    /**
+     * General skill (WIT)
+     */
+    observation: number;
+    /**
+     * General skill (AGI)
+     */
+    rangedCombat: number;
+    /**
+     * General skill (WIT)
+     */
+    survival: number;
+    /**
+     * Advanced skill (EMP)
+     */
+    command: number;
+    /**
+     * Advanced skill (EMP)
+     */
+    culture: number;
+    /**
+     * Advanced skill (WIT)
+     */
+    dataDjinn: number;
+    /**
+     * Advanced skill (WIT)
+     */
+    medicurgy: number;
+    /**
+     * Advanced skill (EMP)
+     */
+    mysticPowers: number;
+    /**
+     * Advanced skill (AGI)
+     */
+    pilot: number;
+    /**
+     * Advanced skill (WIT)
+     */
+    science: number;
+    /**
+     * Advanced skill (WIT)
+     */
+    technology: number;
+};
+
+/**
+ * Boolean flags for the four standard Coriolis conditions (PRD §5.2).
+ * Each active condition imposes a −1 die penalty on all rolls (capped
+ * at the character's pool size). Applied by the RulesEngine.
+ *
+ */
+export type ConditionFlags = {
+    /**
+     * Exhausted condition — also blocks pushing rolls
+     */
+    exhausted: boolean;
+    sleepless: boolean;
+    thirsty: boolean;
+    hungry: boolean;
+};
+
+/**
+ * A critical injury entry on a character's sheet
+ */
+export type CriticalInjury = {
+    /**
+     * Opaque identifier (cuid2)
+     */
+    id: string;
+    /**
+     * Short name of the injury (e.g. "Broken arm")
+     */
+    name: string;
+    severity: CriticalInjurySeverity;
+    /**
+     * Free-text description of the mechanical or narrative effect
+     */
+    effect: string;
+    /**
+     * ISO-8601 instant when the injury was recorded
+     */
+    acquiredAt: string;
+};
+
+/**
+ * A talent owned by a character
+ */
+export type Talent = {
+    /**
+     * Opaque identifier (cuid2)
+     */
+    id: string;
+    /**
+     * Talent name (e.g. "Wing-Mate", "Stunt Pilot")
+     */
+    name: string;
+    /**
+     * Rules text or flavour description of the talent
+     */
+    description: string;
+    /**
+     * Talent rank (1 = basic, 2 = journeyman, 3 = master)
+     */
+    rank: number;
+    /**
+     * ISO-8601 instant when the talent was recorded on the sheet
+     */
+    acquiredAt: string;
+};
+
+/**
+ * Payload for creating a new talent
+ */
+export type TalentCreate = {
+    /**
+     * Talent name
+     */
+    name: string;
+    /**
+     * Rules text or flavour description
+     */
+    description: string;
+    /**
+     * Talent rank (defaults to 1 when not provided)
+     */
+    rank?: number;
+};
+
+/**
+ * PATCH payload for updating a talent — all fields optional
+ */
+export type TalentUpdate = {
+    name?: string;
+    description?: string;
+    rank?: number;
+};
+
+/**
+ * A relationship between a character and another person (NPC or PC)
+ */
+export type Relationship = {
+    /**
+     * Opaque identifier (cuid2)
+     */
+    id: string;
+    /**
+     * Name of the NPC or PC (free text)
+     */
+    targetName: string;
+    kind: RelationshipKind;
+    /**
+     * Optional notes about the relationship
+     */
+    notes?: string | null;
+};
+
+/**
+ * Fields common to every item type
+ */
+export type ItemBase = {
+    /**
+     * Opaque identifier (cuid2)
+     */
+    id: string;
+    /**
+     * Discriminator — determines which type-specific fields are present
+     */
+    type: string;
+    /**
+     * Item name
+     */
+    name: string;
+};
+
+export type ItemWeapon = ItemBase & {
+    type?: 'WEAPON';
+    /**
+     * Base damage dice
+     */
+    damage: number;
+    range: ItemRangeEnum;
+    /**
+     * Bonus dice added to the attack pool
+     */
+    bonus: number;
+    /**
+     * Critical threshold (roll this many successes to crit)
+     */
+    crit: number;
+    /**
+     * Encumbrance weight in slots (0.5 increments)
+     */
+    weight: number;
+    /**
+     * Feature tags (e.g. "Burst", "Explosive")
+     */
+    features: Array<string>;
+    /**
+     * Whether the item is currently equipped
+     */
+    equipped: boolean;
+};
+
+export type ItemArmor = ItemBase & {
+    type?: 'ARMOR';
+    /**
+     * Armor rating — reduces incoming damage
+     */
+    armorRating: number;
+    /**
+     * Encumbrance weight in slots
+     */
+    weight: number;
+    /**
+     * Feature tags (e.g. "Vacuum Sealed", "Exo-Skeleton")
+     */
+    features: Array<string>;
+    equipped: boolean;
+};
+
+export type ItemGear = ItemBase & {
+    type?: 'GEAR';
+    /**
+     * Encumbrance weight in slots
+     */
+    weight: number;
+    /**
+     * Number of units
+     */
+    quantity: number;
+    /**
+     * Optional free-text notes
+     */
+    notes?: string | null;
+};
+
+export type ItemCybernetic = ItemBase & {
+    type?: 'CYBERNETIC';
+    /**
+     * System strain points consumed (0–6)
+     */
+    bodyPoints: number;
+    /**
+     * Description of the cybernetic's effect
+     */
+    effect: string;
+};
+
+export type ItemShipModule = ItemBase & {
+    type?: 'SHIP_MODULE';
+    slot: ItemSlotType;
+    /**
+     * Description of the module's effect and energy use
+     */
+    effect: string;
+};
+
+export type ItemOther = ItemBase & {
+    type?: 'OTHER';
+    /**
+     * Encumbrance weight in slots
+     */
+    weight: number;
+    /**
+     * Optional free-text notes
+     */
+    notes?: string | null;
+};
+
+/**
+ * A discriminated union of all item types. The `type` field determines
+ * which variant applies. Generated clients produce a correctly-typed
+ * sum type from this schema.
+ *
+ */
+export type Item = ({
+    type: 'WEAPON';
+} & ItemWeapon) | ({
+    type: 'ARMOR';
+} & ItemArmor) | ({
+    type: 'GEAR';
+} & ItemGear) | ({
+    type: 'CYBERNETIC';
+} & ItemCybernetic) | ({
+    type: 'SHIP_MODULE';
+} & ItemShipModule) | ({
+    type: 'OTHER';
+} & ItemOther);
+
+/**
+ * Payload for creating a new item. Same discriminated union as `Item`
+ * but without `id` (server-assigned). The `type` discriminator must
+ * be present.
+ *
+ */
+export type ItemCreate = {
+    type: 'WEAPON';
+    name: string;
+    damage: number;
+    range: ItemRangeEnum;
+    bonus: number;
+    crit: number;
+    weight: number;
+    features: Array<string>;
+    equipped: boolean;
+} | {
+    type: 'ARMOR';
+    name: string;
+    armorRating: number;
+    weight: number;
+    features: Array<string>;
+    equipped: boolean;
+} | {
+    type: 'GEAR';
+    name: string;
+    weight: number;
+    quantity: number;
+    notes?: string | null;
+} | {
+    type: 'CYBERNETIC';
+    name: string;
+    bodyPoints: number;
+    effect: string;
+} | {
+    type: 'SHIP_MODULE';
+    name: string;
+    slot: ItemSlotType;
+    effect: string;
+} | {
+    type: 'OTHER';
+    name: string;
+    weight: number;
+    notes?: string | null;
+};
+
+/**
+ * PATCH payload for updating an item. The `type` discriminator must
+ * match the existing item type — changing it returns 400
+ * `ITEM_TYPE_MISMATCH`. All fields are optional.
+ *
+ */
+export type ItemUpdate = {
+    name?: string;
+    /**
+     * WEAPON only
+     */
+    damage?: number;
+    /**
+     * WEAPON only
+     */
+    range?: ItemRangeEnum;
+    /**
+     * WEAPON only
+     */
+    bonus?: number;
+    /**
+     * WEAPON only
+     */
+    crit?: number;
+    /**
+     * ARMOR only
+     */
+    armorRating?: number;
+    weight?: number;
+    /**
+     * WEAPON or ARMOR
+     */
+    features?: Array<string>;
+    /**
+     * WEAPON or ARMOR
+     */
+    equipped?: boolean;
+    /**
+     * GEAR only
+     */
+    quantity?: number;
+    /**
+     * GEAR or OTHER
+     */
+    notes?: string | null;
+    /**
+     * CYBERNETIC only
+     */
+    bodyPoints?: number;
+    /**
+     * CYBERNETIC or SHIP_MODULE
+     */
+    effect?: string;
+    /**
+     * SHIP_MODULE only
+     */
+    slot?: ItemSlotType;
+};
+
+/**
+ * Full character DTO as returned by the v1 API. Server-derived fields
+ * (`hp.max`, `mp.max`, `encumbrance.max`) are computed by the
+ * RulesEngine on every write and are marked `readOnly`.
+ *
+ * Formulas (PRD §5.2, §10):
+ * - HP max = STR + AGI
+ * - MP max = WIT + EMP
+ * - Encumbrance max = STR × 2
+ *
+ */
+export type Character = {
+    /**
+     * Opaque character identifier (cuid2)
+     */
+    readonly id: string;
+    /**
+     * Identifier of the owning user (cuid2)
+     */
+    readonly ownerId: string;
+    /**
+     * Character name (1–80 characters)
+     */
+    name: string;
+    /**
+     * Short concept phrase — the role the character plays at the table (1–120 chars when non-null)
+     */
+    concept: string | null;
+    /**
+     * One of the Nine Icons, or null if not chosen yet
+     */
+    iconId: IconId | null;
+    attributes: Attributes;
+    skills: Skills;
+    hp: {
+        current: number;
+        /**
+         * Derived from STR + AGI; set by the server
+         */
+        readonly max: number;
+    };
+    mp: {
+        current: number;
+        /**
+         * Derived from WIT + EMP; set by the server
+         */
+        readonly max: number;
+    };
+    encumbrance: {
+        /**
+         * Sum of non-stowed item weights; set by the server
+         */
+        readonly current: number;
+        /**
+         * Derived from STR × 2; set by the server
+         */
+        readonly max: number;
+    };
+    /**
+     * Total XP earned
+     */
+    experience: number;
+    conditions: ConditionFlags;
+    criticalInjuries: Array<CriticalInjury>;
+    talents: Array<Talent>;
+    relationships: Array<Relationship>;
+    inventory: Array<Item>;
+    /**
+     * Free-form notes (Markdown; soft cap 4096 characters)
+     */
+    notes: string | null;
+    readonly createdAt: string;
+    readonly updatedAt: string;
+};
+
+/**
+ * Payload for `POST /api/v1/characters`. Only `name` is required.
+ * Attribute values default to 2 if the `attributes` object is omitted
+ * or a key within it is missing. Skill values default to 0.
+ *
+ * Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
+ * `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`)
+ * must not be included; they are rejected with 400.
+ *
+ */
+export type CharacterCreate = {
+    name: string;
+    concept?: string | null;
+    iconId?: IconId | null;
+    attributes?: Attributes;
+    skills?: Skills;
+    hp?: {
+        current?: number;
+    };
+    mp?: {
+        current?: number;
+    };
+    experience?: number;
+    conditions?: ConditionFlags;
+    notes?: string | null;
+};
+
+/**
+ * PATCH payload for `PATCH /api/v1/characters/{id}`. All fields are
+ * optional. Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
+ * `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`)
+ * are rejected with 400 if present.
+ *
+ * Derived stats (`hp.max`, `mp.max`, `encumbrance.max`) are
+ * recalculated automatically after each successful write.
+ *
+ */
+export type CharacterUpdate = {
+    name?: string;
+    concept?: string | null;
+    iconId?: IconId | null;
+    attributes?: Attributes;
+    skills?: Skills;
+    hp?: {
+        current?: number;
+    };
+    mp?: {
+        current?: number;
+    };
+    experience?: number;
+    conditions?: ConditionFlags;
+    /**
+     * Replaces the entire critical injuries list when provided.
+     * Use the dedicated nested-item pattern (POST/PATCH/DELETE on
+     * individual injuries) once that surface is added in a later epic.
+     *
+     */
+    criticalInjuries?: Array<CriticalInjury>;
+    notes?: string | null;
+};
+
+/**
+ * Cursor-paginated list of characters
+ */
+export type CharacterList = {
+    items: Array<Character>;
+    /**
+     * Opaque cursor for the next page; null when this is the last page
+     */
+    nextCursor: string | null;
+};
 
 export type HealthStatus = {
     status: DependencyStatus;
@@ -89,6 +777,433 @@ export type RealtimeToken = {
     expiresAt: string | null;
 };
 
+/**
+ * Full character DTO as returned by the v1 API. Server-derived fields
+ * (`hp.max`, `mp.max`, `encumbrance.max`) are computed by the
+ * RulesEngine on every write and are marked `readOnly`.
+ *
+ * Formulas (PRD §5.2, §10):
+ * - HP max = STR + AGI
+ * - MP max = WIT + EMP
+ * - Encumbrance max = STR × 2
+ *
+ */
+export type CharacterWritable = {
+    /**
+     * Character name (1–80 characters)
+     */
+    name: string;
+    /**
+     * Short concept phrase — the role the character plays at the table (1–120 chars when non-null)
+     */
+    concept: string | null;
+    /**
+     * One of the Nine Icons, or null if not chosen yet
+     */
+    iconId: IconId | null;
+    attributes: Attributes;
+    skills: Skills;
+    hp: {
+        current: number;
+    };
+    mp: {
+        current: number;
+    };
+    /**
+     * Total XP earned
+     */
+    experience: number;
+    conditions: ConditionFlags;
+    criticalInjuries: Array<CriticalInjury>;
+    talents: Array<Talent>;
+    relationships: Array<Relationship>;
+    inventory: Array<Item>;
+    /**
+     * Free-form notes (Markdown; soft cap 4096 characters)
+     */
+    notes: string | null;
+};
+
+/**
+ * Cursor-paginated list of characters
+ */
+export type CharacterListWritable = {
+    items: Array<CharacterWritable>;
+    /**
+     * Opaque cursor for the next page; null when this is the last page
+     */
+    nextCursor: string | null;
+};
+
+/**
+ * Character identifier (cuid2)
+ */
+export type CharacterId = string;
+
+/**
+ * Item identifier (cuid2)
+ */
+export type ItemId = string;
+
+/**
+ * Talent identifier (cuid2)
+ */
+export type TalentId = string;
+
+export type ListCharactersData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Opaque pagination cursor returned by the previous page
+         */
+        cursor?: string;
+        /**
+         * Number of characters to return (1–100, default 20)
+         */
+        limit?: number;
+    };
+    url: '/api/v1/characters';
+};
+
+export type ListCharactersErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+};
+
+export type ListCharactersError = ListCharactersErrors[keyof ListCharactersErrors];
+
+export type ListCharactersResponses = {
+    /**
+     * Paginated character list
+     */
+    200: CharacterList;
+};
+
+export type ListCharactersResponse = ListCharactersResponses[keyof ListCharactersResponses];
+
+export type CreateCharacterData = {
+    body: CharacterCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/characters';
+};
+
+export type CreateCharacterErrors = {
+    /**
+     * Validation error. Possible codes:
+     * - `CHARACTER_NAME_EMPTY` — name is an empty string.
+     * - `CHARACTER_NAME_TOO_LONG` — name exceeds 80 characters.
+     * - `ATTRIBUTE_OUT_OF_RANGE` — an attribute value is outside 1–5.
+     * - `SKILL_OUT_OF_RANGE` — a skill value is outside its allowed range.
+     *
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+};
+
+export type CreateCharacterError = CreateCharacterErrors[keyof CreateCharacterErrors];
+
+export type CreateCharacterResponses = {
+    /**
+     * Character created
+     */
+    201: Character;
+};
+
+export type CreateCharacterResponse = CreateCharacterResponses[keyof CreateCharacterResponses];
+
+export type DeleteCharacterData = {
+    body?: never;
+    path: {
+        /**
+         * Character identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/characters/{id}';
+};
+
+export type DeleteCharacterErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this character
+     */
+    403: Problem;
+    /**
+     * Character not found
+     */
+    404: Problem;
+};
+
+export type DeleteCharacterError = DeleteCharacterErrors[keyof DeleteCharacterErrors];
+
+export type DeleteCharacterResponses = {
+    /**
+     * Character deleted
+     */
+    204: void;
+};
+
+export type DeleteCharacterResponse = DeleteCharacterResponses[keyof DeleteCharacterResponses];
+
+export type GetCharacterData = {
+    body?: never;
+    path: {
+        /**
+         * Character identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/characters/{id}';
+};
+
+export type GetCharacterErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller is authenticated but does not own this character
+     */
+    403: Problem;
+    /**
+     * Character not found
+     */
+    404: Problem;
+};
+
+export type GetCharacterError = GetCharacterErrors[keyof GetCharacterErrors];
+
+export type GetCharacterResponses = {
+    /**
+     * Character found
+     */
+    200: Character;
+};
+
+export type GetCharacterResponse = GetCharacterResponses[keyof GetCharacterResponses];
+
+export type UpdateCharacterData = {
+    body: CharacterUpdate;
+    path: {
+        /**
+         * Character identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/characters/{id}';
+};
+
+export type UpdateCharacterErrors = {
+    /**
+     * Validation error. Possible codes:
+     * - `CHARACTER_NAME_EMPTY`
+     * - `CHARACTER_NAME_TOO_LONG`
+     * - `ATTRIBUTE_OUT_OF_RANGE`
+     * - `SKILL_OUT_OF_RANGE`
+     *
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this character
+     */
+    403: Problem;
+    /**
+     * Character not found
+     */
+    404: Problem;
+};
+
+export type UpdateCharacterError = UpdateCharacterErrors[keyof UpdateCharacterErrors];
+
+export type UpdateCharacterResponses = {
+    /**
+     * Updated character
+     */
+    200: Character;
+};
+
+export type UpdateCharacterResponse = UpdateCharacterResponses[keyof UpdateCharacterResponses];
+
+export type DuplicateCharacterData = {
+    body?: never;
+    path: {
+        /**
+         * Character identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/characters/{id}/duplicate';
+};
+
+export type DuplicateCharacterErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this character
+     */
+    403: Problem;
+    /**
+     * Character not found
+     */
+    404: Problem;
+};
+
+export type DuplicateCharacterError = DuplicateCharacterErrors[keyof DuplicateCharacterErrors];
+
+export type DuplicateCharacterResponses = {
+    /**
+     * Duplicated character
+     */
+    201: Character;
+};
+
+export type DuplicateCharacterResponse = DuplicateCharacterResponses[keyof DuplicateCharacterResponses];
+
+export type ExportCharacterData = {
+    body?: never;
+    path: {
+        /**
+         * Character identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/characters/{id}/export';
+};
+
+export type ExportCharacterErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this character
+     */
+    403: Problem;
+    /**
+     * Character not found
+     */
+    404: Problem;
+};
+
+export type ExportCharacterError = ExportCharacterErrors[keyof ExportCharacterErrors];
+
+export type ExportCharacterResponses = {
+    /**
+     * Character JSON export
+     */
+    200: Character;
+};
+
+export type ExportCharacterResponse = ExportCharacterResponses[keyof ExportCharacterResponses];
+
+export type AddCharacterItemData = {
+    body: ItemCreate;
+    path: {
+        /**
+         * Character identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/characters/{id}/items';
+};
+
+export type AddCharacterItemErrors = {
+    /**
+     * Validation error. Possible codes:
+     * - `CHARACTER_NAME_EMPTY` — item name is empty.
+     * - `ITEM_TYPE_MISMATCH` — payload fields do not match the declared type.
+     *
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this character
+     */
+    403: Problem;
+    /**
+     * Character not found
+     */
+    404: Problem;
+};
+
+export type AddCharacterItemError = AddCharacterItemErrors[keyof AddCharacterItemErrors];
+
+export type AddCharacterItemResponses = {
+    /**
+     * Item created
+     */
+    201: Item;
+};
+
+export type AddCharacterItemResponse = AddCharacterItemResponses[keyof AddCharacterItemResponses];
+
+export type AddCharacterTalentData = {
+    body: TalentCreate;
+    path: {
+        /**
+         * Character identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/characters/{id}/talents';
+};
+
+export type AddCharacterTalentErrors = {
+    /**
+     * Validation error (name empty, rank out of 1–3 range)
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this character
+     */
+    403: Problem;
+    /**
+     * Character not found
+     */
+    404: Problem;
+};
+
+export type AddCharacterTalentError = AddCharacterTalentErrors[keyof AddCharacterTalentErrors];
+
+export type AddCharacterTalentResponses = {
+    /**
+     * Talent created
+     */
+    201: Talent;
+};
+
+export type AddCharacterTalentResponse = AddCharacterTalentResponses[keyof AddCharacterTalentResponses];
+
 export type GetHealthData = {
     body?: never;
     path?: never;
@@ -113,6 +1228,88 @@ export type GetHealthResponses = {
 };
 
 export type GetHealthResponse = GetHealthResponses[keyof GetHealthResponses];
+
+export type DeleteItemData = {
+    body?: never;
+    path: {
+        /**
+         * Item identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/items/{id}';
+};
+
+export type DeleteItemErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the parent character
+     */
+    403: Problem;
+    /**
+     * Item not found
+     */
+    404: Problem;
+};
+
+export type DeleteItemError = DeleteItemErrors[keyof DeleteItemErrors];
+
+export type DeleteItemResponses = {
+    /**
+     * Item deleted
+     */
+    204: void;
+};
+
+export type DeleteItemResponse = DeleteItemResponses[keyof DeleteItemResponses];
+
+export type UpdateItemData = {
+    body: ItemUpdate;
+    path: {
+        /**
+         * Item identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/items/{id}';
+};
+
+export type UpdateItemErrors = {
+    /**
+     * Validation error. Possible code:
+     * - `ITEM_TYPE_MISMATCH` — type discriminator changed.
+     *
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the parent character
+     */
+    403: Problem;
+    /**
+     * Item not found
+     */
+    404: Problem;
+};
+
+export type UpdateItemError = UpdateItemErrors[keyof UpdateItemErrors];
+
+export type UpdateItemResponses = {
+    /**
+     * Updated item
+     */
+    200: Item;
+};
+
+export type UpdateItemResponse = UpdateItemResponses[keyof UpdateItemResponses];
 
 export type GetMeData = {
     body?: never;
@@ -196,3 +1393,83 @@ export type IssueRealtimeTokenResponses = {
 };
 
 export type IssueRealtimeTokenResponse = IssueRealtimeTokenResponses[keyof IssueRealtimeTokenResponses];
+
+export type DeleteTalentData = {
+    body?: never;
+    path: {
+        /**
+         * Talent identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/talents/{id}';
+};
+
+export type DeleteTalentErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the parent character
+     */
+    403: Problem;
+    /**
+     * Talent not found
+     */
+    404: Problem;
+};
+
+export type DeleteTalentError = DeleteTalentErrors[keyof DeleteTalentErrors];
+
+export type DeleteTalentResponses = {
+    /**
+     * Talent deleted
+     */
+    204: void;
+};
+
+export type DeleteTalentResponse = DeleteTalentResponses[keyof DeleteTalentResponses];
+
+export type UpdateTalentData = {
+    body: TalentUpdate;
+    path: {
+        /**
+         * Talent identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/talents/{id}';
+};
+
+export type UpdateTalentErrors = {
+    /**
+     * Validation error (rank out of 1–3 range)
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the parent character
+     */
+    403: Problem;
+    /**
+     * Talent not found
+     */
+    404: Problem;
+};
+
+export type UpdateTalentError = UpdateTalentErrors[keyof UpdateTalentErrors];
+
+export type UpdateTalentResponses = {
+    /**
+     * Updated talent
+     */
+    200: Talent;
+};
+
+export type UpdateTalentResponse = UpdateTalentResponses[keyof UpdateTalentResponses];
