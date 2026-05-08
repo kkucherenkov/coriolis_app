@@ -45,7 +45,7 @@
 </script>
 
 <template>
-  <aside :class="classes" :role="role">
+  <div :class="classes" :role="role">
     <span class="app-banner__icon" aria-hidden="true">
       <AppIcon :name="resolvedIcon" size="md" />
     </span>
@@ -70,7 +70,7 @@
     >
       <AppIcon name="x" size="sm" />
     </button>
-  </aside>
+  </div>
 </template>
 
 <style lang="scss" scoped>

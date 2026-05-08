@@ -27,6 +27,9 @@ const meta: Meta<typeof AppProgress> = {
     tone: 'brass',
     size: 'md',
     showLabel: false,
+    // Default label satisfies aria-progressbar-name for the autodocs story
+    // and any story that does not override it.
+    label: 'Progress bar',
   },
 };
 
@@ -38,17 +41,17 @@ type Story = StoryObj<typeof AppProgress>;
 
 export const Default: Story = {
   name: 'Default (60/100 brass)',
-  args: { value: 60, max: 100, tone: 'brass', size: 'md' },
+  args: { value: 60, max: 100, tone: 'brass', size: 'md', label: 'Progress 60 of 100' },
 };
 
 export const Empty: Story = {
   name: 'Empty (0/100)',
-  args: { value: 0, max: 100, tone: 'brass', size: 'md' },
+  args: { value: 0, max: 100, tone: 'brass', size: 'md', label: 'Progress 0 of 100' },
 };
 
 export const Full: Story = {
   name: 'Full (100/100)',
-  args: { value: 100, max: 100, tone: 'brass', size: 'md' },
+  args: { value: 100, max: 100, tone: 'brass', size: 'md', label: 'Progress 100 of 100' },
 };
 
 // ── Size variants ─────────────────────────────────────────────────────────────
@@ -61,15 +64,15 @@ export const Sizes: Story = {
       <div style="display: flex; flex-direction: column; gap: var(--space-4); max-width: 360px;">
         <div style="display: flex; align-items: center; gap: var(--space-3);">
           <span style="font-family: var(--type-body-md-font-family); font-size: var(--type-body-sm-font-size); color: var(--text-secondary); min-width: 24px;">sm</span>
-          <AppProgress :value="60" :max="100" size="sm" tone="brass" style="flex: 1;" />
+          <AppProgress :value="60" :max="100" size="sm" tone="brass" label="Small progress bar 60 of 100" style="flex: 1;" />
         </div>
         <div style="display: flex; align-items: center; gap: var(--space-3);">
           <span style="font-family: var(--type-body-md-font-family); font-size: var(--type-body-sm-font-size); color: var(--text-secondary); min-width: 24px;">md</span>
-          <AppProgress :value="60" :max="100" size="md" tone="brass" style="flex: 1;" />
+          <AppProgress :value="60" :max="100" size="md" tone="brass" label="Medium progress bar 60 of 100" style="flex: 1;" />
         </div>
         <div style="display: flex; align-items: center; gap: var(--space-3);">
           <span style="font-family: var(--type-body-md-font-family); font-size: var(--type-body-sm-font-size); color: var(--text-secondary); min-width: 24px;">lg</span>
-          <AppProgress :value="60" :max="100" size="lg" tone="brass" style="flex: 1;" />
+          <AppProgress :value="60" :max="100" size="lg" tone="brass" label="Large progress bar 60 of 100" style="flex: 1;" />
         </div>
       </div>
     `,
@@ -86,7 +89,7 @@ export const Tones: Story = {
       <div style="display: flex; flex-direction: column; gap: var(--space-4); max-width: 360px;">
         <div v-for="tone in tones" :key="tone" style="display: flex; align-items: center; gap: var(--space-3);">
           <span style="font-family: var(--type-body-md-font-family); font-size: var(--type-body-sm-font-size); color: var(--text-secondary); min-width: 64px;">{{ tone }}</span>
-          <AppProgress :value="60" :max="100" size="md" :tone="tone" style="flex: 1;" />
+          <AppProgress :value="60" :max="100" size="md" :tone="tone" :label="tone + ' tone progress 60 of 100'" style="flex: 1;" />
         </div>
       </div>
     `,
@@ -151,17 +154,17 @@ export const WizardSteps: Story = {
 
 export const OverMax: Story = {
   name: 'Value over max (clamped to 100)',
-  args: { value: 999, max: 100, tone: 'brass', size: 'md' },
+  args: { value: 999, max: 100, tone: 'brass', size: 'md', label: 'Clamped progress bar' },
 };
 
 export const UnderMin: Story = {
   name: 'Value under min (clamped to 0)',
-  args: { value: -50, max: 100, min: 0, tone: 'brass', size: 'md' },
+  args: { value: -50, max: 100, min: 0, tone: 'brass', size: 'md', label: 'Empty progress bar' },
 };
 
 export const NonZeroMin: Story = {
   name: 'Non-zero min (range 10–20, value 15)',
-  args: { value: 15, max: 20, min: 10, tone: 'success', size: 'md', showLabel: true },
+  args: { value: 15, max: 20, min: 10, tone: 'success', size: 'md', showLabel: true, label: 'Progress 15 of 20' },
 };
 
 export const AccessibleLabel: Story = {

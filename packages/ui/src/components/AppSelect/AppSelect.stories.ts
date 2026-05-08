@@ -32,6 +32,20 @@ const meta: Meta<typeof AppSelect> = {
       },
     },
   },
+  // Default render wraps the select with a <label> so the autodocs story
+  // and any story without a custom render function satisfies the select-name rule.
+  render: (args) => ({
+    components: { AppSelect },
+    setup() {
+      return { args, options: [{ value: 'apple', label: 'Apple' }, { value: 'banana', label: 'Banana' }] };
+    },
+    template: `
+      <div style="width:280px;">
+        <label for="select-meta-default" style="display:block;margin-bottom:var(--space-2);font-family:var(--type-body-sm-font-family);font-size:var(--type-body-sm-font-size);color:var(--text-secondary);">Option</label>
+        <AppSelect v-bind="args" :options="options" select-id="select-meta-default" />
+      </div>
+    `,
+  }),
 };
 
 export default meta;
@@ -92,7 +106,8 @@ export const Default: Story = {
     },
     template: `
       <div style="width:280px;">
-        <AppSelect v-model="value" :options="options" />
+        <label for="select-default" style="display:block;margin-bottom:var(--space-2);font-family:var(--type-body-sm-font-family);font-size:var(--type-body-sm-font-size);color:var(--text-secondary);">Fruit</label>
+        <AppSelect v-model="value" :options="options" select-id="select-default" />
         <p style="margin-top:var(--space-4);color:var(--text-secondary);font-size:var(--type-body-sm-font-size);">
           modelValue: {{ value ?? 'null' }}
         </p>
@@ -111,7 +126,8 @@ export const WithPlaceholder: Story = {
     },
     template: `
       <div style="width:280px;">
-        <AppSelect v-model="value" :options="options" placeholder="Choose a fruit…" />
+        <label for="select-placeholder" style="display:block;margin-bottom:var(--space-2);font-family:var(--type-body-sm-font-family);font-size:var(--type-body-sm-font-size);color:var(--text-secondary);">Fruit</label>
+        <AppSelect v-model="value" :options="options" placeholder="Choose a fruit…" select-id="select-placeholder" />
         <p style="margin-top:var(--space-4);color:var(--text-secondary);font-size:var(--type-body-sm-font-size);">
           modelValue: {{ value ?? 'null' }}
         </p>
@@ -132,9 +148,18 @@ export const Sizes: Story = {
     },
     template: `
       <div style="display:flex;flex-direction:column;gap:var(--space-6);width:280px;">
-        <AppSelect size="sm" placeholder="Small (sm)" :options="options" v-model="sm" />
-        <AppSelect size="md" placeholder="Medium (md)" :options="options" v-model="md" />
-        <AppSelect size="lg" placeholder="Large (lg)" :options="options" v-model="lg" />
+        <div>
+          <label for="select-size-sm" style="display:block;margin-bottom:var(--space-1);font-family:var(--type-body-sm-font-family);font-size:var(--type-body-sm-font-size);color:var(--text-secondary);">Small (sm)</label>
+          <AppSelect size="sm" placeholder="Small (sm)" :options="options" v-model="sm" select-id="select-size-sm" />
+        </div>
+        <div>
+          <label for="select-size-md" style="display:block;margin-bottom:var(--space-1);font-family:var(--type-body-sm-font-family);font-size:var(--type-body-sm-font-size);color:var(--text-secondary);">Medium (md)</label>
+          <AppSelect size="md" placeholder="Medium (md)" :options="options" v-model="md" select-id="select-size-md" />
+        </div>
+        <div>
+          <label for="select-size-lg" style="display:block;margin-bottom:var(--space-1);font-family:var(--type-body-sm-font-family);font-size:var(--type-body-sm-font-size);color:var(--text-secondary);">Large (lg)</label>
+          <AppSelect size="lg" placeholder="Large (lg)" :options="options" v-model="lg" select-id="select-size-lg" />
+        </div>
       </div>
     `,
   }),
@@ -147,7 +172,12 @@ export const Disabled: Story = {
       const value = ref<string>('banana');
       return { value, options: FRUITS };
     },
-    template: `<div style="width:280px;"><AppSelect v-model="value" :options="options" disabled /></div>`,
+    template: `
+      <div style="width:280px;">
+        <label for="select-disabled" style="display:block;margin-bottom:var(--space-2);font-family:var(--type-body-sm-font-family);font-size:var(--type-body-sm-font-size);color:var(--text-secondary);">Fruit (disabled)</label>
+        <AppSelect v-model="value" :options="options" disabled select-id="select-disabled" />
+      </div>
+    `,
   }),
 };
 
@@ -160,7 +190,8 @@ export const Invalid: Story = {
     },
     template: `
       <div style="width:280px;display:flex;flex-direction:column;gap:var(--space-2);">
-        <AppSelect v-model="value" :options="options" placeholder="Pick a fruit…" invalid />
+        <label for="select-invalid" style="display:block;font-family:var(--type-body-sm-font-family);font-size:var(--type-body-sm-font-size);color:var(--text-secondary);">Fruit</label>
+        <AppSelect v-model="value" :options="options" placeholder="Pick a fruit…" invalid select-id="select-invalid" />
         <p style="margin:0;color:var(--state-crimson);font-size:var(--type-body-sm-font-size);">
           Selection is required.
         </p>
@@ -179,6 +210,7 @@ export const RequiredInForm: Story = {
     },
     template: `
       <form @submit.prevent style="width:280px;display:flex;flex-direction:column;gap:var(--space-4);">
+        <label for="fruit-required" style="font-family:var(--type-body-sm-font-family);font-size:var(--type-body-sm-font-size);color:var(--text-secondary);">Fruit (required)</label>
         <AppSelect
           v-model="value"
           :options="options"
@@ -205,7 +237,8 @@ export const NumberValues: Story = {
     },
     template: `
       <div style="width:280px;">
-        <AppSelect v-model="value" :options="options" placeholder="Pick a number…" />
+        <label for="select-number" style="display:block;margin-bottom:var(--space-2);font-family:var(--type-body-sm-font-family);font-size:var(--type-body-sm-font-size);color:var(--text-secondary);">Number</label>
+        <AppSelect v-model="value" :options="options" placeholder="Pick a number…" select-id="select-number" />
         <p style="margin-top:var(--space-4);color:var(--text-secondary);font-size:var(--type-body-sm-font-size);">
           modelValue: {{ value ?? 'null' }} (type: {{ typeof value }})
         </p>
@@ -224,7 +257,8 @@ export const ManyOptions: Story = {
     },
     template: `
       <div style="width:280px;">
-        <AppSelect v-model="value" :options="options" placeholder="Select a star system…" />
+        <label for="select-many" style="display:block;margin-bottom:var(--space-2);font-family:var(--type-body-sm-font-family);font-size:var(--type-body-sm-font-size);color:var(--text-secondary);">Star System</label>
+        <AppSelect v-model="value" :options="options" placeholder="Select a star system…" select-id="select-many" />
       </div>
     `,
   }),
@@ -240,7 +274,8 @@ export const DisabledOption: Story = {
     },
     template: `
       <div style="width:280px;">
-        <AppSelect v-model="value" :options="options" placeholder="Pick a fruit…" />
+        <label for="select-disabled-option" style="display:block;margin-bottom:var(--space-2);font-family:var(--type-body-sm-font-family);font-size:var(--type-body-sm-font-size);color:var(--text-secondary);">Fruit</label>
+        <AppSelect v-model="value" :options="options" placeholder="Pick a fruit…" select-id="select-disabled-option" />
         <p style="margin-top:var(--space-4);color:var(--text-secondary);font-size:var(--type-body-sm-font-size);">
           Cherry is disabled (out of season).
         </p>
@@ -257,7 +292,12 @@ export const SmInvalid: Story = {
       const value = ref<string | null>(null);
       return { value, options: FRUITS };
     },
-    template: `<div style="width:240px;"><AppSelect size="sm" v-model="value" :options="options" placeholder="Small invalid…" invalid /></div>`,
+    template: `
+      <div style="width:240px;">
+        <label for="select-sm-invalid" style="display:block;margin-bottom:var(--space-1);font-family:var(--type-body-sm-font-family);font-size:var(--type-body-sm-font-size);color:var(--text-secondary);">Fruit</label>
+        <AppSelect size="sm" v-model="value" :options="options" placeholder="Small invalid…" invalid select-id="select-sm-invalid" />
+      </div>
+    `,
   }),
 };
 
@@ -269,6 +309,11 @@ export const LgInvalid: Story = {
       const value = ref<string | null>(null);
       return { value, options: FRUITS };
     },
-    template: `<div style="width:320px;"><AppSelect size="lg" v-model="value" :options="options" placeholder="Large invalid…" invalid /></div>`,
+    template: `
+      <div style="width:320px;">
+        <label for="select-lg-invalid" style="display:block;margin-bottom:var(--space-1);font-family:var(--type-body-sm-font-family);font-size:var(--type-body-sm-font-size);color:var(--text-secondary);">Fruit</label>
+        <AppSelect size="lg" v-model="value" :options="options" placeholder="Large invalid…" invalid select-id="select-lg-invalid" />
+      </div>
+    `,
   }),
 };

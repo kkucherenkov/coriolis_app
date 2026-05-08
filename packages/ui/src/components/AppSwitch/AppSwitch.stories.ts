@@ -8,7 +8,10 @@ const meta: Meta<typeof AppSwitch> = {
   title: 'Primitives/AppSwitch',
   component: AppSwitch,
   tags: ['autodocs'],
-  args: { modelValue: false },
+  // Default args include a label so every story (including autodocs default)
+  // renders an accessible switch. Stories that want to show a bare switch
+  // (no visible label) must override label and supply aria-label themselves.
+  args: { modelValue: false, label: 'Feature toggle' },
   argTypes: {
     modelValue: { control: 'boolean', description: 'Current on/off state (v-model).' },
     label: {
@@ -30,25 +33,33 @@ type Story = StoryObj<typeof AppSwitch>;
 
 /** Switch in the off (unchecked) state — no label. */
 export const DefaultOff: Story = {
+  // Reset label so the bare-button branch is rendered; aria-label provides
+  // the accessible name that the button-name rule requires.
+  args: { label: undefined },
   render: (args) => ({
     components: { AppSwitch },
     setup: () => {
       const checked = ref(false);
       return { args, checked };
     },
-    template: `<AppSwitch v-bind="args" v-model="checked" />`,
+    // No visible label — aria-label applied via $attrs to the root <button>.
+    template: `<AppSwitch v-bind="args" v-model="checked" aria-label="Toggle feature off" />`,
   }),
 };
 
 /** Switch in the on (checked) state — no label. */
 export const DefaultOn: Story = {
+  // Reset label so the bare-button branch is rendered; aria-label provides
+  // the accessible name that the button-name rule requires.
+  args: { label: undefined },
   render: (args) => ({
     components: { AppSwitch },
     setup: () => {
       const checked = ref(true);
       return { args, checked };
     },
-    template: `<AppSwitch v-bind="args" v-model="checked" />`,
+    // No visible label — aria-label applied via $attrs to the root <button>.
+    template: `<AppSwitch v-bind="args" v-model="checked" aria-label="Toggle feature on" />`,
   }),
 };
 

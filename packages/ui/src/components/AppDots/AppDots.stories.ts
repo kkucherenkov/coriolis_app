@@ -21,6 +21,9 @@ const meta: Meta<typeof AppDots> = {
     max: 5,
     size: 'md',
     tone: 'brass',
+    // Default label satisfies aria-meter-name for the autodocs story and
+    // any story that does not override it.
+    label: 'Attribute dots',
   },
 };
 
@@ -32,32 +35,32 @@ type Story = StoryObj<typeof AppDots>;
 
 export const Default: Story = {
   name: 'Default (3/5 brass)',
-  args: { value: 3, max: 5, tone: 'brass', size: 'md' },
+  args: { value: 3, max: 5, tone: 'brass', size: 'md', label: 'Attribute dots 3 of 5' },
 };
 
 export const Full: Story = {
   name: 'Full (5/5)',
-  args: { value: 5, max: 5, tone: 'brass', size: 'md' },
+  args: { value: 5, max: 5, tone: 'brass', size: 'md', label: 'Attribute dots 5 of 5' },
 };
 
 export const Empty: Story = {
   name: 'Empty (0/5)',
-  args: { value: 0, max: 5, tone: 'brass', size: 'md' },
+  args: { value: 0, max: 5, tone: 'brass', size: 'md', label: 'Attribute dots 0 of 5' },
 };
 
 export const Mystic: Story = {
   name: 'Mystic (2/5)',
-  args: { value: 2, max: 5, tone: 'mystic', size: 'md' },
+  args: { value: 2, max: 5, tone: 'mystic', size: 'md', label: 'Mystic attribute 2 of 5' },
 };
 
 export const Crimson: Story = {
   name: 'Crimson (4/5)',
-  args: { value: 4, max: 5, tone: 'crimson', size: 'md' },
+  args: { value: 4, max: 5, tone: 'crimson', size: 'md', label: 'Crimson attribute 4 of 5' },
 };
 
 export const Darkness: Story = {
   name: 'Darkness (1/5)',
-  args: { value: 1, max: 5, tone: 'darkness', size: 'md' },
+  args: { value: 1, max: 5, tone: 'darkness', size: 'md', label: 'Darkness attribute 1 of 5' },
 };
 
 // ── Size variants ─────────────────────────────────────────────────────────────
@@ -70,15 +73,15 @@ export const Sizes: Story = {
       <div style="display: flex; flex-direction: column; gap: var(--space-3); align-items: flex-start;">
         <div style="display: flex; align-items: center; gap: var(--space-3);">
           <span style="font-family: var(--type-body-md-font-family); font-size: var(--type-body-sm-font-size); color: var(--text-secondary); min-width: 24px;">sm</span>
-          <AppDots :value="3" :max="5" size="sm" tone="brass" />
+          <AppDots :value="3" :max="5" size="sm" tone="brass" label="Small dots 3 of 5" />
         </div>
         <div style="display: flex; align-items: center; gap: var(--space-3);">
           <span style="font-family: var(--type-body-md-font-family); font-size: var(--type-body-sm-font-size); color: var(--text-secondary); min-width: 24px;">md</span>
-          <AppDots :value="3" :max="5" size="md" tone="brass" />
+          <AppDots :value="3" :max="5" size="md" tone="brass" label="Medium dots 3 of 5" />
         </div>
         <div style="display: flex; align-items: center; gap: var(--space-3);">
           <span style="font-family: var(--type-body-md-font-family); font-size: var(--type-body-sm-font-size); color: var(--text-secondary); min-width: 24px;">lg</span>
-          <AppDots :value="3" :max="5" size="lg" tone="brass" />
+          <AppDots :value="3" :max="5" size="lg" tone="brass" label="Large dots 3 of 5" />
         </div>
       </div>
     `,
@@ -89,7 +92,7 @@ export const Sizes: Story = {
 
 export const LargerMax: Story = {
   name: 'Larger max (4/8)',
-  args: { value: 4, max: 8, tone: 'brass', size: 'md' },
+  args: { value: 4, max: 8, tone: 'brass', size: 'md', label: 'Attribute dots 4 of 8' },
 };
 
 export const WithLabel: Story = {

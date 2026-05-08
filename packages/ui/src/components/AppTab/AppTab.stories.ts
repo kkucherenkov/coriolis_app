@@ -24,6 +24,20 @@ const meta: Meta<typeof AppTab> = {
     size: 'md',
     tone: 'brass',
   },
+  // AppTab renders role="tab" which requires a role="tablist" parent.
+  // All stories must provide this wrapper. The autodocs default story
+  // uses the meta-level render below so the rule is always satisfied.
+  render: (args) => ({
+    components: { AppTab },
+    setup() {
+      return { args };
+    },
+    template: `
+      <div role="tablist" aria-label="Demo tabs">
+        <AppTab v-bind="args">Tab</AppTab>
+      </div>
+    `,
+  }),
 };
 
 export default meta;
@@ -40,7 +54,7 @@ export const Inactive: Story = {
     setup() {
       return { args };
     },
-    template: `<AppTab v-bind="args">Stats</AppTab>`,
+    template: `<div role="tablist" aria-label="Character sheet sections"><AppTab v-bind="args">Stats</AppTab></div>`,
   }),
 };
 
@@ -54,7 +68,7 @@ export const Active: Story = {
     setup() {
       return { args };
     },
-    template: `<AppTab v-bind="args">Stats</AppTab>`,
+    template: `<div role="tablist" aria-label="Character sheet sections"><AppTab v-bind="args">Stats</AppTab></div>`,
   }),
 };
 
@@ -65,7 +79,7 @@ export const HoverVisualDemo: Story = {
   render: () => ({
     components: { AppTab },
     template: `
-      <div style="display: flex; gap: var(--space-1); align-items: flex-end; padding-bottom: var(--space-2);">
+      <div role="tablist" aria-label="Demo tabs" style="display: flex; gap: var(--space-1); align-items: flex-end; padding-bottom: var(--space-2);">
         <AppTab :active="false" tone="brass">Hover me</AppTab>
         <AppTab :active="true" tone="brass">Active</AppTab>
       </div>
@@ -80,7 +94,7 @@ export const Disabled: Story = {
   render: () => ({
     components: { AppTab },
     template: `
-      <div style="display: flex; gap: var(--space-1); align-items: flex-end;">
+      <div role="tablist" aria-label="Demo tabs" style="display: flex; gap: var(--space-1); align-items: flex-end;">
         <AppTab :active="false" :disabled="true">Locked</AppTab>
         <AppTab :active="true" :disabled="true">Active + Disabled</AppTab>
       </div>
@@ -98,11 +112,15 @@ export const Sizes: Story = {
       <div style="display: flex; gap: var(--space-4); align-items: flex-end;">
         <div>
           <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: var(--space-2);">sm</div>
-          <AppTab size="sm" :active="true">Stats</AppTab>
+          <div role="tablist" aria-label="Small size demo tabs">
+            <AppTab size="sm" :active="true">Stats</AppTab>
+          </div>
         </div>
         <div>
           <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: var(--space-2);">md</div>
-          <AppTab size="md" :active="true">Stats</AppTab>
+          <div role="tablist" aria-label="Medium size demo tabs">
+            <AppTab size="md" :active="true">Stats</AppTab>
+          </div>
         </div>
       </div>
     `,
@@ -119,11 +137,15 @@ export const Tones: Story = {
       <div style="display: flex; gap: var(--space-6); align-items: flex-end;">
         <div>
           <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: var(--space-2);">brass</div>
-          <AppTab tone="brass" :active="true">Current Roll</AppTab>
+          <div role="tablist" aria-label="Brass tone demo tabs">
+            <AppTab tone="brass" :active="true">Current Roll</AppTab>
+          </div>
         </div>
         <div>
           <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: var(--space-2);">mystic</div>
-          <AppTab tone="mystic" :active="true">Push History</AppTab>
+          <div role="tablist" aria-label="Mystic tone demo tabs">
+            <AppTab tone="mystic" :active="true">Push History</AppTab>
+          </div>
         </div>
       </div>
     `,
@@ -137,7 +159,7 @@ export const WithIcon: Story = {
   render: () => ({
     components: { AppTab, AppIcon },
     template: `
-      <div style="display: flex; gap: var(--space-1); align-items: flex-end;">
+      <div role="tablist" aria-label="Character sheet sections" style="display: flex; gap: var(--space-1); align-items: flex-end;">
         <AppTab :active="true" tone="brass">
           <template #icon-leading>
             <AppIcon name="user" size="sm" />
@@ -173,7 +195,7 @@ export const TabList: Story = {
       return { tabs, active };
     },
     template: `
-      <nav role="tablist" style="display: flex; border-bottom: 1px solid var(--brand-brass-deep); padding: 0 var(--space-6);">
+      <div role="tablist" aria-label="Character sheet sections" style="display: flex; border-bottom: 1px solid var(--brand-brass-deep); padding: 0 var(--space-6);">
         <AppTab
           v-for="tab in tabs"
           :key="tab"
@@ -181,7 +203,7 @@ export const TabList: Story = {
           tone="brass"
           @click="active = tab"
         >{{ tab }}</AppTab>
-      </nav>
+      </div>
     `,
   }),
 };
@@ -198,7 +220,7 @@ export const TabListMystic: Story = {
       return { tabs, active };
     },
     template: `
-      <nav role="tablist" style="display: flex; border-bottom: 1px solid var(--brand-brass-deep);">
+      <div role="tablist" aria-label="Dice roller sections" style="display: flex; border-bottom: 1px solid var(--brand-brass-deep);">
         <AppTab
           v-for="tab in tabs"
           :key="tab"
@@ -206,7 +228,7 @@ export const TabListMystic: Story = {
           tone="mystic"
           @click="active = tab"
         >{{ tab }}</AppTab>
-      </nav>
+      </div>
     `,
   }),
 };
@@ -223,7 +245,7 @@ export const TabListSmall: Story = {
       return { tabs, active };
     },
     template: `
-      <nav role="tablist" style="display: flex; border-bottom: 1px solid var(--brand-brass-deep);">
+      <div role="tablist" aria-label="Ship sheet sections" style="display: flex; border-bottom: 1px solid var(--brand-brass-deep);">
         <AppTab
           v-for="tab in tabs"
           :key="tab"
@@ -232,7 +254,7 @@ export const TabListSmall: Story = {
           tone="brass"
           @click="active = tab"
         >{{ tab }}</AppTab>
-      </nav>
+      </div>
     `,
   }),
 };
@@ -254,7 +276,7 @@ export const GMSessionTabs: Story = {
       return { players, active };
     },
     template: `
-      <nav role="tablist" style="display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--brand-brass-deep); padding: 0 var(--space-4);">
+      <div role="tablist" aria-label="GM session participants" style="display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--brand-brass-deep); padding: 0 var(--space-4);">
         <AppTab
           v-for="p in players"
           :key="p.name"
@@ -268,7 +290,7 @@ export const GMSessionTabs: Story = {
           </template>
           {{ p.name }}
         </AppTab>
-      </nav>
+      </div>
     `,
   }),
 };

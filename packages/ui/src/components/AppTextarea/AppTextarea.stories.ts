@@ -24,6 +24,13 @@ const meta: Meta<typeof AppTextarea> = {
     invalid: false,
     autosize: false,
   },
+  // Default render provides aria-label so the autodocs story satisfies the
+  // label rule without wiring up a visible <label> element.
+  render: (args) => ({
+    components: { AppTextarea },
+    setup: () => ({ args }),
+    template: `<AppTextarea v-bind="args" aria-label="Textarea field" style="max-width:360px;" />`,
+  }),
 };
 
 export default meta;
@@ -38,7 +45,7 @@ export const DefaultSm: Story = {
   render: (args) => ({
     components: { AppTextarea },
     setup: () => ({ args }),
-    template: `<AppTextarea v-bind="args" style="max-width:360px;" />`,
+    template: `<AppTextarea v-bind="args" aria-label="Small textarea" style="max-width:360px;" />`,
   }),
 };
 
@@ -48,7 +55,7 @@ export const DefaultMd: Story = {
   render: (args) => ({
     components: { AppTextarea },
     setup: () => ({ args }),
-    template: `<AppTextarea v-bind="args" style="max-width:360px;" />`,
+    template: `<AppTextarea v-bind="args" aria-label="Medium textarea" style="max-width:360px;" />`,
   }),
 };
 
@@ -58,7 +65,7 @@ export const DefaultLg: Story = {
   render: (args) => ({
     components: { AppTextarea },
     setup: () => ({ args }),
-    template: `<AppTextarea v-bind="args" style="max-width:360px;" />`,
+    template: `<AppTextarea v-bind="args" aria-label="Large textarea" style="max-width:360px;" />`,
   }),
 };
 
@@ -72,7 +79,7 @@ export const InvalidSm: Story = {
     setup: () => ({ args }),
     template: `
       <div style="max-width:360px; display:flex; flex-direction:column; gap:var(--space-2);">
-        <AppTextarea v-bind="args" />
+        <AppTextarea v-bind="args" aria-label="Small invalid textarea" />
         <p style="color:var(--state-crimson); font-size:var(--type-body-sm-font-size); margin:0;">Notes must be at least 20 characters.</p>
       </div>
     `,
@@ -87,7 +94,7 @@ export const InvalidMd: Story = {
     setup: () => ({ args }),
     template: `
       <div style="max-width:360px; display:flex; flex-direction:column; gap:var(--space-2);">
-        <AppTextarea v-bind="args" />
+        <AppTextarea v-bind="args" aria-label="Medium invalid textarea" />
         <p style="color:var(--state-crimson); font-size:var(--type-body-sm-font-size); margin:0;">Please provide a longer description.</p>
       </div>
     `,
@@ -102,7 +109,7 @@ export const InvalidLg: Story = {
     setup: () => ({ args }),
     template: `
       <div style="max-width:360px; display:flex; flex-direction:column; gap:var(--space-2);">
-        <AppTextarea v-bind="args" />
+        <AppTextarea v-bind="args" aria-label="Large invalid textarea" />
         <p style="color:var(--state-crimson); font-size:var(--type-body-sm-font-size); margin:0;">This value is too short.</p>
       </div>
     `,
@@ -116,7 +123,7 @@ export const Disabled: Story = {
   render: (args) => ({
     components: { AppTextarea },
     setup: () => ({ args }),
-    template: `<AppTextarea v-bind="args" style="max-width:360px;" />`,
+    template: `<AppTextarea v-bind="args" aria-label="Disabled textarea" style="max-width:360px;" />`,
   }),
 };
 
@@ -128,7 +135,7 @@ export const Readonly: Story = {
   render: (args) => ({
     components: { AppTextarea },
     setup: () => ({ args }),
-    template: `<AppTextarea v-bind="args" style="max-width:360px;" />`,
+    template: `<AppTextarea v-bind="args" aria-label="Read-only textarea" style="max-width:360px;" />`,
   }),
 };
 
@@ -138,7 +145,7 @@ export const WithPlaceholder: Story = {
   render: (args) => ({
     components: { AppTextarea },
     setup: () => ({ args }),
-    template: `<AppTextarea v-bind="args" style="max-width:360px;" />`,
+    template: `<AppTextarea v-bind="args" aria-label="Character background textarea" style="max-width:360px;" />`,
   }),
 };
 
@@ -150,9 +157,9 @@ export const RowsCount: Story = {
     components: { AppTextarea },
     template: `
       <div style="display:flex; flex-direction:column; gap:var(--space-4); max-width:360px;">
-        <AppTextarea :model-value="''" :rows="2" placeholder="2 rows" />
-        <AppTextarea :model-value="''" :rows="4" placeholder="4 rows (default)" />
-        <AppTextarea :model-value="''" :rows="8" placeholder="8 rows" />
+        <AppTextarea :model-value="''" :rows="2" placeholder="2 rows" aria-label="2 rows textarea" />
+        <AppTextarea :model-value="''" :rows="4" placeholder="4 rows (default)" aria-label="4 rows textarea" />
+        <AppTextarea :model-value="''" :rows="8" placeholder="8 rows" aria-label="8 rows textarea" />
       </div>
     `,
   }),
@@ -166,7 +173,7 @@ export const MaxLength: Story = {
   render: (args) => ({
     components: { AppTextarea },
     setup: () => ({ args }),
-    template: `<AppTextarea v-bind="args" style="max-width:360px;" />`,
+    template: `<AppTextarea v-bind="args" aria-label="Max length textarea" style="max-width:360px;" />`,
   }),
 };
 
@@ -183,7 +190,7 @@ export const AutosizeBasic: Story = {
   render: (args) => ({
     components: { AppTextarea },
     setup: () => ({ args }),
-    template: `<AppTextarea v-bind="args" style="max-width:360px;" />`,
+    template: `<AppTextarea v-bind="args" aria-label="Autosize textarea" style="max-width:360px;" />`,
   }),
 };
 
@@ -195,9 +202,9 @@ export const AllSizes: Story = {
     components: { AppTextarea },
     template: `
       <div style="display:flex; flex-direction:column; gap:var(--space-4); max-width:400px;">
-        <AppTextarea size="sm" :model-value="''" placeholder="Small (sm)" />
-        <AppTextarea size="md" :model-value="''" placeholder="Medium (md)" />
-        <AppTextarea size="lg" :model-value="''" placeholder="Large (lg)" />
+        <AppTextarea size="sm" :model-value="''" placeholder="Small (sm)"  aria-label="Small textarea" />
+        <AppTextarea size="md" :model-value="''" placeholder="Medium (md)" aria-label="Medium textarea" />
+        <AppTextarea size="lg" :model-value="''" placeholder="Large (lg)"  aria-label="Large textarea" />
       </div>
     `,
   }),
@@ -211,11 +218,11 @@ export const AllStates: Story = {
     components: { AppTextarea },
     template: `
       <div style="display:flex; flex-direction:column; gap:var(--space-4); max-width:400px;">
-        <AppTextarea :model-value="''" placeholder="Default" />
-        <AppTextarea :model-value="'Has value — ready to submit.'" />
-        <AppTextarea :model-value="''" placeholder="Invalid" :invalid="true" />
-        <AppTextarea :model-value="'Disabled content'" :disabled="true" />
-        <AppTextarea :model-value="'Read-only content'" :readonly="true" />
+        <AppTextarea :model-value="''" placeholder="Default"  aria-label="Default state textarea" />
+        <AppTextarea :model-value="'Has value — ready to submit.'"          aria-label="Filled textarea" />
+        <AppTextarea :model-value="''" placeholder="Invalid"  aria-label="Invalid state textarea"  :invalid="true" />
+        <AppTextarea :model-value="'Disabled content'"                      aria-label="Disabled textarea"   :disabled="true" />
+        <AppTextarea :model-value="'Read-only content'"                     aria-label="Read-only textarea"  :readonly="true" />
       </div>
     `,
   }),
