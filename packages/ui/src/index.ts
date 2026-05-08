@@ -17,6 +17,7 @@ export type { IconCoriolisName } from './components/AppIconCoriolis';
 export { AppInput } from './components/AppInput';
 export { AppKbd } from './components/AppKbd';
 export { AppLabel } from './components/AppLabel';
+export { AppModal } from './components/AppModal';
 export { AppPopover } from './components/AppPopover';
 export { AppProgress } from './components/AppProgress';
 export { AppSegControl } from './components/AppSegControl';
