@@ -135,3 +135,4 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 | Primitive | `AppCard` | ✓ | — |
 | Primitive | `AppInput` | ✓ | — |
 | Primitive | `AppBadge` | ✓ | — |
+| Primitive | `AppDivider` | ✓ | — |
