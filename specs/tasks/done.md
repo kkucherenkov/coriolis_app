@@ -2,6 +2,30 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## Coriolis-decorative primitives (Epic 2.2 — final 4)
+
+- Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Epic 2 Feature 2.2 (T-2.2.a, .c, .e, .f)
+- Result: merged at `ff53323`. Nine commits — one component + one specs/stories per primitive plus a barrel/inventory commit and a typecheck fix.
+- AppIconCoriolis: 9 SVG glyphs for the Nine Icons (placeholder designs ready for a publisher-aware illustration pass), `currentColor` stroke. Static map + `v-html` rendering with explicit ESLint suppression rationale (closed map, not user input).
+- AppDiePool: composes AppDie; counts hits per ST3001 ГЛАВА 5 (all 6s count, including pushed); pushed dice get a translateY+opacity visual without losing their hit contribution.
+- AppStarOrnament: single 12-point polygon on a 100×100 viewBox; filled rather than stroked for legibility at sm size.
+- AppArabesqueCorner: single canonical TL path + `rotate()` for the four orientations.
+- 655 vitest specs across the @app/ui package (all primitives green).
+
+## Account deletion backend (Epic 4.2.b–c)
+
+- Completed: 2026-05-08
+- Owner: claude (backend-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Feature 4.2, T-4.2.1.b–c
+- Result: merged at `8db8a7f`. Three commits: DeleteMeCommand handler (`6ea0835`), daily cron job (`cbf3822`), UserDeletedEvent + log handler (`8db8a7f`).
+- New dep: `@nestjs/schedule@^6.1.3`. `ScheduleModule.forRoot()` registered at app level.
+- Idempotent path: `repo.softDelete` uses `prisma.user.updateMany` with `where: { id, deletedAt: null }`; if `count === 0`, the handler returns 204 without re-stamping or emitting events.
+- BA session revocation: `auth.api.revokeSessions` requires the caller's own session, so `AuthService.revokeAllSessions(userId)` instead clears `prisma.session` directly. Session FK to User has `onDelete: Cascade`, so the eventual hard-delete flushes any survivors.
+- Cron: `@Cron(CronExpression.EVERY_DAY_AT_3AM)` deletes users with `deletedAt < now - 30d`. Cascade FKs handle children. TODO: Centrifugo channel cleanup + share-slug invalidation when those systems land (Epic 7).
+- 160 backend specs pass total (+16 new across DeleteMe handler + cron job).
+
 ## Mobile sheet skeleton (Epic 3.4)
 
 - Completed: 2026-05-08
