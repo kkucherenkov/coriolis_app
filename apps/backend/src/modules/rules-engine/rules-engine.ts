@@ -78,6 +78,35 @@ export function computeEncumbranceCurrent(items: ItemReadModel[]): number {
   }, 0);
 }
 
+// --------------- Condition dice-pool penalty ---------------
+
+/**
+ * PRD §5.3 / Epic 5 Feature 5.3 T-5.3.1.d:
+ * Each active condition reduces the dice pool by 1.
+ * The four conditions are: exhausted, sleepless, thirsty, hungry.
+ * Result is clamped to 0 — the pool can never go negative.
+ *
+ * ConditionFlags schema: packages/specs/openapi/openapi.yaml#/components/schemas/ConditionFlags
+ */
+export interface ConditionFlags {
+  exhausted: boolean;
+  sleepless: boolean;
+  thirsty: boolean;
+  hungry: boolean;
+}
+
+export function applyConditions(
+  conditions: ConditionFlags,
+  basePool: number,
+): number {
+  const active =
+    Number(Boolean(conditions.exhausted)) +
+    Number(Boolean(conditions.sleepless)) +
+    Number(Boolean(conditions.thirsty)) +
+    Number(Boolean(conditions.hungry));
+  return Math.max(0, basePool - active);
+}
+
 // --------------- Push eligibility ---------------
 
 /**

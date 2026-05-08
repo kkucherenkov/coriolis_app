@@ -11,12 +11,14 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  applyConditions,
   canPush,
   computeEncumbranceCurrent,
   computeEncumbranceMax,
   computeHpMax,
   computeMpMax,
 } from './rules-engine';
+import type { ConditionFlags } from './rules-engine';
 
 import type { ItemReadModel } from '../characters/domain/character.ports';
 
@@ -164,6 +166,61 @@ describe('computeEncumbranceCurrent', () => {
   it('handles SHIP_MODULE items', () => {
     const module: ItemReadModel = { id: 'm-1', type: 'SHIP_MODULE', weight: 3 };
     expect(computeEncumbranceCurrent([module])).toBe(3);
+  });
+});
+
+// --------------- applyConditions ---------------
+
+describe('applyConditions', () => {
+  const none: ConditionFlags = { exhausted: false, sleepless: false, thirsty: false, hungry: false };
+  const all: ConditionFlags = { exhausted: true, sleepless: true, thirsty: true, hungry: true };
+
+  it('no conditions active → pool unchanged', () => {
+    expect(applyConditions(none, 6)).toBe(6);
+  });
+
+  it('one condition (exhausted) → pool − 1', () => {
+    expect(applyConditions({ ...none, exhausted: true }, 5)).toBe(4);
+  });
+
+  it('one condition (sleepless) → pool − 1', () => {
+    expect(applyConditions({ ...none, sleepless: true }, 3)).toBe(2);
+  });
+
+  it('one condition (thirsty) → pool − 1', () => {
+    expect(applyConditions({ ...none, thirsty: true }, 4)).toBe(3);
+  });
+
+  it('one condition (hungry) → pool − 1', () => {
+    expect(applyConditions({ ...none, hungry: true }, 2)).toBe(1);
+  });
+
+  it('all four conditions → pool − 4', () => {
+    expect(applyConditions(all, 6)).toBe(2);
+  });
+
+  it('pool of 0 with all conditions → still 0 (clamped)', () => {
+    expect(applyConditions(all, 0)).toBe(0);
+  });
+
+  it('pool of 2 with three conditions → 0 (clamped, not negative)', () => {
+    expect(applyConditions({ exhausted: true, sleepless: true, thirsty: true, hungry: false }, 2)).toBe(0);
+  });
+
+  it('pool of 1 with all four conditions → 0 (clamped)', () => {
+    expect(applyConditions(all, 1)).toBe(0);
+  });
+
+  it('partial: two conditions out of four → pool − 2', () => {
+    expect(applyConditions({ ...none, exhausted: true, hungry: true }, 7)).toBe(5);
+  });
+
+  it('three conditions → pool − 3', () => {
+    expect(applyConditions({ exhausted: true, sleepless: true, thirsty: true, hungry: false }, 5)).toBe(2);
+  });
+
+  it('pool exactly equal to active conditions → result is 0', () => {
+    expect(applyConditions({ ...none, sleepless: true, thirsty: true }, 2)).toBe(0);
   });
 });
 

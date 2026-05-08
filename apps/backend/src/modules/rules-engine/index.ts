@@ -8,4 +8,6 @@ export {
   computeEncumbranceMax,
   computeEncumbranceCurrent,
   canPush,
+  applyConditions,
 } from './rules-engine';
+export type { ConditionFlags } from './rules-engine';
