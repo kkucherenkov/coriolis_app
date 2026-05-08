@@ -1,3 +1,27 @@
-# Active tasks
+## T-2026-05-08-004 — Replace AppInput with Coriolis-token implementation
 
-_No tasks in progress. Start here when beginning new work._
+- Created: 2026-05-08
+- Owner: claude
+- Spec: docs/IMPLEMENTATION_PLAN.md Epic 2.1.d; docs/DESIGN.md §11.1
+- Goal: Deliver a fully-styled AppInput primitive that uses Coriolis design tokens, matching the cor-input / cor-input--invalid contract from primitives.jsx, with the full test and Storybook surface required by CI.
+- Acceptance:
+  - AppInput renders with surface-night background, brass-shadow border, brass-light text
+  - Invalid state shows crimson border and focus ring
+  - Size variants sm/md/lg scale padding and font via space/type tokens
+  - disabled blocks pointer events and applies opacity-disabled
+  - readonly sets aria-readonly without opacity
+  - Storybook shows 12+ stories covering variant × size matrix, states, and types
+  - 15+ vitest specs pass
+- Spec diff: none
+- Codegen impact: no
+- Design impact: new @app/ui component AppInput (replaces unstyled boilerplate)
+- Tests: unit (vitest) — 15+ specs; Storybook stories — 12+
+- Sub-steps:
+  - [x] Push task entry to active.md
+  - [x] Write AppInput.vue with Coriolis tokens
+  - [x] Write AppInput.stories.ts (12+ stories)
+  - [x] Write AppInput.spec.ts (15+ specs)
+  - [x] Update specs/design/README.md inventory
+  - [ ] Verify typecheck + test + stylelint
+- Status: in-progress
+- Blockers: —

@@ -1,71 +1,72 @@
 <script setup lang="ts">
+  import { computed } from 'vue';
+
+  type InputType = 'text' | 'email' | 'password' | 'number' | 'search' | 'tel' | 'url';
   type Size = 'sm' | 'md' | 'lg';
-  type InputType =
-    | 'text'
-    | 'email'
-    | 'password'
-    | 'tel'
-    | 'url'
-    | 'search'
-    | 'number'
-    | 'date'
-    | 'time'
-    | 'datetime-local';
 
-  withDefaults(
-    defineProps<{
-      modelValue: string;
-      type?: InputType;
-      placeholder?: string;
-      size?: Size;
-      disabled?: boolean;
-      readonly?: boolean;
-      required?: boolean;
-    }>(),
-    {
-      type: 'text',
-      placeholder: undefined,
-      size: 'md',
-      disabled: false,
-      readonly: false,
-      required: false,
-    },
-  );
+  interface Props {
+    modelValue: string | number | null;
+    type?: InputType;
+    size?: Size;
+    disabled?: boolean;
+    readonly?: boolean;
+    invalid?: boolean;
+    placeholder?: string;
+    inputId?: string;
+    inputmode?: 'none' | 'text' | 'decimal' | 'numeric' | 'tel' | 'search' | 'email' | 'url';
+    autocomplete?: string;
+  }
 
+  const props = withDefaults(defineProps<Props>(), {
+    type: 'text',
+    size: 'md',
+    disabled: false,
+    readonly: false,
+    invalid: false,
+    placeholder: undefined,
+    inputId: undefined,
+    inputmode: undefined,
+    autocomplete: undefined,
+  });
+
+  // Emit string for all text-like types; number when type="number"; null when empty.
+  // This keeps the v-model contract explicit and predictable for consumers.
   const emit = defineEmits<{
-    'update:modelValue': [value: string];
+    'update:modelValue': [value: string | number | null];
   }>();
 
-  // a11y / field-linkage attrs (id, aria-describedby, aria-invalid,
-  // aria-required) come in via $attrs from AppField's slot contract, as do
-  // pass-through HTML attributes (inputmode, autocomplete, maxlength, pattern,
-  // data-testid, …). They must land on the <input> itself, so we disable the
-  // default root-element fallthrough and spread $attrs manually.
-  defineOptions({ inheritAttrs: false });
+  const classes = computed(() => [
+    'app-input',
+    `app-input--${props.size}`,
+    { 'app-input--invalid': props.invalid },
+    { 'app-input--disabled': props.disabled },
+  ]);
 
   function onInput(event: Event): void {
+    if (props.disabled) return;
     const target = event.target as HTMLInputElement;
-    emit('update:modelValue', target.value);
+    if (props.type === 'number') {
+      emit('update:modelValue', target.value === '' ? null : Number(target.value));
+    } else {
+      emit('update:modelValue', target.value === '' ? null : target.value);
+    }
   }
 </script>
 
 <template>
   <input
-    :class="[
-      'app-input',
-      `app-input--${size}`,
-      {
-        'app-input--disabled': disabled,
-        'app-input--readonly': readonly,
-      },
-    ]"
+    :id="inputId"
+    :class="classes"
     :type="type"
-    :value="modelValue"
+    :value="modelValue ?? ''"
     :placeholder="placeholder"
     :disabled="disabled"
     :readonly="readonly"
-    :required="required || undefined"
-    v-bind="$attrs"
+    :inputmode="inputmode"
+    :autocomplete="autocomplete"
+    :aria-disabled="disabled || undefined"
+    :aria-readonly="readonly || undefined"
+    :aria-invalid="invalid || undefined"
     @input="onInput"
   />
 </template>
@@ -75,58 +76,71 @@
     display: block;
     width: 100%;
     min-width: 0;
-    background: var(--surface-surface);
-    border: 1px solid var(--border-default);
+    background-color: var(--surface-night);
+    border: 1px solid var(--brand-brass-shadow);
     border-radius: var(--radius-md);
-    color: var(--text-fg);
-    font-family: var(--font-sans);
-    line-height: var(--leading-normal);
-    transition:
-      border-color var(--dur-fast) var(--ease-default),
-      box-shadow var(--dur-fast) var(--ease-default);
+    color: var(--brand-brass-light);
+    font-family: var(--type-body-md-font-family);
+    font-size: var(--type-body-md-font-size);
+    line-height: var(--type-body-md-line-height);
+    transition: border-color var(--motion-duration-fast) var(--motion-ease-standard);
 
     &::placeholder {
-      color: var(--text-fg-subtle);
+      color: var(--text-secondary);
+    }
+
+    &:hover:not(:disabled):not([readonly]) {
+      border-color: var(--brand-brass-deep);
     }
 
     &:focus-visible {
-      border-color: var(--brand-accent);
-      box-shadow: var(--shadow-focus);
-      outline: none;
+      outline: 2px solid var(--brand-brass);
+      outline-offset: 2px;
+      border-color: var(--brand-brass);
     }
 
-    &:disabled,
-    &--disabled {
-      background: var(--surface-bg-muted);
-      color: var(--text-fg-disabled);
-      cursor: not-allowed;
-
-      &::placeholder {
-        color: var(--text-fg-disabled);
-      }
-    }
-
-    &--readonly {
-      background: var(--surface-bg-subtle);
-      cursor: default;
-    }
+    // ── Size modifiers ───────────────────────────────────────────────────────
 
     &--sm {
-      padding: var(--space-2) var(--space-3);
-      font-size: var(--text-xs);
-      height: var(--space-16);
+      padding: var(--space-1) var(--space-3);
+      font-size: var(--type-body-sm-font-size);
+      line-height: var(--type-body-sm-line-height);
     }
 
     &--md {
-      padding: var(--space-3) var(--space-4);
-      font-size: var(--text-sm);
-      height: var(--space-20);
+      padding: var(--space-2) var(--space-4);
+      font-size: var(--type-body-md-font-size);
+      line-height: var(--type-body-md-line-height);
     }
 
     &--lg {
       padding: var(--space-3) var(--space-5);
-      font-size: var(--text-md);
-      height: var(--space-24);
+      font-size: var(--type-body-lg-font-size);
+      line-height: var(--type-body-lg-line-height);
+    }
+
+    // ── State: invalid ───────────────────────────────────────────────────────
+
+    &--invalid {
+      border-color: var(--state-crimson);
+
+      &:hover:not(:disabled) {
+        border-color: var(--state-crimson-bright);
+      }
+
+      &:focus-visible {
+        outline-color: var(--state-crimson-bright);
+        border-color: var(--state-crimson);
+      }
+    }
+
+    // ── State: disabled ──────────────────────────────────────────────────────
+
+    &--disabled,
+    &:disabled {
+      opacity: var(--opacity-disabled);
+      pointer-events: none;
+      cursor: not-allowed;
     }
   }
 </style>
