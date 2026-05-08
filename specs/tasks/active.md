@@ -1,16 +1,25 @@
 # Active tasks
 
-_No tasks in progress. Start here when beginning new work._
+## T-2026-05-08-010 — Add AppDivider primitive to @app/ui
 
-## T-2026-05-08-007: Codegen follow-up for /api/v1/characters
-
-Phase 1.1 follow-up. Regenerate TypeScript and Dart clients against the merged
-/api/v1/characters spec (commit 691e9de, version 0.3.0).
-
-- [x] pnpm spec:validate (spec valid)
-- [x] pnpm spec:bundle (bundled to dist/openapi.json)
-- [x] pnpm spec:codegen (13 new operations, Character + Item + Talent types)
-- [x] Sanity check diff (only packages/api-client-*, packages/specs/src/openapi-types.ts changed)
-- [x] Commit artefacts (3bf29f6)
-
-Status: Ready for PR.
+- Created: 2026-05-08
+- Owner: claude
+- Spec: docs/IMPLEMENTATION_PLAN.md T-2.1.1.o
+- Goal: Ship a semantic separator primitive (horizontal + vertical) with brass tone variants so sheet panels and card sections can be divided without custom markup.
+- Acceptance:
+  - `AppDivider` renders `<hr>` for horizontal and `<div role="separator" aria-orientation="vertical">` for vertical
+  - All three tone + three weight + inset combos apply the correct BEM class
+  - Storybook shows all stories without errors
+  - Vitest suite passes
+  - Stylelint passes; no hex literals in SCSS
+- Sub-steps:
+  - [x] Push task entry
+  - [x] Create AppDivider.vue
+  - [x] Create AppDivider.stories.ts
+  - [x] Create AppDivider.spec.ts
+  - [x] Create index.ts barrel
+  - [x] Export from packages/ui/src/index.ts
+  - [x] Add row to specs/design/README.md
+  - [x] Verify typecheck + test + stylelint pass
+- Status: in-progress
+- Blockers: —
