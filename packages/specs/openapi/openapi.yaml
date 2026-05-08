@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 0.5.0
+  version: 0.5.1
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -2413,6 +2413,54 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+
+    delete:
+      operationId: deleteMe
+      summary: Soft-delete the authenticated user's account.
+      description: |
+        Initiates a soft-delete of the authenticated user's account per PRD §4.2.
+
+        **Semantics:**
+        - All active Better Auth sessions for this account are revoked
+          immediately — the current request is the last one they will authorise.
+        - The user record's `deletedAt` timestamp is set to the current UTC time.
+        - Characters, ships, and share links owned by the user remain readable
+          (via existing share slugs) until a daily cron job hard-deletes them
+          30 days after `deletedAt`.
+
+        **Idempotency:** calling DELETE on an account whose `deletedAt` is
+        already set (i.e. an already soft-deleted account) returns `204` without
+        error. This prevents clients from treating a retry as a failure.
+
+        **No 404:** because the caller must be authenticated to reach this
+        endpoint, and sessions are revoked on deletion, there is no scenario
+        where a live session is attached to a non-existent account. A 404 path
+        does not exist for this operation.
+      tags: [users]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      responses:
+        "204":
+          description: |
+            Account soft-deleted (or was already soft-deleted — idempotent).
+            Sessions revoked. No response body.
+          headers: {}
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                unauthenticated:
+                  value:
+                    type: https://coriolis.example.com/problems/unauthorized
+                    title: Unauthorized
+                    status: 401
+                    detail: No active session found. Sign in and retry.
+                    instance: /api/v1/me
+                    code: NO_ACTIVE_SESSION
 
   /api/v1/realtime/token:
     post:
