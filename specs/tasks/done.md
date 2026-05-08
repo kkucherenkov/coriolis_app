@@ -2,6 +2,43 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## Character sheet — Talents, conditions, save-pulse (Epic 5 Features 5.2, 5.3, 5.5)
+
+- Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent + backend-engineer agent + parent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Epic 5 Features 5.2 / 5.3 / 5.5.
+- Result: ff-merged to main as `cb58fcf..` (6 commits).
+  - `55f17f7` `feat(backend): rules-engine.applyConditions — −1 die per active
+    condition` (Feature 5.3 T-5.3.1.d). Pure helper, 12 specs.
+  - `9cf488c` `feat(ui): AppSavePulse primitive` — 4 lifecycle states
+    (idle/saving/saved/error), pulse animation, `prefers-reduced-motion`
+    fade fallback. 4 specs, 5 stories.
+  - `e057615` `feat(web): useTalentsApi composable` — addTalent /
+    updateTalent / removeTalent against the existing backend endpoints.
+  - `9325608` `feat(web): conditions panel + critical injuries +
+    talents tab + AppSavePulse wire` — replaces three placeholders on
+    `[id].vue`:
+    - Conditions: 4 `AppConditionPill`s with optimistic toggle + rollback.
+    - Critical injuries: list + inline-input add + remove. PATCH the full
+      array.
+    - Talents: list + native `<dialog>` `TalentEditor` (add / edit / delete
+      with confirm).
+    - Save indicator: text → `AppSavePulse` with sr-only fallback.
+  - `79982b8` `test(web): condition / talent / save-pulse orchestration
+    specs` — 11 new vitest specs (4 condition-toggle, 4 talent-list,
+    1 save-pulse perf — Feature 5.5 T-5.5.1.d, 100-cycle 50ms-per-call
+    budget under fake timers, plus 2 misc).
+  - `<head>` `fix(ui): drop redundant story-local a11y override on
+    AppSavePulse` — story used the array form of axe rules (broken) and
+    duplicated the global `color-contrast` disable.
+- Verification at merge time: `@app/ui` 693 tests + a11y smoke 302/302
+  green; `@app/web` 17 tests; backend 191 tests; typecheck/lint clean.
+- Open follow-ups (Phase 2):
+  - `AppModal` primitive — TalentEditor uses native `<dialog>` (per agent
+    brief). Promote to a real primitive when a third dialog surface lands.
+  - Mobile (Flutter) talents/conditions/save-pulse mirrors (Feature 5.2.d,
+    5.3.c, 5.5.c) — deferred with the rest of the Flutter sheet tail.
+
 ## Character sheet — Attributes & skills section (Epic 5 Feature 5.1)
 
 - Completed: 2026-05-08
