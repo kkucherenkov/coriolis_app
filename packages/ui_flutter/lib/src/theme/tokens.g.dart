@@ -11,10 +11,17 @@ abstract final class AppColors {
   static const Color surfaceNight = Color(0xFF15193F);
   static const Color surfaceDawn = Color(0xFF252B5C);
   static const Color surfaceParchment = Color(0xFFF2E8D0);
+  static const Color brandBrass50 = Color(0xFFFFFEF8);
+  static const Color brandBrass100 = Color(0xFFFCF6E5);
   static const Color brandBrassLight = Color(0xFFF4E4B8);
+  static const Color brandBrass300 = Color(0xFFECD49E);
+  static const Color brandBrass400 = Color(0xFFDEBB72);
   static const Color brandBrass = Color(0xFFD4A95C);
   static const Color brandBrassDeep = Color(0xFFA67C28);
   static const Color brandBrassShadow = Color(0xFF6B4E1A);
+  static const Color brandBrass800 = Color(0xFF4A3712);
+  static const Color brandBrass900 = Color(0xFF2D2208);
+  static const Color brandBrass950 = Color(0xFF1A1306);
   static const Color textPrimary = Color(0xFFF2E8D0);
   static const Color textSecondary = Color(0xFFD9CDB0);
   static const Color textInk = Color(0xFF1A1810);

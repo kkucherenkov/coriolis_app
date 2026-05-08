@@ -22,21 +22,21 @@
   --color-fg-muted: var(--text-secondary);
 
   /* Primary color scale — Nuxt UI's `primary='accent'` (app.config.ts) consumes
-     50..950. Coriolis tokens cover the four canonical brass stops; the
-     intermediate levels are derived linearly from those so utilities like
-     `text-primary-300` render without breaking. Renaming the canonical four
-     requires an ADR; the intermediates do not. */
-  --color-accent-50: #FFFEF8;
-  --color-accent-100: #FCF6E5;
+     50..950. Every stop is a Coriolis token; the canonical four
+     (brass-light/brass/brass-deep/brass-shadow) carry the design language and
+     the intermediate stops live alongside them in `specs/design/tokens/color.json`
+     so Stylelint's no-hex rule sees only token references here. */
+  --color-accent-50: var(--brand-brass-50);
+  --color-accent-100: var(--brand-brass-100);
   --color-accent-200: var(--brand-brass-light);
-  --color-accent-300: #ECD49E;
-  --color-accent-400: #DEBB72;
+  --color-accent-300: var(--brand-brass-300);
+  --color-accent-400: var(--brand-brass-400);
   --color-accent-500: var(--brand-brass);
   --color-accent-600: var(--brand-brass-deep);
   --color-accent-700: var(--brand-brass-shadow);
-  --color-accent-800: #4A3712;
-  --color-accent-900: #2D2208;
-  --color-accent-950: #1A1306;
+  --color-accent-800: var(--brand-brass-800);
+  --color-accent-900: var(--brand-brass-900);
+  --color-accent-950: var(--brand-brass-950);
 
   /* Status — Nuxt UI maps `success`, `error`, `warning`, `info` to its own
      scale. We only seed the 500 stop (the Tailwind default). */

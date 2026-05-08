@@ -199,6 +199,10 @@
 </template>
 
 <style lang="scss" scoped>
+  // Page-scoped layout cap. Boilerplate left-over — proper restyling against
+  // Coriolis tokens lands in Phase 1 Epic 4 auth-vertical extensions.
+  $card-max-width: 400px;
+
   .page-login {
     display: flex;
     align-items: center;
@@ -209,7 +213,7 @@
 
     &__card {
       width: 100%;
-      max-width: 400px;
+      max-width: $card-max-width;
       background: var(--surface-surface);
       border: 1px solid var(--border-default);
       border-radius: var(--radius-xl);
