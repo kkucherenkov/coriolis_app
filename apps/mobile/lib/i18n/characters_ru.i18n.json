@@ -1,0 +1,20 @@
+{
+  "title": "Персонажи",
+  "newTitle": "Новый персонаж",
+  "create": "Новый персонаж",
+  "createButton": "Создать персонажа",
+  "nameLabel": "Имя",
+  "nameHint": "Имя персонажа",
+  "nameValidationRequired": "Имя обязательно.",
+  "nameValidationTooLong": "Имя не должно превышать 80 символов.",
+  "conceptLabel": "Концепт",
+  "conceptHint": "Короткая фраза, описывающая вашу роль",
+  "emptyTitle": "Персонажей пока нет",
+  "errorLoad": "Не удалось загрузить персонажей.",
+  "deleteTooltip": "Удалить персонажа",
+  "deleteConfirmTitle": "Удалить персонажа?",
+  "deleteConfirmBody": "Это действие необратимо.",
+  "deleteConfirm": "Удалить",
+  "deleteCancel": "Отмена",
+  "sheetPlaceholder": "Полный лист — Фаза 2 (Эпик 5)"
+}

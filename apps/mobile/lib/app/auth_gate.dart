@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_mobile/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:app_mobile/features/auth/presentation/bloc/auth_state.dart';
 import 'package:app_mobile/features/auth/presentation/welcome_screen.dart';
+import 'package:app_mobile/features/characters/presentation/pages/characters_list_page.dart';
 import 'package:app_mobile/i18n/strings.g.dart';
 import 'package:app_mobile/shared/di/injector.dart';
 
@@ -27,8 +28,7 @@ class AuthGate extends StatelessWidget {
             case AuthStatus.otpSent:
               return const _SplashScreen();
             case AuthStatus.authenticated:
-              // Replace with your post-auth home screen.
-              return const _HomeScreen();
+              return const CharactersListPage();
           }
         },
       ),
@@ -52,16 +52,3 @@ class _SplashScreen extends StatelessWidget {
   }
 }
 
-/// Placeholder home screen shown after successful authentication.
-/// Replace this with your app's actual home widget.
-class _HomeScreen extends StatelessWidget {
-  const _HomeScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(context.t.common.appTitle)),
-      body: const Center(child: Text('Home — replace me')),
-    );
-  }
-}

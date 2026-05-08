@@ -1,9 +1,14 @@
+import 'package:app_api_client/app_api_client.dart' show CharactersApi, standardSerializers;
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:app_mobile/features/auth/data/auth_api.dart';
 import 'package:app_mobile/features/auth/domain/auth_repository.dart';
 import 'package:app_mobile/features/auth/presentation/bloc/auth_cubit.dart';
+import 'package:app_mobile/features/characters/data/character_repository_impl.dart';
+import 'package:app_mobile/features/characters/domain/character_repository.dart';
+import 'package:app_mobile/features/characters/presentation/blocs/character_sheet/character_sheet_cubit.dart';
+import 'package:app_mobile/features/characters/presentation/blocs/characters_list/characters_list_cubit.dart';
 import 'package:app_mobile/shared/auth/token_storage.dart';
 import 'package:app_mobile/shared/config/app_config.dart';
 import 'package:app_mobile/shared/network/api_client.dart';
@@ -42,9 +47,27 @@ void configureDependencies() {
     ),
   );
 
+  // ── Generated API singletons ─────────────────────────────────────────────
+  getIt.registerLazySingleton<CharactersApi>(
+    () => CharactersApi(getIt<Dio>(), standardSerializers),
+  );
+
+  // ── Characters domain ────────────────────────────────────────────────────
+  getIt.registerLazySingleton<CharacterRepository>(
+    () => CharacterRepositoryImpl(api: getIt<CharactersApi>()),
+  );
+
   // ── Cubit factories ─────────────────────────────────────────────────────
   getIt.registerFactory<AuthCubit>(
     () => AuthCubit(getIt<AuthRepository>()),
+  );
+
+  getIt.registerFactory<CharactersListCubit>(
+    () => CharactersListCubit(getIt<CharacterRepository>()),
+  );
+
+  getIt.registerFactory<CharacterSheetCubit>(
+    () => CharacterSheetCubit(repository: getIt<CharacterRepository>()),
   );
 }
 

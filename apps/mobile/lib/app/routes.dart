@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:app_mobile/features/auth/presentation/sign_in_screen.dart';
 import 'package:app_mobile/features/auth/presentation/sign_up_screen.dart';
 import 'package:app_mobile/features/auth/presentation/welcome_screen.dart';
+import 'package:app_mobile/features/characters/presentation/pages/character_create_page.dart';
+import 'package:app_mobile/features/characters/presentation/pages/character_sheet_page.dart';
+import 'package:app_mobile/features/characters/presentation/pages/characters_list_page.dart';
 import 'package:app_mobile/features/settings/presentation/settings_screen.dart';
 
 /// Named route constants.
@@ -11,6 +14,13 @@ abstract class AppRoutes {
   static const signIn = '/sign-in';
   static const signUp = '/sign-up';
   static const settings = '/settings';
+
+  // Characters feature — authenticated routes.
+  static const characters = '/app/characters';
+  static const charactersNew = '/app/characters/new';
+
+  /// Detail route: pass the character id as a [RouteSettings.arguments] String.
+  static const characterDetail = '/app/characters/detail';
 }
 
 /// Route factory — maps route names to screen widgets.
@@ -41,6 +51,30 @@ Route<dynamic>? onGenerateRoute(RouteSettings settings) {
   if (name == AppRoutes.settings) {
     return MaterialPageRoute<void>(
       builder: (_) => const SettingsScreen(),
+      settings: settings,
+    );
+  }
+
+  // ── Characters feature ─────────────────────────────────────────────────
+
+  if (name == AppRoutes.characters) {
+    return MaterialPageRoute<void>(
+      builder: (_) => const CharactersListPage(),
+      settings: settings,
+    );
+  }
+
+  if (name == AppRoutes.charactersNew) {
+    return MaterialPageRoute<void>(
+      builder: (_) => const CharacterCreatePage(),
+      settings: settings,
+    );
+  }
+
+  if (name == AppRoutes.characterDetail) {
+    final id = settings.arguments as String;
+    return MaterialPageRoute<void>(
+      builder: (_) => CharacterSheetPage(characterId: id),
       settings: settings,
     );
   }

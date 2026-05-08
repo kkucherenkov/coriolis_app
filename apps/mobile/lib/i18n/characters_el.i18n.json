@@ -1,0 +1,20 @@
+{
+  "title": "[el-todo] Characters",
+  "newTitle": "[el-todo] New character",
+  "create": "[el-todo] New character",
+  "createButton": "[el-todo] Create character",
+  "nameLabel": "[el-todo] Name",
+  "nameHint": "[el-todo] Character name",
+  "nameValidationRequired": "[el-todo] Name is required.",
+  "nameValidationTooLong": "[el-todo] Name must be 80 characters or fewer.",
+  "conceptLabel": "[el-todo] Concept",
+  "conceptHint": "[el-todo] Short phrase describing your role",
+  "emptyTitle": "[el-todo] No characters yet",
+  "errorLoad": "[el-todo] Failed to load characters.",
+  "deleteTooltip": "[el-todo] Delete character",
+  "deleteConfirmTitle": "[el-todo] Delete character?",
+  "deleteConfirmBody": "[el-todo] This action is permanent and cannot be undone.",
+  "deleteConfirm": "[el-todo] Delete",
+  "deleteCancel": "[el-todo] Cancel",
+  "sheetPlaceholder": "[el-todo] Full sheet — Phase 2 (Epic 5)"
+}

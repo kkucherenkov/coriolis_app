@@ -1,0 +1,20 @@
+{
+  "title": "Characters",
+  "newTitle": "New character",
+  "create": "New character",
+  "createButton": "Create character",
+  "nameLabel": "Name",
+  "nameHint": "Character name",
+  "nameValidationRequired": "Name is required.",
+  "nameValidationTooLong": "Name must be 80 characters or fewer.",
+  "conceptLabel": "Concept",
+  "conceptHint": "Short phrase describing your role",
+  "emptyTitle": "No characters yet",
+  "errorLoad": "Failed to load characters.",
+  "deleteTooltip": "Delete character",
+  "deleteConfirmTitle": "Delete character?",
+  "deleteConfirmBody": "This action is permanent and cannot be undone.",
+  "deleteConfirm": "Delete",
+  "deleteCancel": "Cancel",
+  "sheetPlaceholder": "Full sheet — Phase 2 (Epic 5)"
+}

@@ -1,0 +1,20 @@
+{
+  "title": "[uk-todo] Characters",
+  "newTitle": "[uk-todo] New character",
+  "create": "[uk-todo] New character",
+  "createButton": "[uk-todo] Create character",
+  "nameLabel": "[uk-todo] Name",
+  "nameHint": "[uk-todo] Character name",
+  "nameValidationRequired": "[uk-todo] Name is required.",
+  "nameValidationTooLong": "[uk-todo] Name must be 80 characters or fewer.",
+  "conceptLabel": "[uk-todo] Concept",
+  "conceptHint": "[uk-todo] Short phrase describing your role",
+  "emptyTitle": "[uk-todo] No characters yet",
+  "errorLoad": "[uk-todo] Failed to load characters.",
+  "deleteTooltip": "[uk-todo] Delete character",
+  "deleteConfirmTitle": "[uk-todo] Delete character?",
+  "deleteConfirmBody": "[uk-todo] This action is permanent and cannot be undone.",
+  "deleteConfirm": "[uk-todo] Delete",
+  "deleteCancel": "[uk-todo] Cancel",
+  "sheetPlaceholder": "[uk-todo] Full sheet — Phase 2 (Epic 5)"
+}
