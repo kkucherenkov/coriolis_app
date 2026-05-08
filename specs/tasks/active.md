@@ -1,5 +1,30 @@
 # Active tasks
 
+## T-2026-05-08-008 — Implement AppIcon Coriolis primitive (Epic 2.1.g)
+
+- Created: 2026-05-08
+- Owner: claude
+- Spec: docs/IMPLEMENTATION_PLAN.md §2.1.g, docs/DESIGN.md §4.3
+- Goal: Replace the boilerplate UIcon wrapper with a Lucide-backed AppIcon primitive that exposes size, color, and strokeWidth props and conforms to BEM/SCSS/a11y conventions.
+- Acceptance:
+  - `<AppIcon name="sword" />` renders a Lucide Sword SVG in the DOM
+  - `<AppIcon name="sword" color="brass" />` colors the icon via `var(--brand-brass)` through currentColor
+  - `<AppIcon name="sword" size="lg" />` applies `.app-icon--lg` BEM class and correct px size
+  - No aria-label → `aria-hidden="true"` on root; aria-label set → exposed to AT
+  - Unknown name logs a console.warn and renders an empty `<span>`, no crash
+  - `pnpm --filter @app/ui typecheck` and `test` pass green
+- Sub-steps:
+  - [x] Push task to active.md
+  - [x] Add lucide-vue-next to packages/ui/package.json
+  - [x] Rewrite AppIcon.vue (dynamic Lucide, BEM, SCSS, a11y)
+  - [x] Rewrite AppIcon.stories.ts (6 colors × sizes × wall-of-icons + a11y stories)
+  - [x] Rewrite AppIcon.spec.ts (8 vitest cases)
+  - [x] Update specs/design/README.md inventory row
+  - [x] pnpm install + typecheck + test green
+  - [x] 3 commits on feat/phase-1/app-icon
+- Status: in-progress
+- Blockers: —
+
 ## T-2026-05-08-010 — Add AppDivider primitive to @app/ui
 
 - Created: 2026-05-08
