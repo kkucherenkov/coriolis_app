@@ -2,6 +2,75 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## Character creation wizard (Epic 5 Feature 5.6)
+
+- Completed: 2026-05-09
+- Owner: claude (backend-engineer agent + frontend-engineer agent + parent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Epic 5 Feature 5.6, T-5.6.1.{a,b,c,d,e}.
+  T-5.6.1.f (Flutter wizard) deferred. T-5.6.1.g (native-speaker Cyrillic
+  review) flagged with a TODO; not gating the merge.
+- Result: ff-merged to main as `<wizard range>` (12 commits across two
+  worktree-isolated agent runs + spec fix).
+
+  **Backend / spec / Prisma**:
+  - `5d1af2e` `docs(adr): 0002 — character draft state via status flag`
+    chooses option B (status flag on Character) over a separate
+    `/draft` resource. ADR enumerates the 5-point rationale.
+  - `3a7a1c0` `feat(specs): add Character.status (draft|active) +
+    includeDrafts query` — bumps spec to **0.6.0**. Required `status` on
+    `Character`; optional on `CharacterCreate`/`CharacterUpdate`. New
+    `?includeDrafts=false` query on `GET /characters`. Forge transition is
+    a plain `PATCH` with `{ status: 'active' }`; `active → draft` is
+    rejected with 422 `INVALID_STATUS_TRANSITION`.
+  - `a3ad6aa` `chore(codegen): regenerate clients after Character.status`
+    — codegen-only commit per CLAUDE.md.
+  - `4e2eb90` `feat(backend): Prisma Character.status migration` —
+    `CharacterStatus` enum (`ACTIVE`, `DRAFT`), `@@index([status])`.
+  - `459d453` `feat(backend): wizard support — draft status +
+    status-transition guard + listings + cleanup-abandoned-drafts cron`.
+    The cron runs at `EVERY_DAY_AT_3:05` (offset from user-cleanup) and
+    deletes drafts older than 30 days. 22 new specs across 4 files.
+  - `<head>` `fix(backend): align legacy list-characters specs with
+    includeDrafts param` — two pre-existing specs needed expectations
+    updated since the handler now always passes the param.
+
+  **Web wizard UI**:
+  - `be06e2a` `feat(web): wizard shell — progress, header, footer,
+    navigation` — `WizardShell.vue` skeleton (AppProgress in
+    `--brand-brass`, Back / Save & exit / Next + Forge footer).
+  - `88c9eba` `feat(web): wizard step 1+2 — concept + people/background`.
+  - `4307e65` `feat(web): wizard step 3 — Nine Icons grid + teal aura
+    pulse` (T-5.6.1.d). 3×3 grid; selected icon pulses
+    `--state-mystic-teal`; `prefers-reduced-motion` strips animation.
+  - `6c949f2` `feat(web): wizard step 4+5 — attributes + skills point
+    pools`. Soft point-pool guidance (rulebook-derived); enforcement is
+    backend-side via `Attributes` 1–5 / `Skills` 0–5 schema bounds.
+  - `19a9820` `feat(web): wizard step 6 — talents + Forge transition`
+    (T-5.6.1.e). Final step PATCHes `{ status: 'active' }` and
+    `navigateTo(\`/app/characters/${id}\`)`.
+  - `e2b1eec` `i18n(web): wizard en + ru full, uk + el placeholders`.
+  - `2f440ab` `test(web): wizard orchestration specs` — 7 wizard-specific
+    describe blocks; final web-suite total at 40 specs.
+
+- Wizard architecture:
+  - `/app/characters/new` reads `?id=` to resume mid-wizard. With no `id`
+    it POSTs `{ name: 'Untitled', status: 'draft' }` and `replaceState`s
+    so refresh stays on the same draft.
+  - Each step PATCHes the draft on advance via the `useAutoSave` composable.
+  - Forge = PATCH `{ status: 'active' }` then redirect.
+
+- Verification at merge time: `@app/backend` 224 tests; `@app/web` 40
+  tests; `@app/ui` a11y smoke 306/306; typecheck/lint/stylelint/format
+  clean across all packages.
+
+- Open follow-ups (Phase 2 / Phase 3):
+  - T-5.6.1.f Flutter mobile wizard (deferred with the rest of the
+    Flutter sheet tail).
+  - T-5.6.1.g native-speaker review of `ru` wizard copy (TODO).
+  - Step 7 (Relationships) deferred to v1.1+ with a
+    `TODO(wizard-step-7-relationships)` marker in `new.vue` /
+    `Step6Talents.vue`.
+
 ## Character sheet — Inventory & gear (Epic 5 Feature 5.4)
 
 - Completed: 2026-05-08
