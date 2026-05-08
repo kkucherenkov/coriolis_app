@@ -3,6 +3,7 @@ import path from 'node:path';
 import { Module, type DynamicModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { CqrsModule } from '@nestjs/cqrs';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import {
   AcceptLanguageResolver,
@@ -35,6 +36,7 @@ const devOnlyModules: ImportableModule[] = [];
   imports: [
     ConfigModule,
     CqrsModule.forRoot(),
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRoot({
       throttlers: [{ ttl: 60_000, limit: 60 }],
     }),
