@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Scale beam at the top -->
+  <line x1="4" y1="7" x2="20" y2="7"/>
+  <line x1="12" y1="3" x2="12" y2="7"/>
+  <!-- Left pan with weight -->
+  <line x1="7" y1="7" x2="7" y2="11"/>
+  <ellipse cx="7" cy="13" rx="3" ry="2"/>
+  <!-- Right pan with weight (slightly lower — judgment tips) -->
+  <line x1="17" y1="7" x2="17" y2="13"/>
+  <ellipse cx="17" cy="15" rx="3" ry="2"/>
+  <!-- Pillar -->
+  <line x1="12" y1="7" x2="12" y2="21"/>
+  <!-- Base -->
+  <line x1="9" y1="21" x2="15" y2="21"/>
+</svg>

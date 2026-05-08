@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Outer circle -->
+  <circle cx="12" cy="12" r="10"/>
+  <!-- Teardrop: rounded top, pointed bottom -->
+  <path d="M12 4 C9 7, 7 9.5, 7 12 a5 5 0 0 0 10 0 C17 9.5, 15 7, 12 4Z"/>
+  <!-- Inner dot at top of tear -->
+  <circle cx="12" cy="9" r="1" fill="currentColor" stroke="none"/>
+</svg>
