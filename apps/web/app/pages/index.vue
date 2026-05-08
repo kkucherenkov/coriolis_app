@@ -66,6 +66,11 @@
 </template>
 
 <style lang="scss" scoped>
+  // Layout dimensions for the landing hero. Page-scoped, not part of the
+  // shared spacing scale — Stylelint allows named SCSS variables for
+  // layout caps (see stylelint.config.mjs declaration-property-value rule).
+  $hero-max-width: 640px;
+
   .page-landing {
     flex: 1;
     display: flex;
@@ -74,7 +79,7 @@
     padding: var(--space-9) var(--space-7);
 
     &__hero {
-      max-width: 640px;
+      max-width: $hero-max-width;
       text-align: center;
       display: flex;
       flex-direction: column;
