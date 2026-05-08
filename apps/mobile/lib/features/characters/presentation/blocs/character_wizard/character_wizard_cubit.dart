@@ -55,7 +55,8 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
         return null; // id already known to caller
       } else {
         // New flow: create a placeholder draft.
-        final character = await _repository.create(name: 'Untitled');
+        final character =
+            await _repository.create(name: 'Untitled', status: 'draft');
         emit(state.copyWith(
           isLoading: false,
           character: character,
@@ -233,10 +234,9 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
 
   /// Persist all remaining data and activate the character.
   ///
-  /// Calls [CharacterRepository.update] with full draft data, then adds any
-  /// pending talents, and finally does a second update to set `notes` to a
-  /// sentinel value that signals active status (until the API exposes a
-  /// `status` field in the update DTO directly).
+  /// Calls [CharacterRepository.update] with full draft data and
+  /// `status: 'active'` to forge the draft into a playable character.
+  /// Pending talents are then committed via dedicated repository calls.
   ///
   /// Returns the activated [Character] on success, or null on failure.
   Future<Character?> forge() async {
@@ -275,6 +275,7 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
           science: d.science ?? 0,
           technology: d.technology ?? 0,
         ),
+        status: 'active',
       );
 
       // Persist pending talents via discrete repository calls.

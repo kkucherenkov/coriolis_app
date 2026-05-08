@@ -2,7 +2,9 @@ import 'package:app_api_client/app_api_client.dart'
     show
         CharactersApi,
         CharacterCreate,
+        CharacterCreateStatusEnum,
         CharacterUpdate,
+        CharacterUpdateStatusEnum,
         TalentCreate,
         TalentUpdate,
         ItemCreate,
@@ -276,8 +278,13 @@ class CharacterRepositoryImpl implements CharacterRepository {
   }
 
   @override
-  Future<Character> create({required String name}) async {
-    final payload = CharacterCreate((b) => b..name = name);
+  Future<Character> create({required String name, String? status}) async {
+    final payload = CharacterCreate((b) {
+      b.name = name;
+      if (status != null) {
+        b.status = CharacterCreateStatusEnum.valueOf(status);
+      }
+    });
     final response = await _api.createCharacter(characterCreate: payload);
     final body = response.data;
     if (body == null) throw StateError('Empty response after create');
@@ -297,12 +304,16 @@ class CharacterRepositoryImpl implements CharacterRepository {
     CharacterConditions? conditions,
     List<DomainCriticalInjury>? criticalInjuries,
     String? notes,
+    String? status,
   }) async {
     final payload = CharacterUpdate((b) {
       if (name != null) b.name = name;
       if (concept != null) b.concept = concept;
       if (experience != null) b.experience = experience;
       if (notes != null) b.notes = notes;
+      if (status != null) {
+        b.status = CharacterUpdateStatusEnum.valueOf(status);
+      }
       final apiAttrs = _attributesToApi(attributes);
       if (apiAttrs != null) b.attributes.replace(apiAttrs);
       final apiSkills = _skillsToApi(skills);

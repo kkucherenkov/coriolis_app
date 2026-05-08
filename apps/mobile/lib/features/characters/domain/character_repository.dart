@@ -15,9 +15,16 @@ abstract class CharacterRepository {
   Future<Character> get(String id);
 
   /// Creates a new character with [name].
-  Future<Character> create({required String name});
+  ///
+  /// [status] defaults to `active`; pass `draft` from the creation wizard
+  /// so the character does not surface in the dashboard until forged.
+  Future<Character> create({required String name, String? status});
 
   /// Partially updates the character identified by [id].
+  ///
+  /// [status] is the lifecycle transition: only `draft → active` (forge) is
+  /// permitted by the server; `active → draft` returns 422
+  /// `INVALID_STATUS_TRANSITION`.
   Future<Character> update(
     String id, {
     String? name,
@@ -30,6 +37,7 @@ abstract class CharacterRepository {
     CharacterConditions? conditions,
     List<DomainCriticalInjury>? criticalInjuries,
     String? notes,
+    String? status,
   });
 
   /// Permanently deletes the character identified by [id].
