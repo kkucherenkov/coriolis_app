@@ -2,6 +2,69 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## Mobile sheet + wizard — Flutter tail (Epic 5 Features 5.1–5.6)
+
+- Completed: 2026-05-09
+- Owner: claude (flutter-engineer agents ×2 + parent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Epic 5 T-5.1.1.e, 5.2.d, 5.3.c, 5.4.e,
+  5.5.c, 5.6.f. T-5.6.1.g (native-speaker Cyrillic review) still
+  outstanding.
+- Result: ff-merged to main as `8c8efcd..` (14 commits across two
+  flutter-engineer runs + codegen + parent fix).
+  - **Sheet (5.1–5.5):** 4 commits.
+    - `8c8efcd` `feat(ui-flutter): AppSavePulse widget` — 4-state animated
+      dot mirroring the Vue primitive. 8 widget tests.
+    - `e92e6fa` `feat(mobile): extend CharacterSheetCubit + domain` — full
+      domain rewrite (`CharacterAttributes`, `CharacterSkills`,
+      `CharacterConditions`, `DomainTalent`, `DomainItem` with 6-type
+      discriminated union via `OneOfDynamic`); repo gains
+      addTalent/updateTalent/removeTalent + addItem/updateItem/removeItem;
+      cubit gains all debounced edit operations + optimistic CRUD with
+      rollback; i18n extended for all 4 locales.
+    - `cfe6ae0` `feat(mobile): full character sheet page` — sticky header
+      (avatar, name/concept, AppSavePulse, condition strip), hero counters
+      (HP/MP/ENC with ±, encumbrance warning), attributes block, skills
+      block, conditions panel + critical injuries list, talents tab,
+      inventory tab with 6-type ItemEditor bottom sheet, save error banner,
+      delete confirm dialog. Stats / Gear / Talents / Notes tabs.
+    - `fecf343` `test(mobile): BLoC + widget tests` — 11 BLoC + 11 widget
+      tests for the sheet edit surfaces.
+  - **Wizard (5.6.f):** 8 commits.
+    - `bf4b4e7` `feat(mobile): CharacterWizardCubit + state machine + draft
+      persistence`.
+    - `f99f7b8` `feat(mobile): wizard shell page` — brass progress, step
+      labels, Back/Save & exit/Next/Forge.
+    - `4070c17` `feat(mobile): wizard step 1+2` — concept + people /
+      background.
+    - `98857a7` `feat(mobile): wizard step 3 — Nine Icons grid + teal aura
+      pulse` (T-5.6.1.d). `MediaQuery.disableAnimations` →
+      static teal halo fallback.
+    - `6fd5713` `feat(mobile): wizard step 4+5` — attributes + skills point
+      pools.
+    - `7a6c164` `feat(mobile): wizard step 6 + Forge transition`.
+    - `1c21436` `i18n(mobile): wizard en + ru full, uk + el placeholders`.
+    - `08f2507` `test(mobile): wizard cubit + widget specs` — 8 cubit + 5
+      widget tests.
+  - **Codegen + status wiring**: 2 follow-up commits by parent.
+    - `<head-1>` `chore(codegen): regenerate dart client + bundled types
+      after spec v0.6.0` — backfills the missing `status` enum on
+      CharacterCreate / CharacterUpdate that the wizard-backend batch
+      didn't propagate to dart.
+    - `<head>` `fix(mobile): wire CharacterStatus through repo + wizard
+      forge` — wizard now creates with `status: 'draft'` and forges with
+      `status: 'active'` explicitly. The earlier "concept-as-sentinel"
+      workaround is removed.
+- Verification: `flutter test` / `flutter analyze` could NOT run locally
+  (system Dart 3.5 vs project floor 3.8; `fvm` not configured). CI under
+  the target SDK is authoritative.
+- Open follow-ups (Phase 2):
+  - T-5.6.1.g native-speaker review of `ru` mobile copy (sheet + wizard).
+  - Spec gap: wizard step 2 (origin / upbringing / age) is currently
+    pickled into the `concept` field — the spec lacks dedicated fields.
+    Add to a future spec batch.
+  - `AppIconCoriolis` Flutter widget — wizard step 3 currently uses
+    letter-medallion stand-ins; promote when an icon-glyph widget ships.
+
 ## Character creation wizard (Epic 5 Feature 5.6)
 
 - Completed: 2026-05-09
