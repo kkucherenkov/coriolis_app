@@ -11,7 +11,7 @@
   const loading = ref(false);
   const errorMsg = ref('');
 
-  const nameValid = computed(() => name.value.trim().length >= 1 && name.value.trim().length <= 80);
+  const nameValid = computed(() => name.value.trim().length > 0 && name.value.trim().length <= 80);
   const nameError = computed<string>(() => {
     if (errorMsg.value) return errorMsg.value;
     if (name.value.trim().length > 80) return t('errorNameTooLong');
@@ -29,9 +29,9 @@
     try {
       const character = await api.create({ name: name.value.trim() });
       await navigateTo(`/app/characters/${character.id}`);
-    } catch (err) {
-      const problem = err as Problem;
-      errorMsg.value = problem?.detail ?? t('errorGeneric');
+    } catch (error) {
+      const problem = error as Problem;
+      errorMsg.value = problem.detail ?? t('errorGeneric');
     } finally {
       loading.value = false;
     }
@@ -91,14 +91,12 @@
   <section class="page-new-character">
     <AppCard class="page-new-character__card">
       <template #header>
-        <h1 class="page-new-character__title">{{ t('pageTitle') }}</h1>
+        <h1 class="page-new-character__title">
+          {{ t('pageTitle') }}
+        </h1>
       </template>
 
-      <form
-        class="page-new-character__form"
-        novalidate
-        @submit="onSubmit"
-      >
+      <form class="page-new-character__form" novalidate @submit="onSubmit">
         <AppField
           :label="t('nameLabel')"
           :help-text="nameError ? undefined : t('nameHelp')"

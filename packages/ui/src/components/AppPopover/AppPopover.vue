@@ -68,6 +68,7 @@
     const focusable = getFocusable();
     if (focusable.length === 0) return;
     const first = focusable[0];
+    if (!first) return;
     const last = focusable.at(-1) ?? first;
     if (event.shiftKey) {
       if (document.activeElement === first) {
@@ -92,7 +93,7 @@
         // Move focus into panel on next tick so DOM is visible.
         await nextTick();
         const focusable = getFocusable();
-        if (focusable.length > 0) focusable[0].focus();
+        if (focusable.length > 0) focusable[0]?.focus();
         panelRef.value?.addEventListener('keydown', trapFocus);
       } else {
         document.removeEventListener('click', onDocumentClick, { capture: true });
@@ -122,11 +123,7 @@
 <template>
   <div :class="rootClasses">
     <!-- Trigger wrapper — click toggles the panel. -->
-    <div
-      ref="triggerRef"
-      class="app-popover__trigger"
-      @click="onTriggerClick"
-    >
+    <div ref="triggerRef" class="app-popover__trigger" @click="onTriggerClick">
       <slot name="trigger" />
     </div>
 
@@ -145,6 +142,9 @@
 </template>
 
 <style lang="scss" scoped>
+  // Minimum panel width — layout constant; not a spacing-scale value.
+  $panel-min-width: 180px;
+
   .app-popover {
     position: relative;
     display: inline-flex;
@@ -161,7 +161,7 @@
     &__panel {
       position: absolute;
       z-index: var(--z-dropdown);
-      min-width: 180px;
+      min-width: $panel-min-width;
       padding: var(--space-3);
       background: var(--surface-night);
       border: 1px solid var(--brand-brass-deep);

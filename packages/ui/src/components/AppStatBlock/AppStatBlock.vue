@@ -72,6 +72,11 @@
 <style lang="scss" scoped>
   // Minimum tap target — 44px per WCAG 2.5.5.
   $tap-min: 44px;
+  // Label font sizes — sub-token sizes named for the rule exemption.
+  $label-font-size-md: 11px;
+  $label-font-size-sm: 10px;
+  // Value font size at sm scale — between the md stat token and body-sm.
+  $value-font-size-sm: 18px;
 
   .app-stat-block {
     display: inline-flex;
@@ -143,7 +148,7 @@
     &--md {
       .app-stat-block__label {
         font-family: var(--type-display-sm-font-family);
-        font-size: 11px;
+        font-size: $label-font-size-md;
         letter-spacing: 0.1em;
         text-transform: uppercase;
       }
@@ -164,14 +169,14 @@
 
       .app-stat-block__label {
         font-family: var(--type-display-sm-font-family);
-        font-size: 10px;
+        font-size: $label-font-size-sm;
         letter-spacing: 0.08em;
         text-transform: uppercase;
       }
 
       .app-stat-block__value {
         font-family: var(--type-mono-stat-md-font-family);
-        font-size: 18px;
+        font-size: $value-font-size-sm;
         font-weight: var(--type-mono-stat-md-font-weight);
         line-height: 1;
       }

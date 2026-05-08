@@ -1,5 +1,14 @@
 <script setup lang="ts">
-  import { AppAvatar, AppButton, AppCard, AppField, AppInput, AppLabel, AppSelect, AppSwitch } from '@app/ui';
+  import {
+    AppAvatar,
+    AppButton,
+    AppCard,
+    AppField,
+    AppInput,
+    AppLabel,
+    AppSelect,
+    AppSwitch,
+  } from '@app/ui';
   import type { AppSelectOption } from '@app/ui';
   import { ref, watch, computed, onBeforeUnmount, onMounted } from 'vue';
   import { useMeApi } from '~/composables/useMeApi';
@@ -54,9 +63,9 @@
 
   function applyTheme(active: boolean): void {
     if (active) {
-      document.documentElement.setAttribute('data-theme', HIGH_CONTRAST_VALUE);
+      document.documentElement.dataset.theme = HIGH_CONTRAST_VALUE;
     } else {
-      document.documentElement.removeAttribute('data-theme');
+      delete document.documentElement.dataset.theme;
     }
   }
 
@@ -86,9 +95,9 @@
       me.value = data;
       displayNameValue.value = data.displayName ?? '';
       loadState.value = 'loaded';
-    } catch (err) {
-      const problem = err as Problem;
-      loadError.value = problem?.detail ?? t('errorLoad');
+    } catch (error) {
+      const problem = error as Problem;
+      loadError.value = problem.detail ?? t('errorLoad');
       loadState.value = 'error';
     }
   }
@@ -114,15 +123,19 @@
       setTimeout(() => {
         if (saveState.value === 'saved') saveState.value = 'idle';
       }, 1500);
-    } catch (err) {
-      const problem = err as Problem;
-      saveError.value = problem?.detail ?? t('errorSave');
+    } catch (error) {
+      const problem = error as Problem;
+      saveError.value = problem.detail ?? t('errorSave');
       saveState.value = 'error';
     }
   }
 
+  function persistDisplayNameVoid(): void {
+    void persistDisplayName();
+  }
+
   const { debouncedFn: scheduleSave, cancel: cancelSave } = useDebounceFn(
-    persistDisplayName,
+    persistDisplayNameVoid,
     500,
   );
 
@@ -201,9 +214,9 @@
       await api.deleteMe();
       localStorage.removeItem(THEME_KEY);
       await navigateTo('/');
-    } catch (err) {
-      const problem = err as Problem;
-      deleteError.value = problem?.detail ?? t('deleteAccountError');
+    } catch (error) {
+      const problem = error as Problem;
+      deleteError.value = problem.detail ?? t('deleteAccountError');
       deleteInProgress.value = false;
     }
   }
@@ -365,44 +378,31 @@
     </div>
 
     <!-- Error state -->
-    <div
-      v-else-if="loadState === 'error'"
-      class="page-settings__error"
-      role="alert"
-    >
-      <p class="page-settings__error-text">{{ loadError }}</p>
+    <div v-else-if="loadState === 'error'" class="page-settings__error" role="alert">
+      <p class="page-settings__error-text">
+        {{ loadError }}
+      </p>
     </div>
 
     <!-- Loaded -->
     <template v-else-if="loadState === 'loaded' && me">
-
       <!-- Section: Profile -->
       <AppCard>
         <template #header>
-          <AppLabel
-            tone="eyebrow"
-            :text="t('sectionProfile')"
-          />
+          <AppLabel tone="eyebrow" :text="t('sectionProfile')" />
         </template>
 
         <div class="page-settings__profile">
           <!-- Avatar column -->
           <div class="page-settings__profile-avatar">
-            <AppAvatar
-              :name="avatarName"
-              size="lg"
-              tone="brass"
-            />
+            <AppAvatar :name="avatarName" size="lg" tone="brass" />
           </div>
 
           <!-- Fields column -->
           <div class="page-settings__profile-fields">
             <!-- Editable: displayName with auto-save indicator -->
             <div class="page-settings__display-name-row">
-              <AppField
-                :label="t('displayNameLabel')"
-                size="md"
-              >
+              <AppField :label="t('displayNameLabel')" size="md">
                 <template #default="slotAttrs">
                   <AppInput
                     v-bind="slotAttrs"
@@ -418,16 +418,19 @@
                 <span
                   v-if="saveState === 'saving'"
                   class="page-settings__save-label page-settings__save-label--saving"
-                >{{ t('statusSaving') }}</span>
+                  >{{ t('statusSaving') }}</span
+                >
                 <span
                   v-else-if="saveState === 'saved'"
                   class="page-settings__save-label page-settings__save-label--saved"
-                >{{ t('statusSaved') }}</span>
+                  >{{ t('statusSaved') }}</span
+                >
                 <span
                   v-else-if="saveState === 'error'"
                   class="page-settings__save-label page-settings__save-label--error"
                   role="alert"
-                >{{ t('statusError') }}</span>
+                  >{{ t('statusError') }}</span
+                >
               </div>
             </div>
 
@@ -442,19 +445,13 @@
 
             <!-- Read-only: email -->
             <div class="page-settings__read-row">
-              <AppLabel
-                tone="default"
-                :text="t('emailLabel')"
-              />
+              <AppLabel tone="default" :text="t('emailLabel')" />
               <span class="page-settings__read-value">{{ me.email }}</span>
             </div>
 
             <!-- Read-only: member since -->
             <div class="page-settings__read-row">
-              <AppLabel
-                tone="default"
-                :text="t('memberSinceLabel')"
-              />
+              <AppLabel tone="default" :text="t('memberSinceLabel')" />
               <span class="page-settings__read-value">{{ formattedCreatedAt }}</span>
             </div>
           </div>
@@ -464,17 +461,11 @@
       <!-- Section: Locale -->
       <AppCard>
         <template #header>
-          <AppLabel
-            tone="eyebrow"
-            :text="t('sectionLocale')"
-          />
+          <AppLabel tone="eyebrow" :text="t('sectionLocale')" />
         </template>
 
         <div class="page-settings__locale">
-          <AppField
-            :label="t('localeLabel')"
-            size="md"
-          >
+          <AppField :label="t('localeLabel')" size="md">
             <template #default="slotAttrs">
               <AppSelect
                 :select-id="slotAttrs.id"
@@ -491,10 +482,7 @@
       <!-- Section: Theme -->
       <AppCard>
         <template #header>
-          <AppLabel
-            tone="eyebrow"
-            :text="t('sectionTheme')"
-          />
+          <AppLabel tone="eyebrow" :text="t('sectionTheme')" />
         </template>
 
         <div class="page-settings__theme">
@@ -504,31 +492,27 @@
             size="md"
             @update:model-value="toggleHighContrast"
           />
-          <p class="page-settings__theme-help">{{ t('highContrastHelp') }}</p>
+          <p class="page-settings__theme-help">
+            {{ t('highContrastHelp') }}
+          </p>
         </div>
       </AppCard>
 
       <!-- Section: Account (danger zone) -->
       <AppCard class="page-settings__account-card">
         <template #header>
-          <AppLabel
-            tone="eyebrow"
-            :text="t('sectionAccount')"
-          />
+          <AppLabel tone="eyebrow" :text="t('sectionAccount')" />
         </template>
 
         <div class="page-settings__account">
-          <AppButton
-            variant="danger"
-            size="md"
-            @click="openDeleteDialog"
-          >
+          <AppButton variant="danger" size="md" @click="openDeleteDialog">
             {{ t('deleteAccountButton') }}
           </AppButton>
-          <p class="page-settings__account-help">{{ t('deleteAccountHelp') }}</p>
+          <p class="page-settings__account-help">
+            {{ t('deleteAccountHelp') }}
+          </p>
         </div>
       </AppCard>
-
     </template>
 
     <!-- Delete account confirmation dialog -->
@@ -539,18 +523,18 @@
       @close="closeDeleteDialog"
     >
       <div class="page-settings__dialog-inner">
-        <AppLabel
-          tone="eyebrow"
-          :text="t('deleteAccountTitle')"
-        />
-        <p class="page-settings__dialog-heading">{{ t('deleteAccountModalTitle') }}</p>
-        <p class="page-settings__dialog-warning">{{ t('deleteAccountWarning') }}</p>
+        <AppLabel tone="eyebrow" :text="t('deleteAccountTitle')" />
+        <p class="page-settings__dialog-heading">
+          {{ t('deleteAccountModalTitle') }}
+        </p>
+        <p class="page-settings__dialog-warning">
+          {{ t('deleteAccountWarning') }}
+        </p>
 
         <div class="page-settings__dialog-confirm-field">
-          <label
-            class="page-settings__dialog-confirm-label"
-            for="delete-confirm-input"
-          >{{ t('deleteAccountConfirmPrompt') }}</label>
+          <label class="page-settings__dialog-confirm-label" for="delete-confirm-input">{{
+            t('deleteAccountConfirmPrompt')
+          }}</label>
           <AppInput
             id="delete-confirm-input"
             v-model="deleteConfirmInput"
@@ -565,11 +549,7 @@
           />
         </div>
 
-        <p
-          v-if="deleteError"
-          class="page-settings__dialog-error"
-          role="alert"
-        >
+        <p v-if="deleteError" class="page-settings__dialog-error" role="alert">
           {{ deleteError }}
         </p>
 

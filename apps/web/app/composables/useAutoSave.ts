@@ -65,13 +65,17 @@ export function useAutoSave(
         if (saveState.value === 'saved') saveState.value = 'idle';
         fadeTimer = null;
       }, savedFadeMs);
-    } catch (err) {
+    } catch (error) {
       saveState.value = 'error';
-      saveError.value = err instanceof Error ? err.message : String(err);
+      saveError.value = error instanceof Error ? error.message : String(error);
     }
   }
 
-  const { debouncedFn, cancel } = useDebounceFn(run, debounceMs);
+  function runVoid(): void {
+    void run();
+  }
+
+  const { debouncedFn, cancel } = useDebounceFn(runVoid, debounceMs);
 
   function schedule(): void {
     saveState.value = 'idle';

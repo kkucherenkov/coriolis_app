@@ -17,14 +17,7 @@ import {
   updateCharacter,
   deleteCharacter,
 } from '@app/api-client-ts';
-import type {
-  Character,
-  CharacterList,
-  CharacterUpdate,
-  Problem,
-} from '@app/api-client-ts';
-
-export type { Character, CharacterList, CharacterUpdate, Problem };
+import type { Character, CharacterList, CharacterUpdate, Problem } from '@app/api-client-ts';
 
 export interface CharactersApiClient {
   list(opts?: { limit?: number }): Promise<CharacterList>;
@@ -40,35 +33,47 @@ export function useCharactersApi(): CharactersApiClient {
       const res = await listCharacters({
         query: opts?.limit !== undefined ? { limit: opts.limit } : undefined,
       });
+      // WHY: the generated SDK returns a Problem plain object (RFC 9457), not an
+      // Error subclass. Callers depend on `problem.status` / `problem.detail`
+      // being present on the caught value. A typed ApiProblemError wrapper is a
+      // separate refactor (Epic 5.x); until then we suppress the linter rule.
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       if (res.error) throw res.error as Problem;
-      if (!res.data) throw new Error('Empty response from listCharacters');
       return res.data;
     },
 
     async get(id) {
       const res = await getCharacter({ path: { id } });
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       if (res.error) throw res.error as Problem;
-      if (!res.data) throw new Error('Empty response from getCharacter');
       return res.data;
     },
 
     async create(body) {
       const res = await createCharacter({ body });
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       if (res.error) throw res.error as Problem;
-      if (!res.data) throw new Error('Empty response from createCharacter');
       return res.data;
     },
 
     async update(id, body) {
       const res = await updateCharacter({ path: { id }, body });
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       if (res.error) throw res.error as Problem;
-      if (!res.data) throw new Error('Empty response from updateCharacter');
       return res.data;
     },
 
     async delete(id) {
       const res = await deleteCharacter({ path: { id } });
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       if (res.error) throw res.error as Problem;
     },
   };
 }
+
+export {
+  type Character,
+  type CharacterList,
+  type CharacterUpdate,
+  type Problem,
+} from '@app/api-client-ts';

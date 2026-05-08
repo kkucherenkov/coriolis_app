@@ -12,8 +12,6 @@
 import { getMe, updateMe, deleteMe } from '@app/api-client-ts';
 import type { Me, MeUpdate, Problem } from '@app/api-client-ts';
 
-export type { Me, MeUpdate, Problem };
-
 export interface MeApiClient {
   get(): Promise<Me>;
   update(body: MeUpdate): Promise<Me>;
@@ -24,21 +22,26 @@ export function useMeApi(): MeApiClient {
   return {
     async get() {
       const res = await getMe();
+      // WHY: the generated SDK returns a Problem plain object (RFC 9457), not an
+      // Error subclass. A typed ApiProblemError wrapper is a separate refactor.
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       if (res.error) throw res.error as Problem;
-      if (!res.data) throw new Error('Empty response from getMe');
       return res.data;
     },
 
     async update(body) {
       const res = await updateMe({ body });
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       if (res.error) throw res.error as Problem;
-      if (!res.data) throw new Error('Empty response from updateMe');
       return res.data;
     },
 
     async deleteMe() {
       const res = await deleteMe();
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       if (res.error) throw res.error as Problem;
     },
   };
 }
+
+export { type Me, type MeUpdate, type Problem } from '@app/api-client-ts';
