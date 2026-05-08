@@ -19,6 +19,7 @@ import {
   IconId,
   Skills,
 } from '../domain/character.ports';
+import type { CharacterStatus } from '../domain/character.ports';
 import { CharacterUpdatedEvent } from '../events/character-updated.event';
 
 import { CreateCharacterCommand } from './create-character.command';
@@ -80,6 +81,8 @@ export class CreateCharacterHandler
     validateAttributes(attributes);
     validateSkills(skills);
 
+    const status: CharacterStatus = dto.status ?? 'active';
+
     const character = await this.repo.create({
       ownerId,
       name: dto.name.trim(),
@@ -92,6 +95,7 @@ export class CreateCharacterHandler
       experience: dto.experience ?? 0,
       conditions,
       notes: dto.notes ?? null,
+      status,
     });
 
     this.eventBus.publish(new CharacterUpdatedEvent(character.id, character.ownerId));

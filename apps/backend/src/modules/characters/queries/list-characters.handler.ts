@@ -22,6 +22,7 @@ export class ListCharactersHandler
     const opts: Parameters<ICharacterRepo['list']>[0] = {
       ownerId: query.ownerId,
       limit: query.limit,
+      includeDrafts: query.includeDrafts,
     };
     if (query.cursor !== undefined) {
       opts.cursor = query.cursor;

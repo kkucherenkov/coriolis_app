@@ -25,6 +25,7 @@ function makeRepo(): ICharacterRepo {
     list: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    deleteAbandonedDrafts: vi.fn(),
     delete: vi.fn(),
   };
 }
@@ -50,6 +51,7 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     relationships: [],
     inventory: [],
     notes: null,
+    status: 'active',
     createdAt: '2026-01-15T00:00:00.000Z',
     updatedAt: '2026-01-15T00:00:00.000Z',
     ...overrides,
@@ -202,5 +204,51 @@ describe('CreateCharacterHandler', () => {
         handler.execute(new CreateCharacterCommand('user-1', makeDto({ iconId }))),
       ).resolves.toBeDefined();
     }
+  });
+
+  // ── status field (T-5.6.1.b) ────────────────────────────────────────────────
+
+  it('defaults status to active when dto.status is omitted', async () => {
+    vi.mocked(repo.create).mockResolvedValue(makeCharacter({ status: 'active' }));
+
+    await handler.execute(new CreateCharacterCommand('user-1', makeDto()));
+
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'active' }),
+    );
+  });
+
+  it('passes status draft through to the repo when dto.status is draft', async () => {
+    vi.mocked(repo.create).mockResolvedValue(makeCharacter({ status: 'draft' }));
+
+    await handler.execute(
+      new CreateCharacterCommand('user-1', makeDto({ status: 'draft' })),
+    );
+
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'draft' }),
+    );
+  });
+
+  it('passes status active through to the repo when dto.status is active', async () => {
+    vi.mocked(repo.create).mockResolvedValue(makeCharacter({ status: 'active' }));
+
+    await handler.execute(
+      new CreateCharacterCommand('user-1', makeDto({ status: 'active' })),
+    );
+
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'active' }),
+    );
+  });
+
+  it('returns the status field from the repo result', async () => {
+    vi.mocked(repo.create).mockResolvedValue(makeCharacter({ status: 'draft' }));
+
+    const result = await handler.execute(
+      new CreateCharacterCommand('user-1', makeDto({ status: 'draft' })),
+    );
+
+    expect(result.status).toBe('draft');
   });
 });

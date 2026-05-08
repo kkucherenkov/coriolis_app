@@ -16,6 +16,7 @@ import { Type } from 'class-transformer';
 
 import type {
   Attributes,
+  CharacterStatus,
   ConditionFlags,
   CriticalInjurySeverity,
   IconId,
@@ -116,6 +117,10 @@ export class UpdateCharacterDto {
   @IsString()
   @MaxLength(4096)
   notes?: string | null;
+
+  @IsOptional()
+  @IsIn(['draft', 'active'])
+  status?: CharacterStatus;
 }
 
 export class UpdateCharacterCommand {

@@ -20,6 +20,7 @@ import { CHARACTER_REPO } from './domain/character.ports';
 import { CharacterUpdatedHandler } from './events/character-updated.event';
 import { CharacterRepo } from './infra/character.repo';
 import { ItemsModule } from './items/items.module';
+import { CleanupAbandonedDraftsJob } from './jobs/cleanup-abandoned-drafts.job';
 import { ExportCharacterHandler } from './queries/export-character.handler';
 import { GetCharacterHandler } from './queries/get-character.handler';
 import { ListCharactersHandler } from './queries/list-characters.handler';
@@ -40,6 +41,8 @@ import { TalentsModule } from './talents/talents.module';
     ExportCharacterHandler,
     // Events
     CharacterUpdatedHandler,
+    // Jobs
+    CleanupAbandonedDraftsJob,
     // Infrastructure
     { provide: CHARACTER_REPO, useClass: CharacterRepo },
     // Guards

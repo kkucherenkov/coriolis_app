@@ -88,6 +88,13 @@ export type IconId =
   | 'faceless-one'
   | 'deckhand';
 
+/**
+ * Lifecycle state of a character.
+ * Matches the OpenAPI enum `draft | active` (lowercase wire) and maps
+ * to the Prisma enum DRAFT | ACTIVE (UPPERCASE DB).
+ */
+export type CharacterStatus = 'draft' | 'active';
+
 export type RelationshipKind = 'ally' | 'rival' | 'family' | 'mentor' | 'debtor' | 'creditor';
 export type CriticalInjurySeverity = 'LIGHT' | 'SEVERE' | 'CRITICAL';
 export type ItemType = 'WEAPON' | 'ARMOR' | 'GEAR' | 'CYBERNETIC' | 'SHIP_MODULE' | 'OTHER';
@@ -158,6 +165,8 @@ export interface CharacterReadModel {
   relationships: RelationshipReadModel[];
   inventory: ItemReadModel[];
   notes: string | null;
+  /** Lifecycle state: 'draft' (wizard-in-progress) or 'active' (published). */
+  status: CharacterStatus;
   createdAt: string; // ISO-8601
   updatedAt: string; // ISO-8601
 }
@@ -174,6 +183,8 @@ export interface CharacterListItem {
   hp: { current: number; max: number };
   mp: { current: number; max: number };
   conditions: ConditionFlags;
+  /** Lifecycle state: 'draft' or 'active'. */
+  status: CharacterStatus;
   createdAt: string;
   updatedAt: string;
 }
@@ -184,9 +195,15 @@ export interface ListCharactersOptions {
   ownerId: string;
   limit: number;
   cursor?: string;
+  /** When true, both draft and active characters are returned. Default: false (active only). */
+  includeDrafts?: boolean;
 }
 
 export interface ICharacterRepo {
+  /**
+   * Find a character by id regardless of status (used by update, get-one, export).
+   * Returns null if not found.
+   */
   findActiveById(id: string): Promise<CharacterReadModel | null>;
 
   /**
@@ -209,6 +226,8 @@ export interface ICharacterRepo {
     experience: number;
     conditions: ConditionFlags;
     notes?: string | null;
+    /** Lifecycle state. Defaults to 'active' when omitted. */
+    status?: CharacterStatus;
   }): Promise<CharacterReadModel>;
 
   update(
@@ -230,8 +249,16 @@ export interface ICharacterRepo {
         acquiredAt: string;
       }>;
       notes: string | null;
+      /** Status transition. Only draft → active is permitted at the handler layer. */
+      status: CharacterStatus;
     }>,
   ): Promise<CharacterReadModel>;
+
+  /**
+   * Delete abandoned drafts older than the provided cutoff date.
+   * Returns the number of rows deleted.
+   */
+  deleteAbandonedDrafts(cutoff: Date): Promise<number>;
 
   delete(id: string): Promise<void>;
 }

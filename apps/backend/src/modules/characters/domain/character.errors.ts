@@ -98,3 +98,19 @@ export class ReadOnlyFieldError extends DomainError {
     });
   }
 }
+
+/**
+ * Thrown when the client attempts an illegal status transition.
+ * Only draft → active (forge) is permitted. The reverse (active → draft)
+ * is a product rule violation — ADR 0002.
+ */
+export class InvalidStatusTransitionError extends DomainError {
+  constructor(from: string, to: string) {
+    super({
+      code: 'INVALID_STATUS_TRANSITION',
+      status: 422,
+      title: 'Invalid Status Transition',
+      detail: `Cannot transition character status from '${from}' to '${to}'. Only draft → active is permitted.`,
+    });
+  }
+}

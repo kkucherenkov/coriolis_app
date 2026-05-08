@@ -60,9 +60,11 @@ export class CharactersController {
     @Req() req: AuthenticatedRequest,
     @Query('limit') limitRaw?: string,
     @Query('cursor') cursor?: string,
+    @Query('includeDrafts') includeDraftsRaw?: string,
   ): Promise<CharacterListResponse> {
     const limit = Math.min(Math.max(parseInt(limitRaw ?? '20', 10) || 20, 1), 100);
-    return this.queryBus.execute(new ListCharactersQuery(req.userId, limit, cursor));
+    const includeDrafts = includeDraftsRaw === 'true' || includeDraftsRaw === '1';
+    return this.queryBus.execute(new ListCharactersQuery(req.userId, limit, cursor, includeDrafts));
   }
 
   /** POST /api/v1/characters */

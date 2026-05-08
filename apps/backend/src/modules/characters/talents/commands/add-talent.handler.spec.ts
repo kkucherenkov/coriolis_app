@@ -15,6 +15,7 @@ function makeCharacterRepo(): ICharacterRepo {
     list: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    deleteAbandonedDrafts: vi.fn(),
     delete: vi.fn(),
   };
 }

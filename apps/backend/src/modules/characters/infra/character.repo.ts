@@ -31,6 +31,7 @@ import type {
   Attributes,
   CharacterListItem,
   CharacterReadModel,
+  CharacterStatus,
   ConditionFlags,
   CriticalInjuryReadModel,
   CriticalInjurySeverity,
@@ -60,6 +61,7 @@ const CHARACTER_FULL_SELECT = {
   experience: true,
   conditions: true,
   notes: true,
+  status: true,
   createdAt: true,
   updatedAt: true,
   items: {
@@ -90,6 +92,7 @@ const CHARACTER_LIST_SELECT = {
   hpCurrent: true,
   mpCurrent: true,
   conditions: true,
+  status: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -109,6 +112,8 @@ type PrismaCharacterFull = {
   experience: number;
   conditions: unknown;
   notes: string | null;
+  /** Prisma enum value: 'ACTIVE' | 'DRAFT' (uppercase). Mapped to lowercase at boundary. */
+  status: string;
   createdAt: Date;
   updatedAt: Date;
   items: Array<{ id: string; type: string; data: unknown }>;
@@ -122,6 +127,11 @@ type PrismaCharacterFull = {
     acquiredAt: Date;
   }>;
 };
+
+/** Maps Prisma UPPERCASE enum to OpenAPI lowercase wire value. */
+function toCharacterStatus(s: string): CharacterStatus {
+  return s.toLowerCase() as CharacterStatus;
+}
 
 function mapTalent(t: {
   id: string;
@@ -193,6 +203,7 @@ function toReadModel(row: PrismaCharacterFull): CharacterReadModel {
     relationships: row.relationships.map(mapRelationship),
     inventory,
     notes: row.notes,
+    status: toCharacterStatus(row.status),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -221,11 +232,18 @@ export class CharacterRepo implements ICharacterRepo {
   }
 
   async list(opts: ListCharactersOptions): Promise<{ items: CharacterListItem[]; nextCursor: string | null }> {
-    const { ownerId, limit, cursor } = opts;
+    const { ownerId, limit, cursor, includeDrafts } = opts;
     const take = limit + 1; // fetch one extra to detect next page
 
+    // Default behaviour: only return ACTIVE characters (dashboard-safe).
+    // When includeDrafts=true, return both ACTIVE and DRAFT.
+    const statusFilter = includeDrafts ? undefined : ('ACTIVE' as const);
+
     const rows = await this.prisma.character.findMany({
-      where: { ownerId },
+      where: {
+        ownerId,
+        ...(statusFilter ? { status: statusFilter } : {}),
+      },
       select: CHARACTER_LIST_SELECT,
       orderBy: { createdAt: 'desc' },
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
@@ -253,6 +271,7 @@ export class CharacterRepo implements ICharacterRepo {
             max: computeMpMax(attrs.wits, attrs.empathy),
           },
           conditions: row.conditions as unknown as ConditionFlags,
+          status: toCharacterStatus(row.status as string),
           createdAt: row.createdAt.toISOString(),
           updatedAt: row.updatedAt.toISOString(),
         };
@@ -273,7 +292,11 @@ export class CharacterRepo implements ICharacterRepo {
     experience: number;
     conditions: ConditionFlags;
     notes?: string | null;
+    status?: CharacterStatus;
   }): Promise<CharacterReadModel> {
+    // Map lowercase wire status to Prisma UPPERCASE enum value.
+    const statusEnum = (data.status?.toUpperCase() ?? 'ACTIVE') as 'ACTIVE' | 'DRAFT';
+
     const row = await this.prisma.character.create({
       data: {
         ownerId: data.ownerId,
@@ -287,6 +310,7 @@ export class CharacterRepo implements ICharacterRepo {
         experience: data.experience,
         conditions: data.conditions as object,
         notes: data.notes ?? null,
+        status: statusEnum,
       },
       select: CHARACTER_FULL_SELECT,
     });
@@ -312,9 +336,10 @@ export class CharacterRepo implements ICharacterRepo {
         acquiredAt: string;
       }>;
       notes: string | null;
+      status: CharacterStatus;
     }>,
   ): Promise<CharacterReadModel> {
-    const { criticalInjuries, iconId, ...rest } = data;
+    const { criticalInjuries, iconId, status, ...rest } = data;
 
     await this.prisma.$transaction(async (tx) => {
       // Replace critical injuries if provided
@@ -340,6 +365,10 @@ export class CharacterRepo implements ICharacterRepo {
       if (rest.attributes) updateData['attributes'] = rest.attributes as object;
       if (rest.skills) updateData['skills'] = rest.skills as object;
       if (rest.conditions) updateData['conditions'] = rest.conditions as object;
+      // Map lowercase wire status to Prisma UPPERCASE enum on update.
+      if (status !== undefined) {
+        updateData['status'] = status.toUpperCase() as 'ACTIVE' | 'DRAFT';
+      }
 
       if (Object.keys(updateData).length > 0) {
         await tx.character.update({ where: { id }, data: updateData });
@@ -349,6 +378,16 @@ export class CharacterRepo implements ICharacterRepo {
     const updated = await this.findActiveById(id);
     // findActiveById should always find the row we just updated
     return updated!;
+  }
+
+  async deleteAbandonedDrafts(cutoff: Date): Promise<number> {
+    const result = await this.prisma.character.deleteMany({
+      where: {
+        status: 'DRAFT' as const,
+        updatedAt: { lt: cutoff },
+      },
+    });
+    return result.count;
   }
 
   async delete(id: string): Promise<void> {

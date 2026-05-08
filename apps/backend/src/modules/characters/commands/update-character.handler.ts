@@ -8,6 +8,7 @@ import {
   CharacterNotFoundError,
   CharacterNotOwnedError,
   IconUnknownError,
+  InvalidStatusTransitionError,
   ReadOnlyFieldError,
   SkillOutOfRangeError,
 } from '../domain/character.errors';
@@ -82,6 +83,15 @@ export class UpdateCharacterHandler
     if (!existing) throw new CharacterNotFoundError(characterId);
     if (existing.ownerId !== ownerId) throw new CharacterNotOwnedError(characterId);
 
+    // Status-transition guard (ADR 0002): only draft → active is permitted.
+    // active → draft is rejected; active → active and draft → draft are no-ops.
+    if (dto.status !== undefined && dto.status !== existing.status) {
+      if (existing.status === 'active' && dto.status === 'draft') {
+        throw new InvalidStatusTransitionError(existing.status, dto.status);
+      }
+      // draft → active: allowed — fall through to repo.update
+    }
+
     // Defence-in-depth validation
     if (dto.name !== undefined) {
       if (!dto.name || dto.name.trim() === '') throw new CharacterNameEmptyError();
@@ -114,6 +124,7 @@ export class UpdateCharacterHandler
       ...(dto.conditions ? { conditions: dto.conditions } : {}),
       ...(criticalInjuries ? { criticalInjuries } : {}),
       ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
+      ...(dto.status !== undefined ? { status: dto.status } : {}),
     });
 
     this.eventBus.publish(new CharacterUpdatedEvent(updated.id, updated.ownerId));

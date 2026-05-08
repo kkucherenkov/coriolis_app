@@ -14,7 +14,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import type { Attributes, ConditionFlags, IconId, Skills } from '../domain/character.ports';
+import type { Attributes, CharacterStatus, ConditionFlags, IconId, Skills } from '../domain/character.ports';
 
 export class AttributesDto {
   @IsInt() @Min(1) @Max(5) strength!: number;
@@ -123,6 +123,10 @@ export class CreateCharacterDto {
   @IsString()
   @MaxLength(4096)
   notes?: string | null;
+
+  @IsOptional()
+  @IsIn(['draft', 'active'])
+  status?: CharacterStatus;
 }
 
 export class CreateCharacterCommand {

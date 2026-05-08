@@ -14,6 +14,7 @@ function makeRepo(): ICharacterRepo {
     list: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    deleteAbandonedDrafts: vi.fn(),
     delete: vi.fn(),
   };
 }
@@ -28,6 +29,7 @@ function makeListItem(overrides: Partial<CharacterListItem> = {}): CharacterList
     hp: { current: 14, max: 14 },
     mp: { current: 10, max: 10 },
     conditions: { ...DEFAULT_CONDITIONS },
+    status: 'active',
     createdAt: '2026-01-15T00:00:00.000Z',
     updatedAt: '2026-01-15T00:00:00.000Z',
     ...overrides,
@@ -87,5 +89,49 @@ describe('ListCharactersHandler', () => {
     expect(repo.list).toHaveBeenCalledWith(
       expect.objectContaining({ ownerId: 'specific-user' }),
     );
+  });
+
+  // ── includeDrafts (ADR 0002, T-5.6.1.b) ────────────────────────────────────
+
+  it('passes includeDrafts=false by default when not specified', async () => {
+    vi.mocked(repo.list).mockResolvedValue({ items: [], nextCursor: null });
+
+    await handler.execute(new ListCharactersQuery('user-1', 20));
+
+    expect(repo.list).toHaveBeenCalledWith(
+      expect.objectContaining({ includeDrafts: false }),
+    );
+  });
+
+  it('passes includeDrafts=true to repo when query sets it', async () => {
+    vi.mocked(repo.list).mockResolvedValue({ items: [], nextCursor: null });
+
+    await handler.execute(new ListCharactersQuery('user-1', 20, undefined, true));
+
+    expect(repo.list).toHaveBeenCalledWith(
+      expect.objectContaining({ includeDrafts: true }),
+    );
+  });
+
+  it('returns draft items when includeDrafts=true and repo returns them', async () => {
+    const draftItem = makeListItem({ id: 'draft-1', status: 'draft' });
+    const activeItem = makeListItem({ id: 'active-1', status: 'active' });
+    vi.mocked(repo.list).mockResolvedValue({ items: [draftItem, activeItem], nextCursor: null });
+
+    const result = await handler.execute(new ListCharactersQuery('user-1', 20, undefined, true));
+
+    expect(result.items).toHaveLength(2);
+    expect(result.items.find((i) => i.status === 'draft')).toBeDefined();
+    expect(result.items.find((i) => i.status === 'active')).toBeDefined();
+  });
+
+  it('returns only active items when includeDrafts=false and repo filters them', async () => {
+    const activeItem = makeListItem({ id: 'active-1', status: 'active' });
+    vi.mocked(repo.list).mockResolvedValue({ items: [activeItem], nextCursor: null });
+
+    const result = await handler.execute(new ListCharactersQuery('user-1', 20, undefined, false));
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]!.status).toBe('active');
   });
 });

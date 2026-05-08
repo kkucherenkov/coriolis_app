@@ -5,6 +5,7 @@ import {
   CharacterNameEmptyError,
   CharacterNotFoundError,
   CharacterNotOwnedError,
+  InvalidStatusTransitionError,
   ReadOnlyFieldError,
   SkillOutOfRangeError,
 } from '../domain/character.errors';
@@ -22,6 +23,7 @@ function makeRepo(): ICharacterRepo {
     list: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    deleteAbandonedDrafts: vi.fn(),
     delete: vi.fn(),
   };
 }
@@ -47,6 +49,7 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     relationships: [],
     inventory: [],
     notes: null,
+    status: 'active',
     createdAt: '2026-01-15T00:00:00.000Z',
     updatedAt: '2026-01-15T00:00:00.000Z',
     ...overrides,
@@ -208,6 +211,61 @@ describe('UpdateCharacterHandler', () => {
     vi.mocked(repo.update).mockResolvedValue(makeCharacter({ hp: { current: 5, max: 6 } }));
 
     const dto = Object.assign(new UpdateCharacterDto(), { hp: { current: 5 } });
+    await expect(
+      handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+    ).resolves.toBeDefined();
+  });
+
+  // ── status transitions (ADR 0002, T-5.6.1.b) ────────────────────────────────
+
+  it('permits draft → active transition and passes status to repo', async () => {
+    vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter({ status: 'draft' }));
+    vi.mocked(repo.update).mockResolvedValue(makeCharacter({ status: 'active' }));
+
+    const dto = Object.assign(new UpdateCharacterDto(), { status: 'active' });
+    const result = await handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto));
+
+    expect(result.status).toBe('active');
+    expect(repo.update).toHaveBeenCalledWith(
+      'char-1',
+      expect.objectContaining({ status: 'active' }),
+    );
+  });
+
+  it('throws InvalidStatusTransitionError for active → draft with 422 status', async () => {
+    vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter({ status: 'active' }));
+
+    const dto = Object.assign(new UpdateCharacterDto(), { status: 'draft' });
+    await expect(
+      handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+    ).rejects.toBeInstanceOf(InvalidStatusTransitionError);
+    expect(repo.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects active → draft with code INVALID_STATUS_TRANSITION and status 422', async () => {
+    vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter({ status: 'active' }));
+
+    const dto = Object.assign(new UpdateCharacterDto(), { status: 'draft' });
+    await expect(
+      handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+    ).rejects.toMatchObject({ status: 422, code: 'INVALID_STATUS_TRANSITION' });
+  });
+
+  it('allows draft → draft no-op without error', async () => {
+    vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter({ status: 'draft' }));
+    vi.mocked(repo.update).mockResolvedValue(makeCharacter({ status: 'draft' }));
+
+    const dto = Object.assign(new UpdateCharacterDto(), { status: 'draft' });
+    await expect(
+      handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+    ).resolves.toBeDefined();
+  });
+
+  it('allows active → active no-op without error', async () => {
+    vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter({ status: 'active' }));
+    vi.mocked(repo.update).mockResolvedValue(makeCharacter({ status: 'active' }));
+
+    const dto = Object.assign(new UpdateCharacterDto(), { status: 'active' });
     await expect(
       handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
     ).resolves.toBeDefined();

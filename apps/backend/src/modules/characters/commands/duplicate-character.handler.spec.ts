@@ -15,6 +15,7 @@ function makeRepo(): ICharacterRepo {
     list: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    deleteAbandonedDrafts: vi.fn(),
     delete: vi.fn(),
   };
 }
@@ -40,6 +41,7 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     relationships: [],
     inventory: [],
     notes: 'Some notes',
+    status: 'active',
     createdAt: '2026-01-15T00:00:00.000Z',
     updatedAt: '2026-01-15T00:00:00.000Z',
     ...overrides,
