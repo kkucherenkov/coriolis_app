@@ -144,3 +144,4 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 | Primitive | `AppProgress` | ✓ | — |
 | Primitive | `AppSelect` | ✓ | — |
 | Primitive | `AppSwitch` | ✓ | — |
+| Primitive | `AppTextarea` | ✓ | — |
