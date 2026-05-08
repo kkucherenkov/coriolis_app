@@ -1,347 +1,285 @@
 <script setup lang="ts">
-  import { computed, resolveComponent } from 'vue';
-  import type { RouteLocationRaw } from 'vue-router';
+  import { computed } from 'vue';
 
-  import AppIcon from '../AppIcon/AppIcon.vue';
+  type Variant = 'brass' | 'mystic' | 'crimson' | 'success' | 'darkness';
+  type Size = 'sm' | 'md';
 
-  type Color = 'primary' | 'neutral' | 'success' | 'warning' | 'error' | 'info';
-  type Variant = 'solid' | 'soft' | 'subtle' | 'outline';
-  type Size = 'sm' | 'md' | 'lg';
-  type IconSize = 'xs' | 'sm' | 'md';
+  interface Props {
+    modelValue?: boolean;
+    variant?: Variant;
+    size?: Size;
+    disabled?: boolean;
+    removable?: boolean;
+  }
 
-  const props = withDefaults(
-    defineProps<{
-      label?: string;
-      color?: Color;
-      variant?: Variant;
-      size?: Size;
-      icon?: string;
-      dismissible?: boolean;
-      selected?: boolean;
-      disabled?: boolean;
-      /** If set, chip renders as a NuxtLink instead of a button. */
-      to?: RouteLocationRaw;
-    }>(),
-    {
-      label: undefined,
-      color: 'neutral',
-      variant: 'soft',
-      size: 'md',
-      icon: undefined,
-      dismissible: false,
-      selected: false,
-      disabled: false,
-      to: undefined,
-    },
-  );
+  const props = withDefaults(defineProps<Props>(), {
+    modelValue: false,
+    variant: 'brass',
+    size: 'md',
+    disabled: false,
+    removable: false,
+  });
 
   const emit = defineEmits<{
-    click: [event: MouseEvent];
-    dismiss: [event: Event];
+    'update:modelValue': [value: boolean];
+    remove: [];
   }>();
 
-  const isLink = computed(() => Boolean(props.to) && !props.disabled);
-  const rootTag = computed(() => (isLink.value ? resolveComponent('NuxtLink') : 'button'));
-
-  const rootClasses = computed(() => [
+  const classes = computed(() => [
     'app-chip',
-    `app-chip--${props.color}`,
     `app-chip--${props.variant}`,
     `app-chip--${props.size}`,
     {
-      'app-chip--selected': props.selected,
+      'app-chip--active': props.modelValue,
       'app-chip--disabled': props.disabled,
-      'app-chip--dismissible': props.dismissible,
+      'app-chip--removable': props.removable,
     },
   ]);
 
-  // AppIcon size scale is `xs|sm|md|lg|xl` — chip only uses the small end, one
-  // step smaller than the chip itself so the glyph doesn't crowd the label.
-  const iconSize = computed<IconSize>(() => {
-    switch (props.size) {
-      case 'sm': {
-        return 'xs';
-      }
-      case 'lg': {
-        return 'md';
-      }
-      default: {
-        return 'sm';
-      }
-    }
-  });
-
-  function handleClick(event: MouseEvent): void {
+  function handleToggle(): void {
     if (props.disabled) return;
-    emit('click', event);
+    emit('update:modelValue', !props.modelValue);
   }
 
-  function handleDismiss(event: Event): void {
+  function handleRemove(event: MouseEvent | KeyboardEvent): void {
     if (props.disabled) return;
-    // Prevent the dismiss click from bubbling up as a chip click. The caller
-    // can listen for `dismiss` and `click` independently.
     event.stopPropagation();
-    emit('dismiss', event);
+    emit('remove');
   }
 </script>
 
 <template>
-  <component
-    :is="rootTag"
-    :to="to"
-    :type="isLink ? undefined : 'button'"
-    :class="rootClasses"
-    :disabled="isLink ? undefined : disabled"
-    :aria-pressed="selected ? 'true' : undefined"
+  <button
+    type="button"
+    :class="classes"
+    :disabled="disabled"
+    :aria-pressed="modelValue ? 'true' : 'false'"
     :aria-disabled="disabled ? 'true' : undefined"
-    @click="handleClick"
+    @click="handleToggle"
   >
-    <AppIcon v-if="icon" :name="icon" :size="iconSize" class="app-chip__icon" />
-    <span v-if="$slots['default'] || label" class="app-chip__label">
-      <slot>{{ label }}</slot>
+    <span class="app-chip__label">
+      <slot />
     </span>
     <span
-      v-if="dismissible"
-      class="app-chip__dismiss"
+      v-if="removable"
+      class="app-chip__remove"
       role="button"
       tabindex="0"
-      aria-label="Dismiss"
-      @click="handleDismiss"
-      @keydown.enter.prevent="handleDismiss"
-      @keydown.space.prevent="handleDismiss"
+      aria-label="Remove"
+      @click.stop="handleRemove"
+      @keydown.enter.prevent="handleRemove"
+      @keydown.space.prevent="handleRemove"
+      >×</span
     >
-      <AppIcon name="i-lucide-x" :size="iconSize" />
-    </span>
-  </component>
+  </button>
 </template>
 
 <style lang="scss" scoped>
+  // Badge-aligned font sizes — sub body-sm by design.
+  // SCSS variables are the approved escape hatch for layout-dimension literals.
+  $chip-font-sm: 10px;
+  $chip-font-md: 12px;
+  $chip-pad-v-md: 3px;
+  $chip-remove-size: 16px;
+  $chip-remove-font: 14px;
+
   .app-chip {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-6);
-    border: 1px solid transparent;
+    gap: var(--space-1);
+    border: 1px solid;
     border-radius: var(--radius-pill);
     background: transparent;
-    color: var(--text-fg);
-    font-family: var(--font-sans);
-    font-weight: var(--fw-medium);
-    font-size: var(--text-sm);
-    line-height: var(--leading-snug);
-    text-decoration: none;
+    font-family: var(--type-body-sm-font-family);
+    font-weight: 500;
+    white-space: nowrap;
+    line-height: 1;
     cursor: pointer;
     transition:
-      background-color var(--dur-fast) var(--ease-default),
-      border-color var(--dur-fast) var(--ease-default),
-      color var(--dur-fast) var(--ease-default);
+      background-color var(--motion-duration-fast) var(--motion-ease-standard),
+      border-color var(--motion-duration-fast) var(--motion-ease-standard),
+      color var(--motion-duration-fast) var(--motion-ease-standard);
+
+    // ── Focus ───────────────────────────────────────────────────────────────
 
     &:focus-visible {
-      outline: none;
-      box-shadow: var(--shadow-focus);
+      outline: 2px solid var(--brand-brass);
+      outline-offset: 2px;
     }
 
-    &__icon {
-      flex-shrink: 0;
+    // ── Size modifiers ───────────────────────────────────────────────────────
+
+    &--sm {
+      font-size: $chip-font-sm;
+      padding: 2px var(--space-2);
     }
+
+    &--md {
+      font-size: $chip-font-md;
+      padding: $chip-pad-v-md var(--space-3);
+    }
+
+    // ── Variant: brass ───────────────────────────────────────────────────────
+
+    &--brass {
+      border-color: var(--brand-brass);
+      color: var(--brand-brass-light);
+      background-color: transparent;
+
+      &:hover:not(:disabled) {
+        background-color: color-mix(in srgb, var(--brand-brass) 12%, transparent);
+      }
+
+      &:active:not(:disabled) {
+        background-color: color-mix(in srgb, var(--brand-brass) 20%, transparent);
+      }
+
+      &.app-chip--active {
+        background-color: var(--brand-brass);
+        color: var(--text-on-brass);
+
+        &:hover:not(:disabled) {
+          background-color: var(--brand-brass-deep);
+        }
+      }
+    }
+
+    // ── Variant: mystic ──────────────────────────────────────────────────────
+
+    &--mystic {
+      border-color: var(--state-mystic-teal);
+      color: var(--state-mystic-teal);
+      background-color: transparent;
+
+      &:hover:not(:disabled) {
+        background-color: color-mix(in srgb, var(--state-mystic-teal) 12%, transparent);
+      }
+
+      &:active:not(:disabled) {
+        background-color: color-mix(in srgb, var(--state-mystic-teal) 20%, transparent);
+      }
+
+      &.app-chip--active {
+        background-color: var(--state-mystic-teal);
+        color: var(--text-primary);
+
+        &:hover:not(:disabled) {
+          background-color: color-mix(in srgb, var(--state-mystic-teal) 85%, transparent);
+        }
+      }
+    }
+
+    // ── Variant: crimson ─────────────────────────────────────────────────────
+
+    &--crimson {
+      border-color: var(--state-crimson);
+      color: var(--state-crimson-bright);
+      background-color: transparent;
+
+      &:hover:not(:disabled) {
+        background-color: color-mix(in srgb, var(--state-crimson) 12%, transparent);
+      }
+
+      &:active:not(:disabled) {
+        background-color: color-mix(in srgb, var(--state-crimson) 20%, transparent);
+      }
+
+      &.app-chip--active {
+        background-color: var(--state-crimson);
+        color: var(--text-primary);
+
+        &:hover:not(:disabled) {
+          background-color: color-mix(in srgb, var(--state-crimson) 85%, transparent);
+        }
+      }
+    }
+
+    // ── Variant: success ─────────────────────────────────────────────────────
+
+    &--success {
+      border-color: var(--state-success);
+      color: var(--state-success);
+      background-color: transparent;
+
+      &:hover:not(:disabled) {
+        background-color: color-mix(in srgb, var(--state-success) 12%, transparent);
+      }
+
+      &:active:not(:disabled) {
+        background-color: color-mix(in srgb, var(--state-success) 20%, transparent);
+      }
+
+      &.app-chip--active {
+        background-color: var(--state-success);
+        color: var(--text-primary);
+
+        &:hover:not(:disabled) {
+          background-color: color-mix(in srgb, var(--state-success) 85%, transparent);
+        }
+      }
+    }
+
+    // ── Variant: darkness ────────────────────────────────────────────────────
+
+    &--darkness {
+      border-color: var(--state-darkness);
+      color: var(--text-primary);
+      background-color: transparent;
+
+      &:hover:not(:disabled) {
+        background-color: color-mix(in srgb, var(--state-darkness) 20%, transparent);
+      }
+
+      &:active:not(:disabled) {
+        background-color: color-mix(in srgb, var(--state-darkness) 35%, transparent);
+      }
+
+      &.app-chip--active {
+        background-color: var(--state-darkness);
+        color: var(--text-primary);
+
+        &:hover:not(:disabled) {
+          background-color: color-mix(in srgb, var(--state-darkness) 85%, transparent);
+        }
+      }
+    }
+
+    // ── State: disabled ──────────────────────────────────────────────────────
+
+    &--disabled,
+    &:disabled {
+      cursor: not-allowed;
+      opacity: var(--opacity-disabled);
+      pointer-events: none;
+    }
+
+    // ── Internal elements ────────────────────────────────────────────────────
 
     &__label {
       display: inline-flex;
       align-items: center;
     }
 
-    &__dismiss {
+    &__remove {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      margin-inline-start: var(--space-1);
-      padding: var(--space-1);
+      width: $chip-remove-size;
+      height: $chip-remove-size;
+      font-size: $chip-remove-font;
+      line-height: 1;
       border-radius: var(--radius-pill);
-      color: currentcolor;
       cursor: pointer;
-      transition: background-color var(--dur-fast) var(--ease-default);
+      margin-inline-start: var(--space-1);
 
       &:hover {
-        background-color: var(--surface-bg-muted);
+        background-color: color-mix(in srgb, currentcolor 20%, transparent);
       }
 
       &:focus-visible {
-        outline: none;
-        box-shadow: var(--shadow-focus);
-      }
-    }
-
-    /* ----- sizes ----- */
-    &--sm {
-      padding: var(--space-1) var(--space-4);
-      font-size: var(--text-xs);
-    }
-
-    &--md {
-      padding: var(--space-2) var(--space-6);
-      font-size: var(--text-sm);
-    }
-
-    &--lg {
-      padding: var(--space-3) var(--space-8);
-      font-size: var(--text-md);
-    }
-
-    /* ----- colour × variant matrix -----
-     Each (colour) block defines the `solid`, `soft`, `subtle`, `outline`
-     variants by composing token families. `subtle` is a lighter take on
-     `soft` — the background is the same token at a reduced opacity. */
-    &--primary {
-      &.app-chip--solid {
-        background-color: var(--brand-accent);
-        border-color: var(--brand-accent);
-        color: var(--text-fg-inverse);
-      }
-
-      &.app-chip--soft {
-        background-color: var(--brand-accent-soft);
-        color: var(--brand-accent-fg);
-      }
-
-      &.app-chip--subtle {
-        background-color: color-mix(in srgb, var(--brand-accent-soft) 60%, transparent);
-        color: var(--brand-accent-fg);
-      }
-
-      &.app-chip--outline {
-        border-color: var(--brand-accent);
-        color: var(--brand-accent-fg);
-      }
-    }
-
-    &--neutral {
-      &.app-chip--solid {
-        background-color: var(--text-fg);
-        border-color: var(--text-fg);
-        color: var(--text-fg-inverse);
-      }
-
-      &.app-chip--soft {
-        background-color: var(--surface-bg-muted);
-        color: var(--text-fg);
-      }
-
-      &.app-chip--subtle {
-        background-color: color-mix(in srgb, var(--surface-bg-muted) 60%, transparent);
-        color: var(--text-fg-muted);
-      }
-
-      &.app-chip--outline {
-        border-color: var(--border-strong);
-        color: var(--text-fg);
-      }
-    }
-
-    &--success {
-      &.app-chip--solid {
-        background-color: var(--status-success);
-        border-color: var(--status-success);
-        color: var(--text-fg-inverse);
-      }
-
-      &.app-chip--soft {
-        background-color: var(--status-success-soft);
-        color: var(--status-success);
-      }
-
-      &.app-chip--subtle {
-        background-color: color-mix(in srgb, var(--status-success-soft) 60%, transparent);
-        color: var(--status-success);
-      }
-
-      &.app-chip--outline {
-        border-color: var(--status-success);
-        color: var(--status-success);
-      }
-    }
-
-    &--warning {
-      &.app-chip--solid {
-        background-color: var(--status-warning);
-        border-color: var(--status-warning);
-        color: var(--text-fg-inverse);
-      }
-
-      &.app-chip--soft {
-        background-color: var(--status-warning-soft);
-        color: var(--status-warning);
-      }
-
-      &.app-chip--subtle {
-        background-color: color-mix(in srgb, var(--status-warning-soft) 60%, transparent);
-        color: var(--status-warning);
-      }
-
-      &.app-chip--outline {
-        border-color: var(--status-warning);
-        color: var(--status-warning);
-      }
-    }
-
-    &--error {
-      &.app-chip--solid {
-        background-color: var(--status-danger);
-        border-color: var(--status-danger);
-        color: var(--text-fg-inverse);
-      }
-
-      &.app-chip--soft {
-        background-color: var(--status-danger-soft);
-        color: var(--status-danger);
-      }
-
-      &.app-chip--subtle {
-        background-color: color-mix(in srgb, var(--status-danger-soft) 60%, transparent);
-        color: var(--status-danger);
-      }
-
-      &.app-chip--outline {
-        border-color: var(--status-danger);
-        color: var(--status-danger);
-      }
-    }
-
-    &--info {
-      &.app-chip--solid {
-        background-color: var(--status-info);
-        border-color: var(--status-info);
-        color: var(--text-fg-inverse);
-      }
-
-      &.app-chip--soft {
-        background-color: var(--status-info-soft);
-        color: var(--status-info);
-      }
-
-      &.app-chip--subtle {
-        background-color: color-mix(in srgb, var(--status-info-soft) 60%, transparent);
-        color: var(--status-info);
-      }
-
-      &.app-chip--outline {
-        border-color: var(--status-info);
-        color: var(--status-info);
-      }
-    }
-
-    /* ----- selected / disabled ----- */
-    &--selected {
-      border-color: var(--brand-accent);
-      box-shadow: inset 0 0 0 1px var(--brand-accent);
-    }
-
-    &--disabled {
-      cursor: not-allowed;
-      opacity: var(--opacity-disabled);
-
-      .app-chip__dismiss {
-        cursor: not-allowed;
+        outline: 2px solid var(--brand-brass);
+        outline-offset: 1px;
       }
     }
   }
