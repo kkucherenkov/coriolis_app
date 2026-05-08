@@ -2,6 +2,40 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-08-014 — Build AppProgress Coriolis primitive
+
+- Created/Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md T-2.1.1.f
+- Result: merged at `f230d4c` (`chore(ui): register`); preceded by `00a47f2` (component+stories+spec) and `b68ffa3` (task entry).
+- Linear-only — circular variant deferred. 5 tones, 3 sizes, role="progressbar" with full aria-value attrs. 36 vitest specs.
+- Notes: circular variant deferred; wizard-icon.jsx and sheet-desktop.jsx need only the linear bar.
+
+## T-2026-05-08-013 — Implement AppChip Coriolis primitive
+
+- Created/Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md §Epic 2.1.c
+- Result: merged at `d64d72b` (`docs(design)`); preceded by `fcf03d6` (component) and `644d667` (task entry).
+- `<button type="button">` with `aria-pressed`. Five Coriolis variants × 2 sizes. Toggleable `update:modelValue` + optional `removable` with `remove` event. 28 vitest specs.
+
+## T-2026-05-08-012 — AppSwitch Coriolis primitive
+
+- Created/Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md §Epic 2.1.e
+- Result: merged at `940d115` — three commits `9fb6b2b` (task) + `1bdba04` (component) + `940d115` (specs+stories).
+- `<button role="switch">` with `aria-checked`. Brass-on-night track, brass-light thumb. Slot wins over `label` prop when both present. 19 specs, 11 stories.
+
+## T-2026-05-08-011 — Implement CharactersModule backend (Epic 3.2 Story 3.2.1)
+
+- Created/Completed: 2026-05-08
+- Owner: claude (backend-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Feature 3.2 Story 3.2.1
+- Result: merged at `64db2d0` — three commits `d94d8fe` (Prisma schema) + `8ab5452` (CharactersModule + nested ItemsModule and TalentsModule) + `64db2d0` (105 handler specs).
+- Files: 57 files, +3873 lines. Full Coriolis domain (Character, Item, Talent, Relationship, CriticalInjury) Prisma models with cascade-delete on character delete. CQRS layout under `apps/backend/src/modules/characters/` with sub-modules for `items/` and `talents/`. Ownership guards on every parameterized route. JSON columns for attributes/skills/conditions/item.data per design judgement. 105 vitest specs across 20 files, all green.
+- Notes: derived stats (hp.max/mp.max/encumbrance.max) returned as placeholders 14/10/5 with `TODO(rules-engine, T-3.2.2)` comments. Encumbrance current = 0 placeholder pending rules-engine. Item.type stored as enum + `data: Json` column for the discriminated union (alternative to 6-table-per-type schema; documented in module).
+
 ## T-2026-05-08-010 — Add AppDivider primitive to @app/ui
 
 - Created/Completed: 2026-05-08
