@@ -2,6 +2,34 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## Codegen — /api/v1/ships
+
+- Completed: 2026-05-08
+- Owner: claude (main thread; codegen-runner agent hit a permissions block)
+- Result: merged at `75a6ee8`. 113 files / +14K lines. New ShipsApi (TS + Dart), Ship/ShipCreate/ShipUpdate/ShipList types, discriminated ShipModule union, CrewSlot, six new enums.
+- Note: dart-dio still emits `ShipModuleCreateOneOf{,1..4}` and `Model0{2..42}` duplicate names for the inline `oneOf` discriminator branches (same pattern as Items). When a ShipsModule backend is dispatched (Phase 5), follow up with a spec PR to extract `ShipModuleWeaponCreate`/`ShipModuleTorpedoCreate`/etc. as named schemas.
+
+## AppTab Coriolis primitive (Epic 2.1.k)
+
+- Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent)
+- Result: merged at `5508b02`. `<button role="tab">` with `aria-selected` per ARIA-1.2; underline-on-active via `::after` pseudo. 27 vitest specs, 10 stories. Brass + mystic tones, sm/md sizes.
+
+## AppBanner Coriolis primitive (Epic 2.1.j)
+
+- Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent)
+- Result: merged at `f0914c7`. Inline notice panel with 5 tones (info/success/warning/danger/parchment), default-icon-per-tone via AppIcon, optional dismiss + actions slot. `role="alert"` for danger, `role="status"` otherwise. 32 vitest specs. Parchment variant verified WCAG AAA contrast (text-ink #1A1810 on surface-parchment #F2E8D0 ≈ 12.5:1).
+
+## Web settings page (Epic 4.1.c)
+
+- Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent)
+- Result: merged at `ee9b8d9`. New `/app/settings` route, behind the existing `/app/**` auth guard.
+- `apps/web/app/composables/useMeApi.ts` — CRUD wrapper around `getMe`/`updateMe`. Throws RFC 9457 `Problem` on error.
+- `apps/web/app/pages/app/settings.vue` — four `AppCard` panels: Profile (avatar + displayName editable + email/createdAt read-only with debounced auto-save mirroring the sheet header), Locale (`AppSelect` for en/ru/uk/el; uk/el labeled `[uk-todo]`/`[el-todo]`), Theme (`AppSwitch` for high-contrast persisted to `localStorage('coriolis.theme')` — server-side persistence pending Phase 2), Account (delete button visibly disabled with help text referencing T-4.2.1).
+- 78 i18n keys × 4 locales clean. Stylelint clean.
+
 ## T-2026-05-08-022 — Ships OpenAPI surface (Epic 5 / Feature 8.1+8.2)
 
 - Created/Completed: 2026-05-08
