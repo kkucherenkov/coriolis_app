@@ -2,6 +2,47 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## Character sheet — Attributes & skills section (Epic 5 Feature 5.1)
+
+- Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent ×2 + parent session)
+- Spec: docs/IMPLEMENTATION_PLAN.md Epic 5, Feature 5.1, T-5.1.1.{a,b,c,d,f}.
+  T-5.1.1.e (Flutter mirror) deferred to a later batch.
+- Result: ff-merged to main as `43d2e87..ba6b7ee` (5 commits across two
+  worktree-isolated agent runs + one spec fix).
+  - `a646cf5` `feat(ui): AppStatBlock` — attribute/derived-stat block primitive
+    (button-or-div, brass/mystic tones, sm/md sizes, hideDots, aria-label
+    forwarding). 16 specs, 6 stories.
+  - `082ebc5` `feat(ui): AppPopover` — controlled tokens-styled popover
+    (4 placements, focus trap, Escape + click-outside close, reduced-motion
+    aware). 14 specs, 4 stories.
+  - `b508bac` `chore(ui): export AppStatBlock + AppPopover from @app/ui barrel`
+    + `specs/design/README.md` inventory rows.
+  - `43d2e87` `fix(ui): align AppBanner spec with <div> root` (regression
+    from the a11y CI batch — the `<aside>`→`<div>` change had not been
+    mirrored in the spec).
+  - `63882b2` `feat(web): extract useAutoSave composable from sheet skeleton`
+    — preempts Feature 5.5 T-5.5.1.a (composable only; no save-pulse
+    component yet). Lifecycle: idle / saving / saved / error; flush + cancel.
+  - `ba6b7ee` `feat(web): character sheet — three-column layout, hero
+    counters, attributes + skills panels`. Rewrites `[id].vue` from the
+    name+concept skeleton into the full sheet. Includes 8 vitest specs.
+- Backend: T-5.1.1.b is free — `express-openapi-validator` enforces
+  Attributes 1–5 and Skills 0–5 bounds at runtime from the OpenAPI schema.
+  No code change needed.
+- Open follow-ups (Phase 2):
+  - Flutter sheet (T-5.1.1.e).
+  - Conditions & critical injuries panel (Feature 5.3) — currently a
+    placeholder card on the desktop sheet.
+  - Equipped / Talents / Recent rolls right-column cards — placeholders;
+    implemented under Features 5.2 (talents) and 5.4 (inventory).
+  - `AppSavePulse` micro-component (Feature 5.5 T-5.5.1.b) — current sheet
+    uses plain text "saving / saved / error".
+- Agent-discipline notes: the second agent (sheet build) ignored two
+  guardrails — touched `packages/ui/` (legitimate lint/typecheck fixes
+  in AppPopover/AppStatBlock; kept) and committed a self-bookkeeping entry
+  to `done.md` (dropped at merge time; re-written by parent here).
+
 ## Storybook a11y CI smoke (Phase 2 follow-up)
 
 - Completed: 2026-05-08
