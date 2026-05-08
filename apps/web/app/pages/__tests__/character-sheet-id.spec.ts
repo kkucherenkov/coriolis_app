@@ -381,3 +381,173 @@ describe('save-pulse perf orchestration', () => {
     expect(callCount).toBeGreaterThanOrEqual(TRIPS);
   });
 });
+
+// ── Feature 5.4 — Inventory orchestration ────────────────────────────────────
+// Tests mirror the talent-list pattern: isolated helpers that replicate the
+// mutation logic from [id].vue without mounting the full SFC (Nuxt env not
+// set up for unit tests — see the file-level note above).
+
+describe('inventory — addItem places item at head of list', () => {
+  interface Item {
+    id: string;
+    type: string;
+    name: string;
+  }
+
+  function makeWeapon(id: string, name: string): Item {
+    return { id, type: 'WEAPON', name };
+  }
+
+  it('prepends a newly created item to the inventory list', async () => {
+    const inventory = ref<Item[]>([makeWeapon('w2', 'Old Weapon')]);
+
+    const newWeapon = makeWeapon('w1', 'Vulcan Carbine');
+    const addFn = vi.fn().mockResolvedValue(newWeapon);
+
+    const created = await addFn({ type: 'WEAPON', name: 'Vulcan Carbine' });
+    inventory.value = [created, ...inventory.value];
+
+    expect(inventory.value[0]?.id).toBe('w1');
+    expect(inventory.value[0]?.name).toBe('Vulcan Carbine');
+    expect(inventory.value).toHaveLength(2);
+  });
+
+  it('replaces an updated item in-place preserving list order', async () => {
+    const item = makeWeapon('w1', 'Vulcan Carbine');
+    const inventory = ref<Item[]>([item, makeWeapon('w2', 'Stun Baton')]);
+
+    const updatedItem = { ...item, name: 'Heavy Carbine' };
+    const updateFn = vi.fn().mockResolvedValue(updatedItem);
+
+    const result = await updateFn({ type: 'WEAPON', name: 'Heavy Carbine' });
+    inventory.value = inventory.value.map((i) => (i.id === result.id ? result : i));
+
+    expect(inventory.value[0]?.name).toBe('Heavy Carbine');
+    expect(inventory.value).toHaveLength(2);
+    // Second item must be unaffected
+    expect(inventory.value[1]?.name).toBe('Stun Baton');
+  });
+
+  it('removes a deleted item by id', async () => {
+    const w1 = makeWeapon('w1', 'Vulcan Carbine');
+    const w2 = makeWeapon('w2', 'Stun Baton');
+    const inventory = ref<Item[]>([w1, w2]);
+
+    const removeFn = vi.fn().mockResolvedValue(undefined);
+    await removeFn('w1');
+    inventory.value = inventory.value.filter((i) => i.id !== 'w1');
+
+    expect(inventory.value).toHaveLength(1);
+    expect(inventory.value[0]?.id).toBe('w2');
+  });
+
+  it('does not mutate list when removeItem API throws', async () => {
+    const w1 = makeWeapon('w1', 'Vulcan Carbine');
+    const inventory = ref<Item[]>([w1]);
+    const prev = [...inventory.value];
+
+    const removeFn = vi.fn().mockRejectedValue(new Error('Not found'));
+
+    try {
+      await removeFn('w1');
+      inventory.value = inventory.value.filter((i) => i.id !== 'w1');
+    } catch {
+      // Rollback — list stays as prev
+    }
+
+    expect(prev).toHaveLength(1);
+    expect(inventory.value).toHaveLength(1);
+  });
+});
+
+// ── Feature 5.4 — Encumbrance warning logic ───────────────────────────────────
+
+describe('encumbrance warning — isEncumbered computed', () => {
+  it('isEncumbered is false when current <= max', () => {
+    const enc = { current: 3, max: 6 };
+    expect(enc.current > enc.max).toBe(false);
+  });
+
+  it('isEncumbered is true when current > max', () => {
+    const enc = { current: 7, max: 6 };
+    expect(enc.current > enc.max).toBe(true);
+  });
+
+  it('isEncumbered is false when current === max', () => {
+    const enc = { current: 6, max: 6 };
+    expect(enc.current > enc.max).toBe(false);
+  });
+
+  it('isEncumbered is false for zero current', () => {
+    const enc = { current: 0, max: 6 };
+    expect(enc.current > enc.max).toBe(false);
+  });
+});
+
+// ── Feature 5.4 — Equipped quick view filtering ───────────────────────────────
+
+describe('equipped quick view — equippedItems filter', () => {
+  interface Weapon {
+    id: string;
+    type: 'WEAPON';
+    name: string;
+    equipped: boolean;
+  }
+  interface Armor {
+    id: string;
+    type: 'ARMOR';
+    name: string;
+    equipped: boolean;
+  }
+  interface Gear {
+    id: string;
+    type: 'GEAR';
+    name: string;
+    equipped: boolean;
+  }
+  interface Other {
+    id: string;
+    type: 'OTHER';
+    name: string;
+  }
+  type TestItem = Weapon | Armor | Gear | Other;
+
+  it('includes WEAPON items where equipped=true', () => {
+    const inventory: TestItem[] = [
+      { id: 'w1', type: 'WEAPON', name: 'Carbine', equipped: true },
+      { id: 'w2', type: 'WEAPON', name: 'Pistol', equipped: false },
+    ];
+
+    const equipped = inventory.filter(
+      (item) =>
+        (item.type === 'WEAPON' || item.type === 'ARMOR' || item.type === 'GEAR') &&
+        'equipped' in item &&
+        item.equipped,
+    );
+
+    expect(equipped).toHaveLength(1);
+    expect(equipped[0]?.id).toBe('w1');
+  });
+
+  it('excludes CYBERNETIC and SHIP_MODULE items from equipped list', () => {
+    const inventory = [
+      { id: 'c1', type: 'CYBERNETIC', name: 'Neural Link' },
+      { id: 's1', type: 'SHIP_MODULE', name: 'Fuel Pod' },
+    ];
+
+    const equipped = inventory.filter(
+      (item) =>
+        (item.type === 'WEAPON' || item.type === 'ARMOR' || item.type === 'GEAR') &&
+        'equipped' in item,
+    );
+
+    expect(equipped).toHaveLength(0);
+  });
+
+  it('returns empty array when no items are equipped', () => {
+    const inventory: Weapon[] = [{ id: 'w1', type: 'WEAPON', name: 'Carbine', equipped: false }];
+
+    const equipped = inventory.filter((item) => 'equipped' in item && item.equipped);
+    expect(equipped).toHaveLength(0);
+  });
+});

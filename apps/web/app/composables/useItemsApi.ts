@@ -47,7 +47,10 @@ export function useItemsApi(): ItemsApiClient {
   };
 }
 
-export type { Item, ItemCreate, ItemUpdate, Problem } from '@app/api-client-ts';
+// Problem is intentionally not re-exported here — it is already exposed via
+// useTalentsApi.ts. Re-exporting it from both composables triggers Nuxt's
+// "Duplicated imports" warning in the auto-import scanner.
+export type { Item, ItemCreate, ItemUpdate } from '@app/api-client-ts';
 export type {
   ItemWeapon,
   ItemArmor,
