@@ -9,7 +9,7 @@
  * Re-exports `Me` and `MeUpdate` so pages import from one place.
  */
 
-import { getMe, updateMe } from '@app/api-client-ts';
+import { getMe, updateMe, deleteMe } from '@app/api-client-ts';
 import type { Me, MeUpdate, Problem } from '@app/api-client-ts';
 
 export type { Me, MeUpdate, Problem };
@@ -17,6 +17,7 @@ export type { Me, MeUpdate, Problem };
 export interface MeApiClient {
   get(): Promise<Me>;
   update(body: MeUpdate): Promise<Me>;
+  deleteMe(): Promise<void>;
 }
 
 export function useMeApi(): MeApiClient {
@@ -33,6 +34,11 @@ export function useMeApi(): MeApiClient {
       if (res.error) throw res.error as Problem;
       if (!res.data) throw new Error('Empty response from updateMe');
       return res.data;
+    },
+
+    async deleteMe() {
+      const res = await deleteMe();
+      if (res.error) throw res.error as Problem;
     },
   };
 }
