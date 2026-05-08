@@ -17,12 +17,18 @@ import {
   updateCharacter,
   deleteCharacter,
 } from '@app/api-client-ts';
-import type { Character, CharacterList, CharacterUpdate, Problem } from '@app/api-client-ts';
+import type {
+  Character,
+  CharacterCreate,
+  CharacterList,
+  CharacterUpdate,
+  Problem,
+} from '@app/api-client-ts';
 
 export interface CharactersApiClient {
   list(opts?: { limit?: number }): Promise<CharacterList>;
   get(id: string): Promise<Character>;
-  create(body: { name: string }): Promise<Character>;
+  create(body: CharacterCreate): Promise<Character>;
   update(id: string, body: CharacterUpdate): Promise<Character>;
   delete(id: string): Promise<void>;
 }
@@ -73,6 +79,7 @@ export function useCharactersApi(): CharactersApiClient {
 
 export {
   type Character,
+  type CharacterCreate,
   type CharacterList,
   type CharacterUpdate,
   type Problem,

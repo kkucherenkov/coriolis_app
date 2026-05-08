@@ -1,179 +1,466 @@
 <script setup lang="ts">
-  import { AppCard, AppButton, AppField, AppInput } from '@app/ui';
-  import { ref, computed } from 'vue';
+  import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
   import { useCharactersApi } from '~/composables/useCharactersApi';
-  import type { Problem } from '~/composables/useCharactersApi';
+  import { useAutoSave } from '~/composables/useAutoSave';
+  import type { Character, CharacterUpdate } from '~/composables/useCharactersApi';
+  import type { Attributes, Skills, IconId } from '@app/api-client-ts';
+  import WizardShell from '~/components/wizard/WizardShell.vue';
+  import Step1Concept from '~/components/wizard/Step1Concept.vue';
+  import Step2Background from '~/components/wizard/Step2Background.vue';
+  import Step3Icon from '~/components/wizard/Step3Icon.vue';
+  import Step4Attributes from '~/components/wizard/Step4Attributes.vue';
+  import Step5Skills from '~/components/wizard/Step5Skills.vue';
+  import Step6Talents from '~/components/wizard/Step6Talents.vue';
+
+  // TODO(wizard-step-7-relationships): Relationships step deferred to v1.1+.
 
   const { t } = useI18n({ useScope: 'local' });
+
   const api = useCharactersApi();
+  const route = useRoute();
+  const router = useRouter();
 
-  const name = ref('');
-  const loading = ref(false);
-  const errorMsg = ref('');
+  // ── Constants ────────────────────────────────────────────────────────────────
 
-  const nameValid = computed(() => name.value.trim().length > 0 && name.value.trim().length <= 80);
-  const nameError = computed<string>(() => {
-    if (errorMsg.value) return errorMsg.value;
-    if (name.value.trim().length > 80) return t('errorNameTooLong');
-    return '';
-  });
+  const TOTAL_STEPS = 6;
 
-  async function onSubmit(event: Event): Promise<void> {
-    event.preventDefault();
-    if (!nameValid.value) {
-      errorMsg.value = t('errorNameRequired');
-      return;
-    }
-    errorMsg.value = '';
+  const DEFAULT_ATTRS: Attributes = {
+    strength: 2,
+    agility: 2,
+    wits: 2,
+    empathy: 2,
+  };
+
+  const DEFAULT_SKILLS: Skills = {
+    force: 0,
+    meleeCombat: 0,
+    dexterity: 0,
+    infiltration: 0,
+    rangedCombat: 0,
+    observation: 0,
+    survival: 0,
+    manipulation: 0,
+    command: 0,
+    culture: 0,
+    dataDjinn: 0,
+    medicurgy: 0,
+    mysticPowers: 0,
+    pilot: 0,
+    science: 0,
+    technology: 0,
+  };
+
+  // ── State ────────────────────────────────────────────────────────────────────
+
+  const step = ref<number>(1);
+  const loading = ref<boolean>(true);
+  const forging = ref<boolean>(false);
+  const errorMsg = ref<string>('');
+
+  // Draft character fields mirrored locally.
+  const draftId = ref<string>('');
+  const draftName = ref<string>('Untitled');
+  const draftConcept = ref<string | null>(null);
+  const draftOrigin = ref<string | null>(null);
+  const draftUpbringing = ref<string | null>(null);
+  const draftAge = ref<number | null>(null);
+  const draftIconId = ref<IconId | null>(null);
+  const draftAttributes = ref<Attributes>({ ...DEFAULT_ATTRS });
+  const draftSkills = ref<Skills>({ ...DEFAULT_SKILLS });
+  const draftTalentIds = ref<string[]>([]);
+
+  // ── AutoSave ─────────────────────────────────────────────────────────────────
+
+  async function persistDraft(): Promise<void> {
+    if (!draftId.value) return;
+    const body: CharacterUpdate = {
+      name: draftName.value.trim() || 'Untitled',
+      concept: draftConcept.value,
+      iconId: draftIconId.value,
+      attributes: draftAttributes.value,
+      skills: draftSkills.value,
+    };
+    await api.update(draftId.value, body);
+  }
+
+  const {
+    schedule: scheduleSave,
+    flush: flushSave,
+    cancel: cancelSave,
+  } = useAutoSave(persistDraft, { debounceMs: 600 });
+
+  // ── Mount — resume or create draft ───────────────────────────────────────────
+
+  onMounted(async () => {
     loading.value = true;
+    errorMsg.value = '';
+
     try {
-      const character = await api.create({ name: name.value.trim() });
-      await navigateTo(`/app/characters/${character.id}`);
-    } catch (error) {
-      const problem = error as Problem;
-      errorMsg.value = problem.detail ?? t('errorGeneric');
+      const qId = route.query.id as string | undefined;
+
+      if (qId) {
+        // Resume existing draft
+        const char = await api.get(qId);
+        if (char.status !== 'draft') {
+          // Draft was already forged — land on the sheet
+          await navigateTo(`/app/characters/${qId}`);
+          return;
+        }
+        hydrateDraft(char);
+      } else {
+        // Create a fresh draft
+        const char = await api.create({ name: 'Untitled', status: 'draft' });
+        hydrateDraft(char);
+        // Replace URL so refresh resumes without re-creating
+        await router.replace({ query: { id: char.id } });
+      }
+    } catch {
+      errorMsg.value = t('errorLoad');
     } finally {
       loading.value = false;
     }
+  });
+
+  onBeforeUnmount(() => {
+    cancelSave();
+  });
+
+  function hydrateDraft(char: Character): void {
+    draftId.value = char.id;
+    draftName.value = char.name;
+    draftConcept.value = char.concept ?? null;
+    draftIconId.value = char.iconId ?? null;
+    draftAttributes.value = { ...char.attributes };
+    draftSkills.value = { ...char.skills };
   }
+
+  // ── Validation guards ─────────────────────────────────────────────────────────
+
+  const step1Valid = computed<boolean>(() => {
+    const n = draftName.value.trim();
+    return n.length > 0 && n.length <= 80;
+  });
+
+  const canAdvance = computed<boolean>(() => {
+    if (step.value === 1) return step1Valid.value;
+    return true; // Steps 2–6 are fully optional at the data level
+  });
+
+  // ── Navigation ────────────────────────────────────────────────────────────────
+
+  async function goNext(): Promise<void> {
+    if (!canAdvance.value) return;
+    await flushSave();
+    if (step.value < TOTAL_STEPS) step.value++;
+  }
+
+  async function goBack(): Promise<void> {
+    await flushSave();
+    if (step.value > 1) step.value--;
+  }
+
+  async function saveAndExit(): Promise<void> {
+    await flushSave();
+    await navigateTo('/app/characters');
+  }
+
+  async function forge(): Promise<void> {
+    if (forging.value) return;
+    forging.value = true;
+    errorMsg.value = '';
+    try {
+      cancelSave();
+      // Final data sync + status transition in one PATCH
+      await api.update(draftId.value, {
+        name: draftName.value.trim() || 'Untitled',
+        concept: draftConcept.value,
+        iconId: draftIconId.value,
+        attributes: draftAttributes.value,
+        skills: draftSkills.value,
+        status: 'active',
+      });
+      await navigateTo(`/app/characters/${draftId.value}`);
+    } catch {
+      errorMsg.value = t('errorForge');
+      forging.value = false;
+    }
+  }
+
+  // ── Field mutations — schedule auto-save on every change ─────────────────────
+
+  function onNameUpdate(val: string): void {
+    draftName.value = val;
+    scheduleSave();
+  }
+
+  function onConceptUpdate(val: string | null): void {
+    draftConcept.value = val;
+    scheduleSave();
+  }
+
+  function onOriginUpdate(val: string | null): void {
+    draftOrigin.value = val;
+    // Origin is not in CharacterUpdate yet — stored locally only for v1.
+  }
+
+  function onUpbringingUpdate(val: string | null): void {
+    draftUpbringing.value = val;
+    // Upbringing is not in CharacterUpdate yet — stored locally only for v1.
+  }
+
+  function onAgeUpdate(val: number | null): void {
+    draftAge.value = val;
+    // Age is not in CharacterUpdate yet — stored locally only for v1.
+  }
+
+  function onIconUpdate(val: IconId | null): void {
+    draftIconId.value = val;
+    scheduleSave();
+  }
+
+  function onAttributesUpdate(val: Attributes): void {
+    draftAttributes.value = val;
+    scheduleSave();
+  }
+
+  function onSkillsUpdate(val: Skills): void {
+    draftSkills.value = val;
+    scheduleSave();
+  }
+
+  function onTalentIdsUpdate(val: string[]): void {
+    draftTalentIds.value = val;
+    // Talents are created via POST /talents on the sheet — stored locally for v1.
+  }
+
+  // ── Step metadata ─────────────────────────────────────────────────────────────
+
+  const stepTitle = computed<string>(() => t(`step.${String(step.value)}.title`));
+  const stepBlurb = computed<string>(() => t(`step.${String(step.value)}.blurb`));
+  const stepLabel = computed<string>(() => t('wizardLabel'));
 </script>
 
 <i18n lang="json">
 {
   "en": {
-    "pageTitle": "New character",
-    "nameLabel": "Character name",
-    "namePlaceholder": "Enter a name for your character",
-    "nameHelp": "1–80 characters. You can change this later.",
-    "submitButton": "Create character",
-    "cancelButton": "Cancel",
-    "errorNameRequired": "Name is required.",
-    "errorNameTooLong": "Name must be 80 characters or fewer.",
-    "errorGeneric": "Something went wrong. Please try again."
+    "wizardLabel": "New Character",
+    "saveExit": "Save & exit",
+    "back": "Back",
+    "next": "Next",
+    "forge": "Forge character",
+    "errorLoad": "Could not load the draft. Please try again.",
+    "errorForge": "Could not forge the character. Please try again.",
+    "step": {
+      "1": {
+        "title": "Your concept",
+        "blurb": "Give your character a name and a short phrase that captures who they are at the table."
+      },
+      "2": {
+        "title": "People & Background",
+        "blurb": "Where did you come from? How were you raised among the stars?"
+      },
+      "3": {
+        "title": "Choose your Icon",
+        "blurb": "The Icons watch from beyond the dark water. One walks beside you. Choose, and they will hear your prayers."
+      },
+      "4": {
+        "title": "Distribute your attributes",
+        "blurb": "13 points. Minimum 2, maximum 5 in each. These shape everything you do."
+      },
+      "5": {
+        "title": "Train your skills",
+        "blurb": "General skills you may use untrained. Advanced skills require at least one rank to attempt."
+      },
+      "6": {
+        "title": "Choose your talents",
+        "blurb": "Talents are habits forged in the dark between worlds. Pick up to three starting talents."
+      }
+    }
   },
   "ru": {
-    "pageTitle": "Новый персонаж",
-    "nameLabel": "Имя персонажа",
-    "namePlaceholder": "Введите имя персонажа",
-    "nameHelp": "1–80 символов. Можно изменить позже.",
-    "submitButton": "Создать персонажа",
-    "cancelButton": "Отмена",
-    "errorNameRequired": "Имя обязательно.",
-    "errorNameTooLong": "Имя не должно превышать 80 символов.",
-    "errorGeneric": "Что-то пошло не так. Попробуйте ещё раз."
+    "wizardLabel": "Новый персонаж",
+    "saveExit": "Сохранить и выйти",
+    "back": "Назад",
+    "next": "Далее",
+    "forge": "Создать персонажа",
+    "errorLoad": "Не удалось загрузить черновик. Попробуйте ещё раз.",
+    "errorForge": "Не удалось создать персонажа. Попробуйте ещё раз.",
+    "step": {
+      "1": {
+        "title": "Концепт персонажа",
+        "blurb": "Дайте персонажу имя и короткую фразу, отражающую его роль за столом."
+      },
+      "2": {
+        "title": "Люди и происхождение",
+        "blurb": "Откуда вы? Как вы выросли среди звёзд Третьего горизонта?"
+      },
+      "3": {
+        "title": "Выберите свою Икону",
+        "blurb": "Иконы наблюдают из-за тёмных вод. Одна идёт рядом с вами. Выберите — и она услышит ваши молитвы."
+      },
+      "4": {
+        "title": "Распределите атрибуты",
+        "blurb": "13 очков. Минимум 2, максимум 5 на каждый атрибут. Они определяют всё, что вы делаете."
+      },
+      "5": {
+        "title": "Развейте навыки",
+        "blurb": "Общие навыки можно использовать без тренировки. Для продвинутых нужен хотя бы один ранг."
+      },
+      "6": {
+        "title": "Выберите таланты",
+        "blurb": "Таланты — привычки, выкованные в тёмном пространстве между мирами. Возьмите до трёх начальных талантов."
+      }
+    }
   },
   "uk": {
-    "pageTitle": "[uk-todo] New character",
-    "nameLabel": "[uk-todo] Character name",
-    "namePlaceholder": "[uk-todo] Enter a name",
-    "nameHelp": "[uk-todo] 1–80 characters",
-    "submitButton": "[uk-todo] Create character",
-    "cancelButton": "[uk-todo] Cancel",
-    "errorNameRequired": "[uk-todo] Name is required",
-    "errorNameTooLong": "[uk-todo] Name too long",
-    "errorGeneric": "[uk-todo] Something went wrong"
+    "wizardLabel": "[uk-todo] New Character",
+    "saveExit": "[uk-todo] Save & exit",
+    "back": "[uk-todo] Back",
+    "next": "[uk-todo] Next",
+    "forge": "[uk-todo] Forge character",
+    "errorLoad": "[uk-todo] Could not load the draft.",
+    "errorForge": "[uk-todo] Could not forge the character.",
+    "step": {
+      "1": { "title": "[uk-todo] Your concept", "blurb": "[uk-todo] Name your character." },
+      "2": { "title": "[uk-todo] People & Background", "blurb": "[uk-todo] Where are you from?" },
+      "3": { "title": "[uk-todo] Choose your Icon", "blurb": "[uk-todo] Pick an Icon." },
+      "4": { "title": "[uk-todo] Distribute attributes", "blurb": "[uk-todo] 13 points." },
+      "5": { "title": "[uk-todo] Train your skills", "blurb": "[uk-todo] Spend skill points." },
+      "6": { "title": "[uk-todo] Choose talents", "blurb": "[uk-todo] Pick up to 3 talents." }
+    }
   },
   "el": {
-    "pageTitle": "[el-todo] New character",
-    "nameLabel": "[el-todo] Character name",
-    "namePlaceholder": "[el-todo] Enter a name",
-    "nameHelp": "[el-todo] 1–80 characters",
-    "submitButton": "[el-todo] Create character",
-    "cancelButton": "[el-todo] Cancel",
-    "errorNameRequired": "[el-todo] Name is required",
-    "errorNameTooLong": "[el-todo] Name too long",
-    "errorGeneric": "[el-todo] Something went wrong"
+    "wizardLabel": "[el-todo] New Character",
+    "saveExit": "[el-todo] Save & exit",
+    "back": "[el-todo] Back",
+    "next": "[el-todo] Next",
+    "forge": "[el-todo] Forge character",
+    "errorLoad": "[el-todo] Could not load the draft.",
+    "errorForge": "[el-todo] Could not forge the character.",
+    "step": {
+      "1": { "title": "[el-todo] Your concept", "blurb": "[el-todo] Name your character." },
+      "2": { "title": "[el-todo] People & Background", "blurb": "[el-todo] Where are you from?" },
+      "3": { "title": "[el-todo] Choose your Icon", "blurb": "[el-todo] Pick an Icon." },
+      "4": { "title": "[el-todo] Distribute attributes", "blurb": "[el-todo] 13 points." },
+      "5": { "title": "[el-todo] Train your skills", "blurb": "[el-todo] Spend skill points." },
+      "6": { "title": "[el-todo] Choose talents", "blurb": "[el-todo] Pick up to 3 talents." }
+    }
   }
 }
 </i18n>
 
 <template>
-  <section class="page-new-character">
-    <AppCard class="page-new-character__card">
-      <template #header>
-        <h1 class="page-new-character__title">
-          {{ t('pageTitle') }}
-        </h1>
-      </template>
+  <div class="page-wizard">
+    <div v-if="loading" class="page-wizard__loader" role="status" aria-live="polite" />
 
-      <form class="page-new-character__form" novalidate @submit="onSubmit">
-        <AppField
-          :label="t('nameLabel')"
-          :help-text="nameError ? undefined : t('nameHelp')"
-          :error="nameError || undefined"
-          required
-        >
-          <template #default="slotAttrs">
-            <AppInput
-              v-bind="slotAttrs"
-              v-model="name"
-              :placeholder="t('namePlaceholder')"
-              :invalid="!!nameError"
-              :disabled="loading"
-              autocomplete="off"
-              size="md"
-            />
-          </template>
-        </AppField>
+    <div v-else-if="errorMsg" class="page-wizard__error" role="alert">
+      {{ errorMsg }}
+    </div>
 
-        <div class="page-new-character__actions">
-          <AppButton
-            variant="ghost"
-            size="md"
-            type="button"
-            :disabled="loading"
-            @click="navigateTo('/app/characters')"
-          >
-            {{ t('cancelButton') }}
-          </AppButton>
-          <AppButton
-            variant="primary"
-            size="md"
-            type="submit"
-            :loading="loading"
-            :disabled="!nameValid || loading"
-          >
-            {{ t('submitButton') }}
-          </AppButton>
-        </div>
-      </form>
-    </AppCard>
-  </section>
+    <WizardShell
+      v-else
+      :step="step"
+      :total-steps="TOTAL_STEPS"
+      :step-label="stepLabel"
+      :title="stepTitle"
+      :blurb="stepBlurb"
+      :is-first-step="step === 1"
+      :is-last-step="step === TOTAL_STEPS"
+      :can-advance="canAdvance"
+      :forging="forging"
+      :save-exit-label="t('saveExit')"
+      :back-label="t('back')"
+      :next-label="t('next')"
+      :forge-label="t('forge')"
+      @back="goBack"
+      @next="goNext"
+      @forge="forge"
+      @save-exit="saveAndExit"
+    >
+      <Step1Concept
+        v-if="step === 1"
+        :name="draftName"
+        :concept="draftConcept"
+        @update:name="onNameUpdate"
+        @update:concept="onConceptUpdate"
+      />
+
+      <Step2Background
+        v-if="step === 2"
+        :origin="draftOrigin"
+        :upbringing="draftUpbringing"
+        :age="draftAge"
+        @update:origin="onOriginUpdate"
+        @update:upbringing="onUpbringingUpdate"
+        @update:age="onAgeUpdate"
+      />
+
+      <Step3Icon v-if="step === 3" :icon-id="draftIconId" @update:icon-id="onIconUpdate" />
+
+      <Step4Attributes
+        v-if="step === 4"
+        :attributes="draftAttributes"
+        @update:attributes="onAttributesUpdate"
+      />
+
+      <Step5Skills v-if="step === 5" :skills="draftSkills" @update:skills="onSkillsUpdate" />
+
+      <Step6Talents
+        v-if="step === 6"
+        :picked-talent-ids="draftTalentIds"
+        @update:picked-talent-ids="onTalentIdsUpdate"
+      />
+    </WizardShell>
+  </div>
 </template>
 
 <style lang="scss" scoped>
-  $form-max-width: 480px;
+  // Named SCSS variables for pixel dimensions and durations — permitted escape hatch.
+  $spinner-size: 40px;
+  $spinner-spin-duration: 800ms;
+  $spinner-slow-duration: 2000ms;
 
-  .page-new-character {
-    display: flex;
-    justify-content: center;
-    padding: var(--space-9) var(--space-6);
+  .page-wizard {
+    min-height: 100vh;
 
-    &__card {
-      width: 100%;
-      max-width: $form-max-width;
-    }
-
-    &__title {
-      margin: 0;
-      font-family: var(--font-display);
-      font-size: var(--type-display-sm-font-size);
-      line-height: var(--type-display-sm-line-height);
-      font-weight: var(--type-display-sm-font-weight);
-      letter-spacing: var(--type-display-sm-letter-spacing);
-      color: var(--brand-brass-light);
-    }
-
-    &__form {
+    &__loader {
       display: flex;
-      flex-direction: column;
-      gap: var(--space-6);
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      // Spinner via CSS-only ring — no inline style, token-derived.
+      &::after {
+        content: '';
+        display: block;
+        width: $spinner-size;
+        height: $spinner-size;
+        border-radius: var(--radius-pill);
+        border: 3px solid var(--brand-brass-deep);
+        border-top-color: var(--brand-brass);
+        animation: wizard-spin $spinner-spin-duration linear infinite;
+
+        @media (prefers-reduced-motion: reduce) {
+          animation-duration: $spinner-slow-duration;
+        }
+      }
     }
 
-    &__actions {
+    &__error {
       display: flex;
-      justify-content: flex-end;
-      gap: var(--space-3);
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: var(--space-8);
+      font-family: var(--font-body);
+      font-size: var(--type-body-md-font-size);
+      color: var(--state-crimson);
+      text-align: center;
+    }
+  }
+
+  @keyframes wizard-spin {
+    to {
+      transform: rotate(360deg);
     }
   }
 </style>
