@@ -77,6 +77,16 @@ model Verification {
 
 // ----- Domain -----
 
+/// Lifecycle state of a Character row.
+/// DRAFT   — wizard-in-progress; excluded from the default list query.
+/// ACTIVE  — published character; visible on the dashboard.
+enum CharacterStatus {
+  ACTIVE
+  DRAFT
+
+  @@map("character_status")
+}
+
 /// One of the nine Coriolis Icons (enum mirrors the OpenAPI IconId type).
 enum IconId {
   lady_of_tears  @map("lady-of-tears")
@@ -127,6 +137,10 @@ model Character {
   /// JSON column: { exhausted, sleepless, thirsty, hungry } — all booleans.
   conditions          Json
   notes               String?
+  /// Lifecycle state: ACTIVE (default, dashboard-visible) or DRAFT (wizard-in-progress).
+  /// Draft characters are excluded from the list endpoint unless ?includeDrafts=true.
+  /// Cleanup of abandoned drafts runs nightly (CleanupAbandonedDraftsJob — 30-day window).
+  status              CharacterStatus  @default(ACTIVE)
   items               Item[]
   talents             Talent[]
   relationships       Relationship[]
@@ -135,6 +149,7 @@ model Character {
   updatedAt           DateTime         @updatedAt
 
   @@index([ownerId])
+  @@index([status])
   @@map("character")
 }
 
