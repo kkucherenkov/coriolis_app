@@ -65,8 +65,12 @@ Route<dynamic>? onGenerateRoute(RouteSettings settings) {
   }
 
   if (name == AppRoutes.charactersNew) {
+    // arguments may be a String draft id (resume) or null (new).
+    final draftId = settings.arguments is String
+        ? settings.arguments as String
+        : null;
     return MaterialPageRoute<void>(
-      builder: (_) => const CharacterCreatePage(),
+      builder: (_) => CharacterCreatePage(draftId: draftId),
       settings: settings,
     );
   }
