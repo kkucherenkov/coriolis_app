@@ -2,8 +2,11 @@ import 'package:equatable/equatable.dart';
 
 import 'package:app_mobile/features/characters/domain/character.dart';
 
-/// Save-cycle status for the auto-save indicator.
+/// Save-cycle status mirroring the web `useAutoSave` enum.
 enum CharacterSheetSaveStatus { idle, saving, saved, error }
+
+/// Active tab on the character sheet.
+enum CharacterSheetTab { stats, gear, talents, notes }
 
 /// State emitted by [CharacterSheetCubit].
 class CharacterSheetState extends Equatable {
@@ -11,6 +14,7 @@ class CharacterSheetState extends Equatable {
     this.isLoading = true,
     this.character,
     this.saveStatus = CharacterSheetSaveStatus.idle,
+    this.activeTab = CharacterSheetTab.stats,
     this.errorMessage,
     this.saveErrorMessage,
   });
@@ -18,6 +22,7 @@ class CharacterSheetState extends Equatable {
   final bool isLoading;
   final Character? character;
   final CharacterSheetSaveStatus saveStatus;
+  final CharacterSheetTab activeTab;
 
   /// Load-level error (e.g. 404 on initial GET).
   final String? errorMessage;
@@ -33,6 +38,7 @@ class CharacterSheetState extends Equatable {
     bool? isLoading,
     Character? character,
     CharacterSheetSaveStatus? saveStatus,
+    CharacterSheetTab? activeTab,
     String? errorMessage,
     String? saveErrorMessage,
   }) {
@@ -40,6 +46,7 @@ class CharacterSheetState extends Equatable {
       isLoading: isLoading ?? this.isLoading,
       character: character ?? this.character,
       saveStatus: saveStatus ?? this.saveStatus,
+      activeTab: activeTab ?? this.activeTab,
       errorMessage: errorMessage,
       saveErrorMessage: saveErrorMessage,
     );
@@ -50,6 +57,7 @@ class CharacterSheetState extends Equatable {
         isLoading,
         character,
         saveStatus,
+        activeTab,
         errorMessage,
         saveErrorMessage,
       ];
