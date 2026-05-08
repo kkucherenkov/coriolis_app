@@ -131,4 +131,4 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 
 | Category | Component | Vue (`@app/ui`) | Flutter (`app_ui`) |
 | -------- | --------- | --------------- | ------------------ |
-| _none yet — Phase 0 ships tokens only; Phase 1 lands foundation primitives_ | | | |
+| Primitive | `AppButton` | ✓ | — |
