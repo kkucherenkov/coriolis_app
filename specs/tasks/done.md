@@ -2,6 +2,37 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-08-018 — build AppSelect primitive
+
+- Created/Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Epic 2 Feature 2.1
+- Result: merged at `88e27d8`. Native `<select>` styled to Coriolis chrome with chevron, sm/md/lg sizes, disabled/invalid states, options via prop with placeholder support, 28 vitest specs.
+
+## T-2026-05-08-017 — AppField primitive
+
+- Created/Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent)
+- Spec: IMPLEMENTATION_PLAN.md Epic 2 Feature 2.1
+- Result: merged at `44488bf`. Form-row composer using Vue 3.5 `useId()` for auto-id, scoped slot exposing `slotAttrs` with `id` + `aria-describedby` + `aria-invalid`, error replaces help, role="alert" on error span. 26 specs, 11 stories.
+
+## T-2026-05-08-016 — implement AppLabel primitive
+
+- Created/Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Epic 2 Feature 2.1
+- Result: merged at `9160271`. `<label for>` or `<span>` based on `for` prop. Tones default/eyebrow/stat-block. Required marker with `aria-label="required"`. helpText support. 21 specs, 11 stories.
+
+## T-2026-05-08-015 — Add rules-engine module and wire derived stats into CharactersModule
+
+- Created/Completed: 2026-05-08
+- Owner: claude (backend-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Feature 3.2 Story 3.2.2, T-3.2.2.a..d
+- Result: merged at `c423dc2` — three commits `1f6a869` (module), `a0578dc` (wire into character.repo.ts), `c423dc2` (specs).
+- Formulas (PRD §5.2): `hpMax = STR + AGI`, `mpMax = WIT + EMP`, `encumbranceMax = STR × 2`, `encumbranceCurrent = sum(item.weight)`, `canPush(conditions, alreadyPushed) = !exhausted && !alreadyPushed`.
+- ReadOnlyFieldError (422 `READ_ONLY_FIELD`) added to UpdateCharacterHandler — rejects PATCH bodies that try to set `hp.max`, `mp.max`, `encumbrance.max`, or `encumbrance.current`. Defence-in-depth alongside spec's `readOnly: true` declarations.
+- 39 new specs (33 rules-engine + 6 ReadOnlyFieldError); 144/144 backend tests pass.
+
 ## T-2026-05-08-014 — Build AppProgress Coriolis primitive
 
 - Created/Completed: 2026-05-08
