@@ -14,6 +14,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    setupFiles: ['reflect-metadata'],
     include: ['src/**/*.spec.ts', 'test/**/*.spec.ts'],
     exclude: ['**/*.e2e-spec.ts', 'node_modules', 'dist'],
     coverage: {
