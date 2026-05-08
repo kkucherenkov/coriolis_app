@@ -1,3 +1,4 @@
+export { AppAvatar } from './components/AppAvatar';
 export { AppButton } from './components/AppButton';
 export { AppDots } from './components/AppDots';
 export { AppInput } from './components/AppInput';
