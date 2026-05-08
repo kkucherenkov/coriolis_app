@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 0.1.0
+  version: 0.2.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -31,6 +31,8 @@ tags:
     description: Health and liveness endpoints
   - name: realtime
     description: Centrifugo connection tokens
+  - name: users
+    description: Authenticated user profile
 
 paths:
   /api/v1/health:
@@ -74,6 +76,125 @@ paths:
                       db: ok
                       redis: degraded
                       centrifugo: ok
+
+  /api/v1/me:
+    get:
+      operationId: getMe
+      summary: Get the authenticated user's profile.
+      description: |
+        Returns the current user's profile fields sourced from the Better Auth
+        `user` table. `email` and `createdAt` are read-only in this DTO — they
+        are managed by Better Auth and cannot be changed via this endpoint.
+
+        See PRD §4.1 for full product context. Soft-deleted users receive a
+        `404` because their sessions are revoked on deletion; this endpoint
+        will therefore never return a user whose `deletedAt` is set (that
+        field is an internal flag and is not exposed in this DTO).
+      tags: [users]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      responses:
+        "200":
+          description: The authenticated user's profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Me"
+              examples:
+                ok:
+                  value:
+                    id: cuid_01j9zxk5e0000qw3h8m7n6p4r2
+                    email: kalim.al-rashid@example.com
+                    displayName: Kalim al-Rashid
+                    createdAt: "2026-01-15T09:30:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+    patch:
+      operationId: updateMe
+      summary: Update the authenticated user's mutable profile fields.
+      description: |
+        Applies a partial update (PATCH semantics) to the authenticated user's
+        profile. Only `displayName` is mutable via this endpoint.
+
+        `email` and `createdAt` are managed by Better Auth and are silently
+        ignored if included in the request body — attempting to send them
+        is treated as a `400` so the contract is unambiguous.
+
+        `displayName` constraints:
+        - Must be between 1 and 80 characters when non-null (80 matches the
+          character-name guidance in PRD §5.2).
+        - May be set to `null` to clear the field.
+        - An empty string (`""`) is rejected with `400`.
+      tags: [users]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeUpdate"
+            examples:
+              setDisplayName:
+                value:
+                  displayName: Kalim al-Rashid
+              clearDisplayName:
+                value:
+                  displayName: null
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Me"
+              examples:
+                ok:
+                  value:
+                    id: cuid_01j9zxk5e0000qw3h8m7n6p4r2
+                    email: kalim.al-rashid@example.com
+                    displayName: Kalim al-Rashid
+                    createdAt: "2026-01-15T09:30:00Z"
+        "400":
+          description: |
+            Validation error. Possible cases:
+            - `displayName` is an empty string.
+            - `displayName` exceeds 80 characters.
+            - Request body contains read-only fields (`email`, `createdAt`).
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                emptyDisplayName:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: displayName must be between 1 and 80 characters
+                    instance: /api/v1/me
+                    code: DISPLAY_NAME_EMPTY
+                displayNameTooLong:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: displayName must not exceed 80 characters
+                    instance: /api/v1/me
+                    code: DISPLAY_NAME_TOO_LONG
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
 
   /api/v1/realtime/token:
     post:
@@ -165,6 +286,49 @@ components:
           type: ["string", "null"]
         code:
           type: ["string", "null"]
+
+    Me:
+      type: object
+      description: |
+        The authenticated user's profile as exposed by the v1 API. Fields
+        sourced from the Better Auth `user` table. `deletedAt` is an internal
+        soft-delete flag and is never surfaced here — deleted users receive a
+        404 because their sessions are revoked at deletion time.
+      required: [id, email, displayName, createdAt]
+      properties:
+        id:
+          type: string
+          description: Opaque user identifier issued by Better Auth (cuid2)
+        email:
+          type: string
+          format: email
+          description: Primary email address. Read-only via this API.
+        displayName:
+          type: ["string", "null"]
+          minLength: 1
+          maxLength: 80
+          description: |
+            User-chosen display name shown in share-link banners and the avatar
+            menu. Null when the user has not set one yet.
+        createdAt:
+          type: ["string", "null"]
+          format: date-time
+          description: ISO-8601 instant when the account was created. Read-only via this API.
+
+    MeUpdate:
+      type: object
+      description: |
+        Partial update payload for PATCH /api/v1/me. Only `displayName` is
+        mutable. Omitting a property leaves the corresponding field unchanged.
+        Setting `displayName` to null clears the field.
+      properties:
+        displayName:
+          type: ["string", "null"]
+          minLength: 1
+          maxLength: 80
+          description: |
+            User-chosen display name. Must be 1–80 characters when non-null.
+            Set to null to clear the field.
 
     RealtimeToken:
       type: object

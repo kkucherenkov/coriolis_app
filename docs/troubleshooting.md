@@ -83,6 +83,32 @@ counts them anyway.
 
 **Fix:** Add `--excludePrivatePackages` to the invocation.
 
+## corepack — `Cannot find matching keyid` when activating pnpm
+
+**Symptom:**
+```
+Error: Cannot find matching keyid: {"signatures":[…],"keys":[…]}
+    at verifySignature (.../corepack.cjs:…)
+```
+on `corepack enable && corepack prepare pnpm@10.33.0 --activate` (or any
+`corepack pnpm …` invocation).
+
+**Cause:** Older `corepack` releases ship with a hardcoded list of
+package-manager signing keys. pnpm rotated theirs; the bundled keys no
+longer cover the current pnpm releases.
+
+**Fix:** Upgrade corepack itself.
+
+```sh
+npm install -g corepack@latest
+corepack enable
+corepack prepare pnpm@10.33.0 --activate
+```
+
+If you don't want to touch corepack, skip it entirely and install pnpm via
+npm: `npm install -g pnpm@10.33.0`. Equivalent for our purposes — pnpm
+itself doesn't need corepack at runtime.
+
 ## Flutter — SDK version mismatch after upgrading macOS or Xcode
 
 **Symptom:** `flutter analyze` or `flutter pub get` complains about Dart SDK
