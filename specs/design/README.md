@@ -142,4 +142,5 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 | Primitive | `AppInput` | ✓ | — |
 | Primitive | `AppLabel` | ✓ | — |
 | Primitive | `AppProgress` | ✓ | — |
+| Primitive | `AppSelect` | ✓ | — |
 | Primitive | `AppSwitch` | ✓ | — |
