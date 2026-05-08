@@ -25,6 +25,7 @@ Name | Type | Description | Notes
 **relationships** | [**BuiltList&lt;Relationship&gt;**](Relationship.md) |  | 
 **inventory** | [**BuiltList&lt;Item&gt;**](Item.md) |  | 
 **notes** | **String** | Free-form notes (Markdown; soft cap 4096 characters) | 
+**status** | **String** | Lifecycle state of the character.  - `draft` — character is a work-in-progress created by the wizard.   Draft characters are excluded from the default character list   (`GET /api/v1/characters`) unless `?includeDrafts=true` is passed. - `active` — character is complete and visible on the dashboard.  Transitioning from `draft` to `active` (forging) is done by sending `PATCH /api/v1/characters/{id}` with `{ \"status\": \"active\" }`. The reverse transition (`active → draft`) is rejected with 422 `INVALID_STATUS_TRANSITION`.  | 
 **createdAt** | [**DateTime**](DateTime.md) |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 

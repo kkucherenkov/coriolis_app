@@ -19,6 +19,7 @@ Name | Type | Description | Notes
 **conditions** | [**ConditionFlags**](ConditionFlags.md) |  | [optional] 
 **criticalInjuries** | [**BuiltList&lt;CriticalInjury&gt;**](CriticalInjury.md) | Replaces the entire critical injuries list when provided. Use the dedicated nested-item pattern (POST/PATCH/DELETE on individual injuries) once that surface is added in a later epic.  | [optional] 
 **notes** | **String** |  | [optional] 
+**status** | **String** | Lifecycle state transition. Only `draft → active` (forge) is permitted. Attempting `active → draft` returns 422 `INVALID_STATUS_TRANSITION`.  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

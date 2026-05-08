@@ -5,9 +5,11 @@
 // ignore_for_file: unused_element
 import 'package:app_api_client/src/model/item_armor.dart';
 import 'package:app_api_client/src/model/item_ship_module.dart';
+import 'package:app_api_client/src/model/item_slot_type.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:app_api_client/src/model/item_gear.dart';
 import 'package:app_api_client/src/model/item_other.dart';
+import 'package:app_api_client/src/model/item_range_enum.dart';
 import 'package:app_api_client/src/model/item_cybernetic.dart';
 import 'package:app_api_client/src/model/item_weapon.dart';
 import 'package:built_value/built_value.dart';
@@ -118,9 +120,7 @@ class _$ItemSerializer implements PrimitiveSerializer<Item> {
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    Item object, {
-    FullType specifiedType = FullType.unspecified,
-  }) sync* {
+    Item object) sync* {
   }
 
   @override

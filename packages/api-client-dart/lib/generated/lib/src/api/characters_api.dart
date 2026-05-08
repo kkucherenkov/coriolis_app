@@ -787,6 +787,7 @@ class CharactersApi {
   /// Parameters:
   /// * [cursor] - Opaque pagination cursor returned by the previous page
   /// * [limit] - Number of characters to return (1–100, default 20)
+  /// * [includeDrafts] - When `false` (default), only `active` characters are returned — draft wizard-in-progress characters are hidden from the dashboard. When `true`, both `active` and `draft` characters are returned so the wizard UI can display in-progress records. 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -799,6 +800,7 @@ class CharactersApi {
   Future<Response<CharacterList>> listCharacters({ 
     String? cursor,
     int? limit = 20,
+    bool? includeDrafts = false,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -833,6 +835,7 @@ class CharactersApi {
     final _queryParameters = <String, dynamic>{
       if (cursor != null) r'cursor': encodeQueryParameter(_serializers, cursor, const FullType(String)),
       if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
+      if (includeDrafts != null) r'includeDrafts': encodeQueryParameter(_serializers, includeDrafts, const FullType(bool)),
     };
 
     final _response = await _dio.request<Object>(

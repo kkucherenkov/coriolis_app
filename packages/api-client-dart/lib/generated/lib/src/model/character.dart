@@ -40,6 +40,7 @@ part 'character.g.dart';
 /// * [relationships] 
 /// * [inventory] 
 /// * [notes] - Free-form notes (Markdown; soft cap 4096 characters)
+/// * [status] - Lifecycle state of the character.  - `draft` — character is a work-in-progress created by the wizard.   Draft characters are excluded from the default character list   (`GET /api/v1/characters`) unless `?includeDrafts=true` is passed. - `active` — character is complete and visible on the dashboard.  Transitioning from `draft` to `active` (forging) is done by sending `PATCH /api/v1/characters/{id}` with `{ \"status\": \"active\" }`. The reverse transition (`active → draft`) is rejected with 422 `INVALID_STATUS_TRANSITION`. 
 /// * [createdAt] 
 /// * [updatedAt] 
 @BuiltValue()
@@ -101,6 +102,11 @@ abstract class Character implements Built<Character, CharacterBuilder> {
   /// Free-form notes (Markdown; soft cap 4096 characters)
   @BuiltValueField(wireName: r'notes')
   String? get notes;
+
+  /// Lifecycle state of the character.  - `draft` — character is a work-in-progress created by the wizard.   Draft characters are excluded from the default character list   (`GET /api/v1/characters`) unless `?includeDrafts=true` is passed. - `active` — character is complete and visible on the dashboard.  Transitioning from `draft` to `active` (forging) is done by sending `PATCH /api/v1/characters/{id}` with `{ \"status\": \"active\" }`. The reverse transition (`active → draft`) is rejected with 422 `INVALID_STATUS_TRANSITION`. 
+  @BuiltValueField(wireName: r'status')
+  CharacterStatusEnum get status;
+  // enum statusEnum {  draft,  active,  };
 
   @BuiltValueField(wireName: r'createdAt')
   DateTime get createdAt;
@@ -215,6 +221,11 @@ class _$CharacterSerializer implements PrimitiveSerializer<Character> {
     yield object.notes == null ? null : serializers.serialize(
       object.notes,
       specifiedType: const FullType.nullable(String),
+    );
+    yield r'status';
+    yield serializers.serialize(
+      object.status,
+      specifiedType: const FullType(CharacterStatusEnum),
     );
     yield r'createdAt';
     yield serializers.serialize(
@@ -371,6 +382,13 @@ class _$CharacterSerializer implements PrimitiveSerializer<Character> {
           if (valueDes == null) continue;
           result.notes = valueDes;
           break;
+        case r'status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CharacterStatusEnum),
+          ) as CharacterStatusEnum;
+          result.status = valueDes;
+          break;
         case r'createdAt':
           final valueDes = serializers.deserialize(
             value,
@@ -412,5 +430,22 @@ class _$CharacterSerializer implements PrimitiveSerializer<Character> {
     );
     return result.build();
   }
+}
+
+class CharacterStatusEnum extends EnumClass {
+
+  /// Lifecycle state of the character.  - `draft` — character is a work-in-progress created by the wizard.   Draft characters are excluded from the default character list   (`GET /api/v1/characters`) unless `?includeDrafts=true` is passed. - `active` — character is complete and visible on the dashboard.  Transitioning from `draft` to `active` (forging) is done by sending `PATCH /api/v1/characters/{id}` with `{ \"status\": \"active\" }`. The reverse transition (`active → draft`) is rejected with 422 `INVALID_STATUS_TRANSITION`. 
+  @BuiltValueEnumConst(wireName: r'draft')
+  static const CharacterStatusEnum draft = _$characterStatusEnum_draft;
+  /// Lifecycle state of the character.  - `draft` — character is a work-in-progress created by the wizard.   Draft characters are excluded from the default character list   (`GET /api/v1/characters`) unless `?includeDrafts=true` is passed. - `active` — character is complete and visible on the dashboard.  Transitioning from `draft` to `active` (forging) is done by sending `PATCH /api/v1/characters/{id}` with `{ \"status\": \"active\" }`. The reverse transition (`active → draft`) is rejected with 422 `INVALID_STATUS_TRANSITION`. 
+  @BuiltValueEnumConst(wireName: r'active')
+  static const CharacterStatusEnum active = _$characterStatusEnum_active;
+
+  static Serializer<CharacterStatusEnum> get serializer => _$characterStatusEnumSerializer;
+
+  const CharacterStatusEnum._(String name): super(name);
+
+  static BuiltSet<CharacterStatusEnum> get values => _$characterStatusEnumValues;
+  static CharacterStatusEnum valueOf(String name) => _$characterStatusEnumValueOf(name);
 }
 

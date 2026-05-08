@@ -15,7 +15,7 @@ import 'package:built_value/serializer.dart';
 
 part 'character_update.g.dart';
 
-/// PATCH payload for `PATCH /api/v1/characters/{id}`. All fields are optional. Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`, `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`) are rejected with 400 if present.  Derived stats (`hp.max`, `mp.max`, `encumbrance.max`) are recalculated automatically after each successful write. 
+/// PATCH payload for `PATCH /api/v1/characters/{id}`. All fields are optional. Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`, `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`) are rejected with 400 if present.  Derived stats (`hp.max`, `mp.max`, `encumbrance.max`) are recalculated automatically after each successful write.  **Status transitions:** - `draft → draft` — no-op; the wizard continues editing. - `draft → active` — forges the character (wizard complete).   Send `{ \"status\": \"active\" }` as a standalone PATCH or alongside   other field updates. - `active → draft` — **rejected** with 422 `INVALID_STATUS_TRANSITION`.   Active characters cannot be reverted to draft state. 
 ///
 /// Properties:
 /// * [name] 
@@ -29,6 +29,7 @@ part 'character_update.g.dart';
 /// * [conditions] 
 /// * [criticalInjuries] - Replaces the entire critical injuries list when provided. Use the dedicated nested-item pattern (POST/PATCH/DELETE on individual injuries) once that surface is added in a later epic. 
 /// * [notes] 
+/// * [status] - Lifecycle state transition. Only `draft → active` (forge) is permitted. Attempting `active → draft` returns 422 `INVALID_STATUS_TRANSITION`. 
 @BuiltValue()
 abstract class CharacterUpdate implements Built<CharacterUpdate, CharacterUpdateBuilder> {
   @BuiltValueField(wireName: r'name')
@@ -65,6 +66,11 @@ abstract class CharacterUpdate implements Built<CharacterUpdate, CharacterUpdate
 
   @BuiltValueField(wireName: r'notes')
   String? get notes;
+
+  /// Lifecycle state transition. Only `draft → active` (forge) is permitted. Attempting `active → draft` returns 422 `INVALID_STATUS_TRANSITION`. 
+  @BuiltValueField(wireName: r'status')
+  CharacterUpdateStatusEnum? get status;
+  // enum statusEnum {  draft,  active,  };
 
   CharacterUpdate._();
 
@@ -164,6 +170,13 @@ class _$CharacterUpdateSerializer implements PrimitiveSerializer<CharacterUpdate
       yield serializers.serialize(
         object.notes,
         specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.status != null) {
+      yield r'status';
+      yield serializers.serialize(
+        object.status,
+        specifiedType: const FullType(CharacterUpdateStatusEnum),
       );
     }
   }
@@ -269,6 +282,13 @@ class _$CharacterUpdateSerializer implements PrimitiveSerializer<CharacterUpdate
           if (valueDes == null) continue;
           result.notes = valueDes;
           break;
+        case r'status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CharacterUpdateStatusEnum),
+          ) as CharacterUpdateStatusEnum;
+          result.status = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -296,5 +316,22 @@ class _$CharacterUpdateSerializer implements PrimitiveSerializer<CharacterUpdate
     );
     return result.build();
   }
+}
+
+class CharacterUpdateStatusEnum extends EnumClass {
+
+  /// Lifecycle state transition. Only `draft → active` (forge) is permitted. Attempting `active → draft` returns 422 `INVALID_STATUS_TRANSITION`. 
+  @BuiltValueEnumConst(wireName: r'draft')
+  static const CharacterUpdateStatusEnum draft = _$characterUpdateStatusEnum_draft;
+  /// Lifecycle state transition. Only `draft → active` (forge) is permitted. Attempting `active → draft` returns 422 `INVALID_STATUS_TRANSITION`. 
+  @BuiltValueEnumConst(wireName: r'active')
+  static const CharacterUpdateStatusEnum active = _$characterUpdateStatusEnum_active;
+
+  static Serializer<CharacterUpdateStatusEnum> get serializer => _$characterUpdateStatusEnumSerializer;
+
+  const CharacterUpdateStatusEnum._(String name): super(name);
+
+  static BuiltSet<CharacterUpdateStatusEnum> get values => _$characterUpdateStatusEnumValues;
+  static CharacterUpdateStatusEnum valueOf(String name) => _$characterUpdateStatusEnumValueOf(name);
 }
 

@@ -449,7 +449,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **listCharacters**
-> CharacterList listCharacters(cursor, limit)
+> CharacterList listCharacters(cursor, limit, includeDrafts)
 
 List the authenticated user's characters
 
@@ -466,9 +466,10 @@ import 'package:app_api_client/api.dart';
 final api = AppApiClient().getCharactersApi();
 final String cursor = cursor_example; // String | Opaque pagination cursor returned by the previous page
 final int limit = 56; // int | Number of characters to return (1–100, default 20)
+final bool includeDrafts = true; // bool | When `false` (default), only `active` characters are returned — draft wizard-in-progress characters are hidden from the dashboard. When `true`, both `active` and `draft` characters are returned so the wizard UI can display in-progress records. 
 
 try {
-    final response = api.listCharacters(cursor, limit);
+    final response = api.listCharacters(cursor, limit, includeDrafts);
     print(response);
 } on DioException catch (e) {
     print('Exception when calling CharactersApi->listCharacters: $e\n');
@@ -481,6 +482,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **cursor** | **String**| Opaque pagination cursor returned by the previous page | [optional] 
  **limit** | **int**| Number of characters to return (1–100, default 20) | [optional] [default to 20]
+ **includeDrafts** | **bool**| When `false` (default), only `active` characters are returned — draft wizard-in-progress characters are hidden from the dashboard. When `true`, both `active` and `draft` characters are returned so the wizard UI can display in-progress records.  | [optional] [default to false]
 
 ### Return type
 

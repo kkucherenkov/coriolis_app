@@ -5,7 +5,9 @@
 // ignore_for_file: unused_element
 import 'package:app_api_client/src/model/ship_module_other_update.dart';
 import 'package:app_api_client/src/model/ship_module_weapon_update.dart';
+import 'package:app_api_client/src/model/ship_module_slot.dart';
 import 'package:app_api_client/src/model/ship_module_torpedo_update.dart';
+import 'package:app_api_client/src/model/ship_weapon_range.dart';
 import 'package:app_api_client/src/model/ship_module_hold_update.dart';
 import 'package:app_api_client/src/model/ship_module_sensor_update.dart';
 import 'package:built_value/built_value.dart';
@@ -218,9 +220,7 @@ class _$ShipModuleUpdateSerializer implements PrimitiveSerializer<ShipModuleUpda
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    ShipModuleUpdate object, {
-    FullType specifiedType = FullType.unspecified,
-  }) sync* {
+    ShipModuleUpdate object) sync* {
   }
 
   @override

@@ -6,6 +6,7 @@
 import 'package:app_api_client/src/model/skills.dart';
 import 'package:app_api_client/src/model/attributes.dart';
 import 'package:app_api_client/src/model/condition_flags.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:app_api_client/src/model/character_create_hp.dart';
 import 'package:app_api_client/src/model/icon_id.dart';
 import 'package:built_value/built_value.dart';
@@ -13,7 +14,7 @@ import 'package:built_value/serializer.dart';
 
 part 'character_create.g.dart';
 
-/// Payload for `POST /api/v1/characters`. Only `name` is required. Attribute values default to 2 if the `attributes` object is omitted or a key within it is missing. Skill values default to 0.  Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`, `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`) must not be included; they are rejected with 400. 
+/// Payload for `POST /api/v1/characters`. Only `name` is required. Attribute values default to 2 if the `attributes` object is omitted or a key within it is missing. Skill values default to 0.  Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`, `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`) must not be included; they are rejected with 400.  Set `status: 'draft'` to create a wizard-in-progress character. Omitting `status` defaults to `'active'`. 
 ///
 /// Properties:
 /// * [name] 
@@ -26,6 +27,7 @@ part 'character_create.g.dart';
 /// * [experience] 
 /// * [conditions] 
 /// * [notes] 
+/// * [status] - Initial lifecycle state. Omit (or set `active`) for normal creation. Set to `draft` when starting the character-creation wizard. 
 @BuiltValue()
 abstract class CharacterCreate implements Built<CharacterCreate, CharacterCreateBuilder> {
   @BuiltValueField(wireName: r'name')
@@ -59,13 +61,19 @@ abstract class CharacterCreate implements Built<CharacterCreate, CharacterCreate
   @BuiltValueField(wireName: r'notes')
   String? get notes;
 
+  /// Initial lifecycle state. Omit (or set `active`) for normal creation. Set to `draft` when starting the character-creation wizard. 
+  @BuiltValueField(wireName: r'status')
+  CharacterCreateStatusEnum? get status;
+  // enum statusEnum {  draft,  active,  };
+
   CharacterCreate._();
 
   factory CharacterCreate([void updates(CharacterCreateBuilder b)]) = _$CharacterCreate;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CharacterCreateBuilder b) => b
-      ..experience = 0;
+      ..experience = 0
+      ..status = CharacterCreateStatusEnum.valueOf('active');
 
   @BuiltValueSerializer(custom: true)
   static Serializer<CharacterCreate> get serializer => _$CharacterCreateSerializer();
@@ -149,6 +157,13 @@ class _$CharacterCreateSerializer implements PrimitiveSerializer<CharacterCreate
       yield serializers.serialize(
         object.notes,
         specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.status != null) {
+      yield r'status';
+      yield serializers.serialize(
+        object.status,
+        specifiedType: const FullType(CharacterCreateStatusEnum),
       );
     }
   }
@@ -247,6 +262,13 @@ class _$CharacterCreateSerializer implements PrimitiveSerializer<CharacterCreate
           if (valueDes == null) continue;
           result.notes = valueDes;
           break;
+        case r'status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CharacterCreateStatusEnum),
+          ) as CharacterCreateStatusEnum;
+          result.status = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -274,5 +296,22 @@ class _$CharacterCreateSerializer implements PrimitiveSerializer<CharacterCreate
     );
     return result.build();
   }
+}
+
+class CharacterCreateStatusEnum extends EnumClass {
+
+  /// Initial lifecycle state. Omit (or set `active`) for normal creation. Set to `draft` when starting the character-creation wizard. 
+  @BuiltValueEnumConst(wireName: r'draft')
+  static const CharacterCreateStatusEnum draft = _$characterCreateStatusEnum_draft;
+  /// Initial lifecycle state. Omit (or set `active`) for normal creation. Set to `draft` when starting the character-creation wizard. 
+  @BuiltValueEnumConst(wireName: r'active')
+  static const CharacterCreateStatusEnum active = _$characterCreateStatusEnum_active;
+
+  static Serializer<CharacterCreateStatusEnum> get serializer => _$characterCreateStatusEnumSerializer;
+
+  const CharacterCreateStatusEnum._(String name): super(name);
+
+  static BuiltSet<CharacterCreateStatusEnum> get values => _$characterCreateStatusEnumValues;
+  static CharacterCreateStatusEnum valueOf(String name) => _$characterCreateStatusEnumValueOf(name);
 }
 

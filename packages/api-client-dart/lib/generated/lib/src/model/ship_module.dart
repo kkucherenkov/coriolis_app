@@ -7,7 +7,9 @@ import 'package:app_api_client/src/model/ship_module_torpedo.dart';
 import 'package:app_api_client/src/model/ship_module_weapon.dart';
 import 'package:app_api_client/src/model/ship_module_other.dart';
 import 'package:app_api_client/src/model/ship_module_sensor.dart';
+import 'package:app_api_client/src/model/ship_module_slot.dart';
 import 'package:app_api_client/src/model/ship_module_hold.dart';
+import 'package:app_api_client/src/model/ship_weapon_range.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 import 'package:one_of/one_of.dart';
@@ -219,9 +221,7 @@ class _$ShipModuleSerializer implements PrimitiveSerializer<ShipModule> {
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    ShipModule object, {
-    FullType specifiedType = FullType.unspecified,
-  }) sync* {
+    ShipModule object) sync* {
   }
 
   @override
