@@ -2,6 +2,58 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-08-006 — Add /api/v1/characters CRUD + nested items/talents to OpenAPI spec
+
+- Created: 2026-05-08
+- Completed: 2026-05-08
+- Owner: claude (spec-writer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Feature 3.1, T-3.1.1.a..d
+- Result: merged at `691e9de`. info.version bumped 0.2.0 → 0.3.0.
+- Goal: Define the full character API surface in OpenAPI so backend and generated clients have an unambiguous contract to implement against.
+- Acceptance — all met:
+  - [x] `pnpm spec:validate` green (Redocly + AsyncAPI)
+  - [x] 13 new operations under `characters` tag (listCharacters, createCharacter, getCharacter, updateCharacter, deleteCharacter, duplicateCharacter, exportCharacter, addCharacterItem, updateItem, deleteItem, addCharacterTalent, updateTalent, deleteTalent)
+  - [x] ~15 new schemas (Character + Create/Update, CharacterList, IconId, Attributes, Skills, ConditionFlags, CriticalInjury, Talent + Create/Update, Relationship, ItemBase + 6 type variants + Item discriminated union + ItemCreate/Update)
+  - [x] RFC 9457 problem+json on every 4xx with named codes
+  - [x] info.version is 0.3.0
+- Open questions raised by the agent (deferred):
+  - **ItemRangeEnum naming** — used `arm/near/short/long/distant` per the task brief; PRD §5.3 lists "Engaged/Short/Medium/Long/Extreme". Worth aligning before backend lands the wire validation.
+  - **Skill max** — set to 5 uniformly; PRD §5.2 says "0–3 typical for advanced skills". Backend can layer a soft warning.
+  - **Reputation / birr** fields — not in Character DTO; PRD §5.2 mentions them. Add in Epic 5 (full sheet).
+  - **Relationship.kind** — task brief enumerated `ally/rival/family/mentor/debtor/creditor`; PRD §5.2 leaves it free-text. Followed task brief.
+
+## T-2026-05-08-005 — build AppBadge Coriolis primitive
+
+- Created: 2026-05-08
+- Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md §Feature 2.1 T-2.1.1.b
+- Result: merged at `bc50700` (docs); preceded by `36844a5` (specs + stories) and `92bde7e` (component rewrite).
+- Goal: Replace the boilerplate AppBadge with a native Coriolis-token badge chip covering 5 state-color variants and 2 sizes, with story + spec.
+- Acceptance — all met:
+  - [x] `pnpm --filter @app/ui typecheck` green
+  - [x] `pnpm --filter @app/ui test` 181 specs pass (11 new AppBadge)
+  - [x] `pnpm stylelint "packages/ui/src/components/AppBadge/**/*.{vue,scss,css}"` green
+  - [x] AppBadge row in `specs/design/README.md`
+  - [x] 10 variant × size stories + WithIcon + LongLabel + InlineWithText + AllVariants
+- Variants: `brass` (default), `mystic`, `crimson`, `success`, `darkness` × `sm` / `md`. `<span>` root, decorative `tabindex="-1"`.
+
+## T-2026-05-08-004 — Replace AppInput with Coriolis-token implementation
+
+- Created: 2026-05-08
+- Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Epic 2.1.d; docs/DESIGN.md §11.1
+- Result: merged at `4b0f644` (docs); preceded by `cf2817a` (specs + stories) and `c35d0fe` (component rewrite).
+- Goal: Deliver a fully-styled AppInput primitive that uses Coriolis design tokens, matching the cor-input / cor-input--invalid contract from primitives.jsx.
+- Acceptance — all met:
+  - [x] `pnpm --filter @app/ui typecheck` green
+  - [x] `pnpm --filter @app/ui test` 199 specs pass (30 new AppInput)
+  - [x] `pnpm stylelint` green for AppInput files
+  - [x] 13 stories covering variant × size matrix + states + types
+  - [x] AppInput row in `specs/design/README.md`
+- Note: `inputmode` prop typed as explicit union literal rather than `HTMLInputElement['inputMode']` to avoid vue-tsc TS2322 widening to `string`.
+
 ## T-2026-05-08-003 — UsersModule backend (T-4.1.1.b)
 
 - Created: 2026-05-08
