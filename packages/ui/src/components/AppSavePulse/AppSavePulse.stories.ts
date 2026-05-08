@@ -7,12 +7,9 @@ const meta: Meta<typeof AppSavePulse> = {
   component: AppSavePulse,
   tags: ['autodocs'],
   parameters: {
-    a11y: {
-      // The dot is aria-hidden; accessible label is provided by the sr-only
-      // sibling rendered by the consuming page. axe should not flag contrast
-      // for decorative elements.
-      config: { rules: [{ id: 'color-contrast', enabled: false }] },
-    },
+    // color-contrast is disabled globally in .storybook/preview.ts; the dot
+    // is also aria-hidden, with the accessible label provided by an sr-only
+    // sibling on the consuming page.
     backgrounds: {
       default: 'void',
       values: [{ name: 'void', value: 'var(--surface-void, #0a0c10)' }],
