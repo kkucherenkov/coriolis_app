@@ -1,5 +1,6 @@
 // Foundation widget re-exports — do not add generated files here.
 export 'app_avatar/app_avatar.dart';
+export 'app_save_pulse/app_save_pulse.dart';
 export 'app_badge/app_badge.dart';
 export 'app_banner/app_banner.dart';
 export 'app_button/app_button.dart';
