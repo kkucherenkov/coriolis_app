@@ -137,3 +137,4 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 | Primitive | `AppBadge` | ✓ | — |
 | Primitive | `AppDivider` | ✓ | — |
 | Primitive | `AppDots` | ✓ | — |
+| Primitive | `AppIcon` | ✓ | — |
