@@ -1,6 +1,8 @@
 export { AppAvatar } from './components/AppAvatar';
 export { AppBanner } from './components/AppBanner';
 export { AppButton } from './components/AppButton';
+export { AppConditionPill } from './components/AppConditionPill';
+export { AppDie } from './components/AppDie';
 export { AppDots } from './components/AppDots';
 export { AppInput } from './components/AppInput';
 export { AppTextarea } from './components/AppTextarea';

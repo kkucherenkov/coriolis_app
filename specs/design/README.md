@@ -137,7 +137,9 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 | Primitive | `AppButton` | ✓ | — |
 | Primitive | `AppCard` | ✓ | — |
 | Primitive | `AppChip` | ✓ | — |
+| Coriolis | `AppConditionPill` | ✓ | — |
 | Primitive | `AppDivider` | ✓ | — |
+| Coriolis | `AppDie` | ✓ | — |
 | Primitive | `AppDots` | ✓ | — |
 | Primitive | `AppField` | ✓ | — |
 | Primitive | `AppIcon` | ✓ | — |
