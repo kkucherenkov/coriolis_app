@@ -29,6 +29,24 @@ function createInstance(
     // contract and are consistent with seed data.
     advanced: { database: { generateId: () => crypto.randomUUID() } },
     emailAndPassword: { enabled: true, autoSignIn: true },
+    user: {
+      additionalFields: {
+        // User-set display name shown in share-link banners and avatar menu.
+        displayName: {
+          type: 'string',
+          required: false,
+          input: true,
+          defaultValue: null,
+        },
+        // Soft-delete timestamp. Server-only: never accepted from client input.
+        deletedAt: {
+          type: 'date',
+          required: false,
+          input: false,
+          defaultValue: null,
+        },
+      },
+    },
     plugins: [
       bearer(),
       phoneNumber({
