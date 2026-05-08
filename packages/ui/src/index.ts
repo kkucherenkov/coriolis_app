@@ -13,3 +13,4 @@ export { AppLabel } from './components/AppLabel';
 export { AppField } from './components/AppField';
 export { AppDivider } from './components/AppDivider';
 export { AppProgress } from './components/AppProgress';
+export { AppTab } from './components/AppTab';
