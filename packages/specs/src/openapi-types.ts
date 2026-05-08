@@ -25,6 +25,48 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/me': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get the authenticated user's profile.
+     * @description Returns the current user's profile fields sourced from the Better Auth
+     *     `user` table. `email` and `createdAt` are read-only in this DTO — they
+     *     are managed by Better Auth and cannot be changed via this endpoint.
+     *
+     *     See PRD §4.1 for full product context. Soft-deleted users receive a
+     *     `404` because their sessions are revoked on deletion; this endpoint
+     *     will therefore never return a user whose `deletedAt` is set (that
+     *     field is an internal flag and is not exposed in this DTO).
+     */
+    get: operations['getMe'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Update the authenticated user's mutable profile fields.
+     * @description Applies a partial update (PATCH semantics) to the authenticated user's
+     *     profile. Only `displayName` is mutable via this endpoint.
+     *
+     *     `email` and `createdAt` are managed by Better Auth and are silently
+     *     ignored if included in the request body — attempting to send them
+     *     is treated as a `400` so the contract is unambiguous.
+     *
+     *     `displayName` constraints:
+     *     - Must be between 1 and 80 characters when non-null (80 matches the
+     *       character-name guidance in PRD §5.2).
+     *     - May be set to `null` to clear the field.
+     *     - An empty string (`""`) is rejected with `400`.
+     */
+    patch: operations['updateMe'];
+    trace?: never;
+  };
   '/api/v1/realtime/token': {
     parameters: {
       query?: never;
@@ -79,6 +121,43 @@ export interface components {
       instance?: string | null;
       code?: string | null;
     };
+    /**
+     * @description The authenticated user's profile as exposed by the v1 API. Fields
+     *     sourced from the Better Auth `user` table. `deletedAt` is an internal
+     *     soft-delete flag and is never surfaced here — deleted users receive a
+     *     404 because their sessions are revoked at deletion time.
+     */
+    Me: {
+      /** @description Opaque user identifier issued by Better Auth (cuid2) */
+      id: string;
+      /**
+       * Format: email
+       * @description Primary email address. Read-only via this API.
+       */
+      email: string;
+      /**
+       * @description User-chosen display name shown in share-link banners and the avatar
+       *     menu. Null when the user has not set one yet.
+       */
+      displayName: string | null;
+      /**
+       * Format: date-time
+       * @description ISO-8601 instant when the account was created. Read-only via this API.
+       */
+      createdAt: string | null;
+    };
+    /**
+     * @description Partial update payload for PATCH /api/v1/me. Only `displayName` is
+     *     mutable. Omitting a property leaves the corresponding field unchanged.
+     *     Setting `displayName` to null clears the field.
+     */
+    MeUpdate: {
+      /**
+       * @description User-chosen display name. Must be 1–80 characters when non-null.
+       *     Set to null to clear the field.
+       */
+      displayName?: string | null;
+    };
     RealtimeToken: {
       /** @description Short-lived HMAC-signed JWT for Centrifugo */
       token: string | null;
@@ -122,6 +201,82 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['HealthStatus'];
+        };
+      };
+    };
+  };
+  getMe: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The authenticated user's profile */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Me'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  updateMe: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MeUpdate'];
+      };
+    };
+    responses: {
+      /** @description Updated profile */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Me'];
+        };
+      };
+      /**
+       * @description Validation error. Possible cases:
+       *     - `displayName` is an empty string.
+       *     - `displayName` exceeds 80 characters.
+       *     - Request body contains read-only fields (`email`, `createdAt`).
+       */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
         };
       };
     };

@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetHealthData, GetHealthErrors, GetHealthResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses } from './types.gen';
+import type { GetHealthData, GetHealthErrors, GetHealthResponses, GetMeData, GetMeErrors, GetMeResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -26,6 +26,60 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  *
  */
 export const getHealth = <ThrowOnError extends boolean = false>(options?: Options<GetHealthData, ThrowOnError>) => (options?.client ?? client).get<GetHealthResponses, GetHealthErrors, ThrowOnError>({ url: '/api/v1/health', ...options });
+
+/**
+ * Get the authenticated user's profile.
+ *
+ * Returns the current user's profile fields sourced from the Better Auth
+ * `user` table. `email` and `createdAt` are read-only in this DTO — they
+ * are managed by Better Auth and cannot be changed via this endpoint.
+ *
+ * See PRD §4.1 for full product context. Soft-deleted users receive a
+ * `404` because their sessions are revoked on deletion; this endpoint
+ * will therefore never return a user whose `deletedAt` is set (that
+ * field is an internal flag and is not exposed in this DTO).
+ *
+ */
+export const getMe = <ThrowOnError extends boolean = false>(options?: Options<GetMeData, ThrowOnError>) => (options?.client ?? client).get<GetMeResponses, GetMeErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/me',
+    ...options
+});
+
+/**
+ * Update the authenticated user's mutable profile fields.
+ *
+ * Applies a partial update (PATCH semantics) to the authenticated user's
+ * profile. Only `displayName` is mutable via this endpoint.
+ *
+ * `email` and `createdAt` are managed by Better Auth and are silently
+ * ignored if included in the request body — attempting to send them
+ * is treated as a `400` so the contract is unambiguous.
+ *
+ * `displayName` constraints:
+ * - Must be between 1 and 80 characters when non-null (80 matches the
+ * character-name guidance in PRD §5.2).
+ * - May be set to `null` to clear the field.
+ * - An empty string (`""`) is rejected with `400`.
+ *
+ */
+export const updateMe = <ThrowOnError extends boolean = false>(options: Options<UpdateMeData, ThrowOnError>) => (options.client ?? client).patch<UpdateMeResponses, UpdateMeErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/me',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Issue a short-lived Centrifugo connection token

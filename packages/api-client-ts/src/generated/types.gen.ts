@@ -35,6 +35,49 @@ export type Problem = {
     code?: string | null;
 };
 
+/**
+ * The authenticated user's profile as exposed by the v1 API. Fields
+ * sourced from the Better Auth `user` table. `deletedAt` is an internal
+ * soft-delete flag and is never surfaced here — deleted users receive a
+ * 404 because their sessions are revoked at deletion time.
+ *
+ */
+export type Me = {
+    /**
+     * Opaque user identifier issued by Better Auth (cuid2)
+     */
+    id: string;
+    /**
+     * Primary email address. Read-only via this API.
+     */
+    email: string;
+    /**
+     * User-chosen display name shown in share-link banners and the avatar
+     * menu. Null when the user has not set one yet.
+     *
+     */
+    displayName: string | null;
+    /**
+     * ISO-8601 instant when the account was created. Read-only via this API.
+     */
+    createdAt: string | null;
+};
+
+/**
+ * Partial update payload for PATCH /api/v1/me. Only `displayName` is
+ * mutable. Omitting a property leaves the corresponding field unchanged.
+ * Setting `displayName` to null clears the field.
+ *
+ */
+export type MeUpdate = {
+    /**
+     * User-chosen display name. Must be 1–80 characters when non-null.
+     * Set to null to clear the field.
+     *
+     */
+    displayName?: string | null;
+};
+
 export type RealtimeToken = {
     /**
      * Short-lived HMAC-signed JWT for Centrifugo
@@ -70,6 +113,64 @@ export type GetHealthResponses = {
 };
 
 export type GetHealthResponse = GetHealthResponses[keyof GetHealthResponses];
+
+export type GetMeData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/me';
+};
+
+export type GetMeErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+};
+
+export type GetMeError = GetMeErrors[keyof GetMeErrors];
+
+export type GetMeResponses = {
+    /**
+     * The authenticated user's profile
+     */
+    200: Me;
+};
+
+export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
+
+export type UpdateMeData = {
+    body: MeUpdate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/me';
+};
+
+export type UpdateMeErrors = {
+    /**
+     * Validation error. Possible cases:
+     * - `displayName` is an empty string.
+     * - `displayName` exceeds 80 characters.
+     * - Request body contains read-only fields (`email`, `createdAt`).
+     *
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+};
+
+export type UpdateMeError = UpdateMeErrors[keyof UpdateMeErrors];
+
+export type UpdateMeResponses = {
+    /**
+     * Updated profile
+     */
+    200: Me;
+};
+
+export type UpdateMeResponse = UpdateMeResponses[keyof UpdateMeResponses];
 
 export type IssueRealtimeTokenData = {
     body?: never;
