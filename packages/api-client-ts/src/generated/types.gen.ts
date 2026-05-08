@@ -1360,6 +1360,94 @@ export type HealthStatus = {
 };
 
 /**
+ * Request body for creating a share link. All fields are optional; an
+ * empty object `{}` creates a permanent link without GM notes.
+ *
+ */
+export type ShareLinkCreate = {
+    /**
+     * When true, the public character endpoint returns the top-level
+     * `notes` field. When false (default), `notes` is always null in the
+     * public response regardless of the character's actual notes value.
+     *
+     */
+    includeGmNotes?: boolean;
+    /**
+     * ISO-8601 instant after which the link stops resolving. Omit or
+     * set to null for a permanent link.
+     *
+     */
+    expiresAt?: string | null;
+    /**
+     * Optional human-readable label to distinguish this link from others
+     * in the owner's list (e.g. "GM copy", "public preview").
+     *
+     */
+    label?: string | null;
+};
+
+/**
+ * A share link grants anonymous read-only access to a character via the
+ * `/api/v1/public/character/{slug}` endpoint.
+ *
+ */
+export type ShareLink = {
+    /**
+     * Opaque share-link identifier (cuid2). Used for revocation.
+     */
+    id: string;
+    /**
+     * 24-character URL-safe slug. Use in the public URL:
+     * `/api/v1/public/character/{slug}`.
+     *
+     */
+    slug: string;
+    /**
+     * ID of the character this link exposes.
+     */
+    characterId: string;
+    /**
+     * Whether the `notes` field is included in the public character
+     * response. Always false if not set at creation time.
+     *
+     */
+    includeGmNotes: boolean;
+    /**
+     * Owner-assigned label for this link.
+     */
+    label?: string | null;
+    /**
+     * Expiry instant. Null for permanent links.
+     */
+    expiresAt: string | null;
+    /**
+     * Revocation instant. Null if active. When set, the public endpoint
+     * returns 410 Gone.
+     *
+     */
+    revokedAt: string | null;
+    /**
+     * ISO-8601 instant of the last recorded public view. Updated
+     * asynchronously (up to 60 seconds lag) via the view-tracker flush job.
+     * Null until the first view is flushed.
+     *
+     */
+    lastViewedAt: string | null;
+    /**
+     * Cumulative count of public views. Updated asynchronously; may lag
+     * by up to 60 seconds.
+     *
+     */
+    viewCount: number;
+    createdAt: string;
+    updatedAt: string;
+};
+
+export type ShareLinkList = {
+    items: Array<ShareLink>;
+};
+
+/**
  * RFC 9457 problem details
  */
 export type Problem = {
@@ -1733,6 +1821,16 @@ export type ShipId = string;
  * Ship module identifier (cuid2)
  */
 export type ShipModuleId = string;
+
+/**
+ * Share link identifier (cuid2)
+ */
+export type ShareLinkId = string;
+
+/**
+ * 24-character unambiguous nanoid slug identifying a share link
+ */
+export type ShareSlug = string;
 
 export type ListCharactersData = {
     body?: never;
@@ -2876,3 +2974,181 @@ export type UpdateTalentResponses = {
 };
 
 export type UpdateTalentResponse = UpdateTalentResponses[keyof UpdateTalentResponses];
+
+export type CreateShareLinkData = {
+    body: ShareLinkCreate;
+    path: {
+        /**
+         * Character identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/characters/{id}/share';
+};
+
+export type CreateShareLinkErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this character
+     */
+    403: Problem;
+    /**
+     * Character not found
+     */
+    404: Problem;
+};
+
+export type CreateShareLinkError = CreateShareLinkErrors[keyof CreateShareLinkErrors];
+
+export type CreateShareLinkResponses = {
+    /**
+     * Share link created
+     */
+    201: ShareLink;
+};
+
+export type CreateShareLinkResponse = CreateShareLinkResponses[keyof CreateShareLinkResponses];
+
+export type ListShareLinksData = {
+    body?: never;
+    path: {
+        /**
+         * Character identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/characters/{id}/shares';
+};
+
+export type ListShareLinksErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this character
+     */
+    403: Problem;
+    /**
+     * Character not found
+     */
+    404: Problem;
+};
+
+export type ListShareLinksError = ListShareLinksErrors[keyof ListShareLinksErrors];
+
+export type ListShareLinksResponses = {
+    /**
+     * Share link list
+     */
+    200: ShareLinkList;
+};
+
+export type ListShareLinksResponse = ListShareLinksResponses[keyof ListShareLinksResponses];
+
+export type RevokeShareLinkData = {
+    body?: never;
+    path: {
+        /**
+         * Share link identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/share-links/{id}';
+};
+
+export type RevokeShareLinkErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the character associated with this share link
+     */
+    403: Problem;
+    /**
+     * Share link not found
+     */
+    404: Problem;
+};
+
+export type RevokeShareLinkError = RevokeShareLinkErrors[keyof RevokeShareLinkErrors];
+
+export type RevokeShareLinkResponses = {
+    /**
+     * Share link revoked
+     */
+    204: void;
+};
+
+export type RevokeShareLinkResponse = RevokeShareLinkResponses[keyof RevokeShareLinkResponses];
+
+export type GetPublicCharacterData = {
+    body?: never;
+    path: {
+        /**
+         * 24-character unambiguous nanoid slug identifying a share link
+         */
+        slug: string;
+    };
+    query?: never;
+    url: '/api/v1/public/character/{slug}';
+};
+
+export type GetPublicCharacterErrors = {
+    /**
+     * Slug not found
+     */
+    404: Problem;
+    /**
+     * Share link revoked or expired
+     */
+    410: Problem;
+};
+
+export type GetPublicCharacterError = GetPublicCharacterErrors[keyof GetPublicCharacterErrors];
+
+export type GetPublicCharacterResponses = {
+    /**
+     * Publicly-shared character
+     */
+    200: Character;
+};
+
+export type GetPublicCharacterResponse = GetPublicCharacterResponses[keyof GetPublicCharacterResponses];
+
+export type GetCharacterOgImageData = {
+    body?: never;
+    path: {
+        /**
+         * 24-character unambiguous nanoid slug identifying a share link
+         */
+        slug: string;
+    };
+    query?: never;
+    url: '/api/v1/public/og/character/{slug}.png';
+};
+
+export type GetCharacterOgImageErrors = {
+    /**
+     * OG image renderer not yet implemented (ships in Feature 6.3)
+     */
+    501: Problem;
+};
+
+export type GetCharacterOgImageError = GetCharacterOgImageErrors[keyof GetCharacterOgImageErrors];
+
+export type GetCharacterOgImageResponses = {
+    /**
+     * PNG image (Feature 6.3 — not yet implemented)
+     */
+    200: Blob | File;
+};
+
+export type GetCharacterOgImageResponse = GetCharacterOgImageResponses[keyof GetCharacterOgImageResponses];

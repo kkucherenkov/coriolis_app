@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddCharacterItemData, AddCharacterItemErrors, AddCharacterItemResponses, AddCharacterTalentData, AddCharacterTalentErrors, AddCharacterTalentResponses, AddShipModuleData, AddShipModuleErrors, AddShipModuleResponses, AssignCrewData, AssignCrewErrors, AssignCrewResponses, CreateCharacterData, CreateCharacterErrors, CreateCharacterResponses, CreateShipData, CreateShipErrors, CreateShipResponses, DeleteCharacterData, DeleteCharacterErrors, DeleteCharacterResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteShipData, DeleteShipErrors, DeleteShipModuleData, DeleteShipModuleErrors, DeleteShipModuleResponses, DeleteShipResponses, DeleteTalentData, DeleteTalentErrors, DeleteTalentResponses, DuplicateCharacterData, DuplicateCharacterErrors, DuplicateCharacterResponses, DuplicateShipData, DuplicateShipErrors, DuplicateShipResponses, ExportCharacterData, ExportCharacterErrors, ExportCharacterResponses, ExportShipData, ExportShipErrors, ExportShipResponses, GetCharacterData, GetCharacterErrors, GetCharacterResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetMeData, GetMeErrors, GetMeResponses, GetShipData, GetShipErrors, GetShipResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, ListCharactersData, ListCharactersErrors, ListCharactersResponses, ListShipsData, ListShipsErrors, ListShipsResponses, UnassignCrewData, UnassignCrewErrors, UnassignCrewResponses, UpdateCharacterData, UpdateCharacterErrors, UpdateCharacterResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses, UpdateShipData, UpdateShipErrors, UpdateShipModuleData, UpdateShipModuleErrors, UpdateShipModuleResponses, UpdateShipResponses, UpdateTalentData, UpdateTalentErrors, UpdateTalentResponses } from './types.gen';
+import type { AddCharacterItemData, AddCharacterItemErrors, AddCharacterItemResponses, AddCharacterTalentData, AddCharacterTalentErrors, AddCharacterTalentResponses, AddShipModuleData, AddShipModuleErrors, AddShipModuleResponses, AssignCrewData, AssignCrewErrors, AssignCrewResponses, CreateCharacterData, CreateCharacterErrors, CreateCharacterResponses, CreateShareLinkData, CreateShareLinkErrors, CreateShareLinkResponses, CreateShipData, CreateShipErrors, CreateShipResponses, DeleteCharacterData, DeleteCharacterErrors, DeleteCharacterResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteShipData, DeleteShipErrors, DeleteShipModuleData, DeleteShipModuleErrors, DeleteShipModuleResponses, DeleteShipResponses, DeleteTalentData, DeleteTalentErrors, DeleteTalentResponses, DuplicateCharacterData, DuplicateCharacterErrors, DuplicateCharacterResponses, DuplicateShipData, DuplicateShipErrors, DuplicateShipResponses, ExportCharacterData, ExportCharacterErrors, ExportCharacterResponses, ExportShipData, ExportShipErrors, ExportShipResponses, GetCharacterData, GetCharacterErrors, GetCharacterOgImageData, GetCharacterOgImageErrors, GetCharacterOgImageResponses, GetCharacterResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetMeData, GetMeErrors, GetMeResponses, GetPublicCharacterData, GetPublicCharacterErrors, GetPublicCharacterResponses, GetShipData, GetShipErrors, GetShipResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, ListCharactersData, ListCharactersErrors, ListCharactersResponses, ListShareLinksData, ListShareLinksErrors, ListShareLinksResponses, ListShipsData, ListShipsErrors, ListShipsResponses, RevokeShareLinkData, RevokeShareLinkErrors, RevokeShareLinkResponses, UnassignCrewData, UnassignCrewErrors, UnassignCrewResponses, UpdateCharacterData, UpdateCharacterErrors, UpdateCharacterResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses, UpdateShipData, UpdateShipErrors, UpdateShipModuleData, UpdateShipModuleErrors, UpdateShipModuleResponses, UpdateShipResponses, UpdateTalentData, UpdateTalentErrors, UpdateTalentResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -636,3 +636,101 @@ export const updateTalent = <ThrowOnError extends boolean = false>(options: Opti
         ...options.headers
     }
 });
+
+/**
+ * Create a share link for a character
+ *
+ * Creates a new share link for the authenticated user's character. The
+ * link is identified by a 24-character unguessable slug. Multiple links
+ * per character are allowed — useful for different audiences or different
+ * `includeGmNotes` settings.
+ *
+ * The optional `label` (1–80 characters) helps the owner distinguish links.
+ * The optional `expiresAt` is an ISO-8601 instant; omit (or set to null)
+ * for a permanent link. The optional `includeGmNotes` flag (default false)
+ * controls whether the top-level `notes` field is included in the public
+ * character read.
+ *
+ */
+export const createShareLink = <ThrowOnError extends boolean = false>(options: Options<CreateShareLinkData, ThrowOnError>) => (options.client ?? client).post<CreateShareLinkResponses, CreateShareLinkErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/characters/{id}/share',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List share links for a character
+ *
+ * Returns all non-revoked share links for the authenticated user's
+ * character, ordered newest-first. Revoked links are excluded by default.
+ * A `?includeRevoked` query parameter may be added in a future version.
+ *
+ */
+export const listShareLinks = <ThrowOnError extends boolean = false>(options: Options<ListShareLinksData, ThrowOnError>) => (options.client ?? client).get<ListShareLinksResponses, ListShareLinksErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/characters/{id}/shares',
+    ...options
+});
+
+/**
+ * Revoke a share link
+ *
+ * Soft-revokes a share link by setting its `revokedAt` timestamp. After
+ * revocation, `GET /api/v1/public/character/{slug}` returns 410 Gone.
+ * The link row is not deleted — historical view counts are preserved.
+ * The caller must own the character the link belongs to.
+ *
+ */
+export const revokeShareLink = <ThrowOnError extends boolean = false>(options: Options<RevokeShareLinkData, ThrowOnError>) => (options.client ?? client).delete<RevokeShareLinkResponses, RevokeShareLinkErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/share-links/{id}',
+    ...options
+});
+
+/**
+ * Get a publicly-shared character by slug
+ *
+ * Returns the character associated with the given share-link slug.
+ * No authentication is required.
+ *
+ * The `notes` field (top-level GM notes) is included only when the share
+ * link was created with `includeGmNotes: true`. If the link does not
+ * include GM notes, `notes` is always returned as `null` regardless of
+ * whether the character actually has notes.
+ *
+ * Error semantics:
+ * - `404` — slug does not exist or was never created.
+ * - `410` — slug existed but has been revoked or has expired.
+ *
+ */
+export const getPublicCharacter = <ThrowOnError extends boolean = false>(options: Options<GetPublicCharacterData, ThrowOnError>) => (options.client ?? client).get<GetPublicCharacterResponses, GetPublicCharacterErrors, ThrowOnError>({ url: '/api/v1/public/character/{slug}', ...options });
+
+/**
+ * OG image for a shared character (Feature 6.3 — not yet implemented)
+ *
+ * Returns a PNG Open Graph image for the shared character. Intended for
+ * social-media preview unfurling.
+ *
+ * **This endpoint is not yet implemented.** It will always return 501
+ * until Feature 6.3 lands the server-side renderer. Consumers should plan
+ * for the following cache headers on the eventual 200 response:
+ * `Cache-Control: public, max-age=3600, stale-while-revalidate=86400`.
+ *
+ */
+export const getCharacterOgImage = <ThrowOnError extends boolean = false>(options: Options<GetCharacterOgImageData, ThrowOnError>) => (options.client ?? client).get<GetCharacterOgImageResponses, GetCharacterOgImageErrors, ThrowOnError>({ url: '/api/v1/public/og/character/{slug}.png', ...options });

@@ -63,6 +63,9 @@ import 'package:app_api_client/src/model/problem.dart';
 import 'package:app_api_client/src/model/realtime_token.dart';
 import 'package:app_api_client/src/model/relationship.dart';
 import 'package:app_api_client/src/model/relationship_kind.dart';
+import 'package:app_api_client/src/model/share_link.dart';
+import 'package:app_api_client/src/model/share_link_create.dart';
+import 'package:app_api_client/src/model/share_link_list.dart';
 import 'package:app_api_client/src/model/ship.dart';
 import 'package:app_api_client/src/model/ship_class.dart';
 import 'package:app_api_client/src/model/ship_create.dart';
@@ -151,6 +154,9 @@ part 'serializers.g.dart';
   RealtimeToken,
   Relationship,
   RelationshipKind,
+  ShareLink,
+  ShareLinkCreate,
+  ShareLinkList,
   Ship,
   ShipClass,
   ShipCreate,

@@ -527,6 +527,136 @@ export interface paths {
     patch: operations['updateTalent'];
     trace?: never;
   };
+  '/api/v1/characters/{id}/share': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Create a share link for a character
+     * @description Creates a new share link for the authenticated user's character. The
+     *     link is identified by a 24-character unguessable slug. Multiple links
+     *     per character are allowed — useful for different audiences or different
+     *     `includeGmNotes` settings.
+     *
+     *     The optional `label` (1–80 characters) helps the owner distinguish links.
+     *     The optional `expiresAt` is an ISO-8601 instant; omit (or set to null)
+     *     for a permanent link. The optional `includeGmNotes` flag (default false)
+     *     controls whether the top-level `notes` field is included in the public
+     *     character read.
+     */
+    post: operations['createShareLink'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/characters/{id}/shares': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List share links for a character
+     * @description Returns all non-revoked share links for the authenticated user's
+     *     character, ordered newest-first. Revoked links are excluded by default.
+     *     A `?includeRevoked` query parameter may be added in a future version.
+     */
+    get: operations['listShareLinks'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/share-links/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Revoke a share link
+     * @description Soft-revokes a share link by setting its `revokedAt` timestamp. After
+     *     revocation, `GET /api/v1/public/character/{slug}` returns 410 Gone.
+     *     The link row is not deleted — historical view counts are preserved.
+     *     The caller must own the character the link belongs to.
+     */
+    delete: operations['revokeShareLink'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/public/character/{slug}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get a publicly-shared character by slug
+     * @description Returns the character associated with the given share-link slug.
+     *     No authentication is required.
+     *
+     *     The `notes` field (top-level GM notes) is included only when the share
+     *     link was created with `includeGmNotes: true`. If the link does not
+     *     include GM notes, `notes` is always returned as `null` regardless of
+     *     whether the character actually has notes.
+     *
+     *     Error semantics:
+     *     - `404` — slug does not exist or was never created.
+     *     - `410` — slug existed but has been revoked or has expired.
+     */
+    get: operations['getPublicCharacter'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/public/og/character/{slug}.png': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * OG image for a shared character (Feature 6.3 — not yet implemented)
+     * @description Returns a PNG Open Graph image for the shared character. Intended for
+     *     social-media preview unfurling.
+     *
+     *     **This endpoint is not yet implemented.** It will always return 501
+     *     until Feature 6.3 lands the server-side renderer. Consumers should plan
+     *     for the following cache headers on the eventual 200 response:
+     *     `Cache-Control: public, max-age=3600, stale-while-revalidate=86400`.
+     */
+    get: operations['getCharacterOgImage'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1924,6 +2054,82 @@ export interface components {
         centrifugo: components['schemas']['DependencyStatus'];
       };
     };
+    /**
+     * @description Request body for creating a share link. All fields are optional; an
+     *     empty object `{}` creates a permanent link without GM notes.
+     */
+    ShareLinkCreate: {
+      /**
+       * @description When true, the public character endpoint returns the top-level
+       *     `notes` field. When false (default), `notes` is always null in the
+       *     public response regardless of the character's actual notes value.
+       * @default false
+       */
+      includeGmNotes: boolean;
+      /**
+       * Format: date-time
+       * @description ISO-8601 instant after which the link stops resolving. Omit or
+       *     set to null for a permanent link.
+       */
+      expiresAt?: string | null;
+      /**
+       * @description Optional human-readable label to distinguish this link from others
+       *     in the owner's list (e.g. "GM copy", "public preview").
+       */
+      label?: string | null;
+    };
+    /**
+     * @description A share link grants anonymous read-only access to a character via the
+     *     `/api/v1/public/character/{slug}` endpoint.
+     */
+    ShareLink: {
+      /** @description Opaque share-link identifier (cuid2). Used for revocation. */
+      id: string;
+      /**
+       * @description 24-character URL-safe slug. Use in the public URL:
+       *     `/api/v1/public/character/{slug}`.
+       */
+      slug: string;
+      /** @description ID of the character this link exposes. */
+      characterId: string;
+      /**
+       * @description Whether the `notes` field is included in the public character
+       *     response. Always false if not set at creation time.
+       */
+      includeGmNotes: boolean;
+      /** @description Owner-assigned label for this link. */
+      label?: string | null;
+      /**
+       * Format: date-time
+       * @description Expiry instant. Null for permanent links.
+       */
+      expiresAt: string | null;
+      /**
+       * Format: date-time
+       * @description Revocation instant. Null if active. When set, the public endpoint
+       *     returns 410 Gone.
+       */
+      revokedAt: string | null;
+      /**
+       * Format: date-time
+       * @description ISO-8601 instant of the last recorded public view. Updated
+       *     asynchronously (up to 60 seconds lag) via the view-tracker flush job.
+       *     Null until the first view is flushed.
+       */
+      lastViewedAt: string | null;
+      /**
+       * @description Cumulative count of public views. Updated asynchronously; may lag
+       *     by up to 60 seconds.
+       */
+      viewCount: number;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    ShareLinkList: {
+      items: components['schemas']['ShareLink'][];
+    };
     /** @description RFC 9457 problem details */
     Problem: {
       /**
@@ -1997,6 +2203,10 @@ export interface components {
     ShipId: string;
     /** @description Ship module identifier (cuid2) */
     ShipModuleId: string;
+    /** @description Share link identifier (cuid2) */
+    ShareLinkId: string;
+    /** @description 24-character unambiguous nanoid slug identifying a share link */
+    ShareSlug: string;
   };
   requestBodies: never;
   headers: never;
@@ -3518,6 +3728,231 @@ export interface operations {
       };
       /** @description Talent not found */
       404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  createShareLink: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Character identifier (cuid2) */
+        id: components['parameters']['CharacterId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ShareLinkCreate'];
+      };
+    };
+    responses: {
+      /** @description Share link created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ShareLink'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this character */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Character not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  listShareLinks: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Character identifier (cuid2) */
+        id: components['parameters']['CharacterId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Share link list */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ShareLinkList'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this character */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Character not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  revokeShareLink: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Share link identifier (cuid2) */
+        id: components['parameters']['ShareLinkId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Share link revoked */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own the character associated with this share link */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Share link not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  getPublicCharacter: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 24-character unambiguous nanoid slug identifying a share link */
+        slug: components['parameters']['ShareSlug'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Publicly-shared character */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Character'];
+        };
+      };
+      /** @description Slug not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Share link revoked or expired */
+      410: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  getCharacterOgImage: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 24-character unambiguous nanoid slug identifying a share link */
+        slug: components['parameters']['ShareSlug'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description PNG image (Feature 6.3 — not yet implemented) */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'image/png': string;
+        };
+      };
+      /** @description OG image renderer not yet implemented (ships in Feature 6.3) */
+      501: {
         headers: {
           [name: string]: unknown;
         };
