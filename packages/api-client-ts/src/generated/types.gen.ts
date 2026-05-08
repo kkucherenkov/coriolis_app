@@ -694,6 +694,452 @@ export type CharacterList = {
     nextCursor: string | null;
 };
 
+/**
+ * Ship hull class per ST3001 ГЛАВА 7 Table 7.4 (типы кораблей). The
+ * class determines the base stat block (energy, hull, maneuverability,
+ * signature, armor, speed, module slots) from Table 7.5. Kebab-case
+ * values map to the Russian originals in the rulebook.
+ *
+ * Class I examples: fighter, shuttle.
+ * Class II examples: torpedo-boat.
+ * Class III examples: light-freighter, light-passenger, courier-yacht,
+ * clipper, patrol-boat, gunboat, assault-ship, blockade-runner, pleasure-yacht.
+ * Class IV examples: flying-circus, prospector, rescue-ship, passenger-liner.
+ * Class V examples: heavy-cruiser, passenger-liner (large).
+ *
+ */
+export type ShipClass = 'fighter' | 'shuttle' | 'torpedo-boat' | 'light-freighter' | 'light-passenger' | 'courier-yacht' | 'clipper' | 'patrol-boat' | 'gunboat' | 'assault-ship' | 'blockade-runner' | 'pleasure-yacht' | 'flying-circus' | 'prospector' | 'rescue-ship' | 'passenger-liner' | 'heavy-freighter' | 'cruiser' | 'destroyer' | 'heavy-cruiser';
+
+/**
+ * Ship module slot type per ST3001 ГЛАВА 7 mandatory and optional module
+ * catalogue. `BRIDGE`, `REACTOR`, `DRIVE` are mandatory on every ship.
+ * All others are optional and consume module slots. The existing
+ * `ItemSlotType` enum covers character-inventory ship modules; this enum
+ * covers actual installed ship modules and provides richer coverage of
+ * the full ГЛАВА 7 catalogue.
+ *
+ */
+export type ShipModuleSlot = 'BRIDGE' | 'REACTOR' | 'DRIVE' | 'HOLD' | 'WEAPON' | 'TORPEDO' | 'SENSOR' | 'COMMS' | 'HANGAR' | 'QUARTERS' | 'MEDICAL' | 'WORKSHOP' | 'CHAPEL' | 'ESCAPE-PODS' | 'CRYO' | 'DOCKING' | 'MINING' | 'REPAIR' | 'CONCEALED-HOLD' | 'PROXY-DECK' | 'OTHER';
+
+/**
+ * Ship-combat range bands per ST3001 ГЛАВА 7 Table 7.9. Distinct from
+ * the personal-scale `ItemRangeEnum`.
+ * - `zero` — point-blank / boarding range.
+ * - `close` — within a few hundred metres.
+ * - `medium` — standard engagement distance.
+ * - `long` — extended engagement.
+ * - `extreme` — maximum sensor range.
+ *
+ */
+export type ShipWeaponRange = 'zero' | 'close' | 'medium' | 'long' | 'extreme';
+
+/**
+ * Crew positions per ST3001 ГЛАВА 7 (crew roles). `sensorOp` is the
+ * штурман-оператор (navigator/sensor operator) in the rulebook, also
+ * responsible for combat-meme and info-impulse attacks. All positions
+ * except `captain` may be filled by automation (усовершенствование
+ * «Автоматика»).
+ *
+ */
+export type CrewPosition = 'captain' | 'pilot' | 'sensorOp' | 'gunner' | 'engineer' | 'serviceCrew';
+
+/**
+ * A crew position on a ship. Positions without an assigned character are
+ * vacant (open berth). Multiple characters may not share one position.
+ *
+ */
+export type CrewSlot = {
+    position: CrewPosition;
+    /**
+     * ID of the assigned Character. Null when the berth is vacant.
+     * The character must be owned by the same user as the ship.
+     *
+     */
+    assignedCharacterId?: string | null;
+};
+
+/**
+ * Fields common to every ship module variant
+ */
+export type ShipModuleBase = {
+    /**
+     * Opaque module identifier (cuid2)
+     */
+    readonly id: string;
+    slot: ShipModuleSlot;
+    /**
+     * Module name (e.g. "Graviton Projector", "Smuggler hold")
+     */
+    name: string;
+    /**
+     * Energy points consumed by this module when active
+     */
+    energyUse: number;
+    /**
+     * Free-text notes; used for damage state, special conditions, etc.
+     */
+    notes?: string | null;
+};
+
+export type ShipModuleWeapon = ShipModuleBase & {
+    slot?: 'WEAPON';
+    /**
+     * Modifier dice added to the attack pool (Мод. column in Table 7.9)
+     */
+    weaponBonus: number;
+    weaponRange: ShipWeaponRange;
+    /**
+     * Structural damage dealt on a hit
+     */
+    weaponDamage: number;
+    /**
+     * Number of successes required to trigger a critical effect
+     */
+    weaponCritThreshold: number;
+};
+
+export type ShipModuleTorpedo = ShipModuleBase & {
+    slot?: 'TORPEDO';
+    /**
+     * Number of torpedoes currently loaded
+     */
+    torpedoCount?: number;
+    /**
+     * Number of mines currently loaded
+     */
+    mineCount?: number;
+};
+
+export type ShipModuleHold = ShipModuleBase & {
+    slot?: 'HOLD';
+    /**
+     * Cargo capacity in tonnes (class-dependent per Table 7.6)
+     */
+    cargoTons?: number;
+    /**
+     * True for a потайной грузовой отсек (concealed hold)
+     */
+    concealed?: boolean;
+};
+
+export type ShipModuleSensor = ShipModuleBase & {
+    slot?: 'SENSOR';
+    /**
+     * Modifier added to sensor / dataDjinn checks
+     */
+    detectionBonus?: number;
+};
+
+export type ShipModuleOther = ShipModuleBase & {
+    slot?: ShipModuleSlot;
+};
+
+/**
+ * A discriminated union of all ship module variants. The `slot` field
+ * determines which variant applies. Generated clients produce a
+ * correctly-typed sum type from this schema.
+ *
+ * Mandatory modules (BRIDGE, REACTOR, DRIVE) are always present on a
+ * ship and are not individually manageable via the module CRUD endpoints.
+ * They appear in the `modules` array for completeness and energy tracking.
+ *
+ */
+export type ShipModule = ({
+    slot: 'WEAPON';
+} & ShipModuleWeapon) | ({
+    slot: 'TORPEDO';
+} & ShipModuleTorpedo) | ({
+    slot: 'HOLD';
+} & ShipModuleHold) | ({
+    slot: 'SENSOR';
+} & ShipModuleSensor) | ({
+    slot: 'BRIDGE' | 'REACTOR' | 'DRIVE' | 'COMMS' | 'HANGAR' | 'QUARTERS' | 'MEDICAL' | 'WORKSHOP' | 'CHAPEL' | 'ESCAPE-PODS' | 'CRYO' | 'DOCKING' | 'MINING' | 'REPAIR' | 'CONCEALED-HOLD' | 'PROXY-DECK' | 'OTHER';
+} & ShipModuleOther);
+
+/**
+ * Payload for `POST /api/v1/ships/{id}/modules`. Same discriminated
+ * union as `ShipModule` but without `id` (server-assigned). The `slot`
+ * discriminator must be present.
+ *
+ * Note: BRIDGE, REACTOR, and DRIVE modules are created automatically
+ * with the ship and cannot be added via this endpoint.
+ *
+ */
+export type ShipModuleCreate = {
+    slot: 'WEAPON';
+    name: string;
+    energyUse: number;
+    weaponBonus: number;
+    weaponRange: ShipWeaponRange;
+    weaponDamage: number;
+    weaponCritThreshold: number;
+    notes?: string | null;
+} | {
+    slot: 'TORPEDO';
+    name: string;
+    energyUse: number;
+    torpedoCount?: number;
+    mineCount?: number;
+    notes?: string | null;
+} | {
+    slot: 'HOLD';
+    name: string;
+    energyUse: number;
+    cargoTons?: number;
+    concealed?: boolean;
+    notes?: string | null;
+} | {
+    slot: 'SENSOR';
+    name: string;
+    energyUse: number;
+    detectionBonus?: number;
+    notes?: string | null;
+} | {
+    slot: 'BRIDGE' | 'REACTOR' | 'DRIVE' | 'COMMS' | 'HANGAR' | 'QUARTERS' | 'MEDICAL' | 'WORKSHOP' | 'CHAPEL' | 'ESCAPE-PODS' | 'CRYO' | 'DOCKING' | 'MINING' | 'REPAIR' | 'CONCEALED-HOLD' | 'PROXY-DECK' | 'OTHER';
+    name: string;
+    energyUse: number;
+    notes?: string | null;
+};
+
+/**
+ * PATCH payload for `PATCH /api/v1/ship-modules/{id}`. The `slot`
+ * discriminator may not be changed after installation. All fields
+ * optional.
+ *
+ */
+export type ShipModuleUpdate = {
+    name?: string;
+    energyUse?: number;
+    notes?: string | null;
+    /**
+     * WEAPON only
+     */
+    weaponBonus?: number;
+    /**
+     * WEAPON only
+     */
+    weaponRange?: ShipWeaponRange;
+    /**
+     * WEAPON only
+     */
+    weaponDamage?: number;
+    /**
+     * WEAPON only
+     */
+    weaponCritThreshold?: number;
+    /**
+     * TORPEDO only
+     */
+    torpedoCount?: number;
+    /**
+     * TORPEDO only
+     */
+    mineCount?: number;
+    /**
+     * HOLD only
+     */
+    cargoTons?: number;
+    /**
+     * HOLD only
+     */
+    concealed?: boolean;
+    /**
+     * SENSOR only
+     */
+    detectionBonus?: number;
+};
+
+/**
+ * Full Ship DTO as returned by the v1 API. Ship stats correspond to
+ * ST3001 ГЛАВА 7 Table 7.5 base stats, modified by the installed
+ * modules and upgrades.
+ *
+ * `hull.max` and `energy.max` are tracked as explicit editable values
+ * (not derived) because they can be altered by upgrades (Прочный корпус
+ * +1 hull, Мощный реактор +1 energy). `maneuverability` and `signature`
+ * are signed integers (negative values are valid per the class table).
+ *
+ */
+export type Ship = {
+    /**
+     * Opaque ship identifier (cuid2)
+     */
+    readonly id: string;
+    /**
+     * Identifier of the owning user (cuid2)
+     */
+    readonly ownerId: string;
+    /**
+     * Ship name (1–80 characters)
+     */
+    name: string;
+    class: ShipClass;
+    /**
+     * Model / shipyard name (e.g. "Helebian Class III freighter")
+     */
+    model: string | null;
+    /**
+     * Registry number / transponder code (e.g. "KUA-7741-M")
+     */
+    registry: string | null;
+    /**
+     * Structural integrity (Прочность in ST3001 ГЛАВА 7)
+     */
+    hull: {
+        /**
+         * Current hull points
+         */
+        current: number;
+        /**
+         * Maximum hull points (base per class + Прочный корпус upgrades)
+         */
+        max: number;
+    };
+    /**
+     * Reactor energy (Энергия in ST3001 ГЛАВА 7)
+     */
+    energy: {
+        /**
+         * Energy points currently available for allocation
+         */
+        current: number;
+        /**
+         * Maximum energy points (base per class + Мощный реактор upgrades)
+         */
+        max: number;
+    };
+    /**
+     * Armor rating — number of dice rolled for the armor check (Броня)
+     */
+    armor: number;
+    /**
+     * Maneuverability modifier (Манёвренность). Signed integer — negative
+     * for large classes (Class IV is −1, Class V is −2). Affects pilot
+     * skill checks in ship combat per ST3001 ГЛАВА 7.
+     *
+     */
+    maneuverability: number;
+    /**
+     * Signature modifier (Заметность). Signed integer. Negative values
+     * mean the ship is harder to detect; positive values mean it is more
+     * visible. Applied to opponent sensor checks per ГЛАВА 7.
+     *
+     */
+    signature: number;
+    /**
+     * Speed in astronomical units per day (Скорость per ГЛАВА 7 Table 7.5)
+     */
+    speed: number;
+    /**
+     * Total cargo capacity in tonnes across all hold modules
+     * (Вместимость per ГЛАВА 7 Table 7.6: Class III = 50 tonnes).
+     *
+     */
+    cargoCapacity: number;
+    /**
+     * Installed modules including the three mandatory ones (BRIDGE,
+     * REACTOR, DRIVE). Optional modules consume the class module-slot
+     * budget.
+     *
+     */
+    modules: Array<ShipModule>;
+    /**
+     * Crew assignment roster
+     */
+    crew: Array<CrewSlot>;
+    /**
+     * List of active ship problems (free-text entries, e.g. damage
+     * effects or wear-and-tear notes per ГЛАВА 7 wear table).
+     *
+     */
+    problems: Array<string>;
+    /**
+     * Free-form ship history / background text (Markdown)
+     */
+    history: string | null;
+    /**
+     * GM / player operational notes (Markdown)
+     */
+    notes: string | null;
+    readonly createdAt: string;
+    readonly updatedAt: string;
+};
+
+/**
+ * Payload for `POST /api/v1/ships`. `name` and `class` are required.
+ * Server populates base stats from the class table (ST3001 ГЛАВА 7
+ * Table 7.5) when not explicitly provided. The three mandatory modules
+ * (BRIDGE, REACTOR, DRIVE) are created automatically.
+ *
+ */
+export type ShipCreate = {
+    name: string;
+    class: ShipClass;
+    model?: string | null;
+    registry?: string | null;
+    /**
+     * Override base hull stats from class table
+     */
+    hull?: {
+        current?: number;
+        max?: number;
+    };
+    /**
+     * Override base energy from class table
+     */
+    energy?: {
+        current?: number;
+        max?: number;
+    };
+    armor?: number;
+    maneuverability?: number;
+    signature?: number;
+    speed?: number;
+    notes?: string | null;
+    history?: string | null;
+};
+
+/**
+ * PATCH payload for `PATCH /api/v1/ships/{id}`. All fields optional.
+ * Read-only fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are
+ * rejected with 400 if present.
+ *
+ */
+export type ShipUpdate = {
+    name?: string;
+    model?: string | null;
+    registry?: string | null;
+    hull?: {
+        current?: number;
+        max?: number;
+    };
+    energy?: {
+        current?: number;
+        max?: number;
+    };
+    armor?: number;
+    maneuverability?: number;
+    signature?: number;
+    speed?: number;
+    /**
+     * Replaces the entire problems list when provided
+     */
+    problems?: Array<string>;
+    history?: string | null;
+    notes?: string | null;
+};
+
+/**
+ * Cursor-paginated list of ships
+ */
+export type ShipList = {
+    items: Array<Ship>;
+    /**
+     * Opaque cursor for the next page; null when this is the last page
+     */
+    nextCursor: string | null;
+};
+
 export type HealthStatus = {
     status: DependencyStatus;
     /**
@@ -777,6 +1223,50 @@ export type RealtimeToken = {
     expiresAt: string | null;
 };
 
+export type _02 = {
+    slot: 'WEAPON';
+    name: string;
+    energyUse: number;
+    weaponBonus: number;
+    weaponRange: ShipWeaponRange;
+    weaponDamage: number;
+    weaponCritThreshold: number;
+    notes?: string | null;
+};
+
+export type _12 = {
+    slot: 'TORPEDO';
+    name: string;
+    energyUse: number;
+    torpedoCount?: number;
+    mineCount?: number;
+    notes?: string | null;
+};
+
+export type _22 = {
+    slot: 'HOLD';
+    name: string;
+    energyUse: number;
+    cargoTons?: number;
+    concealed?: boolean;
+    notes?: string | null;
+};
+
+export type _32 = {
+    slot: 'SENSOR';
+    name: string;
+    energyUse: number;
+    detectionBonus?: number;
+    notes?: string | null;
+};
+
+export type _42 = {
+    slot: 'BRIDGE' | 'REACTOR' | 'DRIVE' | 'COMMS' | 'HANGAR' | 'QUARTERS' | 'MEDICAL' | 'WORKSHOP' | 'CHAPEL' | 'ESCAPE-PODS' | 'CRYO' | 'DOCKING' | 'MINING' | 'REPAIR' | 'CONCEALED-HOLD' | 'PROXY-DECK' | 'OTHER';
+    name: string;
+    energyUse: number;
+    notes?: string | null;
+};
+
 /**
  * Full character DTO as returned by the v1 API. Server-derived fields
  * (`hp.max`, `mp.max`, `encumbrance.max`) are computed by the
@@ -836,6 +1326,217 @@ export type CharacterListWritable = {
 };
 
 /**
+ * Fields common to every ship module variant
+ */
+export type ShipModuleBaseWritable = {
+    slot: ShipModuleSlot;
+    /**
+     * Module name (e.g. "Graviton Projector", "Smuggler hold")
+     */
+    name: string;
+    /**
+     * Energy points consumed by this module when active
+     */
+    energyUse: number;
+    /**
+     * Free-text notes; used for damage state, special conditions, etc.
+     */
+    notes?: string | null;
+};
+
+export type ShipModuleWeaponWritable = ShipModuleBaseWritable & {
+    slot?: 'WEAPON';
+    /**
+     * Modifier dice added to the attack pool (Мод. column in Table 7.9)
+     */
+    weaponBonus: number;
+    weaponRange: ShipWeaponRange;
+    /**
+     * Structural damage dealt on a hit
+     */
+    weaponDamage: number;
+    /**
+     * Number of successes required to trigger a critical effect
+     */
+    weaponCritThreshold: number;
+};
+
+export type ShipModuleTorpedoWritable = ShipModuleBaseWritable & {
+    slot?: 'TORPEDO';
+    /**
+     * Number of torpedoes currently loaded
+     */
+    torpedoCount?: number;
+    /**
+     * Number of mines currently loaded
+     */
+    mineCount?: number;
+};
+
+export type ShipModuleHoldWritable = ShipModuleBaseWritable & {
+    slot?: 'HOLD';
+    /**
+     * Cargo capacity in tonnes (class-dependent per Table 7.6)
+     */
+    cargoTons?: number;
+    /**
+     * True for a потайной грузовой отсек (concealed hold)
+     */
+    concealed?: boolean;
+};
+
+export type ShipModuleSensorWritable = ShipModuleBaseWritable & {
+    slot?: 'SENSOR';
+    /**
+     * Modifier added to sensor / dataDjinn checks
+     */
+    detectionBonus?: number;
+};
+
+export type ShipModuleOtherWritable = ShipModuleBaseWritable & {
+    slot?: ShipModuleSlot;
+};
+
+/**
+ * A discriminated union of all ship module variants. The `slot` field
+ * determines which variant applies. Generated clients produce a
+ * correctly-typed sum type from this schema.
+ *
+ * Mandatory modules (BRIDGE, REACTOR, DRIVE) are always present on a
+ * ship and are not individually manageable via the module CRUD endpoints.
+ * They appear in the `modules` array for completeness and energy tracking.
+ *
+ */
+export type ShipModuleWritable = ({
+    slot: 'WEAPON';
+} & ShipModuleWeaponWritable) | ({
+    slot: 'TORPEDO';
+} & ShipModuleTorpedoWritable) | ({
+    slot: 'HOLD';
+} & ShipModuleHoldWritable) | ({
+    slot: 'SENSOR';
+} & ShipModuleSensorWritable) | ({
+    slot: 'BRIDGE' | 'REACTOR' | 'DRIVE' | 'COMMS' | 'HANGAR' | 'QUARTERS' | 'MEDICAL' | 'WORKSHOP' | 'CHAPEL' | 'ESCAPE-PODS' | 'CRYO' | 'DOCKING' | 'MINING' | 'REPAIR' | 'CONCEALED-HOLD' | 'PROXY-DECK' | 'OTHER';
+} & ShipModuleOtherWritable);
+
+/**
+ * Full Ship DTO as returned by the v1 API. Ship stats correspond to
+ * ST3001 ГЛАВА 7 Table 7.5 base stats, modified by the installed
+ * modules and upgrades.
+ *
+ * `hull.max` and `energy.max` are tracked as explicit editable values
+ * (not derived) because they can be altered by upgrades (Прочный корпус
+ * +1 hull, Мощный реактор +1 energy). `maneuverability` and `signature`
+ * are signed integers (negative values are valid per the class table).
+ *
+ */
+export type ShipWritable = {
+    /**
+     * Ship name (1–80 characters)
+     */
+    name: string;
+    class: ShipClass;
+    /**
+     * Model / shipyard name (e.g. "Helebian Class III freighter")
+     */
+    model: string | null;
+    /**
+     * Registry number / transponder code (e.g. "KUA-7741-M")
+     */
+    registry: string | null;
+    /**
+     * Structural integrity (Прочность in ST3001 ГЛАВА 7)
+     */
+    hull: {
+        /**
+         * Current hull points
+         */
+        current: number;
+        /**
+         * Maximum hull points (base per class + Прочный корпус upgrades)
+         */
+        max: number;
+    };
+    /**
+     * Reactor energy (Энергия in ST3001 ГЛАВА 7)
+     */
+    energy: {
+        /**
+         * Energy points currently available for allocation
+         */
+        current: number;
+        /**
+         * Maximum energy points (base per class + Мощный реактор upgrades)
+         */
+        max: number;
+    };
+    /**
+     * Armor rating — number of dice rolled for the armor check (Броня)
+     */
+    armor: number;
+    /**
+     * Maneuverability modifier (Манёвренность). Signed integer — negative
+     * for large classes (Class IV is −1, Class V is −2). Affects pilot
+     * skill checks in ship combat per ST3001 ГЛАВА 7.
+     *
+     */
+    maneuverability: number;
+    /**
+     * Signature modifier (Заметность). Signed integer. Negative values
+     * mean the ship is harder to detect; positive values mean it is more
+     * visible. Applied to opponent sensor checks per ГЛАВА 7.
+     *
+     */
+    signature: number;
+    /**
+     * Speed in astronomical units per day (Скорость per ГЛАВА 7 Table 7.5)
+     */
+    speed: number;
+    /**
+     * Total cargo capacity in tonnes across all hold modules
+     * (Вместимость per ГЛАВА 7 Table 7.6: Class III = 50 tonnes).
+     *
+     */
+    cargoCapacity: number;
+    /**
+     * Installed modules including the three mandatory ones (BRIDGE,
+     * REACTOR, DRIVE). Optional modules consume the class module-slot
+     * budget.
+     *
+     */
+    modules: Array<ShipModuleWritable>;
+    /**
+     * Crew assignment roster
+     */
+    crew: Array<CrewSlot>;
+    /**
+     * List of active ship problems (free-text entries, e.g. damage
+     * effects or wear-and-tear notes per ГЛАВА 7 wear table).
+     *
+     */
+    problems: Array<string>;
+    /**
+     * Free-form ship history / background text (Markdown)
+     */
+    history: string | null;
+    /**
+     * GM / player operational notes (Markdown)
+     */
+    notes: string | null;
+};
+
+/**
+ * Cursor-paginated list of ships
+ */
+export type ShipListWritable = {
+    items: Array<ShipWritable>;
+    /**
+     * Opaque cursor for the next page; null when this is the last page
+     */
+    nextCursor: string | null;
+};
+
+/**
  * Character identifier (cuid2)
  */
 export type CharacterId = string;
@@ -849,6 +1550,16 @@ export type ItemId = string;
  * Talent identifier (cuid2)
  */
 export type TalentId = string;
+
+/**
+ * Ship identifier (cuid2)
+ */
+export type ShipId = string;
+
+/**
+ * Ship module identifier (cuid2)
+ */
+export type ShipModuleId = string;
 
 export type ListCharactersData = {
     body?: never;
@@ -1203,6 +1914,490 @@ export type AddCharacterTalentResponses = {
 };
 
 export type AddCharacterTalentResponse = AddCharacterTalentResponses[keyof AddCharacterTalentResponses];
+
+export type ListShipsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Opaque pagination cursor returned by the previous page
+         */
+        cursor?: string;
+        /**
+         * Number of ships to return (1–100, default 20)
+         */
+        limit?: number;
+    };
+    url: '/api/v1/ships';
+};
+
+export type ListShipsErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+};
+
+export type ListShipsError = ListShipsErrors[keyof ListShipsErrors];
+
+export type ListShipsResponses = {
+    /**
+     * Paginated ship list
+     */
+    200: ShipList;
+};
+
+export type ListShipsResponse = ListShipsResponses[keyof ListShipsResponses];
+
+export type CreateShipData = {
+    body: ShipCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/ships';
+};
+
+export type CreateShipErrors = {
+    /**
+     * Validation error. Possible codes:
+     * - `SHIP_NAME_EMPTY` — name is an empty string.
+     * - `SHIP_NAME_TOO_LONG` — name exceeds 80 characters.
+     *
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+};
+
+export type CreateShipError = CreateShipErrors[keyof CreateShipErrors];
+
+export type CreateShipResponses = {
+    /**
+     * Ship created
+     */
+    201: Ship;
+};
+
+export type CreateShipResponse = CreateShipResponses[keyof CreateShipResponses];
+
+export type DeleteShipData = {
+    body?: never;
+    path: {
+        /**
+         * Ship identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/ships/{id}';
+};
+
+export type DeleteShipErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this ship
+     */
+    403: Problem;
+    /**
+     * Ship not found
+     */
+    404: Problem;
+};
+
+export type DeleteShipError = DeleteShipErrors[keyof DeleteShipErrors];
+
+export type DeleteShipResponses = {
+    /**
+     * Ship deleted
+     */
+    204: void;
+};
+
+export type DeleteShipResponse = DeleteShipResponses[keyof DeleteShipResponses];
+
+export type GetShipData = {
+    body?: never;
+    path: {
+        /**
+         * Ship identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/ships/{id}';
+};
+
+export type GetShipErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller is authenticated but does not own this ship
+     */
+    403: Problem;
+    /**
+     * Ship not found
+     */
+    404: Problem;
+};
+
+export type GetShipError = GetShipErrors[keyof GetShipErrors];
+
+export type GetShipResponses = {
+    /**
+     * Ship found
+     */
+    200: Ship;
+};
+
+export type GetShipResponse = GetShipResponses[keyof GetShipResponses];
+
+export type UpdateShipData = {
+    body: ShipUpdate;
+    path: {
+        /**
+         * Ship identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/ships/{id}';
+};
+
+export type UpdateShipErrors = {
+    /**
+     * Validation error. Possible codes:
+     * - `SHIP_NAME_EMPTY`
+     * - `SHIP_NAME_TOO_LONG`
+     *
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this ship
+     */
+    403: Problem;
+    /**
+     * Ship not found
+     */
+    404: Problem;
+};
+
+export type UpdateShipError = UpdateShipErrors[keyof UpdateShipErrors];
+
+export type UpdateShipResponses = {
+    /**
+     * Updated ship
+     */
+    200: Ship;
+};
+
+export type UpdateShipResponse = UpdateShipResponses[keyof UpdateShipResponses];
+
+export type DuplicateShipData = {
+    body?: never;
+    path: {
+        /**
+         * Ship identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/ships/{id}/duplicate';
+};
+
+export type DuplicateShipErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this ship
+     */
+    403: Problem;
+    /**
+     * Ship not found
+     */
+    404: Problem;
+};
+
+export type DuplicateShipError = DuplicateShipErrors[keyof DuplicateShipErrors];
+
+export type DuplicateShipResponses = {
+    /**
+     * Duplicated ship
+     */
+    201: Ship;
+};
+
+export type DuplicateShipResponse = DuplicateShipResponses[keyof DuplicateShipResponses];
+
+export type ExportShipData = {
+    body?: never;
+    path: {
+        /**
+         * Ship identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/ships/{id}/export';
+};
+
+export type ExportShipErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this ship
+     */
+    403: Problem;
+    /**
+     * Ship not found
+     */
+    404: Problem;
+};
+
+export type ExportShipError = ExportShipErrors[keyof ExportShipErrors];
+
+export type ExportShipResponses = {
+    /**
+     * Ship JSON export
+     */
+    200: Ship;
+};
+
+export type ExportShipResponse = ExportShipResponses[keyof ExportShipResponses];
+
+export type AddShipModuleData = {
+    body: ShipModuleCreate;
+    path: {
+        /**
+         * Ship identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/ships/{id}/modules';
+};
+
+export type AddShipModuleErrors = {
+    /**
+     * Validation error. Possible codes:
+     * - `MODULE_SLOT_INVALID` — slot value not recognised.
+     * - `MODULE_TYPE_MISMATCH` — payload fields do not match the declared slot.
+     *
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this ship
+     */
+    403: Problem;
+    /**
+     * Ship not found
+     */
+    404: Problem;
+};
+
+export type AddShipModuleError = AddShipModuleErrors[keyof AddShipModuleErrors];
+
+export type AddShipModuleResponses = {
+    /**
+     * Module installed
+     */
+    201: ShipModule;
+};
+
+export type AddShipModuleResponse = AddShipModuleResponses[keyof AddShipModuleResponses];
+
+export type AssignCrewData = {
+    body: {
+        position: CrewPosition;
+        /**
+         * ID of the character to assign (must be owned by caller)
+         */
+        characterId: string;
+    };
+    path: {
+        /**
+         * Ship identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/ships/{id}/crew';
+};
+
+export type AssignCrewErrors = {
+    /**
+     * Validation error. Possible codes:
+     * - `CREW_POSITION_TAKEN` — that position is already occupied.
+     * - `CHARACTER_NOT_FOUND` — characterId does not exist.
+     * - `CHARACTER_NOT_OWNED` — character is not owned by the caller.
+     *
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this ship
+     */
+    403: Problem;
+    /**
+     * Ship not found
+     */
+    404: Problem;
+};
+
+export type AssignCrewError = AssignCrewErrors[keyof AssignCrewErrors];
+
+export type AssignCrewResponses = {
+    /**
+     * Crew member assigned
+     */
+    201: CrewSlot;
+};
+
+export type AssignCrewResponse = AssignCrewResponses[keyof AssignCrewResponses];
+
+export type UnassignCrewData = {
+    body?: never;
+    path: {
+        /**
+         * Ship identifier (cuid2)
+         */
+        id: string;
+        /**
+         * Character identifier to remove from the crew
+         */
+        characterId: string;
+    };
+    query?: never;
+    url: '/api/v1/ships/{id}/crew/{characterId}';
+};
+
+export type UnassignCrewErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this ship
+     */
+    403: Problem;
+    /**
+     * Ship or crew assignment not found
+     */
+    404: Problem;
+};
+
+export type UnassignCrewError = UnassignCrewErrors[keyof UnassignCrewErrors];
+
+export type UnassignCrewResponses = {
+    /**
+     * Crew member unassigned
+     */
+    204: void;
+};
+
+export type UnassignCrewResponse = UnassignCrewResponses[keyof UnassignCrewResponses];
+
+export type DeleteShipModuleData = {
+    body?: never;
+    path: {
+        /**
+         * Ship module identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/ship-modules/{id}';
+};
+
+export type DeleteShipModuleErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the parent ship
+     */
+    403: Problem;
+    /**
+     * Module not found
+     */
+    404: Problem;
+};
+
+export type DeleteShipModuleError = DeleteShipModuleErrors[keyof DeleteShipModuleErrors];
+
+export type DeleteShipModuleResponses = {
+    /**
+     * Module removed
+     */
+    204: void;
+};
+
+export type DeleteShipModuleResponse = DeleteShipModuleResponses[keyof DeleteShipModuleResponses];
+
+export type UpdateShipModuleData = {
+    body: ShipModuleUpdate;
+    path: {
+        /**
+         * Ship module identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/ship-modules/{id}';
+};
+
+export type UpdateShipModuleErrors = {
+    /**
+     * Validation error. Possible code:
+     * - `MODULE_TYPE_MISMATCH` — slot discriminator changed.
+     *
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the parent ship
+     */
+    403: Problem;
+    /**
+     * Module not found
+     */
+    404: Problem;
+};
+
+export type UpdateShipModuleError = UpdateShipModuleErrors[keyof UpdateShipModuleErrors];
+
+export type UpdateShipModuleResponses = {
+    /**
+     * Updated module
+     */
+    200: ShipModule;
+};
+
+export type UpdateShipModuleResponse = UpdateShipModuleResponses[keyof UpdateShipModuleResponses];
 
 export type GetHealthData = {
     body?: never;

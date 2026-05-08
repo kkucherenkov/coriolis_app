@@ -165,6 +165,208 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/ships': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List the authenticated user's ships
+     * @description Returns a cursor-paginated list of ships owned by the authenticated
+     *     user. Pass `cursor` from a previous response's `nextCursor` to retrieve
+     *     the following page. Results are ordered newest-first by `createdAt`.
+     */
+    get: operations['listShips'];
+    put?: never;
+    /**
+     * Create a new ship
+     * @description Creates a ship owned by the authenticated user. `name` and `class` are
+     *     required; all other fields default to class-appropriate values per
+     *     ST3001 ГЛАВА 7 Table 7.5. Server assigns `id`, `ownerId`, `createdAt`,
+     *     `updatedAt`.
+     */
+    post: operations['createShip'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/ships/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get a ship by ID
+     * @description Returns the full Ship DTO. Returns 404 if the ship does not exist or
+     *     is not owned by the authenticated user. Owner-scoped: a ship owned by
+     *     another user returns 403.
+     */
+    get: operations['getShip'];
+    put?: never;
+    post?: never;
+    /**
+     * Delete a ship
+     * @description Permanently deletes a ship and all its modules, crew assignments, and
+     *     share links. This action is irreversible.
+     */
+    delete: operations['deleteShip'];
+    options?: never;
+    head?: never;
+    /**
+     * Partially update a ship
+     * @description Applies PATCH semantics — omitted fields are left unchanged. Read-only
+     *     fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are rejected with
+     *     400 if included.
+     */
+    patch: operations['updateShip'];
+    trace?: never;
+  };
+  '/api/v1/ships/{id}/duplicate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Duplicate a ship
+     * @description Creates a deep copy of the ship (including modules and problems) and
+     *     assigns it to the authenticated user. The copy receives a new `id` and
+     *     the name has " (copy)" appended. Crew assignments and share links are
+     *     not duplicated. The source ship must be owned by the caller.
+     */
+    post: operations['duplicateShip'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/ships/{id}/export': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Export a ship as JSON
+     * @description Returns the full canonical Ship DTO as a downloadable JSON payload.
+     *     The response carries `Content-Disposition: attachment` so browsers
+     *     prompt a download.
+     */
+    get: operations['exportShip'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/ships/{id}/modules': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Add a module to a ship
+     * @description Installs a new module on the ship. The `slot` discriminator determines
+     *     which type-specific fields are accepted. Validates that the slot type
+     *     is appropriate for the requested module. The ship must be owned by the
+     *     caller.
+     */
+    post: operations['addShipModule'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/ships/{id}/crew': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Assign a character to a crew position
+     * @description Assigns one of the caller's own characters to a crew position on the
+     *     ship. The ship must be owned by the caller. The character must also
+     *     be owned by the caller (returns `CHARACTER_NOT_OWNED` otherwise).
+     *     Returns `CREW_POSITION_TAKEN` if that position is already filled.
+     */
+    post: operations['assignCrew'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/ships/{id}/crew/{characterId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Remove a character from the crew
+     * @description Removes the crew assignment for the given character ID on the ship.
+     *     Both the ship and the character must be owned by the caller.
+     */
+    delete: operations['unassignCrew'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/ship-modules/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Remove a module from a ship
+     * @description Permanently removes an installed module. Authorization: caller must
+     *     own the parent ship.
+     */
+    delete: operations['deleteShipModule'];
+    options?: never;
+    head?: never;
+    /**
+     * Update a ship module
+     * @description Applies PATCH semantics to a ship module. The `slot` discriminator may
+     *     not be changed after installation — attempting to do so returns 400
+     *     with code `MODULE_TYPE_MISMATCH`. Authorization: caller must own the
+     *     parent ship.
+     */
+    patch: operations['updateShipModule'];
+    trace?: never;
+  };
   '/api/v1/health': {
     parameters: {
       query?: never;
@@ -892,6 +1094,462 @@ export interface components {
       /** @description Opaque cursor for the next page; null when this is the last page */
       nextCursor: string | null;
     };
+    /**
+     * @description Ship hull class per ST3001 ГЛАВА 7 Table 7.4 (типы кораблей). The
+     *     class determines the base stat block (energy, hull, maneuverability,
+     *     signature, armor, speed, module slots) from Table 7.5. Kebab-case
+     *     values map to the Russian originals in the rulebook.
+     *
+     *     Class I examples: fighter, shuttle.
+     *     Class II examples: torpedo-boat.
+     *     Class III examples: light-freighter, light-passenger, courier-yacht,
+     *       clipper, patrol-boat, gunboat, assault-ship, blockade-runner, pleasure-yacht.
+     *     Class IV examples: flying-circus, prospector, rescue-ship, passenger-liner.
+     *     Class V examples: heavy-cruiser, passenger-liner (large).
+     * @enum {string}
+     */
+    ShipClass:
+      | 'fighter'
+      | 'shuttle'
+      | 'torpedo-boat'
+      | 'light-freighter'
+      | 'light-passenger'
+      | 'courier-yacht'
+      | 'clipper'
+      | 'patrol-boat'
+      | 'gunboat'
+      | 'assault-ship'
+      | 'blockade-runner'
+      | 'pleasure-yacht'
+      | 'flying-circus'
+      | 'prospector'
+      | 'rescue-ship'
+      | 'passenger-liner'
+      | 'heavy-freighter'
+      | 'cruiser'
+      | 'destroyer'
+      | 'heavy-cruiser';
+    /**
+     * @description Ship module slot type per ST3001 ГЛАВА 7 mandatory and optional module
+     *     catalogue. `BRIDGE`, `REACTOR`, `DRIVE` are mandatory on every ship.
+     *     All others are optional and consume module slots. The existing
+     *     `ItemSlotType` enum covers character-inventory ship modules; this enum
+     *     covers actual installed ship modules and provides richer coverage of
+     *     the full ГЛАВА 7 catalogue.
+     * @enum {string}
+     */
+    ShipModuleSlot:
+      | 'BRIDGE'
+      | 'REACTOR'
+      | 'DRIVE'
+      | 'HOLD'
+      | 'WEAPON'
+      | 'TORPEDO'
+      | 'SENSOR'
+      | 'COMMS'
+      | 'HANGAR'
+      | 'QUARTERS'
+      | 'MEDICAL'
+      | 'WORKSHOP'
+      | 'CHAPEL'
+      | 'ESCAPE-PODS'
+      | 'CRYO'
+      | 'DOCKING'
+      | 'MINING'
+      | 'REPAIR'
+      | 'CONCEALED-HOLD'
+      | 'PROXY-DECK'
+      | 'OTHER';
+    /**
+     * @description Ship-combat range bands per ST3001 ГЛАВА 7 Table 7.9. Distinct from
+     *     the personal-scale `ItemRangeEnum`.
+     *     - `zero` — point-blank / boarding range.
+     *     - `close` — within a few hundred metres.
+     *     - `medium` — standard engagement distance.
+     *     - `long` — extended engagement.
+     *     - `extreme` — maximum sensor range.
+     * @enum {string}
+     */
+    ShipWeaponRange: 'zero' | 'close' | 'medium' | 'long' | 'extreme';
+    /**
+     * @description Crew positions per ST3001 ГЛАВА 7 (crew roles). `sensorOp` is the
+     *     штурман-оператор (navigator/sensor operator) in the rulebook, also
+     *     responsible for combat-meme and info-impulse attacks. All positions
+     *     except `captain` may be filled by automation (усовершенствование
+     *     «Автоматика»).
+     * @enum {string}
+     */
+    CrewPosition: 'captain' | 'pilot' | 'sensorOp' | 'gunner' | 'engineer' | 'serviceCrew';
+    /**
+     * @description A crew position on a ship. Positions without an assigned character are
+     *     vacant (open berth). Multiple characters may not share one position.
+     */
+    CrewSlot: {
+      position: components['schemas']['CrewPosition'];
+      /**
+       * @description ID of the assigned Character. Null when the berth is vacant.
+       *     The character must be owned by the same user as the ship.
+       */
+      assignedCharacterId?: string | null;
+    };
+    /** @description Fields common to every ship module variant */
+    ShipModuleBase: {
+      /** @description Opaque module identifier (cuid2) */
+      readonly id: string;
+      slot: components['schemas']['ShipModuleSlot'];
+      /** @description Module name (e.g. "Graviton Projector", "Smuggler hold") */
+      name: string;
+      /** @description Energy points consumed by this module when active */
+      energyUse: number;
+      /** @description Free-text notes; used for damage state, special conditions, etc. */
+      notes?: string | null;
+    };
+    ShipModuleWeapon: components['schemas']['ShipModuleBase'] & {
+      /** @enum {string} */
+      slot?: 'WEAPON';
+      /** @description Modifier dice added to the attack pool (Мод. column in Table 7.9) */
+      weaponBonus: number;
+      weaponRange: components['schemas']['ShipWeaponRange'];
+      /** @description Structural damage dealt on a hit */
+      weaponDamage: number;
+      /** @description Number of successes required to trigger a critical effect */
+      weaponCritThreshold: number;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot: 'WEAPON';
+    };
+    ShipModuleTorpedo: components['schemas']['ShipModuleBase'] & {
+      /** @enum {string} */
+      slot?: 'TORPEDO';
+      /** @description Number of torpedoes currently loaded */
+      torpedoCount?: number;
+      /** @description Number of mines currently loaded */
+      mineCount?: number;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot: 'TORPEDO';
+    };
+    ShipModuleHold: components['schemas']['ShipModuleBase'] & {
+      /** @enum {string} */
+      slot?: 'HOLD';
+      /** @description Cargo capacity in tonnes (class-dependent per Table 7.6) */
+      cargoTons?: number;
+      /**
+       * @description True for a потайной грузовой отсек (concealed hold)
+       * @default false
+       */
+      concealed: boolean;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot: 'HOLD';
+    };
+    ShipModuleSensor: components['schemas']['ShipModuleBase'] & {
+      /** @enum {string} */
+      slot?: 'SENSOR';
+      /**
+       * @description Modifier added to sensor / dataDjinn checks
+       * @default 1
+       */
+      detectionBonus: number;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot: 'SENSOR';
+    };
+    ShipModuleOther: components['schemas']['ShipModuleBase'] & {
+      slot?: components['schemas']['ShipModuleSlot'];
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot:
+        | 'BRIDGE'
+        | 'REACTOR'
+        | 'DRIVE'
+        | 'COMMS'
+        | 'HANGAR'
+        | 'QUARTERS'
+        | 'MEDICAL'
+        | 'WORKSHOP'
+        | 'CHAPEL'
+        | 'ESCAPE-PODS'
+        | 'CRYO'
+        | 'DOCKING'
+        | 'MINING'
+        | 'REPAIR'
+        | 'CONCEALED-HOLD'
+        | 'PROXY-DECK'
+        | 'OTHER';
+    };
+    /**
+     * @description A discriminated union of all ship module variants. The `slot` field
+     *     determines which variant applies. Generated clients produce a
+     *     correctly-typed sum type from this schema.
+     *
+     *     Mandatory modules (BRIDGE, REACTOR, DRIVE) are always present on a
+     *     ship and are not individually manageable via the module CRUD endpoints.
+     *     They appear in the `modules` array for completeness and energy tracking.
+     */
+    ShipModule:
+      | components['schemas']['ShipModuleWeapon']
+      | components['schemas']['ShipModuleTorpedo']
+      | components['schemas']['ShipModuleHold']
+      | components['schemas']['ShipModuleSensor']
+      | components['schemas']['ShipModuleOther'];
+    /**
+     * @description Payload for `POST /api/v1/ships/{id}/modules`. Same discriminated
+     *     union as `ShipModule` but without `id` (server-assigned). The `slot`
+     *     discriminator must be present.
+     *
+     *     Note: BRIDGE, REACTOR, and DRIVE modules are created automatically
+     *     with the ship and cannot be added via this endpoint.
+     */
+    ShipModuleCreate:
+      | {
+          /** @enum {string} */
+          slot: 'WEAPON';
+          name: string;
+          energyUse: number;
+          weaponBonus: number;
+          weaponRange: components['schemas']['ShipWeaponRange'];
+          weaponDamage: number;
+          weaponCritThreshold: number;
+          notes?: string | null;
+        }
+      | {
+          /** @enum {string} */
+          slot: 'TORPEDO';
+          name: string;
+          energyUse: number;
+          /** @default 0 */
+          torpedoCount: number;
+          /** @default 0 */
+          mineCount: number;
+          notes?: string | null;
+        }
+      | {
+          /** @enum {string} */
+          slot: 'HOLD';
+          name: string;
+          energyUse: number;
+          /** @default 0 */
+          cargoTons: number;
+          /** @default false */
+          concealed: boolean;
+          notes?: string | null;
+        }
+      | {
+          /** @enum {string} */
+          slot: 'SENSOR';
+          name: string;
+          energyUse: number;
+          /** @default 1 */
+          detectionBonus: number;
+          notes?: string | null;
+        }
+      | {
+          /** @enum {string} */
+          slot:
+            | 'BRIDGE'
+            | 'REACTOR'
+            | 'DRIVE'
+            | 'COMMS'
+            | 'HANGAR'
+            | 'QUARTERS'
+            | 'MEDICAL'
+            | 'WORKSHOP'
+            | 'CHAPEL'
+            | 'ESCAPE-PODS'
+            | 'CRYO'
+            | 'DOCKING'
+            | 'MINING'
+            | 'REPAIR'
+            | 'CONCEALED-HOLD'
+            | 'PROXY-DECK'
+            | 'OTHER';
+          name: string;
+          energyUse: number;
+          notes?: string | null;
+        };
+    /**
+     * @description PATCH payload for `PATCH /api/v1/ship-modules/{id}`. The `slot`
+     *     discriminator may not be changed after installation. All fields
+     *     optional.
+     */
+    ShipModuleUpdate: {
+      name?: string;
+      energyUse?: number;
+      notes?: string | null;
+      /** @description WEAPON only */
+      weaponBonus?: number;
+      /** @description WEAPON only */
+      weaponRange?: components['schemas']['ShipWeaponRange'];
+      /** @description WEAPON only */
+      weaponDamage?: number;
+      /** @description WEAPON only */
+      weaponCritThreshold?: number;
+      /** @description TORPEDO only */
+      torpedoCount?: number;
+      /** @description TORPEDO only */
+      mineCount?: number;
+      /** @description HOLD only */
+      cargoTons?: number;
+      /** @description HOLD only */
+      concealed?: boolean;
+      /** @description SENSOR only */
+      detectionBonus?: number;
+    };
+    /**
+     * @description Full Ship DTO as returned by the v1 API. Ship stats correspond to
+     *     ST3001 ГЛАВА 7 Table 7.5 base stats, modified by the installed
+     *     modules and upgrades.
+     *
+     *     `hull.max` and `energy.max` are tracked as explicit editable values
+     *     (not derived) because they can be altered by upgrades (Прочный корпус
+     *     +1 hull, Мощный реактор +1 energy). `maneuverability` and `signature`
+     *     are signed integers (negative values are valid per the class table).
+     */
+    Ship: {
+      /** @description Opaque ship identifier (cuid2) */
+      readonly id: string;
+      /** @description Identifier of the owning user (cuid2) */
+      readonly ownerId: string;
+      /** @description Ship name (1–80 characters) */
+      name: string;
+      class: components['schemas']['ShipClass'];
+      /** @description Model / shipyard name (e.g. "Helebian Class III freighter") */
+      model: string | null;
+      /** @description Registry number / transponder code (e.g. "KUA-7741-M") */
+      registry: string | null;
+      /** @description Structural integrity (Прочность in ST3001 ГЛАВА 7) */
+      hull: {
+        /** @description Current hull points */
+        current: number;
+        /** @description Maximum hull points (base per class + Прочный корпус upgrades) */
+        max: number;
+      };
+      /** @description Reactor energy (Энергия in ST3001 ГЛАВА 7) */
+      energy: {
+        /** @description Energy points currently available for allocation */
+        current: number;
+        /** @description Maximum energy points (base per class + Мощный реактор upgrades) */
+        max: number;
+      };
+      /** @description Armor rating — number of dice rolled for the armor check (Броня) */
+      armor: number;
+      /**
+       * @description Maneuverability modifier (Манёвренность). Signed integer — negative
+       *     for large classes (Class IV is −1, Class V is −2). Affects pilot
+       *     skill checks in ship combat per ST3001 ГЛАВА 7.
+       */
+      maneuverability: number;
+      /**
+       * @description Signature modifier (Заметность). Signed integer. Negative values
+       *     mean the ship is harder to detect; positive values mean it is more
+       *     visible. Applied to opponent sensor checks per ГЛАВА 7.
+       */
+      signature: number;
+      /** @description Speed in astronomical units per day (Скорость per ГЛАВА 7 Table 7.5) */
+      speed: number;
+      /**
+       * @description Total cargo capacity in tonnes across all hold modules
+       *     (Вместимость per ГЛАВА 7 Table 7.6: Class III = 50 tonnes).
+       */
+      cargoCapacity: number;
+      /**
+       * @description Installed modules including the three mandatory ones (BRIDGE,
+       *     REACTOR, DRIVE). Optional modules consume the class module-slot
+       *     budget.
+       */
+      modules: components['schemas']['ShipModule'][];
+      /** @description Crew assignment roster */
+      crew: components['schemas']['CrewSlot'][];
+      /**
+       * @description List of active ship problems (free-text entries, e.g. damage
+       *     effects or wear-and-tear notes per ГЛАВА 7 wear table).
+       */
+      problems: string[];
+      /** @description Free-form ship history / background text (Markdown) */
+      history: string | null;
+      /** @description GM / player operational notes (Markdown) */
+      notes: string | null;
+      /** Format: date-time */
+      readonly createdAt: string;
+      /** Format: date-time */
+      readonly updatedAt: string;
+    };
+    /**
+     * @description Payload for `POST /api/v1/ships`. `name` and `class` are required.
+     *     Server populates base stats from the class table (ST3001 ГЛАВА 7
+     *     Table 7.5) when not explicitly provided. The three mandatory modules
+     *     (BRIDGE, REACTOR, DRIVE) are created automatically.
+     */
+    ShipCreate: {
+      name: string;
+      class: components['schemas']['ShipClass'];
+      model?: string | null;
+      registry?: string | null;
+      /** @description Override base hull stats from class table */
+      hull?: {
+        current?: number;
+        max?: number;
+      };
+      /** @description Override base energy from class table */
+      energy?: {
+        current?: number;
+        max?: number;
+      };
+      armor?: number;
+      maneuverability?: number;
+      signature?: number;
+      speed?: number;
+      notes?: string | null;
+      history?: string | null;
+    };
+    /**
+     * @description PATCH payload for `PATCH /api/v1/ships/{id}`. All fields optional.
+     *     Read-only fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are
+     *     rejected with 400 if present.
+     */
+    ShipUpdate: {
+      name?: string;
+      model?: string | null;
+      registry?: string | null;
+      hull?: {
+        current?: number;
+        max?: number;
+      };
+      energy?: {
+        current?: number;
+        max?: number;
+      };
+      armor?: number;
+      maneuverability?: number;
+      signature?: number;
+      speed?: number;
+      /** @description Replaces the entire problems list when provided */
+      problems?: string[];
+      history?: string | null;
+      notes?: string | null;
+    };
+    /** @description Cursor-paginated list of ships */
+    ShipList: {
+      items: components['schemas']['Ship'][];
+      /** @description Opaque cursor for the next page; null when this is the last page */
+      nextCursor: string | null;
+    };
     HealthStatus: {
       status: components['schemas']['DependencyStatus'];
       /** @description Semantic version of the running backend build */
@@ -964,6 +1622,119 @@ export interface components {
        */
       expiresAt: string | null;
     };
+    '0-2': {
+      /** @enum {string} */
+      slot: 'WEAPON';
+      name: string;
+      energyUse: number;
+      weaponBonus: number;
+      weaponRange: components['schemas']['ShipWeaponRange'];
+      weaponDamage: number;
+      weaponCritThreshold: number;
+      notes?: string | null;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot: 'WEAPON';
+    };
+    '1-2': {
+      /** @enum {string} */
+      slot: 'TORPEDO';
+      name: string;
+      energyUse: number;
+      /** @default 0 */
+      torpedoCount: number;
+      /** @default 0 */
+      mineCount: number;
+      notes?: string | null;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot: 'TORPEDO';
+    };
+    '2-2': {
+      /** @enum {string} */
+      slot: 'HOLD';
+      name: string;
+      energyUse: number;
+      /** @default 0 */
+      cargoTons: number;
+      /** @default false */
+      concealed: boolean;
+      notes?: string | null;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot: 'HOLD';
+    };
+    '3-2': {
+      /** @enum {string} */
+      slot: 'SENSOR';
+      name: string;
+      energyUse: number;
+      /** @default 1 */
+      detectionBonus: number;
+      notes?: string | null;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot: 'SENSOR';
+    };
+    '4-2': {
+      /** @enum {string} */
+      slot:
+        | 'BRIDGE'
+        | 'REACTOR'
+        | 'DRIVE'
+        | 'COMMS'
+        | 'HANGAR'
+        | 'QUARTERS'
+        | 'MEDICAL'
+        | 'WORKSHOP'
+        | 'CHAPEL'
+        | 'ESCAPE-PODS'
+        | 'CRYO'
+        | 'DOCKING'
+        | 'MINING'
+        | 'REPAIR'
+        | 'CONCEALED-HOLD'
+        | 'PROXY-DECK'
+        | 'OTHER';
+      name: string;
+      energyUse: number;
+      notes?: string | null;
+    } & {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot:
+        | 'BRIDGE'
+        | 'REACTOR'
+        | 'DRIVE'
+        | 'COMMS'
+        | 'HANGAR'
+        | 'QUARTERS'
+        | 'MEDICAL'
+        | 'WORKSHOP'
+        | 'CHAPEL'
+        | 'ESCAPE-PODS'
+        | 'CRYO'
+        | 'DOCKING'
+        | 'MINING'
+        | 'REPAIR'
+        | 'CONCEALED-HOLD'
+        | 'PROXY-DECK'
+        | 'OTHER';
+    };
   };
   responses: never;
   parameters: {
@@ -973,6 +1744,10 @@ export interface components {
     ItemId: string;
     /** @description Talent identifier (cuid2) */
     TalentId: string;
+    /** @description Ship identifier (cuid2) */
+    ShipId: string;
+    /** @description Ship module identifier (cuid2) */
+    ShipModuleId: string;
   };
   requestBodies: never;
   headers: never;
@@ -1449,6 +2224,654 @@ export interface operations {
         };
       };
       /** @description Character not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  listShips: {
+    parameters: {
+      query?: {
+        /** @description Opaque pagination cursor returned by the previous page */
+        cursor?: string;
+        /** @description Number of ships to return (1–100, default 20) */
+        limit?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Paginated ship list */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ShipList'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  createShip: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ShipCreate'];
+      };
+    };
+    responses: {
+      /** @description Ship created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Ship'];
+        };
+      };
+      /**
+       * @description Validation error. Possible codes:
+       *     - `SHIP_NAME_EMPTY` — name is an empty string.
+       *     - `SHIP_NAME_TOO_LONG` — name exceeds 80 characters.
+       */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  getShip: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Ship identifier (cuid2) */
+        id: components['parameters']['ShipId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Ship found */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Ship'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller is authenticated but does not own this ship */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Ship not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  deleteShip: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Ship identifier (cuid2) */
+        id: components['parameters']['ShipId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Ship deleted */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this ship */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Ship not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  updateShip: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Ship identifier (cuid2) */
+        id: components['parameters']['ShipId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ShipUpdate'];
+      };
+    };
+    responses: {
+      /** @description Updated ship */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Ship'];
+        };
+      };
+      /**
+       * @description Validation error. Possible codes:
+       *     - `SHIP_NAME_EMPTY`
+       *     - `SHIP_NAME_TOO_LONG`
+       */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this ship */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Ship not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  duplicateShip: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Ship identifier (cuid2) */
+        id: components['parameters']['ShipId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Duplicated ship */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Ship'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this ship */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Ship not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  exportShip: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Ship identifier (cuid2) */
+        id: components['parameters']['ShipId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Ship JSON export */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Ship'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this ship */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Ship not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  addShipModule: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Ship identifier (cuid2) */
+        id: components['parameters']['ShipId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ShipModuleCreate'];
+      };
+    };
+    responses: {
+      /** @description Module installed */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ShipModule'];
+        };
+      };
+      /**
+       * @description Validation error. Possible codes:
+       *     - `MODULE_SLOT_INVALID` — slot value not recognised.
+       *     - `MODULE_TYPE_MISMATCH` — payload fields do not match the declared slot.
+       */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this ship */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Ship not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  assignCrew: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Ship identifier (cuid2) */
+        id: components['parameters']['ShipId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          position: components['schemas']['CrewPosition'];
+          /** @description ID of the character to assign (must be owned by caller) */
+          characterId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Crew member assigned */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CrewSlot'];
+        };
+      };
+      /**
+       * @description Validation error. Possible codes:
+       *     - `CREW_POSITION_TAKEN` — that position is already occupied.
+       *     - `CHARACTER_NOT_FOUND` — characterId does not exist.
+       *     - `CHARACTER_NOT_OWNED` — character is not owned by the caller.
+       */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this ship */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Ship not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  unassignCrew: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Ship identifier (cuid2) */
+        id: components['parameters']['ShipId'];
+        /** @description Character identifier to remove from the crew */
+        characterId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Crew member unassigned */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this ship */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Ship or crew assignment not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  deleteShipModule: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Ship module identifier (cuid2) */
+        id: components['parameters']['ShipModuleId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Module removed */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own the parent ship */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Module not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  updateShipModule: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Ship module identifier (cuid2) */
+        id: components['parameters']['ShipModuleId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ShipModuleUpdate'];
+      };
+    };
+    responses: {
+      /** @description Updated module */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ShipModule'];
+        };
+      };
+      /**
+       * @description Validation error. Possible code:
+       *     - `MODULE_TYPE_MISMATCH` — slot discriminator changed.
+       */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own the parent ship */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Module not found */
       404: {
         headers: {
           [name: string]: unknown;

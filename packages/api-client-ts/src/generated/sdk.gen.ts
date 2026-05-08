@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddCharacterItemData, AddCharacterItemErrors, AddCharacterItemResponses, AddCharacterTalentData, AddCharacterTalentErrors, AddCharacterTalentResponses, CreateCharacterData, CreateCharacterErrors, CreateCharacterResponses, DeleteCharacterData, DeleteCharacterErrors, DeleteCharacterResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteTalentData, DeleteTalentErrors, DeleteTalentResponses, DuplicateCharacterData, DuplicateCharacterErrors, DuplicateCharacterResponses, ExportCharacterData, ExportCharacterErrors, ExportCharacterResponses, GetCharacterData, GetCharacterErrors, GetCharacterResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetMeData, GetMeErrors, GetMeResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, ListCharactersData, ListCharactersErrors, ListCharactersResponses, UpdateCharacterData, UpdateCharacterErrors, UpdateCharacterResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses, UpdateTalentData, UpdateTalentErrors, UpdateTalentResponses } from './types.gen';
+import type { AddCharacterItemData, AddCharacterItemErrors, AddCharacterItemResponses, AddCharacterTalentData, AddCharacterTalentErrors, AddCharacterTalentResponses, AddShipModuleData, AddShipModuleErrors, AddShipModuleResponses, AssignCrewData, AssignCrewErrors, AssignCrewResponses, CreateCharacterData, CreateCharacterErrors, CreateCharacterResponses, CreateShipData, CreateShipErrors, CreateShipResponses, DeleteCharacterData, DeleteCharacterErrors, DeleteCharacterResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteShipData, DeleteShipErrors, DeleteShipModuleData, DeleteShipModuleErrors, DeleteShipModuleResponses, DeleteShipResponses, DeleteTalentData, DeleteTalentErrors, DeleteTalentResponses, DuplicateCharacterData, DuplicateCharacterErrors, DuplicateCharacterResponses, DuplicateShipData, DuplicateShipErrors, DuplicateShipResponses, ExportCharacterData, ExportCharacterErrors, ExportCharacterResponses, ExportShipData, ExportShipErrors, ExportShipResponses, GetCharacterData, GetCharacterErrors, GetCharacterResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetMeData, GetMeErrors, GetMeResponses, GetShipData, GetShipErrors, GetShipResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, ListCharactersData, ListCharactersErrors, ListCharactersResponses, ListShipsData, ListShipsErrors, ListShipsResponses, UnassignCrewData, UnassignCrewErrors, UnassignCrewResponses, UpdateCharacterData, UpdateCharacterErrors, UpdateCharacterResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses, UpdateShipData, UpdateShipErrors, UpdateShipModuleData, UpdateShipModuleErrors, UpdateShipModuleResponses, UpdateShipResponses, UpdateTalentData, UpdateTalentErrors, UpdateTalentResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -200,6 +200,244 @@ export const addCharacterTalent = <ThrowOnError extends boolean = false>(options
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/characters/{id}/talents',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List the authenticated user's ships
+ *
+ * Returns a cursor-paginated list of ships owned by the authenticated
+ * user. Pass `cursor` from a previous response's `nextCursor` to retrieve
+ * the following page. Results are ordered newest-first by `createdAt`.
+ *
+ */
+export const listShips = <ThrowOnError extends boolean = false>(options?: Options<ListShipsData, ThrowOnError>) => (options?.client ?? client).get<ListShipsResponses, ListShipsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ships',
+    ...options
+});
+
+/**
+ * Create a new ship
+ *
+ * Creates a ship owned by the authenticated user. `name` and `class` are
+ * required; all other fields default to class-appropriate values per
+ * ST3001 ГЛАВА 7 Table 7.5. Server assigns `id`, `ownerId`, `createdAt`,
+ * `updatedAt`.
+ *
+ */
+export const createShip = <ThrowOnError extends boolean = false>(options: Options<CreateShipData, ThrowOnError>) => (options.client ?? client).post<CreateShipResponses, CreateShipErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ships',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a ship
+ *
+ * Permanently deletes a ship and all its modules, crew assignments, and
+ * share links. This action is irreversible.
+ *
+ */
+export const deleteShip = <ThrowOnError extends boolean = false>(options: Options<DeleteShipData, ThrowOnError>) => (options.client ?? client).delete<DeleteShipResponses, DeleteShipErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ships/{id}',
+    ...options
+});
+
+/**
+ * Get a ship by ID
+ *
+ * Returns the full Ship DTO. Returns 404 if the ship does not exist or
+ * is not owned by the authenticated user. Owner-scoped: a ship owned by
+ * another user returns 403.
+ *
+ */
+export const getShip = <ThrowOnError extends boolean = false>(options: Options<GetShipData, ThrowOnError>) => (options.client ?? client).get<GetShipResponses, GetShipErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ships/{id}',
+    ...options
+});
+
+/**
+ * Partially update a ship
+ *
+ * Applies PATCH semantics — omitted fields are left unchanged. Read-only
+ * fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are rejected with
+ * 400 if included.
+ *
+ */
+export const updateShip = <ThrowOnError extends boolean = false>(options: Options<UpdateShipData, ThrowOnError>) => (options.client ?? client).patch<UpdateShipResponses, UpdateShipErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ships/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Duplicate a ship
+ *
+ * Creates a deep copy of the ship (including modules and problems) and
+ * assigns it to the authenticated user. The copy receives a new `id` and
+ * the name has " (copy)" appended. Crew assignments and share links are
+ * not duplicated. The source ship must be owned by the caller.
+ *
+ */
+export const duplicateShip = <ThrowOnError extends boolean = false>(options: Options<DuplicateShipData, ThrowOnError>) => (options.client ?? client).post<DuplicateShipResponses, DuplicateShipErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ships/{id}/duplicate',
+    ...options
+});
+
+/**
+ * Export a ship as JSON
+ *
+ * Returns the full canonical Ship DTO as a downloadable JSON payload.
+ * The response carries `Content-Disposition: attachment` so browsers
+ * prompt a download.
+ *
+ */
+export const exportShip = <ThrowOnError extends boolean = false>(options: Options<ExportShipData, ThrowOnError>) => (options.client ?? client).get<ExportShipResponses, ExportShipErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ships/{id}/export',
+    ...options
+});
+
+/**
+ * Add a module to a ship
+ *
+ * Installs a new module on the ship. The `slot` discriminator determines
+ * which type-specific fields are accepted. Validates that the slot type
+ * is appropriate for the requested module. The ship must be owned by the
+ * caller.
+ *
+ */
+export const addShipModule = <ThrowOnError extends boolean = false>(options: Options<AddShipModuleData, ThrowOnError>) => (options.client ?? client).post<AddShipModuleResponses, AddShipModuleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ships/{id}/modules',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Assign a character to a crew position
+ *
+ * Assigns one of the caller's own characters to a crew position on the
+ * ship. The ship must be owned by the caller. The character must also
+ * be owned by the caller (returns `CHARACTER_NOT_OWNED` otherwise).
+ * Returns `CREW_POSITION_TAKEN` if that position is already filled.
+ *
+ */
+export const assignCrew = <ThrowOnError extends boolean = false>(options: Options<AssignCrewData, ThrowOnError>) => (options.client ?? client).post<AssignCrewResponses, AssignCrewErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ships/{id}/crew',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove a character from the crew
+ *
+ * Removes the crew assignment for the given character ID on the ship.
+ * Both the ship and the character must be owned by the caller.
+ *
+ */
+export const unassignCrew = <ThrowOnError extends boolean = false>(options: Options<UnassignCrewData, ThrowOnError>) => (options.client ?? client).delete<UnassignCrewResponses, UnassignCrewErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ships/{id}/crew/{characterId}',
+    ...options
+});
+
+/**
+ * Remove a module from a ship
+ *
+ * Permanently removes an installed module. Authorization: caller must
+ * own the parent ship.
+ *
+ */
+export const deleteShipModule = <ThrowOnError extends boolean = false>(options: Options<DeleteShipModuleData, ThrowOnError>) => (options.client ?? client).delete<DeleteShipModuleResponses, DeleteShipModuleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ship-modules/{id}',
+    ...options
+});
+
+/**
+ * Update a ship module
+ *
+ * Applies PATCH semantics to a ship module. The `slot` discriminator may
+ * not be changed after installation — attempting to do so returns 400
+ * with code `MODULE_TYPE_MISMATCH`. Authorization: caller must own the
+ * parent ship.
+ *
+ */
+export const updateShipModule = <ThrowOnError extends boolean = false>(options: Options<UpdateShipModuleData, ThrowOnError>) => (options.client ?? client).patch<UpdateShipModuleResponses, UpdateShipModuleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ship-modules/{id}',
     ...options,
     headers: {
         'Content-Type': 'application/json',
