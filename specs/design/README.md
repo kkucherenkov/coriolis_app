@@ -131,6 +131,7 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 
 | Category | Component | Vue (`@app/ui`) | Flutter (`app_ui`) |
 | -------- | --------- | --------------- | ------------------ |
+| Coriolis | `AppArabesqueCorner` | ✓ | — |
 | Primitive | `AppAvatar` | ✓ | — |
 | Primitive | `AppBadge` | ✓ | — |
 | Primitive | `AppBanner` | ✓ | — |
@@ -138,10 +139,12 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 | Primitive | `AppCard` | ✓ | — |
 | Primitive | `AppChip` | ✓ | — |
 | Coriolis | `AppConditionPill` | ✓ | — |
-| Primitive | `AppDivider` | ✓ | — |
 | Coriolis | `AppDie` | ✓ | — |
+| Coriolis | `AppDiePool` | ✓ | — |
+| Primitive | `AppDivider` | ✓ | — |
 | Primitive | `AppDots` | ✓ | — |
 | Primitive | `AppField` | ✓ | — |
+| Coriolis | `AppIconCoriolis` | ✓ | — |
 | Primitive | `AppIcon` | ✓ | — |
 | Primitive | `AppInput` | ✓ | — |
 | Primitive | `AppKbd` | ✓ | — |
@@ -149,6 +152,7 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 | Primitive | `AppProgress` | ✓ | — |
 | Primitive | `AppSegControl` | ✓ | — |
 | Primitive | `AppSelect` | ✓ | — |
+| Coriolis | `AppStarOrnament` | ✓ | — |
 | Primitive | `AppSwitch` | ✓ | — |
 | Primitive | `AppTab` | ✓ | — |
 | Primitive | `AppTextarea` | ✓ | — |
