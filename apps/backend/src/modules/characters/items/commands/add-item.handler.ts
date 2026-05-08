@@ -12,7 +12,7 @@ import type { IItemRepo } from '../domain/item.ports';
 
 function buildPayload(dto: AddItemCommand['dto']): Record<string, unknown> {
   const { type, ...rest } = dto;
-  return rest as Record<string, unknown>;
+  return rest;
 }
 
 @CommandHandler(AddItemCommand)

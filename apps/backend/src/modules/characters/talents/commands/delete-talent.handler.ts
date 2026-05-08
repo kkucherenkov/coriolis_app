@@ -24,7 +24,7 @@ export class DeleteTalentHandler implements ICommandHandler<DeleteTalentCommand,
     if (!talent) throw new TalentNotFoundError(talentId);
 
     const charOwner = await this.characterRepo.findOwnerIdById(talent.characterId);
-    if (!charOwner || charOwner.ownerId !== ownerId) {
+    if (charOwner?.ownerId !== ownerId) {
       throw new TalentNotOwnedError(talentId);
     }
 

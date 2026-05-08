@@ -242,12 +242,12 @@ export interface ICharacterRepo {
       mpCurrent: number;
       experience: number;
       conditions: ConditionFlags;
-      criticalInjuries: Array<{
+      criticalInjuries: {
         name: string;
         severity: CriticalInjurySeverity;
         effect: string;
         acquiredAt: string;
-      }>;
+      }[];
       notes: string | null;
       /** Status transition. Only draft → active is permitted at the handler layer. */
       status: CharacterStatus;

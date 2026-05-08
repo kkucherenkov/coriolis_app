@@ -1,13 +1,11 @@
 import {
   IsArray,
-  IsBoolean,
   IsIn,
   IsInt,
   IsNotEmpty,
   IsObject,
   IsOptional,
   IsString,
-  Max,
   MaxLength,
   Min,
   ValidateNested,
@@ -106,12 +104,12 @@ export class UpdateCharacterDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CriticalInjuryDto)
-  criticalInjuries?: Array<{
+  criticalInjuries?: {
     name: string;
     severity: CriticalInjurySeverity;
     effect: string;
     acquiredAt?: string;
-  }>;
+  }[];
 
   @IsOptional()
   @IsString()

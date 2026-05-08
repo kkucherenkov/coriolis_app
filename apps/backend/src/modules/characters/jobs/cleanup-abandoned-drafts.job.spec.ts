@@ -27,7 +27,7 @@ function makeRepo(): ICharacterRepo {
 
 describe('CleanupAbandonedDraftsJob', () => {
   const FIXED_NOW = new Date('2026-05-08T03:05:00.000Z').getTime();
-  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1_000;
+  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
   const EXPECTED_CUTOFF = new Date(FIXED_NOW - THIRTY_DAYS_MS);
 
   let repo: ICharacterRepo;
@@ -92,7 +92,7 @@ describe('CleanupAbandonedDraftsJob', () => {
     await job.cleanup();
 
     // A draft updated 29 days ago is AFTER the cutoff → not deleted
-    const twentyNineDaysAgo = new Date(FIXED_NOW - 29 * 24 * 60 * 60 * 1_000);
+    const twentyNineDaysAgo = new Date(FIXED_NOW - 29 * 24 * 60 * 60 * 1000);
     const passedCutoff = vi.mocked(repo.deleteAbandonedDrafts).mock.calls[0]![0];
     expect(twentyNineDaysAgo.getTime()).toBeGreaterThan(passedCutoff.getTime());
   });

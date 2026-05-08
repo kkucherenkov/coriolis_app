@@ -5,7 +5,7 @@ import { CHARACTER_REPO, CharacterListItem } from '../domain/character.ports';
 
 import { ListCharactersQuery } from './list-characters.query';
 
-import type { ICharacterRepo, ListCharactersOptions } from '../domain/character.ports';
+import type { ICharacterRepo } from '../domain/character.ports';
 
 export interface CharacterListResult {
   items: CharacterListItem[];

@@ -25,7 +25,7 @@ export class CharacterOwnershipGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest<AuthenticatedRequest & { params: { id?: string } }>();
-    const characterId = req.params['id'];
+    const characterId = req.params.id;
 
     if (!characterId) return true; // no :id param — guard is a no-op
 

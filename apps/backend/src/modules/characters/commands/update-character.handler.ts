@@ -85,12 +85,10 @@ export class UpdateCharacterHandler
 
     // Status-transition guard (ADR 0002): only draft → active is permitted.
     // active → draft is rejected; active → active and draft → draft are no-ops.
-    if (dto.status !== undefined && dto.status !== existing.status) {
-      if (existing.status === 'active' && dto.status === 'draft') {
+    if (dto.status !== undefined && dto.status !== existing.status && existing.status === 'active' && dto.status === 'draft') {
         throw new InvalidStatusTransitionError(existing.status, dto.status);
       }
       // draft → active: allowed — fall through to repo.update
-    }
 
     // Defence-in-depth validation
     if (dto.name !== undefined) {
@@ -113,18 +111,18 @@ export class UpdateCharacterHandler
     }));
 
     const updated = await this.repo.update(characterId, {
-      ...(dto.name !== undefined ? { name: dto.name.trim() } : {}),
-      ...(dto.concept !== undefined ? { concept: dto.concept } : {}),
-      ...(dto.iconId !== undefined ? { iconId: dto.iconId } : {}),
+      ...(dto.name === undefined ? {} : { name: dto.name.trim() }),
+      ...(dto.concept === undefined ? {} : { concept: dto.concept }),
+      ...(dto.iconId === undefined ? {} : { iconId: dto.iconId }),
       ...(dto.attributes ? { attributes: dto.attributes } : {}),
       ...(dto.skills ? { skills: dto.skills } : {}),
-      ...(dto.hp?.current !== undefined ? { hpCurrent: dto.hp.current } : {}),
-      ...(dto.mp?.current !== undefined ? { mpCurrent: dto.mp.current } : {}),
-      ...(dto.experience !== undefined ? { experience: dto.experience } : {}),
+      ...(dto.hp?.current === undefined ? {} : { hpCurrent: dto.hp.current }),
+      ...(dto.mp?.current === undefined ? {} : { mpCurrent: dto.mp.current }),
+      ...(dto.experience === undefined ? {} : { experience: dto.experience }),
       ...(dto.conditions ? { conditions: dto.conditions } : {}),
       ...(criticalInjuries ? { criticalInjuries } : {}),
-      ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
-      ...(dto.status !== undefined ? { status: dto.status } : {}),
+      ...(dto.notes === undefined ? {} : { notes: dto.notes }),
+      ...(dto.status === undefined ? {} : { status: dto.status }),
     });
 
     this.eventBus.publish(new CharacterUpdatedEvent(updated.id, updated.ownerId));

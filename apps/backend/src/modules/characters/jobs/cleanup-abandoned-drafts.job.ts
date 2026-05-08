@@ -20,7 +20,7 @@ import { CHARACTER_REPO } from '../domain/character.ports';
 
 import type { ICharacterRepo } from '../domain/character.ports';
 
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1_000;
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 // 03:05 UTC — offset from CascadeDeletedUsersJob (03:00) to stagger DB load.
 const CRON_EXPRESSION = '5 03 * * *';

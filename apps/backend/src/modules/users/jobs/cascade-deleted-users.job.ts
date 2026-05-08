@@ -18,7 +18,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { PrismaService } from '../../../common/prisma/prisma.service';
 
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1_000;
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 @Injectable()
 export class CascadeDeletedUsersJob {

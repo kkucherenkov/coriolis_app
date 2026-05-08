@@ -74,9 +74,9 @@ export class CreateCharacterHandler
       throw new IconUnknownError(dto.iconId);
     }
 
-    const attributes = { ...DEFAULT_ATTRIBUTES, ...(dto.attributes ?? {}) };
-    const skills = { ...DEFAULT_SKILLS, ...(dto.skills ?? {}) };
-    const conditions: ConditionFlags = { ...DEFAULT_CONDITIONS, ...(dto.conditions ?? {}) };
+    const attributes = { ...DEFAULT_ATTRIBUTES, ...dto.attributes };
+    const skills = { ...DEFAULT_SKILLS, ...dto.skills };
+    const conditions: ConditionFlags = { ...DEFAULT_CONDITIONS, ...dto.conditions };
 
     validateAttributes(attributes);
     validateSkills(skills);

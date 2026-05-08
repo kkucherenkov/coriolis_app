@@ -110,7 +110,7 @@ describe('DeleteMeHandler', () => {
 
     await handler.execute(new DeleteMeCommand('user-1'));
 
-    expect(auth.revokeAllSessions).not.toHaveBeenCalled(); // eslint-disable-line @typescript-eslint/unbound-method
+    expect(auth.revokeAllSessions).not.toHaveBeenCalled();  
   });
 
   it('does NOT publish UserDeletedEvent when user was already deleted', async () => {
@@ -144,7 +144,7 @@ describe('DeleteMeHandler', () => {
 
   it('embeds the stamped timestamp (from repo) in UserDeletedEvent, not a re-computed one', async () => {
     // Simulate repo returning a slightly different object (same value, different reference)
-    const repoTimestamp = new Date(FIXED_DATE.getTime());
+    const repoTimestamp = new Date(FIXED_DATE);
     vi.mocked(repo.softDelete).mockResolvedValue(repoTimestamp);
 
     await handler.execute(new DeleteMeCommand('user-1'));

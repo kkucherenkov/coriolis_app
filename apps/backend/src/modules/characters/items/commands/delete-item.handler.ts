@@ -24,7 +24,7 @@ export class DeleteItemHandler implements ICommandHandler<DeleteItemCommand, voi
     if (!item) throw new ItemNotFoundError(itemId);
 
     const charOwner = await this.characterRepo.findOwnerIdById(item.characterId);
-    if (!charOwner || charOwner.ownerId !== ownerId) {
+    if (charOwner?.ownerId !== ownerId) {
       throw new ItemNotOwnedError(itemId);
     }
 

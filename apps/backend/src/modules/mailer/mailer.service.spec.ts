@@ -125,7 +125,7 @@ describe('ResendMailer', () => {
 
   it('POSTs to the Resend API on sendVerificationEmail', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ id: 'email_123' }), { status: 200 }),
+      Response.json({ id: 'email_123' }, { status: 200 }),
     );
 
     const config = makeConfig();
@@ -153,7 +153,7 @@ describe('ResendMailer', () => {
 
   it('POSTs to the Resend API on sendPasswordResetEmail (ru locale)', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ id: 'email_456' }), { status: 200 }),
+      Response.json({ id: 'email_456' }, { status: 200 }),
     );
 
     const config = makeConfig();
@@ -191,7 +191,7 @@ describe('ResendMailer', () => {
 
   it('uses the fromAddress from AppConfig', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ id: 'email_789' }), { status: 200 }),
+      Response.json({ id: 'email_789' }, { status: 200 }),
     );
 
     const config = makeConfig({ fromAddress: 'Custom <custom@example.app>' });

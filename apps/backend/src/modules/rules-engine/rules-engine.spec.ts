@@ -131,7 +131,7 @@ describe('computeEncumbranceCurrent', () => {
 
   it('handles fractional weights (0.5 increments per PRD §5.3)', () => {
     const items = [makeItem({ weight: 0.5 }), makeItem({ id: 'item-2', weight: 1.5 })];
-    expect(computeEncumbranceCurrent(items)).toBeCloseTo(2.0);
+    expect(computeEncumbranceCurrent(items)).toBeCloseTo(2);
   });
 
   it('handles zero-weight items (contributes nothing)', () => {

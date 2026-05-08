@@ -16,7 +16,7 @@ export class ItemRepo implements IItemRepo {
     });
     if (!row) return null;
     const data = row.data as Record<string, unknown>;
-    return { id: row.id, type: row.type as ItemType, characterId: row.characterId, ...data };
+    return { id: row.id, type: row.type, characterId: row.characterId, ...data };
   }
 
   async findOwnerCharacterId(itemId: string): Promise<{ characterId: string } | null> {
@@ -42,7 +42,7 @@ export class ItemRepo implements IItemRepo {
       select: { id: true, type: true, data: true, characterId: true },
     });
     const rowData = row.data as Record<string, unknown>;
-    return { id: row.id, type: row.type as ItemType, characterId: row.characterId, ...rowData };
+    return { id: row.id, type: row.type, characterId: row.characterId, ...rowData };
   }
 
   async update(
@@ -65,7 +65,7 @@ export class ItemRepo implements IItemRepo {
       select: { id: true, type: true, data: true, characterId: true },
     });
     const rowData = row.data as Record<string, unknown>;
-    return { id: row.id, type: row.type as ItemType, characterId: row.characterId, ...rowData };
+    return { id: row.id, type: row.type, characterId: row.characterId, ...rowData };
   }
 
   async delete(id: string): Promise<void> {

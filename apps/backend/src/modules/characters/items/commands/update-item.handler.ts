@@ -29,11 +29,11 @@ export class UpdateItemHandler
 
     // Verify parent character is owned by the caller
     const charOwner = await this.characterRepo.findOwnerIdById(item.characterId);
-    if (!charOwner || charOwner.ownerId !== ownerId) {
+    if (charOwner?.ownerId !== ownerId) {
       throw new ItemNotOwnedError(itemId);
     }
 
     const { ...payload } = dto;
-    return this.itemRepo.update(itemId, payload as Record<string, unknown>);
+    return this.itemRepo.update(itemId, payload);
   }
 }

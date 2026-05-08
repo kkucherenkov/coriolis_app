@@ -5,7 +5,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { CronExpression } from '@nestjs/schedule';
 
 import { CascadeDeletedUsersJob } from './cascade-deleted-users.job';
 
@@ -23,7 +23,7 @@ function makePrisma() {
 
 describe('CascadeDeletedUsersJob', () => {
   const FIXED_NOW = new Date('2026-05-08T03:00:00.000Z').getTime();
-  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1_000;
+  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
   const EXPECTED_CUTOFF = new Date(FIXED_NOW - THIRTY_DAYS_MS);
 
   let prisma: ReturnType<typeof makePrisma>;
