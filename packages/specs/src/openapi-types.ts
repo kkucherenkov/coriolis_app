@@ -4,3480 +4,3393 @@
  */
 
 export interface paths {
-  '/api/v1/characters': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/characters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the authenticated user's characters
+         * @description Returns a cursor-paginated list of characters owned by the
+         *     authenticated user. Pass `cursor` from a previous response's
+         *     `nextCursor` to retrieve the following page. Results are ordered
+         *     newest-first by `createdAt`.
+         */
+        get: operations["listCharacters"];
+        put?: never;
+        /**
+         * Create a new character
+         * @description Creates a character owned by the authenticated user. `name` is the
+         *     only required field; all other fields default to empty arrays, null,
+         *     or 0. Server-derived fields (`hp.max`, `mp.max`, `encumbrance.max`)
+         *     are populated from the provided attribute values or defaults.
+         *
+         *     Attribute defaults are 2 per attribute when not provided. Skills
+         *     default to 0.
+         */
+        post: operations["createCharacter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * List the authenticated user's characters
-     * @description Returns a cursor-paginated list of characters owned by the
-     *     authenticated user. Pass `cursor` from a previous response's
-     *     `nextCursor` to retrieve the following page. Results are ordered
-     *     newest-first by `createdAt`.
-     */
-    get: operations['listCharacters'];
-    put?: never;
-    /**
-     * Create a new character
-     * @description Creates a character owned by the authenticated user. `name` is the
-     *     only required field; all other fields default to empty arrays, null,
-     *     or 0. Server-derived fields (`hp.max`, `mp.max`, `encumbrance.max`)
-     *     are populated from the provided attribute values or defaults.
-     *
-     *     Attribute defaults are 2 per attribute when not provided. Skills
-     *     default to 0.
-     */
-    post: operations['createCharacter'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/characters/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/characters/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a character by ID
+         * @description Returns the full character DTO. Returns 404 if the character does not
+         *     exist or is not owned by the authenticated user. Owner-scoped: a
+         *     character owned by another user returns 403 (not 404) when the caller
+         *     is authenticated, to aid debugging while preserving access boundaries.
+         */
+        get: operations["getCharacter"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a character
+         * @description Permanently deletes a character and all its nested items, talents,
+         *     relationships, and share links. This action is irreversible.
+         */
+        delete: operations["deleteCharacter"];
+        options?: never;
+        head?: never;
+        /**
+         * Partially update a character
+         * @description Applies PATCH semantics — omitted fields are left unchanged. Read-only
+         *     fields (`id`, `ownerId`, `hp.max`, `mp.max`, `encumbrance.max`,
+         *     `createdAt`, `updatedAt`) are rejected with 400 if included.
+         *
+         *     Server-derived fields (`hp.max`, `mp.max`, `encumbrance.max`) are
+         *     recalculated after each write and reflected in the response.
+         */
+        patch: operations["updateCharacter"];
+        trace?: never;
     };
-    /**
-     * Get a character by ID
-     * @description Returns the full character DTO. Returns 404 if the character does not
-     *     exist or is not owned by the authenticated user. Owner-scoped: a
-     *     character owned by another user returns 403 (not 404) when the caller
-     *     is authenticated, to aid debugging while preserving access boundaries.
-     */
-    get: operations['getCharacter'];
-    put?: never;
-    post?: never;
-    /**
-     * Delete a character
-     * @description Permanently deletes a character and all its nested items, talents,
-     *     relationships, and share links. This action is irreversible.
-     */
-    delete: operations['deleteCharacter'];
-    options?: never;
-    head?: never;
-    /**
-     * Partially update a character
-     * @description Applies PATCH semantics — omitted fields are left unchanged. Read-only
-     *     fields (`id`, `ownerId`, `hp.max`, `mp.max`, `encumbrance.max`,
-     *     `createdAt`, `updatedAt`) are rejected with 400 if included.
-     *
-     *     Server-derived fields (`hp.max`, `mp.max`, `encumbrance.max`) are
-     *     recalculated after each write and reflected in the response.
-     */
-    patch: operations['updateCharacter'];
-    trace?: never;
-  };
-  '/api/v1/characters/{id}/duplicate': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/characters/{id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Duplicate a character
+         * @description Creates a deep copy of the character (including items, talents,
+         *     relationships, and conditions) and assigns it to the authenticated
+         *     user. The copy receives a new `id` and the name has " (copy)"
+         *     appended. Share links are not duplicated. The source character must
+         *     be owned by the caller.
+         */
+        post: operations["duplicateCharacter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Duplicate a character
-     * @description Creates a deep copy of the character (including items, talents,
-     *     relationships, and conditions) and assigns it to the authenticated
-     *     user. The copy receives a new `id` and the name has " (copy)"
-     *     appended. Share links are not duplicated. The source character must
-     *     be owned by the caller.
-     */
-    post: operations['duplicateCharacter'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/characters/{id}/export': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/characters/{id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export a character as JSON
+         * @description Returns the full canonical Character DTO as a downloadable JSON
+         *     payload. v1 ships JSON only; PDF and encounter-bundle exports are
+         *     post-v1. The response carries `Content-Disposition: attachment` so
+         *     browsers prompt a download.
+         */
+        get: operations["exportCharacter"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * Export a character as JSON
-     * @description Returns the full canonical Character DTO as a downloadable JSON
-     *     payload. v1 ships JSON only; PDF and encounter-bundle exports are
-     *     post-v1. The response carries `Content-Disposition: attachment` so
-     *     browsers prompt a download.
-     */
-    get: operations['exportCharacter'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/characters/{id}/items': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/characters/{id}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add an item to a character's inventory
+         * @description Creates an item of the specified `type` under the character. The
+         *     discriminator field `type` determines which additional fields are
+         *     accepted and required. `id` is assigned by the server.
+         */
+        post: operations["addCharacterItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Add an item to a character's inventory
-     * @description Creates an item of the specified `type` under the character. The
-     *     discriminator field `type` determines which additional fields are
-     *     accepted and required. `id` is assigned by the server.
-     */
-    post: operations['addCharacterItem'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/characters/{id}/talents': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/characters/{id}/talents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add a talent to a character
+         * @description Creates a talent record attached to the character. Talents are
+         *     free-form (name + description + rank); there is no server-side
+         *     talent library in v1.
+         */
+        post: operations["addCharacterTalent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Add a talent to a character
-     * @description Creates a talent record attached to the character. Talents are
-     *     free-form (name + description + rank); there is no server-side
-     *     talent library in v1.
-     */
-    post: operations['addCharacterTalent'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/ships': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/ships": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the authenticated user's ships
+         * @description Returns a cursor-paginated list of ships owned by the authenticated
+         *     user. Pass `cursor` from a previous response's `nextCursor` to retrieve
+         *     the following page. Results are ordered newest-first by `createdAt`.
+         */
+        get: operations["listShips"];
+        put?: never;
+        /**
+         * Create a new ship
+         * @description Creates a ship owned by the authenticated user. `name` and `class` are
+         *     required; all other fields default to class-appropriate values per
+         *     ST3001 ГЛАВА 7 Table 7.5. Server assigns `id`, `ownerId`, `createdAt`,
+         *     `updatedAt`.
+         */
+        post: operations["createShip"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * List the authenticated user's ships
-     * @description Returns a cursor-paginated list of ships owned by the authenticated
-     *     user. Pass `cursor` from a previous response's `nextCursor` to retrieve
-     *     the following page. Results are ordered newest-first by `createdAt`.
-     */
-    get: operations['listShips'];
-    put?: never;
-    /**
-     * Create a new ship
-     * @description Creates a ship owned by the authenticated user. `name` and `class` are
-     *     required; all other fields default to class-appropriate values per
-     *     ST3001 ГЛАВА 7 Table 7.5. Server assigns `id`, `ownerId`, `createdAt`,
-     *     `updatedAt`.
-     */
-    post: operations['createShip'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/ships/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/ships/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a ship by ID
+         * @description Returns the full Ship DTO. Returns 404 if the ship does not exist or
+         *     is not owned by the authenticated user. Owner-scoped: a ship owned by
+         *     another user returns 403.
+         */
+        get: operations["getShip"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a ship
+         * @description Permanently deletes a ship and all its modules, crew assignments, and
+         *     share links. This action is irreversible.
+         */
+        delete: operations["deleteShip"];
+        options?: never;
+        head?: never;
+        /**
+         * Partially update a ship
+         * @description Applies PATCH semantics — omitted fields are left unchanged. Read-only
+         *     fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are rejected with
+         *     400 if included.
+         */
+        patch: operations["updateShip"];
+        trace?: never;
     };
-    /**
-     * Get a ship by ID
-     * @description Returns the full Ship DTO. Returns 404 if the ship does not exist or
-     *     is not owned by the authenticated user. Owner-scoped: a ship owned by
-     *     another user returns 403.
-     */
-    get: operations['getShip'];
-    put?: never;
-    post?: never;
-    /**
-     * Delete a ship
-     * @description Permanently deletes a ship and all its modules, crew assignments, and
-     *     share links. This action is irreversible.
-     */
-    delete: operations['deleteShip'];
-    options?: never;
-    head?: never;
-    /**
-     * Partially update a ship
-     * @description Applies PATCH semantics — omitted fields are left unchanged. Read-only
-     *     fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are rejected with
-     *     400 if included.
-     */
-    patch: operations['updateShip'];
-    trace?: never;
-  };
-  '/api/v1/ships/{id}/duplicate': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/ships/{id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Duplicate a ship
+         * @description Creates a deep copy of the ship (including modules and problems) and
+         *     assigns it to the authenticated user. The copy receives a new `id` and
+         *     the name has " (copy)" appended. Crew assignments and share links are
+         *     not duplicated. The source ship must be owned by the caller.
+         */
+        post: operations["duplicateShip"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Duplicate a ship
-     * @description Creates a deep copy of the ship (including modules and problems) and
-     *     assigns it to the authenticated user. The copy receives a new `id` and
-     *     the name has " (copy)" appended. Crew assignments and share links are
-     *     not duplicated. The source ship must be owned by the caller.
-     */
-    post: operations['duplicateShip'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/ships/{id}/export': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/ships/{id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export a ship as JSON
+         * @description Returns the full canonical Ship DTO as a downloadable JSON payload.
+         *     The response carries `Content-Disposition: attachment` so browsers
+         *     prompt a download.
+         */
+        get: operations["exportShip"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * Export a ship as JSON
-     * @description Returns the full canonical Ship DTO as a downloadable JSON payload.
-     *     The response carries `Content-Disposition: attachment` so browsers
-     *     prompt a download.
-     */
-    get: operations['exportShip'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/ships/{id}/modules': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/ships/{id}/modules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add a module to a ship
+         * @description Installs a new module on the ship. The `slot` discriminator determines
+         *     which type-specific fields are accepted. Validates that the slot type
+         *     is appropriate for the requested module. The ship must be owned by the
+         *     caller.
+         */
+        post: operations["addShipModule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Add a module to a ship
-     * @description Installs a new module on the ship. The `slot` discriminator determines
-     *     which type-specific fields are accepted. Validates that the slot type
-     *     is appropriate for the requested module. The ship must be owned by the
-     *     caller.
-     */
-    post: operations['addShipModule'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/ships/{id}/crew': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/ships/{id}/crew": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assign a character to a crew position
+         * @description Assigns one of the caller's own characters to a crew position on the
+         *     ship. The ship must be owned by the caller. The character must also
+         *     be owned by the caller (returns `CHARACTER_NOT_OWNED` otherwise).
+         *     Returns `CREW_POSITION_TAKEN` if that position is already filled.
+         */
+        post: operations["assignCrew"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Assign a character to a crew position
-     * @description Assigns one of the caller's own characters to a crew position on the
-     *     ship. The ship must be owned by the caller. The character must also
-     *     be owned by the caller (returns `CHARACTER_NOT_OWNED` otherwise).
-     *     Returns `CREW_POSITION_TAKEN` if that position is already filled.
-     */
-    post: operations['assignCrew'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/ships/{id}/crew/{characterId}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/ships/{id}/crew/{characterId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove a character from the crew
+         * @description Removes the crew assignment for the given character ID on the ship.
+         *     Both the ship and the character must be owned by the caller.
+         */
+        delete: operations["unassignCrew"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * Remove a character from the crew
-     * @description Removes the crew assignment for the given character ID on the ship.
-     *     Both the ship and the character must be owned by the caller.
-     */
-    delete: operations['unassignCrew'];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/ship-modules/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/ship-modules/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove a module from a ship
+         * @description Permanently removes an installed module. Authorization: caller must
+         *     own the parent ship.
+         */
+        delete: operations["deleteShipModule"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a ship module
+         * @description Applies PATCH semantics to a ship module. The `slot` discriminator may
+         *     not be changed after installation — attempting to do so returns 400
+         *     with code `MODULE_TYPE_MISMATCH`. Authorization: caller must own the
+         *     parent ship.
+         */
+        patch: operations["updateShipModule"];
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * Remove a module from a ship
-     * @description Permanently removes an installed module. Authorization: caller must
-     *     own the parent ship.
-     */
-    delete: operations['deleteShipModule'];
-    options?: never;
-    head?: never;
-    /**
-     * Update a ship module
-     * @description Applies PATCH semantics to a ship module. The `slot` discriminator may
-     *     not be changed after installation — attempting to do so returns 400
-     *     with code `MODULE_TYPE_MISMATCH`. Authorization: caller must own the
-     *     parent ship.
-     */
-    patch: operations['updateShipModule'];
-    trace?: never;
-  };
-  '/api/v1/health': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Service health probe
+         * @description Reports combined health status of the service and its runtime
+         *     dependencies (database, cache, realtime bus).
+         */
+        get: operations["getHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * Service health probe
-     * @description Reports combined health status of the service and its runtime
-     *     dependencies (database, cache, realtime bus).
-     */
-    get: operations['getHealth'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/items/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/items/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete an item
+         * @description Permanently deletes an item from a character's inventory.
+         *     Authorization: caller must own the parent character.
+         */
+        delete: operations["deleteItem"];
+        options?: never;
+        head?: never;
+        /**
+         * Update an item
+         * @description Applies PATCH semantics to an item. The `type` discriminator may not
+         *     be changed after creation — attempting to do so returns 400 with code
+         *     `ITEM_TYPE_MISMATCH`. Authorization: caller must own the parent
+         *     character.
+         */
+        patch: operations["updateItem"];
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * Delete an item
-     * @description Permanently deletes an item from a character's inventory.
-     *     Authorization: caller must own the parent character.
-     */
-    delete: operations['deleteItem'];
-    options?: never;
-    head?: never;
-    /**
-     * Update an item
-     * @description Applies PATCH semantics to an item. The `type` discriminator may not
-     *     be changed after creation — attempting to do so returns 400 with code
-     *     `ITEM_TYPE_MISMATCH`. Authorization: caller must own the parent
-     *     character.
-     */
-    patch: operations['updateItem'];
-    trace?: never;
-  };
-  '/api/v1/me': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the authenticated user's profile.
+         * @description Returns the current user's profile fields sourced from the Better Auth
+         *     `user` table. `email` and `createdAt` are read-only in this DTO — they
+         *     are managed by Better Auth and cannot be changed via this endpoint.
+         *
+         *     See PRD §4.1 for full product context. Soft-deleted users receive a
+         *     `404` because their sessions are revoked on deletion; this endpoint
+         *     will therefore never return a user whose `deletedAt` is set (that
+         *     field is an internal flag and is not exposed in this DTO).
+         */
+        get: operations["getMe"];
+        put?: never;
+        post?: never;
+        /**
+         * Soft-delete the authenticated user's account.
+         * @description Initiates a soft-delete of the authenticated user's account per PRD §4.2.
+         *
+         *     **Semantics:**
+         *     - All active Better Auth sessions for this account are revoked
+         *       immediately — the current request is the last one they will authorise.
+         *     - The user record's `deletedAt` timestamp is set to the current UTC time.
+         *     - Characters, ships, and share links owned by the user remain readable
+         *       (via existing share slugs) until a daily cron job hard-deletes them
+         *       30 days after `deletedAt`.
+         *
+         *     **Idempotency:** calling DELETE on an account whose `deletedAt` is
+         *     already set (i.e. an already soft-deleted account) returns `204` without
+         *     error. This prevents clients from treating a retry as a failure.
+         *
+         *     **No 404:** because the caller must be authenticated to reach this
+         *     endpoint, and sessions are revoked on deletion, there is no scenario
+         *     where a live session is attached to a non-existent account. A 404 path
+         *     does not exist for this operation.
+         */
+        delete: operations["deleteMe"];
+        options?: never;
+        head?: never;
+        /**
+         * Update the authenticated user's mutable profile fields.
+         * @description Applies a partial update (PATCH semantics) to the authenticated user's
+         *     profile. Only `displayName` is mutable via this endpoint.
+         *
+         *     `email` and `createdAt` are managed by Better Auth and are silently
+         *     ignored if included in the request body — attempting to send them
+         *     is treated as a `400` so the contract is unambiguous.
+         *
+         *     `displayName` constraints:
+         *     - Must be between 1 and 80 characters when non-null (80 matches the
+         *       character-name guidance in PRD §5.2).
+         *     - May be set to `null` to clear the field.
+         *     - An empty string (`""`) is rejected with `400`.
+         */
+        patch: operations["updateMe"];
+        trace?: never;
     };
-    /**
-     * Get the authenticated user's profile.
-     * @description Returns the current user's profile fields sourced from the Better Auth
-     *     `user` table. `email` and `createdAt` are read-only in this DTO — they
-     *     are managed by Better Auth and cannot be changed via this endpoint.
-     *
-     *     See PRD §4.1 for full product context. Soft-deleted users receive a
-     *     `404` because their sessions are revoked on deletion; this endpoint
-     *     will therefore never return a user whose `deletedAt` is set (that
-     *     field is an internal flag and is not exposed in this DTO).
-     */
-    get: operations['getMe'];
-    put?: never;
-    post?: never;
-    /**
-     * Soft-delete the authenticated user's account.
-     * @description Initiates a soft-delete of the authenticated user's account per PRD §4.2.
-     *
-     *     **Semantics:**
-     *     - All active Better Auth sessions for this account are revoked
-     *       immediately — the current request is the last one they will authorise.
-     *     - The user record's `deletedAt` timestamp is set to the current UTC time.
-     *     - Characters, ships, and share links owned by the user remain readable
-     *       (via existing share slugs) until a daily cron job hard-deletes them
-     *       30 days after `deletedAt`.
-     *
-     *     **Idempotency:** calling DELETE on an account whose `deletedAt` is
-     *     already set (i.e. an already soft-deleted account) returns `204` without
-     *     error. This prevents clients from treating a retry as a failure.
-     *
-     *     **No 404:** because the caller must be authenticated to reach this
-     *     endpoint, and sessions are revoked on deletion, there is no scenario
-     *     where a live session is attached to a non-existent account. A 404 path
-     *     does not exist for this operation.
-     */
-    delete: operations['deleteMe'];
-    options?: never;
-    head?: never;
-    /**
-     * Update the authenticated user's mutable profile fields.
-     * @description Applies a partial update (PATCH semantics) to the authenticated user's
-     *     profile. Only `displayName` is mutable via this endpoint.
-     *
-     *     `email` and `createdAt` are managed by Better Auth and are silently
-     *     ignored if included in the request body — attempting to send them
-     *     is treated as a `400` so the contract is unambiguous.
-     *
-     *     `displayName` constraints:
-     *     - Must be between 1 and 80 characters when non-null (80 matches the
-     *       character-name guidance in PRD §5.2).
-     *     - May be set to `null` to clear the field.
-     *     - An empty string (`""`) is rejected with `400`.
-     */
-    patch: operations['updateMe'];
-    trace?: never;
-  };
-  '/api/v1/realtime/token': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/realtime/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Issue a short-lived Centrifugo connection token
+         * @description Mints a short-lived HMAC-signed JWT that the client can use to connect
+         *     to Centrifugo. Requires an active Better Auth session (cookie on web,
+         *     bearer token on mobile).
+         */
+        post: operations["issueRealtimeToken"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Issue a short-lived Centrifugo connection token
-     * @description Mints a short-lived HMAC-signed JWT that the client can use to connect
-     *     to Centrifugo. Requires an active Better Auth session (cookie on web,
-     *     bearer token on mobile).
-     */
-    post: operations['issueRealtimeToken'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/talents/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/talents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete a talent
+         * @description Permanently removes a talent from a character. Authorization: caller
+         *     must own the parent character.
+         */
+        delete: operations["deleteTalent"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a talent
+         * @description Applies PATCH semantics to a talent. Authorization: caller must own
+         *     the parent character.
+         */
+        patch: operations["updateTalent"];
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * Delete a talent
-     * @description Permanently removes a talent from a character. Authorization: caller
-     *     must own the parent character.
-     */
-    delete: operations['deleteTalent'];
-    options?: never;
-    head?: never;
-    /**
-     * Update a talent
-     * @description Applies PATCH semantics to a talent. Authorization: caller must own
-     *     the parent character.
-     */
-    patch: operations['updateTalent'];
-    trace?: never;
-  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    /**
-     * @description Severity tier of a critical injury per Coriolis core rules.
-     *     - `light` — minor wound, no long-term mechanical effect.
-     *     - `severe` — significant injury; may impose ongoing penalties.
-     *     - `critical` — life-threatening; requires urgent medicurgy.
-     * @enum {string}
-     */
-    CriticalInjurySeverity: 'light' | 'severe' | 'critical';
-    /** @enum {string|null} */
-    DependencyStatus: 'ok' | 'degraded' | 'down' | null;
-    /**
-     * @description One of the Nine Icons of the Third Horizon. Kebab-case names match
-     *     the asset filenames in `packages/ui/src/assets/icons/`.
-     * @enum {string}
-     */
-    IconId:
-      | 'lady-of-tears'
-      | 'traveler'
-      | 'messenger'
-      | 'merchant'
-      | 'dancer'
-      | 'gambler'
-      | 'judge'
-      | 'faceless-one'
-      | 'deckhand';
-    /**
-     * @description Effective range band for a weapon. Matches the Coriolis core book
-     *     range terminology:
-     *     - `arm` — Engaged / hand-to-hand.
-     *     - `near` — same room / close quarters.
-     *     - `short` — corridor / street distance.
-     *     - `long` — open ground / rooftop.
-     *     - `distant` — sniper range.
-     * @enum {string}
-     */
-    ItemRangeEnum: 'arm' | 'near' | 'short' | 'long' | 'distant';
-    /**
-     * @description Ship module slot type. Used only for SHIP_MODULE items. Matches the
-     *     slot categories from Coriolis core book ship construction rules.
-     * @enum {string}
-     */
-    ItemSlotType: 'bridge' | 'hull' | 'hold' | 'weapon' | 'drive' | 'sensor' | 'comms';
-    /**
-     * @description The nature of the relationship between a character and an NPC or PC.
-     * @enum {string}
-     */
-    RelationshipKind: 'ally' | 'rival' | 'family' | 'mentor' | 'debtor' | 'creditor';
-    /**
-     * @description The four primary attributes per Coriolis core rules (PRD §5.2). Each
-     *     is a 1–5 integer. All keys are required — missing attributes would
-     *     make derived-stat calculation impossible server-side.
-     */
-    Attributes: {
-      /** @description STR — governs Force, Melee Combat skills and HP max */
-      strength: number;
-      /** @description AGI — governs Dexterity, Infiltration, Ranged Combat, Pilot; contributes to HP max */
-      agility: number;
-      /** @description WIT — governs Observation, Survival, Technology, Data Djinn, Science, Medicurgy; contributes to MP max */
-      wits: number;
-      /** @description EMP — governs Manipulation, Command, Culture, Mystic Powers; contributes to MP max */
-      empathy: number;
+    schemas: {
+        /**
+         * @description Severity tier of a critical injury per Coriolis core rules.
+         *     - `light` — minor wound, no long-term mechanical effect.
+         *     - `severe` — significant injury; may impose ongoing penalties.
+         *     - `critical` — life-threatening; requires urgent medicurgy.
+         * @enum {string}
+         */
+        CriticalInjurySeverity: "light" | "severe" | "critical";
+        /** @enum {string|null} */
+        DependencyStatus: "ok" | "degraded" | "down" | null;
+        /**
+         * @description One of the Nine Icons of the Third Horizon. Kebab-case names match
+         *     the asset filenames in `packages/ui/src/assets/icons/`.
+         * @enum {string}
+         */
+        IconId: "lady-of-tears" | "traveler" | "messenger" | "merchant" | "dancer" | "gambler" | "judge" | "faceless-one" | "deckhand";
+        /**
+         * @description Effective range band for a weapon. Matches the Coriolis core book
+         *     range terminology:
+         *     - `arm` — Engaged / hand-to-hand.
+         *     - `near` — same room / close quarters.
+         *     - `short` — corridor / street distance.
+         *     - `long` — open ground / rooftop.
+         *     - `distant` — sniper range.
+         * @enum {string}
+         */
+        ItemRangeEnum: "arm" | "near" | "short" | "long" | "distant";
+        /**
+         * @description Ship module slot type. Used only for SHIP_MODULE items. Matches the
+         *     slot categories from Coriolis core book ship construction rules.
+         * @enum {string}
+         */
+        ItemSlotType: "bridge" | "hull" | "hold" | "weapon" | "drive" | "sensor" | "comms";
+        /**
+         * @description The nature of the relationship between a character and an NPC or PC.
+         * @enum {string}
+         */
+        RelationshipKind: "ally" | "rival" | "family" | "mentor" | "debtor" | "creditor";
+        /**
+         * @description The four primary attributes per Coriolis core rules (PRD §5.2). Each
+         *     is a 1–5 integer. All keys are required — missing attributes would
+         *     make derived-stat calculation impossible server-side.
+         */
+        Attributes: {
+            /** @description STR — governs Force, Melee Combat skills and HP max */
+            strength: number;
+            /** @description AGI — governs Dexterity, Infiltration, Ranged Combat, Pilot; contributes to HP max */
+            agility: number;
+            /** @description WIT — governs Observation, Survival, Technology, Data Djinn, Science, Medicurgy; contributes to MP max */
+            wits: number;
+            /** @description EMP — governs Manipulation, Command, Culture, Mystic Powers; contributes to MP max */
+            empathy: number;
+        };
+        /**
+         * @description The 16 skills per Coriolis core rules (PRD §5.2). General skills
+         *     range 0–5; advanced skills (command, culture, dataDjinn, medicurgy,
+         *     mysticPowers, pilot, science, technology) also range 0–5 in the
+         *     schema — the "0–3 typical" note in the PRD describes usual play,
+         *     not a hard cap, so the server accepts up to 5 for all skills.
+         *     All keys are required.
+         */
+        Skills: {
+            /** @description General skill (AGI) */
+            dexterity: number;
+            /** @description General skill (STR) */
+            force: number;
+            /** @description General skill (AGI) */
+            infiltration: number;
+            /** @description General skill (EMP) */
+            manipulation: number;
+            /** @description General skill (STR) */
+            meleeCombat: number;
+            /** @description General skill (WIT) */
+            observation: number;
+            /** @description General skill (AGI) */
+            rangedCombat: number;
+            /** @description General skill (WIT) */
+            survival: number;
+            /** @description Advanced skill (EMP) */
+            command: number;
+            /** @description Advanced skill (EMP) */
+            culture: number;
+            /** @description Advanced skill (WIT) */
+            dataDjinn: number;
+            /** @description Advanced skill (WIT) */
+            medicurgy: number;
+            /** @description Advanced skill (EMP) */
+            mysticPowers: number;
+            /** @description Advanced skill (AGI) */
+            pilot: number;
+            /** @description Advanced skill (WIT) */
+            science: number;
+            /** @description Advanced skill (WIT) */
+            technology: number;
+        };
+        /**
+         * @description Boolean flags for the four standard Coriolis conditions (PRD §5.2).
+         *     Each active condition imposes a −1 die penalty on all rolls (capped
+         *     at the character's pool size). Applied by the RulesEngine.
+         */
+        ConditionFlags: {
+            /** @description Exhausted condition — also blocks pushing rolls */
+            exhausted: boolean;
+            sleepless: boolean;
+            thirsty: boolean;
+            hungry: boolean;
+        };
+        /** @description A critical injury entry on a character's sheet */
+        CriticalInjury: {
+            /** @description Opaque identifier (cuid2) */
+            id: string;
+            /** @description Short name of the injury (e.g. "Broken arm") */
+            name: string;
+            severity: components["schemas"]["CriticalInjurySeverity"];
+            /** @description Free-text description of the mechanical or narrative effect */
+            effect: string;
+            /**
+             * Format: date-time
+             * @description ISO-8601 instant when the injury was recorded
+             */
+            acquiredAt: string;
+        };
+        /** @description A talent owned by a character */
+        Talent: {
+            /** @description Opaque identifier (cuid2) */
+            id: string;
+            /** @description Talent name (e.g. "Wing-Mate", "Stunt Pilot") */
+            name: string;
+            /** @description Rules text or flavour description of the talent */
+            description: string;
+            /** @description Talent rank (1 = basic, 2 = journeyman, 3 = master) */
+            rank: number;
+            /**
+             * Format: date-time
+             * @description ISO-8601 instant when the talent was recorded on the sheet
+             */
+            acquiredAt: string;
+        };
+        /** @description Payload for creating a new talent */
+        TalentCreate: {
+            /** @description Talent name */
+            name: string;
+            /** @description Rules text or flavour description */
+            description: string;
+            /**
+             * @description Talent rank (defaults to 1 when not provided)
+             * @default 1
+             */
+            rank: number;
+        };
+        /** @description PATCH payload for updating a talent — all fields optional */
+        TalentUpdate: {
+            name?: string;
+            description?: string;
+            rank?: number;
+        };
+        /** @description A relationship between a character and another person (NPC or PC) */
+        Relationship: {
+            /** @description Opaque identifier (cuid2) */
+            id: string;
+            /** @description Name of the NPC or PC (free text) */
+            targetName: string;
+            kind: components["schemas"]["RelationshipKind"];
+            /** @description Optional notes about the relationship */
+            notes?: string | null;
+        };
+        /** @description Fields common to every item type */
+        ItemBase: {
+            /** @description Opaque identifier (cuid2) */
+            id: string;
+            /** @description Discriminator — determines which type-specific fields are present */
+            type: string;
+            /** @description Item name */
+            name: string;
+        };
+        ItemWeapon: components["schemas"]["ItemBase"] & {
+            /** @enum {string} */
+            type?: "WEAPON";
+            /** @description Base damage dice */
+            damage: number;
+            range: components["schemas"]["ItemRangeEnum"];
+            /** @description Bonus dice added to the attack pool */
+            bonus: number;
+            /** @description Critical threshold (roll this many successes to crit) */
+            crit: number;
+            /** @description Encumbrance weight in slots (0.5 increments) */
+            weight: number;
+            /** @description Feature tags (e.g. "Burst", "Explosive") */
+            features: string[];
+            /** @description Whether the item is currently equipped */
+            equipped: boolean;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "WEAPON";
+        };
+        ItemArmor: components["schemas"]["ItemBase"] & {
+            /** @enum {string} */
+            type?: "ARMOR";
+            /** @description Armor rating — reduces incoming damage */
+            armorRating: number;
+            /** @description Encumbrance weight in slots */
+            weight: number;
+            /** @description Feature tags (e.g. "Vacuum Sealed", "Exo-Skeleton") */
+            features: string[];
+            equipped: boolean;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "ARMOR";
+        };
+        ItemGear: components["schemas"]["ItemBase"] & {
+            /** @enum {string} */
+            type?: "GEAR";
+            /** @description Encumbrance weight in slots */
+            weight: number;
+            /** @description Number of units */
+            quantity: number;
+            /** @description Optional free-text notes */
+            notes?: string | null;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "GEAR";
+        };
+        ItemCybernetic: components["schemas"]["ItemBase"] & {
+            /** @enum {string} */
+            type?: "CYBERNETIC";
+            /** @description System strain points consumed (0–6) */
+            bodyPoints: number;
+            /** @description Description of the cybernetic's effect */
+            effect: string;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "CYBERNETIC";
+        };
+        ItemShipModule: components["schemas"]["ItemBase"] & {
+            /** @enum {string} */
+            type?: "SHIP_MODULE";
+            slot: components["schemas"]["ItemSlotType"];
+            /** @description Description of the module's effect and energy use */
+            effect: string;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "SHIP_MODULE";
+        };
+        ItemOther: components["schemas"]["ItemBase"] & {
+            /** @enum {string} */
+            type?: "OTHER";
+            /** @description Encumbrance weight in slots */
+            weight: number;
+            /** @description Optional free-text notes */
+            notes?: string | null;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "OTHER";
+        };
+        /**
+         * @description Create payload for a WEAPON item. No `id` — server-assigned.
+         * @example {
+         *       "type": "WEAPON",
+         *       "name": "Vulcan Carbine",
+         *       "damage": 2,
+         *       "range": "short",
+         *       "bonus": 2,
+         *       "crit": 2,
+         *       "weight": 0.8,
+         *       "features": [],
+         *       "equipped": false
+         *     }
+         */
+        ItemWeaponCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "WEAPON";
+            name: string;
+            /** @description Base damage dice */
+            damage: number;
+            range: components["schemas"]["ItemRangeEnum"];
+            /** @description Bonus dice added to the attack pool */
+            bonus: number;
+            /** @description Critical threshold */
+            crit: number;
+            /** @description Encumbrance weight in slots (0.5 increments) */
+            weight: number;
+            /** @description Feature tags (e.g. "Burst", "Explosive") */
+            features: string[];
+            /** @default false */
+            equipped: boolean;
+        };
+        /**
+         * @description Create payload for an ARMOR item. No `id` — server-assigned.
+         * @example {
+         *       "type": "ARMOR",
+         *       "name": "Coriolis Guard Suit",
+         *       "armorRating": 3,
+         *       "weight": 1,
+         *       "features": [
+         *         "Vacuum Sealed"
+         *       ],
+         *       "equipped": false
+         *     }
+         */
+        ItemArmorCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "ARMOR";
+            name: string;
+            /** @description Armor rating — reduces incoming damage */
+            armorRating: number;
+            /** @description Encumbrance weight in slots */
+            weight: number;
+            /** @description Feature tags (e.g. "Vacuum Sealed", "Exo-Skeleton") */
+            features: string[];
+            /** @default false */
+            equipped: boolean;
+        };
+        /**
+         * @description Create payload for a GEAR item. No `id` — server-assigned.
+         * @example {
+         *       "type": "GEAR",
+         *       "name": "Medkit",
+         *       "weight": 0.5,
+         *       "quantity": 1,
+         *       "notes": "Standard field medkit"
+         *     }
+         */
+        ItemGearCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "GEAR";
+            name: string;
+            /** @description Encumbrance weight in slots */
+            weight: number;
+            /** @description Number of units */
+            quantity: number;
+            /** @description Optional free-text notes */
+            notes?: string | null;
+        };
+        /**
+         * @description Create payload for a CYBERNETIC item. No `id` — server-assigned.
+         * @example {
+         *       "type": "CYBERNETIC",
+         *       "name": "Neural Interface",
+         *       "bodyPoints": 2,
+         *       "effect": "Grants +1 die to Data Djinn checks"
+         *     }
+         */
+        ItemCyberneticCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "CYBERNETIC";
+            name: string;
+            /** @description System strain points consumed (0–6) */
+            bodyPoints: number;
+            /** @description Description of the cybernetic's effect */
+            effect: string;
+        };
+        /**
+         * @description Create payload for a SHIP_MODULE item. No `id` — server-assigned.
+         * @example {
+         *       "type": "SHIP_MODULE",
+         *       "name": "Sensor Upgrade Mk I",
+         *       "slot": "sensor",
+         *       "effect": "+1 die to sensor checks"
+         *     }
+         */
+        ItemShipModuleCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "SHIP_MODULE";
+            name: string;
+            slot: components["schemas"]["ItemSlotType"];
+            /** @description Description of the module's effect and energy use */
+            effect: string;
+        };
+        /**
+         * @description Create payload for an OTHER item. No `id` — server-assigned.
+         * @example {
+         *       "type": "OTHER",
+         *       "name": "Coriolis Prayer Rug",
+         *       "weight": 0.5,
+         *       "notes": null
+         *     }
+         */
+        ItemOtherCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "OTHER";
+            name: string;
+            /** @description Encumbrance weight in slots */
+            weight: number;
+            /** @description Optional free-text notes */
+            notes?: string | null;
+        };
+        /**
+         * @description PATCH payload for a WEAPON item. All fields optional.
+         * @example {
+         *       "type": "WEAPON",
+         *       "damage": 3,
+         *       "equipped": true
+         *     }
+         */
+        ItemWeaponUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "WEAPON";
+            name?: string;
+            damage?: number;
+            range?: components["schemas"]["ItemRangeEnum"];
+            bonus?: number;
+            crit?: number;
+            weight?: number;
+            features?: string[];
+            equipped?: boolean;
+        };
+        /**
+         * @description PATCH payload for an ARMOR item. All fields optional.
+         * @example {
+         *       "type": "ARMOR",
+         *       "armorRating": 4,
+         *       "equipped": true
+         *     }
+         */
+        ItemArmorUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "ARMOR";
+            name?: string;
+            armorRating?: number;
+            weight?: number;
+            features?: string[];
+            equipped?: boolean;
+        };
+        /**
+         * @description PATCH payload for a GEAR item. All fields optional.
+         * @example {
+         *       "type": "GEAR",
+         *       "quantity": 3
+         *     }
+         */
+        ItemGearUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "GEAR";
+            name?: string;
+            weight?: number;
+            quantity?: number;
+            notes?: string | null;
+        };
+        /**
+         * @description PATCH payload for a CYBERNETIC item. All fields optional.
+         * @example {
+         *       "type": "CYBERNETIC",
+         *       "effect": "Grants +2 dice to Data Djinn checks"
+         *     }
+         */
+        ItemCyberneticUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "CYBERNETIC";
+            name?: string;
+            bodyPoints?: number;
+            effect?: string;
+        };
+        /**
+         * @description PATCH payload for a SHIP_MODULE item. All fields optional.
+         * @example {
+         *       "type": "SHIP_MODULE",
+         *       "effect": "+2 dice to sensor checks"
+         *     }
+         */
+        ItemShipModuleUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "SHIP_MODULE";
+            name?: string;
+            slot?: components["schemas"]["ItemSlotType"];
+            effect?: string;
+        };
+        /**
+         * @description PATCH payload for an OTHER item. All fields optional.
+         * @example {
+         *       "type": "OTHER",
+         *       "notes": "Blessed by the Lady of Tears"
+         *     }
+         */
+        ItemOtherUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "OTHER";
+            name?: string;
+            weight?: number;
+            notes?: string | null;
+        };
+        /**
+         * @description A discriminated union of all item types. The `type` field determines
+         *     which variant applies. Generated clients produce a correctly-typed
+         *     sum type from this schema.
+         */
+        Item: components["schemas"]["ItemWeapon"] | components["schemas"]["ItemArmor"] | components["schemas"]["ItemGear"] | components["schemas"]["ItemCybernetic"] | components["schemas"]["ItemShipModule"] | components["schemas"]["ItemOther"];
+        /**
+         * @description Payload for creating a new item. Same discriminated union as `Item`
+         *     but without `id` (server-assigned). The `type` discriminator must
+         *     be present.
+         */
+        ItemCreate: components["schemas"]["ItemWeaponCreate"] | components["schemas"]["ItemArmorCreate"] | components["schemas"]["ItemGearCreate"] | components["schemas"]["ItemCyberneticCreate"] | components["schemas"]["ItemShipModuleCreate"] | components["schemas"]["ItemOtherCreate"];
+        /**
+         * @description PATCH payload for updating an item. The `type` discriminator must
+         *     match the existing item type — changing it returns 400
+         *     `ITEM_TYPE_MISMATCH`. All fields are optional.
+         */
+        ItemUpdate: components["schemas"]["ItemWeaponUpdate"] | components["schemas"]["ItemArmorUpdate"] | components["schemas"]["ItemGearUpdate"] | components["schemas"]["ItemCyberneticUpdate"] | components["schemas"]["ItemShipModuleUpdate"] | components["schemas"]["ItemOtherUpdate"];
+        /**
+         * @description Full character DTO as returned by the v1 API. Server-derived fields
+         *     (`hp.max`, `mp.max`, `encumbrance.max`) are computed by the
+         *     RulesEngine on every write and are marked `readOnly`.
+         *
+         *     Formulas (PRD §5.2, §10):
+         *     - HP max = STR + AGI
+         *     - MP max = WIT + EMP
+         *     - Encumbrance max = STR × 2
+         */
+        Character: {
+            /** @description Opaque character identifier (cuid2) */
+            readonly id: string;
+            /** @description Identifier of the owning user (cuid2) */
+            readonly ownerId: string;
+            /** @description Character name (1–80 characters) */
+            name: string;
+            /** @description Short concept phrase — the role the character plays at the table (1–120 chars when non-null) */
+            concept: string | null;
+            /** @description One of the Nine Icons, or null if not chosen yet */
+            iconId: components["schemas"]["IconId"] | null;
+            attributes: components["schemas"]["Attributes"];
+            skills: components["schemas"]["Skills"];
+            hp: {
+                current: number;
+                /** @description Derived from STR + AGI; set by the server */
+                readonly max: number;
+            };
+            mp: {
+                current: number;
+                /** @description Derived from WIT + EMP; set by the server */
+                readonly max: number;
+            };
+            encumbrance: {
+                /** @description Sum of non-stowed item weights; set by the server */
+                readonly current: number;
+                /** @description Derived from STR × 2; set by the server */
+                readonly max: number;
+            };
+            /** @description Total XP earned */
+            experience: number;
+            conditions: components["schemas"]["ConditionFlags"];
+            criticalInjuries: components["schemas"]["CriticalInjury"][];
+            talents: components["schemas"]["Talent"][];
+            relationships: components["schemas"]["Relationship"][];
+            inventory: components["schemas"]["Item"][];
+            /** @description Free-form notes (Markdown; soft cap 4096 characters) */
+            notes: string | null;
+            /**
+             * @description Lifecycle state of the character.
+             *
+             *     - `draft` — character is a work-in-progress created by the wizard.
+             *       Draft characters are excluded from the default character list
+             *       (`GET /api/v1/characters`) unless `?includeDrafts=true` is passed.
+             *     - `active` — character is complete and visible on the dashboard.
+             *
+             *     Transitioning from `draft` to `active` (forging) is done by sending
+             *     `PATCH /api/v1/characters/{id}` with `{ "status": "active" }`.
+             *     The reverse transition (`active → draft`) is rejected with 422
+             *     `INVALID_STATUS_TRANSITION`.
+             * @enum {string}
+             */
+            status: "draft" | "active";
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        /**
+         * @description Payload for `POST /api/v1/characters`. Only `name` is required.
+         *     Attribute values default to 2 if the `attributes` object is omitted
+         *     or a key within it is missing. Skill values default to 0.
+         *
+         *     Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
+         *     `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`)
+         *     must not be included; they are rejected with 400.
+         *
+         *     Set `status: 'draft'` to create a wizard-in-progress character.
+         *     Omitting `status` defaults to `'active'`.
+         */
+        CharacterCreate: {
+            name: string;
+            concept?: string | null;
+            iconId?: components["schemas"]["IconId"] | null;
+            attributes?: components["schemas"]["Attributes"];
+            skills?: components["schemas"]["Skills"];
+            hp?: {
+                current?: number;
+            };
+            mp?: {
+                current?: number;
+            };
+            /** @default 0 */
+            experience: number;
+            conditions?: components["schemas"]["ConditionFlags"];
+            notes?: string | null;
+            /**
+             * @description Initial lifecycle state. Omit (or set `active`) for normal creation.
+             *     Set to `draft` when starting the character-creation wizard.
+             * @default active
+             * @enum {string}
+             */
+            status: "draft" | "active";
+        };
+        /**
+         * @description PATCH payload for `PATCH /api/v1/characters/{id}`. All fields are
+         *     optional. Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
+         *     `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`)
+         *     are rejected with 400 if present.
+         *
+         *     Derived stats (`hp.max`, `mp.max`, `encumbrance.max`) are
+         *     recalculated automatically after each successful write.
+         *
+         *     **Status transitions:**
+         *     - `draft → draft` — no-op; the wizard continues editing.
+         *     - `draft → active` — forges the character (wizard complete).
+         *       Send `{ "status": "active" }` as a standalone PATCH or alongside
+         *       other field updates.
+         *     - `active → draft` — **rejected** with 422 `INVALID_STATUS_TRANSITION`.
+         *       Active characters cannot be reverted to draft state.
+         */
+        CharacterUpdate: {
+            name?: string;
+            concept?: string | null;
+            iconId?: components["schemas"]["IconId"] | null;
+            attributes?: components["schemas"]["Attributes"];
+            skills?: components["schemas"]["Skills"];
+            hp?: {
+                current?: number;
+            };
+            mp?: {
+                current?: number;
+            };
+            experience?: number;
+            conditions?: components["schemas"]["ConditionFlags"];
+            /**
+             * @description Replaces the entire critical injuries list when provided.
+             *     Use the dedicated nested-item pattern (POST/PATCH/DELETE on
+             *     individual injuries) once that surface is added in a later epic.
+             */
+            criticalInjuries?: components["schemas"]["CriticalInjury"][];
+            notes?: string | null;
+            /**
+             * @description Lifecycle state transition. Only `draft → active` (forge) is
+             *     permitted. Attempting `active → draft` returns 422
+             *     `INVALID_STATUS_TRANSITION`.
+             * @enum {string}
+             */
+            status?: "draft" | "active";
+        };
+        /** @description Cursor-paginated list of characters */
+        CharacterList: {
+            items: components["schemas"]["Character"][];
+            /** @description Opaque cursor for the next page; null when this is the last page */
+            nextCursor: string | null;
+        };
+        /**
+         * @description Ship hull class per ST3001 ГЛАВА 7 Table 7.4 (типы кораблей). The
+         *     class determines the base stat block (energy, hull, maneuverability,
+         *     signature, armor, speed, module slots) from Table 7.5. Kebab-case
+         *     values map to the Russian originals in the rulebook.
+         *
+         *     Class I examples: fighter, shuttle.
+         *     Class II examples: torpedo-boat.
+         *     Class III examples: light-freighter, light-passenger, courier-yacht,
+         *       clipper, patrol-boat, gunboat, assault-ship, blockade-runner, pleasure-yacht.
+         *     Class IV examples: flying-circus, prospector, rescue-ship, passenger-liner.
+         *     Class V examples: heavy-cruiser, passenger-liner (large).
+         * @enum {string}
+         */
+        ShipClass: "fighter" | "shuttle" | "torpedo-boat" | "light-freighter" | "light-passenger" | "courier-yacht" | "clipper" | "patrol-boat" | "gunboat" | "assault-ship" | "blockade-runner" | "pleasure-yacht" | "flying-circus" | "prospector" | "rescue-ship" | "passenger-liner" | "heavy-freighter" | "cruiser" | "destroyer" | "heavy-cruiser";
+        /**
+         * @description Ship module slot type per ST3001 ГЛАВА 7 mandatory and optional module
+         *     catalogue. `BRIDGE`, `REACTOR`, `DRIVE` are mandatory on every ship.
+         *     All others are optional and consume module slots. The existing
+         *     `ItemSlotType` enum covers character-inventory ship modules; this enum
+         *     covers actual installed ship modules and provides richer coverage of
+         *     the full ГЛАВА 7 catalogue.
+         * @enum {string}
+         */
+        ShipModuleSlot: "BRIDGE" | "REACTOR" | "DRIVE" | "HOLD" | "WEAPON" | "TORPEDO" | "SENSOR" | "COMMS" | "HANGAR" | "QUARTERS" | "MEDICAL" | "WORKSHOP" | "CHAPEL" | "ESCAPE-PODS" | "CRYO" | "DOCKING" | "MINING" | "REPAIR" | "CONCEALED-HOLD" | "PROXY-DECK" | "OTHER";
+        /**
+         * @description Ship-combat range bands per ST3001 ГЛАВА 7 Table 7.9. Distinct from
+         *     the personal-scale `ItemRangeEnum`.
+         *     - `zero` — point-blank / boarding range.
+         *     - `close` — within a few hundred metres.
+         *     - `medium` — standard engagement distance.
+         *     - `long` — extended engagement.
+         *     - `extreme` — maximum sensor range.
+         * @enum {string}
+         */
+        ShipWeaponRange: "zero" | "close" | "medium" | "long" | "extreme";
+        /**
+         * @description Crew positions per ST3001 ГЛАВА 7 (crew roles). `sensorOp` is the
+         *     штурман-оператор (navigator/sensor operator) in the rulebook, also
+         *     responsible for combat-meme and info-impulse attacks. All positions
+         *     except `captain` may be filled by automation (усовершенствование
+         *     «Автоматика»).
+         * @enum {string}
+         */
+        CrewPosition: "captain" | "pilot" | "sensorOp" | "gunner" | "engineer" | "serviceCrew";
+        /**
+         * @description A crew position on a ship. Positions without an assigned character are
+         *     vacant (open berth). Multiple characters may not share one position.
+         */
+        CrewSlot: {
+            position: components["schemas"]["CrewPosition"];
+            /**
+             * @description ID of the assigned Character. Null when the berth is vacant.
+             *     The character must be owned by the same user as the ship.
+             */
+            assignedCharacterId?: string | null;
+        };
+        /** @description Fields common to every ship module variant */
+        ShipModuleBase: {
+            /** @description Opaque module identifier (cuid2) */
+            readonly id: string;
+            slot: components["schemas"]["ShipModuleSlot"];
+            /** @description Module name (e.g. "Graviton Projector", "Smuggler hold") */
+            name: string;
+            /** @description Energy points consumed by this module when active */
+            energyUse: number;
+            /** @description Free-text notes; used for damage state, special conditions, etc. */
+            notes?: string | null;
+        };
+        ShipModuleWeapon: components["schemas"]["ShipModuleBase"] & {
+            /** @enum {string} */
+            slot?: "WEAPON";
+            /** @description Modifier dice added to the attack pool (Мод. column in Table 7.9) */
+            weaponBonus: number;
+            weaponRange: components["schemas"]["ShipWeaponRange"];
+            /** @description Structural damage dealt on a hit */
+            weaponDamage: number;
+            /** @description Number of successes required to trigger a critical effect */
+            weaponCritThreshold: number;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "WEAPON";
+        };
+        ShipModuleTorpedo: components["schemas"]["ShipModuleBase"] & {
+            /** @enum {string} */
+            slot?: "TORPEDO";
+            /** @description Number of torpedoes currently loaded */
+            torpedoCount?: number;
+            /** @description Number of mines currently loaded */
+            mineCount?: number;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "TORPEDO";
+        };
+        ShipModuleHold: components["schemas"]["ShipModuleBase"] & {
+            /** @enum {string} */
+            slot?: "HOLD";
+            /** @description Cargo capacity in tonnes (class-dependent per Table 7.6) */
+            cargoTons?: number;
+            /**
+             * @description True for a потайной грузовой отсек (concealed hold)
+             * @default false
+             */
+            concealed: boolean;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "HOLD";
+        };
+        ShipModuleSensor: components["schemas"]["ShipModuleBase"] & {
+            /** @enum {string} */
+            slot?: "SENSOR";
+            /**
+             * @description Modifier added to sensor / dataDjinn checks
+             * @default 1
+             */
+            detectionBonus: number;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "SENSOR";
+        };
+        ShipModuleOther: components["schemas"]["ShipModuleBase"] & {
+            slot?: components["schemas"]["ShipModuleSlot"];
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "BRIDGE" | "REACTOR" | "DRIVE" | "COMMS" | "HANGAR" | "QUARTERS" | "MEDICAL" | "WORKSHOP" | "CHAPEL" | "ESCAPE-PODS" | "CRYO" | "DOCKING" | "MINING" | "REPAIR" | "CONCEALED-HOLD" | "PROXY-DECK" | "OTHER";
+        };
+        /**
+         * @description Create payload for a WEAPON ship module. No `id` — server-assigned.
+         * @example {
+         *       "slot": "WEAPON",
+         *       "name": "Graviton Projector",
+         *       "energyUse": 2,
+         *       "weaponBonus": 1,
+         *       "weaponRange": "medium",
+         *       "weaponDamage": 3,
+         *       "weaponCritThreshold": 3,
+         *       "notes": null
+         *     }
+         */
+        ShipModuleWeaponCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "WEAPON";
+            name: string;
+            energyUse: number;
+            /** @description Modifier dice added to the attack pool */
+            weaponBonus: number;
+            weaponRange: components["schemas"]["ShipWeaponRange"];
+            /** @description Structural damage dealt on a hit */
+            weaponDamage: number;
+            /** @description Number of successes required to trigger a critical effect */
+            weaponCritThreshold: number;
+            notes?: string | null;
+        };
+        /**
+         * @description Create payload for a TORPEDO ship module. No `id` — server-assigned.
+         * @example {
+         *       "slot": "TORPEDO",
+         *       "name": "Torpedo Bay Alpha",
+         *       "energyUse": 1,
+         *       "torpedoCount": 4,
+         *       "mineCount": 0,
+         *       "notes": null
+         *     }
+         */
+        ShipModuleTorpedoCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "TORPEDO";
+            name: string;
+            energyUse: number;
+            /**
+             * @description Number of torpedoes currently loaded
+             * @default 0
+             */
+            torpedoCount: number;
+            /**
+             * @description Number of mines currently loaded
+             * @default 0
+             */
+            mineCount: number;
+            notes?: string | null;
+        };
+        /**
+         * @description Create payload for a HOLD ship module. No `id` — server-assigned.
+         * @example {
+         *       "slot": "HOLD",
+         *       "name": "Main Cargo Hold",
+         *       "energyUse": 0,
+         *       "cargoTons": 50,
+         *       "concealed": false,
+         *       "notes": null
+         *     }
+         */
+        ShipModuleHoldCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "HOLD";
+            name: string;
+            energyUse: number;
+            /**
+             * @description Cargo capacity in tonnes
+             * @default 0
+             */
+            cargoTons: number;
+            /**
+             * @description True for a concealed hold
+             * @default false
+             */
+            concealed: boolean;
+            notes?: string | null;
+        };
+        /**
+         * @description Create payload for a SENSOR ship module. No `id` — server-assigned.
+         * @example {
+         *       "slot": "SENSOR",
+         *       "name": "Long-Range Sensor Tower",
+         *       "energyUse": 1,
+         *       "detectionBonus": 1,
+         *       "notes": null
+         *     }
+         */
+        ShipModuleSensorCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "SENSOR";
+            name: string;
+            energyUse: number;
+            /**
+             * @description Modifier added to sensor / dataDjinn checks
+             * @default 1
+             */
+            detectionBonus: number;
+            notes?: string | null;
+        };
+        /**
+         * @description Create payload for any other ship module slot type (BRIDGE, REACTOR,
+         *     DRIVE, COMMS, HANGAR, QUARTERS, MEDICAL, WORKSHOP, CHAPEL, ESCAPE-PODS,
+         *     CRYO, DOCKING, MINING, REPAIR, CONCEALED-HOLD, PROXY-DECK, OTHER).
+         *     No `id` — server-assigned.
+         * @example {
+         *       "slot": "COMMS",
+         *       "name": "Long-Range Comms Array",
+         *       "energyUse": 1,
+         *       "notes": null
+         *     }
+         */
+        ShipModuleOtherCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "BRIDGE" | "REACTOR" | "DRIVE" | "COMMS" | "HANGAR" | "QUARTERS" | "MEDICAL" | "WORKSHOP" | "CHAPEL" | "ESCAPE-PODS" | "CRYO" | "DOCKING" | "MINING" | "REPAIR" | "CONCEALED-HOLD" | "PROXY-DECK" | "OTHER";
+            name: string;
+            energyUse: number;
+            notes?: string | null;
+        };
+        /**
+         * @description PATCH payload for a WEAPON ship module. All fields optional.
+         * @example {
+         *       "slot": "WEAPON",
+         *       "weaponDamage": 4
+         *     }
+         */
+        ShipModuleWeaponUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "WEAPON";
+            name?: string;
+            energyUse?: number;
+            weaponBonus?: number;
+            weaponRange?: components["schemas"]["ShipWeaponRange"];
+            weaponDamage?: number;
+            weaponCritThreshold?: number;
+            notes?: string | null;
+        };
+        /**
+         * @description PATCH payload for a TORPEDO ship module. All fields optional.
+         * @example {
+         *       "slot": "TORPEDO",
+         *       "torpedoCount": 2
+         *     }
+         */
+        ShipModuleTorpedoUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "TORPEDO";
+            name?: string;
+            energyUse?: number;
+            torpedoCount?: number;
+            mineCount?: number;
+            notes?: string | null;
+        };
+        /**
+         * @description PATCH payload for a HOLD ship module. All fields optional.
+         * @example {
+         *       "slot": "HOLD",
+         *       "cargoTons": 60
+         *     }
+         */
+        ShipModuleHoldUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "HOLD";
+            name?: string;
+            energyUse?: number;
+            cargoTons?: number;
+            concealed?: boolean;
+            notes?: string | null;
+        };
+        /**
+         * @description PATCH payload for a SENSOR ship module. All fields optional.
+         * @example {
+         *       "slot": "SENSOR",
+         *       "detectionBonus": 2
+         *     }
+         */
+        ShipModuleSensorUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "SENSOR";
+            name?: string;
+            energyUse?: number;
+            detectionBonus?: number;
+            notes?: string | null;
+        };
+        /**
+         * @description PATCH payload for any other ship module slot type. All fields optional.
+         *     The `slot` discriminator may not be changed after installation.
+         * @example {
+         *       "slot": "COMMS",
+         *       "notes": "Upgraded to Mk II antenna"
+         *     }
+         */
+        ShipModuleOtherUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "BRIDGE" | "REACTOR" | "DRIVE" | "COMMS" | "HANGAR" | "QUARTERS" | "MEDICAL" | "WORKSHOP" | "CHAPEL" | "ESCAPE-PODS" | "CRYO" | "DOCKING" | "MINING" | "REPAIR" | "CONCEALED-HOLD" | "PROXY-DECK" | "OTHER";
+            name?: string;
+            energyUse?: number;
+            notes?: string | null;
+        };
+        /**
+         * @description A discriminated union of all ship module variants. The `slot` field
+         *     determines which variant applies. Generated clients produce a
+         *     correctly-typed sum type from this schema.
+         *
+         *     Mandatory modules (BRIDGE, REACTOR, DRIVE) are always present on a
+         *     ship and are not individually manageable via the module CRUD endpoints.
+         *     They appear in the `modules` array for completeness and energy tracking.
+         */
+        ShipModule: components["schemas"]["ShipModuleWeapon"] | components["schemas"]["ShipModuleTorpedo"] | components["schemas"]["ShipModuleHold"] | components["schemas"]["ShipModuleSensor"] | components["schemas"]["ShipModuleOther"];
+        /**
+         * @description Payload for `POST /api/v1/ships/{id}/modules`. Same discriminated
+         *     union as `ShipModule` but without `id` (server-assigned). The `slot`
+         *     discriminator must be present.
+         *
+         *     Note: BRIDGE, REACTOR, and DRIVE modules are created automatically
+         *     with the ship and cannot be added via this endpoint.
+         */
+        ShipModuleCreate: components["schemas"]["ShipModuleWeaponCreate"] | components["schemas"]["ShipModuleTorpedoCreate"] | components["schemas"]["ShipModuleHoldCreate"] | components["schemas"]["ShipModuleSensorCreate"] | components["schemas"]["ShipModuleOtherCreate"];
+        /**
+         * @description PATCH payload for `PATCH /api/v1/ship-modules/{id}`. The `slot`
+         *     discriminator must match the installed module's slot — changing it
+         *     returns 400 `SHIP_MODULE_SLOT_MISMATCH`. All fields optional.
+         */
+        ShipModuleUpdate: components["schemas"]["ShipModuleWeaponUpdate"] | components["schemas"]["ShipModuleTorpedoUpdate"] | components["schemas"]["ShipModuleHoldUpdate"] | components["schemas"]["ShipModuleSensorUpdate"] | components["schemas"]["ShipModuleOtherUpdate"];
+        /**
+         * @description Full Ship DTO as returned by the v1 API. Ship stats correspond to
+         *     ST3001 ГЛАВА 7 Table 7.5 base stats, modified by the installed
+         *     modules and upgrades.
+         *
+         *     `hull.max` and `energy.max` are tracked as explicit editable values
+         *     (not derived) because they can be altered by upgrades (Прочный корпус
+         *     +1 hull, Мощный реактор +1 energy). `maneuverability` and `signature`
+         *     are signed integers (negative values are valid per the class table).
+         */
+        Ship: {
+            /** @description Opaque ship identifier (cuid2) */
+            readonly id: string;
+            /** @description Identifier of the owning user (cuid2) */
+            readonly ownerId: string;
+            /** @description Ship name (1–80 characters) */
+            name: string;
+            class: components["schemas"]["ShipClass"];
+            /** @description Model / shipyard name (e.g. "Helebian Class III freighter") */
+            model: string | null;
+            /** @description Registry number / transponder code (e.g. "KUA-7741-M") */
+            registry: string | null;
+            /** @description Structural integrity (Прочность in ST3001 ГЛАВА 7) */
+            hull: {
+                /** @description Current hull points */
+                current: number;
+                /** @description Maximum hull points (base per class + Прочный корпус upgrades) */
+                max: number;
+            };
+            /** @description Reactor energy (Энергия in ST3001 ГЛАВА 7) */
+            energy: {
+                /** @description Energy points currently available for allocation */
+                current: number;
+                /** @description Maximum energy points (base per class + Мощный реактор upgrades) */
+                max: number;
+            };
+            /** @description Armor rating — number of dice rolled for the armor check (Броня) */
+            armor: number;
+            /**
+             * @description Maneuverability modifier (Манёвренность). Signed integer — negative
+             *     for large classes (Class IV is −1, Class V is −2). Affects pilot
+             *     skill checks in ship combat per ST3001 ГЛАВА 7.
+             */
+            maneuverability: number;
+            /**
+             * @description Signature modifier (Заметность). Signed integer. Negative values
+             *     mean the ship is harder to detect; positive values mean it is more
+             *     visible. Applied to opponent sensor checks per ГЛАВА 7.
+             */
+            signature: number;
+            /** @description Speed in astronomical units per day (Скорость per ГЛАВА 7 Table 7.5) */
+            speed: number;
+            /**
+             * @description Total cargo capacity in tonnes across all hold modules
+             *     (Вместимость per ГЛАВА 7 Table 7.6: Class III = 50 tonnes).
+             */
+            cargoCapacity: number;
+            /**
+             * @description Installed modules including the three mandatory ones (BRIDGE,
+             *     REACTOR, DRIVE). Optional modules consume the class module-slot
+             *     budget.
+             */
+            modules: components["schemas"]["ShipModule"][];
+            /** @description Crew assignment roster */
+            crew: components["schemas"]["CrewSlot"][];
+            /**
+             * @description List of active ship problems (free-text entries, e.g. damage
+             *     effects or wear-and-tear notes per ГЛАВА 7 wear table).
+             */
+            problems: string[];
+            /** @description Free-form ship history / background text (Markdown) */
+            history: string | null;
+            /** @description GM / player operational notes (Markdown) */
+            notes: string | null;
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        /**
+         * @description Payload for `POST /api/v1/ships`. `name` and `class` are required.
+         *     Server populates base stats from the class table (ST3001 ГЛАВА 7
+         *     Table 7.5) when not explicitly provided. The three mandatory modules
+         *     (BRIDGE, REACTOR, DRIVE) are created automatically.
+         */
+        ShipCreate: {
+            name: string;
+            class: components["schemas"]["ShipClass"];
+            model?: string | null;
+            registry?: string | null;
+            /** @description Override base hull stats from class table */
+            hull?: {
+                current?: number;
+                max?: number;
+            };
+            /** @description Override base energy from class table */
+            energy?: {
+                current?: number;
+                max?: number;
+            };
+            armor?: number;
+            maneuverability?: number;
+            signature?: number;
+            speed?: number;
+            notes?: string | null;
+            history?: string | null;
+        };
+        /**
+         * @description PATCH payload for `PATCH /api/v1/ships/{id}`. All fields optional.
+         *     Read-only fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are
+         *     rejected with 400 if present.
+         */
+        ShipUpdate: {
+            name?: string;
+            model?: string | null;
+            registry?: string | null;
+            hull?: {
+                current?: number;
+                max?: number;
+            };
+            energy?: {
+                current?: number;
+                max?: number;
+            };
+            armor?: number;
+            maneuverability?: number;
+            signature?: number;
+            speed?: number;
+            /** @description Replaces the entire problems list when provided */
+            problems?: string[];
+            history?: string | null;
+            notes?: string | null;
+        };
+        /** @description Cursor-paginated list of ships */
+        ShipList: {
+            items: components["schemas"]["Ship"][];
+            /** @description Opaque cursor for the next page; null when this is the last page */
+            nextCursor: string | null;
+        };
+        HealthStatus: {
+            status: components["schemas"]["DependencyStatus"];
+            /** @description Semantic version of the running backend build */
+            version: string | null;
+            /** @description Seconds since the backend process started */
+            uptimeSeconds: number;
+            dependencies: {
+                db: components["schemas"]["DependencyStatus"];
+                redis: components["schemas"]["DependencyStatus"];
+                centrifugo: components["schemas"]["DependencyStatus"];
+            };
+        };
+        /** @description RFC 9457 problem details */
+        Problem: {
+            /**
+             * Format: uri
+             * @default about:blank
+             */
+            type: string | null;
+            title: string | null;
+            /** Format: int32 */
+            status: number;
+            detail?: string | null;
+            instance?: string | null;
+            code?: string | null;
+        };
+        /**
+         * @description The authenticated user's profile as exposed by the v1 API. Fields
+         *     sourced from the Better Auth `user` table. `deletedAt` is an internal
+         *     soft-delete flag and is never surfaced here — deleted users receive a
+         *     404 because their sessions are revoked at deletion time.
+         */
+        Me: {
+            /** @description Opaque user identifier issued by Better Auth (cuid2) */
+            id: string;
+            /**
+             * Format: email
+             * @description Primary email address. Read-only via this API.
+             */
+            email: string;
+            /**
+             * @description User-chosen display name shown in share-link banners and the avatar
+             *     menu. Null when the user has not set one yet.
+             */
+            displayName: string | null;
+            /**
+             * Format: date-time
+             * @description ISO-8601 instant when the account was created. Read-only via this API.
+             */
+            createdAt: string | null;
+        };
+        /**
+         * @description Partial update payload for PATCH /api/v1/me. Only `displayName` is
+         *     mutable. Omitting a property leaves the corresponding field unchanged.
+         *     Setting `displayName` to null clears the field.
+         */
+        MeUpdate: {
+            /**
+             * @description User-chosen display name. Must be 1–80 characters when non-null.
+             *     Set to null to clear the field.
+             */
+            displayName?: string | null;
+        };
+        RealtimeToken: {
+            /** @description Short-lived HMAC-signed JWT for Centrifugo */
+            token: string | null;
+            /**
+             * Format: date-time
+             * @description ISO-8601 instant when the token expires
+             */
+            expiresAt: string | null;
+        };
     };
-    /**
-     * @description The 16 skills per Coriolis core rules (PRD §5.2). General skills
-     *     range 0–5; advanced skills (command, culture, dataDjinn, medicurgy,
-     *     mysticPowers, pilot, science, technology) also range 0–5 in the
-     *     schema — the "0–3 typical" note in the PRD describes usual play,
-     *     not a hard cap, so the server accepts up to 5 for all skills.
-     *     All keys are required.
-     */
-    Skills: {
-      /** @description General skill (AGI) */
-      dexterity: number;
-      /** @description General skill (STR) */
-      force: number;
-      /** @description General skill (AGI) */
-      infiltration: number;
-      /** @description General skill (EMP) */
-      manipulation: number;
-      /** @description General skill (STR) */
-      meleeCombat: number;
-      /** @description General skill (WIT) */
-      observation: number;
-      /** @description General skill (AGI) */
-      rangedCombat: number;
-      /** @description General skill (WIT) */
-      survival: number;
-      /** @description Advanced skill (EMP) */
-      command: number;
-      /** @description Advanced skill (EMP) */
-      culture: number;
-      /** @description Advanced skill (WIT) */
-      dataDjinn: number;
-      /** @description Advanced skill (WIT) */
-      medicurgy: number;
-      /** @description Advanced skill (EMP) */
-      mysticPowers: number;
-      /** @description Advanced skill (AGI) */
-      pilot: number;
-      /** @description Advanced skill (WIT) */
-      science: number;
-      /** @description Advanced skill (WIT) */
-      technology: number;
+    responses: never;
+    parameters: {
+        /** @description Character identifier (cuid2) */
+        CharacterId: string;
+        /** @description Item identifier (cuid2) */
+        ItemId: string;
+        /** @description Talent identifier (cuid2) */
+        TalentId: string;
+        /** @description Ship identifier (cuid2) */
+        ShipId: string;
+        /** @description Ship module identifier (cuid2) */
+        ShipModuleId: string;
     };
-    /**
-     * @description Boolean flags for the four standard Coriolis conditions (PRD §5.2).
-     *     Each active condition imposes a −1 die penalty on all rolls (capped
-     *     at the character's pool size). Applied by the RulesEngine.
-     */
-    ConditionFlags: {
-      /** @description Exhausted condition — also blocks pushing rolls */
-      exhausted: boolean;
-      sleepless: boolean;
-      thirsty: boolean;
-      hungry: boolean;
-    };
-    /** @description A critical injury entry on a character's sheet */
-    CriticalInjury: {
-      /** @description Opaque identifier (cuid2) */
-      id: string;
-      /** @description Short name of the injury (e.g. "Broken arm") */
-      name: string;
-      severity: components['schemas']['CriticalInjurySeverity'];
-      /** @description Free-text description of the mechanical or narrative effect */
-      effect: string;
-      /**
-       * Format: date-time
-       * @description ISO-8601 instant when the injury was recorded
-       */
-      acquiredAt: string;
-    };
-    /** @description A talent owned by a character */
-    Talent: {
-      /** @description Opaque identifier (cuid2) */
-      id: string;
-      /** @description Talent name (e.g. "Wing-Mate", "Stunt Pilot") */
-      name: string;
-      /** @description Rules text or flavour description of the talent */
-      description: string;
-      /** @description Talent rank (1 = basic, 2 = journeyman, 3 = master) */
-      rank: number;
-      /**
-       * Format: date-time
-       * @description ISO-8601 instant when the talent was recorded on the sheet
-       */
-      acquiredAt: string;
-    };
-    /** @description Payload for creating a new talent */
-    TalentCreate: {
-      /** @description Talent name */
-      name: string;
-      /** @description Rules text or flavour description */
-      description: string;
-      /**
-       * @description Talent rank (defaults to 1 when not provided)
-       * @default 1
-       */
-      rank: number;
-    };
-    /** @description PATCH payload for updating a talent — all fields optional */
-    TalentUpdate: {
-      name?: string;
-      description?: string;
-      rank?: number;
-    };
-    /** @description A relationship between a character and another person (NPC or PC) */
-    Relationship: {
-      /** @description Opaque identifier (cuid2) */
-      id: string;
-      /** @description Name of the NPC or PC (free text) */
-      targetName: string;
-      kind: components['schemas']['RelationshipKind'];
-      /** @description Optional notes about the relationship */
-      notes?: string | null;
-    };
-    /** @description Fields common to every item type */
-    ItemBase: {
-      /** @description Opaque identifier (cuid2) */
-      id: string;
-      /** @description Discriminator — determines which type-specific fields are present */
-      type: string;
-      /** @description Item name */
-      name: string;
-    };
-    ItemWeapon: components['schemas']['ItemBase'] & {
-      /** @enum {string} */
-      type?: 'WEAPON';
-      /** @description Base damage dice */
-      damage: number;
-      range: components['schemas']['ItemRangeEnum'];
-      /** @description Bonus dice added to the attack pool */
-      bonus: number;
-      /** @description Critical threshold (roll this many successes to crit) */
-      crit: number;
-      /** @description Encumbrance weight in slots (0.5 increments) */
-      weight: number;
-      /** @description Feature tags (e.g. "Burst", "Explosive") */
-      features: string[];
-      /** @description Whether the item is currently equipped */
-      equipped: boolean;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'WEAPON';
-    };
-    ItemArmor: components['schemas']['ItemBase'] & {
-      /** @enum {string} */
-      type?: 'ARMOR';
-      /** @description Armor rating — reduces incoming damage */
-      armorRating: number;
-      /** @description Encumbrance weight in slots */
-      weight: number;
-      /** @description Feature tags (e.g. "Vacuum Sealed", "Exo-Skeleton") */
-      features: string[];
-      equipped: boolean;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'ARMOR';
-    };
-    ItemGear: components['schemas']['ItemBase'] & {
-      /** @enum {string} */
-      type?: 'GEAR';
-      /** @description Encumbrance weight in slots */
-      weight: number;
-      /** @description Number of units */
-      quantity: number;
-      /** @description Optional free-text notes */
-      notes?: string | null;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'GEAR';
-    };
-    ItemCybernetic: components['schemas']['ItemBase'] & {
-      /** @enum {string} */
-      type?: 'CYBERNETIC';
-      /** @description System strain points consumed (0–6) */
-      bodyPoints: number;
-      /** @description Description of the cybernetic's effect */
-      effect: string;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'CYBERNETIC';
-    };
-    ItemShipModule: components['schemas']['ItemBase'] & {
-      /** @enum {string} */
-      type?: 'SHIP_MODULE';
-      slot: components['schemas']['ItemSlotType'];
-      /** @description Description of the module's effect and energy use */
-      effect: string;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'SHIP_MODULE';
-    };
-    ItemOther: components['schemas']['ItemBase'] & {
-      /** @enum {string} */
-      type?: 'OTHER';
-      /** @description Encumbrance weight in slots */
-      weight: number;
-      /** @description Optional free-text notes */
-      notes?: string | null;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'OTHER';
-    };
-    /**
-     * @description Create payload for a WEAPON item. No `id` — server-assigned.
-     * @example {
-     *       "type": "WEAPON",
-     *       "name": "Vulcan Carbine",
-     *       "damage": 2,
-     *       "range": "short",
-     *       "bonus": 2,
-     *       "crit": 2,
-     *       "weight": 0.8,
-     *       "features": [],
-     *       "equipped": false
-     *     }
-     */
-    ItemWeaponCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'WEAPON';
-      name: string;
-      /** @description Base damage dice */
-      damage: number;
-      range: components['schemas']['ItemRangeEnum'];
-      /** @description Bonus dice added to the attack pool */
-      bonus: number;
-      /** @description Critical threshold */
-      crit: number;
-      /** @description Encumbrance weight in slots (0.5 increments) */
-      weight: number;
-      /** @description Feature tags (e.g. "Burst", "Explosive") */
-      features: string[];
-      /** @default false */
-      equipped: boolean;
-    };
-    /**
-     * @description Create payload for an ARMOR item. No `id` — server-assigned.
-     * @example {
-     *       "type": "ARMOR",
-     *       "name": "Coriolis Guard Suit",
-     *       "armorRating": 3,
-     *       "weight": 1,
-     *       "features": [
-     *         "Vacuum Sealed"
-     *       ],
-     *       "equipped": false
-     *     }
-     */
-    ItemArmorCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'ARMOR';
-      name: string;
-      /** @description Armor rating — reduces incoming damage */
-      armorRating: number;
-      /** @description Encumbrance weight in slots */
-      weight: number;
-      /** @description Feature tags (e.g. "Vacuum Sealed", "Exo-Skeleton") */
-      features: string[];
-      /** @default false */
-      equipped: boolean;
-    };
-    /**
-     * @description Create payload for a GEAR item. No `id` — server-assigned.
-     * @example {
-     *       "type": "GEAR",
-     *       "name": "Medkit",
-     *       "weight": 0.5,
-     *       "quantity": 1,
-     *       "notes": "Standard field medkit"
-     *     }
-     */
-    ItemGearCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'GEAR';
-      name: string;
-      /** @description Encumbrance weight in slots */
-      weight: number;
-      /** @description Number of units */
-      quantity: number;
-      /** @description Optional free-text notes */
-      notes?: string | null;
-    };
-    /**
-     * @description Create payload for a CYBERNETIC item. No `id` — server-assigned.
-     * @example {
-     *       "type": "CYBERNETIC",
-     *       "name": "Neural Interface",
-     *       "bodyPoints": 2,
-     *       "effect": "Grants +1 die to Data Djinn checks"
-     *     }
-     */
-    ItemCyberneticCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'CYBERNETIC';
-      name: string;
-      /** @description System strain points consumed (0–6) */
-      bodyPoints: number;
-      /** @description Description of the cybernetic's effect */
-      effect: string;
-    };
-    /**
-     * @description Create payload for a SHIP_MODULE item. No `id` — server-assigned.
-     * @example {
-     *       "type": "SHIP_MODULE",
-     *       "name": "Sensor Upgrade Mk I",
-     *       "slot": "sensor",
-     *       "effect": "+1 die to sensor checks"
-     *     }
-     */
-    ItemShipModuleCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'SHIP_MODULE';
-      name: string;
-      slot: components['schemas']['ItemSlotType'];
-      /** @description Description of the module's effect and energy use */
-      effect: string;
-    };
-    /**
-     * @description Create payload for an OTHER item. No `id` — server-assigned.
-     * @example {
-     *       "type": "OTHER",
-     *       "name": "Coriolis Prayer Rug",
-     *       "weight": 0.5,
-     *       "notes": null
-     *     }
-     */
-    ItemOtherCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'OTHER';
-      name: string;
-      /** @description Encumbrance weight in slots */
-      weight: number;
-      /** @description Optional free-text notes */
-      notes?: string | null;
-    };
-    /**
-     * @description PATCH payload for a WEAPON item. All fields optional.
-     * @example {
-     *       "type": "WEAPON",
-     *       "damage": 3,
-     *       "equipped": true
-     *     }
-     */
-    ItemWeaponUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'WEAPON';
-      name?: string;
-      damage?: number;
-      range?: components['schemas']['ItemRangeEnum'];
-      bonus?: number;
-      crit?: number;
-      weight?: number;
-      features?: string[];
-      equipped?: boolean;
-    };
-    /**
-     * @description PATCH payload for an ARMOR item. All fields optional.
-     * @example {
-     *       "type": "ARMOR",
-     *       "armorRating": 4,
-     *       "equipped": true
-     *     }
-     */
-    ItemArmorUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'ARMOR';
-      name?: string;
-      armorRating?: number;
-      weight?: number;
-      features?: string[];
-      equipped?: boolean;
-    };
-    /**
-     * @description PATCH payload for a GEAR item. All fields optional.
-     * @example {
-     *       "type": "GEAR",
-     *       "quantity": 3
-     *     }
-     */
-    ItemGearUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'GEAR';
-      name?: string;
-      weight?: number;
-      quantity?: number;
-      notes?: string | null;
-    };
-    /**
-     * @description PATCH payload for a CYBERNETIC item. All fields optional.
-     * @example {
-     *       "type": "CYBERNETIC",
-     *       "effect": "Grants +2 dice to Data Djinn checks"
-     *     }
-     */
-    ItemCyberneticUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'CYBERNETIC';
-      name?: string;
-      bodyPoints?: number;
-      effect?: string;
-    };
-    /**
-     * @description PATCH payload for a SHIP_MODULE item. All fields optional.
-     * @example {
-     *       "type": "SHIP_MODULE",
-     *       "effect": "+2 dice to sensor checks"
-     *     }
-     */
-    ItemShipModuleUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'SHIP_MODULE';
-      name?: string;
-      slot?: components['schemas']['ItemSlotType'];
-      effect?: string;
-    };
-    /**
-     * @description PATCH payload for an OTHER item. All fields optional.
-     * @example {
-     *       "type": "OTHER",
-     *       "notes": "Blessed by the Lady of Tears"
-     *     }
-     */
-    ItemOtherUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'OTHER';
-      name?: string;
-      weight?: number;
-      notes?: string | null;
-    };
-    /**
-     * @description A discriminated union of all item types. The `type` field determines
-     *     which variant applies. Generated clients produce a correctly-typed
-     *     sum type from this schema.
-     */
-    Item:
-      | components['schemas']['ItemWeapon']
-      | components['schemas']['ItemArmor']
-      | components['schemas']['ItemGear']
-      | components['schemas']['ItemCybernetic']
-      | components['schemas']['ItemShipModule']
-      | components['schemas']['ItemOther'];
-    /**
-     * @description Payload for creating a new item. Same discriminated union as `Item`
-     *     but without `id` (server-assigned). The `type` discriminator must
-     *     be present.
-     */
-    ItemCreate:
-      | components['schemas']['ItemWeaponCreate']
-      | components['schemas']['ItemArmorCreate']
-      | components['schemas']['ItemGearCreate']
-      | components['schemas']['ItemCyberneticCreate']
-      | components['schemas']['ItemShipModuleCreate']
-      | components['schemas']['ItemOtherCreate'];
-    /**
-     * @description PATCH payload for updating an item. The `type` discriminator must
-     *     match the existing item type — changing it returns 400
-     *     `ITEM_TYPE_MISMATCH`. All fields are optional.
-     */
-    ItemUpdate:
-      | components['schemas']['ItemWeaponUpdate']
-      | components['schemas']['ItemArmorUpdate']
-      | components['schemas']['ItemGearUpdate']
-      | components['schemas']['ItemCyberneticUpdate']
-      | components['schemas']['ItemShipModuleUpdate']
-      | components['schemas']['ItemOtherUpdate'];
-    /**
-     * @description Full character DTO as returned by the v1 API. Server-derived fields
-     *     (`hp.max`, `mp.max`, `encumbrance.max`) are computed by the
-     *     RulesEngine on every write and are marked `readOnly`.
-     *
-     *     Formulas (PRD §5.2, §10):
-     *     - HP max = STR + AGI
-     *     - MP max = WIT + EMP
-     *     - Encumbrance max = STR × 2
-     */
-    Character: {
-      /** @description Opaque character identifier (cuid2) */
-      readonly id: string;
-      /** @description Identifier of the owning user (cuid2) */
-      readonly ownerId: string;
-      /** @description Character name (1–80 characters) */
-      name: string;
-      /** @description Short concept phrase — the role the character plays at the table (1–120 chars when non-null) */
-      concept: string | null;
-      /** @description One of the Nine Icons, or null if not chosen yet */
-      iconId: components['schemas']['IconId'] | null;
-      attributes: components['schemas']['Attributes'];
-      skills: components['schemas']['Skills'];
-      hp: {
-        current: number;
-        /** @description Derived from STR + AGI; set by the server */
-        readonly max: number;
-      };
-      mp: {
-        current: number;
-        /** @description Derived from WIT + EMP; set by the server */
-        readonly max: number;
-      };
-      encumbrance: {
-        /** @description Sum of non-stowed item weights; set by the server */
-        readonly current: number;
-        /** @description Derived from STR × 2; set by the server */
-        readonly max: number;
-      };
-      /** @description Total XP earned */
-      experience: number;
-      conditions: components['schemas']['ConditionFlags'];
-      criticalInjuries: components['schemas']['CriticalInjury'][];
-      talents: components['schemas']['Talent'][];
-      relationships: components['schemas']['Relationship'][];
-      inventory: components['schemas']['Item'][];
-      /** @description Free-form notes (Markdown; soft cap 4096 characters) */
-      notes: string | null;
-      /** Format: date-time */
-      readonly createdAt: string;
-      /** Format: date-time */
-      readonly updatedAt: string;
-    };
-    /**
-     * @description Payload for `POST /api/v1/characters`. Only `name` is required.
-     *     Attribute values default to 2 if the `attributes` object is omitted
-     *     or a key within it is missing. Skill values default to 0.
-     *
-     *     Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
-     *     `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`)
-     *     must not be included; they are rejected with 400.
-     */
-    CharacterCreate: {
-      name: string;
-      concept?: string | null;
-      iconId?: components['schemas']['IconId'] | null;
-      attributes?: components['schemas']['Attributes'];
-      skills?: components['schemas']['Skills'];
-      hp?: {
-        current?: number;
-      };
-      mp?: {
-        current?: number;
-      };
-      /** @default 0 */
-      experience: number;
-      conditions?: components['schemas']['ConditionFlags'];
-      notes?: string | null;
-    };
-    /**
-     * @description PATCH payload for `PATCH /api/v1/characters/{id}`. All fields are
-     *     optional. Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
-     *     `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`)
-     *     are rejected with 400 if present.
-     *
-     *     Derived stats (`hp.max`, `mp.max`, `encumbrance.max`) are
-     *     recalculated automatically after each successful write.
-     */
-    CharacterUpdate: {
-      name?: string;
-      concept?: string | null;
-      iconId?: components['schemas']['IconId'] | null;
-      attributes?: components['schemas']['Attributes'];
-      skills?: components['schemas']['Skills'];
-      hp?: {
-        current?: number;
-      };
-      mp?: {
-        current?: number;
-      };
-      experience?: number;
-      conditions?: components['schemas']['ConditionFlags'];
-      /**
-       * @description Replaces the entire critical injuries list when provided.
-       *     Use the dedicated nested-item pattern (POST/PATCH/DELETE on
-       *     individual injuries) once that surface is added in a later epic.
-       */
-      criticalInjuries?: components['schemas']['CriticalInjury'][];
-      notes?: string | null;
-    };
-    /** @description Cursor-paginated list of characters */
-    CharacterList: {
-      items: components['schemas']['Character'][];
-      /** @description Opaque cursor for the next page; null when this is the last page */
-      nextCursor: string | null;
-    };
-    /**
-     * @description Ship hull class per ST3001 ГЛАВА 7 Table 7.4 (типы кораблей). The
-     *     class determines the base stat block (energy, hull, maneuverability,
-     *     signature, armor, speed, module slots) from Table 7.5. Kebab-case
-     *     values map to the Russian originals in the rulebook.
-     *
-     *     Class I examples: fighter, shuttle.
-     *     Class II examples: torpedo-boat.
-     *     Class III examples: light-freighter, light-passenger, courier-yacht,
-     *       clipper, patrol-boat, gunboat, assault-ship, blockade-runner, pleasure-yacht.
-     *     Class IV examples: flying-circus, prospector, rescue-ship, passenger-liner.
-     *     Class V examples: heavy-cruiser, passenger-liner (large).
-     * @enum {string}
-     */
-    ShipClass:
-      | 'fighter'
-      | 'shuttle'
-      | 'torpedo-boat'
-      | 'light-freighter'
-      | 'light-passenger'
-      | 'courier-yacht'
-      | 'clipper'
-      | 'patrol-boat'
-      | 'gunboat'
-      | 'assault-ship'
-      | 'blockade-runner'
-      | 'pleasure-yacht'
-      | 'flying-circus'
-      | 'prospector'
-      | 'rescue-ship'
-      | 'passenger-liner'
-      | 'heavy-freighter'
-      | 'cruiser'
-      | 'destroyer'
-      | 'heavy-cruiser';
-    /**
-     * @description Ship module slot type per ST3001 ГЛАВА 7 mandatory and optional module
-     *     catalogue. `BRIDGE`, `REACTOR`, `DRIVE` are mandatory on every ship.
-     *     All others are optional and consume module slots. The existing
-     *     `ItemSlotType` enum covers character-inventory ship modules; this enum
-     *     covers actual installed ship modules and provides richer coverage of
-     *     the full ГЛАВА 7 catalogue.
-     * @enum {string}
-     */
-    ShipModuleSlot:
-      | 'BRIDGE'
-      | 'REACTOR'
-      | 'DRIVE'
-      | 'HOLD'
-      | 'WEAPON'
-      | 'TORPEDO'
-      | 'SENSOR'
-      | 'COMMS'
-      | 'HANGAR'
-      | 'QUARTERS'
-      | 'MEDICAL'
-      | 'WORKSHOP'
-      | 'CHAPEL'
-      | 'ESCAPE-PODS'
-      | 'CRYO'
-      | 'DOCKING'
-      | 'MINING'
-      | 'REPAIR'
-      | 'CONCEALED-HOLD'
-      | 'PROXY-DECK'
-      | 'OTHER';
-    /**
-     * @description Ship-combat range bands per ST3001 ГЛАВА 7 Table 7.9. Distinct from
-     *     the personal-scale `ItemRangeEnum`.
-     *     - `zero` — point-blank / boarding range.
-     *     - `close` — within a few hundred metres.
-     *     - `medium` — standard engagement distance.
-     *     - `long` — extended engagement.
-     *     - `extreme` — maximum sensor range.
-     * @enum {string}
-     */
-    ShipWeaponRange: 'zero' | 'close' | 'medium' | 'long' | 'extreme';
-    /**
-     * @description Crew positions per ST3001 ГЛАВА 7 (crew roles). `sensorOp` is the
-     *     штурман-оператор (navigator/sensor operator) in the rulebook, also
-     *     responsible for combat-meme and info-impulse attacks. All positions
-     *     except `captain` may be filled by automation (усовершенствование
-     *     «Автоматика»).
-     * @enum {string}
-     */
-    CrewPosition: 'captain' | 'pilot' | 'sensorOp' | 'gunner' | 'engineer' | 'serviceCrew';
-    /**
-     * @description A crew position on a ship. Positions without an assigned character are
-     *     vacant (open berth). Multiple characters may not share one position.
-     */
-    CrewSlot: {
-      position: components['schemas']['CrewPosition'];
-      /**
-       * @description ID of the assigned Character. Null when the berth is vacant.
-       *     The character must be owned by the same user as the ship.
-       */
-      assignedCharacterId?: string | null;
-    };
-    /** @description Fields common to every ship module variant */
-    ShipModuleBase: {
-      /** @description Opaque module identifier (cuid2) */
-      readonly id: string;
-      slot: components['schemas']['ShipModuleSlot'];
-      /** @description Module name (e.g. "Graviton Projector", "Smuggler hold") */
-      name: string;
-      /** @description Energy points consumed by this module when active */
-      energyUse: number;
-      /** @description Free-text notes; used for damage state, special conditions, etc. */
-      notes?: string | null;
-    };
-    ShipModuleWeapon: components['schemas']['ShipModuleBase'] & {
-      /** @enum {string} */
-      slot?: 'WEAPON';
-      /** @description Modifier dice added to the attack pool (Мод. column in Table 7.9) */
-      weaponBonus: number;
-      weaponRange: components['schemas']['ShipWeaponRange'];
-      /** @description Structural damage dealt on a hit */
-      weaponDamage: number;
-      /** @description Number of successes required to trigger a critical effect */
-      weaponCritThreshold: number;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'WEAPON';
-    };
-    ShipModuleTorpedo: components['schemas']['ShipModuleBase'] & {
-      /** @enum {string} */
-      slot?: 'TORPEDO';
-      /** @description Number of torpedoes currently loaded */
-      torpedoCount?: number;
-      /** @description Number of mines currently loaded */
-      mineCount?: number;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'TORPEDO';
-    };
-    ShipModuleHold: components['schemas']['ShipModuleBase'] & {
-      /** @enum {string} */
-      slot?: 'HOLD';
-      /** @description Cargo capacity in tonnes (class-dependent per Table 7.6) */
-      cargoTons?: number;
-      /**
-       * @description True for a потайной грузовой отсек (concealed hold)
-       * @default false
-       */
-      concealed: boolean;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'HOLD';
-    };
-    ShipModuleSensor: components['schemas']['ShipModuleBase'] & {
-      /** @enum {string} */
-      slot?: 'SENSOR';
-      /**
-       * @description Modifier added to sensor / dataDjinn checks
-       * @default 1
-       */
-      detectionBonus: number;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'SENSOR';
-    };
-    ShipModuleOther: components['schemas']['ShipModuleBase'] & {
-      slot?: components['schemas']['ShipModuleSlot'];
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot:
-        | 'BRIDGE'
-        | 'REACTOR'
-        | 'DRIVE'
-        | 'COMMS'
-        | 'HANGAR'
-        | 'QUARTERS'
-        | 'MEDICAL'
-        | 'WORKSHOP'
-        | 'CHAPEL'
-        | 'ESCAPE-PODS'
-        | 'CRYO'
-        | 'DOCKING'
-        | 'MINING'
-        | 'REPAIR'
-        | 'CONCEALED-HOLD'
-        | 'PROXY-DECK'
-        | 'OTHER';
-    };
-    /**
-     * @description Create payload for a WEAPON ship module. No `id` — server-assigned.
-     * @example {
-     *       "slot": "WEAPON",
-     *       "name": "Graviton Projector",
-     *       "energyUse": 2,
-     *       "weaponBonus": 1,
-     *       "weaponRange": "medium",
-     *       "weaponDamage": 3,
-     *       "weaponCritThreshold": 3,
-     *       "notes": null
-     *     }
-     */
-    ShipModuleWeaponCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'WEAPON';
-      name: string;
-      energyUse: number;
-      /** @description Modifier dice added to the attack pool */
-      weaponBonus: number;
-      weaponRange: components['schemas']['ShipWeaponRange'];
-      /** @description Structural damage dealt on a hit */
-      weaponDamage: number;
-      /** @description Number of successes required to trigger a critical effect */
-      weaponCritThreshold: number;
-      notes?: string | null;
-    };
-    /**
-     * @description Create payload for a TORPEDO ship module. No `id` — server-assigned.
-     * @example {
-     *       "slot": "TORPEDO",
-     *       "name": "Torpedo Bay Alpha",
-     *       "energyUse": 1,
-     *       "torpedoCount": 4,
-     *       "mineCount": 0,
-     *       "notes": null
-     *     }
-     */
-    ShipModuleTorpedoCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'TORPEDO';
-      name: string;
-      energyUse: number;
-      /**
-       * @description Number of torpedoes currently loaded
-       * @default 0
-       */
-      torpedoCount: number;
-      /**
-       * @description Number of mines currently loaded
-       * @default 0
-       */
-      mineCount: number;
-      notes?: string | null;
-    };
-    /**
-     * @description Create payload for a HOLD ship module. No `id` — server-assigned.
-     * @example {
-     *       "slot": "HOLD",
-     *       "name": "Main Cargo Hold",
-     *       "energyUse": 0,
-     *       "cargoTons": 50,
-     *       "concealed": false,
-     *       "notes": null
-     *     }
-     */
-    ShipModuleHoldCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'HOLD';
-      name: string;
-      energyUse: number;
-      /**
-       * @description Cargo capacity in tonnes
-       * @default 0
-       */
-      cargoTons: number;
-      /**
-       * @description True for a concealed hold
-       * @default false
-       */
-      concealed: boolean;
-      notes?: string | null;
-    };
-    /**
-     * @description Create payload for a SENSOR ship module. No `id` — server-assigned.
-     * @example {
-     *       "slot": "SENSOR",
-     *       "name": "Long-Range Sensor Tower",
-     *       "energyUse": 1,
-     *       "detectionBonus": 1,
-     *       "notes": null
-     *     }
-     */
-    ShipModuleSensorCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'SENSOR';
-      name: string;
-      energyUse: number;
-      /**
-       * @description Modifier added to sensor / dataDjinn checks
-       * @default 1
-       */
-      detectionBonus: number;
-      notes?: string | null;
-    };
-    /**
-     * @description Create payload for any other ship module slot type (BRIDGE, REACTOR,
-     *     DRIVE, COMMS, HANGAR, QUARTERS, MEDICAL, WORKSHOP, CHAPEL, ESCAPE-PODS,
-     *     CRYO, DOCKING, MINING, REPAIR, CONCEALED-HOLD, PROXY-DECK, OTHER).
-     *     No `id` — server-assigned.
-     * @example {
-     *       "slot": "COMMS",
-     *       "name": "Long-Range Comms Array",
-     *       "energyUse": 1,
-     *       "notes": null
-     *     }
-     */
-    ShipModuleOtherCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot:
-        | 'BRIDGE'
-        | 'REACTOR'
-        | 'DRIVE'
-        | 'COMMS'
-        | 'HANGAR'
-        | 'QUARTERS'
-        | 'MEDICAL'
-        | 'WORKSHOP'
-        | 'CHAPEL'
-        | 'ESCAPE-PODS'
-        | 'CRYO'
-        | 'DOCKING'
-        | 'MINING'
-        | 'REPAIR'
-        | 'CONCEALED-HOLD'
-        | 'PROXY-DECK'
-        | 'OTHER';
-      name: string;
-      energyUse: number;
-      notes?: string | null;
-    };
-    /**
-     * @description PATCH payload for a WEAPON ship module. All fields optional.
-     * @example {
-     *       "slot": "WEAPON",
-     *       "weaponDamage": 4
-     *     }
-     */
-    ShipModuleWeaponUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'WEAPON';
-      name?: string;
-      energyUse?: number;
-      weaponBonus?: number;
-      weaponRange?: components['schemas']['ShipWeaponRange'];
-      weaponDamage?: number;
-      weaponCritThreshold?: number;
-      notes?: string | null;
-    };
-    /**
-     * @description PATCH payload for a TORPEDO ship module. All fields optional.
-     * @example {
-     *       "slot": "TORPEDO",
-     *       "torpedoCount": 2
-     *     }
-     */
-    ShipModuleTorpedoUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'TORPEDO';
-      name?: string;
-      energyUse?: number;
-      torpedoCount?: number;
-      mineCount?: number;
-      notes?: string | null;
-    };
-    /**
-     * @description PATCH payload for a HOLD ship module. All fields optional.
-     * @example {
-     *       "slot": "HOLD",
-     *       "cargoTons": 60
-     *     }
-     */
-    ShipModuleHoldUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'HOLD';
-      name?: string;
-      energyUse?: number;
-      cargoTons?: number;
-      concealed?: boolean;
-      notes?: string | null;
-    };
-    /**
-     * @description PATCH payload for a SENSOR ship module. All fields optional.
-     * @example {
-     *       "slot": "SENSOR",
-     *       "detectionBonus": 2
-     *     }
-     */
-    ShipModuleSensorUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'SENSOR';
-      name?: string;
-      energyUse?: number;
-      detectionBonus?: number;
-      notes?: string | null;
-    };
-    /**
-     * @description PATCH payload for any other ship module slot type. All fields optional.
-     *     The `slot` discriminator may not be changed after installation.
-     * @example {
-     *       "slot": "COMMS",
-     *       "notes": "Upgraded to Mk II antenna"
-     *     }
-     */
-    ShipModuleOtherUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot:
-        | 'BRIDGE'
-        | 'REACTOR'
-        | 'DRIVE'
-        | 'COMMS'
-        | 'HANGAR'
-        | 'QUARTERS'
-        | 'MEDICAL'
-        | 'WORKSHOP'
-        | 'CHAPEL'
-        | 'ESCAPE-PODS'
-        | 'CRYO'
-        | 'DOCKING'
-        | 'MINING'
-        | 'REPAIR'
-        | 'CONCEALED-HOLD'
-        | 'PROXY-DECK'
-        | 'OTHER';
-      name?: string;
-      energyUse?: number;
-      notes?: string | null;
-    };
-    /**
-     * @description A discriminated union of all ship module variants. The `slot` field
-     *     determines which variant applies. Generated clients produce a
-     *     correctly-typed sum type from this schema.
-     *
-     *     Mandatory modules (BRIDGE, REACTOR, DRIVE) are always present on a
-     *     ship and are not individually manageable via the module CRUD endpoints.
-     *     They appear in the `modules` array for completeness and energy tracking.
-     */
-    ShipModule:
-      | components['schemas']['ShipModuleWeapon']
-      | components['schemas']['ShipModuleTorpedo']
-      | components['schemas']['ShipModuleHold']
-      | components['schemas']['ShipModuleSensor']
-      | components['schemas']['ShipModuleOther'];
-    /**
-     * @description Payload for `POST /api/v1/ships/{id}/modules`. Same discriminated
-     *     union as `ShipModule` but without `id` (server-assigned). The `slot`
-     *     discriminator must be present.
-     *
-     *     Note: BRIDGE, REACTOR, and DRIVE modules are created automatically
-     *     with the ship and cannot be added via this endpoint.
-     */
-    ShipModuleCreate:
-      | components['schemas']['ShipModuleWeaponCreate']
-      | components['schemas']['ShipModuleTorpedoCreate']
-      | components['schemas']['ShipModuleHoldCreate']
-      | components['schemas']['ShipModuleSensorCreate']
-      | components['schemas']['ShipModuleOtherCreate'];
-    /**
-     * @description PATCH payload for `PATCH /api/v1/ship-modules/{id}`. The `slot`
-     *     discriminator must match the installed module's slot — changing it
-     *     returns 400 `SHIP_MODULE_SLOT_MISMATCH`. All fields optional.
-     */
-    ShipModuleUpdate:
-      | components['schemas']['ShipModuleWeaponUpdate']
-      | components['schemas']['ShipModuleTorpedoUpdate']
-      | components['schemas']['ShipModuleHoldUpdate']
-      | components['schemas']['ShipModuleSensorUpdate']
-      | components['schemas']['ShipModuleOtherUpdate'];
-    /**
-     * @description Full Ship DTO as returned by the v1 API. Ship stats correspond to
-     *     ST3001 ГЛАВА 7 Table 7.5 base stats, modified by the installed
-     *     modules and upgrades.
-     *
-     *     `hull.max` and `energy.max` are tracked as explicit editable values
-     *     (not derived) because they can be altered by upgrades (Прочный корпус
-     *     +1 hull, Мощный реактор +1 energy). `maneuverability` and `signature`
-     *     are signed integers (negative values are valid per the class table).
-     */
-    Ship: {
-      /** @description Opaque ship identifier (cuid2) */
-      readonly id: string;
-      /** @description Identifier of the owning user (cuid2) */
-      readonly ownerId: string;
-      /** @description Ship name (1–80 characters) */
-      name: string;
-      class: components['schemas']['ShipClass'];
-      /** @description Model / shipyard name (e.g. "Helebian Class III freighter") */
-      model: string | null;
-      /** @description Registry number / transponder code (e.g. "KUA-7741-M") */
-      registry: string | null;
-      /** @description Structural integrity (Прочность in ST3001 ГЛАВА 7) */
-      hull: {
-        /** @description Current hull points */
-        current: number;
-        /** @description Maximum hull points (base per class + Прочный корпус upgrades) */
-        max: number;
-      };
-      /** @description Reactor energy (Энергия in ST3001 ГЛАВА 7) */
-      energy: {
-        /** @description Energy points currently available for allocation */
-        current: number;
-        /** @description Maximum energy points (base per class + Мощный реактор upgrades) */
-        max: number;
-      };
-      /** @description Armor rating — number of dice rolled for the armor check (Броня) */
-      armor: number;
-      /**
-       * @description Maneuverability modifier (Манёвренность). Signed integer — negative
-       *     for large classes (Class IV is −1, Class V is −2). Affects pilot
-       *     skill checks in ship combat per ST3001 ГЛАВА 7.
-       */
-      maneuverability: number;
-      /**
-       * @description Signature modifier (Заметность). Signed integer. Negative values
-       *     mean the ship is harder to detect; positive values mean it is more
-       *     visible. Applied to opponent sensor checks per ГЛАВА 7.
-       */
-      signature: number;
-      /** @description Speed in astronomical units per day (Скорость per ГЛАВА 7 Table 7.5) */
-      speed: number;
-      /**
-       * @description Total cargo capacity in tonnes across all hold modules
-       *     (Вместимость per ГЛАВА 7 Table 7.6: Class III = 50 tonnes).
-       */
-      cargoCapacity: number;
-      /**
-       * @description Installed modules including the three mandatory ones (BRIDGE,
-       *     REACTOR, DRIVE). Optional modules consume the class module-slot
-       *     budget.
-       */
-      modules: components['schemas']['ShipModule'][];
-      /** @description Crew assignment roster */
-      crew: components['schemas']['CrewSlot'][];
-      /**
-       * @description List of active ship problems (free-text entries, e.g. damage
-       *     effects or wear-and-tear notes per ГЛАВА 7 wear table).
-       */
-      problems: string[];
-      /** @description Free-form ship history / background text (Markdown) */
-      history: string | null;
-      /** @description GM / player operational notes (Markdown) */
-      notes: string | null;
-      /** Format: date-time */
-      readonly createdAt: string;
-      /** Format: date-time */
-      readonly updatedAt: string;
-    };
-    /**
-     * @description Payload for `POST /api/v1/ships`. `name` and `class` are required.
-     *     Server populates base stats from the class table (ST3001 ГЛАВА 7
-     *     Table 7.5) when not explicitly provided. The three mandatory modules
-     *     (BRIDGE, REACTOR, DRIVE) are created automatically.
-     */
-    ShipCreate: {
-      name: string;
-      class: components['schemas']['ShipClass'];
-      model?: string | null;
-      registry?: string | null;
-      /** @description Override base hull stats from class table */
-      hull?: {
-        current?: number;
-        max?: number;
-      };
-      /** @description Override base energy from class table */
-      energy?: {
-        current?: number;
-        max?: number;
-      };
-      armor?: number;
-      maneuverability?: number;
-      signature?: number;
-      speed?: number;
-      notes?: string | null;
-      history?: string | null;
-    };
-    /**
-     * @description PATCH payload for `PATCH /api/v1/ships/{id}`. All fields optional.
-     *     Read-only fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are
-     *     rejected with 400 if present.
-     */
-    ShipUpdate: {
-      name?: string;
-      model?: string | null;
-      registry?: string | null;
-      hull?: {
-        current?: number;
-        max?: number;
-      };
-      energy?: {
-        current?: number;
-        max?: number;
-      };
-      armor?: number;
-      maneuverability?: number;
-      signature?: number;
-      speed?: number;
-      /** @description Replaces the entire problems list when provided */
-      problems?: string[];
-      history?: string | null;
-      notes?: string | null;
-    };
-    /** @description Cursor-paginated list of ships */
-    ShipList: {
-      items: components['schemas']['Ship'][];
-      /** @description Opaque cursor for the next page; null when this is the last page */
-      nextCursor: string | null;
-    };
-    HealthStatus: {
-      status: components['schemas']['DependencyStatus'];
-      /** @description Semantic version of the running backend build */
-      version: string | null;
-      /** @description Seconds since the backend process started */
-      uptimeSeconds: number;
-      dependencies: {
-        db: components['schemas']['DependencyStatus'];
-        redis: components['schemas']['DependencyStatus'];
-        centrifugo: components['schemas']['DependencyStatus'];
-      };
-    };
-    /** @description RFC 9457 problem details */
-    Problem: {
-      /**
-       * Format: uri
-       * @default about:blank
-       */
-      type: string | null;
-      title: string | null;
-      /** Format: int32 */
-      status: number;
-      detail?: string | null;
-      instance?: string | null;
-      code?: string | null;
-    };
-    /**
-     * @description The authenticated user's profile as exposed by the v1 API. Fields
-     *     sourced from the Better Auth `user` table. `deletedAt` is an internal
-     *     soft-delete flag and is never surfaced here — deleted users receive a
-     *     404 because their sessions are revoked at deletion time.
-     */
-    Me: {
-      /** @description Opaque user identifier issued by Better Auth (cuid2) */
-      id: string;
-      /**
-       * Format: email
-       * @description Primary email address. Read-only via this API.
-       */
-      email: string;
-      /**
-       * @description User-chosen display name shown in share-link banners and the avatar
-       *     menu. Null when the user has not set one yet.
-       */
-      displayName: string | null;
-      /**
-       * Format: date-time
-       * @description ISO-8601 instant when the account was created. Read-only via this API.
-       */
-      createdAt: string | null;
-    };
-    /**
-     * @description Partial update payload for PATCH /api/v1/me. Only `displayName` is
-     *     mutable. Omitting a property leaves the corresponding field unchanged.
-     *     Setting `displayName` to null clears the field.
-     */
-    MeUpdate: {
-      /**
-       * @description User-chosen display name. Must be 1–80 characters when non-null.
-       *     Set to null to clear the field.
-       */
-      displayName?: string | null;
-    };
-    RealtimeToken: {
-      /** @description Short-lived HMAC-signed JWT for Centrifugo */
-      token: string | null;
-      /**
-       * Format: date-time
-       * @description ISO-8601 instant when the token expires
-       */
-      expiresAt: string | null;
-    };
-  };
-  responses: never;
-  parameters: {
-    /** @description Character identifier (cuid2) */
-    CharacterId: string;
-    /** @description Item identifier (cuid2) */
-    ItemId: string;
-    /** @description Talent identifier (cuid2) */
-    TalentId: string;
-    /** @description Ship identifier (cuid2) */
-    ShipId: string;
-    /** @description Ship module identifier (cuid2) */
-    ShipModuleId: string;
-  };
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  listCharacters: {
-    parameters: {
-      query?: {
-        /** @description Opaque pagination cursor returned by the previous page */
-        cursor?: string;
-        /** @description Number of characters to return (1–100, default 20) */
-        limit?: number;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Paginated character list */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['CharacterList'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  createCharacter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CharacterCreate'];
-      };
-    };
-    responses: {
-      /** @description Character created */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Character'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `CHARACTER_NAME_EMPTY` — name is an empty string.
-       *     - `CHARACTER_NAME_TOO_LONG` — name exceeds 80 characters.
-       *     - `ATTRIBUTE_OUT_OF_RANGE` — an attribute value is outside 1–5.
-       *     - `SKILL_OUT_OF_RANGE` — a skill value is outside its allowed range.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  getCharacter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Character found */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Character'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller is authenticated but does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  deleteCharacter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Character deleted */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  updateCharacter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CharacterUpdate'];
-      };
-    };
-    responses: {
-      /** @description Updated character */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Character'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `CHARACTER_NAME_EMPTY`
-       *     - `CHARACTER_NAME_TOO_LONG`
-       *     - `ATTRIBUTE_OUT_OF_RANGE`
-       *     - `SKILL_OUT_OF_RANGE`
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  duplicateCharacter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Duplicated character */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Character'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  exportCharacter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Character JSON export */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Character'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  addCharacterItem: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ItemCreate'];
-      };
-    };
-    responses: {
-      /** @description Item created */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Item'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `CHARACTER_NAME_EMPTY` — item name is empty.
-       *     - `ITEM_TYPE_MISMATCH` — payload fields do not match the declared type.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  addCharacterTalent: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['TalentCreate'];
-      };
-    };
-    responses: {
-      /** @description Talent created */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Talent'];
-        };
-      };
-      /** @description Validation error (name empty, rank out of 1–3 range) */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  listShips: {
-    parameters: {
-      query?: {
-        /** @description Opaque pagination cursor returned by the previous page */
-        cursor?: string;
-        /** @description Number of ships to return (1–100, default 20) */
-        limit?: number;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Paginated ship list */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ShipList'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  createShip: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ShipCreate'];
-      };
-    };
-    responses: {
-      /** @description Ship created */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Ship'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `SHIP_NAME_EMPTY` — name is an empty string.
-       *     - `SHIP_NAME_TOO_LONG` — name exceeds 80 characters.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  getShip: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship identifier (cuid2) */
-        id: components['parameters']['ShipId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Ship found */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Ship'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller is authenticated but does not own this ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Ship not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  deleteShip: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship identifier (cuid2) */
-        id: components['parameters']['ShipId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Ship deleted */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Ship not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  updateShip: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship identifier (cuid2) */
-        id: components['parameters']['ShipId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ShipUpdate'];
-      };
-    };
-    responses: {
-      /** @description Updated ship */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Ship'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `SHIP_NAME_EMPTY`
-       *     - `SHIP_NAME_TOO_LONG`
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Ship not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  duplicateShip: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship identifier (cuid2) */
-        id: components['parameters']['ShipId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Duplicated ship */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Ship'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Ship not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  exportShip: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship identifier (cuid2) */
-        id: components['parameters']['ShipId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Ship JSON export */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Ship'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Ship not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  addShipModule: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship identifier (cuid2) */
-        id: components['parameters']['ShipId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ShipModuleCreate'];
-      };
-    };
-    responses: {
-      /** @description Module installed */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ShipModule'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `MODULE_SLOT_INVALID` — slot value not recognised.
-       *     - `MODULE_TYPE_MISMATCH` — payload fields do not match the declared slot.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Ship not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  assignCrew: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship identifier (cuid2) */
-        id: components['parameters']['ShipId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': {
-          position: components['schemas']['CrewPosition'];
-          /** @description ID of the character to assign (must be owned by caller) */
-          characterId: string;
-        };
-      };
-    };
-    responses: {
-      /** @description Crew member assigned */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['CrewSlot'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `CREW_POSITION_TAKEN` — that position is already occupied.
-       *     - `CHARACTER_NOT_FOUND` — characterId does not exist.
-       *     - `CHARACTER_NOT_OWNED` — character is not owned by the caller.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Ship not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  unassignCrew: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship identifier (cuid2) */
-        id: components['parameters']['ShipId'];
-        /** @description Character identifier to remove from the crew */
-        characterId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Crew member unassigned */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Ship or crew assignment not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  deleteShipModule: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship module identifier (cuid2) */
-        id: components['parameters']['ShipModuleId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Module removed */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the parent ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Module not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  updateShipModule: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship module identifier (cuid2) */
-        id: components['parameters']['ShipModuleId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ShipModuleUpdate'];
-      };
-    };
-    responses: {
-      /** @description Updated module */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ShipModule'];
-        };
-      };
-      /**
-       * @description Validation error. Possible code:
-       *     - `MODULE_TYPE_MISMATCH` — slot discriminator changed.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the parent ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Module not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  getHealth: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Service and all dependencies are operational */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['HealthStatus'];
-        };
-      };
-      /** @description One or more dependencies are degraded or down */
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['HealthStatus'];
-        };
-      };
-    };
-  };
-  deleteItem: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Item identifier (cuid2) */
-        id: components['parameters']['ItemId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Item deleted */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the parent character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Item not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  updateItem: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Item identifier (cuid2) */
-        id: components['parameters']['ItemId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ItemUpdate'];
-      };
-    };
-    responses: {
-      /** @description Updated item */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Item'];
-        };
-      };
-      /**
-       * @description Validation error. Possible code:
-       *     - `ITEM_TYPE_MISMATCH` — type discriminator changed.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the parent character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Item not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  getMe: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description The authenticated user's profile */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Me'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  deleteMe: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /**
-       * @description Account soft-deleted (or was already soft-deleted — idempotent).
-       *     Sessions revoked. No response body.
-       */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  updateMe: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['MeUpdate'];
-      };
-    };
-    responses: {
-      /** @description Updated profile */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Me'];
-        };
-      };
-      /**
-       * @description Validation error. Possible cases:
-       *     - `displayName` is an empty string.
-       *     - `displayName` exceeds 80 characters.
-       *     - Request body contains read-only fields (`email`, `createdAt`).
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  issueRealtimeToken: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Token issued */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['RealtimeToken'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  deleteTalent: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Talent identifier (cuid2) */
-        id: components['parameters']['TalentId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Talent deleted */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the parent character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Talent not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  updateTalent: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Talent identifier (cuid2) */
-        id: components['parameters']['TalentId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['TalentUpdate'];
-      };
-    };
-    responses: {
-      /** @description Updated talent */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Talent'];
-        };
-      };
-      /** @description Validation error (rank out of 1–3 range) */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the parent character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Talent not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
+    listCharacters: {
+        parameters: {
+            query?: {
+                /** @description Opaque pagination cursor returned by the previous page */
+                cursor?: string;
+                /** @description Number of characters to return (1–100, default 20) */
+                limit?: number;
+                /**
+                 * @description When `false` (default), only `active` characters are returned —
+                 *     draft wizard-in-progress characters are hidden from the dashboard.
+                 *     When `true`, both `active` and `draft` characters are returned so
+                 *     the wizard UI can display in-progress records.
+                 */
+                includeDrafts?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated character list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CharacterList"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    createCharacter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CharacterCreate"];
+            };
+        };
+        responses: {
+            /** @description Character created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Character"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `CHARACTER_NAME_EMPTY` — name is an empty string.
+             *     - `CHARACTER_NAME_TOO_LONG` — name exceeds 80 characters.
+             *     - `ATTRIBUTE_OUT_OF_RANGE` — an attribute value is outside 1–5.
+             *     - `SKILL_OUT_OF_RANGE` — a skill value is outside its allowed range.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    getCharacter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Character found */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Character"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller is authenticated but does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteCharacter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Character deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateCharacter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CharacterUpdate"];
+            };
+        };
+        responses: {
+            /** @description Updated character */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Character"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `CHARACTER_NAME_EMPTY`
+             *     - `CHARACTER_NAME_TOO_LONG`
+             *     - `ATTRIBUTE_OUT_OF_RANGE`
+             *     - `SKILL_OUT_OF_RANGE`
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    duplicateCharacter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Duplicated character */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Character"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    exportCharacter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Character JSON export */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Character"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    addCharacterItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ItemCreate"];
+            };
+        };
+        responses: {
+            /** @description Item created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `CHARACTER_NAME_EMPTY` — item name is empty.
+             *     - `ITEM_TYPE_MISMATCH` — payload fields do not match the declared type.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    addCharacterTalent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TalentCreate"];
+            };
+        };
+        responses: {
+            /** @description Talent created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Talent"];
+                };
+            };
+            /** @description Validation error (name empty, rank out of 1–3 range) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    listShips: {
+        parameters: {
+            query?: {
+                /** @description Opaque pagination cursor returned by the previous page */
+                cursor?: string;
+                /** @description Number of ships to return (1–100, default 20) */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated ship list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipList"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    createShip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShipCreate"];
+            };
+        };
+        responses: {
+            /** @description Ship created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ship"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `SHIP_NAME_EMPTY` — name is an empty string.
+             *     - `SHIP_NAME_TOO_LONG` — name exceeds 80 characters.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    getShip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship identifier (cuid2) */
+                id: components["parameters"]["ShipId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ship found */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ship"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller is authenticated but does not own this ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Ship not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteShip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship identifier (cuid2) */
+                id: components["parameters"]["ShipId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ship deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Ship not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateShip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship identifier (cuid2) */
+                id: components["parameters"]["ShipId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShipUpdate"];
+            };
+        };
+        responses: {
+            /** @description Updated ship */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ship"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `SHIP_NAME_EMPTY`
+             *     - `SHIP_NAME_TOO_LONG`
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Ship not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    duplicateShip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship identifier (cuid2) */
+                id: components["parameters"]["ShipId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Duplicated ship */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ship"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Ship not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    exportShip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship identifier (cuid2) */
+                id: components["parameters"]["ShipId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ship JSON export */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ship"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Ship not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    addShipModule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship identifier (cuid2) */
+                id: components["parameters"]["ShipId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShipModuleCreate"];
+            };
+        };
+        responses: {
+            /** @description Module installed */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipModule"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `MODULE_SLOT_INVALID` — slot value not recognised.
+             *     - `MODULE_TYPE_MISMATCH` — payload fields do not match the declared slot.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Ship not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    assignCrew: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship identifier (cuid2) */
+                id: components["parameters"]["ShipId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    position: components["schemas"]["CrewPosition"];
+                    /** @description ID of the character to assign (must be owned by caller) */
+                    characterId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Crew member assigned */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CrewSlot"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `CREW_POSITION_TAKEN` — that position is already occupied.
+             *     - `CHARACTER_NOT_FOUND` — characterId does not exist.
+             *     - `CHARACTER_NOT_OWNED` — character is not owned by the caller.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Ship not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    unassignCrew: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship identifier (cuid2) */
+                id: components["parameters"]["ShipId"];
+                /** @description Character identifier to remove from the crew */
+                characterId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Crew member unassigned */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Ship or crew assignment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteShipModule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship module identifier (cuid2) */
+                id: components["parameters"]["ShipModuleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Module removed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the parent ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Module not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateShipModule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship module identifier (cuid2) */
+                id: components["parameters"]["ShipModuleId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShipModuleUpdate"];
+            };
+        };
+        responses: {
+            /** @description Updated module */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipModule"];
+                };
+            };
+            /**
+             * @description Validation error. Possible code:
+             *     - `MODULE_TYPE_MISMATCH` — slot discriminator changed.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the parent ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Module not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    getHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Service and all dependencies are operational */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthStatus"];
+                };
+            };
+            /** @description One or more dependencies are degraded or down */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthStatus"];
+                };
+            };
+        };
+    };
+    deleteItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Item identifier (cuid2) */
+                id: components["parameters"]["ItemId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Item deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the parent character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Item not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Item identifier (cuid2) */
+                id: components["parameters"]["ItemId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ItemUpdate"];
+            };
+        };
+        responses: {
+            /** @description Updated item */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item"];
+                };
+            };
+            /**
+             * @description Validation error. Possible code:
+             *     - `ITEM_TYPE_MISMATCH` — type discriminator changed.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the parent character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Item not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    getMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The authenticated user's profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /**
+             * @description Account soft-deleted (or was already soft-deleted — idempotent).
+             *     Sessions revoked. No response body.
+             */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MeUpdate"];
+            };
+        };
+        responses: {
+            /** @description Updated profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            /**
+             * @description Validation error. Possible cases:
+             *     - `displayName` is an empty string.
+             *     - `displayName` exceeds 80 characters.
+             *     - Request body contains read-only fields (`email`, `createdAt`).
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    issueRealtimeToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Token issued */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RealtimeToken"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteTalent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Talent identifier (cuid2) */
+                id: components["parameters"]["TalentId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Talent deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the parent character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Talent not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateTalent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Talent identifier (cuid2) */
+                id: components["parameters"]["TalentId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TalentUpdate"];
+            };
+        };
+        responses: {
+            /** @description Updated talent */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Talent"];
+                };
+            };
+            /** @description Validation error (rank out of 1–3 range) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the parent character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Talent not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
     };
-  };
 }

@@ -687,6 +687,21 @@ export type Character = {
      * Free-form notes (Markdown; soft cap 4096 characters)
      */
     notes: string | null;
+    /**
+     * Lifecycle state of the character.
+     *
+     * - `draft` — character is a work-in-progress created by the wizard.
+     * Draft characters are excluded from the default character list
+     * (`GET /api/v1/characters`) unless `?includeDrafts=true` is passed.
+     * - `active` — character is complete and visible on the dashboard.
+     *
+     * Transitioning from `draft` to `active` (forging) is done by sending
+     * `PATCH /api/v1/characters/{id}` with `{ "status": "active" }`.
+     * The reverse transition (`active → draft`) is rejected with 422
+     * `INVALID_STATUS_TRANSITION`.
+     *
+     */
+    status: 'draft' | 'active';
     readonly createdAt: string;
     readonly updatedAt: string;
 };
@@ -699,6 +714,9 @@ export type Character = {
  * Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
  * `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`)
  * must not be included; they are rejected with 400.
+ *
+ * Set `status: 'draft'` to create a wizard-in-progress character.
+ * Omitting `status` defaults to `'active'`.
  *
  */
 export type CharacterCreate = {
@@ -716,6 +734,12 @@ export type CharacterCreate = {
     experience?: number;
     conditions?: ConditionFlags;
     notes?: string | null;
+    /**
+     * Initial lifecycle state. Omit (or set `active`) for normal creation.
+     * Set to `draft` when starting the character-creation wizard.
+     *
+     */
+    status?: 'draft' | 'active';
 };
 
 /**
@@ -726,6 +750,14 @@ export type CharacterCreate = {
  *
  * Derived stats (`hp.max`, `mp.max`, `encumbrance.max`) are
  * recalculated automatically after each successful write.
+ *
+ * **Status transitions:**
+ * - `draft → draft` — no-op; the wizard continues editing.
+ * - `draft → active` — forges the character (wizard complete).
+ * Send `{ "status": "active" }` as a standalone PATCH or alongside
+ * other field updates.
+ * - `active → draft` — **rejected** with 422 `INVALID_STATUS_TRANSITION`.
+ * Active characters cannot be reverted to draft state.
  *
  */
 export type CharacterUpdate = {
@@ -750,6 +782,13 @@ export type CharacterUpdate = {
      */
     criticalInjuries?: Array<CriticalInjury>;
     notes?: string | null;
+    /**
+     * Lifecycle state transition. Only `draft → active` (forge) is
+     * permitted. Attempting `active → draft` returns 422
+     * `INVALID_STATUS_TRANSITION`.
+     *
+     */
+    status?: 'draft' | 'active';
 };
 
 /**
@@ -1431,6 +1470,21 @@ export type CharacterWritable = {
      * Free-form notes (Markdown; soft cap 4096 characters)
      */
     notes: string | null;
+    /**
+     * Lifecycle state of the character.
+     *
+     * - `draft` — character is a work-in-progress created by the wizard.
+     * Draft characters are excluded from the default character list
+     * (`GET /api/v1/characters`) unless `?includeDrafts=true` is passed.
+     * - `active` — character is complete and visible on the dashboard.
+     *
+     * Transitioning from `draft` to `active` (forging) is done by sending
+     * `PATCH /api/v1/characters/{id}` with `{ "status": "active" }`.
+     * The reverse transition (`active → draft`) is rejected with 422
+     * `INVALID_STATUS_TRANSITION`.
+     *
+     */
+    status: 'draft' | 'active';
 };
 
 /**
@@ -1692,6 +1746,14 @@ export type ListCharactersData = {
          * Number of characters to return (1–100, default 20)
          */
         limit?: number;
+        /**
+         * When `false` (default), only `active` characters are returned —
+         * draft wizard-in-progress characters are hidden from the dashboard.
+         * When `true`, both `active` and `draft` characters are returned so
+         * the wizard UI can display in-progress records.
+         *
+         */
+        includeDrafts?: boolean;
     };
     url: '/api/v1/characters';
 };
