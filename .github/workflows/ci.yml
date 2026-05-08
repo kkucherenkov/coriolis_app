@@ -156,6 +156,36 @@ jobs:
       - name: Audit components (story + spec completeness)
         run: pnpm --filter @app/ui audit:components
 
+  # ── Storybook a11y smoke ──────────────────────────────────────────────────
+  ui-storybook:
+    name: Storybook a11y smoke (axe via test-runner)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build design tokens
+        run: pnpm design:build
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter @app/ui exec playwright install --with-deps chromium
+
+      - name: Build Storybook
+        run: pnpm --filter @app/ui storybook:build
+
+      - name: Run a11y smoke against built Storybook
+        run: pnpm --filter @app/ui test:storybook:ci
+
   # ── Security audit ─────────────────────────────────────────────────────────
   security-audit:
     name: Security audit (deps + secrets + licenses)
