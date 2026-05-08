@@ -1,3 +1,29 @@
-# Active tasks
+## T-2026-05-09-001 — implement share-link backend (Epic 6 Feature 6.1)
 
-_No tasks in progress. Start here when beginning new work._
+- Created: 2026-05-09
+- Owner: claude
+- Spec: docs/IMPLEMENTATION_PLAN.md §5.4, Plan §6.1
+- Goal: Enable public read-only sharing of characters via unguessable slug URLs with owner controls (create, list, revoke) and lazy view tracking.
+- Acceptance:
+  - `POST /api/v1/characters/{id}/share` returns 201 with a `ShareLink` containing a 24-char nanoid slug.
+  - `GET /api/v1/characters/{id}/shares` returns active links for the character.
+  - `DELETE /api/v1/share-links/{id}` soft-revokes a link (sets `revokedAt`); subsequent `GET /api/v1/public/character/{slug}` returns 410.
+  - `GET /api/v1/public/character/{slug}` returns the character without auth; filters `notes` when `includeGmNotes=false`.
+  - `GET /api/v1/public/og/character/{slug}.png` returns 501.
+  - View counts are batched in memory and flushed every minute.
+- Spec diff: packages/specs/openapi/openapi.yaml — version 0.6.0 → 0.7.0; new paths + schemas for ShareLink.
+- Codegen impact: yes — regenerate api-client-{ts,dart}
+- Design impact: none (backend only)
+- Tests: ≥15 unit specs covering all handlers + ViewTracker
+- Sub-steps:
+  - [x] Push task to active.md
+  - [x] docs/adr/0003-share-link-design.md
+  - [x] openapi.yaml bump + new paths/schemas
+  - [x] pnpm spec:validate && pnpm spec:bundle && pnpm spec:codegen
+  - [x] Prisma ShareLink model + migration share-links
+  - [x] SharingModule — domain, commands, queries, infra, controller
+  - [x] ViewTracker + FlushViewTrackerJob
+  - [x] Stub OG image controller
+  - [x] lint + typecheck + test
+- Status: in-progress
+- Blockers: —
