@@ -133,3 +133,4 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 | -------- | --------- | --------------- | ------------------ |
 | Primitive | `AppButton` | ✓ | — |
 | Primitive | `AppCard` | ✓ | — |
+| Primitive | `AppInput` | ✓ | — |
