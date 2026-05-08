@@ -138,4 +138,5 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 | Primitive | `AppDivider` | ✓ | — |
 | Primitive | `AppDots` | ✓ | — |
 | Primitive | `AppIcon` | ✓ | — |
+| Primitive | `AppProgress` | ✓ | — |
 | Primitive | `AppSwitch` | ✓ | — |
