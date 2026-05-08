@@ -12,7 +12,7 @@ export class CharacterNotFoundError extends DomainError {
       code: 'CHARACTER_NOT_FOUND',
       status: 404,
       title: 'Character not found',
-      detail: `Character ${id} does not exist.`,
+      detail: `We could not locate character ${id} — it may have set out for the Far Quarter without telling us.`,
     });
   }
 }
@@ -23,7 +23,7 @@ export class CharacterNotOwnedError extends DomainError {
       code: 'CHARACTER_NOT_OWNED',
       status: 403,
       title: 'Forbidden',
-      detail: `Character ${id} does not belong to the current user.`,
+      detail: `Character ${id} does not belong to your crew. Access denied.`,
     });
   }
 }
@@ -34,7 +34,7 @@ export class CharacterNameEmptyError extends DomainError {
       code: 'CHARACTER_NAME_EMPTY',
       status: 400,
       title: 'Validation Error',
-      detail: 'name must be between 1 and 80 characters',
+      detail: 'Every Companion needs a name — provide between 1 and 80 characters.',
     });
   }
 }
@@ -45,7 +45,7 @@ export class CharacterNameTooLongError extends DomainError {
       code: 'CHARACTER_NAME_TOO_LONG',
       status: 400,
       title: 'Validation Error',
-      detail: 'name must not exceed 80 characters',
+      detail: 'That name is too long for the manifest — keep it to 80 characters or fewer.',
     });
   }
 }
@@ -56,7 +56,7 @@ export class AttributeOutOfRangeError extends DomainError {
       code: 'ATTRIBUTE_OUT_OF_RANGE',
       status: 422,
       title: 'Validation Error',
-      detail: `Attribute '${attribute}' value ${value} is out of range (1–5).`,
+      detail: `Attribute '${attribute}' value ${value} falls outside the permitted range (1–5). Check the character rules.`,
     });
   }
 }
@@ -67,7 +67,7 @@ export class SkillOutOfRangeError extends DomainError {
       code: 'SKILL_OUT_OF_RANGE',
       status: 422,
       title: 'Validation Error',
-      detail: `Skill '${skill}' value ${value} is out of range (0–5).`,
+      detail: `Skill '${skill}' value ${value} is not within the permitted range (0–5).`,
     });
   }
 }
@@ -78,7 +78,7 @@ export class IconUnknownError extends DomainError {
       code: 'ICON_UNKNOWN',
       status: 400,
       title: 'Validation Error',
-      detail: `Unknown icon '${iconId}'. Must be one of the Nine Icons.`,
+      detail: `'${iconId}' is not one of the Nine Icons recognised in the Third Horizon.`,
     });
   }
 }
@@ -94,7 +94,7 @@ export class ReadOnlyFieldError extends DomainError {
       code: 'READ_ONLY_FIELD',
       status: 422,
       title: 'Validation Error',
-      detail: `Field '${field}' is read-only and cannot be set by the client. It is computed server-side.`,
+      detail: `Field '${field}' is calculated by the server and cannot be set directly.`,
     });
   }
 }

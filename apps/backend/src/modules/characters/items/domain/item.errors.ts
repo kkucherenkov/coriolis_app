@@ -6,7 +6,7 @@ export class ItemNotFoundError extends DomainError {
       code: 'ITEM_NOT_FOUND',
       status: 404,
       title: 'Item not found',
-      detail: `Item ${id} does not exist.`,
+      detail: `Item ${id} was not found in the manifest — it may have been lost to the void.`,
     });
   }
 }
@@ -17,7 +17,7 @@ export class ItemNotOwnedError extends DomainError {
       code: 'ITEM_NOT_OWNED',
       status: 403,
       title: 'Forbidden',
-      detail: `Item ${id} does not belong to the current user.`,
+      detail: `Item ${id} does not belong to your crew. Access denied.`,
     });
   }
 }
@@ -28,7 +28,7 @@ export class ItemTypeMismatchError extends DomainError {
       code: 'ITEM_TYPE_MISMATCH',
       status: 400,
       title: 'Validation Error',
-      detail: `Item ${id} type cannot be changed after creation.`,
+      detail: `Item ${id} was forged as a different type — its classification cannot be changed after creation.`,
     });
   }
 }

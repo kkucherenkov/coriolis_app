@@ -6,7 +6,7 @@ export class TalentNotFoundError extends DomainError {
       code: 'TALENT_NOT_FOUND',
       status: 404,
       title: 'Talent not found',
-      detail: `Talent ${id} does not exist.`,
+      detail: `Talent ${id} could not be found — it may have been struck from the record.`,
     });
   }
 }
@@ -17,7 +17,7 @@ export class TalentNotOwnedError extends DomainError {
       code: 'TALENT_NOT_OWNED',
       status: 403,
       title: 'Forbidden',
-      detail: `Talent ${id} does not belong to the current user.`,
+      detail: `Talent ${id} does not belong to your character. Access denied.`,
     });
   }
 }

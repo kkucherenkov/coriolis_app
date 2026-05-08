@@ -16,7 +16,7 @@ export class UserNotFoundError extends DomainError {
       code: 'USER_NOT_FOUND',
       status: 404,
       title: 'User not found',
-      detail: `User ${id} does not exist.`,
+      detail: `No account found for ${id}. The passage may have been sealed.`,
     });
   }
 }
@@ -28,7 +28,7 @@ export class DisplayNameEmptyError extends DomainError {
       code: 'DISPLAY_NAME_EMPTY',
       status: 400,
       title: 'Validation Error',
-      detail: 'displayName must be between 1 and 80 characters',
+      detail: 'Your display name must be between 1 and 80 characters — give your fellow Companions something to call you.',
     });
   }
 }
@@ -40,7 +40,7 @@ export class DisplayNameTooLongError extends DomainError {
       code: 'DISPLAY_NAME_TOO_LONG',
       status: 400,
       title: 'Validation Error',
-      detail: 'displayName must not exceed 80 characters',
+      detail: 'That display name is too long for the ship manifest — keep it to 80 characters or fewer.',
     });
   }
 }
@@ -57,7 +57,7 @@ export class ReadOnlyFieldError extends DomainError {
       code: 'READ_ONLY_FIELD',
       status: 400,
       title: 'Validation Error',
-      detail: `Field '${field}' is read-only and cannot be updated via this endpoint.`,
+      detail: `Field '${field}' is maintained by the server and cannot be updated directly.`,
     });
   }
 }
