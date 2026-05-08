@@ -25,6 +25,7 @@ import { SmsModule } from './common/sms/sms.module';
 import { CharactersModule } from './modules/characters/characters.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { HealthModule } from './modules/health/health.module';
+import { MailerModule } from './modules/mailer/mailer.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
 import { UsersModule } from './modules/users/users.module';
 
@@ -61,6 +62,7 @@ const devOnlyModules: ImportableModule[] = [];
     SmsModule,
     NotificationsModule,
     IntegrationsModule,
+    MailerModule,
     AuthModule,
     HealthModule,
     RealtimeModule,

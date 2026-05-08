@@ -40,6 +40,24 @@ export interface FirebaseConfig {
 
 export type ProviderMode = 'mock' | 'real';
 
+/** Which outbound mailer adapter to use. 'mock' is the default for non-production. */
+export type MailerProvider = 'mock' | 'resend';
+
+export interface MailerConfig {
+  /** Adapter selection. Defaults to 'mock' when NODE_ENV is not 'production'. */
+  readonly provider: MailerProvider;
+  /**
+   * Resend API key — required when provider is 'resend'. Throws at boot if
+   * provider='resend' and this is missing.
+   */
+  readonly resendApiKey: string;
+  /**
+   * The human-readable "from" address for all outbound mail.
+   * Example: "Coriolis Companion <noreply@coriolis-companion.app>"
+   */
+  readonly fromAddress: string;
+}
+
 export interface ProvidersConfig {
   /** Which SMS backend to use. Defaults to 'mock'. */
   readonly sms: ProviderMode;
@@ -111,6 +129,28 @@ export class AppConfig {
       push: 'mock',
       storage: 'mock',
     };
+  }
+
+  get mailer(): MailerConfig {
+    const isProduction = this.runtime.nodeEnv === 'production';
+    const rawProvider = this.config.get<string>('MAILER_PROVIDER') ?? '';
+    const provider: MailerProvider =
+      rawProvider === 'resend' ? 'resend' : isProduction ? 'resend' : 'mock';
+
+    const resendApiKey = this.config.get<string>('RESEND_API_KEY') ?? '';
+    if (provider === 'resend' && resendApiKey.length === 0) {
+      throw new Error(
+        'RESEND_API_KEY is required when MAILER_PROVIDER=resend. ' +
+          'Set it in your environment or switch MAILER_PROVIDER=mock for development.',
+      );
+    }
+
+    const fromAddress = this.stringOrDefault(
+      'MAILER_FROM_ADDRESS',
+      'Coriolis Companion <noreply@coriolis-companion.app>',
+    );
+
+    return { provider, resendApiKey, fromAddress };
   }
 
   get centrifugo(): CentrifugoConfig {
