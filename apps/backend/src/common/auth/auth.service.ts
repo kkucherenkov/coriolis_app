@@ -107,4 +107,20 @@ export class AuthService implements OnModuleInit {
     }
     return this.instance.api.getSession({ headers });
   }
+
+  /**
+   * Revoke all active sessions for the given user immediately.
+   *
+   * Better Auth's `revokeSessions` HTTP endpoint requires an authenticated
+   * request header and can only revoke the caller's own sessions. For
+   * server-side revocation on behalf of any user (e.g. account deletion), we
+   * delete session rows directly via Prisma — safe because both paths write
+   * the same `session` table managed by the Prisma adapter.
+   *
+   * The `Session` FK to `User` is `onDelete: Cascade`, so a future hard-delete
+   * of the user row will clean up any remaining sessions automatically.
+   */
+  async revokeAllSessions(userId: string): Promise<void> {
+    await this.prisma.session.deleteMany({ where: { userId } });
+  }
 }

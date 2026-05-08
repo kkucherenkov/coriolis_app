@@ -46,6 +46,20 @@ export class UserRepo implements IUserRepo {
     return this.toReadModel(row);
   }
 
+  /**
+   * Idempotent soft-delete. Uses `updateMany` (not `update`) so that a
+   * not-found or already-deleted row is silently skipped rather than throwing
+   * a Prisma P2025 "record not found" error. The `deletedAt: null` filter
+   * ensures we never overwrite an existing timestamp.
+   */
+  async softDelete(id: string, deletedAt: Date): Promise<Date | null> {
+    const result = await this.prisma.user.updateMany({
+      where: { id, deletedAt: null },
+      data: { deletedAt, updatedAt: new Date() },
+    });
+    return result.count > 0 ? deletedAt : null;
+  }
+
   private toReadModel(row: {
     id: string;
     email: string;

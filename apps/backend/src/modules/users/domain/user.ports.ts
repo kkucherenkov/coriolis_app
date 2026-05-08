@@ -34,4 +34,12 @@ export interface IUserRepo {
    * model. Throws if the row is gone (should not happen in normal flow).
    */
   updateDisplayName(id: string, displayName: string | null): Promise<MeReadModel>;
+
+  /**
+   * Stamp `deletedAt` on the user row. Idempotent: if the row is already
+   * soft-deleted (or does not exist) the call is a no-op.
+   * Returns the timestamp written to `deletedAt`, or `null` when the row
+   * was already deleted / not found (caller should still return 204).
+   */
+  softDelete(id: string, deletedAt: Date): Promise<Date | null>;
 }

@@ -16,6 +16,7 @@ function makeRepo(): IUserRepo {
   return {
     findActiveById: vi.fn(),
     updateDisplayName: vi.fn(),
+    softDelete: vi.fn(),
   };
 }
 

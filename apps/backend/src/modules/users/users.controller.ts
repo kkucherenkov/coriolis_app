@@ -10,11 +10,12 @@
  * `AuthenticatedRequest.userId`. It is never taken from the request body or
  * query string.
  */
-import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch, Req, UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 
 import { SessionGuard } from '../../common/auth/auth.guard';
 
+import { DeleteMeCommand } from './commands/delete-me.command';
 import { UpdateMeCommand, UpdateMeDto } from './commands/update-me.command';
 import { GetMeQuery } from './queries/get-me.query';
 
@@ -43,5 +44,19 @@ export class UsersController {
     @Body() body: UpdateMeDto,
   ): Promise<MeReadModel> {
     return this.commandBus.execute(new UpdateMeCommand(req.userId, body.displayName));
+  }
+
+  /**
+   * DELETE /api/v1/me
+   *
+   * Soft-deletes the authenticated user's account. Idempotent per spec:
+   * returns 204 even when the account is already deleted. Sessions are
+   * revoked immediately; characters and ships are hard-deleted by the daily
+   * cron after a 30-day grace window.
+   */
+  @Delete('me')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteMe(@Req() req: AuthenticatedRequest): Promise<void> {
+    return this.commandBus.execute(new DeleteMeCommand(req.userId));
   }
 }
