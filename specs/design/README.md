@@ -157,3 +157,5 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 | Primitive | `AppTab` | ✓ | — |
 | Primitive | `AppTextarea` | ✓ | — |
 | Primitive | `AppTooltip` | ✓ | — |
+| Coriolis | `AppStatBlock` | ✓ | — |
+| Primitive | `AppPopover` | ✓ | — |
