@@ -1,5 +1,3 @@
-import AppField from '../AppField/AppField.vue';
-
 import AppTextarea from './AppTextarea.vue';
 
 import type { Meta, StoryObj } from '@storybook/vue3';
@@ -10,18 +8,21 @@ const meta: Meta<typeof AppTextarea> = {
   tags: ['autodocs'],
   argTypes: {
     size: { control: 'select', options: ['sm', 'md', 'lg'] },
-    resize: { control: 'select', options: ['none', 'vertical', 'horizontal', 'both'] },
     rows: { control: 'number' },
-    maxRows: { control: 'number' },
-    autoGrow: { control: 'boolean' },
+    autosize: { control: 'boolean' },
     disabled: { control: 'boolean' },
     readonly: { control: 'boolean' },
+    invalid: { control: 'boolean' },
+    maxlength: { control: 'number' },
   },
   args: {
     modelValue: '',
-    rows: 3,
     size: 'md',
-    resize: 'vertical',
+    rows: 4,
+    disabled: false,
+    readonly: false,
+    invalid: false,
+    autosize: false,
   },
 };
 
@@ -29,115 +30,192 @@ export default meta;
 
 type Story = StoryObj<typeof AppTextarea>;
 
-// A long chunk of copy used to prove the auto-grow story; keeping it here
-// (not a literal inline in a story) so every story that needs filler copy
-// reads from the same source.
-const FILLER_PARAGRAPH =
-  'Tell us about the booking context. What should the provider know before the appointment, and are there any accessibility needs we should plan for in advance?';
+// ── Default × size matrix ──────────────────────────────────────────────────
 
-export const Default: Story = {
+export const DefaultSm: Story = {
+  name: 'Default / sm',
+  args: { size: 'sm', placeholder: 'Small textarea' },
   render: (args) => ({
     components: { AppTextarea },
     setup: () => ({ args }),
-    template: `<AppTextarea v-bind="args" />`,
+    template: `<AppTextarea v-bind="args" style="max-width:360px;" />`,
   }),
 };
 
-export const WithPlaceholder: Story = {
-  args: { placeholder: 'Share any notes for your provider…' },
+export const DefaultMd: Story = {
+  name: 'Default / md',
+  args: { size: 'md', placeholder: 'Medium textarea' },
   render: (args) => ({
     components: { AppTextarea },
     setup: () => ({ args }),
-    template: `<AppTextarea v-bind="args" />`,
+    template: `<AppTextarea v-bind="args" style="max-width:360px;" />`,
   }),
 };
 
-export const WithValue: Story = {
-  args: { modelValue: FILLER_PARAGRAPH },
+export const DefaultLg: Story = {
+  name: 'Default / lg',
+  args: { size: 'lg', placeholder: 'Large textarea' },
   render: (args) => ({
     components: { AppTextarea },
     setup: () => ({ args }),
-    template: `<AppTextarea v-bind="args" />`,
+    template: `<AppTextarea v-bind="args" style="max-width:360px;" />`,
   }),
 };
 
-export const AutoGrow: Story = {
-  args: { autoGrow: true, maxRows: 8, modelValue: FILLER_PARAGRAPH },
+// ── Invalid × size matrix ──────────────────────────────────────────────────
+
+export const InvalidSm: Story = {
+  name: 'Invalid / sm',
+  args: { size: 'sm', invalid: true, modelValue: 'Too short.' },
   render: (args) => ({
     components: { AppTextarea },
     setup: () => ({ args }),
-    template: `<AppTextarea v-bind="args" />`,
-  }),
-};
-
-export const Sizes: Story = {
-  render: () => ({
-    components: { AppTextarea },
-    setup: () => ({ placeholder: 'Type here…' }),
     template: `
-      <div style="display: grid; gap: var(--space-4);">
-        <AppTextarea size="sm" :model-value="''" :placeholder="placeholder" />
-        <AppTextarea size="md" :model-value="''" :placeholder="placeholder" />
-        <AppTextarea size="lg" :model-value="''" :placeholder="placeholder" />
+      <div style="max-width:360px; display:flex; flex-direction:column; gap:var(--space-2);">
+        <AppTextarea v-bind="args" />
+        <p style="color:var(--state-crimson); font-size:var(--type-body-sm-font-size); margin:0;">Notes must be at least 20 characters.</p>
       </div>
     `,
   }),
 };
 
-export const Disabled: Story = {
-  args: { disabled: true, modelValue: 'Disabled content' },
+export const InvalidMd: Story = {
+  name: 'Invalid / md',
+  args: { size: 'md', invalid: true, modelValue: 'Too short.' },
   render: (args) => ({
     components: { AppTextarea },
     setup: () => ({ args }),
-    template: `<AppTextarea v-bind="args" />`,
+    template: `
+      <div style="max-width:360px; display:flex; flex-direction:column; gap:var(--space-2);">
+        <AppTextarea v-bind="args" />
+        <p style="color:var(--state-crimson); font-size:var(--type-body-sm-font-size); margin:0;">Please provide a longer description.</p>
+      </div>
+    `,
+  }),
+};
+
+export const InvalidLg: Story = {
+  name: 'Invalid / lg',
+  args: { size: 'lg', invalid: true, modelValue: 'Too short.' },
+  render: (args) => ({
+    components: { AppTextarea },
+    setup: () => ({ args }),
+    template: `
+      <div style="max-width:360px; display:flex; flex-direction:column; gap:var(--space-2);">
+        <AppTextarea v-bind="args" />
+        <p style="color:var(--state-crimson); font-size:var(--type-body-sm-font-size); margin:0;">This value is too short.</p>
+      </div>
+    `,
+  }),
+};
+
+// ── Special states ─────────────────────────────────────────────────────────
+
+export const Disabled: Story = {
+  args: { disabled: true, modelValue: 'Disabled content — not editable.' },
+  render: (args) => ({
+    components: { AppTextarea },
+    setup: () => ({ args }),
+    template: `<AppTextarea v-bind="args" style="max-width:360px;" />`,
   }),
 };
 
 export const Readonly: Story = {
-  args: { readonly: true, modelValue: 'Read-only content' },
+  args: {
+    readonly: true,
+    modelValue: 'The crew found the derelict station drifting near the Third Horizon gate.',
+  },
   render: (args) => ({
     components: { AppTextarea },
     setup: () => ({ args }),
-    template: `<AppTextarea v-bind="args" />`,
+    template: `<AppTextarea v-bind="args" style="max-width:360px;" />`,
   }),
 };
 
-export const ResizeModes: Story = {
+export const WithPlaceholder: Story = {
+  name: 'With placeholder',
+  args: { placeholder: 'Describe your character background…' },
+  render: (args) => ({
+    components: { AppTextarea },
+    setup: () => ({ args }),
+    template: `<AppTextarea v-bind="args" style="max-width:360px;" />`,
+  }),
+};
+
+// ── Rows count ─────────────────────────────────────────────────────────────
+
+export const RowsCount: Story = {
+  name: 'Rows count',
   render: () => ({
     components: { AppTextarea },
     template: `
-      <div style="display: grid; gap: var(--space-4);">
-        <AppTextarea :model-value="''" resize="none" placeholder="resize=none" />
-        <AppTextarea :model-value="''" resize="vertical" placeholder="resize=vertical" />
-        <AppTextarea :model-value="''" resize="horizontal" placeholder="resize=horizontal" />
-        <AppTextarea :model-value="''" resize="both" placeholder="resize=both" />
+      <div style="display:flex; flex-direction:column; gap:var(--space-4); max-width:360px;">
+        <AppTextarea :model-value="''" :rows="2" placeholder="2 rows" />
+        <AppTextarea :model-value="''" :rows="4" placeholder="4 rows (default)" />
+        <AppTextarea :model-value="''" :rows="8" placeholder="8 rows" />
       </div>
     `,
   }),
 };
 
-export const ComposedWithAppField: Story = {
+// ── Max length ─────────────────────────────────────────────────────────────
+
+export const MaxLength: Story = {
+  name: 'Max length (200)',
+  args: { maxlength: 200, placeholder: 'Limited to 200 characters…' },
+  render: (args) => ({
+    components: { AppTextarea },
+    setup: () => ({ args }),
+    template: `<AppTextarea v-bind="args" style="max-width:360px;" />`,
+  }),
+};
+
+// ── Autosize — BEM modifier only; grow behaviour is a TODO ─────────────────
+
+export const AutosizeBasic: Story = {
+  name: 'Autosize (TODO — modifier only)',
+  args: {
+    autosize: true,
+    modelValue:
+      'The autosize modifier suppresses manual resize. ' +
+      'Full grow-to-content (field-sizing + JS polyfill) is deferred — see active.md T-2026-05-08-019.',
+  },
+  render: (args) => ({
+    components: { AppTextarea },
+    setup: () => ({ args }),
+    template: `<AppTextarea v-bind="args" style="max-width:360px;" />`,
+  }),
+};
+
+// ── All sizes overview ─────────────────────────────────────────────────────
+
+export const AllSizes: Story = {
+  name: 'All sizes',
   render: () => ({
-    components: { AppField, AppTextarea },
-    setup: () => ({
-      label: 'Booking notes',
-      help: 'Visible only to your provider',
-      error: 'Notes must be at least 20 characters',
-      required: true,
-      placeholder: 'Add context for the appointment…',
-    }),
+    components: { AppTextarea },
     template: `
-      <div style="display: grid; gap: var(--space-6); max-width: 480px;">
-        <AppField :label="label" :help="help" :required="required">
-          <template #default="slotAttrs">
-            <AppTextarea v-bind="slotAttrs" :model-value="''" :placeholder="placeholder" />
-          </template>
-        </AppField>
-        <AppField :label="label" :error="error" :required="required">
-          <template #default="slotAttrs">
-            <AppTextarea v-bind="slotAttrs" :model-value="'short'" :placeholder="placeholder" />
-          </template>
-        </AppField>
+      <div style="display:flex; flex-direction:column; gap:var(--space-4); max-width:400px;">
+        <AppTextarea size="sm" :model-value="''" placeholder="Small (sm)" />
+        <AppTextarea size="md" :model-value="''" placeholder="Medium (md)" />
+        <AppTextarea size="lg" :model-value="''" placeholder="Large (lg)" />
+      </div>
+    `,
+  }),
+};
+
+// ── All states overview ────────────────────────────────────────────────────
+
+export const AllStates: Story = {
+  name: 'All states',
+  render: () => ({
+    components: { AppTextarea },
+    template: `
+      <div style="display:flex; flex-direction:column; gap:var(--space-4); max-width:400px;">
+        <AppTextarea :model-value="''" placeholder="Default" />
+        <AppTextarea :model-value="'Has value — ready to submit.'" />
+        <AppTextarea :model-value="''" placeholder="Invalid" :invalid="true" />
+        <AppTextarea :model-value="'Disabled content'" :disabled="true" />
+        <AppTextarea :model-value="'Read-only content'" :readonly="true" />
       </div>
     `,
   }),
