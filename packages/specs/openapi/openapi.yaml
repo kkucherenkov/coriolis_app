@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 0.6.0
+  version: 0.7.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -37,6 +37,10 @@ tags:
     description: Player character CRUD and nested items / talents
   - name: ships
     description: Ship CRUD, nested modules, and crew assignment
+  - name: sharing
+    description: Share-link management for character owners (create, list, revoke)
+  - name: public
+    description: Public read-only endpoints — no authentication required
 
 paths:
   /api/v1/characters:
@@ -2655,6 +2659,373 @@ paths:
                     instance: /api/v1/talents/cuid_tal01
                     code: TALENT_NOT_FOUND
 
+  # ---------------------------------------------------------------------------
+  # Share links (Epic 6 Feature 6.1)
+  # ---------------------------------------------------------------------------
+
+  /api/v1/characters/{id}/share:
+    post:
+      operationId: createShareLink
+      summary: Create a share link for a character
+      description: |
+        Creates a new share link for the authenticated user's character. The
+        link is identified by a 24-character unguessable slug. Multiple links
+        per character are allowed — useful for different audiences or different
+        `includeGmNotes` settings.
+
+        The optional `label` (1–80 characters) helps the owner distinguish links.
+        The optional `expiresAt` is an ISO-8601 instant; omit (or set to null)
+        for a permanent link. The optional `includeGmNotes` flag (default false)
+        controls whether the top-level `notes` field is included in the public
+        character read.
+      tags: [sharing]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CharacterId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareLinkCreate"
+            examples:
+              minimal:
+                value: {}
+              withOptions:
+                value:
+                  includeGmNotes: true
+                  label: GM copy
+                  expiresAt: "2027-01-01T00:00:00Z"
+      responses:
+        "201":
+          description: Share link created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShareLink"
+              examples:
+                created:
+                  value:
+                    id: cuid_sl01
+                    slug: 3Bk7NzYqAcMpRvWxDjGhTs4Q
+                    characterId: cuid_tariq01
+                    includeGmNotes: false
+                    label: null
+                    expiresAt: null
+                    revokedAt: null
+                    lastViewedAt: null
+                    viewCount: 0
+                    createdAt: "2026-05-09T10:00:00Z"
+                    updatedAt: "2026-05-09T10:00:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this character
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this character
+                    instance: /api/v1/characters/cuid_tariq01/share
+                    code: CHARACTER_NOT_OWNED
+        "404":
+          description: Character not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Character cuid_tariq01 does not exist
+                    instance: /api/v1/characters/cuid_tariq01/share
+                    code: CHARACTER_NOT_FOUND
+
+  /api/v1/characters/{id}/shares:
+    get:
+      operationId: listShareLinks
+      summary: List share links for a character
+      description: |
+        Returns all non-revoked share links for the authenticated user's
+        character, ordered newest-first. Revoked links are excluded by default.
+        A `?includeRevoked` query parameter may be added in a future version.
+      tags: [sharing]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CharacterId"
+      responses:
+        "200":
+          description: Share link list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShareLinkList"
+              examples:
+                ok:
+                  value:
+                    items:
+                      - id: cuid_sl01
+                        slug: 3Bk7NzYqAcMpRvWxDjGhTs4Q
+                        characterId: cuid_tariq01
+                        includeGmNotes: false
+                        label: null
+                        expiresAt: null
+                        revokedAt: null
+                        lastViewedAt: "2026-05-09T11:30:00Z"
+                        viewCount: 42
+                        createdAt: "2026-05-09T10:00:00Z"
+                        updatedAt: "2026-05-09T11:30:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this character
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: Character not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /api/v1/share-links/{id}:
+    delete:
+      operationId: revokeShareLink
+      summary: Revoke a share link
+      description: |
+        Soft-revokes a share link by setting its `revokedAt` timestamp. After
+        revocation, `GET /api/v1/public/character/{slug}` returns 410 Gone.
+        The link row is not deleted — historical view counts are preserved.
+        The caller must own the character the link belongs to.
+      tags: [sharing]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ShareLinkId"
+      responses:
+        "204":
+          description: Share link revoked
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the character associated with this share link
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this share link
+                    instance: /api/v1/share-links/cuid_sl01
+                    code: SHARE_LINK_NOT_OWNED
+        "404":
+          description: Share link not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Share link cuid_sl01 does not exist
+                    instance: /api/v1/share-links/cuid_sl01
+                    code: SHARE_LINK_NOT_FOUND
+
+  # ---------------------------------------------------------------------------
+  # Public read endpoints (no auth required)
+  # ---------------------------------------------------------------------------
+
+  /api/v1/public/character/{slug}:
+    get:
+      operationId: getPublicCharacter
+      summary: Get a publicly-shared character by slug
+      description: |
+        Returns the character associated with the given share-link slug.
+        No authentication is required.
+
+        The `notes` field (top-level GM notes) is included only when the share
+        link was created with `includeGmNotes: true`. If the link does not
+        include GM notes, `notes` is always returned as `null` regardless of
+        whether the character actually has notes.
+
+        Error semantics:
+        - `404` — slug does not exist or was never created.
+        - `410` — slug existed but has been revoked or has expired.
+      tags: [public]
+      parameters:
+        - $ref: "#/components/parameters/ShareSlug"
+      responses:
+        "200":
+          description: Publicly-shared character
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Character"
+              examples:
+                ok:
+                  value:
+                    id: cuid_tariq01
+                    ownerId: cuid_user01
+                    name: Tariq al-Asari
+                    concept: Veteran fringe pilot
+                    iconId: traveler
+                    attributes:
+                      strength: 3
+                      agility: 5
+                      wits: 4
+                      empathy: 3
+                    skills:
+                      dexterity: 4
+                      force: 1
+                      infiltration: 3
+                      manipulation: 2
+                      meleeCombat: 1
+                      observation: 4
+                      rangedCombat: 3
+                      survival: 2
+                      command: 2
+                      culture: 1
+                      dataDjinn: 2
+                      medicurgy: 0
+                      mysticPowers: 0
+                      pilot: 5
+                      science: 1
+                      technology: 3
+                    hp:
+                      current: 11
+                      max: 8
+                    mp:
+                      current: 8
+                      max: 7
+                    encumbrance:
+                      current: 2.0
+                      max: 6
+                    experience: 12
+                    conditions:
+                      exhausted: false
+                      sleepless: true
+                      thirsty: true
+                      hungry: false
+                    criticalInjuries: []
+                    talents: []
+                    relationships: []
+                    inventory: []
+                    notes: null
+                    status: active
+                    createdAt: "2026-01-15T09:30:00Z"
+                    updatedAt: "2026-04-01T14:22:00Z"
+        "404":
+          description: Slug not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Share link 3Bk7NzYqAcMpRvWxDjGhTs4Q does not exist
+                    instance: /api/v1/public/character/3Bk7NzYqAcMpRvWxDjGhTs4Q
+                    code: SHARE_LINK_NOT_FOUND
+        "410":
+          description: Share link revoked or expired
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                revoked:
+                  value:
+                    type: https://coriolis.example.com/problems/gone
+                    title: Gone
+                    status: 410
+                    detail: Share link 3Bk7NzYqAcMpRvWxDjGhTs4Q has been revoked
+                    instance: /api/v1/public/character/3Bk7NzYqAcMpRvWxDjGhTs4Q
+                    code: SHARE_LINK_REVOKED
+                expired:
+                  value:
+                    type: https://coriolis.example.com/problems/gone
+                    title: Gone
+                    status: 410
+                    detail: Share link 3Bk7NzYqAcMpRvWxDjGhTs4Q has expired
+                    instance: /api/v1/public/character/3Bk7NzYqAcMpRvWxDjGhTs4Q
+                    code: SHARE_LINK_EXPIRED
+
+  /api/v1/public/og/character/{slug}.png:
+    get:
+      operationId: getCharacterOgImage
+      summary: OG image for a shared character (Feature 6.3 — not yet implemented)
+      description: |
+        Returns a PNG Open Graph image for the shared character. Intended for
+        social-media preview unfurling.
+
+        **This endpoint is not yet implemented.** It will always return 501
+        until Feature 6.3 lands the server-side renderer. Consumers should plan
+        for the following cache headers on the eventual 200 response:
+        `Cache-Control: public, max-age=3600, stale-while-revalidate=86400`.
+      tags: [public]
+      parameters:
+        - $ref: "#/components/parameters/ShareSlug"
+      responses:
+        "200":
+          description: PNG image (Feature 6.3 — not yet implemented)
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        "501":
+          description: OG image renderer not yet implemented (ships in Feature 6.3)
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notImplemented:
+                  value:
+                    type: https://errors.coriolis-companion.app/og-not-implemented
+                    title: OG image renderer not yet implemented
+                    status: 501
+                    detail: The OG image renderer ships in Epic 6 Feature 6.3.
+                    code: OG_NOT_IMPLEMENTED
+
 components:
   parameters:
     CharacterId:
@@ -2696,6 +3067,24 @@ components:
       description: Ship module identifier (cuid2)
       schema:
         type: string
+
+    ShareLinkId:
+      name: id
+      in: path
+      required: true
+      description: Share link identifier (cuid2)
+      schema:
+        type: string
+
+    ShareSlug:
+      name: slug
+      in: path
+      required: true
+      description: 24-character unambiguous nanoid slug identifying a share link
+      schema:
+        type: string
+        minLength: 24
+        maxLength: 24
 
   securitySchemes:
     cookieAuth:
@@ -4812,6 +5201,114 @@ components:
               $ref: "#/components/schemas/DependencyStatus"
             centrifugo:
               $ref: "#/components/schemas/DependencyStatus"
+
+    # -------------------------------------------------------------------------
+    # Share links (Epic 6 Feature 6.1)
+    # -------------------------------------------------------------------------
+
+    ShareLinkCreate:
+      type: object
+      description: |
+        Request body for creating a share link. All fields are optional; an
+        empty object `{}` creates a permanent link without GM notes.
+      properties:
+        includeGmNotes:
+          type: boolean
+          default: false
+          description: |
+            When true, the public character endpoint returns the top-level
+            `notes` field. When false (default), `notes` is always null in the
+            public response regardless of the character's actual notes value.
+        expiresAt:
+          type: ["string", "null"]
+          format: date-time
+          description: |
+            ISO-8601 instant after which the link stops resolving. Omit or
+            set to null for a permanent link.
+        label:
+          type: ["string", "null"]
+          minLength: 1
+          maxLength: 80
+          description: |
+            Optional human-readable label to distinguish this link from others
+            in the owner's list (e.g. "GM copy", "public preview").
+
+    ShareLink:
+      type: object
+      description: |
+        A share link grants anonymous read-only access to a character via the
+        `/api/v1/public/character/{slug}` endpoint.
+      required:
+        - id
+        - slug
+        - characterId
+        - includeGmNotes
+        - revokedAt
+        - expiresAt
+        - lastViewedAt
+        - viewCount
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Opaque share-link identifier (cuid2). Used for revocation.
+        slug:
+          type: string
+          minLength: 24
+          maxLength: 24
+          description: |
+            24-character URL-safe slug. Use in the public URL:
+            `/api/v1/public/character/{slug}`.
+        characterId:
+          type: string
+          description: ID of the character this link exposes.
+        includeGmNotes:
+          type: boolean
+          description: |
+            Whether the `notes` field is included in the public character
+            response. Always false if not set at creation time.
+        label:
+          type: ["string", "null"]
+          description: Owner-assigned label for this link.
+        expiresAt:
+          type: ["string", "null"]
+          format: date-time
+          description: Expiry instant. Null for permanent links.
+        revokedAt:
+          type: ["string", "null"]
+          format: date-time
+          description: |
+            Revocation instant. Null if active. When set, the public endpoint
+            returns 410 Gone.
+        lastViewedAt:
+          type: ["string", "null"]
+          format: date-time
+          description: |
+            ISO-8601 instant of the last recorded public view. Updated
+            asynchronously (up to 60 seconds lag) via the view-tracker flush job.
+            Null until the first view is flushed.
+        viewCount:
+          type: integer
+          minimum: 0
+          description: |
+            Cumulative count of public views. Updated asynchronously; may lag
+            by up to 60 seconds.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ShareLinkList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ShareLink"
 
     Problem:
       type: object
