@@ -3,88 +3,52 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:app_api_client/src/model/item_slot_type.dart';
+import 'package:app_api_client/src/model/item_other_update.dart';
+import 'package:app_api_client/src/model/item_ship_module_update.dart';
+import 'package:app_api_client/src/model/item_cybernetic_update.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:app_api_client/src/model/item_range_enum.dart';
+import 'package:app_api_client/src/model/item_gear_update.dart';
+import 'package:app_api_client/src/model/item_armor_update.dart';
+import 'package:app_api_client/src/model/item_weapon_update.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
+import 'package:one_of/one_of.dart';
 
 part 'item_update.g.dart';
 
 /// PATCH payload for updating an item. The `type` discriminator must match the existing item type — changing it returns 400 `ITEM_TYPE_MISMATCH`. All fields are optional. 
 ///
 /// Properties:
+/// * [type] 
 /// * [name] 
-/// * [damage] - WEAPON only
-/// * [range] - WEAPON only
-/// * [bonus] - WEAPON only
-/// * [crit] - WEAPON only
-/// * [armorRating] - ARMOR only
+/// * [damage] 
+/// * [range] 
+/// * [bonus] 
+/// * [crit] 
 /// * [weight] 
-/// * [features] - WEAPON or ARMOR
-/// * [equipped] - WEAPON or ARMOR
-/// * [quantity] - GEAR only
-/// * [notes] - GEAR or OTHER
-/// * [bodyPoints] - CYBERNETIC only
-/// * [effect] - CYBERNETIC or SHIP_MODULE
-/// * [slot] - SHIP_MODULE only
+/// * [features] 
+/// * [equipped] 
+/// * [armorRating] 
+/// * [quantity] 
+/// * [notes] 
+/// * [bodyPoints] 
+/// * [effect] 
+/// * [slot] 
 @BuiltValue()
 abstract class ItemUpdate implements Built<ItemUpdate, ItemUpdateBuilder> {
-  @BuiltValueField(wireName: r'name')
-  String? get name;
+  /// One Of [ItemArmorUpdate], [ItemCyberneticUpdate], [ItemGearUpdate], [ItemOtherUpdate], [ItemShipModuleUpdate], [ItemWeaponUpdate]
+  OneOf get oneOf;
 
-  /// WEAPON only
-  @BuiltValueField(wireName: r'damage')
-  int? get damage;
+  static const String discriminatorFieldName = r'type';
 
-  /// WEAPON only
-  @BuiltValueField(wireName: r'range')
-  ItemRangeEnum? get range;
-  // enum rangeEnum {  arm,  near,  short,  long,  distant,  };
-
-  /// WEAPON only
-  @BuiltValueField(wireName: r'bonus')
-  int? get bonus;
-
-  /// WEAPON only
-  @BuiltValueField(wireName: r'crit')
-  int? get crit;
-
-  /// ARMOR only
-  @BuiltValueField(wireName: r'armorRating')
-  int? get armorRating;
-
-  @BuiltValueField(wireName: r'weight')
-  num? get weight;
-
-  /// WEAPON or ARMOR
-  @BuiltValueField(wireName: r'features')
-  BuiltList<String>? get features;
-
-  /// WEAPON or ARMOR
-  @BuiltValueField(wireName: r'equipped')
-  bool? get equipped;
-
-  /// GEAR only
-  @BuiltValueField(wireName: r'quantity')
-  int? get quantity;
-
-  /// GEAR or OTHER
-  @BuiltValueField(wireName: r'notes')
-  String? get notes;
-
-  /// CYBERNETIC only
-  @BuiltValueField(wireName: r'bodyPoints')
-  int? get bodyPoints;
-
-  /// CYBERNETIC or SHIP_MODULE
-  @BuiltValueField(wireName: r'effect')
-  String? get effect;
-
-  /// SHIP_MODULE only
-  @BuiltValueField(wireName: r'slot')
-  ItemSlotType? get slot;
-  // enum slotEnum {  bridge,  hull,  hold,  weapon,  drive,  sensor,  comms,  };
+  static const Map<String, Type> discriminatorMapping = {
+    r'ARMOR': ItemArmorUpdate,
+    r'CYBERNETIC': ItemCyberneticUpdate,
+    r'GEAR': ItemGearUpdate,
+    r'OTHER': ItemOtherUpdate,
+    r'SHIP_MODULE': ItemShipModuleUpdate,
+    r'WEAPON': ItemWeaponUpdate,
+  };
 
   ItemUpdate._();
 
@@ -95,6 +59,53 @@ abstract class ItemUpdate implements Built<ItemUpdate, ItemUpdateBuilder> {
 
   @BuiltValueSerializer(custom: true)
   static Serializer<ItemUpdate> get serializer => _$ItemUpdateSerializer();
+}
+
+extension ItemUpdateDiscriminatorExt on ItemUpdate {
+    String? get discriminatorValue {
+        if (this is ItemArmorUpdate) {
+            return r'ARMOR';
+        }
+        if (this is ItemCyberneticUpdate) {
+            return r'CYBERNETIC';
+        }
+        if (this is ItemGearUpdate) {
+            return r'GEAR';
+        }
+        if (this is ItemOtherUpdate) {
+            return r'OTHER';
+        }
+        if (this is ItemShipModuleUpdate) {
+            return r'SHIP_MODULE';
+        }
+        if (this is ItemWeaponUpdate) {
+            return r'WEAPON';
+        }
+        return null;
+    }
+}
+extension ItemUpdateBuilderDiscriminatorExt on ItemUpdateBuilder {
+    String? get discriminatorValue {
+        if (this is ItemArmorUpdateBuilder) {
+            return r'ARMOR';
+        }
+        if (this is ItemCyberneticUpdateBuilder) {
+            return r'CYBERNETIC';
+        }
+        if (this is ItemGearUpdateBuilder) {
+            return r'GEAR';
+        }
+        if (this is ItemOtherUpdateBuilder) {
+            return r'OTHER';
+        }
+        if (this is ItemShipModuleUpdateBuilder) {
+            return r'SHIP_MODULE';
+        }
+        if (this is ItemWeaponUpdateBuilder) {
+            return r'WEAPON';
+        }
+        return null;
+    }
 }
 
 class _$ItemUpdateSerializer implements PrimitiveSerializer<ItemUpdate> {
@@ -109,104 +120,6 @@ class _$ItemUpdateSerializer implements PrimitiveSerializer<ItemUpdate> {
     ItemUpdate object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    if (object.name != null) {
-      yield r'name';
-      yield serializers.serialize(
-        object.name,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.damage != null) {
-      yield r'damage';
-      yield serializers.serialize(
-        object.damage,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.range != null) {
-      yield r'range';
-      yield serializers.serialize(
-        object.range,
-        specifiedType: const FullType(ItemRangeEnum),
-      );
-    }
-    if (object.bonus != null) {
-      yield r'bonus';
-      yield serializers.serialize(
-        object.bonus,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.crit != null) {
-      yield r'crit';
-      yield serializers.serialize(
-        object.crit,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.armorRating != null) {
-      yield r'armorRating';
-      yield serializers.serialize(
-        object.armorRating,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.weight != null) {
-      yield r'weight';
-      yield serializers.serialize(
-        object.weight,
-        specifiedType: const FullType(num),
-      );
-    }
-    if (object.features != null) {
-      yield r'features';
-      yield serializers.serialize(
-        object.features,
-        specifiedType: const FullType(BuiltList, [FullType(String)]),
-      );
-    }
-    if (object.equipped != null) {
-      yield r'equipped';
-      yield serializers.serialize(
-        object.equipped,
-        specifiedType: const FullType(bool),
-      );
-    }
-    if (object.quantity != null) {
-      yield r'quantity';
-      yield serializers.serialize(
-        object.quantity,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.notes != null) {
-      yield r'notes';
-      yield serializers.serialize(
-        object.notes,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.bodyPoints != null) {
-      yield r'bodyPoints';
-      yield serializers.serialize(
-        object.bodyPoints,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.effect != null) {
-      yield r'effect';
-      yield serializers.serialize(
-        object.effect,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.slot != null) {
-      yield r'slot';
-      yield serializers.serialize(
-        object.slot,
-        specifiedType: const FullType(ItemSlotType),
-      );
-    }
   }
 
   @override
@@ -215,126 +128,8 @@ class _$ItemUpdateSerializer implements PrimitiveSerializer<ItemUpdate> {
     ItemUpdate object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
-  }
-
-  void _deserializeProperties(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-    required List<Object?> serializedList,
-    required ItemUpdateBuilder result,
-    required List<Object?> unhandled,
-  }) {
-    for (var i = 0; i < serializedList.length; i += 2) {
-      final key = serializedList[i] as String;
-      final value = serializedList[i + 1];
-      switch (key) {
-        case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.name = valueDes;
-          break;
-        case r'damage':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.damage = valueDes;
-          break;
-        case r'range':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(ItemRangeEnum),
-          ) as ItemRangeEnum;
-          result.range = valueDes;
-          break;
-        case r'bonus':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.bonus = valueDes;
-          break;
-        case r'crit':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.crit = valueDes;
-          break;
-        case r'armorRating':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.armorRating = valueDes;
-          break;
-        case r'weight':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(num),
-          ) as num;
-          result.weight = valueDes;
-          break;
-        case r'features':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
-          result.features.replace(valueDes);
-          break;
-        case r'equipped':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
-          result.equipped = valueDes;
-          break;
-        case r'quantity':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.quantity = valueDes;
-          break;
-        case r'notes':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.notes = valueDes;
-          break;
-        case r'bodyPoints':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.bodyPoints = valueDes;
-          break;
-        case r'effect':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.effect = valueDes;
-          break;
-        case r'slot':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(ItemSlotType),
-          ) as ItemSlotType;
-          result.slot = valueDes;
-          break;
-        default:
-          unhandled.add(key);
-          unhandled.add(value);
-          break;
-      }
-    }
+    final oneOf = object.oneOf;
+    return serializers.serialize(oneOf.value, specifiedType: FullType(oneOf.valueType))!;
   }
 
   @override
@@ -344,17 +139,85 @@ class _$ItemUpdateSerializer implements PrimitiveSerializer<ItemUpdate> {
     FullType specifiedType = FullType.unspecified,
   }) {
     final result = ItemUpdateBuilder();
+    Object? oneOfDataSrc;
     final serializedList = (serialized as Iterable<Object?>).toList();
-    final unhandled = <Object?>[];
-    _deserializeProperties(
-      serializers,
-      serialized,
-      specifiedType: specifiedType,
-      serializedList: serializedList,
-      unhandled: unhandled,
-      result: result,
-    );
+    final discIndex = serializedList.indexOf(ItemUpdate.discriminatorFieldName) + 1;
+    final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
+    oneOfDataSrc = serialized;
+    final oneOfTypes = [ItemArmorUpdate, ItemCyberneticUpdate, ItemGearUpdate, ItemOtherUpdate, ItemShipModuleUpdate, ItemWeaponUpdate, ];
+    Object oneOfResult;
+    Type oneOfType;
+    switch (discValue) {
+      case r'ARMOR':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ItemArmorUpdate),
+        ) as ItemArmorUpdate;
+        oneOfType = ItemArmorUpdate;
+        break;
+      case r'CYBERNETIC':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ItemCyberneticUpdate),
+        ) as ItemCyberneticUpdate;
+        oneOfType = ItemCyberneticUpdate;
+        break;
+      case r'GEAR':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ItemGearUpdate),
+        ) as ItemGearUpdate;
+        oneOfType = ItemGearUpdate;
+        break;
+      case r'OTHER':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ItemOtherUpdate),
+        ) as ItemOtherUpdate;
+        oneOfType = ItemOtherUpdate;
+        break;
+      case r'SHIP_MODULE':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ItemShipModuleUpdate),
+        ) as ItemShipModuleUpdate;
+        oneOfType = ItemShipModuleUpdate;
+        break;
+      case r'WEAPON':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ItemWeaponUpdate),
+        ) as ItemWeaponUpdate;
+        oneOfType = ItemWeaponUpdate;
+        break;
+      default:
+        throw UnsupportedError("Couldn't deserialize oneOf for the discriminator value: ${discValue}");
+    }
+    result.oneOf = OneOfDynamic(typeIndex: oneOfTypes.indexOf(oneOfType), types: oneOfTypes, value: oneOfResult);
     return result.build();
   }
+}
+
+class ItemUpdateTypeEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'WEAPON')
+  static const ItemUpdateTypeEnum WEAPON = _$itemUpdateTypeEnum_WEAPON;
+  @BuiltValueEnumConst(wireName: r'ARMOR')
+  static const ItemUpdateTypeEnum ARMOR = _$itemUpdateTypeEnum_ARMOR;
+  @BuiltValueEnumConst(wireName: r'GEAR')
+  static const ItemUpdateTypeEnum GEAR = _$itemUpdateTypeEnum_GEAR;
+  @BuiltValueEnumConst(wireName: r'CYBERNETIC')
+  static const ItemUpdateTypeEnum CYBERNETIC = _$itemUpdateTypeEnum_CYBERNETIC;
+  @BuiltValueEnumConst(wireName: r'SHIP_MODULE')
+  static const ItemUpdateTypeEnum SHIP_MODULE = _$itemUpdateTypeEnum_SHIP_MODULE;
+  @BuiltValueEnumConst(wireName: r'OTHER')
+  static const ItemUpdateTypeEnum OTHER = _$itemUpdateTypeEnum_OTHER;
+
+  static Serializer<ItemUpdateTypeEnum> get serializer => _$itemUpdateTypeEnumSerializer;
+
+  const ItemUpdateTypeEnum._(String name): super(name);
+
+  static BuiltSet<ItemUpdateTypeEnum> get values => _$itemUpdateTypeEnumValues;
+  static ItemUpdateTypeEnum valueOf(String name) => _$itemUpdateTypeEnumValueOf(name);
 }
 

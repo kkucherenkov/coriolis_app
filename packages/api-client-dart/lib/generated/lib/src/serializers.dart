@@ -35,35 +35,30 @@ import 'package:app_api_client/src/model/health_status_dependencies.dart';
 import 'package:app_api_client/src/model/icon_id.dart';
 import 'package:app_api_client/src/model/item.dart';
 import 'package:app_api_client/src/model/item_armor.dart';
+import 'package:app_api_client/src/model/item_armor_create.dart';
+import 'package:app_api_client/src/model/item_armor_update.dart';
 import 'package:app_api_client/src/model/item_base.dart';
 import 'package:app_api_client/src/model/item_create.dart';
-import 'package:app_api_client/src/model/item_create_one_of.dart';
-import 'package:app_api_client/src/model/item_create_one_of1.dart';
-import 'package:app_api_client/src/model/item_create_one_of2.dart';
-import 'package:app_api_client/src/model/item_create_one_of3.dart';
-import 'package:app_api_client/src/model/item_create_one_of4.dart';
-import 'package:app_api_client/src/model/item_create_one_of5.dart';
 import 'package:app_api_client/src/model/item_cybernetic.dart';
+import 'package:app_api_client/src/model/item_cybernetic_create.dart';
+import 'package:app_api_client/src/model/item_cybernetic_update.dart';
 import 'package:app_api_client/src/model/item_gear.dart';
+import 'package:app_api_client/src/model/item_gear_create.dart';
+import 'package:app_api_client/src/model/item_gear_update.dart';
 import 'package:app_api_client/src/model/item_other.dart';
+import 'package:app_api_client/src/model/item_other_create.dart';
+import 'package:app_api_client/src/model/item_other_update.dart';
 import 'package:app_api_client/src/model/item_range_enum.dart';
 import 'package:app_api_client/src/model/item_ship_module.dart';
+import 'package:app_api_client/src/model/item_ship_module_create.dart';
+import 'package:app_api_client/src/model/item_ship_module_update.dart';
 import 'package:app_api_client/src/model/item_slot_type.dart';
 import 'package:app_api_client/src/model/item_update.dart';
 import 'package:app_api_client/src/model/item_weapon.dart';
+import 'package:app_api_client/src/model/item_weapon_create.dart';
+import 'package:app_api_client/src/model/item_weapon_update.dart';
 import 'package:app_api_client/src/model/me.dart';
 import 'package:app_api_client/src/model/me_update.dart';
-import 'package:app_api_client/src/model/model0.dart';
-import 'package:app_api_client/src/model/model02.dart';
-import 'package:app_api_client/src/model/model1.dart';
-import 'package:app_api_client/src/model/model12.dart';
-import 'package:app_api_client/src/model/model2.dart';
-import 'package:app_api_client/src/model/model22.dart';
-import 'package:app_api_client/src/model/model3.dart';
-import 'package:app_api_client/src/model/model32.dart';
-import 'package:app_api_client/src/model/model4.dart';
-import 'package:app_api_client/src/model/model42.dart';
-import 'package:app_api_client/src/model/model5.dart';
 import 'package:app_api_client/src/model/problem.dart';
 import 'package:app_api_client/src/model/realtime_token.dart';
 import 'package:app_api_client/src/model/relationship.dart';
@@ -79,18 +74,23 @@ import 'package:app_api_client/src/model/ship_list.dart';
 import 'package:app_api_client/src/model/ship_module.dart';
 import 'package:app_api_client/src/model/ship_module_base.dart';
 import 'package:app_api_client/src/model/ship_module_create.dart';
-import 'package:app_api_client/src/model/ship_module_create_one_of.dart';
-import 'package:app_api_client/src/model/ship_module_create_one_of1.dart';
-import 'package:app_api_client/src/model/ship_module_create_one_of2.dart';
-import 'package:app_api_client/src/model/ship_module_create_one_of3.dart';
-import 'package:app_api_client/src/model/ship_module_create_one_of4.dart';
 import 'package:app_api_client/src/model/ship_module_hold.dart';
+import 'package:app_api_client/src/model/ship_module_hold_create.dart';
+import 'package:app_api_client/src/model/ship_module_hold_update.dart';
 import 'package:app_api_client/src/model/ship_module_other.dart';
+import 'package:app_api_client/src/model/ship_module_other_create.dart';
+import 'package:app_api_client/src/model/ship_module_other_update.dart';
 import 'package:app_api_client/src/model/ship_module_sensor.dart';
+import 'package:app_api_client/src/model/ship_module_sensor_create.dart';
+import 'package:app_api_client/src/model/ship_module_sensor_update.dart';
 import 'package:app_api_client/src/model/ship_module_slot.dart';
 import 'package:app_api_client/src/model/ship_module_torpedo.dart';
+import 'package:app_api_client/src/model/ship_module_torpedo_create.dart';
+import 'package:app_api_client/src/model/ship_module_torpedo_update.dart';
 import 'package:app_api_client/src/model/ship_module_update.dart';
 import 'package:app_api_client/src/model/ship_module_weapon.dart';
+import 'package:app_api_client/src/model/ship_module_weapon_create.dart';
+import 'package:app_api_client/src/model/ship_module_weapon_update.dart';
 import 'package:app_api_client/src/model/ship_update.dart';
 import 'package:app_api_client/src/model/ship_update_hull.dart';
 import 'package:app_api_client/src/model/ship_weapon_range.dart';
@@ -123,35 +123,30 @@ part 'serializers.g.dart';
   IconId,
   Item,
   ItemArmor,
+  ItemArmorCreate,
+  ItemArmorUpdate,
   ItemBase,$ItemBase,
   ItemCreate,
-  ItemCreateOneOf,
-  ItemCreateOneOf1,
-  ItemCreateOneOf2,
-  ItemCreateOneOf3,
-  ItemCreateOneOf4,
-  ItemCreateOneOf5,
   ItemCybernetic,
+  ItemCyberneticCreate,
+  ItemCyberneticUpdate,
   ItemGear,
+  ItemGearCreate,
+  ItemGearUpdate,
   ItemOther,
+  ItemOtherCreate,
+  ItemOtherUpdate,
   ItemRangeEnum,
   ItemShipModule,
+  ItemShipModuleCreate,
+  ItemShipModuleUpdate,
   ItemSlotType,
   ItemUpdate,
   ItemWeapon,
+  ItemWeaponCreate,
+  ItemWeaponUpdate,
   Me,
   MeUpdate,
-  Model0,
-  Model02,
-  Model1,
-  Model12,
-  Model2,
-  Model22,
-  Model3,
-  Model32,
-  Model4,
-  Model42,
-  Model5,
   Problem,
   RealtimeToken,
   Relationship,
@@ -167,18 +162,23 @@ part 'serializers.g.dart';
   ShipModule,
   ShipModuleBase,$ShipModuleBase,
   ShipModuleCreate,
-  ShipModuleCreateOneOf,
-  ShipModuleCreateOneOf1,
-  ShipModuleCreateOneOf2,
-  ShipModuleCreateOneOf3,
-  ShipModuleCreateOneOf4,
   ShipModuleHold,
+  ShipModuleHoldCreate,
+  ShipModuleHoldUpdate,
   ShipModuleOther,
+  ShipModuleOtherCreate,
+  ShipModuleOtherUpdate,
   ShipModuleSensor,
+  ShipModuleSensorCreate,
+  ShipModuleSensorUpdate,
   ShipModuleSlot,
   ShipModuleTorpedo,
+  ShipModuleTorpedoCreate,
+  ShipModuleTorpedoUpdate,
   ShipModuleUpdate,
   ShipModuleWeapon,
+  ShipModuleWeaponCreate,
+  ShipModuleWeaponUpdate,
   ShipUpdate,
   ShipUpdateHull,
   ShipWeaponRange,

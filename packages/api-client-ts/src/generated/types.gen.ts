@@ -4,56 +4,6 @@ export type ClientOptions = {
     baseUrl: 'http://localhost:3000' | 'https://api.example.com' | (string & {});
 };
 
-export type _0 = {
-    type: 'WEAPON';
-    name: string;
-    damage: number;
-    range: ItemRangeEnum;
-    bonus: number;
-    crit: number;
-    weight: number;
-    features: Array<string>;
-    equipped: boolean;
-};
-
-export type _1 = {
-    type: 'ARMOR';
-    name: string;
-    armorRating: number;
-    weight: number;
-    features: Array<string>;
-    equipped: boolean;
-};
-
-export type _2 = {
-    type: 'GEAR';
-    name: string;
-    weight: number;
-    quantity: number;
-    notes?: string | null;
-};
-
-export type _3 = {
-    type: 'CYBERNETIC';
-    name: string;
-    bodyPoints: number;
-    effect: string;
-};
-
-export type _4 = {
-    type: 'SHIP_MODULE';
-    name: string;
-    slot: ItemSlotType;
-    effect: string;
-};
-
-export type _5 = {
-    type: 'OTHER';
-    name: string;
-    weight: number;
-    notes?: string | null;
-};
-
 /**
  * Severity tier of a critical injury per Coriolis core rules.
  * - `light` — minor wound, no long-term mechanical effect.
@@ -423,6 +373,190 @@ export type ItemOther = ItemBase & {
 };
 
 /**
+ * Create payload for a WEAPON item. No `id` — server-assigned.
+ */
+export type ItemWeaponCreate = {
+    type: 'WEAPON';
+    name: string;
+    /**
+     * Base damage dice
+     */
+    damage: number;
+    range: ItemRangeEnum;
+    /**
+     * Bonus dice added to the attack pool
+     */
+    bonus: number;
+    /**
+     * Critical threshold
+     */
+    crit: number;
+    /**
+     * Encumbrance weight in slots (0.5 increments)
+     */
+    weight: number;
+    /**
+     * Feature tags (e.g. "Burst", "Explosive")
+     */
+    features: Array<string>;
+    equipped: boolean;
+};
+
+/**
+ * Create payload for an ARMOR item. No `id` — server-assigned.
+ */
+export type ItemArmorCreate = {
+    type: 'ARMOR';
+    name: string;
+    /**
+     * Armor rating — reduces incoming damage
+     */
+    armorRating: number;
+    /**
+     * Encumbrance weight in slots
+     */
+    weight: number;
+    /**
+     * Feature tags (e.g. "Vacuum Sealed", "Exo-Skeleton")
+     */
+    features: Array<string>;
+    equipped: boolean;
+};
+
+/**
+ * Create payload for a GEAR item. No `id` — server-assigned.
+ */
+export type ItemGearCreate = {
+    type: 'GEAR';
+    name: string;
+    /**
+     * Encumbrance weight in slots
+     */
+    weight: number;
+    /**
+     * Number of units
+     */
+    quantity: number;
+    /**
+     * Optional free-text notes
+     */
+    notes?: string | null;
+};
+
+/**
+ * Create payload for a CYBERNETIC item. No `id` — server-assigned.
+ */
+export type ItemCyberneticCreate = {
+    type: 'CYBERNETIC';
+    name: string;
+    /**
+     * System strain points consumed (0–6)
+     */
+    bodyPoints: number;
+    /**
+     * Description of the cybernetic's effect
+     */
+    effect: string;
+};
+
+/**
+ * Create payload for a SHIP_MODULE item. No `id` — server-assigned.
+ */
+export type ItemShipModuleCreate = {
+    type: 'SHIP_MODULE';
+    name: string;
+    slot: ItemSlotType;
+    /**
+     * Description of the module's effect and energy use
+     */
+    effect: string;
+};
+
+/**
+ * Create payload for an OTHER item. No `id` — server-assigned.
+ */
+export type ItemOtherCreate = {
+    type: 'OTHER';
+    name: string;
+    /**
+     * Encumbrance weight in slots
+     */
+    weight: number;
+    /**
+     * Optional free-text notes
+     */
+    notes?: string | null;
+};
+
+/**
+ * PATCH payload for a WEAPON item. All fields optional.
+ */
+export type ItemWeaponUpdate = {
+    type?: 'WEAPON';
+    name?: string;
+    damage?: number;
+    range?: ItemRangeEnum;
+    bonus?: number;
+    crit?: number;
+    weight?: number;
+    features?: Array<string>;
+    equipped?: boolean;
+};
+
+/**
+ * PATCH payload for an ARMOR item. All fields optional.
+ */
+export type ItemArmorUpdate = {
+    type?: 'ARMOR';
+    name?: string;
+    armorRating?: number;
+    weight?: number;
+    features?: Array<string>;
+    equipped?: boolean;
+};
+
+/**
+ * PATCH payload for a GEAR item. All fields optional.
+ */
+export type ItemGearUpdate = {
+    type?: 'GEAR';
+    name?: string;
+    weight?: number;
+    quantity?: number;
+    notes?: string | null;
+};
+
+/**
+ * PATCH payload for a CYBERNETIC item. All fields optional.
+ */
+export type ItemCyberneticUpdate = {
+    type?: 'CYBERNETIC';
+    name?: string;
+    bodyPoints?: number;
+    effect?: string;
+};
+
+/**
+ * PATCH payload for a SHIP_MODULE item. All fields optional.
+ */
+export type ItemShipModuleUpdate = {
+    type?: 'SHIP_MODULE';
+    name?: string;
+    slot?: ItemSlotType;
+    effect?: string;
+};
+
+/**
+ * PATCH payload for an OTHER item. All fields optional.
+ */
+export type ItemOtherUpdate = {
+    type?: 'OTHER';
+    name?: string;
+    weight?: number;
+    notes?: string | null;
+};
+
+/**
  * A discriminated union of all item types. The `type` field determines
  * which variant applies. Generated clients produce a correctly-typed
  * sum type from this schema.
@@ -448,45 +582,19 @@ export type Item = ({
  * be present.
  *
  */
-export type ItemCreate = {
+export type ItemCreate = ({
     type: 'WEAPON';
-    name: string;
-    damage: number;
-    range: ItemRangeEnum;
-    bonus: number;
-    crit: number;
-    weight: number;
-    features: Array<string>;
-    equipped: boolean;
-} | {
+} & ItemWeaponCreate) | ({
     type: 'ARMOR';
-    name: string;
-    armorRating: number;
-    weight: number;
-    features: Array<string>;
-    equipped: boolean;
-} | {
+} & ItemArmorCreate) | ({
     type: 'GEAR';
-    name: string;
-    weight: number;
-    quantity: number;
-    notes?: string | null;
-} | {
+} & ItemGearCreate) | ({
     type: 'CYBERNETIC';
-    name: string;
-    bodyPoints: number;
-    effect: string;
-} | {
+} & ItemCyberneticCreate) | ({
     type: 'SHIP_MODULE';
-    name: string;
-    slot: ItemSlotType;
-    effect: string;
-} | {
+} & ItemShipModuleCreate) | ({
     type: 'OTHER';
-    name: string;
-    weight: number;
-    notes?: string | null;
-};
+} & ItemOtherCreate);
 
 /**
  * PATCH payload for updating an item. The `type` discriminator must
@@ -494,58 +602,19 @@ export type ItemCreate = {
  * `ITEM_TYPE_MISMATCH`. All fields are optional.
  *
  */
-export type ItemUpdate = {
-    name?: string;
-    /**
-     * WEAPON only
-     */
-    damage?: number;
-    /**
-     * WEAPON only
-     */
-    range?: ItemRangeEnum;
-    /**
-     * WEAPON only
-     */
-    bonus?: number;
-    /**
-     * WEAPON only
-     */
-    crit?: number;
-    /**
-     * ARMOR only
-     */
-    armorRating?: number;
-    weight?: number;
-    /**
-     * WEAPON or ARMOR
-     */
-    features?: Array<string>;
-    /**
-     * WEAPON or ARMOR
-     */
-    equipped?: boolean;
-    /**
-     * GEAR only
-     */
-    quantity?: number;
-    /**
-     * GEAR or OTHER
-     */
-    notes?: string | null;
-    /**
-     * CYBERNETIC only
-     */
-    bodyPoints?: number;
-    /**
-     * CYBERNETIC or SHIP_MODULE
-     */
-    effect?: string;
-    /**
-     * SHIP_MODULE only
-     */
-    slot?: ItemSlotType;
-};
+export type ItemUpdate = ({
+    type: 'WEAPON';
+} & ItemWeaponUpdate) | ({
+    type: 'ARMOR';
+} & ItemArmorUpdate) | ({
+    type: 'GEAR';
+} & ItemGearUpdate) | ({
+    type: 'CYBERNETIC';
+} & ItemCyberneticUpdate) | ({
+    type: 'SHIP_MODULE';
+} & ItemShipModuleUpdate) | ({
+    type: 'OTHER';
+} & ItemOtherUpdate);
 
 /**
  * Full character DTO as returned by the v1 API. Server-derived fields
@@ -835,6 +904,154 @@ export type ShipModuleOther = ShipModuleBase & {
 };
 
 /**
+ * Create payload for a WEAPON ship module. No `id` — server-assigned.
+ */
+export type ShipModuleWeaponCreate = {
+    slot: 'WEAPON';
+    name: string;
+    energyUse: number;
+    /**
+     * Modifier dice added to the attack pool
+     */
+    weaponBonus: number;
+    weaponRange: ShipWeaponRange;
+    /**
+     * Structural damage dealt on a hit
+     */
+    weaponDamage: number;
+    /**
+     * Number of successes required to trigger a critical effect
+     */
+    weaponCritThreshold: number;
+    notes?: string | null;
+};
+
+/**
+ * Create payload for a TORPEDO ship module. No `id` — server-assigned.
+ */
+export type ShipModuleTorpedoCreate = {
+    slot: 'TORPEDO';
+    name: string;
+    energyUse: number;
+    /**
+     * Number of torpedoes currently loaded
+     */
+    torpedoCount?: number;
+    /**
+     * Number of mines currently loaded
+     */
+    mineCount?: number;
+    notes?: string | null;
+};
+
+/**
+ * Create payload for a HOLD ship module. No `id` — server-assigned.
+ */
+export type ShipModuleHoldCreate = {
+    slot: 'HOLD';
+    name: string;
+    energyUse: number;
+    /**
+     * Cargo capacity in tonnes
+     */
+    cargoTons?: number;
+    /**
+     * True for a concealed hold
+     */
+    concealed?: boolean;
+    notes?: string | null;
+};
+
+/**
+ * Create payload for a SENSOR ship module. No `id` — server-assigned.
+ */
+export type ShipModuleSensorCreate = {
+    slot: 'SENSOR';
+    name: string;
+    energyUse: number;
+    /**
+     * Modifier added to sensor / dataDjinn checks
+     */
+    detectionBonus?: number;
+    notes?: string | null;
+};
+
+/**
+ * Create payload for any other ship module slot type (BRIDGE, REACTOR,
+ * DRIVE, COMMS, HANGAR, QUARTERS, MEDICAL, WORKSHOP, CHAPEL, ESCAPE-PODS,
+ * CRYO, DOCKING, MINING, REPAIR, CONCEALED-HOLD, PROXY-DECK, OTHER).
+ * No `id` — server-assigned.
+ *
+ */
+export type ShipModuleOtherCreate = {
+    slot: ShipModuleSlot;
+    name: string;
+    energyUse: number;
+    notes?: string | null;
+};
+
+/**
+ * PATCH payload for a WEAPON ship module. All fields optional.
+ */
+export type ShipModuleWeaponUpdate = {
+    slot?: 'WEAPON';
+    name?: string;
+    energyUse?: number;
+    weaponBonus?: number;
+    weaponRange?: ShipWeaponRange;
+    weaponDamage?: number;
+    weaponCritThreshold?: number;
+    notes?: string | null;
+};
+
+/**
+ * PATCH payload for a TORPEDO ship module. All fields optional.
+ */
+export type ShipModuleTorpedoUpdate = {
+    slot?: 'TORPEDO';
+    name?: string;
+    energyUse?: number;
+    torpedoCount?: number;
+    mineCount?: number;
+    notes?: string | null;
+};
+
+/**
+ * PATCH payload for a HOLD ship module. All fields optional.
+ */
+export type ShipModuleHoldUpdate = {
+    slot?: 'HOLD';
+    name?: string;
+    energyUse?: number;
+    cargoTons?: number;
+    concealed?: boolean;
+    notes?: string | null;
+};
+
+/**
+ * PATCH payload for a SENSOR ship module. All fields optional.
+ */
+export type ShipModuleSensorUpdate = {
+    slot?: 'SENSOR';
+    name?: string;
+    energyUse?: number;
+    detectionBonus?: number;
+    notes?: string | null;
+};
+
+/**
+ * PATCH payload for any other ship module slot type. All fields optional.
+ * The `slot` discriminator may not be changed after installation.
+ *
+ */
+export type ShipModuleOtherUpdate = {
+    slot?: ShipModuleSlot;
+    name?: string;
+    energyUse?: number;
+    notes?: string | null;
+};
+
+/**
  * A discriminated union of all ship module variants. The `slot` field
  * determines which variant applies. Generated clients produce a
  * correctly-typed sum type from this schema.
@@ -865,89 +1082,35 @@ export type ShipModule = ({
  * with the ship and cannot be added via this endpoint.
  *
  */
-export type ShipModuleCreate = {
+export type ShipModuleCreate = ({
     slot: 'WEAPON';
-    name: string;
-    energyUse: number;
-    weaponBonus: number;
-    weaponRange: ShipWeaponRange;
-    weaponDamage: number;
-    weaponCritThreshold: number;
-    notes?: string | null;
-} | {
+} & ShipModuleWeaponCreate) | ({
     slot: 'TORPEDO';
-    name: string;
-    energyUse: number;
-    torpedoCount?: number;
-    mineCount?: number;
-    notes?: string | null;
-} | {
+} & ShipModuleTorpedoCreate) | ({
     slot: 'HOLD';
-    name: string;
-    energyUse: number;
-    cargoTons?: number;
-    concealed?: boolean;
-    notes?: string | null;
-} | {
+} & ShipModuleHoldCreate) | ({
     slot: 'SENSOR';
-    name: string;
-    energyUse: number;
-    detectionBonus?: number;
-    notes?: string | null;
-} | {
+} & ShipModuleSensorCreate) | ({
     slot: 'BRIDGE' | 'REACTOR' | 'DRIVE' | 'COMMS' | 'HANGAR' | 'QUARTERS' | 'MEDICAL' | 'WORKSHOP' | 'CHAPEL' | 'ESCAPE-PODS' | 'CRYO' | 'DOCKING' | 'MINING' | 'REPAIR' | 'CONCEALED-HOLD' | 'PROXY-DECK' | 'OTHER';
-    name: string;
-    energyUse: number;
-    notes?: string | null;
-};
+} & ShipModuleOtherCreate);
 
 /**
  * PATCH payload for `PATCH /api/v1/ship-modules/{id}`. The `slot`
- * discriminator may not be changed after installation. All fields
- * optional.
+ * discriminator must match the installed module's slot — changing it
+ * returns 400 `SHIP_MODULE_SLOT_MISMATCH`. All fields optional.
  *
  */
-export type ShipModuleUpdate = {
-    name?: string;
-    energyUse?: number;
-    notes?: string | null;
-    /**
-     * WEAPON only
-     */
-    weaponBonus?: number;
-    /**
-     * WEAPON only
-     */
-    weaponRange?: ShipWeaponRange;
-    /**
-     * WEAPON only
-     */
-    weaponDamage?: number;
-    /**
-     * WEAPON only
-     */
-    weaponCritThreshold?: number;
-    /**
-     * TORPEDO only
-     */
-    torpedoCount?: number;
-    /**
-     * TORPEDO only
-     */
-    mineCount?: number;
-    /**
-     * HOLD only
-     */
-    cargoTons?: number;
-    /**
-     * HOLD only
-     */
-    concealed?: boolean;
-    /**
-     * SENSOR only
-     */
-    detectionBonus?: number;
-};
+export type ShipModuleUpdate = ({
+    slot: 'WEAPON';
+} & ShipModuleWeaponUpdate) | ({
+    slot: 'TORPEDO';
+} & ShipModuleTorpedoUpdate) | ({
+    slot: 'HOLD';
+} & ShipModuleHoldUpdate) | ({
+    slot: 'SENSOR';
+} & ShipModuleSensorUpdate) | ({
+    slot: 'BRIDGE' | 'REACTOR' | 'DRIVE' | 'COMMS' | 'HANGAR' | 'QUARTERS' | 'MEDICAL' | 'WORKSHOP' | 'CHAPEL' | 'ESCAPE-PODS' | 'CRYO' | 'DOCKING' | 'MINING' | 'REPAIR' | 'CONCEALED-HOLD' | 'PROXY-DECK' | 'OTHER';
+} & ShipModuleOtherUpdate);
 
 /**
  * Full Ship DTO as returned by the v1 API. Ship stats correspond to
@@ -1221,50 +1384,6 @@ export type RealtimeToken = {
      * ISO-8601 instant when the token expires
      */
     expiresAt: string | null;
-};
-
-export type _02 = {
-    slot: 'WEAPON';
-    name: string;
-    energyUse: number;
-    weaponBonus: number;
-    weaponRange: ShipWeaponRange;
-    weaponDamage: number;
-    weaponCritThreshold: number;
-    notes?: string | null;
-};
-
-export type _12 = {
-    slot: 'TORPEDO';
-    name: string;
-    energyUse: number;
-    torpedoCount?: number;
-    mineCount?: number;
-    notes?: string | null;
-};
-
-export type _22 = {
-    slot: 'HOLD';
-    name: string;
-    energyUse: number;
-    cargoTons?: number;
-    concealed?: boolean;
-    notes?: string | null;
-};
-
-export type _32 = {
-    slot: 'SENSOR';
-    name: string;
-    energyUse: number;
-    detectionBonus?: number;
-    notes?: string | null;
-};
-
-export type _42 = {
-    slot: 'BRIDGE' | 'REACTOR' | 'DRIVE' | 'COMMS' | 'HANGAR' | 'QUARTERS' | 'MEDICAL' | 'WORKSHOP' | 'CHAPEL' | 'ESCAPE-PODS' | 'CRYO' | 'DOCKING' | 'MINING' | 'REPAIR' | 'CONCEALED-HOLD' | 'PROXY-DECK' | 'OTHER';
-    name: string;
-    energyUse: number;
-    notes?: string | null;
 };
 
 /**

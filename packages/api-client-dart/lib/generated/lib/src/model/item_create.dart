@@ -3,19 +3,13 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:app_api_client/src/model/item_create_one_of.dart';
-import 'package:app_api_client/src/model/item_create_one_of2.dart';
-import 'package:app_api_client/src/model/item_create_one_of3.dart';
-import 'package:app_api_client/src/model/item_create_one_of1.dart';
-import 'package:app_api_client/src/model/model4.dart';
-import 'package:app_api_client/src/model/model1.dart';
-import 'package:app_api_client/src/model/item_create_one_of4.dart';
+import 'package:app_api_client/src/model/item_ship_module_create.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:app_api_client/src/model/model3.dart';
-import 'package:app_api_client/src/model/model2.dart';
-import 'package:app_api_client/src/model/item_create_one_of5.dart';
-import 'package:app_api_client/src/model/model0.dart';
-import 'package:app_api_client/src/model/model5.dart';
+import 'package:app_api_client/src/model/item_gear_create.dart';
+import 'package:app_api_client/src/model/item_weapon_create.dart';
+import 'package:app_api_client/src/model/item_cybernetic_create.dart';
+import 'package:app_api_client/src/model/item_other_create.dart';
+import 'package:app_api_client/src/model/item_armor_create.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 import 'package:one_of/one_of.dart';
@@ -27,33 +21,33 @@ part 'item_create.g.dart';
 /// Properties:
 /// * [type] 
 /// * [name] 
-/// * [damage] 
+/// * [damage] - Base damage dice
 /// * [range] 
-/// * [bonus] 
-/// * [crit] 
-/// * [weight] 
-/// * [features] 
+/// * [bonus] - Bonus dice added to the attack pool
+/// * [crit] - Critical threshold
+/// * [weight] - Encumbrance weight in slots
+/// * [features] - Feature tags (e.g. \"Vacuum Sealed\", \"Exo-Skeleton\")
 /// * [equipped] 
-/// * [armorRating] 
-/// * [quantity] 
-/// * [notes] 
-/// * [bodyPoints] 
-/// * [effect] 
+/// * [armorRating] - Armor rating — reduces incoming damage
+/// * [quantity] - Number of units
+/// * [notes] - Optional free-text notes
+/// * [bodyPoints] - System strain points consumed (0–6)
+/// * [effect] - Description of the module's effect and energy use
 /// * [slot] 
 @BuiltValue()
 abstract class ItemCreate implements Built<ItemCreate, ItemCreateBuilder> {
-  /// One Of [ItemCreateOneOf], [ItemCreateOneOf1], [ItemCreateOneOf2], [ItemCreateOneOf3], [ItemCreateOneOf4], [ItemCreateOneOf5]
+  /// One Of [ItemArmorCreate], [ItemCyberneticCreate], [ItemGearCreate], [ItemOtherCreate], [ItemShipModuleCreate], [ItemWeaponCreate]
   OneOf get oneOf;
 
   static const String discriminatorFieldName = r'type';
 
   static const Map<String, Type> discriminatorMapping = {
-    r'ARMOR': Model1,
-    r'CYBERNETIC': Model3,
-    r'GEAR': Model2,
-    r'OTHER': Model5,
-    r'SHIP_MODULE': Model4,
-    r'WEAPON': Model0,
+    r'ARMOR': ItemArmorCreate,
+    r'CYBERNETIC': ItemCyberneticCreate,
+    r'GEAR': ItemGearCreate,
+    r'OTHER': ItemOtherCreate,
+    r'SHIP_MODULE': ItemShipModuleCreate,
+    r'WEAPON': ItemWeaponCreate,
   };
 
   ItemCreate._();
@@ -69,22 +63,22 @@ abstract class ItemCreate implements Built<ItemCreate, ItemCreateBuilder> {
 
 extension ItemCreateDiscriminatorExt on ItemCreate {
     String? get discriminatorValue {
-        if (this is Model1) {
+        if (this is ItemArmorCreate) {
             return r'ARMOR';
         }
-        if (this is Model3) {
+        if (this is ItemCyberneticCreate) {
             return r'CYBERNETIC';
         }
-        if (this is Model2) {
+        if (this is ItemGearCreate) {
             return r'GEAR';
         }
-        if (this is Model5) {
+        if (this is ItemOtherCreate) {
             return r'OTHER';
         }
-        if (this is Model4) {
+        if (this is ItemShipModuleCreate) {
             return r'SHIP_MODULE';
         }
-        if (this is Model0) {
+        if (this is ItemWeaponCreate) {
             return r'WEAPON';
         }
         return null;
@@ -92,22 +86,22 @@ extension ItemCreateDiscriminatorExt on ItemCreate {
 }
 extension ItemCreateBuilderDiscriminatorExt on ItemCreateBuilder {
     String? get discriminatorValue {
-        if (this is Model1Builder) {
+        if (this is ItemArmorCreateBuilder) {
             return r'ARMOR';
         }
-        if (this is Model3Builder) {
+        if (this is ItemCyberneticCreateBuilder) {
             return r'CYBERNETIC';
         }
-        if (this is Model2Builder) {
+        if (this is ItemGearCreateBuilder) {
             return r'GEAR';
         }
-        if (this is Model5Builder) {
+        if (this is ItemOtherCreateBuilder) {
             return r'OTHER';
         }
-        if (this is Model4Builder) {
+        if (this is ItemShipModuleCreateBuilder) {
             return r'SHIP_MODULE';
         }
-        if (this is Model0Builder) {
+        if (this is ItemWeaponCreateBuilder) {
             return r'WEAPON';
         }
         return null;
@@ -150,51 +144,51 @@ class _$ItemCreateSerializer implements PrimitiveSerializer<ItemCreate> {
     final discIndex = serializedList.indexOf(ItemCreate.discriminatorFieldName) + 1;
     final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
     oneOfDataSrc = serialized;
-    final oneOfTypes = [Model1, Model3, Model2, Model5, Model4, Model0, ];
+    final oneOfTypes = [ItemArmorCreate, ItemCyberneticCreate, ItemGearCreate, ItemOtherCreate, ItemShipModuleCreate, ItemWeaponCreate, ];
     Object oneOfResult;
     Type oneOfType;
     switch (discValue) {
       case r'ARMOR':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model1),
-        ) as Model1;
-        oneOfType = Model1;
+          specifiedType: FullType(ItemArmorCreate),
+        ) as ItemArmorCreate;
+        oneOfType = ItemArmorCreate;
         break;
       case r'CYBERNETIC':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model3),
-        ) as Model3;
-        oneOfType = Model3;
+          specifiedType: FullType(ItemCyberneticCreate),
+        ) as ItemCyberneticCreate;
+        oneOfType = ItemCyberneticCreate;
         break;
       case r'GEAR':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model2),
-        ) as Model2;
-        oneOfType = Model2;
+          specifiedType: FullType(ItemGearCreate),
+        ) as ItemGearCreate;
+        oneOfType = ItemGearCreate;
         break;
       case r'OTHER':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model5),
-        ) as Model5;
-        oneOfType = Model5;
+          specifiedType: FullType(ItemOtherCreate),
+        ) as ItemOtherCreate;
+        oneOfType = ItemOtherCreate;
         break;
       case r'SHIP_MODULE':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model4),
-        ) as Model4;
-        oneOfType = Model4;
+          specifiedType: FullType(ItemShipModuleCreate),
+        ) as ItemShipModuleCreate;
+        oneOfType = ItemShipModuleCreate;
         break;
       case r'WEAPON':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model0),
-        ) as Model0;
-        oneOfType = Model0;
+          specifiedType: FullType(ItemWeaponCreate),
+        ) as ItemWeaponCreate;
+        oneOfType = ItemWeaponCreate;
         break;
       default:
         throw UnsupportedError("Couldn't deserialize oneOf for the discriminator value: ${discValue}");

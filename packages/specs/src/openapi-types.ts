@@ -510,92 +510,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
-    0: {
-      /** @enum {string} */
-      type: 'WEAPON';
-      name: string;
-      damage: number;
-      range: components['schemas']['ItemRangeEnum'];
-      bonus: number;
-      crit: number;
-      weight: number;
-      features: string[];
-      equipped: boolean;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'WEAPON';
-    };
-    1: {
-      /** @enum {string} */
-      type: 'ARMOR';
-      name: string;
-      armorRating: number;
-      weight: number;
-      features: string[];
-      equipped: boolean;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'ARMOR';
-    };
-    2: {
-      /** @enum {string} */
-      type: 'GEAR';
-      name: string;
-      weight: number;
-      quantity: number;
-      notes?: string | null;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'GEAR';
-    };
-    3: {
-      /** @enum {string} */
-      type: 'CYBERNETIC';
-      name: string;
-      bodyPoints: number;
-      effect: string;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'CYBERNETIC';
-    };
-    4: {
-      /** @enum {string} */
-      type: 'SHIP_MODULE';
-      name: string;
-      slot: components['schemas']['ItemSlotType'];
-      effect: string;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'SHIP_MODULE';
-    };
-    5: {
-      /** @enum {string} */
-      type: 'OTHER';
-      name: string;
-      weight: number;
-      notes?: string | null;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'OTHER';
-    };
     /**
      * @description Severity tier of a critical injury per Coriolis core rules.
      *     - `light` — minor wound, no long-term mechanical effect.
@@ -878,6 +792,268 @@ export interface components {
       type: 'OTHER';
     };
     /**
+     * @description Create payload for a WEAPON item. No `id` — server-assigned.
+     * @example {
+     *       "type": "WEAPON",
+     *       "name": "Vulcan Carbine",
+     *       "damage": 2,
+     *       "range": "short",
+     *       "bonus": 2,
+     *       "crit": 2,
+     *       "weight": 0.8,
+     *       "features": [],
+     *       "equipped": false
+     *     }
+     */
+    ItemWeaponCreate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'WEAPON';
+      name: string;
+      /** @description Base damage dice */
+      damage: number;
+      range: components['schemas']['ItemRangeEnum'];
+      /** @description Bonus dice added to the attack pool */
+      bonus: number;
+      /** @description Critical threshold */
+      crit: number;
+      /** @description Encumbrance weight in slots (0.5 increments) */
+      weight: number;
+      /** @description Feature tags (e.g. "Burst", "Explosive") */
+      features: string[];
+      /** @default false */
+      equipped: boolean;
+    };
+    /**
+     * @description Create payload for an ARMOR item. No `id` — server-assigned.
+     * @example {
+     *       "type": "ARMOR",
+     *       "name": "Coriolis Guard Suit",
+     *       "armorRating": 3,
+     *       "weight": 1,
+     *       "features": [
+     *         "Vacuum Sealed"
+     *       ],
+     *       "equipped": false
+     *     }
+     */
+    ItemArmorCreate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'ARMOR';
+      name: string;
+      /** @description Armor rating — reduces incoming damage */
+      armorRating: number;
+      /** @description Encumbrance weight in slots */
+      weight: number;
+      /** @description Feature tags (e.g. "Vacuum Sealed", "Exo-Skeleton") */
+      features: string[];
+      /** @default false */
+      equipped: boolean;
+    };
+    /**
+     * @description Create payload for a GEAR item. No `id` — server-assigned.
+     * @example {
+     *       "type": "GEAR",
+     *       "name": "Medkit",
+     *       "weight": 0.5,
+     *       "quantity": 1,
+     *       "notes": "Standard field medkit"
+     *     }
+     */
+    ItemGearCreate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'GEAR';
+      name: string;
+      /** @description Encumbrance weight in slots */
+      weight: number;
+      /** @description Number of units */
+      quantity: number;
+      /** @description Optional free-text notes */
+      notes?: string | null;
+    };
+    /**
+     * @description Create payload for a CYBERNETIC item. No `id` — server-assigned.
+     * @example {
+     *       "type": "CYBERNETIC",
+     *       "name": "Neural Interface",
+     *       "bodyPoints": 2,
+     *       "effect": "Grants +1 die to Data Djinn checks"
+     *     }
+     */
+    ItemCyberneticCreate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'CYBERNETIC';
+      name: string;
+      /** @description System strain points consumed (0–6) */
+      bodyPoints: number;
+      /** @description Description of the cybernetic's effect */
+      effect: string;
+    };
+    /**
+     * @description Create payload for a SHIP_MODULE item. No `id` — server-assigned.
+     * @example {
+     *       "type": "SHIP_MODULE",
+     *       "name": "Sensor Upgrade Mk I",
+     *       "slot": "sensor",
+     *       "effect": "+1 die to sensor checks"
+     *     }
+     */
+    ItemShipModuleCreate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'SHIP_MODULE';
+      name: string;
+      slot: components['schemas']['ItemSlotType'];
+      /** @description Description of the module's effect and energy use */
+      effect: string;
+    };
+    /**
+     * @description Create payload for an OTHER item. No `id` — server-assigned.
+     * @example {
+     *       "type": "OTHER",
+     *       "name": "Coriolis Prayer Rug",
+     *       "weight": 0.5,
+     *       "notes": null
+     *     }
+     */
+    ItemOtherCreate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'OTHER';
+      name: string;
+      /** @description Encumbrance weight in slots */
+      weight: number;
+      /** @description Optional free-text notes */
+      notes?: string | null;
+    };
+    /**
+     * @description PATCH payload for a WEAPON item. All fields optional.
+     * @example {
+     *       "type": "WEAPON",
+     *       "damage": 3,
+     *       "equipped": true
+     *     }
+     */
+    ItemWeaponUpdate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'WEAPON';
+      name?: string;
+      damage?: number;
+      range?: components['schemas']['ItemRangeEnum'];
+      bonus?: number;
+      crit?: number;
+      weight?: number;
+      features?: string[];
+      equipped?: boolean;
+    };
+    /**
+     * @description PATCH payload for an ARMOR item. All fields optional.
+     * @example {
+     *       "type": "ARMOR",
+     *       "armorRating": 4,
+     *       "equipped": true
+     *     }
+     */
+    ItemArmorUpdate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'ARMOR';
+      name?: string;
+      armorRating?: number;
+      weight?: number;
+      features?: string[];
+      equipped?: boolean;
+    };
+    /**
+     * @description PATCH payload for a GEAR item. All fields optional.
+     * @example {
+     *       "type": "GEAR",
+     *       "quantity": 3
+     *     }
+     */
+    ItemGearUpdate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'GEAR';
+      name?: string;
+      weight?: number;
+      quantity?: number;
+      notes?: string | null;
+    };
+    /**
+     * @description PATCH payload for a CYBERNETIC item. All fields optional.
+     * @example {
+     *       "type": "CYBERNETIC",
+     *       "effect": "Grants +2 dice to Data Djinn checks"
+     *     }
+     */
+    ItemCyberneticUpdate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'CYBERNETIC';
+      name?: string;
+      bodyPoints?: number;
+      effect?: string;
+    };
+    /**
+     * @description PATCH payload for a SHIP_MODULE item. All fields optional.
+     * @example {
+     *       "type": "SHIP_MODULE",
+     *       "effect": "+2 dice to sensor checks"
+     *     }
+     */
+    ItemShipModuleUpdate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'SHIP_MODULE';
+      name?: string;
+      slot?: components['schemas']['ItemSlotType'];
+      effect?: string;
+    };
+    /**
+     * @description PATCH payload for an OTHER item. All fields optional.
+     * @example {
+     *       "type": "OTHER",
+     *       "notes": "Blessed by the Lady of Tears"
+     *     }
+     */
+    ItemOtherUpdate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'OTHER';
+      name?: string;
+      weight?: number;
+      notes?: string | null;
+    };
+    /**
      * @description A discriminated union of all item types. The `type` field determines
      *     which variant applies. Generated clients produce a correctly-typed
      *     sum type from this schema.
@@ -895,89 +1071,24 @@ export interface components {
      *     be present.
      */
     ItemCreate:
-      | {
-          /** @enum {string} */
-          type: 'WEAPON';
-          name: string;
-          damage: number;
-          range: components['schemas']['ItemRangeEnum'];
-          bonus: number;
-          crit: number;
-          weight: number;
-          features: string[];
-          equipped: boolean;
-        }
-      | {
-          /** @enum {string} */
-          type: 'ARMOR';
-          name: string;
-          armorRating: number;
-          weight: number;
-          features: string[];
-          equipped: boolean;
-        }
-      | {
-          /** @enum {string} */
-          type: 'GEAR';
-          name: string;
-          weight: number;
-          quantity: number;
-          notes?: string | null;
-        }
-      | {
-          /** @enum {string} */
-          type: 'CYBERNETIC';
-          name: string;
-          bodyPoints: number;
-          effect: string;
-        }
-      | {
-          /** @enum {string} */
-          type: 'SHIP_MODULE';
-          name: string;
-          slot: components['schemas']['ItemSlotType'];
-          effect: string;
-        }
-      | {
-          /** @enum {string} */
-          type: 'OTHER';
-          name: string;
-          weight: number;
-          notes?: string | null;
-        };
+      | components['schemas']['ItemWeaponCreate']
+      | components['schemas']['ItemArmorCreate']
+      | components['schemas']['ItemGearCreate']
+      | components['schemas']['ItemCyberneticCreate']
+      | components['schemas']['ItemShipModuleCreate']
+      | components['schemas']['ItemOtherCreate'];
     /**
      * @description PATCH payload for updating an item. The `type` discriminator must
      *     match the existing item type — changing it returns 400
      *     `ITEM_TYPE_MISMATCH`. All fields are optional.
      */
-    ItemUpdate: {
-      name?: string;
-      /** @description WEAPON only */
-      damage?: number;
-      /** @description WEAPON only */
-      range?: components['schemas']['ItemRangeEnum'];
-      /** @description WEAPON only */
-      bonus?: number;
-      /** @description WEAPON only */
-      crit?: number;
-      /** @description ARMOR only */
-      armorRating?: number;
-      weight?: number;
-      /** @description WEAPON or ARMOR */
-      features?: string[];
-      /** @description WEAPON or ARMOR */
-      equipped?: boolean;
-      /** @description GEAR only */
-      quantity?: number;
-      /** @description GEAR or OTHER */
-      notes?: string | null;
-      /** @description CYBERNETIC only */
-      bodyPoints?: number;
-      /** @description CYBERNETIC or SHIP_MODULE */
-      effect?: string;
-      /** @description SHIP_MODULE only */
-      slot?: components['schemas']['ItemSlotType'];
-    };
+    ItemUpdate:
+      | components['schemas']['ItemWeaponUpdate']
+      | components['schemas']['ItemArmorUpdate']
+      | components['schemas']['ItemGearUpdate']
+      | components['schemas']['ItemCyberneticUpdate']
+      | components['schemas']['ItemShipModuleUpdate']
+      | components['schemas']['ItemOtherUpdate'];
     /**
      * @description Full character DTO as returned by the v1 API. Server-derived fields
      *     (`hp.max`, `mp.max`, `encumbrance.max`) are computed by the
@@ -1294,6 +1405,274 @@ export interface components {
         | 'OTHER';
     };
     /**
+     * @description Create payload for a WEAPON ship module. No `id` — server-assigned.
+     * @example {
+     *       "slot": "WEAPON",
+     *       "name": "Graviton Projector",
+     *       "energyUse": 2,
+     *       "weaponBonus": 1,
+     *       "weaponRange": "medium",
+     *       "weaponDamage": 3,
+     *       "weaponCritThreshold": 3,
+     *       "notes": null
+     *     }
+     */
+    ShipModuleWeaponCreate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot: 'WEAPON';
+      name: string;
+      energyUse: number;
+      /** @description Modifier dice added to the attack pool */
+      weaponBonus: number;
+      weaponRange: components['schemas']['ShipWeaponRange'];
+      /** @description Structural damage dealt on a hit */
+      weaponDamage: number;
+      /** @description Number of successes required to trigger a critical effect */
+      weaponCritThreshold: number;
+      notes?: string | null;
+    };
+    /**
+     * @description Create payload for a TORPEDO ship module. No `id` — server-assigned.
+     * @example {
+     *       "slot": "TORPEDO",
+     *       "name": "Torpedo Bay Alpha",
+     *       "energyUse": 1,
+     *       "torpedoCount": 4,
+     *       "mineCount": 0,
+     *       "notes": null
+     *     }
+     */
+    ShipModuleTorpedoCreate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot: 'TORPEDO';
+      name: string;
+      energyUse: number;
+      /**
+       * @description Number of torpedoes currently loaded
+       * @default 0
+       */
+      torpedoCount: number;
+      /**
+       * @description Number of mines currently loaded
+       * @default 0
+       */
+      mineCount: number;
+      notes?: string | null;
+    };
+    /**
+     * @description Create payload for a HOLD ship module. No `id` — server-assigned.
+     * @example {
+     *       "slot": "HOLD",
+     *       "name": "Main Cargo Hold",
+     *       "energyUse": 0,
+     *       "cargoTons": 50,
+     *       "concealed": false,
+     *       "notes": null
+     *     }
+     */
+    ShipModuleHoldCreate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot: 'HOLD';
+      name: string;
+      energyUse: number;
+      /**
+       * @description Cargo capacity in tonnes
+       * @default 0
+       */
+      cargoTons: number;
+      /**
+       * @description True for a concealed hold
+       * @default false
+       */
+      concealed: boolean;
+      notes?: string | null;
+    };
+    /**
+     * @description Create payload for a SENSOR ship module. No `id` — server-assigned.
+     * @example {
+     *       "slot": "SENSOR",
+     *       "name": "Long-Range Sensor Tower",
+     *       "energyUse": 1,
+     *       "detectionBonus": 1,
+     *       "notes": null
+     *     }
+     */
+    ShipModuleSensorCreate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot: 'SENSOR';
+      name: string;
+      energyUse: number;
+      /**
+       * @description Modifier added to sensor / dataDjinn checks
+       * @default 1
+       */
+      detectionBonus: number;
+      notes?: string | null;
+    };
+    /**
+     * @description Create payload for any other ship module slot type (BRIDGE, REACTOR,
+     *     DRIVE, COMMS, HANGAR, QUARTERS, MEDICAL, WORKSHOP, CHAPEL, ESCAPE-PODS,
+     *     CRYO, DOCKING, MINING, REPAIR, CONCEALED-HOLD, PROXY-DECK, OTHER).
+     *     No `id` — server-assigned.
+     * @example {
+     *       "slot": "COMMS",
+     *       "name": "Long-Range Comms Array",
+     *       "energyUse": 1,
+     *       "notes": null
+     *     }
+     */
+    ShipModuleOtherCreate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot:
+        | 'BRIDGE'
+        | 'REACTOR'
+        | 'DRIVE'
+        | 'COMMS'
+        | 'HANGAR'
+        | 'QUARTERS'
+        | 'MEDICAL'
+        | 'WORKSHOP'
+        | 'CHAPEL'
+        | 'ESCAPE-PODS'
+        | 'CRYO'
+        | 'DOCKING'
+        | 'MINING'
+        | 'REPAIR'
+        | 'CONCEALED-HOLD'
+        | 'PROXY-DECK'
+        | 'OTHER';
+      name: string;
+      energyUse: number;
+      notes?: string | null;
+    };
+    /**
+     * @description PATCH payload for a WEAPON ship module. All fields optional.
+     * @example {
+     *       "slot": "WEAPON",
+     *       "weaponDamage": 4
+     *     }
+     */
+    ShipModuleWeaponUpdate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot: 'WEAPON';
+      name?: string;
+      energyUse?: number;
+      weaponBonus?: number;
+      weaponRange?: components['schemas']['ShipWeaponRange'];
+      weaponDamage?: number;
+      weaponCritThreshold?: number;
+      notes?: string | null;
+    };
+    /**
+     * @description PATCH payload for a TORPEDO ship module. All fields optional.
+     * @example {
+     *       "slot": "TORPEDO",
+     *       "torpedoCount": 2
+     *     }
+     */
+    ShipModuleTorpedoUpdate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot: 'TORPEDO';
+      name?: string;
+      energyUse?: number;
+      torpedoCount?: number;
+      mineCount?: number;
+      notes?: string | null;
+    };
+    /**
+     * @description PATCH payload for a HOLD ship module. All fields optional.
+     * @example {
+     *       "slot": "HOLD",
+     *       "cargoTons": 60
+     *     }
+     */
+    ShipModuleHoldUpdate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot: 'HOLD';
+      name?: string;
+      energyUse?: number;
+      cargoTons?: number;
+      concealed?: boolean;
+      notes?: string | null;
+    };
+    /**
+     * @description PATCH payload for a SENSOR ship module. All fields optional.
+     * @example {
+     *       "slot": "SENSOR",
+     *       "detectionBonus": 2
+     *     }
+     */
+    ShipModuleSensorUpdate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot: 'SENSOR';
+      name?: string;
+      energyUse?: number;
+      detectionBonus?: number;
+      notes?: string | null;
+    };
+    /**
+     * @description PATCH payload for any other ship module slot type. All fields optional.
+     *     The `slot` discriminator may not be changed after installation.
+     * @example {
+     *       "slot": "COMMS",
+     *       "notes": "Upgraded to Mk II antenna"
+     *     }
+     */
+    ShipModuleOtherUpdate: {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      slot:
+        | 'BRIDGE'
+        | 'REACTOR'
+        | 'DRIVE'
+        | 'COMMS'
+        | 'HANGAR'
+        | 'QUARTERS'
+        | 'MEDICAL'
+        | 'WORKSHOP'
+        | 'CHAPEL'
+        | 'ESCAPE-PODS'
+        | 'CRYO'
+        | 'DOCKING'
+        | 'MINING'
+        | 'REPAIR'
+        | 'CONCEALED-HOLD'
+        | 'PROXY-DECK'
+        | 'OTHER';
+      name?: string;
+      energyUse?: number;
+      notes?: string | null;
+    };
+    /**
      * @description A discriminated union of all ship module variants. The `slot` field
      *     determines which variant applies. Generated clients produce a
      *     correctly-typed sum type from this schema.
@@ -1317,100 +1696,22 @@ export interface components {
      *     with the ship and cannot be added via this endpoint.
      */
     ShipModuleCreate:
-      | {
-          /** @enum {string} */
-          slot: 'WEAPON';
-          name: string;
-          energyUse: number;
-          weaponBonus: number;
-          weaponRange: components['schemas']['ShipWeaponRange'];
-          weaponDamage: number;
-          weaponCritThreshold: number;
-          notes?: string | null;
-        }
-      | {
-          /** @enum {string} */
-          slot: 'TORPEDO';
-          name: string;
-          energyUse: number;
-          /** @default 0 */
-          torpedoCount: number;
-          /** @default 0 */
-          mineCount: number;
-          notes?: string | null;
-        }
-      | {
-          /** @enum {string} */
-          slot: 'HOLD';
-          name: string;
-          energyUse: number;
-          /** @default 0 */
-          cargoTons: number;
-          /** @default false */
-          concealed: boolean;
-          notes?: string | null;
-        }
-      | {
-          /** @enum {string} */
-          slot: 'SENSOR';
-          name: string;
-          energyUse: number;
-          /** @default 1 */
-          detectionBonus: number;
-          notes?: string | null;
-        }
-      | {
-          /** @enum {string} */
-          slot:
-            | 'BRIDGE'
-            | 'REACTOR'
-            | 'DRIVE'
-            | 'COMMS'
-            | 'HANGAR'
-            | 'QUARTERS'
-            | 'MEDICAL'
-            | 'WORKSHOP'
-            | 'CHAPEL'
-            | 'ESCAPE-PODS'
-            | 'CRYO'
-            | 'DOCKING'
-            | 'MINING'
-            | 'REPAIR'
-            | 'CONCEALED-HOLD'
-            | 'PROXY-DECK'
-            | 'OTHER';
-          name: string;
-          energyUse: number;
-          notes?: string | null;
-        };
+      | components['schemas']['ShipModuleWeaponCreate']
+      | components['schemas']['ShipModuleTorpedoCreate']
+      | components['schemas']['ShipModuleHoldCreate']
+      | components['schemas']['ShipModuleSensorCreate']
+      | components['schemas']['ShipModuleOtherCreate'];
     /**
      * @description PATCH payload for `PATCH /api/v1/ship-modules/{id}`. The `slot`
-     *     discriminator may not be changed after installation. All fields
-     *     optional.
+     *     discriminator must match the installed module's slot — changing it
+     *     returns 400 `SHIP_MODULE_SLOT_MISMATCH`. All fields optional.
      */
-    ShipModuleUpdate: {
-      name?: string;
-      energyUse?: number;
-      notes?: string | null;
-      /** @description WEAPON only */
-      weaponBonus?: number;
-      /** @description WEAPON only */
-      weaponRange?: components['schemas']['ShipWeaponRange'];
-      /** @description WEAPON only */
-      weaponDamage?: number;
-      /** @description WEAPON only */
-      weaponCritThreshold?: number;
-      /** @description TORPEDO only */
-      torpedoCount?: number;
-      /** @description TORPEDO only */
-      mineCount?: number;
-      /** @description HOLD only */
-      cargoTons?: number;
-      /** @description HOLD only */
-      concealed?: boolean;
-      /** @description SENSOR only */
-      detectionBonus?: number;
-    };
+    ShipModuleUpdate:
+      | components['schemas']['ShipModuleWeaponUpdate']
+      | components['schemas']['ShipModuleTorpedoUpdate']
+      | components['schemas']['ShipModuleHoldUpdate']
+      | components['schemas']['ShipModuleSensorUpdate']
+      | components['schemas']['ShipModuleOtherUpdate'];
     /**
      * @description Full Ship DTO as returned by the v1 API. Ship stats correspond to
      *     ST3001 ГЛАВА 7 Table 7.5 base stats, modified by the installed
@@ -1621,119 +1922,6 @@ export interface components {
        * @description ISO-8601 instant when the token expires
        */
       expiresAt: string | null;
-    };
-    '0-2': {
-      /** @enum {string} */
-      slot: 'WEAPON';
-      name: string;
-      energyUse: number;
-      weaponBonus: number;
-      weaponRange: components['schemas']['ShipWeaponRange'];
-      weaponDamage: number;
-      weaponCritThreshold: number;
-      notes?: string | null;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'WEAPON';
-    };
-    '1-2': {
-      /** @enum {string} */
-      slot: 'TORPEDO';
-      name: string;
-      energyUse: number;
-      /** @default 0 */
-      torpedoCount: number;
-      /** @default 0 */
-      mineCount: number;
-      notes?: string | null;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'TORPEDO';
-    };
-    '2-2': {
-      /** @enum {string} */
-      slot: 'HOLD';
-      name: string;
-      energyUse: number;
-      /** @default 0 */
-      cargoTons: number;
-      /** @default false */
-      concealed: boolean;
-      notes?: string | null;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'HOLD';
-    };
-    '3-2': {
-      /** @enum {string} */
-      slot: 'SENSOR';
-      name: string;
-      energyUse: number;
-      /** @default 1 */
-      detectionBonus: number;
-      notes?: string | null;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'SENSOR';
-    };
-    '4-2': {
-      /** @enum {string} */
-      slot:
-        | 'BRIDGE'
-        | 'REACTOR'
-        | 'DRIVE'
-        | 'COMMS'
-        | 'HANGAR'
-        | 'QUARTERS'
-        | 'MEDICAL'
-        | 'WORKSHOP'
-        | 'CHAPEL'
-        | 'ESCAPE-PODS'
-        | 'CRYO'
-        | 'DOCKING'
-        | 'MINING'
-        | 'REPAIR'
-        | 'CONCEALED-HOLD'
-        | 'PROXY-DECK'
-        | 'OTHER';
-      name: string;
-      energyUse: number;
-      notes?: string | null;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot:
-        | 'BRIDGE'
-        | 'REACTOR'
-        | 'DRIVE'
-        | 'COMMS'
-        | 'HANGAR'
-        | 'QUARTERS'
-        | 'MEDICAL'
-        | 'WORKSHOP'
-        | 'CHAPEL'
-        | 'ESCAPE-PODS'
-        | 'CRYO'
-        | 'DOCKING'
-        | 'MINING'
-        | 'REPAIR'
-        | 'CONCEALED-HOLD'
-        | 'PROXY-DECK'
-        | 'OTHER';
     };
   };
   responses: never;

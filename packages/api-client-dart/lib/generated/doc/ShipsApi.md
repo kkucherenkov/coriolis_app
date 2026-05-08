@@ -564,7 +564,7 @@ import 'package:app_api_client/api.dart';
 
 final api = AppApiClient().getShipsApi();
 final String id = id_example; // String | Ship module identifier (cuid2)
-final ShipModuleUpdate shipModuleUpdate = {"name":"EMP Cannon","weaponDamage":1,"notes":"Systemed weapon — hits sensors"}; // ShipModuleUpdate | 
+final ShipModuleUpdate shipModuleUpdate = {"slot":"WEAPON","name":"EMP Cannon","weaponDamage":1,"notes":"Systemed weapon — hits sensors"}; // ShipModuleUpdate | 
 
 try {
     final response = api.updateShipModule(id, shipModuleUpdate);

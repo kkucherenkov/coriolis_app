@@ -3,74 +3,63 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:app_api_client/src/model/ship_weapon_range.dart';
+import 'package:app_api_client/src/model/ship_module_other_update.dart';
+import 'package:app_api_client/src/model/ship_module_weapon_update.dart';
+import 'package:app_api_client/src/model/ship_module_torpedo_update.dart';
+import 'package:app_api_client/src/model/ship_module_hold_update.dart';
+import 'package:app_api_client/src/model/ship_module_sensor_update.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
+import 'package:one_of/one_of.dart';
 
 part 'ship_module_update.g.dart';
 
-/// PATCH payload for `PATCH /api/v1/ship-modules/{id}`. The `slot` discriminator may not be changed after installation. All fields optional. 
+/// PATCH payload for `PATCH /api/v1/ship-modules/{id}`. The `slot` discriminator must match the installed module's slot — changing it returns 400 `SHIP_MODULE_SLOT_MISMATCH`. All fields optional. 
 ///
 /// Properties:
+/// * [slot] 
 /// * [name] 
 /// * [energyUse] 
+/// * [weaponBonus] 
+/// * [weaponRange] 
+/// * [weaponDamage] 
+/// * [weaponCritThreshold] 
 /// * [notes] 
-/// * [weaponBonus] - WEAPON only
-/// * [weaponRange] - WEAPON only
-/// * [weaponDamage] - WEAPON only
-/// * [weaponCritThreshold] - WEAPON only
-/// * [torpedoCount] - TORPEDO only
-/// * [mineCount] - TORPEDO only
-/// * [cargoTons] - HOLD only
-/// * [concealed] - HOLD only
-/// * [detectionBonus] - SENSOR only
+/// * [torpedoCount] 
+/// * [mineCount] 
+/// * [cargoTons] 
+/// * [concealed] 
+/// * [detectionBonus] 
 @BuiltValue()
 abstract class ShipModuleUpdate implements Built<ShipModuleUpdate, ShipModuleUpdateBuilder> {
-  @BuiltValueField(wireName: r'name')
-  String? get name;
+  /// One Of [ShipModuleHoldUpdate], [ShipModuleOtherUpdate], [ShipModuleSensorUpdate], [ShipModuleTorpedoUpdate], [ShipModuleWeaponUpdate]
+  OneOf get oneOf;
 
-  @BuiltValueField(wireName: r'energyUse')
-  int? get energyUse;
+  static const String discriminatorFieldName = r'slot';
 
-  @BuiltValueField(wireName: r'notes')
-  String? get notes;
-
-  /// WEAPON only
-  @BuiltValueField(wireName: r'weaponBonus')
-  int? get weaponBonus;
-
-  /// WEAPON only
-  @BuiltValueField(wireName: r'weaponRange')
-  ShipWeaponRange? get weaponRange;
-  // enum weaponRangeEnum {  zero,  close,  medium,  long,  extreme,  };
-
-  /// WEAPON only
-  @BuiltValueField(wireName: r'weaponDamage')
-  int? get weaponDamage;
-
-  /// WEAPON only
-  @BuiltValueField(wireName: r'weaponCritThreshold')
-  int? get weaponCritThreshold;
-
-  /// TORPEDO only
-  @BuiltValueField(wireName: r'torpedoCount')
-  int? get torpedoCount;
-
-  /// TORPEDO only
-  @BuiltValueField(wireName: r'mineCount')
-  int? get mineCount;
-
-  /// HOLD only
-  @BuiltValueField(wireName: r'cargoTons')
-  int? get cargoTons;
-
-  /// HOLD only
-  @BuiltValueField(wireName: r'concealed')
-  bool? get concealed;
-
-  /// SENSOR only
-  @BuiltValueField(wireName: r'detectionBonus')
-  int? get detectionBonus;
+  static const Map<String, Type> discriminatorMapping = {
+    r'BRIDGE': ShipModuleOtherUpdate,
+    r'CHAPEL': ShipModuleOtherUpdate,
+    r'COMMS': ShipModuleOtherUpdate,
+    r'CONCEALED-HOLD': ShipModuleOtherUpdate,
+    r'CRYO': ShipModuleOtherUpdate,
+    r'DOCKING': ShipModuleOtherUpdate,
+    r'DRIVE': ShipModuleOtherUpdate,
+    r'ESCAPE-PODS': ShipModuleOtherUpdate,
+    r'HANGAR': ShipModuleOtherUpdate,
+    r'HOLD': ShipModuleHoldUpdate,
+    r'MEDICAL': ShipModuleOtherUpdate,
+    r'MINING': ShipModuleOtherUpdate,
+    r'OTHER': ShipModuleOtherUpdate,
+    r'PROXY-DECK': ShipModuleOtherUpdate,
+    r'QUARTERS': ShipModuleOtherUpdate,
+    r'REACTOR': ShipModuleOtherUpdate,
+    r'REPAIR': ShipModuleOtherUpdate,
+    r'SENSOR': ShipModuleSensorUpdate,
+    r'TORPEDO': ShipModuleTorpedoUpdate,
+    r'WEAPON': ShipModuleWeaponUpdate,
+    r'WORKSHOP': ShipModuleOtherUpdate,
+  };
 
   ShipModuleUpdate._();
 
@@ -81,6 +70,143 @@ abstract class ShipModuleUpdate implements Built<ShipModuleUpdate, ShipModuleUpd
 
   @BuiltValueSerializer(custom: true)
   static Serializer<ShipModuleUpdate> get serializer => _$ShipModuleUpdateSerializer();
+}
+
+extension ShipModuleUpdateDiscriminatorExt on ShipModuleUpdate {
+    String? get discriminatorValue {
+        if (this is ShipModuleOtherUpdate) {
+            return r'BRIDGE';
+        }
+        if (this is ShipModuleOtherUpdate) {
+            return r'CHAPEL';
+        }
+        if (this is ShipModuleOtherUpdate) {
+            return r'COMMS';
+        }
+        if (this is ShipModuleOtherUpdate) {
+            return r'CONCEALED-HOLD';
+        }
+        if (this is ShipModuleOtherUpdate) {
+            return r'CRYO';
+        }
+        if (this is ShipModuleOtherUpdate) {
+            return r'DOCKING';
+        }
+        if (this is ShipModuleOtherUpdate) {
+            return r'DRIVE';
+        }
+        if (this is ShipModuleOtherUpdate) {
+            return r'ESCAPE-PODS';
+        }
+        if (this is ShipModuleOtherUpdate) {
+            return r'HANGAR';
+        }
+        if (this is ShipModuleHoldUpdate) {
+            return r'HOLD';
+        }
+        if (this is ShipModuleOtherUpdate) {
+            return r'MEDICAL';
+        }
+        if (this is ShipModuleOtherUpdate) {
+            return r'MINING';
+        }
+        if (this is ShipModuleOtherUpdate) {
+            return r'OTHER';
+        }
+        if (this is ShipModuleOtherUpdate) {
+            return r'PROXY-DECK';
+        }
+        if (this is ShipModuleOtherUpdate) {
+            return r'QUARTERS';
+        }
+        if (this is ShipModuleOtherUpdate) {
+            return r'REACTOR';
+        }
+        if (this is ShipModuleOtherUpdate) {
+            return r'REPAIR';
+        }
+        if (this is ShipModuleSensorUpdate) {
+            return r'SENSOR';
+        }
+        if (this is ShipModuleTorpedoUpdate) {
+            return r'TORPEDO';
+        }
+        if (this is ShipModuleWeaponUpdate) {
+            return r'WEAPON';
+        }
+        if (this is ShipModuleOtherUpdate) {
+            return r'WORKSHOP';
+        }
+        return null;
+    }
+}
+extension ShipModuleUpdateBuilderDiscriminatorExt on ShipModuleUpdateBuilder {
+    String? get discriminatorValue {
+        if (this is ShipModuleOtherUpdateBuilder) {
+            return r'BRIDGE';
+        }
+        if (this is ShipModuleOtherUpdateBuilder) {
+            return r'CHAPEL';
+        }
+        if (this is ShipModuleOtherUpdateBuilder) {
+            return r'COMMS';
+        }
+        if (this is ShipModuleOtherUpdateBuilder) {
+            return r'CONCEALED-HOLD';
+        }
+        if (this is ShipModuleOtherUpdateBuilder) {
+            return r'CRYO';
+        }
+        if (this is ShipModuleOtherUpdateBuilder) {
+            return r'DOCKING';
+        }
+        if (this is ShipModuleOtherUpdateBuilder) {
+            return r'DRIVE';
+        }
+        if (this is ShipModuleOtherUpdateBuilder) {
+            return r'ESCAPE-PODS';
+        }
+        if (this is ShipModuleOtherUpdateBuilder) {
+            return r'HANGAR';
+        }
+        if (this is ShipModuleHoldUpdateBuilder) {
+            return r'HOLD';
+        }
+        if (this is ShipModuleOtherUpdateBuilder) {
+            return r'MEDICAL';
+        }
+        if (this is ShipModuleOtherUpdateBuilder) {
+            return r'MINING';
+        }
+        if (this is ShipModuleOtherUpdateBuilder) {
+            return r'OTHER';
+        }
+        if (this is ShipModuleOtherUpdateBuilder) {
+            return r'PROXY-DECK';
+        }
+        if (this is ShipModuleOtherUpdateBuilder) {
+            return r'QUARTERS';
+        }
+        if (this is ShipModuleOtherUpdateBuilder) {
+            return r'REACTOR';
+        }
+        if (this is ShipModuleOtherUpdateBuilder) {
+            return r'REPAIR';
+        }
+        if (this is ShipModuleSensorUpdateBuilder) {
+            return r'SENSOR';
+        }
+        if (this is ShipModuleTorpedoUpdateBuilder) {
+            return r'TORPEDO';
+        }
+        if (this is ShipModuleWeaponUpdateBuilder) {
+            return r'WEAPON';
+        }
+        if (this is ShipModuleOtherUpdateBuilder) {
+            return r'WORKSHOP';
+        }
+        return null;
+    }
 }
 
 class _$ShipModuleUpdateSerializer implements PrimitiveSerializer<ShipModuleUpdate> {
@@ -95,90 +221,6 @@ class _$ShipModuleUpdateSerializer implements PrimitiveSerializer<ShipModuleUpda
     ShipModuleUpdate object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    if (object.name != null) {
-      yield r'name';
-      yield serializers.serialize(
-        object.name,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.energyUse != null) {
-      yield r'energyUse';
-      yield serializers.serialize(
-        object.energyUse,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.notes != null) {
-      yield r'notes';
-      yield serializers.serialize(
-        object.notes,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.weaponBonus != null) {
-      yield r'weaponBonus';
-      yield serializers.serialize(
-        object.weaponBonus,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.weaponRange != null) {
-      yield r'weaponRange';
-      yield serializers.serialize(
-        object.weaponRange,
-        specifiedType: const FullType(ShipWeaponRange),
-      );
-    }
-    if (object.weaponDamage != null) {
-      yield r'weaponDamage';
-      yield serializers.serialize(
-        object.weaponDamage,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.weaponCritThreshold != null) {
-      yield r'weaponCritThreshold';
-      yield serializers.serialize(
-        object.weaponCritThreshold,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.torpedoCount != null) {
-      yield r'torpedoCount';
-      yield serializers.serialize(
-        object.torpedoCount,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.mineCount != null) {
-      yield r'mineCount';
-      yield serializers.serialize(
-        object.mineCount,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.cargoTons != null) {
-      yield r'cargoTons';
-      yield serializers.serialize(
-        object.cargoTons,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.concealed != null) {
-      yield r'concealed';
-      yield serializers.serialize(
-        object.concealed,
-        specifiedType: const FullType(bool),
-      );
-    }
-    if (object.detectionBonus != null) {
-      yield r'detectionBonus';
-      yield serializers.serialize(
-        object.detectionBonus,
-        specifiedType: const FullType(int),
-      );
-    }
   }
 
   @override
@@ -187,112 +229,8 @@ class _$ShipModuleUpdateSerializer implements PrimitiveSerializer<ShipModuleUpda
     ShipModuleUpdate object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
-  }
-
-  void _deserializeProperties(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-    required List<Object?> serializedList,
-    required ShipModuleUpdateBuilder result,
-    required List<Object?> unhandled,
-  }) {
-    for (var i = 0; i < serializedList.length; i += 2) {
-      final key = serializedList[i] as String;
-      final value = serializedList[i + 1];
-      switch (key) {
-        case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.name = valueDes;
-          break;
-        case r'energyUse':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.energyUse = valueDes;
-          break;
-        case r'notes':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.notes = valueDes;
-          break;
-        case r'weaponBonus':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.weaponBonus = valueDes;
-          break;
-        case r'weaponRange':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(ShipWeaponRange),
-          ) as ShipWeaponRange;
-          result.weaponRange = valueDes;
-          break;
-        case r'weaponDamage':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.weaponDamage = valueDes;
-          break;
-        case r'weaponCritThreshold':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.weaponCritThreshold = valueDes;
-          break;
-        case r'torpedoCount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.torpedoCount = valueDes;
-          break;
-        case r'mineCount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.mineCount = valueDes;
-          break;
-        case r'cargoTons':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.cargoTons = valueDes;
-          break;
-        case r'concealed':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
-          result.concealed = valueDes;
-          break;
-        case r'detectionBonus':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.detectionBonus = valueDes;
-          break;
-        default:
-          unhandled.add(key);
-          unhandled.add(value);
-          break;
-      }
-    }
+    final oneOf = object.oneOf;
+    return serializers.serialize(oneOf.value, specifiedType: FullType(oneOf.valueType))!;
   }
 
   @override
@@ -302,16 +240,166 @@ class _$ShipModuleUpdateSerializer implements PrimitiveSerializer<ShipModuleUpda
     FullType specifiedType = FullType.unspecified,
   }) {
     final result = ShipModuleUpdateBuilder();
+    Object? oneOfDataSrc;
     final serializedList = (serialized as Iterable<Object?>).toList();
-    final unhandled = <Object?>[];
-    _deserializeProperties(
-      serializers,
-      serialized,
-      specifiedType: specifiedType,
-      serializedList: serializedList,
-      unhandled: unhandled,
-      result: result,
-    );
+    final discIndex = serializedList.indexOf(ShipModuleUpdate.discriminatorFieldName) + 1;
+    final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
+    oneOfDataSrc = serialized;
+    final oneOfTypes = [ShipModuleOtherUpdate, ShipModuleOtherUpdate, ShipModuleOtherUpdate, ShipModuleOtherUpdate, ShipModuleOtherUpdate, ShipModuleOtherUpdate, ShipModuleOtherUpdate, ShipModuleOtherUpdate, ShipModuleOtherUpdate, ShipModuleHoldUpdate, ShipModuleOtherUpdate, ShipModuleOtherUpdate, ShipModuleOtherUpdate, ShipModuleOtherUpdate, ShipModuleOtherUpdate, ShipModuleOtherUpdate, ShipModuleOtherUpdate, ShipModuleSensorUpdate, ShipModuleTorpedoUpdate, ShipModuleWeaponUpdate, ShipModuleOtherUpdate, ];
+    Object oneOfResult;
+    Type oneOfType;
+    switch (discValue) {
+      case r'BRIDGE':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleOtherUpdate),
+        ) as ShipModuleOtherUpdate;
+        oneOfType = ShipModuleOtherUpdate;
+        break;
+      case r'CHAPEL':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleOtherUpdate),
+        ) as ShipModuleOtherUpdate;
+        oneOfType = ShipModuleOtherUpdate;
+        break;
+      case r'COMMS':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleOtherUpdate),
+        ) as ShipModuleOtherUpdate;
+        oneOfType = ShipModuleOtherUpdate;
+        break;
+      case r'CONCEALED-HOLD':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleOtherUpdate),
+        ) as ShipModuleOtherUpdate;
+        oneOfType = ShipModuleOtherUpdate;
+        break;
+      case r'CRYO':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleOtherUpdate),
+        ) as ShipModuleOtherUpdate;
+        oneOfType = ShipModuleOtherUpdate;
+        break;
+      case r'DOCKING':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleOtherUpdate),
+        ) as ShipModuleOtherUpdate;
+        oneOfType = ShipModuleOtherUpdate;
+        break;
+      case r'DRIVE':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleOtherUpdate),
+        ) as ShipModuleOtherUpdate;
+        oneOfType = ShipModuleOtherUpdate;
+        break;
+      case r'ESCAPE-PODS':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleOtherUpdate),
+        ) as ShipModuleOtherUpdate;
+        oneOfType = ShipModuleOtherUpdate;
+        break;
+      case r'HANGAR':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleOtherUpdate),
+        ) as ShipModuleOtherUpdate;
+        oneOfType = ShipModuleOtherUpdate;
+        break;
+      case r'HOLD':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleHoldUpdate),
+        ) as ShipModuleHoldUpdate;
+        oneOfType = ShipModuleHoldUpdate;
+        break;
+      case r'MEDICAL':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleOtherUpdate),
+        ) as ShipModuleOtherUpdate;
+        oneOfType = ShipModuleOtherUpdate;
+        break;
+      case r'MINING':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleOtherUpdate),
+        ) as ShipModuleOtherUpdate;
+        oneOfType = ShipModuleOtherUpdate;
+        break;
+      case r'OTHER':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleOtherUpdate),
+        ) as ShipModuleOtherUpdate;
+        oneOfType = ShipModuleOtherUpdate;
+        break;
+      case r'PROXY-DECK':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleOtherUpdate),
+        ) as ShipModuleOtherUpdate;
+        oneOfType = ShipModuleOtherUpdate;
+        break;
+      case r'QUARTERS':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleOtherUpdate),
+        ) as ShipModuleOtherUpdate;
+        oneOfType = ShipModuleOtherUpdate;
+        break;
+      case r'REACTOR':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleOtherUpdate),
+        ) as ShipModuleOtherUpdate;
+        oneOfType = ShipModuleOtherUpdate;
+        break;
+      case r'REPAIR':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleOtherUpdate),
+        ) as ShipModuleOtherUpdate;
+        oneOfType = ShipModuleOtherUpdate;
+        break;
+      case r'SENSOR':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleSensorUpdate),
+        ) as ShipModuleSensorUpdate;
+        oneOfType = ShipModuleSensorUpdate;
+        break;
+      case r'TORPEDO':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleTorpedoUpdate),
+        ) as ShipModuleTorpedoUpdate;
+        oneOfType = ShipModuleTorpedoUpdate;
+        break;
+      case r'WEAPON':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleWeaponUpdate),
+        ) as ShipModuleWeaponUpdate;
+        oneOfType = ShipModuleWeaponUpdate;
+        break;
+      case r'WORKSHOP':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ShipModuleOtherUpdate),
+        ) as ShipModuleOtherUpdate;
+        oneOfType = ShipModuleOtherUpdate;
+        break;
+      default:
+        throw UnsupportedError("Couldn't deserialize oneOf for the discriminator value: ${discValue}");
+    }
+    result.oneOf = OneOfDynamic(typeIndex: oneOfTypes.indexOf(oneOfType), types: oneOfTypes, value: oneOfResult);
     return result.build();
   }
 }

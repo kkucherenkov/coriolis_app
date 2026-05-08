@@ -563,7 +563,7 @@ import 'package:app_api_client/api.dart';
 
 final api = AppApiClient().getCharactersApi();
 final String id = id_example; // String | Item identifier (cuid2)
-final ItemUpdate itemUpdate = {"name":"Vulcan Carbine MkII","bonus":3,"equipped":true}; // ItemUpdate | 
+final ItemUpdate itemUpdate = {"type":"WEAPON","name":"Vulcan Carbine MkII","bonus":3,"equipped":true}; // ItemUpdate | 
 
 try {
     final response = api.updateItem(id, itemUpdate);

@@ -3,17 +3,11 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:app_api_client/src/model/model32.dart';
-import 'package:app_api_client/src/model/ship_module_create_one_of2.dart';
-import 'package:app_api_client/src/model/ship_module_create_one_of4.dart';
-import 'package:app_api_client/src/model/model12.dart';
-import 'package:app_api_client/src/model/ship_module_create_one_of.dart';
-import 'package:built_collection/built_collection.dart';
-import 'package:app_api_client/src/model/ship_module_create_one_of3.dart';
-import 'package:app_api_client/src/model/model42.dart';
-import 'package:app_api_client/src/model/ship_module_create_one_of1.dart';
-import 'package:app_api_client/src/model/model22.dart';
-import 'package:app_api_client/src/model/model02.dart';
+import 'package:app_api_client/src/model/ship_module_hold_create.dart';
+import 'package:app_api_client/src/model/ship_module_weapon_create.dart';
+import 'package:app_api_client/src/model/ship_module_torpedo_create.dart';
+import 'package:app_api_client/src/model/ship_module_other_create.dart';
+import 'package:app_api_client/src/model/ship_module_sensor_create.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 import 'package:one_of/one_of.dart';
@@ -26,45 +20,45 @@ part 'ship_module_create.g.dart';
 /// * [slot] 
 /// * [name] 
 /// * [energyUse] 
-/// * [weaponBonus] 
+/// * [weaponBonus] - Modifier dice added to the attack pool
 /// * [weaponRange] 
-/// * [weaponDamage] 
-/// * [weaponCritThreshold] 
+/// * [weaponDamage] - Structural damage dealt on a hit
+/// * [weaponCritThreshold] - Number of successes required to trigger a critical effect
 /// * [notes] 
-/// * [torpedoCount] 
-/// * [mineCount] 
-/// * [cargoTons] 
-/// * [concealed] 
-/// * [detectionBonus] 
+/// * [torpedoCount] - Number of torpedoes currently loaded
+/// * [mineCount] - Number of mines currently loaded
+/// * [cargoTons] - Cargo capacity in tonnes
+/// * [concealed] - True for a concealed hold
+/// * [detectionBonus] - Modifier added to sensor / dataDjinn checks
 @BuiltValue()
 abstract class ShipModuleCreate implements Built<ShipModuleCreate, ShipModuleCreateBuilder> {
-  /// One Of [ShipModuleCreateOneOf], [ShipModuleCreateOneOf1], [ShipModuleCreateOneOf2], [ShipModuleCreateOneOf3], [ShipModuleCreateOneOf4]
+  /// One Of [ShipModuleHoldCreate], [ShipModuleOtherCreate], [ShipModuleSensorCreate], [ShipModuleTorpedoCreate], [ShipModuleWeaponCreate]
   OneOf get oneOf;
 
   static const String discriminatorFieldName = r'slot';
 
   static const Map<String, Type> discriminatorMapping = {
-    r'BRIDGE': Model42,
-    r'CHAPEL': Model42,
-    r'COMMS': Model42,
-    r'CONCEALED-HOLD': Model42,
-    r'CRYO': Model42,
-    r'DOCKING': Model42,
-    r'DRIVE': Model42,
-    r'ESCAPE-PODS': Model42,
-    r'HANGAR': Model42,
-    r'HOLD': Model22,
-    r'MEDICAL': Model42,
-    r'MINING': Model42,
-    r'OTHER': Model42,
-    r'PROXY-DECK': Model42,
-    r'QUARTERS': Model42,
-    r'REACTOR': Model42,
-    r'REPAIR': Model42,
-    r'SENSOR': Model32,
-    r'TORPEDO': Model12,
-    r'WEAPON': Model02,
-    r'WORKSHOP': Model42,
+    r'BRIDGE': ShipModuleOtherCreate,
+    r'CHAPEL': ShipModuleOtherCreate,
+    r'COMMS': ShipModuleOtherCreate,
+    r'CONCEALED-HOLD': ShipModuleOtherCreate,
+    r'CRYO': ShipModuleOtherCreate,
+    r'DOCKING': ShipModuleOtherCreate,
+    r'DRIVE': ShipModuleOtherCreate,
+    r'ESCAPE-PODS': ShipModuleOtherCreate,
+    r'HANGAR': ShipModuleOtherCreate,
+    r'HOLD': ShipModuleHoldCreate,
+    r'MEDICAL': ShipModuleOtherCreate,
+    r'MINING': ShipModuleOtherCreate,
+    r'OTHER': ShipModuleOtherCreate,
+    r'PROXY-DECK': ShipModuleOtherCreate,
+    r'QUARTERS': ShipModuleOtherCreate,
+    r'REACTOR': ShipModuleOtherCreate,
+    r'REPAIR': ShipModuleOtherCreate,
+    r'SENSOR': ShipModuleSensorCreate,
+    r'TORPEDO': ShipModuleTorpedoCreate,
+    r'WEAPON': ShipModuleWeaponCreate,
+    r'WORKSHOP': ShipModuleOtherCreate,
   };
 
   ShipModuleCreate._();
@@ -80,67 +74,67 @@ abstract class ShipModuleCreate implements Built<ShipModuleCreate, ShipModuleCre
 
 extension ShipModuleCreateDiscriminatorExt on ShipModuleCreate {
     String? get discriminatorValue {
-        if (this is Model42) {
+        if (this is ShipModuleOtherCreate) {
             return r'BRIDGE';
         }
-        if (this is Model42) {
+        if (this is ShipModuleOtherCreate) {
             return r'CHAPEL';
         }
-        if (this is Model42) {
+        if (this is ShipModuleOtherCreate) {
             return r'COMMS';
         }
-        if (this is Model42) {
+        if (this is ShipModuleOtherCreate) {
             return r'CONCEALED-HOLD';
         }
-        if (this is Model42) {
+        if (this is ShipModuleOtherCreate) {
             return r'CRYO';
         }
-        if (this is Model42) {
+        if (this is ShipModuleOtherCreate) {
             return r'DOCKING';
         }
-        if (this is Model42) {
+        if (this is ShipModuleOtherCreate) {
             return r'DRIVE';
         }
-        if (this is Model42) {
+        if (this is ShipModuleOtherCreate) {
             return r'ESCAPE-PODS';
         }
-        if (this is Model42) {
+        if (this is ShipModuleOtherCreate) {
             return r'HANGAR';
         }
-        if (this is Model22) {
+        if (this is ShipModuleHoldCreate) {
             return r'HOLD';
         }
-        if (this is Model42) {
+        if (this is ShipModuleOtherCreate) {
             return r'MEDICAL';
         }
-        if (this is Model42) {
+        if (this is ShipModuleOtherCreate) {
             return r'MINING';
         }
-        if (this is Model42) {
+        if (this is ShipModuleOtherCreate) {
             return r'OTHER';
         }
-        if (this is Model42) {
+        if (this is ShipModuleOtherCreate) {
             return r'PROXY-DECK';
         }
-        if (this is Model42) {
+        if (this is ShipModuleOtherCreate) {
             return r'QUARTERS';
         }
-        if (this is Model42) {
+        if (this is ShipModuleOtherCreate) {
             return r'REACTOR';
         }
-        if (this is Model42) {
+        if (this is ShipModuleOtherCreate) {
             return r'REPAIR';
         }
-        if (this is Model32) {
+        if (this is ShipModuleSensorCreate) {
             return r'SENSOR';
         }
-        if (this is Model12) {
+        if (this is ShipModuleTorpedoCreate) {
             return r'TORPEDO';
         }
-        if (this is Model02) {
+        if (this is ShipModuleWeaponCreate) {
             return r'WEAPON';
         }
-        if (this is Model42) {
+        if (this is ShipModuleOtherCreate) {
             return r'WORKSHOP';
         }
         return null;
@@ -148,67 +142,67 @@ extension ShipModuleCreateDiscriminatorExt on ShipModuleCreate {
 }
 extension ShipModuleCreateBuilderDiscriminatorExt on ShipModuleCreateBuilder {
     String? get discriminatorValue {
-        if (this is Model42Builder) {
+        if (this is ShipModuleOtherCreateBuilder) {
             return r'BRIDGE';
         }
-        if (this is Model42Builder) {
+        if (this is ShipModuleOtherCreateBuilder) {
             return r'CHAPEL';
         }
-        if (this is Model42Builder) {
+        if (this is ShipModuleOtherCreateBuilder) {
             return r'COMMS';
         }
-        if (this is Model42Builder) {
+        if (this is ShipModuleOtherCreateBuilder) {
             return r'CONCEALED-HOLD';
         }
-        if (this is Model42Builder) {
+        if (this is ShipModuleOtherCreateBuilder) {
             return r'CRYO';
         }
-        if (this is Model42Builder) {
+        if (this is ShipModuleOtherCreateBuilder) {
             return r'DOCKING';
         }
-        if (this is Model42Builder) {
+        if (this is ShipModuleOtherCreateBuilder) {
             return r'DRIVE';
         }
-        if (this is Model42Builder) {
+        if (this is ShipModuleOtherCreateBuilder) {
             return r'ESCAPE-PODS';
         }
-        if (this is Model42Builder) {
+        if (this is ShipModuleOtherCreateBuilder) {
             return r'HANGAR';
         }
-        if (this is Model22Builder) {
+        if (this is ShipModuleHoldCreateBuilder) {
             return r'HOLD';
         }
-        if (this is Model42Builder) {
+        if (this is ShipModuleOtherCreateBuilder) {
             return r'MEDICAL';
         }
-        if (this is Model42Builder) {
+        if (this is ShipModuleOtherCreateBuilder) {
             return r'MINING';
         }
-        if (this is Model42Builder) {
+        if (this is ShipModuleOtherCreateBuilder) {
             return r'OTHER';
         }
-        if (this is Model42Builder) {
+        if (this is ShipModuleOtherCreateBuilder) {
             return r'PROXY-DECK';
         }
-        if (this is Model42Builder) {
+        if (this is ShipModuleOtherCreateBuilder) {
             return r'QUARTERS';
         }
-        if (this is Model42Builder) {
+        if (this is ShipModuleOtherCreateBuilder) {
             return r'REACTOR';
         }
-        if (this is Model42Builder) {
+        if (this is ShipModuleOtherCreateBuilder) {
             return r'REPAIR';
         }
-        if (this is Model32Builder) {
+        if (this is ShipModuleSensorCreateBuilder) {
             return r'SENSOR';
         }
-        if (this is Model12Builder) {
+        if (this is ShipModuleTorpedoCreateBuilder) {
             return r'TORPEDO';
         }
-        if (this is Model02Builder) {
+        if (this is ShipModuleWeaponCreateBuilder) {
             return r'WEAPON';
         }
-        if (this is Model42Builder) {
+        if (this is ShipModuleOtherCreateBuilder) {
             return r'WORKSHOP';
         }
         return null;
@@ -251,156 +245,156 @@ class _$ShipModuleCreateSerializer implements PrimitiveSerializer<ShipModuleCrea
     final discIndex = serializedList.indexOf(ShipModuleCreate.discriminatorFieldName) + 1;
     final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
     oneOfDataSrc = serialized;
-    final oneOfTypes = [Model42, Model42, Model42, Model42, Model42, Model42, Model42, Model42, Model42, Model22, Model42, Model42, Model42, Model42, Model42, Model42, Model42, Model32, Model12, Model02, Model42, ];
+    final oneOfTypes = [ShipModuleOtherCreate, ShipModuleOtherCreate, ShipModuleOtherCreate, ShipModuleOtherCreate, ShipModuleOtherCreate, ShipModuleOtherCreate, ShipModuleOtherCreate, ShipModuleOtherCreate, ShipModuleOtherCreate, ShipModuleHoldCreate, ShipModuleOtherCreate, ShipModuleOtherCreate, ShipModuleOtherCreate, ShipModuleOtherCreate, ShipModuleOtherCreate, ShipModuleOtherCreate, ShipModuleOtherCreate, ShipModuleSensorCreate, ShipModuleTorpedoCreate, ShipModuleWeaponCreate, ShipModuleOtherCreate, ];
     Object oneOfResult;
     Type oneOfType;
     switch (discValue) {
       case r'BRIDGE':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model42),
-        ) as Model42;
-        oneOfType = Model42;
+          specifiedType: FullType(ShipModuleOtherCreate),
+        ) as ShipModuleOtherCreate;
+        oneOfType = ShipModuleOtherCreate;
         break;
       case r'CHAPEL':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model42),
-        ) as Model42;
-        oneOfType = Model42;
+          specifiedType: FullType(ShipModuleOtherCreate),
+        ) as ShipModuleOtherCreate;
+        oneOfType = ShipModuleOtherCreate;
         break;
       case r'COMMS':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model42),
-        ) as Model42;
-        oneOfType = Model42;
+          specifiedType: FullType(ShipModuleOtherCreate),
+        ) as ShipModuleOtherCreate;
+        oneOfType = ShipModuleOtherCreate;
         break;
       case r'CONCEALED-HOLD':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model42),
-        ) as Model42;
-        oneOfType = Model42;
+          specifiedType: FullType(ShipModuleOtherCreate),
+        ) as ShipModuleOtherCreate;
+        oneOfType = ShipModuleOtherCreate;
         break;
       case r'CRYO':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model42),
-        ) as Model42;
-        oneOfType = Model42;
+          specifiedType: FullType(ShipModuleOtherCreate),
+        ) as ShipModuleOtherCreate;
+        oneOfType = ShipModuleOtherCreate;
         break;
       case r'DOCKING':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model42),
-        ) as Model42;
-        oneOfType = Model42;
+          specifiedType: FullType(ShipModuleOtherCreate),
+        ) as ShipModuleOtherCreate;
+        oneOfType = ShipModuleOtherCreate;
         break;
       case r'DRIVE':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model42),
-        ) as Model42;
-        oneOfType = Model42;
+          specifiedType: FullType(ShipModuleOtherCreate),
+        ) as ShipModuleOtherCreate;
+        oneOfType = ShipModuleOtherCreate;
         break;
       case r'ESCAPE-PODS':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model42),
-        ) as Model42;
-        oneOfType = Model42;
+          specifiedType: FullType(ShipModuleOtherCreate),
+        ) as ShipModuleOtherCreate;
+        oneOfType = ShipModuleOtherCreate;
         break;
       case r'HANGAR':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model42),
-        ) as Model42;
-        oneOfType = Model42;
+          specifiedType: FullType(ShipModuleOtherCreate),
+        ) as ShipModuleOtherCreate;
+        oneOfType = ShipModuleOtherCreate;
         break;
       case r'HOLD':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model22),
-        ) as Model22;
-        oneOfType = Model22;
+          specifiedType: FullType(ShipModuleHoldCreate),
+        ) as ShipModuleHoldCreate;
+        oneOfType = ShipModuleHoldCreate;
         break;
       case r'MEDICAL':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model42),
-        ) as Model42;
-        oneOfType = Model42;
+          specifiedType: FullType(ShipModuleOtherCreate),
+        ) as ShipModuleOtherCreate;
+        oneOfType = ShipModuleOtherCreate;
         break;
       case r'MINING':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model42),
-        ) as Model42;
-        oneOfType = Model42;
+          specifiedType: FullType(ShipModuleOtherCreate),
+        ) as ShipModuleOtherCreate;
+        oneOfType = ShipModuleOtherCreate;
         break;
       case r'OTHER':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model42),
-        ) as Model42;
-        oneOfType = Model42;
+          specifiedType: FullType(ShipModuleOtherCreate),
+        ) as ShipModuleOtherCreate;
+        oneOfType = ShipModuleOtherCreate;
         break;
       case r'PROXY-DECK':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model42),
-        ) as Model42;
-        oneOfType = Model42;
+          specifiedType: FullType(ShipModuleOtherCreate),
+        ) as ShipModuleOtherCreate;
+        oneOfType = ShipModuleOtherCreate;
         break;
       case r'QUARTERS':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model42),
-        ) as Model42;
-        oneOfType = Model42;
+          specifiedType: FullType(ShipModuleOtherCreate),
+        ) as ShipModuleOtherCreate;
+        oneOfType = ShipModuleOtherCreate;
         break;
       case r'REACTOR':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model42),
-        ) as Model42;
-        oneOfType = Model42;
+          specifiedType: FullType(ShipModuleOtherCreate),
+        ) as ShipModuleOtherCreate;
+        oneOfType = ShipModuleOtherCreate;
         break;
       case r'REPAIR':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model42),
-        ) as Model42;
-        oneOfType = Model42;
+          specifiedType: FullType(ShipModuleOtherCreate),
+        ) as ShipModuleOtherCreate;
+        oneOfType = ShipModuleOtherCreate;
         break;
       case r'SENSOR':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model32),
-        ) as Model32;
-        oneOfType = Model32;
+          specifiedType: FullType(ShipModuleSensorCreate),
+        ) as ShipModuleSensorCreate;
+        oneOfType = ShipModuleSensorCreate;
         break;
       case r'TORPEDO':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model12),
-        ) as Model12;
-        oneOfType = Model12;
+          specifiedType: FullType(ShipModuleTorpedoCreate),
+        ) as ShipModuleTorpedoCreate;
+        oneOfType = ShipModuleTorpedoCreate;
         break;
       case r'WEAPON':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model02),
-        ) as Model02;
-        oneOfType = Model02;
+          specifiedType: FullType(ShipModuleWeaponCreate),
+        ) as ShipModuleWeaponCreate;
+        oneOfType = ShipModuleWeaponCreate;
         break;
       case r'WORKSHOP':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
-          specifiedType: FullType(Model42),
-        ) as Model42;
-        oneOfType = Model42;
+          specifiedType: FullType(ShipModuleOtherCreate),
+        ) as ShipModuleOtherCreate;
+        oneOfType = ShipModuleOtherCreate;
         break;
       default:
         throw UnsupportedError("Couldn't deserialize oneOf for the discriminator value: ${discValue}");
@@ -408,50 +402,5 @@ class _$ShipModuleCreateSerializer implements PrimitiveSerializer<ShipModuleCrea
     result.oneOf = OneOfDynamic(typeIndex: oneOfTypes.indexOf(oneOfType), types: oneOfTypes, value: oneOfResult);
     return result.build();
   }
-}
-
-class ShipModuleCreateSlotEnum extends EnumClass {
-
-  @BuiltValueEnumConst(wireName: r'BRIDGE')
-  static const ShipModuleCreateSlotEnum BRIDGE = _$shipModuleCreateSlotEnum_BRIDGE;
-  @BuiltValueEnumConst(wireName: r'REACTOR')
-  static const ShipModuleCreateSlotEnum REACTOR = _$shipModuleCreateSlotEnum_REACTOR;
-  @BuiltValueEnumConst(wireName: r'DRIVE')
-  static const ShipModuleCreateSlotEnum DRIVE = _$shipModuleCreateSlotEnum_DRIVE;
-  @BuiltValueEnumConst(wireName: r'COMMS')
-  static const ShipModuleCreateSlotEnum COMMS = _$shipModuleCreateSlotEnum_COMMS;
-  @BuiltValueEnumConst(wireName: r'HANGAR')
-  static const ShipModuleCreateSlotEnum HANGAR = _$shipModuleCreateSlotEnum_HANGAR;
-  @BuiltValueEnumConst(wireName: r'QUARTERS')
-  static const ShipModuleCreateSlotEnum QUARTERS = _$shipModuleCreateSlotEnum_QUARTERS;
-  @BuiltValueEnumConst(wireName: r'MEDICAL')
-  static const ShipModuleCreateSlotEnum MEDICAL = _$shipModuleCreateSlotEnum_MEDICAL;
-  @BuiltValueEnumConst(wireName: r'WORKSHOP')
-  static const ShipModuleCreateSlotEnum WORKSHOP = _$shipModuleCreateSlotEnum_WORKSHOP;
-  @BuiltValueEnumConst(wireName: r'CHAPEL')
-  static const ShipModuleCreateSlotEnum CHAPEL = _$shipModuleCreateSlotEnum_CHAPEL;
-  @BuiltValueEnumConst(wireName: r'ESCAPE-PODS')
-  static const ShipModuleCreateSlotEnum ESCAPE_PODS = _$shipModuleCreateSlotEnum_ESCAPE_PODS;
-  @BuiltValueEnumConst(wireName: r'CRYO')
-  static const ShipModuleCreateSlotEnum CRYO = _$shipModuleCreateSlotEnum_CRYO;
-  @BuiltValueEnumConst(wireName: r'DOCKING')
-  static const ShipModuleCreateSlotEnum DOCKING = _$shipModuleCreateSlotEnum_DOCKING;
-  @BuiltValueEnumConst(wireName: r'MINING')
-  static const ShipModuleCreateSlotEnum MINING = _$shipModuleCreateSlotEnum_MINING;
-  @BuiltValueEnumConst(wireName: r'REPAIR')
-  static const ShipModuleCreateSlotEnum REPAIR = _$shipModuleCreateSlotEnum_REPAIR;
-  @BuiltValueEnumConst(wireName: r'CONCEALED-HOLD')
-  static const ShipModuleCreateSlotEnum CONCEALED_HOLD = _$shipModuleCreateSlotEnum_CONCEALED_HOLD;
-  @BuiltValueEnumConst(wireName: r'PROXY-DECK')
-  static const ShipModuleCreateSlotEnum PROXY_DECK = _$shipModuleCreateSlotEnum_PROXY_DECK;
-  @BuiltValueEnumConst(wireName: r'OTHER')
-  static const ShipModuleCreateSlotEnum OTHER = _$shipModuleCreateSlotEnum_OTHER;
-
-  static Serializer<ShipModuleCreateSlotEnum> get serializer => _$shipModuleCreateSlotEnumSerializer;
-
-  const ShipModuleCreateSlotEnum._(String name): super(name);
-
-  static BuiltSet<ShipModuleCreateSlotEnum> get values => _$shipModuleCreateSlotEnumValues;
-  static ShipModuleCreateSlotEnum valueOf(String name) => _$shipModuleCreateSlotEnumValueOf(name);
 }
 
