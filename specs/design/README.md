@@ -132,3 +132,4 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 | Category | Component | Vue (`@app/ui`) | Flutter (`app_ui`) |
 | -------- | --------- | --------------- | ------------------ |
 | Primitive | `AppButton` | ✓ | — |
+| Primitive | `AppCard` | ✓ | — |
