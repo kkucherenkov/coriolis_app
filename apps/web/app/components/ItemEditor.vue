@@ -1,0 +1,922 @@
+<script setup lang="ts">
+  import {
+    AppModal,
+    AppSegControl,
+    AppInput,
+    AppTextarea,
+    AppBanner,
+    AppButton,
+    AppSelect,
+  } from '@app/ui';
+  import type { AppSelectOption } from '@app/ui';
+  import { ref, computed, watch } from 'vue';
+  import { useItemsApi } from '~/composables/useItemsApi';
+  import type {
+    Item,
+    ItemCreate,
+    ItemUpdate,
+    ItemRangeEnum,
+    ItemSlotType,
+  } from '~/composables/useItemsApi';
+  import type { Problem } from '~/composables/useTalentsApi';
+
+  const props = defineProps<Props>();
+  const emit = defineEmits<{
+    'update:open': [value: boolean];
+    saved: [item: Item];
+    deleted: [itemId: string];
+  }>();
+  const { t } = useI18n({ useScope: 'local' });
+  const itemsApi = useItemsApi();
+
+  // ── Props & emits ─────────────────────────────────────────────────────────
+
+  interface Props {
+    open: boolean;
+    item: Item | null; // null = create mode
+    characterId: string;
+  }
+
+  // ── Item type options (AppSegControl) ─────────────────────────────────────
+
+  type ItemType = 'WEAPON' | 'ARMOR' | 'GEAR' | 'CYBERNETIC' | 'SHIP_MODULE' | 'OTHER';
+
+  const TYPE_OPTIONS = computed(
+    () =>
+      [
+        { value: 'WEAPON', label: t('typeWeapon') },
+        { value: 'ARMOR', label: t('typeArmor') },
+        { value: 'GEAR', label: t('typeGear') },
+        { value: 'CYBERNETIC', label: t('typeCybernetic') },
+        { value: 'SHIP_MODULE', label: t('typeShipModule') },
+        { value: 'OTHER', label: t('typeOther') },
+      ] satisfies { value: string; label: string }[],
+  );
+
+  const RANGE_OPTIONS = computed<AppSelectOption[]>(() => [
+    { value: 'arm', label: t('rangeArm') },
+    { value: 'near', label: t('rangeNear') },
+    { value: 'short', label: t('rangeShort') },
+    { value: 'long', label: t('rangeLong') },
+    { value: 'distant', label: t('rangeDistant') },
+  ]);
+
+  const SLOT_OPTIONS = computed<AppSelectOption[]>(() => [
+    { value: 'bridge', label: t('slotBridge') },
+    { value: 'hull', label: t('slotHull') },
+    { value: 'hold', label: t('slotHold') },
+    { value: 'weapon', label: t('slotWeapon') },
+    { value: 'drive', label: t('slotDrive') },
+    { value: 'sensor', label: t('slotSensor') },
+    { value: 'electronic', label: t('slotElectronic') },
+  ]);
+
+  // ── Local form state ──────────────────────────────────────────────────────
+
+  const selectedType = ref<ItemType>('WEAPON');
+  const saving = ref(false);
+  const deleting = ref(false);
+  const errorMsg = ref('');
+
+  // Common fields
+  const fieldName = ref('');
+  const fieldNotes = ref('');
+  const fieldEquipped = ref(false);
+
+  // WEAPON-specific
+  const fieldBonus = ref(0);
+  const fieldDamage = ref(1);
+  const fieldCrit = ref(1);
+  const fieldRange = ref<ItemRangeEnum>('near');
+  const fieldWeight = ref(1);
+
+  // ARMOR-specific
+  const fieldArmorRating = ref(0);
+  // (shares fieldWeight, fieldEquipped)
+
+  // GEAR-specific
+  const fieldQuantity = ref(1);
+  // (shares fieldWeight, fieldNotes)
+
+  // CYBERNETIC-specific
+  const fieldBodyPoints = ref(0);
+  const fieldEffect = ref('');
+
+  // SHIP_MODULE-specific
+  const fieldSlot = ref<ItemSlotType>('hull');
+  // (shares fieldEffect)
+
+  const isEditMode = computed(() => props.item !== null);
+
+  // ── Sync form when item or open changes ──────────────────────────────────
+
+  function resetToItem(item: Item | null): void {
+    errorMsg.value = '';
+    if (!item) {
+      // Create mode — reset to defaults
+      selectedType.value = 'WEAPON';
+      fieldName.value = '';
+      fieldNotes.value = '';
+      fieldEquipped.value = false;
+      fieldBonus.value = 0;
+      fieldDamage.value = 1;
+      fieldCrit.value = 1;
+      fieldRange.value = 'near';
+      fieldWeight.value = 1;
+      fieldArmorRating.value = 0;
+      fieldQuantity.value = 1;
+      fieldBodyPoints.value = 0;
+      fieldEffect.value = '';
+      fieldSlot.value = 'hull';
+      return;
+    }
+
+    selectedType.value = item.type as ItemType;
+    fieldName.value = item.name;
+
+    switch (item.type) {
+      case 'WEAPON': {
+        fieldBonus.value = item.bonus;
+        fieldDamage.value = item.damage;
+        fieldCrit.value = item.crit;
+        fieldRange.value = item.range;
+        fieldWeight.value = item.weight;
+        fieldEquipped.value = item.equipped;
+        fieldNotes.value = '';
+
+        break;
+      }
+      case 'ARMOR': {
+        fieldArmorRating.value = item.armorRating;
+        fieldWeight.value = item.weight;
+        fieldEquipped.value = item.equipped;
+        fieldNotes.value = '';
+
+        break;
+      }
+      case 'GEAR': {
+        fieldWeight.value = item.weight;
+        fieldQuantity.value = item.quantity;
+        fieldNotes.value = item.notes ?? '';
+
+        break;
+      }
+      case 'CYBERNETIC': {
+        fieldBodyPoints.value = item.bodyPoints;
+        fieldEffect.value = item.effect;
+        fieldNotes.value = '';
+
+        break;
+      }
+      case 'SHIP_MODULE': {
+        fieldSlot.value = item.slot;
+        fieldEffect.value = item.effect;
+        fieldNotes.value = '';
+
+        break;
+      }
+      case 'OTHER': {
+        fieldWeight.value = item.weight;
+        fieldNotes.value = item.notes ?? '';
+
+        break;
+      }
+      // No default
+    }
+  }
+
+  watch(
+    () => [props.open, props.item] as const,
+    ([isOpen, item]) => {
+      if (isOpen) resetToItem(item);
+    },
+    { immediate: true },
+  );
+
+  // ── Validation ─────────────────────────────────────────────────────────────
+
+  const nameValid = computed(
+    () => fieldName.value.trim().length > 0 && fieldName.value.trim().length <= 80,
+  );
+
+  const canSave = computed(() => nameValid.value && !saving.value);
+
+  // ── Build create/update payload ────────────────────────────────────────────
+
+  function buildCreatePayload(): ItemCreate {
+    const type = selectedType.value;
+    const name = fieldName.value.trim();
+
+    if (type === 'WEAPON') {
+      return {
+        type,
+        name,
+        bonus: fieldBonus.value,
+        damage: fieldDamage.value,
+        crit: fieldCrit.value,
+        range: fieldRange.value,
+        weight: fieldWeight.value,
+        features: [],
+        equipped: fieldEquipped.value,
+      };
+    }
+    if (type === 'ARMOR') {
+      return {
+        type,
+        name,
+        armorRating: fieldArmorRating.value,
+        weight: fieldWeight.value,
+        features: [],
+        equipped: fieldEquipped.value,
+      };
+    }
+    if (type === 'GEAR') {
+      return {
+        type,
+        name,
+        weight: fieldWeight.value,
+        quantity: fieldQuantity.value,
+        notes: fieldNotes.value || null,
+      };
+    }
+    if (type === 'CYBERNETIC') {
+      return {
+        type,
+        name,
+        bodyPoints: fieldBodyPoints.value,
+        effect: fieldEffect.value,
+      };
+    }
+    if (type === 'SHIP_MODULE') {
+      return {
+        type,
+        name,
+        slot: fieldSlot.value,
+        effect: fieldEffect.value,
+      };
+    }
+    // OTHER
+    return {
+      type: 'OTHER',
+      name,
+      weight: fieldWeight.value,
+      notes: fieldNotes.value || null,
+    };
+  }
+
+  function buildUpdatePayload(): ItemUpdate {
+    const type = selectedType.value;
+    const name = fieldName.value.trim();
+
+    if (type === 'WEAPON') {
+      return {
+        type,
+        name,
+        bonus: fieldBonus.value,
+        damage: fieldDamage.value,
+        crit: fieldCrit.value,
+        range: fieldRange.value,
+        weight: fieldWeight.value,
+        equipped: fieldEquipped.value,
+      };
+    }
+    if (type === 'ARMOR') {
+      return {
+        type,
+        name,
+        armorRating: fieldArmorRating.value,
+        weight: fieldWeight.value,
+        equipped: fieldEquipped.value,
+      };
+    }
+    if (type === 'GEAR') {
+      return {
+        type,
+        name,
+        weight: fieldWeight.value,
+        quantity: fieldQuantity.value,
+        notes: fieldNotes.value || null,
+      };
+    }
+    if (type === 'CYBERNETIC') {
+      return {
+        type,
+        name,
+        bodyPoints: fieldBodyPoints.value,
+        effect: fieldEffect.value,
+      };
+    }
+    if (type === 'SHIP_MODULE') {
+      return {
+        type,
+        name,
+        slot: fieldSlot.value,
+        effect: fieldEffect.value,
+      };
+    }
+    return {
+      type: 'OTHER',
+      name,
+      weight: fieldWeight.value,
+      notes: fieldNotes.value || null,
+    };
+  }
+
+  // ── Actions ────────────────────────────────────────────────────────────────
+
+  async function save(): Promise<void> {
+    if (!canSave.value) return;
+    saving.value = true;
+    errorMsg.value = '';
+    try {
+      const result: Item = await (isEditMode.value && props.item
+        ? itemsApi.updateItem(props.item.id, buildUpdatePayload())
+        : itemsApi.addItem(props.characterId, buildCreatePayload()));
+      emit('saved', result);
+      emit('update:open', false);
+    } catch (error) {
+      const problem = error as Problem;
+      errorMsg.value = problem.detail ?? t('errorSave');
+    } finally {
+      saving.value = false;
+    }
+  }
+
+  async function deleteItem(): Promise<void> {
+    if (!props.item) return;
+    if (!confirm(t('deleteConfirm', { name: props.item.name }))) return;
+    deleting.value = true;
+    errorMsg.value = '';
+    try {
+      await itemsApi.removeItem(props.item.id);
+      emit('deleted', props.item.id);
+      emit('update:open', false);
+    } catch (error) {
+      const problem = error as Problem;
+      errorMsg.value = problem.detail ?? t('errorDelete');
+    } finally {
+      deleting.value = false;
+    }
+  }
+
+  function cancel(): void {
+    emit('update:open', false);
+  }
+</script>
+
+<i18n lang="json">
+{
+  "en": {
+    "titleCreate": "Add item",
+    "titleEdit": "Edit item",
+    "fieldName": "Name",
+    "namePlaceholder": "Item name",
+    "fieldNotes": "Notes",
+    "notesPlaceholder": "Optional notes…",
+    "fieldBonus": "Bonus",
+    "fieldDamage": "Damage",
+    "fieldCrit": "Critical",
+    "fieldRange": "Range",
+    "fieldWeight": "Weight (slots)",
+    "fieldArmorRating": "Armor rating",
+    "fieldQuantity": "Quantity",
+    "fieldBodyPoints": "Body points (strain)",
+    "fieldEffect": "Effect / description",
+    "fieldSlot": "Ship slot",
+    "fieldEquipped": "Equipped",
+    "typeWeapon": "Weapon",
+    "typeArmor": "Armor",
+    "typeGear": "Gear",
+    "typeCybernetic": "Cybernetic",
+    "typeShipModule": "Ship module",
+    "typeOther": "Other",
+    "rangeArm": "Arm",
+    "rangeNear": "Near",
+    "rangeShort": "Short",
+    "rangeLong": "Long",
+    "rangeDistant": "Distant",
+    "slotBridge": "Bridge",
+    "slotHull": "Hull",
+    "slotHold": "Hold",
+    "slotWeapon": "Weapon",
+    "slotDrive": "Drive",
+    "slotSensor": "Sensor",
+    "slotElectronic": "Electronic",
+    "save": "Save",
+    "cancel": "Cancel",
+    "deleteItem": "Remove item",
+    "deleteConfirm": "Remove \"{name}\"? This cannot be undone.",
+    "errorSave": "Failed to save item.",
+    "errorDelete": "Failed to remove item.",
+    "typeDisabledHint": "Type cannot be changed after creation."
+  },
+  "ru": {
+    "titleCreate": "Добавить предмет",
+    "titleEdit": "Редактировать предмет",
+    "fieldName": "Название",
+    "namePlaceholder": "Название предмета",
+    "fieldNotes": "Заметки",
+    "notesPlaceholder": "Дополнительные заметки…",
+    "fieldBonus": "Бонус",
+    "fieldDamage": "Урон",
+    "fieldCrit": "Критический",
+    "fieldRange": "Дальность",
+    "fieldWeight": "Вес (ячейки)",
+    "fieldArmorRating": "Показатель брони",
+    "fieldQuantity": "Количество",
+    "fieldBodyPoints": "Очки тела (нагрузка)",
+    "fieldEffect": "Эффект / описание",
+    "fieldSlot": "Слот корабля",
+    "fieldEquipped": "Экипировано",
+    "typeWeapon": "Оружие",
+    "typeArmor": "Броня",
+    "typeGear": "Снаряжение",
+    "typeCybernetic": "Кибернетика",
+    "typeShipModule": "Модуль корабля",
+    "typeOther": "Прочее",
+    "rangeArm": "Ближний",
+    "rangeNear": "Короткий",
+    "rangeShort": "Средний",
+    "rangeLong": "Длинный",
+    "rangeDistant": "Дальний",
+    "slotBridge": "Мостик",
+    "slotHull": "Корпус",
+    "slotHold": "Трюм",
+    "slotWeapon": "Оружейный",
+    "slotDrive": "Двигатель",
+    "slotSensor": "Сенсор",
+    "slotElectronic": "Электроника",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "deleteItem": "Удалить предмет",
+    "deleteConfirm": "Удалить «{name}»? Это необратимо.",
+    "errorSave": "Не удалось сохранить предмет.",
+    "errorDelete": "Не удалось удалить предмет.",
+    "typeDisabledHint": "Тип нельзя изменить после создания."
+  },
+  "uk": {
+    "titleCreate": "[uk-todo] Add item",
+    "titleEdit": "[uk-todo] Edit item",
+    "fieldName": "[uk-todo] Name",
+    "namePlaceholder": "[uk-todo] Item name",
+    "fieldNotes": "[uk-todo] Notes",
+    "notesPlaceholder": "[uk-todo] Optional notes…",
+    "fieldBonus": "[uk-todo] Bonus",
+    "fieldDamage": "[uk-todo] Damage",
+    "fieldCrit": "[uk-todo] Critical",
+    "fieldRange": "[uk-todo] Range",
+    "fieldWeight": "[uk-todo] Weight (slots)",
+    "fieldArmorRating": "[uk-todo] Armor rating",
+    "fieldQuantity": "[uk-todo] Quantity",
+    "fieldBodyPoints": "[uk-todo] Body points",
+    "fieldEffect": "[uk-todo] Effect",
+    "fieldSlot": "[uk-todo] Ship slot",
+    "fieldEquipped": "[uk-todo] Equipped",
+    "typeWeapon": "[uk-todo] Weapon",
+    "typeArmor": "[uk-todo] Armor",
+    "typeGear": "[uk-todo] Gear",
+    "typeCybernetic": "[uk-todo] Cybernetic",
+    "typeShipModule": "[uk-todo] Ship module",
+    "typeOther": "[uk-todo] Other",
+    "rangeArm": "[uk-todo] Arm",
+    "rangeNear": "[uk-todo] Near",
+    "rangeShort": "[uk-todo] Short",
+    "rangeLong": "[uk-todo] Long",
+    "rangeDistant": "[uk-todo] Distant",
+    "slotBridge": "[uk-todo] Bridge",
+    "slotHull": "[uk-todo] Hull",
+    "slotHold": "[uk-todo] Hold",
+    "slotWeapon": "[uk-todo] Weapon",
+    "slotDrive": "[uk-todo] Drive",
+    "slotSensor": "[uk-todo] Sensor",
+    "slotElectronic": "[uk-todo] Electronic",
+    "save": "[uk-todo] Save",
+    "cancel": "[uk-todo] Cancel",
+    "deleteItem": "[uk-todo] Remove item",
+    "deleteConfirm": "[uk-todo] Remove \"{name}\"?",
+    "errorSave": "[uk-todo] Failed to save item.",
+    "errorDelete": "[uk-todo] Failed to remove item.",
+    "typeDisabledHint": "[uk-todo] Type cannot be changed after creation."
+  },
+  "el": {
+    "titleCreate": "[el-todo] Add item",
+    "titleEdit": "[el-todo] Edit item",
+    "fieldName": "[el-todo] Name",
+    "namePlaceholder": "[el-todo] Item name",
+    "fieldNotes": "[el-todo] Notes",
+    "notesPlaceholder": "[el-todo] Optional notes…",
+    "fieldBonus": "[el-todo] Bonus",
+    "fieldDamage": "[el-todo] Damage",
+    "fieldCrit": "[el-todo] Critical",
+    "fieldRange": "[el-todo] Range",
+    "fieldWeight": "[el-todo] Weight (slots)",
+    "fieldArmorRating": "[el-todo] Armor rating",
+    "fieldQuantity": "[el-todo] Quantity",
+    "fieldBodyPoints": "[el-todo] Body points",
+    "fieldEffect": "[el-todo] Effect",
+    "fieldSlot": "[el-todo] Ship slot",
+    "fieldEquipped": "[el-todo] Equipped",
+    "typeWeapon": "[el-todo] Weapon",
+    "typeArmor": "[el-todo] Armor",
+    "typeGear": "[el-todo] Gear",
+    "typeCybernetic": "[el-todo] Cybernetic",
+    "typeShipModule": "[el-todo] Ship module",
+    "typeOther": "[el-todo] Other",
+    "rangeArm": "[el-todo] Arm",
+    "rangeNear": "[el-todo] Near",
+    "rangeShort": "[el-todo] Short",
+    "rangeLong": "[el-todo] Long",
+    "rangeDistant": "[el-todo] Distant",
+    "slotBridge": "[el-todo] Bridge",
+    "slotHull": "[el-todo] Hull",
+    "slotHold": "[el-todo] Hold",
+    "slotWeapon": "[el-todo] Weapon",
+    "slotDrive": "[el-todo] Drive",
+    "slotSensor": "[el-todo] Sensor",
+    "slotElectronic": "[el-todo] Electronic",
+    "save": "[el-todo] Save",
+    "cancel": "[el-todo] Cancel",
+    "deleteItem": "[el-todo] Remove item",
+    "deleteConfirm": "[el-todo] Remove \"{name}\"?",
+    "errorSave": "[el-todo] Failed to save item.",
+    "errorDelete": "[el-todo] Failed to remove item.",
+    "typeDisabledHint": "[el-todo] Type cannot be changed after creation."
+  }
+}
+</i18n>
+
+<template>
+  <AppModal
+    :open="open"
+    :aria-label="isEditMode ? t('titleEdit') : t('titleCreate')"
+    size="md"
+    @update:open="$emit('update:open', $event)"
+  >
+    <div class="item-editor">
+      <h2 class="item-editor__title">
+        {{ isEditMode ? t('titleEdit') : t('titleCreate') }}
+      </h2>
+
+      <!-- Error banner -->
+      <AppBanner v-if="errorMsg" tone="danger" class="item-editor__error">
+        {{ errorMsg }}
+      </AppBanner>
+
+      <!-- Type selector — disabled in edit mode -->
+      <div class="item-editor__type-selector">
+        <AppSegControl
+          v-model="selectedType"
+          :options="TYPE_OPTIONS"
+          size="sm"
+          :disabled="isEditMode"
+        />
+        <p v-if="isEditMode" class="item-editor__type-hint">
+          {{ t('typeDisabledHint') }}
+        </p>
+      </div>
+
+      <!-- Common: name -->
+      <div class="item-editor__field">
+        <label class="item-editor__label" for="item-name">{{ t('fieldName') }}</label>
+        <AppInput
+          id="item-name"
+          v-model="fieldName"
+          size="md"
+          :placeholder="t('namePlaceholder')"
+          autocomplete="off"
+        />
+      </div>
+
+      <!-- ── WEAPON fields ─────────────────────────────────────────────────── -->
+      <template v-if="selectedType === 'WEAPON'">
+        <div class="item-editor__row">
+          <div class="item-editor__field">
+            <label class="item-editor__label" for="item-bonus">{{ t('fieldBonus') }}</label>
+            <AppInput
+              id="item-bonus"
+              v-model.number="fieldBonus"
+              type="number"
+              size="md"
+              :min="-3"
+              :max="3"
+            />
+          </div>
+          <div class="item-editor__field">
+            <label class="item-editor__label" for="item-damage">{{ t('fieldDamage') }}</label>
+            <AppInput
+              id="item-damage"
+              v-model.number="fieldDamage"
+              type="number"
+              size="md"
+              :min="0"
+              :max="6"
+            />
+          </div>
+          <div class="item-editor__field">
+            <label class="item-editor__label" for="item-crit">{{ t('fieldCrit') }}</label>
+            <AppInput
+              id="item-crit"
+              v-model.number="fieldCrit"
+              type="number"
+              size="md"
+              :min="0"
+              :max="3"
+            />
+          </div>
+        </div>
+        <div class="item-editor__row">
+          <div class="item-editor__field">
+            <label class="item-editor__label" for="item-range">{{ t('fieldRange') }}</label>
+            <AppSelect id="item-range" v-model="fieldRange" :options="RANGE_OPTIONS" size="md" />
+          </div>
+          <div class="item-editor__field">
+            <label class="item-editor__label" for="item-weight">{{ t('fieldWeight') }}</label>
+            <AppInput
+              id="item-weight"
+              v-model.number="fieldWeight"
+              type="number"
+              size="md"
+              :min="0"
+              :max="10"
+              :step="0.5"
+            />
+          </div>
+        </div>
+        <div class="item-editor__field item-editor__field--check">
+          <label class="item-editor__label item-editor__label--inline">
+            <input v-model="fieldEquipped" type="checkbox" class="item-editor__checkbox" />
+            {{ t('fieldEquipped') }}
+          </label>
+        </div>
+      </template>
+
+      <!-- ── ARMOR fields ──────────────────────────────────────────────────── -->
+      <template v-else-if="selectedType === 'ARMOR'">
+        <div class="item-editor__row">
+          <div class="item-editor__field">
+            <label class="item-editor__label" for="item-armor">{{ t('fieldArmorRating') }}</label>
+            <AppInput
+              id="item-armor"
+              v-model.number="fieldArmorRating"
+              type="number"
+              size="md"
+              :min="0"
+              :max="10"
+            />
+          </div>
+          <div class="item-editor__field">
+            <label class="item-editor__label" for="item-weight-armor">{{ t('fieldWeight') }}</label>
+            <AppInput
+              id="item-weight-armor"
+              v-model.number="fieldWeight"
+              type="number"
+              size="md"
+              :min="0"
+              :max="10"
+              :step="0.5"
+            />
+          </div>
+        </div>
+        <div class="item-editor__field item-editor__field--check">
+          <label class="item-editor__label item-editor__label--inline">
+            <input v-model="fieldEquipped" type="checkbox" class="item-editor__checkbox" />
+            {{ t('fieldEquipped') }}
+          </label>
+        </div>
+      </template>
+
+      <!-- ── GEAR fields ───────────────────────────────────────────────────── -->
+      <template v-else-if="selectedType === 'GEAR'">
+        <div class="item-editor__row">
+          <div class="item-editor__field">
+            <label class="item-editor__label" for="item-qty">{{ t('fieldQuantity') }}</label>
+            <AppInput
+              id="item-qty"
+              v-model.number="fieldQuantity"
+              type="number"
+              size="md"
+              :min="1"
+            />
+          </div>
+          <div class="item-editor__field">
+            <label class="item-editor__label" for="item-weight-gear">{{ t('fieldWeight') }}</label>
+            <AppInput
+              id="item-weight-gear"
+              v-model.number="fieldWeight"
+              type="number"
+              size="md"
+              :min="0"
+              :max="10"
+              :step="0.5"
+            />
+          </div>
+        </div>
+        <div class="item-editor__field">
+          <label class="item-editor__label" for="item-notes-gear">{{ t('fieldNotes') }}</label>
+          <AppTextarea
+            id="item-notes-gear"
+            v-model="fieldNotes"
+            :placeholder="t('notesPlaceholder')"
+            :rows="3"
+          />
+        </div>
+      </template>
+
+      <!-- ── CYBERNETIC fields ─────────────────────────────────────────────── -->
+      <template v-else-if="selectedType === 'CYBERNETIC'">
+        <div class="item-editor__field">
+          <label class="item-editor__label" for="item-bodypts">{{ t('fieldBodyPoints') }}</label>
+          <AppInput
+            id="item-bodypts"
+            v-model.number="fieldBodyPoints"
+            type="number"
+            size="md"
+            :min="0"
+            :max="6"
+          />
+        </div>
+        <div class="item-editor__field">
+          <label class="item-editor__label" for="item-effect-cyber">{{ t('fieldEffect') }}</label>
+          <AppTextarea
+            id="item-effect-cyber"
+            v-model="fieldEffect"
+            :placeholder="t('notesPlaceholder')"
+            :rows="3"
+          />
+        </div>
+      </template>
+
+      <!-- ── SHIP_MODULE fields ────────────────────────────────────────────── -->
+      <template v-else-if="selectedType === 'SHIP_MODULE'">
+        <div class="item-editor__field">
+          <label class="item-editor__label" for="item-slot">{{ t('fieldSlot') }}</label>
+          <AppSelect id="item-slot" v-model="fieldSlot" :options="SLOT_OPTIONS" size="md" />
+        </div>
+        <div class="item-editor__field">
+          <label class="item-editor__label" for="item-effect-ship">{{ t('fieldEffect') }}</label>
+          <AppTextarea
+            id="item-effect-ship"
+            v-model="fieldEffect"
+            :placeholder="t('notesPlaceholder')"
+            :rows="3"
+          />
+        </div>
+      </template>
+
+      <!-- ── OTHER fields ──────────────────────────────────────────────────── -->
+      <template v-else-if="selectedType === 'OTHER'">
+        <div class="item-editor__field">
+          <label class="item-editor__label" for="item-weight-other">{{ t('fieldWeight') }}</label>
+          <AppInput
+            id="item-weight-other"
+            v-model.number="fieldWeight"
+            type="number"
+            size="md"
+            :min="0"
+            :max="10"
+            :step="0.5"
+          />
+        </div>
+        <div class="item-editor__field">
+          <label class="item-editor__label" for="item-notes-other">{{ t('fieldNotes') }}</label>
+          <AppTextarea
+            id="item-notes-other"
+            v-model="fieldNotes"
+            :placeholder="t('notesPlaceholder')"
+            :rows="3"
+          />
+        </div>
+      </template>
+    </div>
+
+    <!-- Footer slot — save / cancel / delete -->
+    <template #footer>
+      <button
+        v-if="isEditMode"
+        type="button"
+        class="item-editor__delete-link"
+        :disabled="deleting"
+        @click="deleteItem"
+      >
+        {{ t('deleteItem') }}
+      </button>
+      <div class="item-editor__footer-actions">
+        <AppButton variant="ghost" size="md" @click="cancel">
+          {{ t('cancel') }}
+        </AppButton>
+        <AppButton variant="primary" size="md" :loading="saving" :disabled="!canSave" @click="save">
+          {{ t('save') }}
+        </AppButton>
+      </div>
+    </template>
+  </AppModal>
+</template>
+
+<style lang="scss" scoped>
+  // Checkbox size — sub-space-scale dimension; SCSS variable is the approved escape hatch.
+  $checkbox-size: 16px;
+
+  .item-editor {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+
+    &__title {
+      font-family: var(--type-display-sm-font-family);
+      font-size: var(--type-display-sm-font-size);
+      color: var(--brand-brass-light);
+      margin: 0;
+      letter-spacing: var(--type-display-sm-letter-spacing);
+    }
+
+    &__error {
+      // No extra margin — gap handles spacing
+    }
+
+    &__type-selector {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      // Wrap on mobile
+      overflow-x: auto;
+    }
+
+    &__type-hint {
+      margin: 0;
+      font-size: var(--type-body-sm-font-size);
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    &__field {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+
+      &--check {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
+
+    &__label {
+      font-family: var(--type-body-sm-font-family);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--brand-brass);
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+
+      &--inline {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        text-transform: none;
+        letter-spacing: normal;
+        color: var(--text-primary);
+        cursor: pointer;
+      }
+    }
+
+    &__checkbox {
+      width: $checkbox-size;
+      height: $checkbox-size;
+      accent-color: var(--brand-brass);
+      cursor: pointer;
+    }
+
+    &__row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: var(--space-3);
+    }
+
+    &__delete-link {
+      flex: 1;
+      text-align: left;
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: var(--type-body-sm-font-family);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--state-crimson-bright);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+
+      &:hover:not(:disabled) {
+        color: var(--state-crimson);
+      }
+
+      &:disabled {
+        opacity: var(--opacity-disabled);
+        cursor: not-allowed;
+      }
+    }
+
+    &__footer-actions {
+      display: flex;
+      gap: var(--space-3);
+    }
+  }
+</style>

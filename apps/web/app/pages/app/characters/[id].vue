@@ -6,17 +6,21 @@
     AppTextarea,
     AppStatBlock,
     AppPopover,
+    AppModal,
     AppDots,
     AppDivider,
     AppConditionPill,
     AppBanner,
     AppSavePulse,
+    AppBadge,
+    AppTab,
   } from '@app/ui';
   import { ref, watch, onBeforeUnmount, computed } from 'vue';
   import { useCharactersApi } from '~/composables/useCharactersApi';
   import type { Character, Problem } from '~/composables/useCharactersApi';
   import { useTalentsApi } from '~/composables/useTalentsApi';
   import type { Talent } from '~/composables/useTalentsApi';
+  import type { Item } from '~/composables/useItemsApi';
   import type { Attributes, Skills, ConditionFlags, CriticalInjury } from '@app/api-client-ts';
   import { useAutoSave } from '~/composables/useAutoSave';
   import type { SaveState } from '~/composables/useAutoSave';
@@ -157,13 +161,105 @@
   const newInjuryName = ref('');
   const addInjurySaving = ref(false);
 
+  // ── Tab navigation ────────────────────────────────────────────────────────────
+
+  type SheetTab = 'stats' | 'gear' | 'talents' | 'notes' | 'share';
+  const activeTab = ref<SheetTab>('stats');
+
+  // ── Inventory (Feature 5.4) ───────────────────────────────────────────────────
+
+  const localInventory = ref<Item[]>([]);
+  const itemEditorOpen = ref(false);
+  const itemEditorItem = ref<Item | null>(null); // null = create mode
+
+  function openCreateItem(): void {
+    itemEditorItem.value = null;
+    itemEditorOpen.value = true;
+  }
+
+  function openEditItem(item: Item): void {
+    itemEditorItem.value = item;
+    itemEditorOpen.value = true;
+  }
+
+  function onItemSaved(item: Item): void {
+    const idx = localInventory.value.findIndex((i) => i.id === item.id);
+    localInventory.value =
+      idx !== -1
+        ? // Update in-place
+          localInventory.value.map((i) => (i.id === item.id ? item : i))
+        : // Prepend new item
+          [item, ...localInventory.value];
+  }
+
+  function onItemDeleted(itemId: string): void {
+    localInventory.value = localInventory.value.filter((i) => i.id !== itemId);
+  }
+
+  // ── Computed: encumbrance ─────────────────────────────────────────────────────
+
+  const isEncumbered = computed<boolean>(() => {
+    if (!character.value) return false;
+    return character.value.encumbrance.current > character.value.encumbrance.max;
+  });
+
+  // ── Computed: equipped items (for right-column quick view) ────────────────────
+
+  const equippedItems = computed<Item[]>(() =>
+    localInventory.value.filter(
+      (item) =>
+        (item.type === 'WEAPON' || item.type === 'ARMOR' || item.type === 'GEAR') &&
+        'equipped' in item &&
+        item.equipped,
+    ),
+  );
+
+  // ── Helpers: item type badge variant ─────────────────────────────────────────
+
+  function itemTypeBadgeVariant(
+    type: string,
+  ): 'brass' | 'mystic' | 'crimson' | 'success' | 'darkness' {
+    switch (type) {
+      case 'WEAPON': {
+        return 'crimson';
+      }
+      case 'ARMOR': {
+        return 'brass';
+      }
+      case 'GEAR': {
+        return 'success';
+      }
+      case 'CYBERNETIC': {
+        return 'mystic';
+      }
+      case 'SHIP_MODULE': {
+        return 'darkness';
+      }
+      default: {
+        return 'brass';
+      }
+    }
+  }
+
+  function itemTypeBadgeLabel(type: string): string {
+    return t(`itemType.${type}`);
+  }
+
+  function itemSummary(item: Item): string {
+    if (item.type === 'WEAPON') return `+${String(item.bonus)} / ${String(item.damage)}d`;
+    if (item.type === 'ARMOR') return `AR ${String(item.armorRating)}`;
+    if (item.type === 'GEAR') return `×${String(item.quantity)}`;
+    if (item.type === 'CYBERNETIC') return `${String(item.bodyPoints)} BP`;
+    if (item.type === 'SHIP_MODULE') return item.slot;
+    // OTHER — always has weight field
+    return `${String(item.weight)} enc`;
+  }
+
   // ── Talents (Feature 5.2) ────────────────────────────────────────────────────
 
   const localTalents = ref<Talent[]>([]);
 
-  // TalentEditor modal state
-  // Decision: using UModal directly (not AppModal primitive) to preserve
-  // delivery velocity. AppModal primitive is a separate batch.
+  // TalentEditor modal state — migrated to AppModal (Feature 5.4).
   const talentEditorOpen = ref(false);
   const talentEditorTalent = ref<Talent | null>(null); // null = create mode
   const talentEditorName = ref('');
@@ -235,6 +331,7 @@
       localConditions.value = { ...data.conditions };
       localInjuries.value = [...data.criticalInjuries];
       localTalents.value = [...data.talents];
+      localInventory.value = [...data.inventory];
       state.value = 'loaded';
     } catch (error) {
       const problem = error as Problem;
@@ -641,6 +738,31 @@
     "noTalents": "No talents yet.",
     "errorTalentSave": "Failed to save talent.",
     "errorTalentDelete": "Failed to remove talent.",
+    "tabStats": "Stats",
+    "tabGear": "Gear",
+    "tabTalents": "Talents",
+    "tabNotes": "Notes",
+    "tabShare": "Share",
+    "tabComingSoon": "Coming in a future update.",
+    "gearAddButton": "Add item",
+    "gearEmpty": "No items yet. Add your first item to get started.",
+    "encWarning": "Encumbered (−1 die to physical actions)",
+    "itemColType": "Type",
+    "itemColName": "Name",
+    "itemColEquipped": "Equipped",
+    "itemColSummary": "Details",
+    "itemColActions": "Actions",
+    "itemEditBtn": "Edit",
+    "itemDeleteBtn": "Delete",
+    "equippedNone": "Nothing equipped.",
+    "itemType": {
+      "WEAPON": "Weapon",
+      "ARMOR": "Armor",
+      "GEAR": "Gear",
+      "CYBERNETIC": "Cyber",
+      "SHIP_MODULE": "Module",
+      "OTHER": "Other"
+    },
     "attr": {
       "strength": "Strength",
       "agility": "Agility",
@@ -738,6 +860,31 @@
     "noTalents": "Нет талантов.",
     "errorTalentSave": "Не удалось сохранить талант.",
     "errorTalentDelete": "Не удалось удалить талант.",
+    "tabStats": "Статы",
+    "tabGear": "Снаряжение",
+    "tabTalents": "Таланты",
+    "tabNotes": "Заметки",
+    "tabShare": "Поделиться",
+    "tabComingSoon": "Появится в будущем обновлении.",
+    "gearAddButton": "Добавить предмет",
+    "gearEmpty": "Нет предметов. Добавьте первый предмет.",
+    "encWarning": "Перегружен (−1 кубик на физические действия)",
+    "itemColType": "Тип",
+    "itemColName": "Название",
+    "itemColEquipped": "Экипировано",
+    "itemColSummary": "Детали",
+    "itemColActions": "Действия",
+    "itemEditBtn": "Изменить",
+    "itemDeleteBtn": "Удалить",
+    "equippedNone": "Ничего не экипировано.",
+    "itemType": {
+      "WEAPON": "Оружие",
+      "ARMOR": "Броня",
+      "GEAR": "Снар.",
+      "CYBERNETIC": "Кибер",
+      "SHIP_MODULE": "Модуль",
+      "OTHER": "Прочее"
+    },
     "attr": {
       "strength": "Сила",
       "agility": "Ловкость",
@@ -835,6 +982,31 @@
     "noTalents": "[uk-todo] No talents yet.",
     "errorTalentSave": "[uk-todo] Failed to save talent.",
     "errorTalentDelete": "[uk-todo] Failed to remove talent.",
+    "tabStats": "[uk-todo] Stats",
+    "tabGear": "[uk-todo] Gear",
+    "tabTalents": "[uk-todo] Talents",
+    "tabNotes": "[uk-todo] Notes",
+    "tabShare": "[uk-todo] Share",
+    "tabComingSoon": "[uk-todo] Coming in a future update.",
+    "gearAddButton": "[uk-todo] Add item",
+    "gearEmpty": "[uk-todo] No items yet.",
+    "encWarning": "[uk-todo] Encumbered (−1 die to physical actions)",
+    "itemColType": "[uk-todo] Type",
+    "itemColName": "[uk-todo] Name",
+    "itemColEquipped": "[uk-todo] Equipped",
+    "itemColSummary": "[uk-todo] Details",
+    "itemColActions": "[uk-todo] Actions",
+    "itemEditBtn": "[uk-todo] Edit",
+    "itemDeleteBtn": "[uk-todo] Delete",
+    "equippedNone": "[uk-todo] Nothing equipped.",
+    "itemType": {
+      "WEAPON": "[uk-todo] Weapon",
+      "ARMOR": "[uk-todo] Armor",
+      "GEAR": "[uk-todo] Gear",
+      "CYBERNETIC": "[uk-todo] Cyber",
+      "SHIP_MODULE": "[uk-todo] Module",
+      "OTHER": "[uk-todo] Other"
+    },
     "attr": {
       "strength": "[uk-todo] Strength",
       "agility": "[uk-todo] Agility",
@@ -932,6 +1104,31 @@
     "noTalents": "[el-todo] No talents yet.",
     "errorTalentSave": "[el-todo] Failed to save talent.",
     "errorTalentDelete": "[el-todo] Failed to remove talent.",
+    "tabStats": "[el-todo] Stats",
+    "tabGear": "[el-todo] Gear",
+    "tabTalents": "[el-todo] Talents",
+    "tabNotes": "[el-todo] Notes",
+    "tabShare": "[el-todo] Share",
+    "tabComingSoon": "[el-todo] Coming in a future update.",
+    "gearAddButton": "[el-todo] Add item",
+    "gearEmpty": "[el-todo] No items yet.",
+    "encWarning": "[el-todo] Encumbered (−1 die to physical actions)",
+    "itemColType": "[el-todo] Type",
+    "itemColName": "[el-todo] Name",
+    "itemColEquipped": "[el-todo] Equipped",
+    "itemColSummary": "[el-todo] Details",
+    "itemColActions": "[el-todo] Actions",
+    "itemEditBtn": "[el-todo] Edit",
+    "itemDeleteBtn": "[el-todo] Delete",
+    "equippedNone": "[el-todo] Nothing equipped.",
+    "itemType": {
+      "WEAPON": "[el-todo] Weapon",
+      "ARMOR": "[el-todo] Armor",
+      "GEAR": "[el-todo] Gear",
+      "CYBERNETIC": "[el-todo] Cyber",
+      "SHIP_MODULE": "[el-todo] Module",
+      "OTHER": "[el-todo] Other"
+    },
     "attr": {
       "strength": "[el-todo] Strength",
       "agility": "[el-todo] Agility",
@@ -1098,8 +1295,11 @@
             </div>
           </div>
 
-          <!-- ENC (read-only) -->
-          <div class="page-sheet__counter page-sheet__counter--enc">
+          <!-- ENC (read-only, crimson when encumbered) -->
+          <div
+            class="page-sheet__counter page-sheet__counter--enc"
+            :class="{ 'page-sheet__counter--enc-warn': isEncumbered }"
+          >
             <span class="page-sheet__counter-label">{{ t('labelEnc') }}</span>
             <div class="page-sheet__counter-value">
               {{ character.encumbrance.current
@@ -1109,8 +1309,37 @@
         </div>
       </div>
 
-      <!-- ── Three-column body ───────────────────────────────────────────────── -->
-      <div class="page-sheet__columns">
+      <!-- ── Encumbrance warning banner ─────────────────────────────────────── -->
+      <AppBanner v-if="isEncumbered" tone="danger" class="page-sheet__enc-warning" role="status">
+        {{ t('encWarning') }}
+      </AppBanner>
+
+      <!-- ── Tab bar ──────────────────────────────────────────────────────────── -->
+      <div class="page-sheet__tabs" role="tablist">
+        <AppTab :active="activeTab === 'stats'" size="md" tone="brass" @click="activeTab = 'stats'">
+          {{ t('tabStats') }}
+        </AppTab>
+        <AppTab :active="activeTab === 'gear'" size="md" tone="brass" @click="activeTab = 'gear'">
+          {{ t('tabGear') }}
+        </AppTab>
+        <AppTab
+          :active="activeTab === 'talents'"
+          size="md"
+          tone="brass"
+          @click="activeTab = 'talents'"
+        >
+          {{ t('tabTalents') }}
+        </AppTab>
+        <AppTab :active="activeTab === 'notes'" size="md" tone="brass" @click="activeTab = 'notes'">
+          {{ t('tabNotes') }}
+        </AppTab>
+        <AppTab :active="activeTab === 'share'" size="md" tone="brass" @click="activeTab = 'share'">
+          {{ t('tabShare') }}
+        </AppTab>
+      </div>
+
+      <!-- ── Three-column body (Stats tab) ─────────────────────────────────────── -->
+      <div v-show="activeTab === 'stats'" class="page-sheet__columns">
         <!-- LEFT column: Identity + Conditions + Critical Injuries -->
         <div class="page-sheet__col page-sheet__col--left">
           <!-- Identity card -->
@@ -1493,14 +1722,21 @@
           </AppCard>
         </div>
 
-        <!-- RIGHT column: Equipped + Talents + Recent Rolls -->
+        <!-- RIGHT column: Equipped quick view + Talents + Recent Rolls -->
         <div class="page-sheet__col page-sheet__col--right">
+          <!-- ── Feature 5.4: Equipped quick view ────────────────────────────── -->
           <AppCard class="page-sheet__panel">
             <template #header>
               <span class="page-sheet__panel-title">{{ t('panelEquipped') }}</span>
             </template>
-            <p class="page-sheet__placeholder-text">
-              {{ t('comingSoon') }}
+            <ul v-if="equippedItems.length > 0" class="page-sheet__equipped-list">
+              <li v-for="item in equippedItems" :key="item.id" class="page-sheet__equipped-row">
+                <span class="page-sheet__equipped-name">{{ item.name }}</span>
+                <span class="page-sheet__equipped-summary">{{ itemSummary(item) }}</span>
+              </li>
+            </ul>
+            <p v-else class="page-sheet__placeholder-text">
+              {{ t('equippedNone') }}
             </p>
           </AppCard>
 
@@ -1553,6 +1789,95 @@
         </div>
       </div>
 
+      <!-- ── Gear tab ────────────────────────────────────────────────────────── -->
+      <div v-show="activeTab === 'gear'" class="page-sheet__gear-tab">
+        <!-- Top action row -->
+        <div class="page-sheet__gear-header">
+          <AppButton variant="primary" size="sm" @click="openCreateItem">
+            + {{ t('gearAddButton') }}
+          </AppButton>
+          <!-- Encumbrance summary -->
+          <div class="page-sheet__gear-enc" :class="{ 'page-sheet__gear-enc--warn': isEncumbered }">
+            <span class="page-sheet__gear-enc-label">{{ t('labelEnc') }}</span>
+            <span class="page-sheet__gear-enc-value">
+              {{ character.encumbrance.current }} / {{ character.encumbrance.max }}
+            </span>
+            <AppBadge v-if="isEncumbered" variant="crimson" size="sm">
+              {{ t('encWarning') }}
+            </AppBadge>
+          </div>
+        </div>
+
+        <!-- Inventory table -->
+        <div v-if="localInventory.length > 0" class="page-sheet__gear-table-wrap">
+          <table class="page-sheet__gear-table">
+            <thead>
+              <tr>
+                <th class="page-sheet__gear-th">
+                  {{ t('itemColType') }}
+                </th>
+                <th class="page-sheet__gear-th page-sheet__gear-th--name">
+                  {{ t('itemColName') }}
+                </th>
+                <th class="page-sheet__gear-th">
+                  {{ t('itemColSummary') }}
+                </th>
+                <th class="page-sheet__gear-th">
+                  {{ t('itemColActions') }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in localInventory" :key="item.id" class="page-sheet__gear-row">
+                <td class="page-sheet__gear-td">
+                  <AppBadge :variant="itemTypeBadgeVariant(item.type)" size="sm">
+                    {{ itemTypeBadgeLabel(item.type) }}
+                  </AppBadge>
+                </td>
+                <td class="page-sheet__gear-td page-sheet__gear-td--name">
+                  {{ item.name }}
+                </td>
+                <td class="page-sheet__gear-td page-sheet__gear-td--summary">
+                  {{ itemSummary(item) }}
+                </td>
+                <td class="page-sheet__gear-td page-sheet__gear-td--actions">
+                  <AppButton variant="ghost" size="sm" @click="openEditItem(item)">
+                    {{ t('itemEditBtn') }}
+                  </AppButton>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty state -->
+        <AppCard v-else class="page-sheet__gear-empty">
+          <p class="page-sheet__gear-empty-text">
+            {{ t('gearEmpty') }}
+          </p>
+          <AppButton variant="primary" size="sm" @click="openCreateItem">
+            + {{ t('gearAddButton') }}
+          </AppButton>
+        </AppCard>
+      </div>
+
+      <!-- ── Other placeholder tabs ──────────────────────────────────────────── -->
+      <div v-show="activeTab === 'talents'" class="page-sheet__tab-placeholder">
+        <p class="page-sheet__placeholder-text">
+          {{ t('tabComingSoon') }}
+        </p>
+      </div>
+      <div v-show="activeTab === 'notes'" class="page-sheet__tab-placeholder">
+        <p class="page-sheet__placeholder-text">
+          {{ t('tabComingSoon') }}
+        </p>
+      </div>
+      <div v-show="activeTab === 'share'" class="page-sheet__tab-placeholder">
+        <p class="page-sheet__placeholder-text">
+          {{ t('tabComingSoon') }}
+        </p>
+      </div>
+
       <!-- ── Danger zone ─────────────────────────────────────────────────────── -->
       <div class="page-sheet__danger-zone">
         <AppButton variant="danger" size="sm" @click="openDeleteDialog">
@@ -1586,19 +1911,18 @@
       </div>
     </dialog>
 
-    <!-- ── Feature 5.2 — TalentEditor dialog ─────────────────────────────────── -->
-    <!--
-      Decision: using <dialog> natively (same pattern as the delete dialog above),
-      rather than UModal or AppModal, to ship without new primitives.
-      UModal/AppModal wrapping is a follow-up batch.
-    -->
-    <dialog
+    <!-- ── Feature 5.2 — TalentEditor (migrated to AppModal in Feature 5.4) ──── -->
+    <AppModal
       :open="talentEditorOpen"
-      class="page-sheet__dialog page-sheet__dialog--talent"
       :aria-label="talentEditorIsEdit ? t('talentEditTitle') : t('talentCreateTitle')"
-      @close="closeTalentEditor"
+      size="md"
+      @update:open="
+        (v) => {
+          if (!v) closeTalentEditor();
+        }
+      "
     >
-      <div class="page-sheet__dialog-inner">
+      <div class="page-sheet__talent-editor">
         <p class="page-sheet__dialog-heading">
           {{ talentEditorIsEdit ? t('talentEditTitle') : t('talentCreateTitle') }}
         </p>
@@ -1633,33 +1957,43 @@
             />
           </div>
         </div>
-
-        <div class="page-sheet__dialog-actions page-sheet__dialog-actions--talent">
-          <!-- Remove talent (edit mode only) -->
-          <button
-            v-if="talentEditorIsEdit && talentEditorTalent"
-            class="page-sheet__talent-delete-link"
-            @click="deleteTalentConfirm(talentEditorTalent)"
-          >
-            {{ t('talentDelete') }}
-          </button>
-          <div class="page-sheet__dialog-actions-right">
-            <AppButton variant="ghost" size="md" @click="closeTalentEditor">
-              {{ t('talentCancel') }}
-            </AppButton>
-            <AppButton
-              variant="primary"
-              size="md"
-              :loading="talentEditorSaving"
-              :disabled="!talentEditorCanSave"
-              @click="saveTalent"
-            >
-              {{ t('talentSave') }}
-            </AppButton>
-          </div>
-        </div>
       </div>
-    </dialog>
+
+      <template #footer>
+        <!-- Remove talent (edit mode only) -->
+        <button
+          v-if="talentEditorIsEdit && talentEditorTalent"
+          class="page-sheet__talent-delete-link"
+          @click="deleteTalentConfirm(talentEditorTalent)"
+        >
+          {{ t('talentDelete') }}
+        </button>
+        <div class="page-sheet__dialog-actions-right">
+          <AppButton variant="ghost" size="md" @click="closeTalentEditor">
+            {{ t('talentCancel') }}
+          </AppButton>
+          <AppButton
+            variant="primary"
+            size="md"
+            :loading="talentEditorSaving"
+            :disabled="!talentEditorCanSave"
+            @click="saveTalent"
+          >
+            {{ t('talentSave') }}
+          </AppButton>
+        </div>
+      </template>
+    </AppModal>
+
+    <!-- ── Feature 5.4 — ItemEditor modal ──────────────────────────────────────── -->
+    <ItemEditor
+      :open="itemEditorOpen"
+      :item="itemEditorItem"
+      :character-id="characterId"
+      @update:open="itemEditorOpen = $event"
+      @saved="onItemSaved"
+      @deleted="onItemDeleted"
+    />
   </section>
 </template>
 
@@ -2530,6 +2864,197 @@
       justify-content: flex-end;
       padding-top: var(--space-4);
       border-top: 1px solid var(--brand-brass-shadow);
+    }
+
+    // ── Tabs ─────────────────────────────────────────────────────────────────────
+
+    &__tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--brand-brass-deep);
+      padding-inline: var(--space-4);
+      overflow-x: auto;
+    }
+
+    // ── Encumbrance warning banner ────────────────────────────────────────────
+
+    &__enc-warning {
+      // margin handled by gap in the page flex column
+    }
+
+    &__counter--enc-warn {
+      .page-sheet__counter-label,
+      .page-sheet__counter-value {
+        color: var(--state-crimson-bright);
+      }
+    }
+
+    // ── Equipped quick view ───────────────────────────────────────────────────
+
+    &__equipped-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    &__equipped-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--space-2);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid color-mix(in srgb, var(--brand-brass-deep) 60%, transparent);
+
+      &:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+    }
+
+    &__equipped-name {
+      font-family: var(--type-body-md-font-family);
+      font-size: var(--type-body-md-font-size);
+      color: var(--text-primary);
+    }
+
+    &__equipped-summary {
+      font-family: var(--type-body-sm-font-family);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    // ── Gear tab ─────────────────────────────────────────────────────────────
+
+    &__gear-tab {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+    }
+
+    &__gear-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    &__gear-enc {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--type-body-sm-font-family);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--text-secondary);
+
+      &--warn {
+        color: var(--state-crimson-bright);
+      }
+    }
+
+    &__gear-enc-label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: $font-size-eyebrow;
+      color: inherit;
+    }
+
+    &__gear-enc-value {
+      font-family: var(--type-mono-stat-md-font-family);
+      font-size: var(--type-mono-stat-md-font-size);
+    }
+
+    &__gear-table-wrap {
+      overflow-x: auto;
+    }
+
+    &__gear-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--type-body-md-font-family);
+      font-size: var(--type-body-md-font-size);
+    }
+
+    &__gear-th {
+      text-align: left;
+      padding: var(--space-2) var(--space-3);
+      font-size: $font-size-eyebrow;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--brand-brass);
+      border-bottom: 1px solid var(--brand-brass-deep);
+      white-space: nowrap;
+
+      &--name {
+        width: 100%;
+      }
+    }
+
+    &__gear-row {
+      border-bottom: 1px solid color-mix(in srgb, var(--brand-brass-deep) 50%, transparent);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        background-color: color-mix(in srgb, var(--brand-brass) 4%, transparent);
+      }
+    }
+
+    &__gear-td {
+      padding: var(--space-2) var(--space-3);
+      color: var(--text-primary);
+      vertical-align: middle;
+
+      &--name {
+        font-weight: 500;
+      }
+
+      &--summary {
+        color: var(--text-secondary);
+        white-space: nowrap;
+        font-size: var(--type-body-sm-font-size);
+      }
+
+      &--actions {
+        white-space: nowrap;
+      }
+    }
+
+    &__gear-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-8);
+      text-align: center;
+    }
+
+    &__gear-empty-text {
+      margin: 0;
+      color: var(--text-secondary);
+      font-family: var(--type-body-md-font-family);
+      font-size: var(--type-body-md-font-size);
+    }
+
+    // ── Other placeholder tabs ────────────────────────────────────────────────
+
+    &__tab-placeholder {
+      padding: var(--space-8);
+      text-align: center;
+    }
+
+    // ── TalentEditor (AppModal variant) ──────────────────────────────────────
+
+    &__talent-editor {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
     }
 
     // ── Dialogs ───────────────────────────────────────────────────────────────
