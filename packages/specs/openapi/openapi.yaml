@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 0.2.0
+  version: 0.3.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -33,8 +33,1017 @@ tags:
     description: Centrifugo connection tokens
   - name: users
     description: Authenticated user profile
+  - name: characters
+    description: Player character CRUD and nested items / talents
 
 paths:
+  /api/v1/characters:
+    get:
+      operationId: listCharacters
+      summary: List the authenticated user's characters
+      description: |
+        Returns a cursor-paginated list of characters owned by the
+        authenticated user. Pass `cursor` from a previous response's
+        `nextCursor` to retrieve the following page. Results are ordered
+        newest-first by `createdAt`.
+      tags: [characters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque pagination cursor returned by the previous page
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          description: Number of characters to return (1–100, default 20)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: Paginated character list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CharacterList"
+              examples:
+                ok:
+                  value:
+                    items:
+                      - id: cuid_tariq01
+                        ownerId: cuid_user01
+                        name: Tariq al-Asari
+                        concept: Veteran fringe pilot
+                        iconId: traveler
+                        attributes:
+                          strength: 3
+                          agility: 5
+                          wits: 4
+                          empathy: 3
+                        skills:
+                          dexterity: 4
+                          force: 1
+                          infiltration: 3
+                          manipulation: 2
+                          meleeCombat: 1
+                          observation: 4
+                          rangedCombat: 3
+                          survival: 2
+                          command: 2
+                          culture: 1
+                          dataDjinn: 2
+                          medicurgy: 0
+                          mysticPowers: 0
+                          pilot: 5
+                          science: 1
+                          technology: 3
+                        hp:
+                          current: 11
+                          max: 8
+                        mp:
+                          current: 8
+                          max: 7
+                        encumbrance:
+                          current: 2.0
+                          max: 6
+                        experience: 12
+                        conditions:
+                          exhausted: false
+                          sleepless: true
+                          thirsty: true
+                          hungry: false
+                        criticalInjuries: []
+                        talents: []
+                        relationships: []
+                        inventory: []
+                        notes: null
+                        createdAt: "2026-01-15T09:30:00Z"
+                        updatedAt: "2026-04-01T14:22:00Z"
+                    nextCursor: null
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+    post:
+      operationId: createCharacter
+      summary: Create a new character
+      description: |
+        Creates a character owned by the authenticated user. `name` is the
+        only required field; all other fields default to empty arrays, null,
+        or 0. Server-derived fields (`hp.max`, `mp.max`, `encumbrance.max`)
+        are populated from the provided attribute values or defaults.
+
+        Attribute defaults are 2 per attribute when not provided. Skills
+        default to 0.
+      tags: [characters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CharacterCreate"
+            examples:
+              minimal:
+                value:
+                  name: Rana Sadir
+              withAttributes:
+                value:
+                  name: Said al-Khatib
+                  concept: Mercenary from the Far Quarter
+                  iconId: judge
+                  attributes:
+                    strength: 4
+                    agility: 3
+                    wits: 3
+                    empathy: 2
+      responses:
+        "201":
+          description: Character created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Character"
+              examples:
+                created:
+                  value:
+                    id: cuid_said01
+                    ownerId: cuid_user01
+                    name: Said al-Khatib
+                    concept: Mercenary from the Far Quarter
+                    iconId: judge
+                    attributes:
+                      strength: 4
+                      agility: 3
+                      wits: 3
+                      empathy: 2
+                    skills:
+                      dexterity: 0
+                      force: 0
+                      infiltration: 0
+                      manipulation: 0
+                      meleeCombat: 0
+                      observation: 0
+                      rangedCombat: 0
+                      survival: 0
+                      command: 0
+                      culture: 0
+                      dataDjinn: 0
+                      medicurgy: 0
+                      mysticPowers: 0
+                      pilot: 0
+                      science: 0
+                      technology: 0
+                    hp:
+                      current: 0
+                      max: 7
+                    mp:
+                      current: 0
+                      max: 5
+                    encumbrance:
+                      current: 0
+                      max: 8
+                    experience: 0
+                    conditions:
+                      exhausted: false
+                      sleepless: false
+                      thirsty: false
+                      hungry: false
+                    criticalInjuries: []
+                    talents: []
+                    relationships: []
+                    inventory: []
+                    notes: null
+                    createdAt: "2026-05-08T10:00:00Z"
+                    updatedAt: "2026-05-08T10:00:00Z"
+        "400":
+          description: |
+            Validation error. Possible codes:
+            - `CHARACTER_NAME_EMPTY` — name is an empty string.
+            - `CHARACTER_NAME_TOO_LONG` — name exceeds 80 characters.
+            - `ATTRIBUTE_OUT_OF_RANGE` — an attribute value is outside 1–5.
+            - `SKILL_OUT_OF_RANGE` — a skill value is outside its allowed range.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                nameEmpty:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: name must be between 1 and 80 characters
+                    instance: /api/v1/characters
+                    code: CHARACTER_NAME_EMPTY
+                nameTooLong:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: name must not exceed 80 characters
+                    instance: /api/v1/characters
+                    code: CHARACTER_NAME_TOO_LONG
+                attributeOutOfRange:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: strength must be between 1 and 5
+                    instance: /api/v1/characters
+                    code: ATTRIBUTE_OUT_OF_RANGE
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /api/v1/characters/{id}:
+    get:
+      operationId: getCharacter
+      summary: Get a character by ID
+      description: |
+        Returns the full character DTO. Returns 404 if the character does not
+        exist or is not owned by the authenticated user. Owner-scoped: a
+        character owned by another user returns 403 (not 404) when the caller
+        is authenticated, to aid debugging while preserving access boundaries.
+      tags: [characters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CharacterId"
+      responses:
+        "200":
+          description: Character found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Character"
+              examples:
+                ok:
+                  value:
+                    id: cuid_tariq01
+                    ownerId: cuid_user01
+                    name: Tariq al-Asari
+                    concept: Veteran fringe pilot
+                    iconId: traveler
+                    attributes:
+                      strength: 3
+                      agility: 5
+                      wits: 4
+                      empathy: 3
+                    skills:
+                      dexterity: 4
+                      force: 1
+                      infiltration: 3
+                      manipulation: 2
+                      meleeCombat: 1
+                      observation: 4
+                      rangedCombat: 3
+                      survival: 2
+                      command: 2
+                      culture: 1
+                      dataDjinn: 2
+                      medicurgy: 0
+                      mysticPowers: 0
+                      pilot: 5
+                      science: 1
+                      technology: 3
+                    hp:
+                      current: 11
+                      max: 8
+                    mp:
+                      current: 8
+                      max: 7
+                    encumbrance:
+                      current: 2.0
+                      max: 6
+                    experience: 12
+                    conditions:
+                      exhausted: false
+                      sleepless: true
+                      thirsty: true
+                      hungry: false
+                    criticalInjuries:
+                      - id: cuid_crit01
+                        name: Broken arm
+                        severity: light
+                        effect: "-2 to Force and Melee Combat rolls"
+                        acquiredAt: "2026-03-20T19:00:00Z"
+                    talents:
+                      - id: cuid_tal01
+                        name: Wing-Mate
+                        description: Re-roll one die when assisting a fellow pilot.
+                        rank: 2
+                        acquiredAt: "2026-01-15T09:30:00Z"
+                    relationships:
+                      - id: cuid_rel01
+                        targetName: Nokk of the Madara
+                        kind: ally
+                        notes: Ship mechanic, owes me a favour after the Algol run.
+                    inventory:
+                      - id: cuid_item01
+                        type: WEAPON
+                        name: Vulcan Carbine
+                        damage: 2
+                        range: short
+                        bonus: 2
+                        crit: 2
+                        weight: 0.8
+                        features: []
+                        equipped: true
+                    notes: "Notes from the Far Quarter campaign."
+                    createdAt: "2026-01-15T09:30:00Z"
+                    updatedAt: "2026-04-01T14:22:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller is authenticated but does not own this character
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this character
+                    instance: /api/v1/characters/cuid_tariq01
+                    code: CHARACTER_NOT_OWNED
+        "404":
+          description: Character not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Character cuid_tariq01 does not exist
+                    instance: /api/v1/characters/cuid_tariq01
+                    code: CHARACTER_NOT_FOUND
+
+    patch:
+      operationId: updateCharacter
+      summary: Partially update a character
+      description: |
+        Applies PATCH semantics — omitted fields are left unchanged. Read-only
+        fields (`id`, `ownerId`, `hp.max`, `mp.max`, `encumbrance.max`,
+        `createdAt`, `updatedAt`) are rejected with 400 if included.
+
+        Server-derived fields (`hp.max`, `mp.max`, `encumbrance.max`) are
+        recalculated after each write and reflected in the response.
+      tags: [characters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CharacterId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CharacterUpdate"
+            examples:
+              updateName:
+                value:
+                  name: Tariq al-Asari (Pilot)
+              updateConditions:
+                value:
+                  conditions:
+                    exhausted: true
+                    sleepless: true
+                    thirsty: false
+                    hungry: false
+              updateAttributes:
+                value:
+                  attributes:
+                    strength: 4
+                    agility: 5
+                    wits: 4
+                    empathy: 3
+      responses:
+        "200":
+          description: Updated character
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Character"
+              examples:
+                ok:
+                  value:
+                    id: cuid_tariq01
+                    ownerId: cuid_user01
+                    name: Tariq al-Asari (Pilot)
+                    concept: Veteran fringe pilot
+                    iconId: traveler
+                    attributes:
+                      strength: 3
+                      agility: 5
+                      wits: 4
+                      empathy: 3
+                    skills:
+                      dexterity: 4
+                      force: 1
+                      infiltration: 3
+                      manipulation: 2
+                      meleeCombat: 1
+                      observation: 4
+                      rangedCombat: 3
+                      survival: 2
+                      command: 2
+                      culture: 1
+                      dataDjinn: 2
+                      medicurgy: 0
+                      mysticPowers: 0
+                      pilot: 5
+                      science: 1
+                      technology: 3
+                    hp:
+                      current: 11
+                      max: 8
+                    mp:
+                      current: 8
+                      max: 7
+                    encumbrance:
+                      current: 2.0
+                      max: 6
+                    experience: 12
+                    conditions:
+                      exhausted: false
+                      sleepless: true
+                      thirsty: true
+                      hungry: false
+                    criticalInjuries: []
+                    talents: []
+                    relationships: []
+                    inventory: []
+                    notes: null
+                    createdAt: "2026-01-15T09:30:00Z"
+                    updatedAt: "2026-05-08T10:05:00Z"
+        "400":
+          description: |
+            Validation error. Possible codes:
+            - `CHARACTER_NAME_EMPTY`
+            - `CHARACTER_NAME_TOO_LONG`
+            - `ATTRIBUTE_OUT_OF_RANGE`
+            - `SKILL_OUT_OF_RANGE`
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                skillOutOfRange:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: pilot skill value 6 exceeds maximum 5
+                    instance: /api/v1/characters/cuid_tariq01
+                    code: SKILL_OUT_OF_RANGE
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this character
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this character
+                    instance: /api/v1/characters/cuid_tariq01
+                    code: CHARACTER_NOT_OWNED
+        "404":
+          description: Character not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Character cuid_tariq01 does not exist
+                    instance: /api/v1/characters/cuid_tariq01
+                    code: CHARACTER_NOT_FOUND
+
+    delete:
+      operationId: deleteCharacter
+      summary: Delete a character
+      description: |
+        Permanently deletes a character and all its nested items, talents,
+        relationships, and share links. This action is irreversible.
+      tags: [characters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CharacterId"
+      responses:
+        "204":
+          description: Character deleted
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this character
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this character
+                    instance: /api/v1/characters/cuid_tariq01
+                    code: CHARACTER_NOT_OWNED
+        "404":
+          description: Character not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Character cuid_tariq01 does not exist
+                    instance: /api/v1/characters/cuid_tariq01
+                    code: CHARACTER_NOT_FOUND
+
+  /api/v1/characters/{id}/duplicate:
+    post:
+      operationId: duplicateCharacter
+      summary: Duplicate a character
+      description: |
+        Creates a deep copy of the character (including items, talents,
+        relationships, and conditions) and assigns it to the authenticated
+        user. The copy receives a new `id` and the name has " (copy)"
+        appended. Share links are not duplicated. The source character must
+        be owned by the caller.
+      tags: [characters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CharacterId"
+      responses:
+        "201":
+          description: Duplicated character
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Character"
+              examples:
+                created:
+                  value:
+                    id: cuid_tariq02
+                    ownerId: cuid_user01
+                    name: Tariq al-Asari (copy)
+                    concept: Veteran fringe pilot
+                    iconId: traveler
+                    attributes:
+                      strength: 3
+                      agility: 5
+                      wits: 4
+                      empathy: 3
+                    skills:
+                      dexterity: 4
+                      force: 1
+                      infiltration: 3
+                      manipulation: 2
+                      meleeCombat: 1
+                      observation: 4
+                      rangedCombat: 3
+                      survival: 2
+                      command: 2
+                      culture: 1
+                      dataDjinn: 2
+                      medicurgy: 0
+                      mysticPowers: 0
+                      pilot: 5
+                      science: 1
+                      technology: 3
+                    hp:
+                      current: 11
+                      max: 8
+                    mp:
+                      current: 8
+                      max: 7
+                    encumbrance:
+                      current: 2.0
+                      max: 6
+                    experience: 12
+                    conditions:
+                      exhausted: false
+                      sleepless: false
+                      thirsty: false
+                      hungry: false
+                    criticalInjuries: []
+                    talents: []
+                    relationships: []
+                    inventory: []
+                    notes: null
+                    createdAt: "2026-05-08T11:00:00Z"
+                    updatedAt: "2026-05-08T11:00:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this character
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this character
+                    instance: /api/v1/characters/cuid_tariq01/duplicate
+                    code: CHARACTER_NOT_OWNED
+        "404":
+          description: Character not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Character cuid_tariq01 does not exist
+                    instance: /api/v1/characters/cuid_tariq01/duplicate
+                    code: CHARACTER_NOT_FOUND
+
+  /api/v1/characters/{id}/export:
+    get:
+      operationId: exportCharacter
+      summary: Export a character as JSON
+      description: |
+        Returns the full canonical Character DTO as a downloadable JSON
+        payload. v1 ships JSON only; PDF and encounter-bundle exports are
+        post-v1. The response carries `Content-Disposition: attachment` so
+        browsers prompt a download.
+      tags: [characters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CharacterId"
+      responses:
+        "200":
+          description: Character JSON export
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Character"
+              examples:
+                ok:
+                  value:
+                    id: cuid_tariq01
+                    ownerId: cuid_user01
+                    name: Tariq al-Asari
+                    concept: Veteran fringe pilot
+                    iconId: traveler
+                    attributes:
+                      strength: 3
+                      agility: 5
+                      wits: 4
+                      empathy: 3
+                    skills:
+                      dexterity: 4
+                      force: 1
+                      infiltration: 3
+                      manipulation: 2
+                      meleeCombat: 1
+                      observation: 4
+                      rangedCombat: 3
+                      survival: 2
+                      command: 2
+                      culture: 1
+                      dataDjinn: 2
+                      medicurgy: 0
+                      mysticPowers: 0
+                      pilot: 5
+                      science: 1
+                      technology: 3
+                    hp:
+                      current: 11
+                      max: 8
+                    mp:
+                      current: 8
+                      max: 7
+                    encumbrance:
+                      current: 2.0
+                      max: 6
+                    experience: 12
+                    conditions:
+                      exhausted: false
+                      sleepless: true
+                      thirsty: true
+                      hungry: false
+                    criticalInjuries: []
+                    talents: []
+                    relationships: []
+                    inventory: []
+                    notes: "Notes from the Far Quarter campaign."
+                    createdAt: "2026-01-15T09:30:00Z"
+                    updatedAt: "2026-04-01T14:22:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this character
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this character
+                    instance: /api/v1/characters/cuid_tariq01/export
+                    code: CHARACTER_NOT_OWNED
+        "404":
+          description: Character not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Character cuid_tariq01 does not exist
+                    instance: /api/v1/characters/cuid_tariq01/export
+                    code: CHARACTER_NOT_FOUND
+
+  /api/v1/characters/{id}/items:
+    post:
+      operationId: addCharacterItem
+      summary: Add an item to a character's inventory
+      description: |
+        Creates an item of the specified `type` under the character. The
+        discriminator field `type` determines which additional fields are
+        accepted and required. `id` is assigned by the server.
+      tags: [characters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CharacterId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemCreate"
+            examples:
+              addWeapon:
+                value:
+                  type: WEAPON
+                  name: Vulcan Carbine
+                  damage: 2
+                  range: short
+                  bonus: 2
+                  crit: 2
+                  weight: 0.8
+                  features: []
+                  equipped: true
+              addGear:
+                value:
+                  type: GEAR
+                  name: Medkit
+                  weight: 0.5
+                  quantity: 1
+                  notes: Standard field medkit
+      responses:
+        "201":
+          description: Item created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+              examples:
+                created:
+                  value:
+                    id: cuid_item02
+                    type: WEAPON
+                    name: Vulcan Carbine
+                    damage: 2
+                    range: short
+                    bonus: 2
+                    crit: 2
+                    weight: 0.8
+                    features: []
+                    equipped: true
+        "400":
+          description: |
+            Validation error. Possible codes:
+            - `CHARACTER_NAME_EMPTY` — item name is empty.
+            - `ITEM_TYPE_MISMATCH` — payload fields do not match the declared type.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                typeMismatch:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: Fields damage/range are not valid for item type GEAR
+                    instance: /api/v1/characters/cuid_tariq01/items
+                    code: ITEM_TYPE_MISMATCH
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this character
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this character
+                    instance: /api/v1/characters/cuid_tariq01/items
+                    code: CHARACTER_NOT_OWNED
+        "404":
+          description: Character not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Character cuid_tariq01 does not exist
+                    instance: /api/v1/characters/cuid_tariq01/items
+                    code: CHARACTER_NOT_FOUND
+
+  /api/v1/characters/{id}/talents:
+    post:
+      operationId: addCharacterTalent
+      summary: Add a talent to a character
+      description: |
+        Creates a talent record attached to the character. Talents are
+        free-form (name + description + rank); there is no server-side
+        talent library in v1.
+      tags: [characters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CharacterId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TalentCreate"
+            examples:
+              addTalent:
+                value:
+                  name: Wing-Mate
+                  description: Re-roll one die when assisting a fellow pilot.
+                  rank: 2
+      responses:
+        "201":
+          description: Talent created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Talent"
+              examples:
+                created:
+                  value:
+                    id: cuid_tal02
+                    name: Wing-Mate
+                    description: Re-roll one die when assisting a fellow pilot.
+                    rank: 2
+                    acquiredAt: "2026-05-08T10:30:00Z"
+        "400":
+          description: Validation error (name empty, rank out of 1–3 range)
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                nameEmpty:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: Talent name must not be empty
+                    instance: /api/v1/characters/cuid_tariq01/talents
+                    code: CHARACTER_NAME_EMPTY
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this character
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this character
+                    instance: /api/v1/characters/cuid_tariq01/talents
+                    code: CHARACTER_NOT_OWNED
+        "404":
+          description: Character not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Character cuid_tariq01 does not exist
+                    instance: /api/v1/characters/cuid_tariq01/talents
+                    code: CHARACTER_NOT_FOUND
+
   /api/v1/health:
     get:
       operationId: getHealth
@@ -76,6 +1085,159 @@ paths:
                       db: ok
                       redis: degraded
                       centrifugo: ok
+
+  /api/v1/items/{id}:
+    patch:
+      operationId: updateItem
+      summary: Update an item
+      description: |
+        Applies PATCH semantics to an item. The `type` discriminator may not
+        be changed after creation — attempting to do so returns 400 with code
+        `ITEM_TYPE_MISMATCH`. Authorization: caller must own the parent
+        character.
+      tags: [characters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ItemId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemUpdate"
+            examples:
+              updateWeapon:
+                value:
+                  name: Vulcan Carbine MkII
+                  bonus: 3
+                  equipped: true
+      responses:
+        "200":
+          description: Updated item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+              examples:
+                ok:
+                  value:
+                    id: cuid_item01
+                    type: WEAPON
+                    name: Vulcan Carbine MkII
+                    damage: 2
+                    range: short
+                    bonus: 3
+                    crit: 2
+                    weight: 0.8
+                    features: []
+                    equipped: true
+        "400":
+          description: |
+            Validation error. Possible code:
+            - `ITEM_TYPE_MISMATCH` — type discriminator changed.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                typeMismatch:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: Item type cannot be changed after creation
+                    instance: /api/v1/items/cuid_item01
+                    code: ITEM_TYPE_MISMATCH
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the parent character
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this item
+                    instance: /api/v1/items/cuid_item01
+                    code: ITEM_NOT_OWNED
+        "404":
+          description: Item not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Item cuid_item01 does not exist
+                    instance: /api/v1/items/cuid_item01
+                    code: ITEM_NOT_FOUND
+
+    delete:
+      operationId: deleteItem
+      summary: Delete an item
+      description: |
+        Permanently deletes an item from a character's inventory.
+        Authorization: caller must own the parent character.
+      tags: [characters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ItemId"
+      responses:
+        "204":
+          description: Item deleted
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the parent character
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this item
+                    instance: /api/v1/items/cuid_item01
+                    code: ITEM_NOT_OWNED
+        "404":
+          description: Item not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Item cuid_item01 does not exist
+                    instance: /api/v1/items/cuid_item01
+                    code: ITEM_NOT_FOUND
 
   /api/v1/me:
     get:
@@ -227,7 +1389,177 @@ paths:
               schema:
                 $ref: "#/components/schemas/Problem"
 
+  /api/v1/talents/{id}:
+    patch:
+      operationId: updateTalent
+      summary: Update a talent
+      description: |
+        Applies PATCH semantics to a talent. Authorization: caller must own
+        the parent character.
+      tags: [characters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TalentId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TalentUpdate"
+            examples:
+              updateRank:
+                value:
+                  rank: 3
+              updateDescription:
+                value:
+                  description: Re-roll one die and add +1 when assisting a fellow pilot.
+      responses:
+        "200":
+          description: Updated talent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Talent"
+              examples:
+                ok:
+                  value:
+                    id: cuid_tal01
+                    name: Wing-Mate
+                    description: Re-roll one die and add +1 when assisting a fellow pilot.
+                    rank: 3
+                    acquiredAt: "2026-01-15T09:30:00Z"
+        "400":
+          description: Validation error (rank out of 1–3 range)
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                rankOutOfRange:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: rank must be between 1 and 3
+                    instance: /api/v1/talents/cuid_tal01
+                    code: ATTRIBUTE_OUT_OF_RANGE
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the parent character
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this talent
+                    instance: /api/v1/talents/cuid_tal01
+                    code: TALENT_NOT_OWNED
+        "404":
+          description: Talent not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Talent cuid_tal01 does not exist
+                    instance: /api/v1/talents/cuid_tal01
+                    code: TALENT_NOT_FOUND
+
+    delete:
+      operationId: deleteTalent
+      summary: Delete a talent
+      description: |
+        Permanently removes a talent from a character. Authorization: caller
+        must own the parent character.
+      tags: [characters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TalentId"
+      responses:
+        "204":
+          description: Talent deleted
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the parent character
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this talent
+                    instance: /api/v1/talents/cuid_tal01
+                    code: TALENT_NOT_OWNED
+        "404":
+          description: Talent not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Talent cuid_tal01 does not exist
+                    instance: /api/v1/talents/cuid_tal01
+                    code: TALENT_NOT_FOUND
+
 components:
+  parameters:
+    CharacterId:
+      name: id
+      in: path
+      required: true
+      description: Character identifier (cuid2)
+      schema:
+        type: string
+
+    ItemId:
+      name: id
+      in: path
+      required: true
+      description: Item identifier (cuid2)
+      schema:
+        type: string
+
+    TalentId:
+      name: id
+      in: path
+      required: true
+      description: Talent identifier (cuid2)
+      schema:
+        type: string
+
   securitySchemes:
     cookieAuth:
       type: apiKey
@@ -237,10 +1569,942 @@ components:
       type: http
       scheme: bearer
       bearerFormat: Better Auth bearer token
+
   schemas:
+    # -------------------------------------------------------------------------
+    # Enumerations — define once, reference everywhere
+    # -------------------------------------------------------------------------
+
+    CriticalInjurySeverity:
+      type: string
+      enum: [light, severe, critical]
+      description: |
+        Severity tier of a critical injury per Coriolis core rules.
+        - `light` — minor wound, no long-term mechanical effect.
+        - `severe` — significant injury; may impose ongoing penalties.
+        - `critical` — life-threatening; requires urgent medicurgy.
+
     DependencyStatus:
       type: ["string", "null"]
       enum: [ok, degraded, down]
+
+    IconId:
+      type: string
+      enum:
+        - lady-of-tears
+        - traveler
+        - messenger
+        - merchant
+        - dancer
+        - gambler
+        - judge
+        - faceless-one
+        - deckhand
+      description: |
+        One of the Nine Icons of the Third Horizon. Kebab-case names match
+        the asset filenames in `packages/ui/src/assets/icons/`.
+
+    ItemRangeEnum:
+      type: string
+      enum: [arm, near, short, long, distant]
+      description: |
+        Effective range band for a weapon. Matches the Coriolis core book
+        range terminology:
+        - `arm` — Engaged / hand-to-hand.
+        - `near` — same room / close quarters.
+        - `short` — corridor / street distance.
+        - `long` — open ground / rooftop.
+        - `distant` — sniper range.
+
+    ItemSlotType:
+      type: string
+      enum: [bridge, hull, hold, weapon, drive, sensor, comms]
+      description: |
+        Ship module slot type. Used only for SHIP_MODULE items. Matches the
+        slot categories from Coriolis core book ship construction rules.
+
+    RelationshipKind:
+      type: string
+      enum: [ally, rival, family, mentor, debtor, creditor]
+      description: |
+        The nature of the relationship between a character and an NPC or PC.
+
+    # -------------------------------------------------------------------------
+    # Value objects
+    # -------------------------------------------------------------------------
+
+    Attributes:
+      type: object
+      description: |
+        The four primary attributes per Coriolis core rules (PRD §5.2). Each
+        is a 1–5 integer. All keys are required — missing attributes would
+        make derived-stat calculation impossible server-side.
+      required: [strength, agility, wits, empathy]
+      properties:
+        strength:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: STR — governs Force, Melee Combat skills and HP max
+        agility:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: AGI — governs Dexterity, Infiltration, Ranged Combat, Pilot; contributes to HP max
+        wits:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: WIT — governs Observation, Survival, Technology, Data Djinn, Science, Medicurgy; contributes to MP max
+        empathy:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: EMP — governs Manipulation, Command, Culture, Mystic Powers; contributes to MP max
+
+    Skills:
+      type: object
+      description: |
+        The 16 skills per Coriolis core rules (PRD §5.2). General skills
+        range 0–5; advanced skills (command, culture, dataDjinn, medicurgy,
+        mysticPowers, pilot, science, technology) also range 0–5 in the
+        schema — the "0–3 typical" note in the PRD describes usual play,
+        not a hard cap, so the server accepts up to 5 for all skills.
+        All keys are required.
+      required:
+        - dexterity
+        - force
+        - infiltration
+        - manipulation
+        - meleeCombat
+        - observation
+        - rangedCombat
+        - survival
+        - command
+        - culture
+        - dataDjinn
+        - medicurgy
+        - mysticPowers
+        - pilot
+        - science
+        - technology
+      properties:
+        dexterity:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: General skill (AGI)
+        force:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: General skill (STR)
+        infiltration:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: General skill (AGI)
+        manipulation:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: General skill (EMP)
+        meleeCombat:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: General skill (STR)
+        observation:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: General skill (WIT)
+        rangedCombat:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: General skill (AGI)
+        survival:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: General skill (WIT)
+        command:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: Advanced skill (EMP)
+        culture:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: Advanced skill (EMP)
+        dataDjinn:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: Advanced skill (WIT)
+        medicurgy:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: Advanced skill (WIT)
+        mysticPowers:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: Advanced skill (EMP)
+        pilot:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: Advanced skill (AGI)
+        science:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: Advanced skill (WIT)
+        technology:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: Advanced skill (WIT)
+
+    ConditionFlags:
+      type: object
+      description: |
+        Boolean flags for the four standard Coriolis conditions (PRD §5.2).
+        Each active condition imposes a −1 die penalty on all rolls (capped
+        at the character's pool size). Applied by the RulesEngine.
+      required: [exhausted, sleepless, thirsty, hungry]
+      properties:
+        exhausted:
+          type: boolean
+          description: Exhausted condition — also blocks pushing rolls
+        sleepless:
+          type: boolean
+        thirsty:
+          type: boolean
+        hungry:
+          type: boolean
+
+    CriticalInjury:
+      type: object
+      description: A critical injury entry on a character's sheet
+      required: [id, name, severity, effect, acquiredAt]
+      properties:
+        id:
+          type: string
+          description: Opaque identifier (cuid2)
+        name:
+          type: string
+          description: Short name of the injury (e.g. "Broken arm")
+        severity:
+          $ref: "#/components/schemas/CriticalInjurySeverity"
+        effect:
+          type: string
+          description: Free-text description of the mechanical or narrative effect
+        acquiredAt:
+          type: string
+          format: date-time
+          description: ISO-8601 instant when the injury was recorded
+
+    Talent:
+      type: object
+      description: A talent owned by a character
+      required: [id, name, description, rank, acquiredAt]
+      properties:
+        id:
+          type: string
+          description: Opaque identifier (cuid2)
+        name:
+          type: string
+          description: Talent name (e.g. "Wing-Mate", "Stunt Pilot")
+        description:
+          type: string
+          description: Rules text or flavour description of the talent
+        rank:
+          type: integer
+          minimum: 1
+          maximum: 3
+          description: Talent rank (1 = basic, 2 = journeyman, 3 = master)
+        acquiredAt:
+          type: string
+          format: date-time
+          description: ISO-8601 instant when the talent was recorded on the sheet
+
+    TalentCreate:
+      type: object
+      description: Payload for creating a new talent
+      required: [name, description]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Talent name
+        description:
+          type: string
+          description: Rules text or flavour description
+        rank:
+          type: integer
+          minimum: 1
+          maximum: 3
+          default: 1
+          description: Talent rank (defaults to 1 when not provided)
+
+    TalentUpdate:
+      type: object
+      description: PATCH payload for updating a talent — all fields optional
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        rank:
+          type: integer
+          minimum: 1
+          maximum: 3
+
+    Relationship:
+      type: object
+      description: A relationship between a character and another person (NPC or PC)
+      required: [id, targetName, kind]
+      properties:
+        id:
+          type: string
+          description: Opaque identifier (cuid2)
+        targetName:
+          type: string
+          description: Name of the NPC or PC (free text)
+        kind:
+          $ref: "#/components/schemas/RelationshipKind"
+        notes:
+          type: ["string", "null"]
+          description: Optional notes about the relationship
+
+    # -------------------------------------------------------------------------
+    # Item discriminated union
+    # -------------------------------------------------------------------------
+
+    ItemBase:
+      type: object
+      description: Fields common to every item type
+      required: [id, type, name]
+      properties:
+        id:
+          type: string
+          description: Opaque identifier (cuid2)
+        type:
+          type: string
+          description: Discriminator — determines which type-specific fields are present
+        name:
+          type: string
+          minLength: 1
+          description: Item name
+
+    ItemWeapon:
+      allOf:
+        - $ref: "#/components/schemas/ItemBase"
+        - type: object
+          required: [damage, range, bonus, crit, weight, features, equipped]
+          properties:
+            type:
+              type: string
+              enum: [WEAPON]
+            damage:
+              type: integer
+              minimum: 0
+              description: Base damage dice
+            range:
+              $ref: "#/components/schemas/ItemRangeEnum"
+            bonus:
+              type: integer
+              minimum: 0
+              description: Bonus dice added to the attack pool
+            crit:
+              type: integer
+              minimum: 1
+              description: Critical threshold (roll this many successes to crit)
+            weight:
+              type: number
+              minimum: 0
+              description: Encumbrance weight in slots (0.5 increments)
+            features:
+              type: array
+              items:
+                type: string
+              description: Feature tags (e.g. "Burst", "Explosive")
+            equipped:
+              type: boolean
+              description: Whether the item is currently equipped
+
+    ItemArmor:
+      allOf:
+        - $ref: "#/components/schemas/ItemBase"
+        - type: object
+          required: [armorRating, weight, features, equipped]
+          properties:
+            type:
+              type: string
+              enum: [ARMOR]
+            armorRating:
+              type: integer
+              minimum: 0
+              description: Armor rating — reduces incoming damage
+            weight:
+              type: number
+              minimum: 0
+              description: Encumbrance weight in slots
+            features:
+              type: array
+              items:
+                type: string
+              description: Feature tags (e.g. "Vacuum Sealed", "Exo-Skeleton")
+            equipped:
+              type: boolean
+
+    ItemGear:
+      allOf:
+        - $ref: "#/components/schemas/ItemBase"
+        - type: object
+          required: [weight, quantity]
+          properties:
+            type:
+              type: string
+              enum: [GEAR]
+            weight:
+              type: number
+              minimum: 0
+              description: Encumbrance weight in slots
+            quantity:
+              type: integer
+              minimum: 1
+              description: Number of units
+            notes:
+              type: ["string", "null"]
+              description: Optional free-text notes
+
+    ItemCybernetic:
+      allOf:
+        - $ref: "#/components/schemas/ItemBase"
+        - type: object
+          required: [bodyPoints, effect]
+          properties:
+            type:
+              type: string
+              enum: [CYBERNETIC]
+            bodyPoints:
+              type: integer
+              minimum: 0
+              maximum: 6
+              description: System strain points consumed (0–6)
+            effect:
+              type: string
+              description: Description of the cybernetic's effect
+
+    ItemShipModule:
+      allOf:
+        - $ref: "#/components/schemas/ItemBase"
+        - type: object
+          required: [slot, effect]
+          properties:
+            type:
+              type: string
+              enum: [SHIP_MODULE]
+            slot:
+              $ref: "#/components/schemas/ItemSlotType"
+            effect:
+              type: string
+              description: Description of the module's effect and energy use
+
+    ItemOther:
+      allOf:
+        - $ref: "#/components/schemas/ItemBase"
+        - type: object
+          required: [weight]
+          properties:
+            type:
+              type: string
+              enum: [OTHER]
+            weight:
+              type: number
+              minimum: 0
+              description: Encumbrance weight in slots
+            notes:
+              type: ["string", "null"]
+              description: Optional free-text notes
+
+    Item:
+      description: |
+        A discriminated union of all item types. The `type` field determines
+        which variant applies. Generated clients produce a correctly-typed
+        sum type from this schema.
+      oneOf:
+        - $ref: "#/components/schemas/ItemWeapon"
+        - $ref: "#/components/schemas/ItemArmor"
+        - $ref: "#/components/schemas/ItemGear"
+        - $ref: "#/components/schemas/ItemCybernetic"
+        - $ref: "#/components/schemas/ItemShipModule"
+        - $ref: "#/components/schemas/ItemOther"
+      discriminator:
+        propertyName: type
+        mapping:
+          WEAPON: "#/components/schemas/ItemWeapon"
+          ARMOR: "#/components/schemas/ItemArmor"
+          GEAR: "#/components/schemas/ItemGear"
+          CYBERNETIC: "#/components/schemas/ItemCybernetic"
+          SHIP_MODULE: "#/components/schemas/ItemShipModule"
+          OTHER: "#/components/schemas/ItemOther"
+
+    ItemCreate:
+      description: |
+        Payload for creating a new item. Same discriminated union as `Item`
+        but without `id` (server-assigned). The `type` discriminator must
+        be present.
+      oneOf:
+        - allOf:
+            - type: object
+              required: [type, name, damage, range, bonus, crit, weight, features, equipped]
+              properties:
+                type:
+                  type: string
+                  enum: [WEAPON]
+                name:
+                  type: string
+                  minLength: 1
+                damage:
+                  type: integer
+                  minimum: 0
+                range:
+                  $ref: "#/components/schemas/ItemRangeEnum"
+                bonus:
+                  type: integer
+                  minimum: 0
+                crit:
+                  type: integer
+                  minimum: 1
+                weight:
+                  type: number
+                  minimum: 0
+                features:
+                  type: array
+                  items:
+                    type: string
+                equipped:
+                  type: boolean
+        - allOf:
+            - type: object
+              required: [type, name, armorRating, weight, features, equipped]
+              properties:
+                type:
+                  type: string
+                  enum: [ARMOR]
+                name:
+                  type: string
+                  minLength: 1
+                armorRating:
+                  type: integer
+                  minimum: 0
+                weight:
+                  type: number
+                  minimum: 0
+                features:
+                  type: array
+                  items:
+                    type: string
+                equipped:
+                  type: boolean
+        - allOf:
+            - type: object
+              required: [type, name, weight, quantity]
+              properties:
+                type:
+                  type: string
+                  enum: [GEAR]
+                name:
+                  type: string
+                  minLength: 1
+                weight:
+                  type: number
+                  minimum: 0
+                quantity:
+                  type: integer
+                  minimum: 1
+                notes:
+                  type: ["string", "null"]
+        - allOf:
+            - type: object
+              required: [type, name, bodyPoints, effect]
+              properties:
+                type:
+                  type: string
+                  enum: [CYBERNETIC]
+                name:
+                  type: string
+                  minLength: 1
+                bodyPoints:
+                  type: integer
+                  minimum: 0
+                  maximum: 6
+                effect:
+                  type: string
+        - allOf:
+            - type: object
+              required: [type, name, slot, effect]
+              properties:
+                type:
+                  type: string
+                  enum: [SHIP_MODULE]
+                name:
+                  type: string
+                  minLength: 1
+                slot:
+                  $ref: "#/components/schemas/ItemSlotType"
+                effect:
+                  type: string
+        - allOf:
+            - type: object
+              required: [type, name, weight]
+              properties:
+                type:
+                  type: string
+                  enum: [OTHER]
+                name:
+                  type: string
+                  minLength: 1
+                weight:
+                  type: number
+                  minimum: 0
+                notes:
+                  type: ["string", "null"]
+      discriminator:
+        propertyName: type
+        mapping:
+          WEAPON: "#/components/schemas/ItemCreate/oneOf/0"
+          ARMOR: "#/components/schemas/ItemCreate/oneOf/1"
+          GEAR: "#/components/schemas/ItemCreate/oneOf/2"
+          CYBERNETIC: "#/components/schemas/ItemCreate/oneOf/3"
+          SHIP_MODULE: "#/components/schemas/ItemCreate/oneOf/4"
+          OTHER: "#/components/schemas/ItemCreate/oneOf/5"
+
+    ItemUpdate:
+      description: |
+        PATCH payload for updating an item. The `type` discriminator must
+        match the existing item type — changing it returns 400
+        `ITEM_TYPE_MISMATCH`. All fields are optional.
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        damage:
+          type: integer
+          minimum: 0
+          description: WEAPON only
+        range:
+          $ref: "#/components/schemas/ItemRangeEnum"
+          description: WEAPON only
+        bonus:
+          type: integer
+          minimum: 0
+          description: WEAPON only
+        crit:
+          type: integer
+          minimum: 1
+          description: WEAPON only
+        armorRating:
+          type: integer
+          minimum: 0
+          description: ARMOR only
+        weight:
+          type: number
+          minimum: 0
+        features:
+          type: array
+          items:
+            type: string
+          description: WEAPON or ARMOR
+        equipped:
+          type: boolean
+          description: WEAPON or ARMOR
+        quantity:
+          type: integer
+          minimum: 1
+          description: GEAR only
+        notes:
+          type: ["string", "null"]
+          description: GEAR or OTHER
+        bodyPoints:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: CYBERNETIC only
+        effect:
+          type: string
+          description: CYBERNETIC or SHIP_MODULE
+        slot:
+          $ref: "#/components/schemas/ItemSlotType"
+          description: SHIP_MODULE only
+
+    # -------------------------------------------------------------------------
+    # Character schemas
+    # -------------------------------------------------------------------------
+
+    Character:
+      type: object
+      description: |
+        Full character DTO as returned by the v1 API. Server-derived fields
+        (`hp.max`, `mp.max`, `encumbrance.max`) are computed by the
+        RulesEngine on every write and are marked `readOnly`.
+
+        Formulas (PRD §5.2, §10):
+        - HP max = STR + AGI
+        - MP max = WIT + EMP
+        - Encumbrance max = STR × 2
+      required:
+        - id
+        - ownerId
+        - name
+        - concept
+        - iconId
+        - attributes
+        - skills
+        - hp
+        - mp
+        - encumbrance
+        - experience
+        - conditions
+        - criticalInjuries
+        - talents
+        - relationships
+        - inventory
+        - notes
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: Opaque character identifier (cuid2)
+        ownerId:
+          type: string
+          readOnly: true
+          description: Identifier of the owning user (cuid2)
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Character name (1–80 characters)
+        concept:
+          type: ["string", "null"]
+          minLength: 1
+          maxLength: 120
+          description: Short concept phrase — the role the character plays at the table (1–120 chars when non-null)
+        iconId:
+          oneOf:
+            - $ref: "#/components/schemas/IconId"
+            - type: "null"
+          description: One of the Nine Icons, or null if not chosen yet
+        attributes:
+          $ref: "#/components/schemas/Attributes"
+        skills:
+          $ref: "#/components/schemas/Skills"
+        hp:
+          type: object
+          required: [current, max]
+          properties:
+            current:
+              type: integer
+              minimum: 0
+            max:
+              type: integer
+              minimum: 0
+              readOnly: true
+              description: Derived from STR + AGI; set by the server
+        mp:
+          type: object
+          required: [current, max]
+          properties:
+            current:
+              type: integer
+              minimum: 0
+            max:
+              type: integer
+              minimum: 0
+              readOnly: true
+              description: Derived from WIT + EMP; set by the server
+        encumbrance:
+          type: object
+          required: [current, max]
+          properties:
+            current:
+              type: number
+              minimum: 0
+              readOnly: true
+              description: Sum of non-stowed item weights; set by the server
+            max:
+              type: integer
+              minimum: 0
+              readOnly: true
+              description: Derived from STR × 2; set by the server
+        experience:
+          type: integer
+          minimum: 0
+          description: Total XP earned
+        conditions:
+          $ref: "#/components/schemas/ConditionFlags"
+        criticalInjuries:
+          type: array
+          items:
+            $ref: "#/components/schemas/CriticalInjury"
+        talents:
+          type: array
+          items:
+            $ref: "#/components/schemas/Talent"
+        relationships:
+          type: array
+          items:
+            $ref: "#/components/schemas/Relationship"
+        inventory:
+          type: array
+          items:
+            $ref: "#/components/schemas/Item"
+        notes:
+          type: ["string", "null"]
+          maxLength: 4096
+          description: Free-form notes (Markdown; soft cap 4096 characters)
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    CharacterCreate:
+      type: object
+      description: |
+        Payload for `POST /api/v1/characters`. Only `name` is required.
+        Attribute values default to 2 if the `attributes` object is omitted
+        or a key within it is missing. Skill values default to 0.
+
+        Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
+        `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`)
+        must not be included; they are rejected with 400.
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        concept:
+          type: ["string", "null"]
+          minLength: 1
+          maxLength: 120
+        iconId:
+          oneOf:
+            - $ref: "#/components/schemas/IconId"
+            - type: "null"
+        attributes:
+          $ref: "#/components/schemas/Attributes"
+        skills:
+          $ref: "#/components/schemas/Skills"
+        hp:
+          type: object
+          properties:
+            current:
+              type: integer
+              minimum: 0
+        mp:
+          type: object
+          properties:
+            current:
+              type: integer
+              minimum: 0
+        experience:
+          type: integer
+          minimum: 0
+          default: 0
+        conditions:
+          $ref: "#/components/schemas/ConditionFlags"
+        notes:
+          type: ["string", "null"]
+          maxLength: 4096
+
+    CharacterUpdate:
+      type: object
+      description: |
+        PATCH payload for `PATCH /api/v1/characters/{id}`. All fields are
+        optional. Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
+        `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`)
+        are rejected with 400 if present.
+
+        Derived stats (`hp.max`, `mp.max`, `encumbrance.max`) are
+        recalculated automatically after each successful write.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        concept:
+          type: ["string", "null"]
+          minLength: 1
+          maxLength: 120
+        iconId:
+          oneOf:
+            - $ref: "#/components/schemas/IconId"
+            - type: "null"
+        attributes:
+          $ref: "#/components/schemas/Attributes"
+        skills:
+          $ref: "#/components/schemas/Skills"
+        hp:
+          type: object
+          properties:
+            current:
+              type: integer
+              minimum: 0
+        mp:
+          type: object
+          properties:
+            current:
+              type: integer
+              minimum: 0
+        experience:
+          type: integer
+          minimum: 0
+        conditions:
+          $ref: "#/components/schemas/ConditionFlags"
+        criticalInjuries:
+          type: array
+          items:
+            $ref: "#/components/schemas/CriticalInjury"
+          description: |
+            Replaces the entire critical injuries list when provided.
+            Use the dedicated nested-item pattern (POST/PATCH/DELETE on
+            individual injuries) once that surface is added in a later epic.
+        notes:
+          type: ["string", "null"]
+          maxLength: 4096
+
+    CharacterList:
+      type: object
+      description: Cursor-paginated list of characters
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Character"
+        nextCursor:
+          type: ["string", "null"]
+          description: Opaque cursor for the next page; null when this is the last page
+
+    # -------------------------------------------------------------------------
+    # System / realtime schemas (unchanged from 0.2.0)
+    # -------------------------------------------------------------------------
 
     HealthStatus:
       type: object

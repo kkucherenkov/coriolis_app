@@ -1,5 +1,30 @@
 # Active tasks
 
+## T-2026-05-08-006 — Add /api/v1/characters CRUD + nested items/talents to OpenAPI spec
+
+- Created: 2026-05-08
+- Owner: claude
+- Spec: [docs/IMPLEMENTATION_PLAN.md Feature 3.1, T-3.1.1.a..d](../docs/IMPLEMENTATION_PLAN.md)
+- Goal: Define the full character API surface in OpenAPI so backend and generated clients have an unambiguous contract to implement against.
+- Acceptance:
+  - `pnpm spec:validate` passes with zero errors
+  - `GET /api/v1/characters`, `POST /api/v1/characters`, `GET/PATCH/DELETE /api/v1/characters/{id}`, `POST /characters/{id}/duplicate`, `GET /characters/{id}/export` are all present
+  - `POST /characters/{id}/items`, `PATCH /items/{id}`, `DELETE /items/{id}` are present
+  - `POST /characters/{id}/talents`, `PATCH /talents/{id}`, `DELETE /talents/{id}` are present
+  - Every 4xx returns `application/problem+json` with the `Problem` schema
+  - `info.version` is `0.3.0`
+- Sub-steps:
+  - [x] Push task to active.md
+  - [x] Create branch feat/phase-1/characters-spec
+  - [x] Add enum schemas (IconId, ItemRange, ItemSlotType, RelationshipKind, CriticalInjurySeverity)
+  - [x] Add object schemas (Attributes, Skills, ConditionFlags, CriticalInjury, Talent, Relationship, ItemBase + 6 variants, Item discriminated, CharacterList, Character, CharacterCreate, CharacterUpdate)
+  - [x] Add tag `characters`
+  - [x] Add 13 paths
+  - [x] Bump info.version to 0.3.0
+  - [x] Run pnpm spec:validate — green
+- Status: in-progress
+- Blockers: —
+
 ## T-2026-05-08-005 — build AppBadge Coriolis primitive
 
 - Created: 2026-05-08
