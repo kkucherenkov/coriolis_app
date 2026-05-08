@@ -17,6 +17,8 @@ import 'package:app_api_client/src/model/date.dart';
 import 'package:app_api_client/src/model/dependency_status.dart';
 import 'package:app_api_client/src/model/health_status.dart';
 import 'package:app_api_client/src/model/health_status_dependencies.dart';
+import 'package:app_api_client/src/model/me.dart';
+import 'package:app_api_client/src/model/me_update.dart';
 import 'package:app_api_client/src/model/problem.dart';
 import 'package:app_api_client/src/model/realtime_token.dart';
 
@@ -26,6 +28,8 @@ part 'serializers.g.dart';
   DependencyStatus,
   HealthStatus,
   HealthStatusDependencies,
+  Me,
+  MeUpdate,
   Problem,
   RealtimeToken,
 ])
