@@ -1,3 +1,27 @@
+# Active tasks
+
+## T-2026-05-08-005 — build AppBadge Coriolis primitive
+
+- Created: 2026-05-08
+- Owner: claude
+- Spec: docs/IMPLEMENTATION_PLAN.md §Feature 2.1 T-2.1.1.b
+- Goal: Replace the boilerplate AppBadge (wrapping Nuxt UI UBadge) with a native Coriolis-token badge chip covering 5 state-color variants and 2 sizes, with story + spec.
+- Acceptance:
+  - `pnpm --filter @app/ui typecheck` passes
+  - `pnpm --filter @app/ui test` passes for AppBadge.spec.ts
+  - `pnpm stylelint "packages/ui/src/components/AppBadge/**/*.{vue,scss,css}"` passes (no hex literals, no !important)
+  - AppBadge is listed in specs/design/README.md inventory
+  - AppBadge.stories.ts covers variant × size matrix (10 stories) + WithIcon + LongLabel + InlineWithText
+- Sub-steps:
+  - [x] Replace AppBadge.vue — native <span>, SCSS BEM, 5 variants × 2 sizes, token-only
+  - [x] Replace AppBadge.stories.ts — 10 variant/size stories + WithIcon + LongLabel + InlineWithText
+  - [x] Replace AppBadge.spec.ts — vitest BEM, root tag, slot, defaults
+  - [x] Update index.ts barrel
+  - [x] Add AppBadge row to specs/design/README.md
+  - [x] Push task entry to active.md
+- Status: in-progress
+- Blockers: —
+
 ## T-2026-05-08-004 — Replace AppInput with Coriolis-token implementation
 
 - Created: 2026-05-08
@@ -12,16 +36,12 @@
   - readonly sets aria-readonly without opacity
   - Storybook shows 12+ stories covering variant × size matrix, states, and types
   - 15+ vitest specs pass
-- Spec diff: none
-- Codegen impact: no
-- Design impact: new @app/ui component AppInput (replaces unstyled boilerplate)
-- Tests: unit (vitest) — 15+ specs; Storybook stories — 12+
 - Sub-steps:
   - [x] Push task entry to active.md
   - [x] Write AppInput.vue with Coriolis tokens
   - [x] Write AppInput.stories.ts (12+ stories)
   - [x] Write AppInput.spec.ts (15+ specs)
   - [x] Update specs/design/README.md inventory
-  - [ ] Verify typecheck + test + stylelint
+  - [x] Verify typecheck + test + stylelint
 - Status: in-progress
 - Blockers: —
