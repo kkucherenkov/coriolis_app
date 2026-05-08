@@ -2,6 +2,41 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## Mobile sheet skeleton (Epic 3.4)
+
+- Completed: 2026-05-08
+- Owner: claude (flutter-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Feature 3.4, T-3.4.1.a–e
+- Result: merged at `df5194b`. Four commits: domain layer + repository (`2cd0fc1`), CharactersListCubit + list page (`82649ce`), CharacterSheetCubit + detail page (`c25e0c3`), creation page + routing + DI + i18n (`a159931`).
+- Mirror of Epic 3.3 web skeleton on Flutter. Feature-first layering under `apps/mobile/lib/features/characters/{domain,data,presentation}/`. `flutter_bloc` cubits with 500ms debounce auto-save. New `characters` slang namespace (en/ru populated; uk/el `[xx-todo]`). `auth_gate.dart` updated to gate the route surface.
+- Note from agent: hand-written stub `apps/mobile/lib/i18n/strings.g.dart` is gitignored; CI/build env regenerates via `dart run slang` (project SDK 3.8 vs. local 3.5 — agent used a SDK-constraint workaround for analyze-only verification).
+
+## Foundation tail — AppTooltip + AppKbd + AppSegControl
+
+- Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Epic 2 Feature 2.1 (T-2.1.1.l + .m + .p)
+- Result: merged at `f3a799a`. Six commits — one component + one specs/stories per primitive plus a final barrel update.
+- AppTooltip: hover/focus + ESC-dismiss; native `useId()`, `aria-describedby`. No edge-flip in v1; consumer responsible for placement. AppKbd: semantic `<kbd>` element(s) with mono typography. AppSegControl: `role="radiogroup"` with roving focus and arrow-key navigation between segments.
+- 558 vitest specs pass total (60+ new across the three).
+- Note: agent root-cause fixed initial test failures: the components had HTML comments outside the root element making `@vue/test-utils` see multiple roots; comments moved inside the root.
+
+## Codegen — DELETE /api/v1/me
+
+- Completed: 2026-05-08
+- Owner: claude (main thread)
+- Result: merged at `75a213a`. New `deleteMe` operation in TS sdk and Dart `UsersApi`. info.version 0.5.1 reflected.
+
+## DELETE /api/v1/me spec (Epic 4.2.a)
+
+- Completed: 2026-05-08
+- Owner: claude (spec-writer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Feature 4.2, T-4.2.1.a
+- Result: merged at `12c6b43`. Single new operation under `users` tag; 204 idempotent (no 404 on already-deleted); 401 problem+json. info.version 0.5.0 → 0.5.1.
+- Open questions for the backend implementer (T-4.2.1.b-c) — captured in the agent's report:
+  - Cron anchor: 30-day window from exact `deletedAt` timestamp (recommended) vs start-of-calendar-day.
+  - Cascade ordering: single-transaction `deleteMany` on Character (Cascade FKs handle children) vs explicit ordered cascade with Centrifugo / share-slug invalidation hooks.
+
 ## Flutter foundation widgets (Epic 2.5 — partial: 12 of 20)
 
 - Completed: 2026-05-08
