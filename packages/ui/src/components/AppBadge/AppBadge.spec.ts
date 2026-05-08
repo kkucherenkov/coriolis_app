@@ -1,78 +1,82 @@
-import UBadge from '@nuxt/ui/components/Badge.vue';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
 import AppBadge from './AppBadge.vue';
 
-// UIcon resolves iconify collections over the network at runtime — stub it so
-// happy-dom doesn't try to fetch. AppBadge renders AppIcon which renders UIcon.
-const global = { stubs: { UIcon: true } } as const;
-
-const COLORS = ['primary', 'neutral', 'success', 'warning', 'error', 'info'] as const;
-const VARIANTS = ['solid', 'outline', 'soft', 'subtle'] as const;
-const SIZES = ['sm', 'md', 'lg'] as const;
+const VARIANTS = ['brass', 'mystic', 'crimson', 'success', 'darkness'] as const;
+const SIZES = ['sm', 'md'] as const;
 
 describe('AppBadge', () => {
-  it('renders the label prop', () => {
-    const wrapper = mount(AppBadge, { global, props: { label: 'Hello' } });
-    expect(wrapper.find('.app-badge__label').text()).toBe('Hello');
+  // ── Root element ──────────────────────────────────────────────────────────
+
+  it('renders a <span> root element', () => {
+    const wrapper = mount(AppBadge);
+    expect(wrapper.element.tagName).toBe('SPAN');
   });
 
-  it('prefers slot content over the label prop', () => {
+  it('applies the app-badge base class', () => {
+    const wrapper = mount(AppBadge);
+    expect(wrapper.classes()).toContain('app-badge');
+  });
+
+  // ── Variant BEM modifiers ─────────────────────────────────────────────────
+
+  it.each(VARIANTS)('applies app-badge--%s modifier for variant=%s', (variant) => {
+    const wrapper = mount(AppBadge, { props: { variant } });
+    expect(wrapper.classes()).toContain(`app-badge--${variant}`);
+  });
+
+  it('defaults to variant=brass', () => {
+    const wrapper = mount(AppBadge);
+    expect(wrapper.classes()).toContain('app-badge--brass');
+  });
+
+  // ── Size BEM modifiers ────────────────────────────────────────────────────
+
+  it.each(SIZES)('applies app-badge--%s modifier for size=%s', (size) => {
+    const wrapper = mount(AppBadge, { props: { size } });
+    expect(wrapper.classes()).toContain(`app-badge--${size}`);
+  });
+
+  it('defaults to size=md', () => {
+    const wrapper = mount(AppBadge);
+    expect(wrapper.classes()).toContain('app-badge--md');
+  });
+
+  // ── Default slot ──────────────────────────────────────────────────────────
+
+  it('renders default slot content', () => {
+    const wrapper = mount(AppBadge, { slots: { default: 'Wounded' } });
+    expect(wrapper.text()).toContain('Wounded');
+  });
+
+  // ── Icon slot ─────────────────────────────────────────────────────────────
+
+  it('renders the icon slot wrapper when icon slot is provided', () => {
     const wrapper = mount(AppBadge, {
-      global,
-      props: { label: 'Ignored' },
-      slots: { default: 'Slotted' },
-    });
-    expect(wrapper.find('.app-badge__label').text()).toBe('Slotted');
-  });
-
-  it.each(COLORS)('forwards color=%s to UBadge', (color) => {
-    const wrapper = mount(AppBadge, { global, props: { color, label: 'x' } });
-    expect(wrapper.findComponent(UBadge).props('color')).toBe(color);
-  });
-
-  it.each(VARIANTS)('forwards variant=%s to UBadge', (variant) => {
-    const wrapper = mount(AppBadge, { global, props: { variant, label: 'x' } });
-    expect(wrapper.findComponent(UBadge).props('variant')).toBe(variant);
-  });
-
-  it.each(SIZES)('forwards size=%s to UBadge', (size) => {
-    const wrapper = mount(AppBadge, { global, props: { size, label: 'x' } });
-    expect(wrapper.findComponent(UBadge).props('size')).toBe(size);
-  });
-
-  it('defaults to color=neutral, variant=subtle, size=md', () => {
-    const wrapper = mount(AppBadge, { global, props: { label: 'x' } });
-    const badge = wrapper.findComponent(UBadge);
-    expect(badge.props('color')).toBe('neutral');
-    expect(badge.props('variant')).toBe('subtle');
-    expect(badge.props('size')).toBe('md');
-  });
-
-  it('renders an AppIcon on the leading side when `icon` is provided', () => {
-    const wrapper = mount(AppBadge, {
-      global,
-      props: { label: 'Verified', icon: 'i-lucide-check' },
+      slots: { icon: '<svg data-testid="icon" />' },
     });
     expect(wrapper.find('.app-badge__icon').exists()).toBe(true);
   });
 
-  it('does not render the icon slot when no `icon` prop is passed', () => {
-    const wrapper = mount(AppBadge, { global, props: { label: 'Plain' } });
+  it('does not render the icon slot wrapper when icon slot is absent', () => {
+    const wrapper = mount(AppBadge);
     expect(wrapper.find('.app-badge__icon').exists()).toBe(false);
   });
 
-  it('applies the `--uppercase` modifier class when uppercase=true', () => {
-    const wrapper = mount(AppBadge, {
-      global,
-      props: { label: 'beta', uppercase: true },
-    });
-    expect(wrapper.find('.app-badge--uppercase').exists()).toBe(true);
+  // ── No variant + size class collision ────────────────────────────────────
+
+  it('applies exactly one variant class', () => {
+    const wrapper = mount(AppBadge, { props: { variant: 'crimson' } });
+    const variantClasses = wrapper.classes().filter((c) => c.startsWith('app-badge--') && VARIANTS.some((v) => c.endsWith(v)));
+    expect(variantClasses).toHaveLength(1);
+    expect(variantClasses[0]).toBe('app-badge--crimson');
   });
 
-  it('omits the `--uppercase` modifier class by default', () => {
-    const wrapper = mount(AppBadge, { global, props: { label: 'beta' } });
-    expect(wrapper.find('.app-badge--uppercase').exists()).toBe(false);
+  it('applies exactly one size class', () => {
+    const wrapper = mount(AppBadge, { props: { size: 'sm' } });
+    const sizeClasses = wrapper.classes().filter((c) => SIZES.some((s) => c === `app-badge--${s}`));
+    expect(sizeClasses).toHaveLength(1);
+    expect(sizeClasses[0]).toBe('app-badge--sm');
   });
 });
