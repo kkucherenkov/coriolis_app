@@ -1,38 +1,43 @@
 <script setup lang="ts">
-  import { computed, useId } from 'vue';
+  import { computed, useSlots } from 'vue';
 
-  type Size = 'sm' | 'md' | 'lg';
-  type Color = 'primary' | 'success' | 'neutral';
+  type Size = 'sm' | 'md';
 
-  const props = withDefaults(
-    defineProps<{
-      modelValue: boolean;
-      label?: string;
-      disabled?: boolean;
-      size?: Size;
-      color?: Color;
-    }>(),
-    {
-      label: undefined,
-      disabled: false,
-      size: 'md',
-      color: 'primary',
-    },
-  );
+  interface Props {
+    modelValue: boolean;
+    disabled?: boolean;
+    size?: Size;
+    label?: string;
+    name?: string;
+  }
+
+  const props = withDefaults(defineProps<Props>(), {
+    disabled: false,
+    size: 'md',
+    label: undefined,
+    name: undefined,
+  });
 
   const emit = defineEmits<{
     'update:modelValue': [value: boolean];
   }>();
 
-  // A local id lets the wrapper <label> associate with the switch button so a
-  // click on the label text forwards to the switch's click handler — same
-  // affordance as a native `<input type="checkbox">` + <label>.
-  const switchId = useId();
+  const slots = useSlots();
+
+  // Slot wins over label prop when both are provided.
+  const hasVisibleLabel = computed(() => !!slots['default'] || !!props.label);
+
+  // Aria-label is set only when there is no visible text label (slot or prop).
+  // When a visible label is present, it serves as the accessible name via the
+  // <label for=""> association.
+  const ariaLabel = computed<string | undefined>(() => {
+    if (hasVisibleLabel.value) return undefined;
+    return props.label;
+  });
 
   const rootClasses = computed(() => [
     'app-switch',
     `app-switch--${props.size}`,
-    `app-switch--color-${props.color}`,
     {
       'app-switch--checked': props.modelValue,
       'app-switch--disabled': props.disabled,
@@ -40,19 +45,13 @@
   ]);
 
   function toggle(): void {
-    if (props.disabled) {
-      return;
-    }
+    if (props.disabled) return;
     emit('update:modelValue', !props.modelValue);
   }
 
-  function onClick(): void {
-    toggle();
-  }
-
   function onKeydown(event: KeyboardEvent): void {
-    // Space is the standard activation key for role="switch". Enter is delegated
-    // to native <button> semantics, which already fires `click` on Enter.
+    // Space is the standard activation key for role="switch".
+    // Native <button> already fires click on Enter, so we only intercept Space.
     if (event.key === ' ' || event.code === 'Space') {
       event.preventDefault();
       toggle();
@@ -61,59 +60,72 @@
 </script>
 
 <template>
-  <label v-if="label" :class="rootClasses" :for="switchId">
+  <!-- When there is a visible label (slot or prop), wrap with <label> so clicks
+       on the label text activate the switch natively. -->
+  <label v-if="hasVisibleLabel" :class="rootClasses">
     <button
-      :id="switchId"
       type="button"
       role="switch"
       :aria-checked="modelValue"
-      :aria-label="label"
+      :aria-disabled="disabled || undefined"
       :disabled="disabled"
+      :name="name"
       class="app-switch__control"
-      @click="onClick"
+      @click="toggle"
       @keydown="onKeydown"
     >
-      <span class="app-switch__track">
+      <span class="app-switch__track" aria-hidden="true">
         <span class="app-switch__thumb" />
       </span>
     </button>
-    <span class="app-switch__label">{{ label }}</span>
+    <span class="app-switch__label">
+      <!-- Slot wins when both slot and label prop are provided. -->
+      <slot>{{ label }}</slot>
+    </span>
   </label>
+
+  <!-- No visible label — bare button with aria-label for accessible name. -->
   <button
     v-else
     type="button"
     role="switch"
+    :class="rootClasses"
     :aria-checked="modelValue"
+    :aria-label="ariaLabel"
+    :aria-disabled="disabled || undefined"
     :disabled="disabled"
-    :class="[...rootClasses, 'app-switch__control']"
-    @click="onClick"
+    :name="name"
+    @click="toggle"
     @keydown="onKeydown"
   >
-    <span class="app-switch__track">
+    <span class="app-switch__track" aria-hidden="true">
       <span class="app-switch__thumb" />
     </span>
   </button>
 </template>
 
 <style lang="scss" scoped>
-  // Size scale — track width × height × thumb diameter × thumb translate.
-  // Kept as SCSS vars so the --size modifier stays a one-line override.
-  $track-width-sm: var(--space-10); // 20px
-  $track-width-md: var(--space-12); // 24px
-  $track-width-lg: var(--space-16); // 32px
+  // Track and thumb geometry — SCSS variables for layout-dimension literals
+  // (permitted by Stylelint; all color/motion values use design tokens).
 
-  $track-height-sm: var(--space-6); // 12px
-  $track-height-md: var(--space-8); // 16px
-  $track-height-lg: var(--space-10); // 20px
+  // sm: track 28×16 px, thumb 12 px diameter, translate-x when checked = 12px
+  $track-width-sm: 28px;
+  $track-height-sm: 16px;
+  $thumb-size-sm: 12px;
+  $thumb-offset-sm: 2px; // gap between thumb edge and track edge
+  $thumb-translate-sm: 12px; // checked position: track-width - thumb - 2*offset
 
-  $thumb-size-sm: var(--space-4); // 8px
-  $thumb-size-md: var(--space-5); // 10px
-  $thumb-size-lg: var(--space-6); // 12px
+  // md: track 40×22 px, thumb 16 px diameter, translate-x when checked = 18px
+  $track-width-md: 40px;
+  $track-height-md: 22px;
+  $thumb-size-md: 16px;
+  $thumb-offset-md: 3px;
+  $thumb-translate-md: 18px; // 40 - 16 - 2*3
 
   .app-switch {
     display: inline-flex;
-    gap: var(--space-4);
     align-items: center;
+    gap: var(--space-2);
     cursor: pointer;
 
     &--disabled {
@@ -121,57 +133,8 @@
       opacity: var(--opacity-disabled);
     }
 
-    &__control {
-      display: inline-flex;
-      padding: 0;
-      background: transparent;
-      border: 0;
-      cursor: inherit;
-      appearance: none;
+    // ── Size modifiers ────────────────────────────────────────────────────────
 
-      &:focus-visible {
-        outline: none;
-
-        .app-switch__track {
-          box-shadow: var(--shadow-focus);
-        }
-      }
-
-      &:disabled {
-        cursor: not-allowed;
-      }
-    }
-
-    &__track {
-      position: relative;
-      display: inline-block;
-      flex-shrink: 0;
-      background: var(--border-strong);
-      border-radius: var(--radius-pill);
-      transition: background-color var(--dur-base) var(--ease-default);
-    }
-
-    &__thumb {
-      position: absolute;
-      top: 50%;
-      left: var(--space-1);
-      background: var(--surface-surface);
-      border-radius: var(--radius-pill);
-      box-shadow: var(--shadow-sm);
-      transform: translateY(-50%);
-      transition:
-        transform var(--dur-base) var(--ease-default),
-        background-color var(--dur-base) var(--ease-default);
-    }
-
-    &__label {
-      color: var(--text-fg);
-      font-size: var(--text-md);
-      font-weight: var(--fw-medium);
-      user-select: none;
-    }
-
-    // Size modifiers drive track + thumb geometry.
     &--sm {
       .app-switch__track {
         width: $track-width-sm;
@@ -181,11 +144,13 @@
       .app-switch__thumb {
         width: $thumb-size-sm;
         height: $thumb-size-sm;
+        top: $thumb-offset-sm;
+        left: $thumb-offset-sm;
       }
 
       &.app-switch--checked .app-switch__thumb,
-      .app-switch--checked .app-switch__thumb {
-        transform: translate(var(--space-4), -50%);
+      &.app-switch--checked > .app-switch__track .app-switch__thumb {
+        transform: translateX($thumb-translate-sm);
       }
     }
 
@@ -198,45 +163,78 @@
       .app-switch__thumb {
         width: $thumb-size-md;
         height: $thumb-size-md;
+        top: $thumb-offset-md;
+        left: $thumb-offset-md;
       }
 
       &.app-switch--checked .app-switch__thumb,
-      .app-switch--checked .app-switch__thumb {
-        transform: translate(var(--space-5), -50%);
+      &.app-switch--checked > .app-switch__track .app-switch__thumb {
+        transform: translateX($thumb-translate-md);
       }
     }
 
-    &--lg {
-      .app-switch__track {
-        width: $track-width-lg;
-        height: $track-height-lg;
+    // ── Checked state — track fill ────────────────────────────────────────────
+
+    &--checked .app-switch__track {
+      background-color: var(--brand-brass);
+      border-color: var(--brand-brass);
+    }
+
+    // ── Internal elements ─────────────────────────────────────────────────────
+
+    &__control {
+      // Bare button reset — visual control is handled by __track/__thumb.
+      display: inline-flex;
+      flex-shrink: 0;
+      padding: 0;
+      background: transparent;
+      border: none;
+      cursor: inherit;
+      appearance: none;
+
+      &:focus-visible {
+        outline: 2px solid var(--brand-brass);
+        outline-offset: 2px;
+        border-radius: var(--radius-pill);
       }
 
-      .app-switch__thumb {
-        width: $thumb-size-lg;
-        height: $thumb-size-lg;
-      }
-
-      &.app-switch--checked .app-switch__thumb,
-      .app-switch--checked .app-switch__thumb {
-        transform: translate(var(--space-8), -50%);
+      &:disabled {
+        cursor: not-allowed;
       }
     }
 
-    // Colour modifiers — applied when checked. Off-state is always neutral.
-    &--checked.app-switch--color-primary .app-switch__track,
-    .app-switch--checked.app-switch--color-primary .app-switch__track {
-      background: var(--brand-accent);
+    // Focus for the bare-button variant (no wrapper label).
+    &:not(label):focus-visible {
+      outline: 2px solid var(--brand-brass);
+      outline-offset: 2px;
+      border-radius: var(--radius-pill);
     }
 
-    &--checked.app-switch--color-success .app-switch__track,
-    .app-switch--checked.app-switch--color-success .app-switch__track {
-      background: var(--status-success);
+    &__track {
+      position: relative;
+      display: inline-block;
+      flex-shrink: 0;
+      background-color: var(--surface-night);
+      border: 1px solid var(--brand-brass-deep);
+      border-radius: var(--radius-pill);
+      transition:
+        background-color var(--motion-duration-fast) var(--motion-ease-standard),
+        border-color var(--motion-duration-fast) var(--motion-ease-standard);
     }
 
-    &--checked.app-switch--color-neutral .app-switch__track,
-    .app-switch--checked.app-switch--color-neutral .app-switch__track {
-      background: var(--text-fg);
+    &__thumb {
+      position: absolute;
+      background-color: var(--brand-brass-light);
+      border-radius: var(--radius-pill);
+      transition: transform var(--motion-duration-fast) var(--motion-ease-standard);
+    }
+
+    &__label {
+      color: var(--text-primary);
+      font-family: var(--type-body-md-font-family);
+      font-size: var(--type-body-md-font-size);
+      line-height: var(--type-body-md-line-height);
+      user-select: none;
     }
   }
 </style>
