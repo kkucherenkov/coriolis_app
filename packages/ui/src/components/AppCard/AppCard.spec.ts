@@ -4,111 +4,109 @@ import { describe, expect, it } from 'vitest';
 import AppCard from './AppCard.vue';
 
 describe('AppCard', () => {
+  // ── Default slot ──────────────────────────────────────────────────────────
+
   it('renders default slot content', () => {
     const wrapper = mount(AppCard, { slots: { default: '<p>Body copy</p>' } });
     expect(wrapper.html()).toContain('Body copy');
+    expect(wrapper.find('.app-card__body').exists()).toBe(true);
   });
 
-  it('renders title and description when provided', () => {
+  // ── Named slots ───────────────────────────────────────────────────────────
+
+  it('renders the header slot when provided', () => {
     const wrapper = mount(AppCard, {
-      props: { title: 'System health', description: 'All services operational' },
+      slots: {
+        default: 'body',
+        header: '<h3>Section title</h3>',
+      },
     });
-    expect(wrapper.find('.app-card__title').text()).toBe('System health');
-    expect(wrapper.find('.app-card__description').text()).toBe('All services operational');
+    expect(wrapper.find('.app-card__header').exists()).toBe(true);
+    expect(wrapper.html()).toContain('Section title');
   });
 
-  it('omits the header when no title is given', () => {
-    const wrapper = mount(AppCard, { slots: { default: 'x' } });
-    expect(wrapper.find('.app-card__head').exists()).toBe(false);
-  });
-
-  it('omits the description element when title is given without description', () => {
-    const wrapper = mount(AppCard, { props: { title: 'Only title' } });
-    expect(wrapper.find('.app-card__title').exists()).toBe(true);
-    expect(wrapper.find('.app-card__description').exists()).toBe(false);
+  it('does not render the header wrapper when header slot is absent', () => {
+    const wrapper = mount(AppCard, { slots: { default: 'body' } });
+    expect(wrapper.find('.app-card__header').exists()).toBe(false);
   });
 
   it('renders the footer slot when provided', () => {
     const wrapper = mount(AppCard, {
-      slots: { default: 'x', footer: '<small>Footer text</small>' },
+      slots: {
+        default: 'body',
+        footer: '<small>Footer text</small>',
+      },
     });
+    expect(wrapper.find('.app-card__footer').exists()).toBe(true);
     expect(wrapper.html()).toContain('Footer text');
   });
 
-  it('uses a heading element for the title (a11y)', () => {
-    const wrapper = mount(AppCard, { props: { title: 'Section' } });
-    expect(wrapper.find('h3').exists()).toBe(true);
+  it('does not render the footer wrapper when footer slot is absent', () => {
+    const wrapper = mount(AppCard, { slots: { default: 'body' } });
+    expect(wrapper.find('.app-card__footer').exists()).toBe(false);
   });
 
-  // --- interactive prop ---
+  it('renders both header and footer slots simultaneously', () => {
+    const wrapper = mount(AppCard, {
+      slots: {
+        header: 'Header',
+        default: 'Body',
+        footer: 'Footer',
+      },
+    });
+    expect(wrapper.find('.app-card__header').exists()).toBe(true);
+    expect(wrapper.find('.app-card__body').exists()).toBe(true);
+    expect(wrapper.find('.app-card__footer').exists()).toBe(true);
+  });
 
-  it('renders as a <div> by default (non-interactive)', () => {
+  // ── BEM class application ─────────────────────────────────────────────────
+
+  it('applies app-card base class', () => {
     const wrapper = mount(AppCard, { slots: { default: 'x' } });
-    const root = wrapper.find('.app-card');
-    expect(root.exists()).toBe(true);
-    expect(root.element.tagName).toBe('DIV');
-    expect(root.classes()).not.toContain('app-card--interactive');
+    expect(wrapper.find('.app-card').exists()).toBe(true);
   });
 
-  it('renders as a <button type="button"> when interactive=true', () => {
+  it('does not apply app-card--featured for the default variant', () => {
     const wrapper = mount(AppCard, {
-      props: { interactive: true },
+      props: { variant: 'default' },
       slots: { default: 'x' },
     });
-    const root = wrapper.find('.app-card');
-    expect(root.element.tagName).toBe('BUTTON');
-    expect(root.attributes('type')).toBe('button');
-    expect(root.classes()).toContain('app-card--interactive');
+    expect(wrapper.find('.app-card--featured').exists()).toBe(false);
   });
 
-  it('emits click when interactive and the surface is clicked', async () => {
+  it('applies app-card--featured modifier for the featured variant', () => {
     const wrapper = mount(AppCard, {
-      props: { interactive: true },
+      props: { variant: 'featured' },
       slots: { default: 'x' },
     });
-    await wrapper.find('.app-card').trigger('click');
-    expect(wrapper.emitted('click')).toHaveLength(1);
+    expect(wrapper.find('.app-card--featured').exists()).toBe(true);
   });
 
-  it('does NOT emit click when not interactive', async () => {
+  it('defaults to variant=default', () => {
     const wrapper = mount(AppCard, { slots: { default: 'x' } });
-    await wrapper.find('.app-card').trigger('click');
-    expect(wrapper.emitted('click')).toBeUndefined();
+    expect(wrapper.find('.app-card--featured').exists()).toBe(false);
   });
 
-  it('emits click on Enter when interactive (keyboard activation)', async () => {
-    const wrapper = mount(AppCard, {
-      props: { interactive: true },
-      slots: { default: 'x' },
-    });
-    await wrapper.find('.app-card').trigger('keydown', { key: 'Enter' });
-    expect(wrapper.emitted('click')).toHaveLength(1);
+  // ── Polymorphic `as` prop ─────────────────────────────────────────────────
+
+  it('renders as a <div> by default', () => {
+    const wrapper = mount(AppCard, { slots: { default: 'x' } });
+    expect(wrapper.find('.app-card').element.tagName).toBe('DIV');
   });
 
-  it('emits click on Space when interactive (keyboard activation)', async () => {
+  it('renders as an <article> when as="article"', () => {
     const wrapper = mount(AppCard, {
-      props: { interactive: true },
+      props: { as: 'article' },
       slots: { default: 'x' },
     });
-    await wrapper.find('.app-card').trigger('keydown', { key: ' ' });
-    expect(wrapper.emitted('click')).toHaveLength(1);
+    expect(wrapper.find('.app-card').element.tagName).toBe('ARTICLE');
   });
 
-  it('ignores other keys on keydown when interactive', async () => {
+  it('renders as a <section> when as="section"', () => {
     const wrapper = mount(AppCard, {
-      props: { interactive: true },
+      props: { as: 'section' },
       slots: { default: 'x' },
     });
-    await wrapper.find('.app-card').trigger('keydown', { key: 'Tab' });
-    await wrapper.find('.app-card').trigger('keydown', { key: 'a' });
-    expect(wrapper.emitted('click')).toBeUndefined();
-  });
-
-  it('applies the interactive modifier class so hover/focus affordance can attach', () => {
-    const wrapper = mount(AppCard, {
-      props: { interactive: true },
-      slots: { default: 'x' },
-    });
-    expect(wrapper.find('.app-card--interactive').exists()).toBe(true);
+    expect(wrapper.find('.app-card').element.tagName).toBe('SECTION');
   });
 });

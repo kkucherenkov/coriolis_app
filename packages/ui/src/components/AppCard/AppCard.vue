@@ -1,66 +1,33 @@
 <script setup lang="ts">
   import { computed } from 'vue';
 
-  const props = withDefaults(
-    defineProps<{
-      title?: string;
-      description?: string;
-      /**
-       * When true, renders the card as a focusable, clickable surface
-       * (semantic `<button>`) with hover + focus-visible affordances and
-       * keyboard activation via Enter/Space. Emits `click` on activation.
-       *
-       * When false (default) the card renders as a plain `<div>`: no focus
-       * ring, no click emit — purely presentational.
-       */
-      interactive?: boolean;
-    }>(),
-    {
-      title: undefined,
-      description: undefined,
-      interactive: false,
-    },
-  );
+  type Variant = 'default' | 'featured';
 
-  const emit = defineEmits<{
-    click: [event: Event];
-  }>();
-
-  const rootTag = computed(() => (props.interactive ? 'button' : 'div'));
-  const rootClasses = computed(() => ['app-card', { 'app-card--interactive': props.interactive }]);
-
-  function handleClick(event: MouseEvent): void {
-    if (!props.interactive) return;
-    emit('click', event);
+  interface Props {
+    variant?: Variant;
+    as?: string;
   }
 
-  function handleKeydown(event: KeyboardEvent): void {
-    if (!props.interactive) return;
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    event.preventDefault();
-    emit('click', event);
-  }
+  const props = withDefaults(defineProps<Props>(), {
+    variant: 'default',
+    as: 'div',
+  });
+
+  const classes = computed(() => [
+    'app-card',
+    { 'app-card--featured': props.variant === 'featured' },
+  ]);
 </script>
 
 <template>
   <component
-    :is="rootTag"
-    :type="interactive ? 'button' : undefined"
-    :class="rootClasses"
-    @click="handleClick"
-    @keydown="handleKeydown"
+    :is="as"
+    :class="classes"
   >
-    <div v-if="title || description || $slots['header']" class="app-card__header">
-      <slot name="header">
-        <h3 v-if="title" class="app-card__title">
-          {{ title }}
-        </h3>
-        <p v-if="description" class="app-card__description">
-          {{ description }}
-        </p>
-      </slot>
+    <div v-if="$slots['header']" class="app-card__header">
+      <slot name="header" />
     </div>
-    <div v-if="$slots['default']" class="app-card__body">
+    <div class="app-card__body">
       <slot />
     </div>
     <div v-if="$slots['footer']" class="app-card__footer">
@@ -71,55 +38,41 @@
 
 <style lang="scss" scoped>
   .app-card {
-    border-radius: var(--radius-lg);
+    background-color: var(--surface-night);
+    border: 1px solid var(--brand-brass-shadow);
+    border-radius: var(--radius-md);
     overflow: hidden;
-    background: var(--surface-surface);
-    border: 1px solid var(--border-default);
+    transition: box-shadow var(--motion-duration-fast) var(--motion-ease-standard);
+
+    // ── Variant: featured ────────────────────────────────────────────────────
+    // Beveled brass plate effect (DESIGN §5.4): border emphasis + inset bevel.
+
+    &--featured {
+      border-color: var(--brand-brass-deep);
+      box-shadow: var(--shadow-brass-bevel);
+
+      &:hover {
+        box-shadow:
+          var(--shadow-brass-bevel),
+          var(--shadow-card-featured);
+      }
+    }
+
+    // ── Sections ─────────────────────────────────────────────────────────────
 
     &__header {
       padding: var(--space-4) var(--space-6);
-      border-bottom: 1px solid var(--border-default);
-    }
-
-    &__title {
-      margin: 0;
-      font-size: var(--text-lg);
-      font-weight: var(--fw-semibold);
-      color: var(--text-fg);
-    }
-
-    &__description {
-      margin: var(--space-1) 0 0;
-      font-size: var(--text-sm);
-      color: var(--text-fg-muted);
+      border-bottom: 1px solid var(--brand-brass-deep);
+      color: var(--brand-brass-light);
     }
 
     &__body {
-      padding: var(--space-4) var(--space-6);
+      padding: var(--space-6);
     }
 
     &__footer {
       padding: var(--space-4) var(--space-6);
-      border-top: 1px solid var(--border-default);
-    }
-
-    // Interactive surface — hover lift + focus ring, both token-driven.
-    &--interactive {
-      cursor: pointer;
-      text-align: inherit;
-      width: 100%;
-      transition:
-        box-shadow var(--dur-fast) var(--ease-default),
-        transform var(--dur-fast) var(--ease-default);
-
-      &:hover {
-        box-shadow: var(--shadow-md);
-      }
-
-      &:focus-visible {
-        outline: none;
-        box-shadow: var(--shadow-focus);
-      }
+      border-top: 1px solid var(--brand-brass-shadow);
     }
   }
 </style>
