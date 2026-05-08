@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 0.4.0
+  version: 0.5.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -1966,11 +1966,13 @@ paths:
             examples:
               updateWeapon:
                 value:
+                  slot: WEAPON
                   name: EMP Cannon
                   weaponDamage: 1
                   notes: Systemed weapon — hits sensors
               markDamaged:
                 value:
+                  slot: COMMS
                   notes: Damaged · −1 Maneuverability
       responses:
         "200":
@@ -2163,6 +2165,7 @@ paths:
             examples:
               updateWeapon:
                 value:
+                  type: WEAPON
                   name: Vulcan Carbine MkII
                   bonus: 3
                   equipped: true
@@ -3104,6 +3107,338 @@ components:
               type: ["string", "null"]
               description: Optional free-text notes
 
+    # -------------------------------------------------------------------------
+    # Item create variants (no id, no server-derived fields)
+    # -------------------------------------------------------------------------
+
+    ItemWeaponCreate:
+      type: object
+      description: Create payload for a WEAPON item. No `id` — server-assigned.
+      required: [type, name, damage, range, bonus, crit, weight, features, equipped]
+      properties:
+        type:
+          type: string
+          enum: [WEAPON]
+        name:
+          type: string
+          minLength: 1
+        damage:
+          type: integer
+          minimum: 0
+          description: Base damage dice
+        range:
+          $ref: "#/components/schemas/ItemRangeEnum"
+        bonus:
+          type: integer
+          minimum: 0
+          description: Bonus dice added to the attack pool
+        crit:
+          type: integer
+          minimum: 1
+          description: Critical threshold
+        weight:
+          type: number
+          minimum: 0
+          description: Encumbrance weight in slots (0.5 increments)
+        features:
+          type: array
+          items:
+            type: string
+          description: Feature tags (e.g. "Burst", "Explosive")
+        equipped:
+          type: boolean
+          default: false
+      example:
+        type: WEAPON
+        name: Vulcan Carbine
+        damage: 2
+        range: short
+        bonus: 2
+        crit: 2
+        weight: 0.8
+        features: []
+        equipped: false
+
+    ItemArmorCreate:
+      type: object
+      description: Create payload for an ARMOR item. No `id` — server-assigned.
+      required: [type, name, armorRating, weight, features, equipped]
+      properties:
+        type:
+          type: string
+          enum: [ARMOR]
+        name:
+          type: string
+          minLength: 1
+        armorRating:
+          type: integer
+          minimum: 0
+          description: Armor rating — reduces incoming damage
+        weight:
+          type: number
+          minimum: 0
+          description: Encumbrance weight in slots
+        features:
+          type: array
+          items:
+            type: string
+          description: Feature tags (e.g. "Vacuum Sealed", "Exo-Skeleton")
+        equipped:
+          type: boolean
+          default: false
+      example:
+        type: ARMOR
+        name: Coriolis Guard Suit
+        armorRating: 3
+        weight: 1.0
+        features: ["Vacuum Sealed"]
+        equipped: false
+
+    ItemGearCreate:
+      type: object
+      description: Create payload for a GEAR item. No `id` — server-assigned.
+      required: [type, name, weight, quantity]
+      properties:
+        type:
+          type: string
+          enum: [GEAR]
+        name:
+          type: string
+          minLength: 1
+        weight:
+          type: number
+          minimum: 0
+          description: Encumbrance weight in slots
+        quantity:
+          type: integer
+          minimum: 1
+          description: Number of units
+        notes:
+          type: ["string", "null"]
+          description: Optional free-text notes
+      example:
+        type: GEAR
+        name: Medkit
+        weight: 0.5
+        quantity: 1
+        notes: Standard field medkit
+
+    ItemCyberneticCreate:
+      type: object
+      description: Create payload for a CYBERNETIC item. No `id` — server-assigned.
+      required: [type, name, bodyPoints, effect]
+      properties:
+        type:
+          type: string
+          enum: [CYBERNETIC]
+        name:
+          type: string
+          minLength: 1
+        bodyPoints:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: System strain points consumed (0–6)
+        effect:
+          type: string
+          description: Description of the cybernetic's effect
+      example:
+        type: CYBERNETIC
+        name: Neural Interface
+        bodyPoints: 2
+        effect: Grants +1 die to Data Djinn checks
+
+    ItemShipModuleCreate:
+      type: object
+      description: Create payload for a SHIP_MODULE item. No `id` — server-assigned.
+      required: [type, name, slot, effect]
+      properties:
+        type:
+          type: string
+          enum: [SHIP_MODULE]
+        name:
+          type: string
+          minLength: 1
+        slot:
+          $ref: "#/components/schemas/ItemSlotType"
+        effect:
+          type: string
+          description: Description of the module's effect and energy use
+      example:
+        type: SHIP_MODULE
+        name: Sensor Upgrade Mk I
+        slot: sensor
+        effect: +1 die to sensor checks
+
+    ItemOtherCreate:
+      type: object
+      description: Create payload for an OTHER item. No `id` — server-assigned.
+      required: [type, name, weight]
+      properties:
+        type:
+          type: string
+          enum: [OTHER]
+        name:
+          type: string
+          minLength: 1
+        weight:
+          type: number
+          minimum: 0
+          description: Encumbrance weight in slots
+        notes:
+          type: ["string", "null"]
+          description: Optional free-text notes
+      example:
+        type: OTHER
+        name: Coriolis Prayer Rug
+        weight: 0.5
+        notes: null
+
+    # -------------------------------------------------------------------------
+    # Item update variants (PATCH semantics — all fields optional)
+    # -------------------------------------------------------------------------
+
+    ItemWeaponUpdate:
+      type: object
+      description: PATCH payload for a WEAPON item. All fields optional.
+      properties:
+        type:
+          type: string
+          enum: [WEAPON]
+        name:
+          type: string
+          minLength: 1
+        damage:
+          type: integer
+          minimum: 0
+        range:
+          $ref: "#/components/schemas/ItemRangeEnum"
+        bonus:
+          type: integer
+          minimum: 0
+        crit:
+          type: integer
+          minimum: 1
+        weight:
+          type: number
+          minimum: 0
+        features:
+          type: array
+          items:
+            type: string
+        equipped:
+          type: boolean
+      example:
+        type: WEAPON
+        damage: 3
+        equipped: true
+
+    ItemArmorUpdate:
+      type: object
+      description: PATCH payload for an ARMOR item. All fields optional.
+      properties:
+        type:
+          type: string
+          enum: [ARMOR]
+        name:
+          type: string
+          minLength: 1
+        armorRating:
+          type: integer
+          minimum: 0
+        weight:
+          type: number
+          minimum: 0
+        features:
+          type: array
+          items:
+            type: string
+        equipped:
+          type: boolean
+      example:
+        type: ARMOR
+        armorRating: 4
+        equipped: true
+
+    ItemGearUpdate:
+      type: object
+      description: PATCH payload for a GEAR item. All fields optional.
+      properties:
+        type:
+          type: string
+          enum: [GEAR]
+        name:
+          type: string
+          minLength: 1
+        weight:
+          type: number
+          minimum: 0
+        quantity:
+          type: integer
+          minimum: 1
+        notes:
+          type: ["string", "null"]
+      example:
+        type: GEAR
+        quantity: 3
+
+    ItemCyberneticUpdate:
+      type: object
+      description: PATCH payload for a CYBERNETIC item. All fields optional.
+      properties:
+        type:
+          type: string
+          enum: [CYBERNETIC]
+        name:
+          type: string
+          minLength: 1
+        bodyPoints:
+          type: integer
+          minimum: 0
+          maximum: 6
+        effect:
+          type: string
+      example:
+        type: CYBERNETIC
+        effect: Grants +2 dice to Data Djinn checks
+
+    ItemShipModuleUpdate:
+      type: object
+      description: PATCH payload for a SHIP_MODULE item. All fields optional.
+      properties:
+        type:
+          type: string
+          enum: [SHIP_MODULE]
+        name:
+          type: string
+          minLength: 1
+        slot:
+          $ref: "#/components/schemas/ItemSlotType"
+        effect:
+          type: string
+      example:
+        type: SHIP_MODULE
+        effect: +2 dice to sensor checks
+
+    ItemOtherUpdate:
+      type: object
+      description: PATCH payload for an OTHER item. All fields optional.
+      properties:
+        type:
+          type: string
+          enum: [OTHER]
+        name:
+          type: string
+          minLength: 1
+        weight:
+          type: number
+          minimum: 0
+        notes:
+          type: ["string", "null"]
+      example:
+        type: OTHER
+        notes: Blessed by the Lady of Tears
+
     Item:
       description: |
         A discriminated union of all item types. The `type` field determines
@@ -3132,189 +3467,43 @@ components:
         but without `id` (server-assigned). The `type` discriminator must
         be present.
       oneOf:
-        - allOf:
-            - type: object
-              required: [type, name, damage, range, bonus, crit, weight, features, equipped]
-              properties:
-                type:
-                  type: string
-                  enum: [WEAPON]
-                name:
-                  type: string
-                  minLength: 1
-                damage:
-                  type: integer
-                  minimum: 0
-                range:
-                  $ref: "#/components/schemas/ItemRangeEnum"
-                bonus:
-                  type: integer
-                  minimum: 0
-                crit:
-                  type: integer
-                  minimum: 1
-                weight:
-                  type: number
-                  minimum: 0
-                features:
-                  type: array
-                  items:
-                    type: string
-                equipped:
-                  type: boolean
-        - allOf:
-            - type: object
-              required: [type, name, armorRating, weight, features, equipped]
-              properties:
-                type:
-                  type: string
-                  enum: [ARMOR]
-                name:
-                  type: string
-                  minLength: 1
-                armorRating:
-                  type: integer
-                  minimum: 0
-                weight:
-                  type: number
-                  minimum: 0
-                features:
-                  type: array
-                  items:
-                    type: string
-                equipped:
-                  type: boolean
-        - allOf:
-            - type: object
-              required: [type, name, weight, quantity]
-              properties:
-                type:
-                  type: string
-                  enum: [GEAR]
-                name:
-                  type: string
-                  minLength: 1
-                weight:
-                  type: number
-                  minimum: 0
-                quantity:
-                  type: integer
-                  minimum: 1
-                notes:
-                  type: ["string", "null"]
-        - allOf:
-            - type: object
-              required: [type, name, bodyPoints, effect]
-              properties:
-                type:
-                  type: string
-                  enum: [CYBERNETIC]
-                name:
-                  type: string
-                  minLength: 1
-                bodyPoints:
-                  type: integer
-                  minimum: 0
-                  maximum: 6
-                effect:
-                  type: string
-        - allOf:
-            - type: object
-              required: [type, name, slot, effect]
-              properties:
-                type:
-                  type: string
-                  enum: [SHIP_MODULE]
-                name:
-                  type: string
-                  minLength: 1
-                slot:
-                  $ref: "#/components/schemas/ItemSlotType"
-                effect:
-                  type: string
-        - allOf:
-            - type: object
-              required: [type, name, weight]
-              properties:
-                type:
-                  type: string
-                  enum: [OTHER]
-                name:
-                  type: string
-                  minLength: 1
-                weight:
-                  type: number
-                  minimum: 0
-                notes:
-                  type: ["string", "null"]
+        - $ref: "#/components/schemas/ItemWeaponCreate"
+        - $ref: "#/components/schemas/ItemArmorCreate"
+        - $ref: "#/components/schemas/ItemGearCreate"
+        - $ref: "#/components/schemas/ItemCyberneticCreate"
+        - $ref: "#/components/schemas/ItemShipModuleCreate"
+        - $ref: "#/components/schemas/ItemOtherCreate"
       discriminator:
         propertyName: type
         mapping:
-          WEAPON: "#/components/schemas/ItemCreate/oneOf/0"
-          ARMOR: "#/components/schemas/ItemCreate/oneOf/1"
-          GEAR: "#/components/schemas/ItemCreate/oneOf/2"
-          CYBERNETIC: "#/components/schemas/ItemCreate/oneOf/3"
-          SHIP_MODULE: "#/components/schemas/ItemCreate/oneOf/4"
-          OTHER: "#/components/schemas/ItemCreate/oneOf/5"
+          WEAPON: "#/components/schemas/ItemWeaponCreate"
+          ARMOR: "#/components/schemas/ItemArmorCreate"
+          GEAR: "#/components/schemas/ItemGearCreate"
+          CYBERNETIC: "#/components/schemas/ItemCyberneticCreate"
+          SHIP_MODULE: "#/components/schemas/ItemShipModuleCreate"
+          OTHER: "#/components/schemas/ItemOtherCreate"
 
     ItemUpdate:
       description: |
         PATCH payload for updating an item. The `type` discriminator must
         match the existing item type — changing it returns 400
         `ITEM_TYPE_MISMATCH`. All fields are optional.
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 1
-        damage:
-          type: integer
-          minimum: 0
-          description: WEAPON only
-        range:
-          $ref: "#/components/schemas/ItemRangeEnum"
-          description: WEAPON only
-        bonus:
-          type: integer
-          minimum: 0
-          description: WEAPON only
-        crit:
-          type: integer
-          minimum: 1
-          description: WEAPON only
-        armorRating:
-          type: integer
-          minimum: 0
-          description: ARMOR only
-        weight:
-          type: number
-          minimum: 0
-        features:
-          type: array
-          items:
-            type: string
-          description: WEAPON or ARMOR
-        equipped:
-          type: boolean
-          description: WEAPON or ARMOR
-        quantity:
-          type: integer
-          minimum: 1
-          description: GEAR only
-        notes:
-          type: ["string", "null"]
-          description: GEAR or OTHER
-        bodyPoints:
-          type: integer
-          minimum: 0
-          maximum: 6
-          description: CYBERNETIC only
-        effect:
-          type: string
-          description: CYBERNETIC or SHIP_MODULE
-        slot:
-          $ref: "#/components/schemas/ItemSlotType"
-          description: SHIP_MODULE only
+      oneOf:
+        - $ref: "#/components/schemas/ItemWeaponUpdate"
+        - $ref: "#/components/schemas/ItemArmorUpdate"
+        - $ref: "#/components/schemas/ItemGearUpdate"
+        - $ref: "#/components/schemas/ItemCyberneticUpdate"
+        - $ref: "#/components/schemas/ItemShipModuleUpdate"
+        - $ref: "#/components/schemas/ItemOtherUpdate"
+      discriminator:
+        propertyName: type
+        mapping:
+          WEAPON: "#/components/schemas/ItemWeaponUpdate"
+          ARMOR: "#/components/schemas/ItemArmorUpdate"
+          GEAR: "#/components/schemas/ItemGearUpdate"
+          CYBERNETIC: "#/components/schemas/ItemCyberneticUpdate"
+          SHIP_MODULE: "#/components/schemas/ItemShipModuleUpdate"
+          OTHER: "#/components/schemas/ItemOtherUpdate"
 
     # -------------------------------------------------------------------------
     # Character schemas
@@ -3809,6 +3998,295 @@ components:
             slot:
               $ref: "#/components/schemas/ShipModuleSlot"
 
+    # -------------------------------------------------------------------------
+    # Ship module create variants (no id — server-assigned)
+    # -------------------------------------------------------------------------
+
+    ShipModuleWeaponCreate:
+      type: object
+      description: Create payload for a WEAPON ship module. No `id` — server-assigned.
+      required: [slot, name, energyUse, weaponBonus, weaponRange, weaponDamage, weaponCritThreshold]
+      properties:
+        slot:
+          type: string
+          enum: [WEAPON]
+        name:
+          type: string
+          minLength: 1
+        energyUse:
+          type: integer
+          minimum: 0
+        weaponBonus:
+          type: integer
+          minimum: 0
+          description: Modifier dice added to the attack pool
+        weaponRange:
+          $ref: "#/components/schemas/ShipWeaponRange"
+        weaponDamage:
+          type: integer
+          minimum: 0
+          description: Structural damage dealt on a hit
+        weaponCritThreshold:
+          type: integer
+          minimum: 1
+          description: Number of successes required to trigger a critical effect
+        notes:
+          type: ["string", "null"]
+      example:
+        slot: WEAPON
+        name: Graviton Projector
+        energyUse: 2
+        weaponBonus: 1
+        weaponRange: medium
+        weaponDamage: 3
+        weaponCritThreshold: 3
+        notes: null
+
+    ShipModuleTorpedoCreate:
+      type: object
+      description: Create payload for a TORPEDO ship module. No `id` — server-assigned.
+      required: [slot, name, energyUse]
+      properties:
+        slot:
+          type: string
+          enum: [TORPEDO]
+        name:
+          type: string
+          minLength: 1
+        energyUse:
+          type: integer
+          minimum: 0
+        torpedoCount:
+          type: integer
+          minimum: 0
+          default: 0
+          description: Number of torpedoes currently loaded
+        mineCount:
+          type: integer
+          minimum: 0
+          default: 0
+          description: Number of mines currently loaded
+        notes:
+          type: ["string", "null"]
+      example:
+        slot: TORPEDO
+        name: Torpedo Bay Alpha
+        energyUse: 1
+        torpedoCount: 4
+        mineCount: 0
+        notes: null
+
+    ShipModuleHoldCreate:
+      type: object
+      description: Create payload for a HOLD ship module. No `id` — server-assigned.
+      required: [slot, name, energyUse]
+      properties:
+        slot:
+          type: string
+          enum: [HOLD]
+        name:
+          type: string
+          minLength: 1
+        energyUse:
+          type: integer
+          minimum: 0
+        cargoTons:
+          type: integer
+          minimum: 0
+          default: 0
+          description: Cargo capacity in tonnes
+        concealed:
+          type: boolean
+          default: false
+          description: True for a concealed hold
+        notes:
+          type: ["string", "null"]
+      example:
+        slot: HOLD
+        name: Main Cargo Hold
+        energyUse: 0
+        cargoTons: 50
+        concealed: false
+        notes: null
+
+    ShipModuleSensorCreate:
+      type: object
+      description: Create payload for a SENSOR ship module. No `id` — server-assigned.
+      required: [slot, name, energyUse]
+      properties:
+        slot:
+          type: string
+          enum: [SENSOR]
+        name:
+          type: string
+          minLength: 1
+        energyUse:
+          type: integer
+          minimum: 0
+        detectionBonus:
+          type: integer
+          minimum: 0
+          default: 1
+          description: Modifier added to sensor / dataDjinn checks
+        notes:
+          type: ["string", "null"]
+      example:
+        slot: SENSOR
+        name: Long-Range Sensor Tower
+        energyUse: 1
+        detectionBonus: 1
+        notes: null
+
+    ShipModuleOtherCreate:
+      type: object
+      description: |
+        Create payload for any other ship module slot type (BRIDGE, REACTOR,
+        DRIVE, COMMS, HANGAR, QUARTERS, MEDICAL, WORKSHOP, CHAPEL, ESCAPE-PODS,
+        CRYO, DOCKING, MINING, REPAIR, CONCEALED-HOLD, PROXY-DECK, OTHER).
+        No `id` — server-assigned.
+      required: [slot, name, energyUse]
+      properties:
+        slot:
+          $ref: "#/components/schemas/ShipModuleSlot"
+        name:
+          type: string
+          minLength: 1
+        energyUse:
+          type: integer
+          minimum: 0
+        notes:
+          type: ["string", "null"]
+      example:
+        slot: COMMS
+        name: Long-Range Comms Array
+        energyUse: 1
+        notes: null
+
+    # -------------------------------------------------------------------------
+    # Ship module update variants (PATCH semantics — all fields optional)
+    # -------------------------------------------------------------------------
+
+    ShipModuleWeaponUpdate:
+      type: object
+      description: PATCH payload for a WEAPON ship module. All fields optional.
+      properties:
+        slot:
+          type: string
+          enum: [WEAPON]
+        name:
+          type: string
+          minLength: 1
+        energyUse:
+          type: integer
+          minimum: 0
+        weaponBonus:
+          type: integer
+          minimum: 0
+        weaponRange:
+          $ref: "#/components/schemas/ShipWeaponRange"
+        weaponDamage:
+          type: integer
+          minimum: 0
+        weaponCritThreshold:
+          type: integer
+          minimum: 1
+        notes:
+          type: ["string", "null"]
+      example:
+        slot: WEAPON
+        weaponDamage: 4
+
+    ShipModuleTorpedoUpdate:
+      type: object
+      description: PATCH payload for a TORPEDO ship module. All fields optional.
+      properties:
+        slot:
+          type: string
+          enum: [TORPEDO]
+        name:
+          type: string
+          minLength: 1
+        energyUse:
+          type: integer
+          minimum: 0
+        torpedoCount:
+          type: integer
+          minimum: 0
+        mineCount:
+          type: integer
+          minimum: 0
+        notes:
+          type: ["string", "null"]
+      example:
+        slot: TORPEDO
+        torpedoCount: 2
+
+    ShipModuleHoldUpdate:
+      type: object
+      description: PATCH payload for a HOLD ship module. All fields optional.
+      properties:
+        slot:
+          type: string
+          enum: [HOLD]
+        name:
+          type: string
+          minLength: 1
+        energyUse:
+          type: integer
+          minimum: 0
+        cargoTons:
+          type: integer
+          minimum: 0
+        concealed:
+          type: boolean
+        notes:
+          type: ["string", "null"]
+      example:
+        slot: HOLD
+        cargoTons: 60
+
+    ShipModuleSensorUpdate:
+      type: object
+      description: PATCH payload for a SENSOR ship module. All fields optional.
+      properties:
+        slot:
+          type: string
+          enum: [SENSOR]
+        name:
+          type: string
+          minLength: 1
+        energyUse:
+          type: integer
+          minimum: 0
+        detectionBonus:
+          type: integer
+          minimum: 0
+        notes:
+          type: ["string", "null"]
+      example:
+        slot: SENSOR
+        detectionBonus: 2
+
+    ShipModuleOtherUpdate:
+      type: object
+      description: |
+        PATCH payload for any other ship module slot type. All fields optional.
+        The `slot` discriminator may not be changed after installation.
+      properties:
+        slot:
+          $ref: "#/components/schemas/ShipModuleSlot"
+        name:
+          type: string
+          minLength: 1
+        energyUse:
+          type: integer
+          minimum: 0
+        notes:
+          type: ["string", "null"]
+      example:
+        slot: COMMS
+        notes: Upgraded to Mk II antenna
+
     ShipModule:
       description: |
         A discriminated union of all ship module variants. The `slot` field
@@ -3858,202 +4336,71 @@ components:
         Note: BRIDGE, REACTOR, and DRIVE modules are created automatically
         with the ship and cannot be added via this endpoint.
       oneOf:
-        - allOf:
-            - type: object
-              required: [slot, name, energyUse, weaponBonus, weaponRange, weaponDamage, weaponCritThreshold]
-              properties:
-                slot:
-                  type: string
-                  enum: [WEAPON]
-                name:
-                  type: string
-                  minLength: 1
-                energyUse:
-                  type: integer
-                  minimum: 0
-                weaponBonus:
-                  type: integer
-                  minimum: 0
-                weaponRange:
-                  $ref: "#/components/schemas/ShipWeaponRange"
-                weaponDamage:
-                  type: integer
-                  minimum: 0
-                weaponCritThreshold:
-                  type: integer
-                  minimum: 1
-                notes:
-                  type: ["string", "null"]
-        - allOf:
-            - type: object
-              required: [slot, name, energyUse]
-              properties:
-                slot:
-                  type: string
-                  enum: [TORPEDO]
-                name:
-                  type: string
-                  minLength: 1
-                energyUse:
-                  type: integer
-                  minimum: 0
-                torpedoCount:
-                  type: integer
-                  minimum: 0
-                  default: 0
-                mineCount:
-                  type: integer
-                  minimum: 0
-                  default: 0
-                notes:
-                  type: ["string", "null"]
-        - allOf:
-            - type: object
-              required: [slot, name, energyUse]
-              properties:
-                slot:
-                  type: string
-                  enum: [HOLD]
-                name:
-                  type: string
-                  minLength: 1
-                energyUse:
-                  type: integer
-                  minimum: 0
-                cargoTons:
-                  type: integer
-                  minimum: 0
-                  default: 0
-                concealed:
-                  type: boolean
-                  default: false
-                notes:
-                  type: ["string", "null"]
-        - allOf:
-            - type: object
-              required: [slot, name, energyUse]
-              properties:
-                slot:
-                  type: string
-                  enum: [SENSOR]
-                name:
-                  type: string
-                  minLength: 1
-                energyUse:
-                  type: integer
-                  minimum: 0
-                detectionBonus:
-                  type: integer
-                  minimum: 0
-                  default: 1
-                notes:
-                  type: ["string", "null"]
-        - allOf:
-            - type: object
-              required: [slot, name, energyUse]
-              properties:
-                slot:
-                  type: string
-                  enum:
-                    - BRIDGE
-                    - REACTOR
-                    - DRIVE
-                    - COMMS
-                    - HANGAR
-                    - QUARTERS
-                    - MEDICAL
-                    - WORKSHOP
-                    - CHAPEL
-                    - ESCAPE-PODS
-                    - CRYO
-                    - DOCKING
-                    - MINING
-                    - REPAIR
-                    - CONCEALED-HOLD
-                    - PROXY-DECK
-                    - OTHER
-                name:
-                  type: string
-                  minLength: 1
-                energyUse:
-                  type: integer
-                  minimum: 0
-                notes:
-                  type: ["string", "null"]
+        - $ref: "#/components/schemas/ShipModuleWeaponCreate"
+        - $ref: "#/components/schemas/ShipModuleTorpedoCreate"
+        - $ref: "#/components/schemas/ShipModuleHoldCreate"
+        - $ref: "#/components/schemas/ShipModuleSensorCreate"
+        - $ref: "#/components/schemas/ShipModuleOtherCreate"
       discriminator:
         propertyName: slot
         mapping:
-          WEAPON: "#/components/schemas/ShipModuleCreate/oneOf/0"
-          TORPEDO: "#/components/schemas/ShipModuleCreate/oneOf/1"
-          HOLD: "#/components/schemas/ShipModuleCreate/oneOf/2"
-          SENSOR: "#/components/schemas/ShipModuleCreate/oneOf/3"
-          BRIDGE: "#/components/schemas/ShipModuleCreate/oneOf/4"
-          REACTOR: "#/components/schemas/ShipModuleCreate/oneOf/4"
-          DRIVE: "#/components/schemas/ShipModuleCreate/oneOf/4"
-          COMMS: "#/components/schemas/ShipModuleCreate/oneOf/4"
-          HANGAR: "#/components/schemas/ShipModuleCreate/oneOf/4"
-          QUARTERS: "#/components/schemas/ShipModuleCreate/oneOf/4"
-          MEDICAL: "#/components/schemas/ShipModuleCreate/oneOf/4"
-          WORKSHOP: "#/components/schemas/ShipModuleCreate/oneOf/4"
-          CHAPEL: "#/components/schemas/ShipModuleCreate/oneOf/4"
-          ESCAPE-PODS: "#/components/schemas/ShipModuleCreate/oneOf/4"
-          CRYO: "#/components/schemas/ShipModuleCreate/oneOf/4"
-          DOCKING: "#/components/schemas/ShipModuleCreate/oneOf/4"
-          MINING: "#/components/schemas/ShipModuleCreate/oneOf/4"
-          REPAIR: "#/components/schemas/ShipModuleCreate/oneOf/4"
-          CONCEALED-HOLD: "#/components/schemas/ShipModuleCreate/oneOf/4"
-          PROXY-DECK: "#/components/schemas/ShipModuleCreate/oneOf/4"
-          OTHER: "#/components/schemas/ShipModuleCreate/oneOf/4"
+          WEAPON: "#/components/schemas/ShipModuleWeaponCreate"
+          TORPEDO: "#/components/schemas/ShipModuleTorpedoCreate"
+          HOLD: "#/components/schemas/ShipModuleHoldCreate"
+          SENSOR: "#/components/schemas/ShipModuleSensorCreate"
+          BRIDGE: "#/components/schemas/ShipModuleOtherCreate"
+          REACTOR: "#/components/schemas/ShipModuleOtherCreate"
+          DRIVE: "#/components/schemas/ShipModuleOtherCreate"
+          COMMS: "#/components/schemas/ShipModuleOtherCreate"
+          HANGAR: "#/components/schemas/ShipModuleOtherCreate"
+          QUARTERS: "#/components/schemas/ShipModuleOtherCreate"
+          MEDICAL: "#/components/schemas/ShipModuleOtherCreate"
+          WORKSHOP: "#/components/schemas/ShipModuleOtherCreate"
+          CHAPEL: "#/components/schemas/ShipModuleOtherCreate"
+          ESCAPE-PODS: "#/components/schemas/ShipModuleOtherCreate"
+          CRYO: "#/components/schemas/ShipModuleOtherCreate"
+          DOCKING: "#/components/schemas/ShipModuleOtherCreate"
+          MINING: "#/components/schemas/ShipModuleOtherCreate"
+          REPAIR: "#/components/schemas/ShipModuleOtherCreate"
+          CONCEALED-HOLD: "#/components/schemas/ShipModuleOtherCreate"
+          PROXY-DECK: "#/components/schemas/ShipModuleOtherCreate"
+          OTHER: "#/components/schemas/ShipModuleOtherCreate"
 
     ShipModuleUpdate:
-      type: object
       description: |
         PATCH payload for `PATCH /api/v1/ship-modules/{id}`. The `slot`
-        discriminator may not be changed after installation. All fields
-        optional.
-      properties:
-        name:
-          type: string
-          minLength: 1
-        energyUse:
-          type: integer
-          minimum: 0
-        notes:
-          type: ["string", "null"]
-        weaponBonus:
-          type: integer
-          minimum: 0
-          description: WEAPON only
-        weaponRange:
-          $ref: "#/components/schemas/ShipWeaponRange"
-          description: WEAPON only
-        weaponDamage:
-          type: integer
-          minimum: 0
-          description: WEAPON only
-        weaponCritThreshold:
-          type: integer
-          minimum: 1
-          description: WEAPON only
-        torpedoCount:
-          type: integer
-          minimum: 0
-          description: TORPEDO only
-        mineCount:
-          type: integer
-          minimum: 0
-          description: TORPEDO only
-        cargoTons:
-          type: integer
-          minimum: 0
-          description: HOLD only
-        concealed:
-          type: boolean
-          description: HOLD only
-        detectionBonus:
-          type: integer
-          minimum: 0
-          description: SENSOR only
+        discriminator must match the installed module's slot — changing it
+        returns 400 `SHIP_MODULE_SLOT_MISMATCH`. All fields optional.
+      oneOf:
+        - $ref: "#/components/schemas/ShipModuleWeaponUpdate"
+        - $ref: "#/components/schemas/ShipModuleTorpedoUpdate"
+        - $ref: "#/components/schemas/ShipModuleHoldUpdate"
+        - $ref: "#/components/schemas/ShipModuleSensorUpdate"
+        - $ref: "#/components/schemas/ShipModuleOtherUpdate"
+      discriminator:
+        propertyName: slot
+        mapping:
+          WEAPON: "#/components/schemas/ShipModuleWeaponUpdate"
+          TORPEDO: "#/components/schemas/ShipModuleTorpedoUpdate"
+          HOLD: "#/components/schemas/ShipModuleHoldUpdate"
+          SENSOR: "#/components/schemas/ShipModuleSensorUpdate"
+          BRIDGE: "#/components/schemas/ShipModuleOtherUpdate"
+          REACTOR: "#/components/schemas/ShipModuleOtherUpdate"
+          DRIVE: "#/components/schemas/ShipModuleOtherUpdate"
+          COMMS: "#/components/schemas/ShipModuleOtherUpdate"
+          HANGAR: "#/components/schemas/ShipModuleOtherUpdate"
+          QUARTERS: "#/components/schemas/ShipModuleOtherUpdate"
+          MEDICAL: "#/components/schemas/ShipModuleOtherUpdate"
+          WORKSHOP: "#/components/schemas/ShipModuleOtherUpdate"
+          CHAPEL: "#/components/schemas/ShipModuleOtherUpdate"
+          ESCAPE-PODS: "#/components/schemas/ShipModuleOtherUpdate"
+          CRYO: "#/components/schemas/ShipModuleOtherUpdate"
+          DOCKING: "#/components/schemas/ShipModuleOtherUpdate"
+          MINING: "#/components/schemas/ShipModuleOtherUpdate"
+          REPAIR: "#/components/schemas/ShipModuleOtherUpdate"
+          CONCEALED-HOLD: "#/components/schemas/ShipModuleOtherUpdate"
+          PROXY-DECK: "#/components/schemas/ShipModuleOtherUpdate"
+          OTHER: "#/components/schemas/ShipModuleOtherUpdate"
 
     # -------------------------------------------------------------------------
     # Ship schemas
