@@ -44,12 +44,12 @@ deltas listed in `color.json` `theme.high-contrast`.
 
 ### Color (`color.json`)
 
-| Group | Tokens |
-|---|---|
-| `surface` | `void`, `night`, `dawn`, `parchment` |
-| `brand` | `brass-light`, `brass`, `brass-deep`, `brass-shadow` |
-| `text` | `primary`, `secondary`, `ink`, `on-brass` |
-| `state` | `crimson`, `crimson-bright`, `mystic-teal`, `success`, `darkness` |
+| Group     | Tokens                                                            |
+| --------- | ----------------------------------------------------------------- |
+| `surface` | `void`, `night`, `dawn`, `parchment`                              |
+| `brand`   | `brass-light`, `brass`, `brass-deep`, `brass-shadow`              |
+| `text`    | `primary`, `secondary`, `ink`, `on-brass`                         |
+| `state`   | `crimson`, `crimson-bright`, `mystic-teal`, `success`, `darkness` |
 
 CSS custom properties: `--<group>-<name>` (e.g. `--surface-void`,
 `--brand-brass`).
@@ -63,17 +63,17 @@ Composite type roles emit decomposed CSS custom properties under
 `--type-<role>-{font-family,font-size,line-height,font-weight,letter-spacing}`
 (plus `--type-<role>-text-transform` when set):
 
-| Role | Family | Size / Line | Weight | Tracking |
-|---|---|---|---|---|
-| `display-xl` | Forum | 48 / 56 | 400 | 0.06em |
-| `display-lg` | Forum | 36 / 44 | 400 | 0.04em |
-| `display-md` | Forum | 28 / 36 | 400 | 0.04em |
-| `display-sm` | Forum | 20 / 28 | 400 | 0.08em uppercase |
-| `body-lg` | Inter | 18 / 28 | 400 | normal |
-| `body-md` | Inter | 16 / 24 | 400 | normal |
-| `body-sm` | Inter | 14 / 20 | 500 | normal |
-| `mono-stat-xl` | JetBrains Mono | 32 / 32 | 700 | normal |
-| `mono-stat-md` | JetBrains Mono | 20 / 24 | 500 | normal |
+| Role           | Family         | Size / Line | Weight | Tracking         |
+| -------------- | -------------- | ----------- | ------ | ---------------- |
+| `display-xl`   | Forum          | 48 / 56     | 400    | 0.06em           |
+| `display-lg`   | Forum          | 36 / 44     | 400    | 0.04em           |
+| `display-md`   | Forum          | 28 / 36     | 400    | 0.04em           |
+| `display-sm`   | Forum          | 20 / 28     | 400    | 0.08em uppercase |
+| `body-lg`      | Inter          | 18 / 28     | 400    | normal           |
+| `body-md`      | Inter          | 16 / 24     | 400    | normal           |
+| `body-sm`      | Inter          | 14 / 20     | 500    | normal           |
+| `mono-stat-xl` | JetBrains Mono | 32 / 32     | 700    | normal           |
+| `mono-stat-md` | JetBrains Mono | 20 / 24     | 500    | normal           |
 
 ### Spacing (`spacing.json`)
 
@@ -114,11 +114,11 @@ lift) · `--shadow-icon-glow` (mystic teal halo) · `--shadow-brass-bevel`
 
 `[data-theme='high-contrast']` overrides three tokens for accessibility:
 
-| Token | Default | High-contrast |
-|---|---|---|
-| `--surface-void` | `#0B0E2C` | `#000018` |
-| `--brand-brass` | `#D4A95C` | `#FFD773` |
-| `--text-primary` | `#F2E8D0` | `#FFFFFF` |
+| Token            | Default   | High-contrast |
+| ---------------- | --------- | ------------- |
+| `--surface-void` | `#0B0E2C` | `#000018`     |
+| `--brand-brass`  | `#D4A95C` | `#FFD773`     |
+| `--text-primary` | `#F2E8D0` | `#FFFFFF`     |
 
 User preference is persisted in `AppConfig` on the backend so web + mobile
 stay in sync (DESIGN §2.2).
@@ -131,12 +131,13 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 
 | Category | Component | Vue (`@app/ui`) | Flutter (`app_ui`) |
 | -------- | --------- | --------------- | ------------------ |
+| Primitive | `AppBadge` | ✓ | — |
 | Primitive | `AppButton` | ✓ | — |
 | Primitive | `AppCard` | ✓ | — |
-| Primitive | `AppInput` | ✓ | — |
-| Primitive | `AppBadge` | ✓ | — |
+| Primitive | `AppChip` | ✓ | — |
 | Primitive | `AppDivider` | ✓ | — |
 | Primitive | `AppDots` | ✓ | — |
 | Primitive | `AppIcon` | ✓ | — |
+| Primitive | `AppInput` | ✓ | — |
 | Primitive | `AppProgress` | ✓ | — |
 | Primitive | `AppSwitch` | ✓ | — |
