@@ -3,19 +3,27 @@
     AppCard,
     AppButton,
     AppInput,
+    AppTextarea,
     AppStatBlock,
     AppPopover,
     AppDots,
     AppDivider,
+    AppConditionPill,
+    AppBanner,
+    AppSavePulse,
   } from '@app/ui';
   import { ref, watch, onBeforeUnmount, computed } from 'vue';
   import { useCharactersApi } from '~/composables/useCharactersApi';
   import type { Character, Problem } from '~/composables/useCharactersApi';
-  import type { Attributes, Skills } from '@app/api-client-ts';
+  import { useTalentsApi } from '~/composables/useTalentsApi';
+  import type { Talent } from '~/composables/useTalentsApi';
+  import type { Attributes, Skills, ConditionFlags, CriticalInjury } from '@app/api-client-ts';
   import { useAutoSave } from '~/composables/useAutoSave';
+  import type { SaveState } from '~/composables/useAutoSave';
 
   const { t } = useI18n({ useScope: 'local' });
   const api = useCharactersApi();
+  const talentsApi = useTalentsApi();
   const route = useRoute();
 
   const characterId = computed<string>(() => route.params.id as string);
@@ -43,6 +51,7 @@
     | 'science'
     | 'technology';
   type SkillKey = GeneralSkillKey | AdvancedSkillKey;
+  type ConditionKey = 'exhausted' | 'sleepless' | 'thirsty' | 'hungry';
 
   const ATTR_KEYS: AttrKey[] = ['strength', 'agility', 'wits', 'empathy'];
 
@@ -66,6 +75,8 @@
     'science',
     'technology',
   ];
+
+  const CONDITION_KEYS: ConditionKey[] = ['exhausted', 'sleepless', 'thirsty', 'hungry'];
 
   const SKILL_GOVERNING_ATTR: Record<SkillKey, AttrBadge> = {
     force: 'STR',
@@ -99,7 +110,6 @@
   const nameValue = ref('');
   const conceptValue = ref('');
 
-  // Local copies of attributes and skills for optimistic updates.
   const localAttributes = ref<Attributes>({
     strength: 2,
     agility: 2,
@@ -125,23 +135,56 @@
     technology: 0,
   });
 
-  // Local HP current (optimistically updated on +/-; max comes from server).
   const localHpCurrent = ref(0);
   const localMpCurrent = ref(0);
 
-  // Delete confirmation
+  // ── Conditions (Feature 5.3) ─────────────────────────────────────────────────
+
+  const localConditions = ref<ConditionFlags>({
+    exhausted: false,
+    sleepless: false,
+    thirsty: false,
+    hungry: false,
+  });
+  const conditionsError = ref('');
+
+  // ── Critical injuries (Feature 5.3) ──────────────────────────────────────────
+
+  const localInjuries = ref<CriticalInjury[]>([]);
+  const injuriesError = ref('');
+  // Inline add-injury state
+  const addInjuryActive = ref(false);
+  const newInjuryName = ref('');
+  const addInjurySaving = ref(false);
+
+  // ── Talents (Feature 5.2) ────────────────────────────────────────────────────
+
+  const localTalents = ref<Talent[]>([]);
+
+  // TalentEditor modal state
+  // Decision: using UModal directly (not AppModal primitive) to preserve
+  // delivery velocity. AppModal primitive is a separate batch.
+  const talentEditorOpen = ref(false);
+  const talentEditorTalent = ref<Talent | null>(null); // null = create mode
+  const talentEditorName = ref('');
+  const talentEditorDescription = ref('');
+  const talentEditorSaving = ref(false);
+  const talentEditorError = ref('');
+
+  // ── Delete confirmation ───────────────────────────────────────────────────────
+
   const deleteDialogOpen = ref(false);
   const deleteLoading = ref(false);
 
-  // Popover state — at most one open at a time.
+  // ── Popover state ─────────────────────────────────────────────────────────────
+
   const openPopover = ref<string | null>(null);
-  // Stepper pending value — holds the uncommitted in-popover value.
   const stepperValue = ref(0);
 
   // ── Auto-save: name + concept ────────────────────────────────────────────────
 
   const {
-    saveState,
+    saveState: _saveState,
     saveError,
     schedule: scheduleIdentitySave,
     cancel: cancelIdentitySave,
@@ -160,6 +203,11 @@
     },
     { debounceMs: 500 },
   );
+
+  // Explicitly typed to avoid Ref<SaveState | undefined> unwrapping ambiguity
+  // in the template (TypeScript infers ReturnType<typeof ref<SaveState>> as
+  // Ref<SaveState | undefined> when the generic argument is a union).
+  const saveState = computed<SaveState>(() => _saveState.value ?? 'idle');
 
   watch(nameValue, () => {
     if (state.value !== 'loaded') return;
@@ -184,6 +232,9 @@
       localSkills.value = { ...data.skills };
       localHpCurrent.value = data.hp.current;
       localMpCurrent.value = data.mp.current;
+      localConditions.value = { ...data.conditions };
+      localInjuries.value = [...data.criticalInjuries];
+      localTalents.value = [...data.talents];
       state.value = 'loaded';
     } catch (error) {
       const problem = error as Problem;
@@ -233,7 +284,6 @@
   async function commitAttr(key: AttrKey, newValue: number): Promise<void> {
     if (!character.value) return;
     const prev = localAttributes.value[key];
-    // Optimistic update
     localAttributes.value = { ...localAttributes.value, [key]: newValue };
     closeAttrPopover();
     try {
@@ -245,7 +295,6 @@
       localHpCurrent.value = updated.hp.current;
       localMpCurrent.value = updated.mp.current;
     } catch {
-      // Rollback
       localAttributes.value = { ...localAttributes.value, [key]: prev };
     }
   }
@@ -268,7 +317,6 @@
   async function commitSkill(key: SkillKey, newValue: number): Promise<void> {
     if (!character.value) return;
     const prev = localSkills.value[key];
-    // Optimistic update
     localSkills.value = { ...localSkills.value, [key]: newValue };
     closeSkillPopover();
     try {
@@ -278,7 +326,6 @@
       character.value = updated;
       localSkills.value = { ...updated.skills };
     } catch {
-      // Rollback
       localSkills.value = { ...localSkills.value, [key]: prev };
     }
   }
@@ -321,6 +368,163 @@
     }
   }
 
+  // ── Conditions (Feature 5.3) ──────────────────────────────────────────────────
+
+  async function toggleCondition(key: ConditionKey): Promise<void> {
+    if (!character.value) return;
+    const prev = { ...localConditions.value };
+    const next: ConditionFlags = { ...localConditions.value, [key]: !localConditions.value[key] };
+    // Optimistic update
+    localConditions.value = next;
+    conditionsError.value = '';
+    try {
+      const updated = await api.update(characterId.value, { conditions: next });
+      character.value = updated;
+      localConditions.value = { ...updated.conditions };
+    } catch (error) {
+      // Rollback
+      localConditions.value = prev;
+      const problem = error as Problem;
+      conditionsError.value = problem.detail ?? t('errorConditionToggle');
+    }
+  }
+
+  // ── Critical injuries (Feature 5.3) ──────────────────────────────────────────
+
+  function openAddInjury(): void {
+    newInjuryName.value = '';
+    addInjuryActive.value = true;
+  }
+
+  function cancelAddInjury(): void {
+    addInjuryActive.value = false;
+    newInjuryName.value = '';
+  }
+
+  async function confirmAddInjury(): Promise<void> {
+    const name = newInjuryName.value.trim();
+    if (!name || !character.value) return;
+    addInjurySaving.value = true;
+    injuriesError.value = '';
+    // Optimistic — append a client-side entry; replace on server response.
+    const tempInjury: CriticalInjury = {
+      id: `__temp_${String(Date.now())}`,
+      name,
+      severity: 'light',
+      effect: '',
+      acquiredAt: new Date().toISOString(),
+    };
+    const prevInjuries = [...localInjuries.value];
+    localInjuries.value = [...localInjuries.value, tempInjury];
+    addInjuryActive.value = false;
+    newInjuryName.value = '';
+    try {
+      const updated = await api.update(characterId.value, {
+        criticalInjuries: localInjuries.value.map((inj) => ({
+          ...inj,
+          // strip temp id so server generates a real one
+          ...(inj.id.startsWith('__temp_') ? { id: undefined as unknown as string } : {}),
+        })),
+      });
+      character.value = updated;
+      localInjuries.value = [...updated.criticalInjuries];
+    } catch (error) {
+      localInjuries.value = prevInjuries;
+      const problem = error as Problem;
+      injuriesError.value = problem.detail ?? t('errorInjuryAdd');
+    } finally {
+      addInjurySaving.value = false;
+    }
+  }
+
+  async function removeInjury(injuryId: string): Promise<void> {
+    if (!character.value) return;
+    injuriesError.value = '';
+    const prevInjuries = [...localInjuries.value];
+    // Optimistic removal
+    localInjuries.value = localInjuries.value.filter((inj) => inj.id !== injuryId);
+    try {
+      const updated = await api.update(characterId.value, {
+        criticalInjuries: localInjuries.value,
+      });
+      character.value = updated;
+      localInjuries.value = [...updated.criticalInjuries];
+    } catch (error) {
+      localInjuries.value = prevInjuries;
+      const problem = error as Problem;
+      injuriesError.value = problem.detail ?? t('errorInjuryRemove');
+    }
+  }
+
+  // ── Talents — TalentEditor (Feature 5.2) ──────────────────────────────────────
+
+  function openCreateTalent(): void {
+    talentEditorTalent.value = null;
+    talentEditorName.value = '';
+    talentEditorDescription.value = '';
+    talentEditorError.value = '';
+    talentEditorOpen.value = true;
+  }
+
+  function openEditTalent(talent: Talent): void {
+    talentEditorTalent.value = talent;
+    talentEditorName.value = talent.name;
+    talentEditorDescription.value = talent.description;
+    talentEditorError.value = '';
+    talentEditorOpen.value = true;
+  }
+
+  function closeTalentEditor(): void {
+    talentEditorOpen.value = false;
+  }
+
+  async function saveTalent(): Promise<void> {
+    const name = talentEditorName.value.trim();
+    const description = talentEditorDescription.value.trim();
+    if (!name || !character.value) return;
+
+    talentEditorSaving.value = true;
+    talentEditorError.value = '';
+
+    try {
+      if (talentEditorTalent.value) {
+        // Update existing
+        const updated = await talentsApi.updateTalent(talentEditorTalent.value.id, {
+          name,
+          description,
+        });
+        localTalents.value = localTalents.value.map((t) => (t.id === updated.id ? updated : t));
+      } else {
+        // Create new — prepend to list
+        const created = await talentsApi.addTalent(characterId.value, {
+          name,
+          description,
+        });
+        localTalents.value = [created, ...localTalents.value];
+      }
+      closeTalentEditor();
+    } catch (error) {
+      const problem = error as Problem;
+      talentEditorError.value = problem.detail ?? t('errorTalentSave');
+    } finally {
+      talentEditorSaving.value = false;
+    }
+  }
+
+  async function deleteTalentConfirm(talent: Talent): Promise<void> {
+    // v1: native confirm() — AppModal primitive is a separate batch
+    if (!confirm(t('talentDeleteConfirm', { name: talent.name }))) return;
+    talentEditorError.value = '';
+    try {
+      await talentsApi.removeTalent(talent.id);
+      localTalents.value = localTalents.value.filter((t) => t.id !== talent.id);
+      closeTalentEditor();
+    } catch (error) {
+      const problem = error as Problem;
+      talentEditorError.value = problem.detail ?? t('errorTalentDelete');
+    }
+  }
+
   // ── Delete ──────────────────────────────────────────────────────────────────────
 
   function openDeleteDialog(): void {
@@ -343,7 +547,7 @@
     }
   }
 
-  // ── Computed labels for attributes ───────────────────────────────────────────
+  // ── Computed labels ───────────────────────────────────────────────────────────
 
   function attrLabel(key: AttrKey): string {
     return t(`attr.${key}`);
@@ -352,6 +556,21 @@
   function skillLabel(key: SkillKey): string {
     return t(`skill.${key}`);
   }
+
+  function conditionLabel(key: ConditionKey): string {
+    return t(`condition.${key}`);
+  }
+
+  const talentEditorIsEdit = computed(() => talentEditorTalent.value !== null);
+  const talentNameValid = computed(() => {
+    const v = talentEditorName.value.trim();
+    return v.length > 0 && v.length <= 80;
+  });
+  const talentDescriptionValid = computed(() => {
+    const v = talentEditorDescription.value.trim();
+    return v.length === 0 || v.length <= 600;
+  });
+  const talentEditorCanSave = computed(() => talentNameValid.value && talentDescriptionValid.value);
 </script>
 
 <i18n lang="json">
@@ -381,6 +600,7 @@
     "panelEquipped": "Equipped",
     "panelTalents": "Talents",
     "panelRolls": "Recent Rolls",
+    "panelCriticalInjuries": "Critical Injuries",
     "skillsGeneral": "General",
     "skillsAdvanced": "Advanced",
     "skillsAdvancedNote": "requires training",
@@ -392,6 +612,35 @@
     "popoverClose": "Close",
     "comingSoon": "Coming in a future update.",
     "identityConcept": "Concept",
+    "condition": {
+      "exhausted": "Exhausted",
+      "sleepless": "Sleepless",
+      "thirsty": "Thirsty",
+      "hungry": "Hungry"
+    },
+    "errorConditionToggle": "Failed to update condition.",
+    "injuryAddPlaceholder": "Broken arm, etc.",
+    "injuryAddButton": "Add injury",
+    "injuryAddCancel": "Cancel",
+    "injuryAddSave": "Save",
+    "injuryRemoveLabel": "Remove injury",
+    "noInjuries": "No critical injuries.",
+    "errorInjuryAdd": "Failed to add injury.",
+    "errorInjuryRemove": "Failed to remove injury.",
+    "talentAddButton": "Add talent",
+    "talentEditTitle": "Edit talent",
+    "talentCreateTitle": "New talent",
+    "talentNameLabel": "Name",
+    "talentNamePlaceholder": "e.g. Wing-Mate",
+    "talentDescriptionLabel": "Description",
+    "talentDescriptionPlaceholder": "Rules text or flavour…",
+    "talentSave": "Save",
+    "talentCancel": "Cancel",
+    "talentDelete": "Remove talent",
+    "talentDeleteConfirm": "Remove talent \"{name}\"? This cannot be undone.",
+    "noTalents": "No talents yet.",
+    "errorTalentSave": "Failed to save talent.",
+    "errorTalentDelete": "Failed to remove talent.",
     "attr": {
       "strength": "Strength",
       "agility": "Agility",
@@ -448,6 +697,7 @@
     "panelEquipped": "Снаряжение",
     "panelTalents": "Таланты",
     "panelRolls": "Последние броски",
+    "panelCriticalInjuries": "Критические ранения",
     "skillsGeneral": "Общие",
     "skillsAdvanced": "Специальные",
     "skillsAdvancedNote": "требует обучения",
@@ -459,6 +709,35 @@
     "popoverClose": "Закрыть",
     "comingSoon": "Появится в будущем обновлении.",
     "identityConcept": "Концепция",
+    "condition": {
+      "exhausted": "Истощение",
+      "sleepless": "Бессонница",
+      "thirsty": "Жажда",
+      "hungry": "Голод"
+    },
+    "errorConditionToggle": "Не удалось обновить состояние.",
+    "injuryAddPlaceholder": "Сломанная рука и т.п.",
+    "injuryAddButton": "Добавить ранение",
+    "injuryAddCancel": "Отмена",
+    "injuryAddSave": "Сохранить",
+    "injuryRemoveLabel": "Удалить ранение",
+    "noInjuries": "Нет критических ранений.",
+    "errorInjuryAdd": "Не удалось добавить ранение.",
+    "errorInjuryRemove": "Не удалось удалить ранение.",
+    "talentAddButton": "Добавить талант",
+    "talentEditTitle": "Редактировать талант",
+    "talentCreateTitle": "Новый талант",
+    "talentNameLabel": "Название",
+    "talentNamePlaceholder": "напр. Напарник по крылу",
+    "talentDescriptionLabel": "Описание",
+    "talentDescriptionPlaceholder": "Текст правила или описание…",
+    "talentSave": "Сохранить",
+    "talentCancel": "Отмена",
+    "talentDelete": "Удалить талант",
+    "talentDeleteConfirm": "Удалить талант «{name}»? Это необратимо.",
+    "noTalents": "Нет талантов.",
+    "errorTalentSave": "Не удалось сохранить талант.",
+    "errorTalentDelete": "Не удалось удалить талант.",
     "attr": {
       "strength": "Сила",
       "agility": "Ловкость",
@@ -515,6 +794,7 @@
     "panelEquipped": "[uk-todo] Equipped",
     "panelTalents": "[uk-todo] Talents",
     "panelRolls": "[uk-todo] Recent Rolls",
+    "panelCriticalInjuries": "[uk-todo] Critical Injuries",
     "skillsGeneral": "[uk-todo] General",
     "skillsAdvanced": "[uk-todo] Advanced",
     "skillsAdvancedNote": "[uk-todo] requires training",
@@ -526,6 +806,35 @@
     "popoverClose": "[uk-todo] Close",
     "comingSoon": "[uk-todo] Coming in a future update.",
     "identityConcept": "[uk-todo] Concept",
+    "condition": {
+      "exhausted": "[uk-todo] Exhausted",
+      "sleepless": "[uk-todo] Sleepless",
+      "thirsty": "[uk-todo] Thirsty",
+      "hungry": "[uk-todo] Hungry"
+    },
+    "errorConditionToggle": "[uk-todo] Failed to update condition.",
+    "injuryAddPlaceholder": "[uk-todo] Broken arm, etc.",
+    "injuryAddButton": "[uk-todo] Add injury",
+    "injuryAddCancel": "[uk-todo] Cancel",
+    "injuryAddSave": "[uk-todo] Save",
+    "injuryRemoveLabel": "[uk-todo] Remove injury",
+    "noInjuries": "[uk-todo] No critical injuries.",
+    "errorInjuryAdd": "[uk-todo] Failed to add injury.",
+    "errorInjuryRemove": "[uk-todo] Failed to remove injury.",
+    "talentAddButton": "[uk-todo] Add talent",
+    "talentEditTitle": "[uk-todo] Edit talent",
+    "talentCreateTitle": "[uk-todo] New talent",
+    "talentNameLabel": "[uk-todo] Name",
+    "talentNamePlaceholder": "[uk-todo] e.g. Wing-Mate",
+    "talentDescriptionLabel": "[uk-todo] Description",
+    "talentDescriptionPlaceholder": "[uk-todo] Rules text or flavour…",
+    "talentSave": "[uk-todo] Save",
+    "talentCancel": "[uk-todo] Cancel",
+    "talentDelete": "[uk-todo] Remove talent",
+    "talentDeleteConfirm": "[uk-todo] Remove talent \"{name}\"?",
+    "noTalents": "[uk-todo] No talents yet.",
+    "errorTalentSave": "[uk-todo] Failed to save talent.",
+    "errorTalentDelete": "[uk-todo] Failed to remove talent.",
     "attr": {
       "strength": "[uk-todo] Strength",
       "agility": "[uk-todo] Agility",
@@ -582,6 +891,7 @@
     "panelEquipped": "[el-todo] Equipped",
     "panelTalents": "[el-todo] Talents",
     "panelRolls": "[el-todo] Recent Rolls",
+    "panelCriticalInjuries": "[el-todo] Critical Injuries",
     "skillsGeneral": "[el-todo] General",
     "skillsAdvanced": "[el-todo] Advanced",
     "skillsAdvancedNote": "[el-todo] requires training",
@@ -593,6 +903,35 @@
     "popoverClose": "[el-todo] Close",
     "comingSoon": "[el-todo] Coming in a future update.",
     "identityConcept": "[el-todo] Concept",
+    "condition": {
+      "exhausted": "[el-todo] Exhausted",
+      "sleepless": "[el-todo] Sleepless",
+      "thirsty": "[el-todo] Thirsty",
+      "hungry": "[el-todo] Hungry"
+    },
+    "errorConditionToggle": "[el-todo] Failed to update condition.",
+    "injuryAddPlaceholder": "[el-todo] Broken arm, etc.",
+    "injuryAddButton": "[el-todo] Add injury",
+    "injuryAddCancel": "[el-todo] Cancel",
+    "injuryAddSave": "[el-todo] Save",
+    "injuryRemoveLabel": "[el-todo] Remove injury",
+    "noInjuries": "[el-todo] No critical injuries.",
+    "errorInjuryAdd": "[el-todo] Failed to add injury.",
+    "errorInjuryRemove": "[el-todo] Failed to remove injury.",
+    "talentAddButton": "[el-todo] Add talent",
+    "talentEditTitle": "[el-todo] Edit talent",
+    "talentCreateTitle": "[el-todo] New talent",
+    "talentNameLabel": "[el-todo] Name",
+    "talentNamePlaceholder": "[el-todo] e.g. Wing-Mate",
+    "talentDescriptionLabel": "[el-todo] Description",
+    "talentDescriptionPlaceholder": "[el-todo] Rules text or flavour…",
+    "talentSave": "[el-todo] Save",
+    "talentCancel": "[el-todo] Cancel",
+    "talentDelete": "[el-todo] Remove talent",
+    "talentDeleteConfirm": "[el-todo] Remove talent \"{name}\"?",
+    "noTalents": "[el-todo] No talents yet.",
+    "errorTalentSave": "[el-todo] Failed to save talent.",
+    "errorTalentDelete": "[el-todo] Failed to remove talent.",
     "attr": {
       "strength": "[el-todo] Strength",
       "agility": "[el-todo] Agility",
@@ -689,24 +1028,17 @@
             autocomplete="off"
             class="page-sheet__concept-input"
           />
-          <!-- Save indicator -->
+          <!-- Feature 5.5 — AppSavePulse indicator -->
           <div class="page-sheet__save-status" aria-live="polite" aria-atomic="true">
-            <span
-              v-if="saveState === 'saving'"
-              class="page-sheet__save-label page-sheet__save-label--saving"
-              >{{ t('statusSaving') }}</span
-            >
-            <span
-              v-else-if="saveState === 'saved'"
-              class="page-sheet__save-label page-sheet__save-label--saved"
-              >{{ t('statusSaved') }}</span
-            >
-            <span
-              v-else-if="saveState === 'error'"
-              class="page-sheet__save-label page-sheet__save-label--error"
-              role="alert"
-              >{{ t('statusError') }}: {{ saveError }}</span
-            >
+            <AppSavePulse :state="saveState" />
+            <!-- sr-only accessible label for screen readers -->
+            <span class="sr-only">
+              <template v-if="saveState === 'saving'">{{ t('statusSaving') }}</template>
+              <template v-else-if="saveState === 'saved'">{{ t('statusSaved') }}</template>
+              <template v-else-if="saveState === 'error'"
+                >{{ t('statusError') }}: {{ saveError }}</template
+              >
+            </span>
           </div>
         </div>
 
@@ -779,7 +1111,7 @@
 
       <!-- ── Three-column body ───────────────────────────────────────────────── -->
       <div class="page-sheet__columns">
-        <!-- LEFT column: Identity + Conditions placeholder -->
+        <!-- LEFT column: Identity + Conditions + Critical Injuries -->
         <div class="page-sheet__col page-sheet__col--left">
           <!-- Identity card -->
           <AppCard class="page-sheet__panel">
@@ -794,14 +1126,93 @@
             </div>
           </AppCard>
 
-          <!-- Conditions placeholder -->
+          <!-- Feature 5.3 — Conditions panel -->
           <AppCard class="page-sheet__panel">
             <template #header>
               <span class="page-sheet__panel-title">{{ t('panelConditions') }}</span>
             </template>
-            <p class="page-sheet__placeholder-text">
-              {{ t('comingSoon') }}
+
+            <!-- Condition pills -->
+            <div class="page-sheet__conditions">
+              <AppConditionPill
+                v-for="key in CONDITION_KEYS"
+                :key="key"
+                :condition="key"
+                :model-value="localConditions[key]"
+                size="md"
+                @update:model-value="toggleCondition(key)"
+              >
+                {{ conditionLabel(key) }}
+              </AppConditionPill>
+            </div>
+
+            <!-- Conditions error banner -->
+            <AppBanner v-if="conditionsError" tone="danger" class="page-sheet__conditions-error">
+              {{ conditionsError }}
+            </AppBanner>
+
+            <!-- Critical injuries sub-section -->
+            <AppDivider tone="brass-deep" class="page-sheet__injuries-divider" />
+            <div class="page-sheet__injuries-header">
+              <span class="page-sheet__injuries-title">{{ t('panelCriticalInjuries') }}</span>
+            </div>
+
+            <AppBanner v-if="injuriesError" tone="danger" class="page-sheet__conditions-error">
+              {{ injuriesError }}
+            </AppBanner>
+
+            <!-- Injuries list -->
+            <ul v-if="localInjuries.length > 0" class="page-sheet__injuries-list">
+              <li v-for="injury in localInjuries" :key="injury.id" class="page-sheet__injury-row">
+                <span class="page-sheet__injury-name">{{ injury.name }}</span>
+                <button
+                  class="page-sheet__injury-remove"
+                  :aria-label="t('injuryRemoveLabel')"
+                  @click="removeInjury(injury.id)"
+                >
+                  ×
+                </button>
+              </li>
+            </ul>
+            <p v-else class="page-sheet__injuries-empty">
+              {{ t('noInjuries') }}
             </p>
+
+            <!-- Inline add injury -->
+            <div v-if="addInjuryActive" class="page-sheet__injury-add-form">
+              <AppInput
+                v-model="newInjuryName"
+                size="sm"
+                :placeholder="t('injuryAddPlaceholder')"
+                :aria-label="t('injuryAddPlaceholder')"
+                autocomplete="off"
+                @keydown.enter.prevent="confirmAddInjury"
+                @keydown.esc.prevent="cancelAddInjury"
+              />
+              <div class="page-sheet__injury-add-actions">
+                <AppButton variant="ghost" size="sm" @click="cancelAddInjury">
+                  {{ t('injuryAddCancel') }}
+                </AppButton>
+                <AppButton
+                  variant="primary"
+                  size="sm"
+                  :loading="addInjurySaving"
+                  :disabled="!newInjuryName.trim()"
+                  @click="confirmAddInjury"
+                >
+                  {{ t('injuryAddSave') }}
+                </AppButton>
+              </div>
+            </div>
+            <AppButton
+              v-else
+              variant="ghost"
+              size="sm"
+              class="page-sheet__injury-add-btn"
+              @click="openAddInjury"
+            >
+              + {{ t('injuryAddButton') }}
+            </AppButton>
           </AppCard>
         </div>
 
@@ -1082,7 +1493,7 @@
           </AppCard>
         </div>
 
-        <!-- RIGHT column: placeholder cards -->
+        <!-- RIGHT column: Equipped + Talents + Recent Rolls -->
         <div class="page-sheet__col page-sheet__col--right">
           <AppCard class="page-sheet__panel">
             <template #header>
@@ -1093,13 +1504,42 @@
             </p>
           </AppCard>
 
+          <!-- Feature 5.2 — Talents panel -->
           <AppCard class="page-sheet__panel">
             <template #header>
               <span class="page-sheet__panel-title">{{ t('panelTalents') }}</span>
             </template>
-            <p class="page-sheet__placeholder-text">
-              {{ t('comingSoon') }}
+
+            <!-- Error banner -->
+            <AppBanner
+              v-if="talentEditorError && !talentEditorOpen"
+              tone="danger"
+              class="page-sheet__talent-error"
+            >
+              {{ talentEditorError }}
+            </AppBanner>
+
+            <!-- Talent list -->
+            <ul v-if="localTalents.length > 0" class="page-sheet__talents-list">
+              <li v-for="talent in localTalents" :key="talent.id" class="page-sheet__talent-row">
+                <button class="page-sheet__talent-btn" @click="openEditTalent(talent)">
+                  <span class="page-sheet__talent-name">{{ talent.name }}</span>
+                  <span class="page-sheet__talent-chevron" aria-hidden="true">›</span>
+                </button>
+              </li>
+            </ul>
+            <p v-else class="page-sheet__placeholder-text">
+              {{ t('noTalents') }}
             </p>
+
+            <AppButton
+              variant="ghost"
+              size="sm"
+              class="page-sheet__talent-add-btn"
+              @click="openCreateTalent"
+            >
+              + {{ t('talentAddButton') }}
+            </AppButton>
           </AppCard>
 
           <AppCard class="page-sheet__panel">
@@ -1145,12 +1585,86 @@
         </div>
       </div>
     </dialog>
+
+    <!-- ── Feature 5.2 — TalentEditor dialog ─────────────────────────────────── -->
+    <!--
+      Decision: using <dialog> natively (same pattern as the delete dialog above),
+      rather than UModal or AppModal, to ship without new primitives.
+      UModal/AppModal wrapping is a follow-up batch.
+    -->
+    <dialog
+      :open="talentEditorOpen"
+      class="page-sheet__dialog page-sheet__dialog--talent"
+      :aria-label="talentEditorIsEdit ? t('talentEditTitle') : t('talentCreateTitle')"
+      @close="closeTalentEditor"
+    >
+      <div class="page-sheet__dialog-inner">
+        <p class="page-sheet__dialog-heading">
+          {{ talentEditorIsEdit ? t('talentEditTitle') : t('talentCreateTitle') }}
+        </p>
+
+        <AppBanner v-if="talentEditorError" tone="danger" class="page-sheet__talent-editor-error">
+          {{ talentEditorError }}
+        </AppBanner>
+
+        <div class="page-sheet__talent-fields">
+          <div class="page-sheet__talent-field">
+            <label class="page-sheet__talent-label" :for="'talent-name'">
+              {{ t('talentNameLabel') }}
+            </label>
+            <AppInput
+              id="talent-name"
+              v-model="talentEditorName"
+              size="md"
+              :placeholder="t('talentNamePlaceholder')"
+              autocomplete="off"
+              @keydown.enter.prevent="talentEditorCanSave && saveTalent()"
+            />
+          </div>
+          <div class="page-sheet__talent-field">
+            <label class="page-sheet__talent-label" :for="'talent-desc'">
+              {{ t('talentDescriptionLabel') }}
+            </label>
+            <AppTextarea
+              id="talent-desc"
+              v-model="talentEditorDescription"
+              :placeholder="t('talentDescriptionPlaceholder')"
+              :rows="4"
+            />
+          </div>
+        </div>
+
+        <div class="page-sheet__dialog-actions page-sheet__dialog-actions--talent">
+          <!-- Remove talent (edit mode only) -->
+          <button
+            v-if="talentEditorIsEdit && talentEditorTalent"
+            class="page-sheet__talent-delete-link"
+            @click="deleteTalentConfirm(talentEditorTalent)"
+          >
+            {{ t('talentDelete') }}
+          </button>
+          <div class="page-sheet__dialog-actions-right">
+            <AppButton variant="ghost" size="md" @click="closeTalentEditor">
+              {{ t('talentCancel') }}
+            </AppButton>
+            <AppButton
+              variant="primary"
+              size="md"
+              :loading="talentEditorSaving"
+              :disabled="!talentEditorCanSave"
+              @click="saveTalent"
+            >
+              {{ t('talentSave') }}
+            </AppButton>
+          </div>
+        </div>
+      </div>
+    </dialog>
   </section>
 </template>
 
 <style lang="scss" scoped>
   // ── Layout constants ──────────────────────────────────────────────────────────
-  // Named SCSS variables for pixel layout caps (not design tokens).
   $column-gap: 24px;
   $hero-padding-v: 32px;
   $hero-padding-h: 40px;
@@ -1160,6 +1674,7 @@
   $skeleton-body-height: 400px;
   $skeleton-stagger: 200ms;
   $dialog-max-width: 400px;
+  $dialog-talent-max-width: 520px;
   $stepper-btn-size: 32px;
   $counter-min-width: 90px;
   $stepper-min-width: 160px;
@@ -1167,16 +1682,14 @@
   $col-left-pct: 28%;
   $col-center-pct: 44%;
   $col-right-pct: 28%;
-  // Typography — named vars for sub-token font sizes (eyebrow, legend, micro).
   $font-size-eyebrow: 11px;
   $font-size-legend: 10px;
   $font-size-micro: 9px;
-  // Icon/rail sizes — layout constants.
   $legend-dot-size: 8px;
   $accent-rail-offset: 6px;
-  // Breakpoints
   $bp-desktop: 1024px;
   $bp-mobile: 768px;
+  $injury-remove-size: 20px;
 
   // ── Root ──────────────────────────────────────────────────────────────────────
 
@@ -1318,26 +1831,12 @@
       font-family: var(--font-body);
     }
 
+    // Feature 5.5 — save status now uses AppSavePulse + sr-only text
     &__save-status {
       min-height: var(--space-5);
-    }
-
-    &__save-label {
-      font-family: var(--font-body);
-      font-size: var(--type-body-sm-font-size);
-      letter-spacing: 0.04em;
-
-      &--saving {
-        color: var(--text-secondary);
-      }
-
-      &--saved {
-        color: var(--state-success);
-      }
-
-      &--error {
-        color: var(--state-crimson-bright);
-      }
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
     }
 
     // ── HP / MP / ENC counters ─────────────────────────────────────────────────
@@ -1458,7 +1957,6 @@
       flex-direction: column;
       gap: var(--space-5);
 
-      // Mobile: force order — identity → attributes → skills → conditions → right
       @media (max-width: #{$bp-mobile - 1px}) {
         &--left {
           order: 1;
@@ -1474,8 +1972,6 @@
       }
     }
 
-    // On tablet (≥768 <1024), right column spans full width below the two.
-    // Extracted from &__col nesting to stay within max-nesting-depth: 3.
     @media (max-width: #{$bp-desktop - 1px}) and (min-width: $bp-mobile) {
       &__col--right {
         grid-column: 1 / -1;
@@ -1543,6 +2039,229 @@
       color: var(--text-secondary);
       text-align: center;
       padding: var(--space-6) 0;
+    }
+
+    // ── Feature 5.3 — Conditions ──────────────────────────────────────────────
+
+    &__conditions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      padding-bottom: var(--space-3);
+    }
+
+    &__conditions-error {
+      margin-top: var(--space-2);
+    }
+
+    &__injuries-divider {
+      margin: var(--space-3) 0;
+    }
+
+    &__injuries-header {
+      margin-bottom: var(--space-2);
+    }
+
+    &__injuries-title {
+      font-family: var(--font-body);
+      font-size: $font-size-eyebrow;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--state-crimson-bright);
+    }
+
+    &__injuries-list {
+      list-style: none;
+      margin: 0 0 var(--space-3);
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    &__injury-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-1) var(--space-2);
+      background-color: color-mix(in srgb, var(--state-crimson) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--state-crimson) 30%, transparent);
+      border-radius: var(--radius-sm);
+    }
+
+    &__injury-name {
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--text-primary);
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+
+    &__injury-remove {
+      width: $injury-remove-size;
+      height: $injury-remove-size;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: none;
+      background: transparent;
+      color: var(--state-crimson-bright);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      font-size: var(--type-body-md-font-size);
+      line-height: 1;
+      transition: background-color var(--motion-duration-fast) var(--motion-ease-standard);
+
+      &:hover {
+        background-color: color-mix(in srgb, var(--state-crimson) 15%, transparent);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--state-crimson-bright);
+        outline-offset: 2px;
+      }
+    }
+
+    &__injuries-empty {
+      margin: 0 0 var(--space-3);
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--text-secondary);
+    }
+
+    &__injury-add-form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    &__injury-add-actions {
+      display: flex;
+      gap: var(--space-2);
+      justify-content: flex-end;
+    }
+
+    &__injury-add-btn {
+      align-self: flex-start;
+    }
+
+    // ── Feature 5.2 — Talents ─────────────────────────────────────────────────
+
+    &__talent-error {
+      margin-bottom: var(--space-3);
+    }
+
+    &__talents-list {
+      list-style: none;
+      margin: 0 0 var(--space-3);
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    &__talent-row {
+      border-bottom: 1px solid color-mix(in srgb, var(--brand-brass-deep) 60%, transparent);
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    &__talent-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      width: 100%;
+      padding: var(--space-2) var(--space-1);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      transition: background-color var(--motion-duration-fast) var(--motion-ease-standard);
+
+      &:hover {
+        background-color: color-mix(in srgb, var(--brand-brass) 5%, transparent);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--brand-brass);
+        outline-offset: 2px;
+      }
+    }
+
+    &__talent-name {
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--text-primary);
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+
+    &__talent-chevron {
+      font-size: var(--type-body-md-font-size);
+      color: var(--brand-brass);
+      flex-shrink: 0;
+    }
+
+    &__talent-add-btn {
+      align-self: flex-start;
+      margin-top: var(--space-1);
+    }
+
+    // ── Talent editor dialog overrides ────────────────────────────────────────
+
+    &__talent-editor-error {
+      margin-bottom: var(--space-3);
+    }
+
+    &__talent-fields {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    &__talent-field {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    &__talent-label {
+      font-family: var(--font-body);
+      font-size: $font-size-eyebrow;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--brand-brass);
+    }
+
+    &__talent-delete-link {
+      background: transparent;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--state-crimson-bright);
+      text-decoration: underline;
+      transition: opacity var(--motion-duration-fast) var(--motion-ease-standard);
+
+      &:hover {
+        opacity: 0.7;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--state-crimson-bright);
+        outline-offset: 2px;
+      }
     }
 
     // ── Attributes grid ───────────────────────────────────────────────────────
@@ -1727,7 +2446,6 @@
       min-width: $stepper-min-width;
 
       &--mystic {
-        // teal-tinted popover background hint
         background: color-mix(in srgb, var(--state-mystic-teal) 4%, var(--surface-night));
       }
     }
@@ -1814,7 +2532,7 @@
       border-top: 1px solid var(--brand-brass-shadow);
     }
 
-    // ── Delete dialog ─────────────────────────────────────────────────────────
+    // ── Dialogs ───────────────────────────────────────────────────────────────
 
     &__dialog {
       position: fixed;
@@ -1834,6 +2552,10 @@
 
       &:not([open]) {
         display: none;
+      }
+
+      &--talent {
+        max-width: $dialog-talent-max-width;
       }
     }
 
@@ -1863,7 +2585,31 @@
       display: flex;
       justify-content: flex-end;
       gap: var(--space-3);
+
+      &--talent {
+        justify-content: space-between;
+        align-items: center;
+      }
     }
+
+    &__dialog-actions-right {
+      display: flex;
+      gap: var(--space-3);
+    }
+  }
+
+  // ── Utility ───────────────────────────────────────────────────────────────────
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border-width: 0;
   }
 
   // ── Animations ────────────────────────────────────────────────────────────────
