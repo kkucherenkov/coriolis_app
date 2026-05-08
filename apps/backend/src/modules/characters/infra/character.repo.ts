@@ -8,15 +8,24 @@
  * - list() omits heavy nested arrays (inventory, talents, etc.) for performance
  * - findActiveById() fetches the full graph needed for CharacterReadModel
  *
- * Derived stats are placeholders until Story 3.2.2 (rules-engine):
- *   hp.max = 14
- *   mp.max = 10
- *   encumbrance.current = 0
- *   encumbrance.max = 5
+ * Derived stats are computed by the rules-engine module (Story 3.2.2):
+ *   hp.max         = computeHpMax(strength, agility)     — PRD §5.2
+ *   mp.max         = computeMpMax(wits, empathy)          — PRD §5.2
+ *   encumbrance.max     = computeEncumbranceMax(strength)      — PRD §5.2
+ *   encumbrance.current = computeEncumbranceCurrent(items) — PRD §5.3
+ *
+ * For the list() projection, items are not fetched (perf), so encumbrance.current
+ * is not returned in CharacterListItem — only in CharacterReadModel (full).
  */
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../../common/prisma/prisma.service';
+import {
+  computeEncumbranceCurrent,
+  computeEncumbranceMax,
+  computeHpMax,
+  computeMpMax,
+} from '../../rules-engine';
 
 import type {
   Attributes,
@@ -77,6 +86,7 @@ const CHARACTER_LIST_SELECT = {
   name: true,
   concept: true,
   iconId: true,
+  attributes: true,
   hpCurrent: true,
   mpCurrent: true,
   conditions: true,
@@ -154,36 +164,34 @@ function mapItem(item: { id: string; type: string; data: unknown }): ItemReadMod
 }
 
 function toReadModel(row: PrismaCharacterFull): CharacterReadModel {
+  const attrs = row.attributes as Attributes;
+  const inventory = row.items.map(mapItem);
   return {
     id: row.id,
     ownerId: row.ownerId,
     name: row.name,
     concept: row.concept,
     iconId: row.iconId as unknown as IconId | null,
-    attributes: row.attributes as Attributes,
+    attributes: attrs,
     skills: row.skills as Skills,
     hp: {
       current: row.hpCurrent,
-      // TODO(rules-engine, T-3.2.2): replace with computeHpMax(strength, agility)
-      max: 14,
+      max: computeHpMax(attrs.strength, attrs.agility),
     },
     mp: {
       current: row.mpCurrent,
-      // TODO(rules-engine, T-3.2.2): replace with computeMpMax(wits, empathy)
-      max: 10,
+      max: computeMpMax(attrs.wits, attrs.empathy),
     },
     encumbrance: {
-      // TODO(rules-engine, T-3.2.2): replace with sum of equipped item weights
-      current: 0,
-      // TODO(rules-engine, T-3.2.2): replace with computeEncumbrance(strength)
-      max: 5,
+      current: computeEncumbranceCurrent(inventory),
+      max: computeEncumbranceMax(attrs.strength),
     },
     experience: row.experience,
     conditions: row.conditions as unknown as ConditionFlags,
     criticalInjuries: row.criticalInjuries.map(mapInjury),
     talents: row.talents.map(mapTalent),
     relationships: row.relationships.map(mapRelationship),
-    inventory: row.items.map(mapItem),
+    inventory,
     notes: row.notes,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
@@ -228,26 +236,27 @@ export class CharacterRepo implements ICharacterRepo {
     const items = hasNext ? rows.slice(0, limit) : rows;
 
     return {
-      items: items.map((row) => ({
-        id: row.id,
-        ownerId: row.ownerId,
-        name: row.name,
-        concept: row.concept,
-        iconId: row.iconId as unknown as IconId | null,
-        hp: {
-          current: row.hpCurrent,
-          // TODO(rules-engine, T-3.2.2): replace with computeHpMax
-          max: 14,
-        },
-        mp: {
-          current: row.mpCurrent,
-          // TODO(rules-engine, T-3.2.2): replace with computeMpMax
-          max: 10,
-        },
-        conditions: row.conditions as unknown as ConditionFlags,
-        createdAt: row.createdAt.toISOString(),
-        updatedAt: row.updatedAt.toISOString(),
-      })),
+      items: items.map((row) => {
+        const attrs = row.attributes as unknown as Attributes;
+        return {
+          id: row.id,
+          ownerId: row.ownerId,
+          name: row.name,
+          concept: row.concept,
+          iconId: row.iconId as unknown as IconId | null,
+          hp: {
+            current: row.hpCurrent,
+            max: computeHpMax(attrs.strength, attrs.agility),
+          },
+          mp: {
+            current: row.mpCurrent,
+            max: computeMpMax(attrs.wits, attrs.empathy),
+          },
+          conditions: row.conditions as unknown as ConditionFlags,
+          createdAt: row.createdAt.toISOString(),
+          updatedAt: row.updatedAt.toISOString(),
+        };
+      }),
       nextCursor: hasNext ? (items[items.length - 1]?.id ?? null) : null,
     };
   }

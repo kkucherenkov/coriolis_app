@@ -82,3 +82,19 @@ export class IconUnknownError extends DomainError {
     });
   }
 }
+
+/**
+ * Thrown when the client attempts to set a server-computed read-only field.
+ * Belt-and-suspenders defence on top of the OpenAPI spec's readOnly markers.
+ * PRD §5.2: hp.max, mp.max, encumbrance.max are derived — never user-writable.
+ */
+export class ReadOnlyFieldError extends DomainError {
+  constructor(field: string) {
+    super({
+      code: 'READ_ONLY_FIELD',
+      status: 422,
+      title: 'Validation Error',
+      detail: `Field '${field}' is read-only and cannot be set by the client. It is computed server-side.`,
+    });
+  }
+}

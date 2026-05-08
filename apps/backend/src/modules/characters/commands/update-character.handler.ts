@@ -8,6 +8,7 @@ import {
   CharacterNotFoundError,
   CharacterNotOwnedError,
   IconUnknownError,
+  ReadOnlyFieldError,
   SkillOutOfRangeError,
 } from '../domain/character.errors';
 import {
@@ -62,6 +63,20 @@ export class UpdateCharacterHandler
 
   async execute(command: UpdateCharacterCommand): Promise<CharacterReadModel> {
     const { characterId, ownerId, dto } = command;
+
+    // Belt-and-suspenders: reject attempts to set server-computed read-only
+    // derived fields. The OpenAPI spec marks them readOnly:true, but
+    // express-openapi-validator may not strip extra nested keys in all versions.
+    // PRD §5.2 — hp.max, mp.max, encumbrance.max are always server-computed.
+    const rawDto = dto as Record<string, unknown>;
+    const rawHp = rawDto['hp'] as Record<string, unknown> | undefined;
+    const rawMp = rawDto['mp'] as Record<string, unknown> | undefined;
+    const rawEncumbrance = rawDto['encumbrance'] as Record<string, unknown> | undefined;
+    if (rawHp && 'max' in rawHp) throw new ReadOnlyFieldError('hp.max');
+    if (rawMp && 'max' in rawMp) throw new ReadOnlyFieldError('mp.max');
+    if (rawEncumbrance && 'max' in rawEncumbrance) throw new ReadOnlyFieldError('encumbrance.max');
+    if (rawEncumbrance && 'current' in rawEncumbrance)
+      throw new ReadOnlyFieldError('encumbrance.current');
 
     const existing = await this.repo.findActiveById(characterId);
     if (!existing) throw new CharacterNotFoundError(characterId);
