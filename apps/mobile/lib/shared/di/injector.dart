@@ -8,6 +8,7 @@ import 'package:app_mobile/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:app_mobile/features/characters/data/character_repository_impl.dart';
 import 'package:app_mobile/features/characters/domain/character_repository.dart';
 import 'package:app_mobile/features/characters/presentation/blocs/character_sheet/character_sheet_cubit.dart';
+import 'package:app_mobile/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
 import 'package:app_mobile/features/characters/presentation/blocs/characters_list/characters_list_cubit.dart';
 import 'package:app_mobile/shared/auth/token_storage.dart';
 import 'package:app_mobile/shared/config/app_config.dart';
@@ -68,6 +69,10 @@ void configureDependencies() {
 
   getIt.registerFactory<CharacterSheetCubit>(
     () => CharacterSheetCubit(repository: getIt<CharacterRepository>()),
+  );
+
+  getIt.registerFactory<CharacterWizardCubit>(
+    () => CharacterWizardCubit(repository: getIt<CharacterRepository>()),
   );
 }
 
