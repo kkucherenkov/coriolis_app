@@ -2,6 +2,20 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## Flutter foundation tail — 8 deferred widgets (Epic 2.5)
+
+- Completed: 2026-05-08
+- Owner: claude (flutter-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Epic 2.5 — first Phase 2 deliverable after `phase-1-complete` tag.
+- Result: ff-merged to main as `7e7d1d0..a5832cd` (4 commits). Closes Epic 2.5 at 20/20 widgets.
+  - `7e7d1d0` AppIcon (CustomPaint, zero-dep, 20-icon static map) + AppKbd.
+  - `0378dce` AppTooltip (Flutter Tooltip wrapper; left/right placement falls back to bottom — API limitation, documented inline) + AppTab (brass/mystic underline-on-active, `Semantics(selected)`) + AppBanner (5 tones incl. parchment).
+  - `0d5514b` AppSegControl<T> (2–5 options) + AppSelect (DropdownButton via InputDecorator, `dropdownColor: surfaceNight`; full menu-row theming deferred) + AppTextarea (`minLines: rows`, `maxLines: null` for unbounded growth).
+  - `a5832cd` Barrel re-export.
+- 50 new tests (13 + 20 + 17), tap targets ≥ 44×44, tokens-only, no hex literals, no new pubspec entries.
+- Local `flutter analyze`/`flutter test` skipped — system Dart SDK 3.5 below project floor 3.8 (`fvm` not configured locally). CI under target SDK is authoritative.
+- Pre-existing follow-up still open: AppTextarea autosize content-grow (Phase 2 ledger).
+
 ## Email mailer + Coriolis voice copy (Epic 4.3)
 
 - Completed: 2026-05-08
