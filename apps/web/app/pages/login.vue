@@ -171,14 +171,14 @@
         </AppField>
 
         <AppButton
-          :label="t('signInButton')"
           type="submit"
-          variant="solid"
-          color="primary"
-          block
+          variant="primary"
+          class="page-login__submit"
           :loading="loading"
           :disabled="loading || !formValid"
-        />
+        >
+          {{ t('signInButton') }}
+        </AppButton>
       </form>
 
       <p class="page-login__footnote-link">
@@ -252,6 +252,10 @@
       display: flex;
       flex-direction: column;
       gap: var(--space-4);
+    }
+
+    &__submit {
+      width: 100%;
     }
 
     &__footnote-link {

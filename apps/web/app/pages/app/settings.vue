@@ -26,14 +26,21 @@
 
   // ── Locale ────────────────────────────────────────────────────────────────
 
+  const SUPPORTED_LOCALES = ['en', 'ru', 'uk', 'el'] as const;
+  type LocaleCode = (typeof SUPPORTED_LOCALES)[number];
+
   const currentLocale = ref<string>(locale.value);
 
-  const localeOptions = computed<AppSelectOption[]>(() => [
-    { value: 'en', label: t('localeEn') },
-    { value: 'ru', label: t('localeRu') },
-    { value: 'uk', label: t('localeUk') },
-    { value: 'el', label: t('localeEl') },
-  ]);
+  const localeOptions = computed<AppSelectOption[]>(() =>
+    SUPPORTED_LOCALES.map((code) => ({
+      value: code,
+      label: t(`locale${code.charAt(0).toUpperCase()}${code.slice(1)}`),
+    })),
+  );
+
+  function isLocaleCode(value: string): value is LocaleCode {
+    return (SUPPORTED_LOCALES as readonly string[]).includes(value);
+  }
 
   // ── Theme ─────────────────────────────────────────────────────────────────
 
@@ -133,8 +140,10 @@
 
   async function onLocaleChange(value: string | number | null): Promise<void> {
     if (!value || value === locale.value) return;
-    currentLocale.value = String(value);
-    await setLocale(String(value));
+    const code = String(value);
+    if (!isLocaleCode(code)) return;
+    currentLocale.value = code;
+    await setLocale(code);
   }
 
   // ── Avatar initials helper ────────────────────────────────────────────────
