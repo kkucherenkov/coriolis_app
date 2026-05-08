@@ -1,4 +1,5 @@
 export { AppButton } from './components/AppButton';
+export { AppDots } from './components/AppDots';
 export { AppInput } from './components/AppInput';
 export { AppTextarea } from './components/AppTextarea';
 export { AppSelect } from './components/AppSelect';
