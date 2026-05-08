@@ -1,57 +1,79 @@
 <script setup lang="ts">
   import { computed, useId } from 'vue';
 
-  import AppLabel from '../AppLabel/AppLabel.vue';
+  type Size = 'sm' | 'md';
 
-  type Size = 'sm' | 'md' | 'lg';
+  interface Props {
+    label: string;
+    for?: string;
+    required?: boolean;
+    helpText?: string;
+    error?: string;
+    size?: Size;
+  }
 
-  const props = withDefaults(
-    defineProps<{
-      label: string;
-      required?: boolean;
-      help?: string;
-      error?: string;
-      size?: Size;
-    }>(),
-    { required: false, help: undefined, error: undefined, size: 'md' },
-  );
+  const props = withDefaults(defineProps<Props>(), {
+    for: undefined,
+    required: false,
+    helpText: undefined,
+    error: undefined,
+    size: 'md',
+  });
 
-  // Auto-generated, SSR-safe, stable across re-renders.
-  const fieldId = useId();
-  const descId = `${fieldId}-desc`;
+  // useId() is Vue 3.5+; generates a stable, SSR-safe id per component instance.
+  // When the consumer supplies an explicit `for` id we use that instead so the
+  // label and input share a predetermined stable id (e.g. for E2E selectors).
+  const generatedId = useId();
+  const fieldId = computed<string>(() => props.for ?? generatedId);
 
-  // AppLabel only ships sm/md; map the extra "lg" onto md so the label stays legible
-  // without unnecessary growth — input height handles the size signal.
-  const labelSize = computed<'sm' | 'md'>(() => (props.size === 'sm' ? 'sm' : 'md'));
+  // We show either the error span or the help span — never both.
+  // aria-describedby points at whichever is currently rendered.
+  const activeDescId = computed<string | undefined>(() => {
+    if (props.error) return `${fieldId.value}-error`;
+    if (props.helpText) return `${fieldId.value}-help`;
+    return undefined;
+  });
 
-  // We expose attributes the consumer spreads onto their input control — this is
-  // how the field wires a11y linkage without owning the input itself.
+  // Attrs spread onto the slotted control so the consumer wires a11y for free.
   const slotAttrs = computed(() => ({
-    id: fieldId,
-    'aria-describedby': props.help || props.error ? descId : undefined,
-    'aria-invalid': props.error ? true : undefined,
-    'aria-required': props.required ? true : undefined,
+    id: fieldId.value,
+    'aria-describedby': activeDescId.value,
+    'aria-invalid': props.error ? (true as const) : undefined,
+    'aria-required': props.required ? (true as const) : undefined,
   }));
+
+  const rootClasses = computed(() => [
+    'app-field',
+    `app-field--${props.size}`,
+    { 'app-field--required': props.required },
+    { 'app-field--invalid': !!props.error },
+  ]);
 </script>
 
 <template>
-  <div :class="['app-field', `app-field--${size}`, { 'app-field--error': !!error }]">
-    <AppLabel
-      :text="label"
-      :for="fieldId"
-      :required="required"
-      :size="labelSize"
-      class="app-field__label"
-    />
+  <div :class="rootClasses">
+    <!-- Label rendered inline — no AppLabel dep so this branch ships independently -->
+    <label :for="fieldId" class="app-field__label">
+      <span class="app-field__label-text">{{ label }}</span>
+      <span v-if="required" class="app-field__required" aria-hidden="true">*</span>
+    </label>
+
     <div class="app-field__control">
       <slot v-bind="slotAttrs" />
     </div>
-    <p v-if="error" :id="descId" class="app-field__error" role="alert">
-      {{ error }}
-    </p>
-    <p v-else-if="help" :id="descId" class="app-field__help">
-      {{ help }}
-    </p>
+
+    <!-- error wins over helpText when both are set -->
+    <span
+      v-if="error"
+      :id="`${fieldId}-error`"
+      class="app-field__error"
+      role="alert"
+    >{{ error }}</span>
+    <span
+      v-else-if="helpText"
+      :id="`${fieldId}-help`"
+      class="app-field__help"
+    >{{ helpText }}</span>
   </div>
 </template>
 
@@ -61,26 +83,74 @@
     flex-direction: column;
     gap: var(--space-2);
 
+    // ── Size modifiers ───────────────────────────────────────────────────────
+
+    &--sm {
+      gap: var(--space-1);
+    }
+
+    &--md {
+      gap: var(--space-2);
+    }
+
+    // ── Label ────────────────────────────────────────────────────────────────
+
+    &__label {
+      display: inline-flex;
+      align-items: baseline;
+      gap: var(--space-1);
+      color: var(--text-secondary);
+      font-family: var(--type-body-sm-font-family);
+      font-size: var(--type-body-sm-font-size);
+      font-weight: var(--type-body-sm-font-weight);
+      line-height: var(--type-body-sm-line-height);
+      cursor: default;
+      user-select: none;
+
+      .app-field--sm & {
+        font-size: var(--type-body-sm-font-size);
+        line-height: var(--type-body-sm-line-height);
+      }
+    }
+
+    &__label-text {
+      display: inline-block;
+    }
+
+    &__required {
+      color: var(--state-crimson-bright);
+      font-weight: 600;
+    }
+
+    // ── Control wrapper ──────────────────────────────────────────────────────
+
     &__control {
       display: flex;
       flex-direction: column;
     }
 
+    // ── Help and Error ───────────────────────────────────────────────────────
+
     &__help,
     &__error {
-      margin: 0;
-      font-family: var(--font-sans);
-      font-size: var(--text-xs);
-      line-height: var(--leading-normal);
+      font-family: var(--type-body-sm-font-family);
+      font-size: var(--type-body-sm-font-size);
+      line-height: var(--type-body-sm-line-height);
     }
 
     &__help {
-      color: var(--text-fg-muted);
+      color: var(--text-secondary);
     }
 
     &__error {
-      color: var(--status-danger);
-      font-weight: var(--fw-medium);
+      color: var(--state-crimson-bright);
+      font-weight: 600;
+    }
+
+    // ── State: invalid ───────────────────────────────────────────────────────
+
+    &--invalid &__label {
+      color: var(--state-crimson-bright);
     }
   }
 </style>
