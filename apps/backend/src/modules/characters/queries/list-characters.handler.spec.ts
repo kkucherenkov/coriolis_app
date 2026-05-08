@@ -53,7 +53,12 @@ describe('ListCharactersHandler', () => {
 
     expect(result.items).toHaveLength(2);
     expect(result.nextCursor).toBeNull();
-    expect(repo.list).toHaveBeenCalledWith({ ownerId: 'user-1', limit: 20, cursor: undefined });
+    expect(repo.list).toHaveBeenCalledWith({
+      ownerId: 'user-1',
+      limit: 20,
+      cursor: undefined,
+      includeDrafts: false,
+    });
   });
 
   it('passes cursor to repo', async () => {
@@ -61,7 +66,12 @@ describe('ListCharactersHandler', () => {
 
     await handler.execute(new ListCharactersQuery('user-1', 10, 'cursor-abc'));
 
-    expect(repo.list).toHaveBeenCalledWith({ ownerId: 'user-1', limit: 10, cursor: 'cursor-abc' });
+    expect(repo.list).toHaveBeenCalledWith({
+      ownerId: 'user-1',
+      limit: 10,
+      cursor: 'cursor-abc',
+      includeDrafts: false,
+    });
   });
 
   it('returns nextCursor when more pages exist', async () => {
