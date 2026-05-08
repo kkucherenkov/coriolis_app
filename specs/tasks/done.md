@@ -2,6 +2,34 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## Email mailer + Coriolis voice copy (Epic 4.3)
+
+- Completed: 2026-05-08
+- Owner: claude (backend-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Feature 4.3, T-4.3.1.a–c
+- Result: merged at `bf6d158`. Four commits — MailerModule + ports + adapters (`ff6381d`), Better Auth callback wiring (`689618e`), domain-error voice refresh (`68527b6`), pnpm-lock resolution (`ce02ed6`).
+- New module `apps/backend/src/modules/mailer/`:
+  - `IMailer` port (`mailer.port.ts`) with `sendVerificationEmail` / `sendPasswordResetEmail`.
+  - `MockMailer` adapter (default in dev/test) — ring-buffer of last 50 sends, `getLastSent()` for test inspection, debug logging.
+  - `ResendMailer` adapter — `node:fetch` to Resend API, no new dep, throws on non-2xx.
+  - `@Global()` `MailerModule` with factory selecting Mock vs Resend via `AppConfig.mailer.provider`. Boot-time guard throws if provider=`resend` without `RESEND_API_KEY`.
+  - 31 new vitest specs (14 service + 17 templates).
+- Email templates: 4 inline-TS templates (`verification` + `password-reset` × `en/ru`). HTML shell in `templates/email-shell.ts` is the only backend file with hex literals — explicitly justified (email clients don't support CSS custom properties).
+- Better Auth wiring: `auth.service.ts` injects `MailerService` and wires `emailVerification.sendVerificationEmail` and `emailAndPassword.sendResetPassword` callbacks. Locale defaults to `'en'` for now (TODO when `user.locale` field arrives).
+- Domain-error copy refreshed for Coriolis voice across `user.errors.ts`, `character.errors.ts`, `item.errors.ts`, `talent.errors.ts`. `code` strings unchanged (clients depend on them).
+- 191 backend specs pass total (was 160).
+
+## Web delete-account UI (Epic 4.2.c)
+
+- Completed: 2026-05-08
+- Owner: claude (frontend-engineer agent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Feature 4.2, T-4.2.1.d
+- Result: merged at `5afef03`. Two commits — `useMeApi.deleteMe()` (`f79c226`) and the settings-page modal flow (`5afef03`).
+- Native `<dialog>` confirmation modal with double-confirm via typing the exact phrase ("DELETE MY ACCOUNT" / "УДАЛИТЬ МОЙ АККАУНТ"). Locale-aware comparison.
+- Inline error state — Problem.detail rendered above action buttons, modal stays open for retry.
+- Post-delete redirect to `/`; auth guard handles the bounce to `/login`.
+- 87 web i18n keys × 4 locales clean (was 78).
+
 ## Coriolis-decorative primitives (Epic 2.2 — final 4)
 
 - Completed: 2026-05-08
