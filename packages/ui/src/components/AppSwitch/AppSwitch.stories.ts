@@ -10,15 +10,15 @@ const meta: Meta<typeof AppSwitch> = {
   tags: ['autodocs'],
   args: { modelValue: false },
   argTypes: {
-    modelValue: { control: 'boolean', description: 'Current on/off state.' },
+    modelValue: { control: 'boolean', description: 'Current on/off state (v-model).' },
     label: {
       control: 'text',
       description:
-        'When provided, renders beside the switch and forwards label clicks to the control.',
+        'Accessible label text. Rendered beside the switch. If the default slot is also provided, the slot content wins and this prop is ignored visually.',
     },
     disabled: { control: 'boolean' },
-    size: { control: 'select', options: ['sm', 'md', 'lg'] },
-    color: { control: 'select', options: ['primary', 'success', 'neutral'] },
+    size: { control: 'select', options: ['sm', 'md'] },
+    name: { control: 'text', description: 'Optional form field name attribute.' },
   },
 };
 
@@ -26,9 +26,10 @@ export default meta;
 
 type Story = StoryObj<typeof AppSwitch>;
 
-// A tiny v-model host — makes every story interactive so the playground's
-// binding arrow actually updates the control.
-export const Default: Story = {
+// ── Individual states ──────────────────────────────────────────────────────
+
+/** Switch in the off (unchecked) state — no label. */
+export const DefaultOff: Story = {
   render: (args) => ({
     components: { AppSwitch },
     setup: () => {
@@ -39,20 +40,8 @@ export const Default: Story = {
   }),
 };
 
-export const WithLabel: Story = {
-  args: { label: 'Email notifications' },
-  render: (args) => ({
-    components: { AppSwitch },
-    setup: () => {
-      const checked = ref(false);
-      return { args, checked };
-    },
-    template: `<AppSwitch v-bind="args" v-model="checked" />`,
-  }),
-};
-
-export const Checked: Story = {
-  args: { label: 'SMS alerts' },
+/** Switch in the on (checked) state — no label. */
+export const DefaultOn: Story = {
   render: (args) => ({
     components: { AppSwitch },
     setup: () => {
@@ -63,7 +52,98 @@ export const Checked: Story = {
   }),
 };
 
-export const Disabled: Story = {
+// ── With label prop ────────────────────────────────────────────────────────
+
+/** Label prop: string shown to the right; clicking it toggles the switch. */
+export const WithLabelProp: Story = {
+  args: { label: 'Push notifications' },
+  render: (args) => ({
+    components: { AppSwitch },
+    setup: () => {
+      const checked = ref(false);
+      return { args, checked };
+    },
+    template: `<AppSwitch v-bind="args" v-model="checked" />`,
+  }),
+};
+
+/** Label prop — checked state. */
+export const WithLabelPropChecked: Story = {
+  args: { label: 'Auto-save character sheet' },
+  render: (args) => ({
+    components: { AppSwitch },
+    setup: () => {
+      const checked = ref(true);
+      return { args, checked };
+    },
+    template: `<AppSwitch v-bind="args" v-model="checked" />`,
+  }),
+};
+
+// ── Default slot ───────────────────────────────────────────────────────────
+
+/** Default slot allows rich label markup (e.g. bold + muted hint). */
+export const WithSlot: Story = {
+  render: (args) => ({
+    components: { AppSwitch },
+    setup: () => {
+      const checked = ref(false);
+      return { args, checked };
+    },
+    template: `
+      <AppSwitch v-bind="args" v-model="checked">
+        <span>
+          Dark mode
+          <span style="color: var(--text-secondary); font-size: var(--type-body-sm-font-size); margin-left: var(--space-2);">
+            Applies system-wide
+          </span>
+        </span>
+      </AppSwitch>
+    `,
+  }),
+};
+
+/** Slot wins over label prop when both are provided. */
+export const SlotWinsOverProp: Story = {
+  args: { label: 'This prop label is ignored' },
+  render: (args) => ({
+    components: { AppSwitch },
+    setup: () => {
+      const checked = ref(false);
+      return { args, checked };
+    },
+    template: `
+      <AppSwitch v-bind="args" v-model="checked">
+        <strong>Slot label wins</strong>
+      </AppSwitch>
+    `,
+  }),
+};
+
+// ── Sizes ──────────────────────────────────────────────────────────────────
+
+/** Both available sizes side by side. */
+export const Sizes: Story = {
+  render: (args) => ({
+    components: { AppSwitch },
+    setup: () => {
+      const sm = ref(true);
+      const md = ref(true);
+      return { args, sm, md };
+    },
+    template: `
+      <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+        <AppSwitch v-bind="args" v-model="sm" size="sm" label="Small (sm)" />
+        <AppSwitch v-bind="args" v-model="md" size="md" label="Medium (md) — default" />
+      </div>
+    `,
+  }),
+};
+
+// ── Disabled ───────────────────────────────────────────────────────────────
+
+/** Disabled off — cursor not-allowed, opacity reduced. */
+export const DisabledOff: Story = {
   args: { label: 'Sync over cellular', disabled: true },
   render: (args) => ({
     components: { AppSwitch },
@@ -75,39 +155,51 @@ export const Disabled: Story = {
   }),
 };
 
-export const Sizes: Story = {
+/** Disabled on — still visually marked as checked, but not interactive. */
+export const DisabledOn: Story = {
+  args: { label: 'Location services (managed)', disabled: true },
   render: (args) => ({
     components: { AppSwitch },
     setup: () => {
-      const sm = ref(true);
-      const md = ref(true);
-      const lg = ref(true);
-      return { args, sm, md, lg };
+      const checked = ref(true);
+      return { args, checked };
     },
-    template: `
-      <div style="display:flex; gap: var(--space-12); align-items:center;">
-        <AppSwitch v-bind="args" v-model="sm" size="sm" />
-        <AppSwitch v-bind="args" v-model="md" size="md" />
-        <AppSwitch v-bind="args" v-model="lg" size="lg" />
-      </div>
-    `,
+    template: `<AppSwitch v-bind="args" v-model="checked" />`,
   }),
 };
 
-export const Colors: Story = {
+// ── Form field (name prop) ─────────────────────────────────────────────────
+
+/** Form usage: name prop forwarded to the button for progressive enhancement. */
+export const FormField: Story = {
+  args: { label: 'Agree to terms', name: 'terms' },
   render: (args) => ({
     components: { AppSwitch },
     setup: () => {
-      const primary = ref(true);
-      const success = ref(true);
-      const neutral = ref(true);
-      return { args, primary, success, neutral };
+      const checked = ref(false);
+      return { args, checked };
+    },
+    template: `<AppSwitch v-bind="args" v-model="checked" />`,
+  }),
+};
+
+// ── Form field row ─────────────────────────────────────────────────────────
+
+/** Vertical stack of three switches — representative preferences panel. */
+export const FormFieldRow: Story = {
+  render: (args) => ({
+    components: { AppSwitch },
+    setup: () => {
+      const email = ref(true);
+      const sms = ref(false);
+      const push = ref(true);
+      return { args, email, sms, push };
     },
     template: `
-      <div style="display:flex; gap: var(--space-12); align-items:center;">
-        <AppSwitch v-bind="args" v-model="primary" color="primary" label="Primary" />
-        <AppSwitch v-bind="args" v-model="success" color="success" label="Success" />
-        <AppSwitch v-bind="args" v-model="neutral" color="neutral" label="Neutral" />
+      <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+        <AppSwitch v-bind="args" v-model="email" name="notify_email" label="Email notifications" />
+        <AppSwitch v-bind="args" v-model="sms"   name="notify_sms"   label="SMS alerts" />
+        <AppSwitch v-bind="args" v-model="push"  name="notify_push"  label="Push notifications" />
       </div>
     `,
   }),
