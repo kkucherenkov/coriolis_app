@@ -133,6 +133,7 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 | -------- | --------- | --------------- | ------------------ |
 | Primitive | `AppAvatar` | ✓ | — |
 | Primitive | `AppBadge` | ✓ | — |
+| Primitive | `AppBanner` | ✓ | — |
 | Primitive | `AppButton` | ✓ | — |
 | Primitive | `AppCard` | ✓ | — |
 | Primitive | `AppChip` | ✓ | — |

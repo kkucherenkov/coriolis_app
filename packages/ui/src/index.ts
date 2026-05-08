@@ -1,4 +1,5 @@
 export { AppAvatar } from './components/AppAvatar';
+export { AppBanner } from './components/AppBanner';
 export { AppButton } from './components/AppButton';
 export { AppDots } from './components/AppDots';
 export { AppInput } from './components/AppInput';
