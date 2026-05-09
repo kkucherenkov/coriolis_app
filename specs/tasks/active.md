@@ -53,11 +53,13 @@
         Outstanding for next blocks: the widget keeps only the
         last roll in local state; full reverse-chrono history is
         Block 2's job.
-  - [ ] Block 2 — Roll history. Replace the "Recent Rolls" placeholder
-        with the live list (last 50, reverse-chrono, hits + pushed
-        flag + timestamp). Row click opens an `AppModal` showing the
-        full dice array, label, pool, and pushed-vs-original split if
-        applicable.
+  - [x] Block 2 — Roll history (sibling `SheetRollHistory` component).
+        Fetches last 50 on mount, prepended via `defineExpose` from
+        the parent on each `rollCreated` (no refetch — would race
+        the INSERT). Detail modal shows full dice + pool + hits +
+        absolute timestamp; list rows show trimmed label + hits
+        badge + "Pushed" badge + relative time ("3m ago",
+        "yesterday", "May 09"). Locale-aware via `locale.value`.
   - [ ] Block 3 — `useGameSessionsApi` + `/app/sessions` index page
         listing the GM's sessions (active + archived tabs) with
         create / archive actions. New session form (name +
