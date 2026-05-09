@@ -4,11 +4,12 @@
  * Reads `asyncapi/centrifugo.yaml`, extracts the payload schemas referenced
  * by each channel, and emits `packages/api-client-ts/src/realtime/channels.ts`
  * containing:
- *   - One interface per payload (generated via json-schema-to-typescript).
+ *   - One interface per payload schema (generated via json-schema-to-typescript).
  *   - A `RealtimeChannel` union of every channel `address` (with `{param}`
  *     placeholders preserved).
  *   - A `RealtimeChannelPayload<Channel>` conditional type that maps a
- *     channel template to its payload interface.
+ *     channel template to a union of its payload interfaces (channels with
+ *     multiple messages emit a union).
  *
  * The output is a single deterministic file so the `codegen-drift` CI job
  * catches unreviewed changes.
@@ -58,20 +59,29 @@ function resolveRef(ref: string): { name: string; value: unknown } {
 
 interface ChannelEntry {
   address: string;
-  payloadName: string;
+  /** All payload schema names for messages in this channel. */
+  payloadNames: string[];
 }
 
 const channels: ChannelEntry[] = [];
 const payloadSchemas = new Map<string, unknown>();
 
 for (const channel of Object.values(doc.channels)) {
-  const firstMessage = Object.values(channel.messages)[0];
-  if (!firstMessage) continue;
-  const message = resolveRef(firstMessage.$ref).value as { payload: { $ref: string } };
-  const payloadRef = resolveRef(message.payload.$ref);
-  const schemaName = payloadRef.name;
-  payloadSchemas.set(schemaName, payloadRef.value);
-  channels.push({ address: channel.address, payloadName: schemaName });
+  const payloadNames: string[] = [];
+
+  for (const msgRef of Object.values(channel.messages)) {
+    const message = resolveRef(msgRef.$ref).value as { payload: { $ref: string } };
+    const payloadRef = resolveRef(message.payload.$ref);
+    const schemaName = payloadRef.name;
+    if (!payloadSchemas.has(schemaName)) {
+      payloadSchemas.set(schemaName, payloadRef.value);
+    }
+    payloadNames.push(schemaName);
+  }
+
+  if (payloadNames.length > 0) {
+    channels.push({ address: channel.address, payloadNames });
+  }
 }
 
 const banner = `/* eslint-disable */
@@ -94,7 +104,9 @@ for (const [name, schema] of payloadSchemas) {
 }
 
 const channelUnion = channels.map((c) => `  | '${c.address}'`).join('\n');
-const payloadMapEntries = channels.map((c) => `  '${c.address}': ${c.payloadName};`).join('\n');
+const payloadMapEntries = channels
+  .map((c) => `  '${c.address}': ${c.payloadNames.join(' | ')};`)
+  .join('\n');
 
 const body = `
 export type RealtimeChannel =

@@ -1,7 +1,7 @@
 asyncapi: 3.1.0
 info:
   title: App Realtime API
-  version: 0.1.0
+  version: 0.8.2
   description: |
     Real-time channels delivered via Centrifugo. Clients connect with a
     short-lived JWT issued by the backend (`POST /api/v1/realtime/token`)
@@ -31,6 +31,24 @@ channels:
         $ref: "#/components/messages/HealthUpdate"
     description: Broadcast of service health transitions (ok <-> degraded <-> down).
 
+  sessionChannel:
+    address: "session.{gameSessionId}"
+    parameters:
+      gameSessionId:
+        description: GameSession id.
+        location: $message.payload#/gameSessionId
+    messages:
+      dpChanged:
+        $ref: "#/components/messages/DpChanged"
+      rollPushed:
+        $ref: "#/components/messages/RollPushed"
+    description: |
+      Per-session realtime channel. Subscribers: the session GM and any
+      players whose characters are linked to this session. Server publishes
+      DP / encounter / combatant updates here.
+
+      Encounter and combatant payloads are stubbed — they land in Epic 9.
+
 operations:
   receiveHealthUpdate:
     action: receive
@@ -40,6 +58,22 @@ operations:
     messages:
       - $ref: "#/channels/systemHealth/messages/healthUpdate"
 
+  receiveDpChanged:
+    action: receive
+    channel:
+      $ref: "#/channels/sessionChannel"
+    summary: Listen for Darkness Point counter updates in a session
+    messages:
+      - $ref: "#/channels/sessionChannel/messages/dpChanged"
+
+  receiveRollPushed:
+    action: receive
+    channel:
+      $ref: "#/channels/sessionChannel"
+    summary: Listen for roll-push events in a session
+    messages:
+      - $ref: "#/channels/sessionChannel/messages/rollPushed"
+
 components:
   messages:
     HealthUpdate:
@@ -47,6 +81,18 @@ components:
       contentType: application/json
       payload:
         $ref: "#/components/schemas/HealthUpdate"
+
+    DpChanged:
+      name: dp.changed
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/DpChanged"
+
+    RollPushed:
+      name: roll.pushed
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/RollPushed"
 
   schemas:
     HealthUpdate:
@@ -61,6 +107,42 @@ components:
           format: date-time
         reason:
           type: string
+
+    DpChanged:
+      type: object
+      required: [gameSessionId, dpCount, delta, source]
+      properties:
+        gameSessionId:
+          type: string
+        dpCount:
+          type: integer
+          minimum: 0
+        delta:
+          type: integer
+        source:
+          type: string
+          enum: [gm-manual, roll-push, system]
+        at:
+          type: string
+          format: date-time
+
+    RollPushed:
+      type: object
+      required: [rollId, characterId, hits]
+      properties:
+        rollId:
+          type: string
+        characterId:
+          type: string
+        gameSessionId:
+          type: string
+          nullable: true
+        hits:
+          type: integer
+          minimum: 0
+        at:
+          type: string
+          format: date-time
 
   securitySchemes:
     connectionJwt:
