@@ -2,6 +2,59 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-10-001 — T-005 + T-004 follow-ups before next epic
+
+- Completed: 2026-05-10
+- Owner: claude
+- Spec: carried-over follow-ups recorded on T-2026-05-09-005 (character
+  creation rules alignment) and T-2026-05-09-004 (signup page) entries
+  earlier in this file.
+- Goal: Close the three open code follow-ups from those tasks so a
+  fresh epic starts on a clean slate. Translator-pass items (uk/el
+  copy) were explicitly out of scope and remain tracked under "Open
+  follow-ups" below.
+- Result: shipped on `main` across three feature commits + bookkeeping.
+  Each block landed in its own session per the saved
+  `feedback_block_workflow` rule.
+  - `0dc1f87` `feat(character): T-2026-05-10-001 Block 1 — locale-aware talent rendering`
+  - `41f61c5` `feat(character): T-2026-05-10-001 Block 2 — amplua-filtered personal pool`
+  - `cdfca86` `feat(web): T-2026-05-10-001 Block 3 — forgot-password + reset-password flow`
+- Spec diff: none — all three blocks are frontend-only (Block 1 reads
+  the existing catalog at render time; Block 2 ships a new map in
+  `@app/specs` consumed only by the wizard; Block 3 wires Better
+  Auth's existing `request-password-reset` / `reset-password` routes,
+  which were already configured in `auth.service.ts` from T-005).
+- Acceptance check (against the original list):
+  - ✅ Character sheet renders catalog talents (`kind ≠ personal`) in
+    the active i18n locale via `useTalentLocalization`
+    (`apps/web/app/composables/useTalentLocalization.ts`); user-
+    edited rows fall through to stored name/description.
+  - ✅ Wizard Step 6 personal-pool picker narrows to ST3001 ch.2
+    recommendations per amplua via
+    `RECOMMENDED_PERSONAL_TALENTS_BY_CONCEPT`; default-on toggle,
+    auto-drops when the picked talent isn't in the new amplua's
+    list.
+  - ✅ `/login` shows "Forgot password?" link → `/forgot-password`
+    → `auth.requestPasswordReset` → email link →
+    `/reset-password?token=…` → `auth.resetPassword` → bounce to
+    `/login`. Page also renders a "Reset link incomplete" block
+    when the token query parameter is missing.
+- Tests: 434/434 backend (425 → 434, +9 new specs covering
+  `findCatalogTalentByName`, `pickLocalized`,
+  `getRecommendedPersonalTalents`), 53/53 web. typecheck clean. lint
+  zero errors.
+- Open follow-ups (deferred — need a translator, not code):
+  - `uk` and `el` strings on `/signup`, `/login`,
+    `/forgot-password`, `/reset-password` are still
+    `[uk-todo]/[el-todo]` placeholders.
+  - `uk` and `el` entries in `packages/specs/src/talents.ts` — same
+    shape, same reason.
+  - SDK-method naming clarification: BA's email-and-password reset
+    surface is `auth.requestPasswordReset` (not `forgetPassword`,
+    which is reserved for the email-OTP plugin). Memorialised here
+    so a future agent reading the BA docs doesn't reach for the
+    wrong name.
+
 ## T-2026-05-09-003 — Epic 7 Feature 7.3: Darkness Points + push wiring
 
 - Completed: 2026-05-10
