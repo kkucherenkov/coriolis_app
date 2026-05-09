@@ -147,6 +147,7 @@ model Character {
   relationships       Relationship[]
   criticalInjuries    CriticalInjury[]
   shareLinks          ShareLink[]
+  rolls               Roll[]
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
 
@@ -285,4 +286,34 @@ model CriticalInjury {
 
   @@index([characterId])
   @@map("critical_injury")
+}
+
+/// A Coriolis dice roll result, persisted for roll history and the push mechanic.
+///
+/// Design notes:
+/// - `dice` is a Postgres integer array — all pool dice are stored together; after
+///   a push the non-6 values are updated in place so the array always has `pool`
+///   elements.
+/// - `hits` is a derived value but is stored to avoid recounting on every read.
+///   It is recomputed and overwritten on push.
+/// - `gameSessionId` is a nullable String (no FK constraint yet) — the GameSession
+///   resource lands in Feature 7.2. The FK will be added in the Feature 7.2
+///   migration once the GameSession table exists.
+/// - Cascade delete ensures rolls disappear when their character is hard-deleted.
+model Roll {
+  id            String    @id @default(cuid())
+  characterId   String
+  character     Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  /// Nullable until Feature 7.2 ships the GameSession resource.
+  gameSessionId String?
+  label         String
+  pool          Int
+  dice          Int[]
+  hits          Int
+  pushed        Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+
+  @@index([characterId, createdAt])
+  @@index([gameSessionId])
+  @@map("roll")
 }
