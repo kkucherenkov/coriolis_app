@@ -155,7 +155,10 @@
 </i18n>
 
 <template>
-  <div class="page-signup" data-testid="page-signup">
+  <div
+    class="page-signup"
+    data-testid="page-signup"
+  >
     <div class="page-signup__shell">
       <h1 class="page-signup__wordmark">
         {{ t('wordmark') }}
@@ -171,12 +174,24 @@
           </p>
         </div>
 
-        <p v-if="errorMsg" role="alert" class="page-signup__error">
+        <p
+          v-if="errorMsg"
+          role="alert"
+          class="page-signup__error"
+        >
           {{ errorMsg }}
         </p>
 
-        <form class="page-signup__form" novalidate @submit.prevent="onSignUp">
-          <AppField :label="t('emailLabel')" :help="t('emailHint')" required>
+        <form
+          class="page-signup__form"
+          novalidate
+          @submit.prevent="onSignUp"
+        >
+          <AppField
+            :label="t('emailLabel')"
+            :help="t('emailHint')"
+            required
+          >
             <template #default="slotAttrs">
               <AppInput
                 v-bind="slotAttrs"
@@ -189,7 +204,11 @@
             </template>
           </AppField>
 
-          <AppField :label="t('passwordLabel')" :help="t('passwordHint')" required>
+          <AppField
+            :label="t('passwordLabel')"
+            :help="t('passwordHint')"
+            required
+          >
             <template #default="slotAttrs">
               <AppInput
                 v-bind="slotAttrs"
@@ -200,7 +219,11 @@
             </template>
           </AppField>
 
-          <AppField :label="t('confirmLabel')" :help="t('confirmHint')" required>
+          <AppField
+            :label="t('confirmLabel')"
+            :help="t('confirmHint')"
+            required
+          >
             <template #default="slotAttrs">
               <AppInput
                 v-bind="slotAttrs"
@@ -224,7 +247,10 @@
 
         <p class="page-signup__footnote-link">
           {{ t('haveAccount') }}
-          <NuxtLink to="/login" class="page-signup__link">
+          <NuxtLink
+            to="/login"
+            class="page-signup__link"
+          >
             {{ t('signInLink') }}
           </NuxtLink>
         </p>
