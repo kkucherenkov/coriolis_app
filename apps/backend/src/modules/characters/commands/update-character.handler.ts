@@ -25,7 +25,7 @@ import { UpdateCharacterCommand } from './update-character.command';
 
 import type { ICharacterRepo } from '../domain/character.ports';
 
-const VALID_ICONS: readonly IconId[] = [
+const VALID_ICONS = new Set<IconId>([
   'lady-of-tears',
   'traveler',
   'messenger',
@@ -35,10 +35,10 @@ const VALID_ICONS: readonly IconId[] = [
   'judge',
   'faceless-one',
   'deckhand',
-];
+]);
 
 function validateAttributes(attrs: Attributes): void {
-  for (const [key, val] of Object.entries(attrs)) {
+  for (const [key, val] of Object.entries(attrs) as [string, number][]) {
     if (val < 1 || val > 5) {
       throw new AttributeOutOfRangeError(key, val);
     }
@@ -46,7 +46,7 @@ function validateAttributes(attrs: Attributes): void {
 }
 
 function validateSkills(skills: Skills): void {
-  for (const [key, val] of Object.entries(skills)) {
+  for (const [key, val] of Object.entries(skills) as [string, number][]) {
     if (val < 0 || val > 5) {
       throw new SkillOutOfRangeError(key, val);
     }
@@ -96,7 +96,7 @@ export class UpdateCharacterHandler
       if (dto.name.length > 80) throw new CharacterNameTooLongError();
     }
 
-    if (dto.iconId && !VALID_ICONS.includes(dto.iconId)) {
+    if (dto.iconId && !VALID_ICONS.has(dto.iconId)) {
       throw new IconUnknownError(dto.iconId);
     }
 

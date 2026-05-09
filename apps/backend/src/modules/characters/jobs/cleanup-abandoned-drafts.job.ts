@@ -38,7 +38,7 @@ export class CleanupAbandonedDraftsJob {
     const count = await this.repo.deleteAbandonedDrafts(cutoff);
 
     this.logger.log(
-      `Deleted ${count} abandoned draft characters (updatedAt < ${cutoff.toISOString()}).`,
+      `Deleted ${String(count)} abandoned draft characters (updatedAt < ${cutoff.toISOString()}).`,
     );
   }
 }

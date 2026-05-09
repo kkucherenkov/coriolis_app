@@ -11,7 +11,7 @@ import type { ICharacterRepo, ItemReadModel } from '../../domain/character.ports
 import type { IItemRepo } from '../domain/item.ports';
 
 function buildPayload(dto: AddItemCommand['dto']): Record<string, unknown> {
-  const { type, ...rest } = dto;
+  const { type: _type, ...rest } = dto;
   return rest;
 }
 

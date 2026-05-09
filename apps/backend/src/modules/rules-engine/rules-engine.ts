@@ -71,11 +71,13 @@ export function computeEncumbranceMax(strength: number): number {
  * Items without a `weight` field in data are treated as 0 (defensive).
  */
 export function computeEncumbranceCurrent(items: ItemReadModel[]): number {
-  return items.reduce((total, item) => {
+  let total = 0;
+  for (const item of items) {
     const data = item as Record<string, unknown>;
     const weight = typeof data['weight'] === 'number' ? data['weight'] : 0;
-    return total + weight;
-  }, 0);
+    total += weight;
+  }
+  return total;
 }
 
 // --------------- Condition dice-pool penalty ---------------
@@ -100,10 +102,10 @@ export function applyConditions(
   basePool: number,
 ): number {
   const active =
-    Number(Boolean(conditions.exhausted)) +
-    Number(Boolean(conditions.sleepless)) +
-    Number(Boolean(conditions.thirsty)) +
-    Number(Boolean(conditions.hungry));
+    (conditions.exhausted ? 1 : 0) +
+    (conditions.sleepless ? 1 : 0) +
+    (conditions.thirsty ? 1 : 0) +
+    (conditions.hungry ? 1 : 0);
   return Math.max(0, basePool - active);
 }
 

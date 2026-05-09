@@ -34,7 +34,7 @@ export class CascadeDeletedUsersJob {
       where: { deletedAt: { lt: cutoff } },
     });
 
-    this.logger.log(`Cascade-deleted ${result.count} expired users (cutoff=${cutoff.toISOString()}).`);
+    this.logger.log(`Cascade-deleted ${String(result.count)} expired users (cutoff=${cutoff.toISOString()}).`);
 
     // TODO: Centrifugo channel cleanup + share-slug cache invalidation hooks
     // when those systems land (Epic 7+).

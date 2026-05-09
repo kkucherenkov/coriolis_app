@@ -175,7 +175,7 @@ function mapItem(item: { id: string; type: string; data: unknown }): ItemReadMod
 
 function toReadModel(row: PrismaCharacterFull): CharacterReadModel {
   const attrs = row.attributes as Attributes;
-  const inventory = row.items.map(mapItem);
+  const inventory = row.items.map((it) => mapItem(it));
   return {
     id: row.id,
     ownerId: row.ownerId,
@@ -198,9 +198,9 @@ function toReadModel(row: PrismaCharacterFull): CharacterReadModel {
     },
     experience: row.experience,
     conditions: row.conditions as ConditionFlags,
-    criticalInjuries: row.criticalInjuries.map(mapInjury),
-    talents: row.talents.map(mapTalent),
-    relationships: row.relationships.map(mapRelationship),
+    criticalInjuries: row.criticalInjuries.map((ci) => mapInjury(ci)),
+    talents: row.talents.map((t) => mapTalent(t)),
+    relationships: row.relationships.map((r) => mapRelationship(r)),
     inventory,
     notes: row.notes,
     status: toCharacterStatus(row.status),
@@ -303,22 +303,18 @@ export class CharacterRepo implements ICharacterRepo {
         name: data.name,
         concept: data.concept ?? null,
         iconId: data.iconId ? this.toIconIdEnum(data.iconId) : null,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Prisma Json fields require 'as object' cast
-        attributes: data.attributes as object,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Prisma Json fields require 'as object' cast
-        skills: data.skills as object,
+        attributes: data.attributes,
+        skills: data.skills,
         hpCurrent: data.hpCurrent,
         mpCurrent: data.mpCurrent,
         experience: data.experience,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Prisma Json fields require 'as object' cast
-        conditions: data.conditions as object,
+        conditions: data.conditions,
         notes: data.notes ?? null,
         status: statusEnum,
       },
       select: CHARACTER_FULL_SELECT,
     });
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- Prisma select return type differs from our interface; shape is correct by construction
-    return toReadModel(row as unknown as PrismaCharacterFull);
+    return toReadModel(row);
   }
 
   async update(
@@ -380,8 +376,10 @@ export class CharacterRepo implements ICharacterRepo {
     });
 
     const updated = await this.findActiveById(id);
-    // findActiveById should always find the row we just updated
-    return updated!;
+    if (!updated) {
+      throw new Error(`Character ${id} not found after update — race condition or missing row.`);
+    }
+    return updated;
   }
 
   async deleteAbandonedDrafts(cutoff: Date): Promise<number> {

@@ -56,7 +56,7 @@ export class AttributeOutOfRangeError extends DomainError {
       code: 'ATTRIBUTE_OUT_OF_RANGE',
       status: 422,
       title: 'Validation Error',
-      detail: `Attribute '${attribute}' value ${value} falls outside the permitted range (1–5). Check the character rules.`,
+      detail: `Attribute '${attribute}' value ${String(value)} falls outside the permitted range (1–5). Check the character rules.`,
     });
   }
 }
@@ -67,7 +67,7 @@ export class SkillOutOfRangeError extends DomainError {
       code: 'SKILL_OUT_OF_RANGE',
       status: 422,
       title: 'Validation Error',
-      detail: `Skill '${skill}' value ${value} is not within the permitted range (0–5).`,
+      detail: `Skill '${skill}' value ${String(value)} is not within the permitted range (0–5).`,
     });
   }
 }

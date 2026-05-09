@@ -18,7 +18,7 @@ export class MockMailer implements IMailer {
   private readonly logger = new Logger(MockMailer.name);
   private readonly buffer: SentMailRecord[] = [];
 
-  async sendVerificationEmail(args: SendVerificationEmailArgs): Promise<void> {
+  sendVerificationEmail(args: SendVerificationEmailArgs): Promise<void> {
     const tpl =
       args.locale === 'ru'
         ? verificationEmailRu({
@@ -43,9 +43,10 @@ export class MockMailer implements IMailer {
       subject: tpl.subject,
       sentAt: new Date(),
     });
+    return Promise.resolve();
   }
 
-  async sendPasswordResetEmail(args: SendPasswordResetEmailArgs): Promise<void> {
+  sendPasswordResetEmail(args: SendPasswordResetEmailArgs): Promise<void> {
     const tpl =
       args.locale === 'ru'
         ? passwordResetEmailRu({
@@ -70,6 +71,7 @@ export class MockMailer implements IMailer {
       subject: tpl.subject,
       sentAt: new Date(),
     });
+    return Promise.resolve();
   }
 
   /** Returns a copy of the ring buffer. Useful for test assertions. */
