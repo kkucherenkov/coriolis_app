@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 
-import 'package:app_mobile/features/auth/domain/auth_repository.dart';
-import 'package:app_mobile/features/auth/domain/auth_user.dart';
-import 'package:app_mobile/shared/auth/token_storage.dart';
+import 'package:coriolis_companion/features/auth/domain/auth_repository.dart';
+import 'package:coriolis_companion/features/auth/domain/auth_user.dart';
+import 'package:coriolis_companion/shared/auth/token_storage.dart';
 
 /// Implements [AuthRepository] by calling Better Auth endpoints directly via
 /// Dio.  Better Auth owns its own wire format and is not part of the generated

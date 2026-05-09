@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_ui/app_ui.dart';
 
-import 'package:app_mobile/app/routes.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/wizard/wizard_shell.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/wizard/step_1_concept.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/wizard/step_2_background.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/wizard/step_3_icon.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/wizard/step_4_attributes.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/wizard/step_5_skills.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/wizard/step_6_talents.dart';
-import 'package:app_mobile/i18n/strings.g.dart';
-import 'package:app_mobile/shared/di/injector.dart';
+import 'package:coriolis_companion/app/routes.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/wizard_shell.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_1_concept.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_2_background.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_3_icon.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_4_attributes.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_5_skills.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_6_talents.dart';
+import 'package:coriolis_companion/i18n/strings.g.dart';
+import 'package:coriolis_companion/shared/di/injector.dart';
 
 /// Character creation wizard — 6-step PageView backed by [CharacterWizardCubit].
 ///

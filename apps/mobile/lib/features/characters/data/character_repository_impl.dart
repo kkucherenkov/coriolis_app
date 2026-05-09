@@ -54,9 +54,9 @@ import 'package:app_api_client/app_api_client.dart'
 import 'package:built_collection/built_collection.dart';
 import 'package:one_of/one_of.dart';
 
-import 'package:app_mobile/features/characters/domain/character.dart';
-import 'package:app_mobile/features/characters/domain/character_repository.dart';
-import 'package:app_mobile/features/characters/domain/character_summary.dart';
+import 'package:coriolis_companion/features/characters/domain/character.dart';
+import 'package:coriolis_companion/features/characters/domain/character_repository.dart';
+import 'package:coriolis_companion/features/characters/domain/character_summary.dart';
 
 /// Adapter bridging [CharactersApi] with the domain [CharacterRepository].
 ///

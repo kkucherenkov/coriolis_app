@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:app_mobile/features/auth/presentation/bloc/auth_cubit.dart';
-import 'package:app_mobile/features/auth/presentation/bloc/auth_state.dart';
-import 'package:app_mobile/features/auth/presentation/welcome_screen.dart';
-import 'package:app_mobile/features/characters/presentation/pages/characters_list_page.dart';
-import 'package:app_mobile/i18n/strings.g.dart';
-import 'package:app_mobile/shared/di/injector.dart';
+import 'package:coriolis_companion/features/auth/presentation/bloc/auth_cubit.dart';
+import 'package:coriolis_companion/features/auth/presentation/bloc/auth_state.dart';
+import 'package:coriolis_companion/features/auth/presentation/welcome_screen.dart';
+import 'package:coriolis_companion/features/characters/presentation/pages/characters_list_page.dart';
+import 'package:coriolis_companion/i18n/strings.g.dart';
+import 'package:coriolis_companion/shared/di/injector.dart';
 
 /// Root gate: bootstraps the [AuthCubit], checks the stored session, then
 /// routes to either the unauthenticated stack (Welcome) or the authenticated

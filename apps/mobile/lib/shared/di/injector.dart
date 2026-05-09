@@ -2,17 +2,17 @@ import 'package:app_api_client/app_api_client.dart' show CharactersApi, standard
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 
-import 'package:app_mobile/features/auth/data/auth_api.dart';
-import 'package:app_mobile/features/auth/domain/auth_repository.dart';
-import 'package:app_mobile/features/auth/presentation/bloc/auth_cubit.dart';
-import 'package:app_mobile/features/characters/data/character_repository_impl.dart';
-import 'package:app_mobile/features/characters/domain/character_repository.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_sheet/character_sheet_cubit.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/characters_list/characters_list_cubit.dart';
-import 'package:app_mobile/shared/auth/token_storage.dart';
-import 'package:app_mobile/shared/config/app_config.dart';
-import 'package:app_mobile/shared/network/api_client.dart';
+import 'package:coriolis_companion/features/auth/data/auth_api.dart';
+import 'package:coriolis_companion/features/auth/domain/auth_repository.dart';
+import 'package:coriolis_companion/features/auth/presentation/bloc/auth_cubit.dart';
+import 'package:coriolis_companion/features/characters/data/character_repository_impl.dart';
+import 'package:coriolis_companion/features/characters/domain/character_repository.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_sheet/character_sheet_cubit.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/characters_list/characters_list_cubit.dart';
+import 'package:coriolis_companion/shared/auth/token_storage.dart';
+import 'package:coriolis_companion/shared/config/app_config.dart';
+import 'package:coriolis_companion/shared/network/api_client.dart';
 
 /// Global service locator. All runtime dependencies register here; widgets
 /// resolve blocs via `BlocProvider(create: (_) => getIt<FooBloc>())` and

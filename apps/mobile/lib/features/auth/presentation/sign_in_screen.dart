@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:app_mobile/features/auth/presentation/bloc/auth_cubit.dart';
-import 'package:app_mobile/features/auth/presentation/bloc/auth_state.dart';
-import 'package:app_mobile/i18n/strings.g.dart';
-import 'package:app_mobile/shared/di/injector.dart';
+import 'package:coriolis_companion/features/auth/presentation/bloc/auth_cubit.dart';
+import 'package:coriolis_companion/features/auth/presentation/bloc/auth_state.dart';
+import 'package:coriolis_companion/i18n/strings.g.dart';
+import 'package:coriolis_companion/shared/di/injector.dart';
 
 /// Phone + OTP entry. Two internal steps driven by [AuthState.status]:
 ///   - phone → user types their number and name, tapping submit requests a code.

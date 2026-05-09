@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import 'package:app_mobile/features/auth/presentation/sign_in_screen.dart';
-import 'package:app_mobile/features/auth/presentation/sign_up_screen.dart';
-import 'package:app_mobile/features/auth/presentation/welcome_screen.dart';
-import 'package:app_mobile/features/characters/presentation/pages/character_create_page.dart';
-import 'package:app_mobile/features/characters/presentation/pages/character_sheet_page.dart';
-import 'package:app_mobile/features/characters/presentation/pages/characters_list_page.dart';
-import 'package:app_mobile/features/settings/presentation/settings_screen.dart';
+import 'package:coriolis_companion/features/auth/presentation/sign_in_screen.dart';
+import 'package:coriolis_companion/features/auth/presentation/sign_up_screen.dart';
+import 'package:coriolis_companion/features/auth/presentation/welcome_screen.dart';
+import 'package:coriolis_companion/features/characters/presentation/pages/character_create_page.dart';
+import 'package:coriolis_companion/features/characters/presentation/pages/character_sheet_page.dart';
+import 'package:coriolis_companion/features/characters/presentation/pages/characters_list_page.dart';
+import 'package:coriolis_companion/features/settings/presentation/settings_screen.dart';
 
 /// Named route constants.
 abstract class AppRoutes {

@@ -121,7 +121,7 @@
   "wizardNameLabel": "Name",
   "wizardNameHint": "Character name (max 80 characters)",
   "wizardConceptLabel": "Concept",
-  "wizardConceptHint": "A short phrase — e.g. "Veteran fringe pilot"",
+  "wizardConceptHint": "A short phrase — e.g. \"Veteran fringe pilot\"",
 
   "wizardStep2Title": "People & Background",
   "wizardStep2Blurb": "Where do you come from? Your origin shapes your attribute budget, starting reputation, and the reroll-once attribute.",

@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
-import 'package:app_mobile/shared/auth/token_storage.dart';
-import 'package:app_mobile/shared/config/app_config.dart';
+import 'package:coriolis_companion/shared/auth/token_storage.dart';
+import 'package:coriolis_companion/shared/config/app_config.dart';
 
 /// Builds the shared [Dio] with a bearer-token interceptor.
 ///

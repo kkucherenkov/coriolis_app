@@ -4,15 +4,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:app_ui/app_ui.dart';
 
-import 'package:app_mobile/features/characters/domain/character.dart';
-import 'package:app_mobile/features/characters/domain/character_repository.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/wizard/step_1_concept.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/wizard/step_3_icon.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/wizard/step_4_attributes.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/wizard/step_6_talents.dart';
-import 'package:app_mobile/i18n/strings.g.dart';
+import 'package:coriolis_companion/features/characters/domain/character.dart';
+import 'package:coriolis_companion/features/characters/domain/character_repository.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_1_concept.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_3_icon.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_4_attributes.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_6_talents.dart';
+import 'package:coriolis_companion/i18n/strings.g.dart';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 

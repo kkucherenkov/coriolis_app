@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_ui/app_ui.dart';
 
-import 'package:app_mobile/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
-import 'package:app_mobile/i18n/strings.g.dart';
-import 'step_1_concept.dart' show _StepHeader;
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
+import 'package:coriolis_companion/i18n/strings.g.dart';
+import 'step_1_concept.dart' show WizardStepHeader;
 
 /// Wizard step 2 — People & Background.
 ///
@@ -63,7 +63,7 @@ class _Step2BackgroundState extends State<Step2Background> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _StepHeader(
+              WizardStepHeader(
                 title: t.wizardStep2Title,
                 blurb: t.wizardStep2Blurb,
               ),

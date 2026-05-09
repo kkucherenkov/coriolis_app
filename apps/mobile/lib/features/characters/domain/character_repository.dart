@@ -1,5 +1,5 @@
-import 'package:app_mobile/features/characters/domain/character.dart';
-import 'package:app_mobile/features/characters/domain/character_summary.dart';
+import 'package:coriolis_companion/features/characters/domain/character.dart';
+import 'package:coriolis_companion/features/characters/domain/character_summary.dart';
 
 /// Repository contract for character operations.
 ///

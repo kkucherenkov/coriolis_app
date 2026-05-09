@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_ui/app_ui.dart';
 
-import 'package:app_mobile/features/characters/domain/character.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_sheet/character_sheet_cubit.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_sheet/character_sheet_state.dart';
-import 'package:app_mobile/i18n/strings.g.dart';
+import 'package:coriolis_companion/features/characters/domain/character.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_sheet/character_sheet_cubit.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_sheet/character_sheet_state.dart';
+import 'package:coriolis_companion/i18n/strings.g.dart';
 
 /// Sticky header rendered inside a [SliverPersistentHeader] (or plain Column
 /// inside a scroll view). Displays:

@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:app_mobile/features/characters/domain/character.dart';
-import 'package:app_mobile/features/characters/domain/character_repository.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
+import 'package:coriolis_companion/features/characters/domain/character.dart';
+import 'package:coriolis_companion/features/characters/domain/character_repository.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
 
 /// Manages the six-step character creation wizard.
 ///

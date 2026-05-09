@@ -1,3 +1,5 @@
+import 'dart:ui' show Tristate;
+
 import 'package:flutter/material.dart' show MaterialApp;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -116,7 +118,7 @@ void main() {
         const AppTab(child: Text('Tab'), active: true),
       ));
       final semantics = tester.getSemantics(find.byType(AppTab));
-      expect(semantics.hasFlag(SemanticsFlag.isSelected), isTrue);
+      expect(semantics.flagsCollection.isSelected, Tristate.isTrue);
     });
 
     testWidgets('Semantics selected=false when inactive', (tester) async {
@@ -124,7 +126,7 @@ void main() {
         const AppTab(child: Text('Tab'), active: false),
       ));
       final semantics = tester.getSemantics(find.byType(AppTab));
-      expect(semantics.hasFlag(SemanticsFlag.isSelected), isFalse);
+      expect(semantics.flagsCollection.isSelected, Tristate.isFalse);
     });
 
     testWidgets('renders iconLeading slot', (tester) async {
@@ -204,7 +206,7 @@ void main() {
         const AppBanner(tone: AppBannerTone.danger, child: Text('Error!')),
       ));
       final semantics = tester.getSemantics(find.byType(AppBanner));
-      expect(semantics.hasFlag(SemanticsFlag.isLiveRegion), isTrue);
+      expect(semantics.flagsCollection.isLiveRegion, isTrue);
     });
 
     testWidgets('renders all tones without throwing', (tester) async {

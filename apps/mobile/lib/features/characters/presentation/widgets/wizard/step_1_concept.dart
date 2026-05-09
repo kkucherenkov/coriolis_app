@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_ui/app_ui.dart';
 
-import 'package:app_mobile/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
-import 'package:app_mobile/i18n/strings.g.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
+import 'package:coriolis_companion/i18n/strings.g.dart';
 
 /// Wizard step 1 — Concept.
 ///
@@ -59,7 +59,7 @@ class _Step1ConceptState extends State<Step1Concept> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // ── Step header ──────────────────────────────────────────────
-            _StepHeader(
+            WizardStepHeader(
               title: t.wizardStep1Title,
               blurb: t.wizardStep1Blurb,
             ),
@@ -102,8 +102,8 @@ class _Step1ConceptState extends State<Step1Concept> {
 }
 
 /// Shared step-header used by all six wizard steps.
-class _StepHeader extends StatelessWidget {
-  const _StepHeader({required this.title, this.blurb});
+class WizardStepHeader extends StatelessWidget {
+  const WizardStepHeader({required this.title, this.blurb});
 
   final String title;
   final String? blurb;

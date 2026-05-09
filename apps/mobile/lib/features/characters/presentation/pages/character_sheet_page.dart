@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_ui/app_ui.dart';
 
-import 'package:app_mobile/features/characters/domain/character.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_sheet/character_sheet_cubit.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_sheet/character_sheet_state.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/attributes_block.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/conditions_panel.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/hero_counters.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/item_editor.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/sheet_header.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/skills_block.dart';
-import 'package:app_mobile/features/characters/presentation/widgets/talent_editor.dart';
-import 'package:app_mobile/i18n/strings.g.dart';
-import 'package:app_mobile/shared/di/injector.dart';
+import 'package:coriolis_companion/features/characters/domain/character.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_sheet/character_sheet_cubit.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_sheet/character_sheet_state.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/attributes_block.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/conditions_panel.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/hero_counters.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/item_editor.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/sheet_header.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/skills_block.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/talent_editor.dart';
+import 'package:coriolis_companion/i18n/strings.g.dart';
+import 'package:coriolis_companion/shared/di/injector.dart';
 
 /// Character sheet detail page.
 ///

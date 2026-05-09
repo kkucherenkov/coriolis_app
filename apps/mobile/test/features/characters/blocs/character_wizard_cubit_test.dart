@@ -2,10 +2,10 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:app_mobile/features/characters/domain/character.dart';
-import 'package:app_mobile/features/characters/domain/character_repository.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
+import 'package:coriolis_companion/features/characters/domain/character.dart';
+import 'package:coriolis_companion/features/characters/domain/character_repository.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -78,7 +78,7 @@ void main() {
     blocTest<CharacterWizardCubit, CharacterWizardState>(
       'start(id: null) POSTs a new draft and returns the new id',
       build: () {
-        when(() => repo.create(name: 'Untitled'))
+        when(() => repo.create(name: 'Untitled', status: 'draft'))
             .thenAnswer((_) async => _makeCharacter());
         return _buildCubit(repo);
       },
@@ -92,14 +92,14 @@ void main() {
             .having((s) => s.saveStatus, 'saveStatus', WizardSaveStatus.idle),
       ],
       verify: (_) {
-        verify(() => repo.create(name: 'Untitled')).called(1);
+        verify(() => repo.create(name: 'Untitled', status: 'draft')).called(1);
       },
     );
 
     blocTest<CharacterWizardCubit, CharacterWizardState>(
       'start(id: null) emits error state when create throws',
       build: () {
-        when(() => repo.create(name: 'Untitled'))
+        when(() => repo.create(name: 'Untitled', status: 'draft'))
             .thenThrow(Exception('network error'));
         return _buildCubit(repo);
       },
@@ -139,7 +139,7 @@ void main() {
     blocTest<CharacterWizardCubit, CharacterWizardState>(
       'next() advances step after persisting current step data',
       build: () {
-        when(() => repo.create(name: 'Untitled'))
+        when(() => repo.create(name: 'Untitled', status: 'draft'))
             .thenAnswer((_) async => _makeCharacter());
         when(() => repo.update('c1', name: any(named: 'name'), concept: any(named: 'concept')))
             .thenAnswer((_) async => _makeCharacter());
@@ -157,7 +157,7 @@ void main() {
     blocTest<CharacterWizardCubit, CharacterWizardState>(
       'back() decrements step without saving',
       build: () {
-        when(() => repo.create(name: 'Untitled'))
+        when(() => repo.create(name: 'Untitled', status: 'draft'))
             .thenAnswer((_) async => _makeCharacter());
         when(() => repo.update('c1',
               name: any(named: 'name'),
@@ -186,7 +186,7 @@ void main() {
       'forge() calls update with all draft data and re-fetches character',
       build: () {
         final base = _makeCharacter(name: 'Kira Sol');
-        when(() => repo.create(name: 'Untitled'))
+        when(() => repo.create(name: 'Untitled', status: 'draft'))
             .thenAnswer((_) async => base);
         when(() => repo.update(
               'c1',
@@ -194,6 +194,7 @@ void main() {
               concept: any(named: 'concept'),
               attributes: any(named: 'attributes'),
               skills: any(named: 'skills'),
+              status: any(named: 'status'),
             )).thenAnswer((_) async => base);
         when(() => repo.get('c1')).thenAnswer((_) async => base);
         return _buildCubit(repo);
@@ -212,6 +213,7 @@ void main() {
               concept: any(named: 'concept'),
               attributes: any(named: 'attributes'),
               skills: any(named: 'skills'),
+              status: 'active',
             )).called(1);
         verify(() => repo.get('c1')).called(1);
       },
@@ -220,7 +222,7 @@ void main() {
     blocTest<CharacterWizardCubit, CharacterWizardState>(
       'forge() emits error state on repository failure',
       build: () {
-        when(() => repo.create(name: 'Untitled'))
+        when(() => repo.create(name: 'Untitled', status: 'draft'))
             .thenAnswer((_) async => _makeCharacter());
         when(() => repo.update(
               'c1',
@@ -228,6 +230,7 @@ void main() {
               concept: any(named: 'concept'),
               attributes: any(named: 'attributes'),
               skills: any(named: 'skills'),
+              status: any(named: 'status'),
             )).thenThrow(Exception('forge failed'));
         return _buildCubit(repo);
       },

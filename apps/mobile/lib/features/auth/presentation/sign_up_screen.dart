@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:app_mobile/app/routes.dart';
+import 'package:coriolis_companion/app/routes.dart';
 
 /// Phone + OTP covers both sign-in and sign-up; the historic sign-up route
 /// stays in the router so any deep link keeps working, but the screen just

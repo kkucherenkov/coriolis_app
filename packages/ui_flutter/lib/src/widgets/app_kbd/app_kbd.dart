@@ -19,7 +19,7 @@ class AppKbd extends StatelessWidget {
     super.key,
     required this.keys,
     this.size = AppKbdSize.md,
-  }) : assert(keys.length > 0, 'AppKbd requires at least one key');
+  });
 
   final List<String> keys;
   final AppKbdSize size;

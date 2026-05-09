@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import 'package:app_mobile/features/characters/domain/character_summary.dart';
+import 'package:coriolis_companion/features/characters/domain/character_summary.dart';
 
 /// Status of the characters list screen.
 enum CharactersListStatus { loading, empty, loaded, error }

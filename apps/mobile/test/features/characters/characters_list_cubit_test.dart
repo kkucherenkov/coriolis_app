@@ -2,10 +2,10 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:app_mobile/features/characters/domain/character_repository.dart';
-import 'package:app_mobile/features/characters/domain/character_summary.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/characters_list/characters_list_cubit.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/characters_list/characters_list_state.dart';
+import 'package:coriolis_companion/features/characters/domain/character_repository.dart';
+import 'package:coriolis_companion/features/characters/domain/character_summary.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/characters_list/characters_list_cubit.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/characters_list/characters_list_state.dart';
 
 class _MockCharacterRepository extends Mock implements CharacterRepository {}
 

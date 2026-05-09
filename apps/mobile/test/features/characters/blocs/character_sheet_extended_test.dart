@@ -2,10 +2,10 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:app_mobile/features/characters/domain/character.dart';
-import 'package:app_mobile/features/characters/domain/character_repository.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_sheet/character_sheet_cubit.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_sheet/character_sheet_state.dart';
+import 'package:coriolis_companion/features/characters/domain/character.dart';
+import 'package:coriolis_companion/features/characters/domain/character_repository.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_sheet/character_sheet_cubit.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_sheet/character_sheet_state.dart';
 
 class _MockCharacterRepository extends Mock implements CharacterRepository {}
 
@@ -89,6 +89,12 @@ Future<void> _load(CharacterSheetCubit cubit) =>
     cubit.load('c1');
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(
+      const DomainItem(id: '_fallback', type: ItemType.gear, name: 'fallback'),
+    );
+  });
+
   late _MockCharacterRepository repo;
 
   setUp(() {

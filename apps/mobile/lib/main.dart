@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
-import 'package:app_mobile/app/auth_gate.dart';
-import 'package:app_mobile/app/routes.dart';
-import 'package:app_mobile/i18n/strings.g.dart';
-import 'package:app_mobile/shared/di/injector.dart';
-import 'package:app_mobile/shared/notifications/push_notification_service.dart';
+import 'package:coriolis_companion/app/auth_gate.dart';
+import 'package:coriolis_companion/app/routes.dart';
+import 'package:coriolis_companion/i18n/strings.g.dart';
+import 'package:coriolis_companion/shared/di/injector.dart';
+import 'package:coriolis_companion/shared/notifications/push_notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

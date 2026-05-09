@@ -2,10 +2,10 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:app_mobile/features/auth/domain/auth_repository.dart';
-import 'package:app_mobile/features/auth/domain/auth_user.dart';
-import 'package:app_mobile/features/auth/presentation/bloc/auth_cubit.dart';
-import 'package:app_mobile/features/auth/presentation/bloc/auth_state.dart';
+import 'package:coriolis_companion/features/auth/domain/auth_repository.dart';
+import 'package:coriolis_companion/features/auth/domain/auth_user.dart';
+import 'package:coriolis_companion/features/auth/presentation/bloc/auth_cubit.dart';
+import 'package:coriolis_companion/features/auth/presentation/bloc/auth_state.dart';
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
 

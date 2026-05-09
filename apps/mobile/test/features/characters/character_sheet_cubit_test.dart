@@ -2,20 +2,43 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:app_mobile/features/characters/domain/character.dart';
-import 'package:app_mobile/features/characters/domain/character_repository.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_sheet/character_sheet_cubit.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_sheet/character_sheet_state.dart';
+import 'package:coriolis_companion/features/characters/domain/character.dart';
+import 'package:coriolis_companion/features/characters/domain/character_repository.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_sheet/character_sheet_cubit.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_sheet/character_sheet_state.dart';
 
 class _MockCharacterRepository extends Mock implements CharacterRepository {}
 
 final _now = DateTime(2026, 5, 8);
+
+const _attrs = CharacterAttributes(strength: 3, agility: 3, wits: 3, empathy: 3);
+const _skills = CharacterSkills(
+  dexterity: 0, force: 0, infiltration: 0, manipulation: 0,
+  meleeCombat: 0, observation: 0, rangedCombat: 0, survival: 0,
+  command: 0, culture: 0, dataDjinn: 0, medicurgy: 0,
+  mysticPowers: 0, pilot: 0, science: 0, technology: 0,
+);
+const _hp = CharacterHp(current: 6, max: 6);
+const _mp = CharacterMp(current: 6, max: 6);
+const _enc = CharacterEncumbrance(current: 0, max: 6);
+const _conds = CharacterConditions(
+  exhausted: false, sleepless: false, thirsty: false, hungry: false);
 
 final _character = Character(
   id: 'c1',
   ownerId: 'u1',
   name: 'Kira Sol',
   concept: 'Pilot',
+  attributes: _attrs,
+  skills: _skills,
+  hp: _hp,
+  mp: _mp,
+  encumbrance: _enc,
+  experience: 0,
+  conditions: _conds,
+  criticalInjuries: const [],
+  talents: const [],
+  inventory: const [],
   createdAt: _now,
   updatedAt: _now,
 );
@@ -25,6 +48,16 @@ final _updated = Character(
   ownerId: 'u1',
   name: 'Kira Solaris',
   concept: 'Pilot',
+  attributes: _attrs,
+  skills: _skills,
+  hp: _hp,
+  mp: _mp,
+  encumbrance: _enc,
+  experience: 0,
+  conditions: _conds,
+  criticalInjuries: const [],
+  talents: const [],
+  inventory: const [],
   createdAt: _now,
   updatedAt: _now,
 );

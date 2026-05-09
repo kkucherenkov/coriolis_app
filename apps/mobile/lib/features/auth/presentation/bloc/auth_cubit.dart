@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:app_mobile/features/auth/domain/auth_repository.dart';
-import 'package:app_mobile/features/auth/presentation/bloc/auth_state.dart';
+import 'package:coriolis_companion/features/auth/domain/auth_repository.dart';
+import 'package:coriolis_companion/features/auth/presentation/bloc/auth_state.dart';
 
 /// Manages sign-in / sign-up / session-restore flows.
 /// Presentation calls `requestOtp`, `verifyOtp`, `signOut`, `checkSession`.

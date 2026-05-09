@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_ui/app_ui.dart';
 
-import 'package:app_mobile/app/routes.dart';
-import 'package:app_mobile/features/characters/domain/character_summary.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/characters_list/characters_list_cubit.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/characters_list/characters_list_state.dart';
-import 'package:app_mobile/i18n/strings.g.dart';
-import 'package:app_mobile/shared/di/injector.dart';
+import 'package:coriolis_companion/app/routes.dart';
+import 'package:coriolis_companion/features/characters/domain/character_summary.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/characters_list/characters_list_cubit.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/characters_list/characters_list_state.dart';
+import 'package:coriolis_companion/i18n/strings.g.dart';
+import 'package:coriolis_companion/shared/di/injector.dart';
 
 /// Characters list page — the entry point for the characters feature.
 ///

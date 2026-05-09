@@ -1,3 +1,5 @@
+import 'dart:ui' show Tristate;
+
 import 'package:flutter/material.dart' show MaterialApp, Scaffold;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -67,7 +69,7 @@ void main() {
       ));
       // The 'Beta' semantic node should be selected.
       final node = tester.getSemantics(find.text('Beta'));
-      expect(node.hasFlag(SemanticsFlag.isSelected), isTrue);
+      expect(node.flagsCollection.isSelected, Tristate.isTrue);
     });
 
     testWidgets('non-selected segment has Semantics selected=false', (tester) async {
@@ -79,7 +81,7 @@ void main() {
         ),
       ));
       final node = tester.getSemantics(find.text('Alpha'));
-      expect(node.hasFlag(SemanticsFlag.isSelected), isFalse);
+      expect(node.flagsCollection.isSelected, Tristate.isFalse);
     });
 
     testWidgets('renders all size variants without throwing', (tester) async {
@@ -95,7 +97,7 @@ void main() {
             onChanged: (_) {},
           ),
         ));
-        expect(find.byType(AppSegControl), findsOneWidget);
+        expect(find.byType(AppSegControl<String>), findsOneWidget);
       }
     });
 

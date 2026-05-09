@@ -1,4 +1,4 @@
-import 'package:app_mobile/features/auth/domain/auth_user.dart';
+import 'package:coriolis_companion/features/auth/domain/auth_user.dart';
 
 /// Result of a phone-OTP verification.
 class VerifyOtpResult {

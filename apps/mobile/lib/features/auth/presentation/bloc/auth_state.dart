@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import 'package:app_mobile/features/auth/domain/auth_user.dart';
+import 'package:coriolis_companion/features/auth/domain/auth_user.dart';
 
 enum AuthStatus { unauthenticated, authenticating, authenticated, otpSent, error }
 

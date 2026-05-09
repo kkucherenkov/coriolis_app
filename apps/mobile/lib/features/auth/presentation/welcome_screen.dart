@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:app_mobile/app/routes.dart';
-import 'package:app_mobile/i18n/strings.g.dart';
+import 'package:coriolis_companion/app/routes.dart';
+import 'package:coriolis_companion/i18n/strings.g.dart';
 
 /// Entry point for unauthenticated users.
 class WelcomeScreen extends StatelessWidget {

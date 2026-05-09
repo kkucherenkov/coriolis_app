@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import 'package:app_mobile/features/characters/domain/character.dart';
+import 'package:coriolis_companion/features/characters/domain/character.dart';
 
 /// The Nine Icons of the Third Horizon.
 ///

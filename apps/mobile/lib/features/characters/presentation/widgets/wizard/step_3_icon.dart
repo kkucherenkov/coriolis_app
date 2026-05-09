@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_ui/app_ui.dart';
 
-import 'package:app_mobile/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
-import 'package:app_mobile/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
-import 'package:app_mobile/i18n/strings.g.dart';
-import 'step_1_concept.dart' show _StepHeader;
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
+import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
+import 'package:coriolis_companion/i18n/strings.g.dart';
+import 'step_1_concept.dart' show WizardStepHeader;
 
 /// Wizard step 3 — Nine Icons.
 ///
@@ -27,7 +27,7 @@ class Step3Icon extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _StepHeader(
+              WizardStepHeader(
                 title: t.wizardStep3Title,
                 blurb: t.wizardStep3Blurb,
               ),
@@ -100,6 +100,11 @@ class _IconCardState extends State<_IconCard>
     _opacityAnim = Tween<double>(begin: 0.4, end: 0.85).animate(
       CurvedAnimation(parent: _ctrl, curve: AppEasing.standard),
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _syncAnimation();
   }
 
