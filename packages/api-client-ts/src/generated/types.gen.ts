@@ -1485,11 +1485,19 @@ export type Me = {
      * ISO-8601 instant when the account was created. Read-only via this API.
      */
     createdAt: string | null;
+    /**
+     * UI theme preference. Synced across web + mobile so a player who
+     * toggles high-contrast on one device sees it everywhere.
+     * `dark` is the default; `high-contrast` increases colour contrast
+     * for users who need improved readability.
+     *
+     */
+    theme?: 'dark' | 'high-contrast';
 };
 
 /**
- * Partial update payload for PATCH /api/v1/me. Only `displayName` is
- * mutable. Omitting a property leaves the corresponding field unchanged.
+ * Partial update payload for PATCH /api/v1/me. `displayName` and `theme`
+ * are mutable. Omitting a property leaves the corresponding field unchanged.
  * Setting `displayName` to null clears the field.
  *
  */
@@ -1500,6 +1508,12 @@ export type MeUpdate = {
      *
      */
     displayName?: string | null;
+    /**
+     * UI theme preference. Must be one of `dark` or `high-contrast`.
+     * Omitting the field preserves the current value.
+     *
+     */
+    theme?: 'dark' | 'high-contrast';
 };
 
 export type RealtimeToken = {
@@ -2849,6 +2863,7 @@ export type UpdateMeErrors = {
      * Validation error. Possible cases:
      * - `displayName` is an empty string.
      * - `displayName` exceeds 80 characters.
+     * - `theme` is not one of the allowed enum values.
      * - Request body contains read-only fields (`email`, `createdAt`).
      *
      */

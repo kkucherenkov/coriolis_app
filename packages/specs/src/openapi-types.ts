@@ -464,7 +464,7 @@ export interface paths {
     /**
      * Update the authenticated user's mutable profile fields.
      * @description Applies a partial update (PATCH semantics) to the authenticated user's
-     *     profile. Only `displayName` is mutable via this endpoint.
+     *     profile. `displayName` and `theme` are mutable via this endpoint.
      *
      *     `email` and `createdAt` are managed by Better Auth and are silently
      *     ignored if included in the request body — attempting to send them
@@ -475,6 +475,10 @@ export interface paths {
      *       character-name guidance in PRD §5.2).
      *     - May be set to `null` to clear the field.
      *     - An empty string (`""`) is rejected with `400`.
+     *
+     *     `theme` constraints:
+     *     - Must be one of `dark` or `high-contrast` when provided.
+     *     - Omitting the field preserves the current value.
      */
     patch: operations['updateMe'];
     trace?: never;
@@ -2168,10 +2172,19 @@ export interface components {
        * @description ISO-8601 instant when the account was created. Read-only via this API.
        */
       createdAt: string | null;
+      /**
+       * @description UI theme preference. Synced across web + mobile so a player who
+       *     toggles high-contrast on one device sees it everywhere.
+       *     `dark` is the default; `high-contrast` increases colour contrast
+       *     for users who need improved readability.
+       * @default dark
+       * @enum {string}
+       */
+      theme: 'dark' | 'high-contrast';
     };
     /**
-     * @description Partial update payload for PATCH /api/v1/me. Only `displayName` is
-     *     mutable. Omitting a property leaves the corresponding field unchanged.
+     * @description Partial update payload for PATCH /api/v1/me. `displayName` and `theme`
+     *     are mutable. Omitting a property leaves the corresponding field unchanged.
      *     Setting `displayName` to null clears the field.
      */
     MeUpdate: {
@@ -2180,6 +2193,12 @@ export interface components {
        *     Set to null to clear the field.
        */
       displayName?: string | null;
+      /**
+       * @description UI theme preference. Must be one of `dark` or `high-contrast`.
+       *     Omitting the field preserves the current value.
+       * @enum {string}
+       */
+      theme?: 'dark' | 'high-contrast';
     };
     RealtimeToken: {
       /** @description Short-lived HMAC-signed JWT for Centrifugo */
@@ -3576,6 +3595,7 @@ export interface operations {
        * @description Validation error. Possible cases:
        *     - `displayName` is an empty string.
        *     - `displayName` exceeds 80 characters.
+       *     - `theme` is not one of the allowed enum values.
        *     - Request body contains read-only fields (`email`, `createdAt`).
        */
       400: {

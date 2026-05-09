@@ -104,7 +104,7 @@ This endpoint does not need any parameter.
 
 Update the authenticated user's mutable profile fields.
 
-Applies a partial update (PATCH semantics) to the authenticated user's profile. Only `displayName` is mutable via this endpoint.  `email` and `createdAt` are managed by Better Auth and are silently ignored if included in the request body — attempting to send them is treated as a `400` so the contract is unambiguous.  `displayName` constraints: - Must be between 1 and 80 characters when non-null (80 matches the   character-name guidance in PRD §5.2). - May be set to `null` to clear the field. - An empty string (`\"\"`) is rejected with `400`. 
+Applies a partial update (PATCH semantics) to the authenticated user's profile. `displayName` and `theme` are mutable via this endpoint.  `email` and `createdAt` are managed by Better Auth and are silently ignored if included in the request body — attempting to send them is treated as a `400` so the contract is unambiguous.  `displayName` constraints: - Must be between 1 and 80 characters when non-null (80 matches the   character-name guidance in PRD §5.2). - May be set to `null` to clear the field. - An empty string (`\"\"`) is rejected with `400`.  `theme` constraints: - Must be one of `dark` or `high-contrast` when provided. - Omitting the field preserves the current value. 
 
 ### Example
 ```dart

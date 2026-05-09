@@ -159,7 +159,7 @@ class UsersApi {
   }
 
   /// Update the authenticated user&#39;s mutable profile fields.
-  /// Applies a partial update (PATCH semantics) to the authenticated user&#39;s profile. Only &#x60;displayName&#x60; is mutable via this endpoint.  &#x60;email&#x60; and &#x60;createdAt&#x60; are managed by Better Auth and are silently ignored if included in the request body — attempting to send them is treated as a &#x60;400&#x60; so the contract is unambiguous.  &#x60;displayName&#x60; constraints: - Must be between 1 and 80 characters when non-null (80 matches the   character-name guidance in PRD §5.2). - May be set to &#x60;null&#x60; to clear the field. - An empty string (&#x60;\&quot;\&quot;&#x60;) is rejected with &#x60;400&#x60;. 
+  /// Applies a partial update (PATCH semantics) to the authenticated user&#39;s profile. &#x60;displayName&#x60; and &#x60;theme&#x60; are mutable via this endpoint.  &#x60;email&#x60; and &#x60;createdAt&#x60; are managed by Better Auth and are silently ignored if included in the request body — attempting to send them is treated as a &#x60;400&#x60; so the contract is unambiguous.  &#x60;displayName&#x60; constraints: - Must be between 1 and 80 characters when non-null (80 matches the   character-name guidance in PRD §5.2). - May be set to &#x60;null&#x60; to clear the field. - An empty string (&#x60;\&quot;\&quot;&#x60;) is rejected with &#x60;400&#x60;.  &#x60;theme&#x60; constraints: - Must be one of &#x60;dark&#x60; or &#x60;high-contrast&#x60; when provided. - Omitting the field preserves the current value. 
   ///
   /// Parameters:
   /// * [meUpdate] 

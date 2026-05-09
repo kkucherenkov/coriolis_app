@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -15,6 +16,7 @@ part 'me.g.dart';
 /// * [email] - Primary email address. Read-only via this API.
 /// * [displayName] - User-chosen display name shown in share-link banners and the avatar menu. Null when the user has not set one yet. 
 /// * [createdAt] - ISO-8601 instant when the account was created. Read-only via this API.
+/// * [theme] - UI theme preference. Synced across web + mobile so a player who toggles high-contrast on one device sees it everywhere. `dark` is the default; `high-contrast` increases colour contrast for users who need improved readability. 
 @BuiltValue()
 abstract class Me implements Built<Me, MeBuilder> {
   /// Opaque user identifier issued by Better Auth (cuid2)
@@ -33,12 +35,18 @@ abstract class Me implements Built<Me, MeBuilder> {
   @BuiltValueField(wireName: r'createdAt')
   DateTime? get createdAt;
 
+  /// UI theme preference. Synced across web + mobile so a player who toggles high-contrast on one device sees it everywhere. `dark` is the default; `high-contrast` increases colour contrast for users who need improved readability. 
+  @BuiltValueField(wireName: r'theme')
+  MeThemeEnum? get theme;
+  // enum themeEnum {  dark,  high-contrast,  };
+
   Me._();
 
   factory Me([void updates(MeBuilder b)]) = _$Me;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(MeBuilder b) => b;
+  static void _defaults(MeBuilder b) => b
+      ..theme = MeThemeEnum.valueOf('dark');
 
   @BuiltValueSerializer(custom: true)
   static Serializer<Me> get serializer => _$MeSerializer();
@@ -76,6 +84,13 @@ class _$MeSerializer implements PrimitiveSerializer<Me> {
       object.createdAt,
       specifiedType: const FullType.nullable(DateTime),
     );
+    if (object.theme != null) {
+      yield r'theme';
+      yield serializers.serialize(
+        object.theme,
+        specifiedType: const FullType(MeThemeEnum),
+      );
+    }
   }
 
   @override
@@ -129,6 +144,13 @@ class _$MeSerializer implements PrimitiveSerializer<Me> {
           if (valueDes == null) continue;
           result.createdAt = valueDes;
           break;
+        case r'theme':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(MeThemeEnum),
+          ) as MeThemeEnum;
+          result.theme = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -156,5 +178,22 @@ class _$MeSerializer implements PrimitiveSerializer<Me> {
     );
     return result.build();
   }
+}
+
+class MeThemeEnum extends EnumClass {
+
+  /// UI theme preference. Synced across web + mobile so a player who toggles high-contrast on one device sees it everywhere. `dark` is the default; `high-contrast` increases colour contrast for users who need improved readability. 
+  @BuiltValueEnumConst(wireName: r'dark')
+  static const MeThemeEnum dark = _$meThemeEnum_dark;
+  /// UI theme preference. Synced across web + mobile so a player who toggles high-contrast on one device sees it everywhere. `dark` is the default; `high-contrast` increases colour contrast for users who need improved readability. 
+  @BuiltValueEnumConst(wireName: r'high-contrast')
+  static const MeThemeEnum highContrast = _$meThemeEnum_highContrast;
+
+  static Serializer<MeThemeEnum> get serializer => _$meThemeEnumSerializer;
+
+  const MeThemeEnum._(String name): super(name);
+
+  static BuiltSet<MeThemeEnum> get values => _$meThemeEnumValues;
+  static MeThemeEnum valueOf(String name) => _$meThemeEnumValueOf(name);
 }
 

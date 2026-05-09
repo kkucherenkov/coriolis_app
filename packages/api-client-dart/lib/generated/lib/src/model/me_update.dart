@@ -3,20 +3,27 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'me_update.g.dart';
 
-/// Partial update payload for PATCH /api/v1/me. Only `displayName` is mutable. Omitting a property leaves the corresponding field unchanged. Setting `displayName` to null clears the field. 
+/// Partial update payload for PATCH /api/v1/me. `displayName` and `theme` are mutable. Omitting a property leaves the corresponding field unchanged. Setting `displayName` to null clears the field. 
 ///
 /// Properties:
 /// * [displayName] - User-chosen display name. Must be 1–80 characters when non-null. Set to null to clear the field. 
+/// * [theme] - UI theme preference. Must be one of `dark` or `high-contrast`. Omitting the field preserves the current value. 
 @BuiltValue()
 abstract class MeUpdate implements Built<MeUpdate, MeUpdateBuilder> {
   /// User-chosen display name. Must be 1–80 characters when non-null. Set to null to clear the field. 
   @BuiltValueField(wireName: r'displayName')
   String? get displayName;
+
+  /// UI theme preference. Must be one of `dark` or `high-contrast`. Omitting the field preserves the current value. 
+  @BuiltValueField(wireName: r'theme')
+  MeUpdateThemeEnum? get theme;
+  // enum themeEnum {  dark,  high-contrast,  };
 
   MeUpdate._();
 
@@ -46,6 +53,13 @@ class _$MeUpdateSerializer implements PrimitiveSerializer<MeUpdate> {
       yield serializers.serialize(
         object.displayName,
         specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.theme != null) {
+      yield r'theme';
+      yield serializers.serialize(
+        object.theme,
+        specifiedType: const FullType(MeUpdateThemeEnum),
       );
     }
   }
@@ -79,6 +93,13 @@ class _$MeUpdateSerializer implements PrimitiveSerializer<MeUpdate> {
           if (valueDes == null) continue;
           result.displayName = valueDes;
           break;
+        case r'theme':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(MeUpdateThemeEnum),
+          ) as MeUpdateThemeEnum;
+          result.theme = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -106,5 +127,22 @@ class _$MeUpdateSerializer implements PrimitiveSerializer<MeUpdate> {
     );
     return result.build();
   }
+}
+
+class MeUpdateThemeEnum extends EnumClass {
+
+  /// UI theme preference. Must be one of `dark` or `high-contrast`. Omitting the field preserves the current value. 
+  @BuiltValueEnumConst(wireName: r'dark')
+  static const MeUpdateThemeEnum dark = _$meUpdateThemeEnum_dark;
+  /// UI theme preference. Must be one of `dark` or `high-contrast`. Omitting the field preserves the current value. 
+  @BuiltValueEnumConst(wireName: r'high-contrast')
+  static const MeUpdateThemeEnum highContrast = _$meUpdateThemeEnum_highContrast;
+
+  static Serializer<MeUpdateThemeEnum> get serializer => _$meUpdateThemeEnumSerializer;
+
+  const MeUpdateThemeEnum._(String name): super(name);
+
+  static BuiltSet<MeUpdateThemeEnum> get values => _$meUpdateThemeEnumValues;
+  static MeUpdateThemeEnum valueOf(String name) => _$meUpdateThemeEnumValueOf(name);
 }
 
