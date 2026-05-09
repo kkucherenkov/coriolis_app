@@ -2,6 +2,124 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-09-003 — Epic 7 Feature 7.3: Darkness Points + push wiring
+
+- Completed: 2026-05-10
+- Owner: claude
+- Spec: Epic 7, Feature 7.3, tasks T-7.3.1.a, T-7.3.1.b, T-7.3.1.c
+- Goal: DP adjustment endpoint, DpEvent audit log, RollPushedEvent → +1 DP
+  wiring.
+- Result: shipped on `main` across the spec → migration → handler →
+  event-bus chain. The internal-caller path (RollPushedHandler emitting
+  `UpdateDpCommand` with `source: ROLL_PUSH`) bypasses the GM-owner ACL
+  via a discriminated `callerKind` on the command, not a magic flag —
+  the original task entry's "internal flag" wording was tightened to a
+  proper sum type during implementation.
+  - `2ecbcd0` `feat(specs): DP adjustment endpoint + DpEvent audit log (v0.8.1)`
+  - `b6d2172` `chore(codegen): regenerate clients after DP spec (v0.8.1)`
+  - `a447aa2` `feat(backend): Prisma DpEvent migration (dp-events)`
+  - `afd5472` `feat(backend): UpdateDpCommand + DpEvent persistence + ACL`
+  - `a2a7ade` `feat(backend): wire RollPushedEvent to +1 DP via internal command`
+  - `6cac7a2` `feat(backend): publish dp.changed on every DpEvent insert`
+- Spec diff: openapi `0.8.0 → 0.8.1` (additive — two new paths, two
+  schemas).
+- Acceptance check (against the original list):
+  - ✅ `POST /api/v1/game-sessions/{id}/dp` adjusts DP atomically
+    inside a Prisma transaction (`update-dp.handler.ts`).
+  - ✅ `GET /api/v1/game-sessions/{id}/dp/events` returns paginated
+    `DpEvent` audit log (`list-dp-events.handler.ts`).
+  - ✅ `DpEvent` persisted per adjustment with `source: GM_MANUAL |
+    ROLL_PUSH`. The original spec also listed `SYSTEM` — dropped during
+    implementation because no caller path emits it; can be added later
+    if a maintenance script needs it.
+  - ✅ Only the GM owner may apply a negative delta; internal `ROLL_PUSH`
+    callers bypass the ACL (`update-dp.handler.spec.ts` line 81 +
+    "internal caller bypasses GM-owner ACL" case).
+  - ✅ `RollPushedHandler` emits `UpdateDpCommand` when
+    `gameSessionId != null` (`roll-pushed.handler.ts` +
+    `roll-pushed.handler.spec.ts`).
+  - ✅ 22 new unit specs (12 update-dp + 4 list-dp-events + 6
+    roll-pushed-handler — comfortably above the ≥12 floor).
+
+## T-2026-05-09-002 — Epic 7 Feature 7.1 backend: DiceModule
+
+- Completed: 2026-05-10
+- Owner: claude
+- Spec: Epic 7, Feature 7.1, tasks T-7.1.1.a, T-7.1.1.b, T-7.1.1.e
+- Goal: Server-side Coriolis dice roller with push mechanic. Create roll,
+  list history, push reroll.
+- Result: shipped on `main`. `canPush()` lives in the cross-module
+  `rules-engine` (not inside `dice/domain/`) so rolls and conditions can
+  share invariants without a circular import — fix `6a8182b` later
+  promoted its return type from `boolean | string` to a real
+  discriminated union (`{ ok: true } | { ok: false; reason: ... }`).
+  - `4d98fff` `feat(specs): Roll resource + push endpoint (v0.8.0)`
+  - `0550b4e` `feat(backend): Prisma Roll migration`
+  - `048704a` `feat(backend): DiceModule — create + list rolls`
+  - `6a8182b` `fix(backend): CanPushResult is a real discriminated union`
+  - `b0ef2a3` `feat(backend): publish roll.pushed when a roll is pushed`
+- Spec diff: openapi `0.7.1 → 0.8.0` (new `Roll`, `RollCreate`,
+  `RollList` schemas + 3 paths).
+- Acceptance check (against the original list):
+  - ✅ `POST /api/v1/characters/{id}/rolls` → 201 `Roll`, server rolls
+    pool d6 with `crypto.randomInt` (`create-roll.handler.ts`).
+  - ✅ `GET /api/v1/characters/{id}/rolls?limit=50` → 200 `RollList`,
+    last 50 ordered desc (`list-rolls.handler.ts`).
+  - ✅ `PATCH /api/v1/rolls/{id}/push` → 200 `Roll | 422
+    ROLL_NOT_PUSHABLE` (`push-roll.handler.ts` +
+    `roll.errors.ts:ROLL_NOT_PUSHABLE`).
+  - ✅ `canPush(roll, conditions)` returns `{ ok, reason? }`, gated on
+    exhausted + already-pushed (`rules-engine` in
+    `apps/backend/src/modules/rules-engine`).
+  - ✅ `RollPushedEvent` emitted on the bus with `{ rollId, characterId,
+    gameSessionId, hits }` (`roll-pushed.event.ts`); both the DP
+    handler and the Centrifugo `roll.pushed` publisher subscribe to it.
+  - ✅ 20 new unit specs (6 create-roll + 8 push-roll + 6 list-rolls —
+    above the ≥18 floor).
+
+## T-2026-05-09-001 — implement share-link backend (Epic 6 Feature 6.1)
+
+- Completed: 2026-05-10
+- Owner: claude
+- Spec: docs/IMPLEMENTATION_PLAN.md §5.4, Plan §6.1
+- Goal: Enable public read-only sharing of characters via unguessable slug
+  URLs with owner controls (create, list, revoke) and lazy view tracking.
+- Result: shipped on `main`. The original "stub OG image controller"
+  scope grew when the web sharer page needed real Open Graph thumbnails
+  to be link-previewable on Discord / Telegram — `d247051` replaced the
+  501 stub with a Satori + Resvg renderer that lives in
+  `apps/backend/src/modules/sharing/og/`. Frontend share viewer
+  (`AppShareViewer`, `/shared/character/[slug]`) was built on top of
+  the same backend in a follow-up batch (`1f1fbbb` →
+  `08f00f6`) — not part of this task entry but worth tracking when
+  reading the area.
+  - `cadfbbc` `docs(adr): 0003 — share-link design`
+  - `59a0d92` `feat(specs): ShareLink + share endpoints + public read paths (v0.7.0)`
+  - `fc5643d` `chore(codegen): regenerate clients after share-link spec (v0.7.0)`
+  - `f01c16a` `feat(backend): Prisma ShareLink migration`
+  - `f11cd55` `feat(backend): SharingModule — slug + create + list + revoke`
+  - `d247051` `feat(backend): GET /public/og/character/:slug.png replaces 501 stub`
+  - `f450098` `docs(tasks): bookkeep Epic 6 Feature 6.1 (share-link backend)`
+- Spec diff: openapi `0.6.0 → 0.7.0` (new ShareLink + 5 paths).
+- Acceptance check (against the original list):
+  - ✅ `POST /api/v1/characters/{id}/share` returns 201 `ShareLink` with
+    a 24-char nanoid slug (`create-share-link.handler.ts` +
+    `domain/slug.ts`).
+  - ✅ `GET /api/v1/characters/{id}/shares` returns active (non-revoked)
+    links (`list-share-links.handler.ts`).
+  - ✅ `DELETE /api/v1/share-links/{id}` soft-revokes by setting
+    `revokedAt`; subsequent public reads return 410
+    (`revoke-share-link.handler.ts` + `get-public-character.handler.ts`).
+  - ✅ `GET /api/v1/public/character/{slug}` returns the character
+    without auth and filters `notes` when `includeGmNotes=false`
+    (`public-sharing.controller.ts` + handler).
+  - ✅ `GET /api/v1/public/og/character/{slug}.png` evolved beyond the
+    original "returns 501" stub into a real Satori-rendered PNG
+    (`og/og.service.ts`).
+  - ✅ View counts batched in memory and flushed every minute
+    (`infra/view-tracker.ts` + `jobs/flush-view-tracker.job.ts`).
+  - ✅ 36 new unit specs across 7 files (≥15 floor).
+
 ## T-2026-05-09-004 — web: signup page + auth layout fixes
 
 - Completed: 2026-05-10
