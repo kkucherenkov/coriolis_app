@@ -12,10 +12,27 @@ export interface HealthUpdate {
   reason?: string;
 }
 
-export type RealtimeChannel = 'system:health';
+export interface DpChanged {
+  gameSessionId: string;
+  dpCount: number;
+  delta: number;
+  source: 'gm-manual' | 'roll-push' | 'system';
+  at?: string;
+}
+
+export interface RollPushed {
+  rollId: string;
+  characterId: string;
+  gameSessionId?: string;
+  hits: number;
+  at?: string;
+}
+
+export type RealtimeChannel = 'system:health' | 'session.{gameSessionId}';
 
 export interface RealtimeChannelPayloadMap {
   'system:health': HealthUpdate;
+  'session.{gameSessionId}': DpChanged | RollPushed;
 }
 
 export type RealtimeChannelPayload<C extends RealtimeChannel> = RealtimeChannelPayloadMap[C];
