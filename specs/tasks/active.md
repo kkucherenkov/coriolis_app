@@ -60,11 +60,12 @@
         absolute timestamp; list rows show trimmed label + hits
         badge + "Pushed" badge + relative time ("3m ago",
         "yesterday", "May 09"). Locale-aware via `locale.value`.
-  - [ ] Block 3 — `useGameSessionsApi` + `/app/sessions` index page
-        listing the GM's sessions (active + archived tabs) with
-        create / archive actions. New session form (name +
-        description) with optimistic auto-redirect to the detail
-        page on create.
+  - [x] Block 3 — `useGameSessionsApi` + `/app/sessions` index with
+        active / archived tabs, inline create form (auto-redirects to
+        detail), and per-card Archive / Unarchive toggles. Stub
+        `/app/sessions/[id]` page renders basic session stats so the
+        navigation and post-create redirect don't 404 — Block 4 fills
+        in DP controls, audit log, character-assignment UX.
   - [ ] Block 4 — `/app/sessions/[id]` detail page: assigned
         characters list, DP counter, DP-adjustment controls
         (GM-only — owner check from session payload), DP audit log
