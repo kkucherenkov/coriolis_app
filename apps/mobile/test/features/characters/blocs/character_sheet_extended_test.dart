@@ -11,14 +11,14 @@ class _MockCharacterRepository extends Mock implements CharacterRepository {}
 
 final _now = DateTime(2026, 5, 8);
 
-final _attrs = CharacterAttributes(
+const _attrs = CharacterAttributes(
   strength: 3,
   agility: 4,
   wits: 3,
   empathy: 3,
 );
 
-final _skills = CharacterSkills(
+const _skills = CharacterSkills(
   dexterity: 2,
   force: 1,
   infiltration: 1,
@@ -69,7 +69,7 @@ final _talent = DomainTalent(
   acquiredAt: _now,
 );
 
-final _item = DomainItem(
+const _item = DomainItem(
   id: 'i1',
   type: ItemType.gear,
   name: 'Rope',

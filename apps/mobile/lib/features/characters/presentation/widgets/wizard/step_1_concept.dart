@@ -103,7 +103,7 @@ class _Step1ConceptState extends State<Step1Concept> {
 
 /// Shared step-header used by all six wizard steps.
 class WizardStepHeader extends StatelessWidget {
-  const WizardStepHeader({required this.title, this.blurb});
+  const WizardStepHeader({super.key, required this.title, this.blurb});
 
   final String title;
   final String? blurb;

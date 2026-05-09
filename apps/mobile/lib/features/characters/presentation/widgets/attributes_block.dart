@@ -87,7 +87,7 @@ class _AttributeCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.surfaceVoid,
             border: Border.all(
-              color: AppColors.brandBrassDeep.withOpacity(0.4),
+              color: AppColors.brandBrassDeep.withValues(alpha: 0.4),
             ),
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),

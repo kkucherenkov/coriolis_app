@@ -144,7 +144,7 @@ class _SkillRow extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: AppColors.brandBrassDeep.withOpacity(0.15),
+                color: AppColors.brandBrassDeep.withValues(alpha: 0.15),
               ),
             ),
           ),
@@ -158,7 +158,7 @@ class _SkillRow extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: value > 0
                         ? AppColors.stateMysticTeal
-                        : AppColors.stateMysticTeal.withOpacity(0.25),
+                        : AppColors.stateMysticTeal.withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(1),
                   ),
                 )

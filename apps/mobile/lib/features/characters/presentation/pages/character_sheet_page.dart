@@ -42,9 +42,9 @@ class _CharacterSheetView extends StatelessWidget {
     return BlocBuilder<CharacterSheetCubit, CharacterSheetState>(
       builder: (context, state) {
         if (state.isLoading) {
-          return Scaffold(
+          return const Scaffold(
             backgroundColor: AppColors.surfaceVoid,
-            body: const Center(
+            body: Center(
               child: CircularProgressIndicator(color: AppColors.brandBrass),
             ),
           );

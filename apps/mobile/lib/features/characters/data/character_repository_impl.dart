@@ -432,9 +432,6 @@ class CharacterRepositoryImpl implements CharacterRepository {
 
   // ── Internal helpers ─────────────────────────────────────────────────────
 
-  static final _weaponTypes = [
-    ItemArmor, ItemCybernetic, ItemGear, ItemOther, ItemShipModule, ItemWeapon,
-  ];
   static final _weaponCreateTypes = [
     ItemArmorCreate, ItemCyberneticCreate, ItemGearCreate,
     ItemOtherCreate, ItemShipModuleCreate, ItemWeaponCreate,

@@ -77,7 +77,7 @@ class _CharactersListView extends StatelessWidget {
             child: ListView.separated(
               padding: const EdgeInsets.all(AppSpacing.s4),
               itemCount: state.characters.length,
-              separatorBuilder: (_, __) =>
+              separatorBuilder: (_, _) =>
                   const SizedBox(height: AppSpacing.s3),
               itemBuilder: (context, index) => _CharacterRow(
                 character: state.characters[index],

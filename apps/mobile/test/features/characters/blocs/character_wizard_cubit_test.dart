@@ -15,11 +15,11 @@ class _MockRepo extends Mock implements CharacterRepository {}
 
 final _now = DateTime(2026, 5, 9);
 
-final _blankAttrs = CharacterAttributes(
+const _blankAttrs = CharacterAttributes(
   strength: 2, agility: 2, wits: 2, empathy: 2,
 );
 
-final _blankSkills = CharacterSkills(
+const _blankSkills = CharacterSkills(
   dexterity: 0, force: 0, infiltration: 0, manipulation: 0,
   meleeCombat: 0, observation: 0, rangedCombat: 0, survival: 0,
   command: 0, culture: 0, dataDjinn: 0, medicurgy: 0,

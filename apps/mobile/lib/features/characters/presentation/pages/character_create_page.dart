@@ -52,18 +52,19 @@ class _CharacterCreatePageState extends State<CharacterCreatePage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<CharacterWizardCubit>(
-      create: (_) {
+      create: (innerContext) {
         final cubit = getIt<CharacterWizardCubit>();
-        // Start asynchronously; if a new id is returned, replace the route.
+        // Capture the navigator synchronously before the async gap.
+        final navigator = Navigator.of(innerContext);
+        // Start asynchronously; if a new id is returned, replace the route
+        // so back button goes to list, not here, and a process restart
+        // (deep link / notification) resumes correctly.
         cubit.start(id: widget.draftId).then((newId) {
-          if (newId != null && mounted) {
-            // Replace the current route so back button goes to list, not here,
-            // and a process restart (deep link / notification) resumes correctly.
-            Navigator.of(context).pushReplacementNamed(
-              AppRoutes.charactersNew,
-              arguments: newId,
-            );
-          }
+          if (newId == null || !mounted) return;
+          navigator.pushReplacementNamed(
+            AppRoutes.charactersNew,
+            arguments: newId,
+          );
         });
         return cubit;
       },
@@ -84,9 +85,9 @@ class _WizardView extends StatelessWidget {
       buildWhen: (prev, next) => prev.isLoading != next.isLoading,
       builder: (context, state) {
         if (state.isLoading && state.character == null) {
-          return Scaffold(
+          return const Scaffold(
             backgroundColor: AppColors.surfaceVoid,
-            body: const Center(
+            body: Center(
               child: CircularProgressIndicator(color: AppColors.brandBrass),
             ),
           );

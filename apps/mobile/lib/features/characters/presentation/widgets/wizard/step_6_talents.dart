@@ -136,8 +136,8 @@ class _TalentCard extends StatelessWidget {
                 label: t.talentDelete,
                 child: GestureDetector(
                   onTap: onRemove,
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.s2),
+                  child: const Padding(
+                    padding: EdgeInsets.all(AppSpacing.s2),
                     child: Icon(
                       Icons.close,
                       size: AppSpacing.s4,
