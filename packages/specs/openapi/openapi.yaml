@@ -39,6 +39,8 @@ tags:
     description: Ship CRUD, nested modules, and crew assignment
   - name: sharing
     description: Share-link management for character owners (create, list, revoke)
+  - name: game-sessions
+    description: GM campaign session containers — CRUD and character assignment
   - name: public
     description: Public read-only endpoints — no authentication required
   - name: dice
@@ -2672,6 +2674,460 @@ paths:
                     code: TALENT_NOT_FOUND
 
   # ---------------------------------------------------------------------------
+  # Game Sessions (Epic 7 Feature 7.2)
+  # ---------------------------------------------------------------------------
+
+  /api/v1/game-sessions:
+    get:
+      operationId: listGameSessions
+      summary: List the authenticated GM's game sessions
+      description: |
+        Returns a cursor-paginated list of game sessions owned by the
+        authenticated user. Pass `cursor` from a previous response's
+        `nextCursor` to retrieve the following page. Results are ordered
+        newest-first by `createdAt`. Optionally filter by `status`.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque pagination cursor returned by the previous page
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          description: Number of sessions to return (1–100, default 20)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: status
+          in: query
+          required: false
+          description: Filter sessions by status
+          schema:
+            $ref: "#/components/schemas/GameSessionStatus"
+      responses:
+        "200":
+          description: Paginated game session list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameSessionList"
+              examples:
+                ok:
+                  value:
+                    items:
+                      - id: cuid_gs01
+                        ownerId: cuid_user01
+                        name: The Long Night
+                        description: A campaign set in the Kua system.
+                        status: active
+                        dpCount: 0
+                        characterIds: []
+                        shipId: null
+                        createdAt: "2026-05-08T10:00:00Z"
+                        updatedAt: "2026-05-08T10:00:00Z"
+                    nextCursor: null
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+    post:
+      operationId: createGameSession
+      summary: Create a new game session
+      description: |
+        Creates a game session owned by the authenticated user (the GM).
+        `name` is the only required field; all other fields are optional.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameSessionCreate"
+            examples:
+              minimal:
+                value:
+                  name: The Long Night
+              withOptions:
+                value:
+                  name: The Long Night
+                  description: A campaign set in the Kua system.
+                  shipId: cuid_ship01
+      responses:
+        "201":
+          description: Game session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameSession"
+              examples:
+                created:
+                  value:
+                    id: cuid_gs01
+                    ownerId: cuid_user01
+                    name: The Long Night
+                    description: A campaign set in the Kua system.
+                    status: active
+                    dpCount: 0
+                    characterIds: []
+                    shipId: null
+                    createdAt: "2026-05-08T10:00:00Z"
+                    updatedAt: "2026-05-08T10:00:00Z"
+        "400":
+          description: |
+            Validation error. Possible codes:
+            - `GAME_SESSION_NAME_EMPTY` — name is an empty string.
+            - `GAME_SESSION_NAME_TOO_LONG` — name exceeds 80 characters.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /api/v1/game-sessions/{id}:
+    get:
+      operationId: getGameSession
+      summary: Get a game session by ID
+      description: |
+        Returns the full game session DTO. Returns 404 if the session does not
+        exist or is not owned by the authenticated user.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+      responses:
+        "200":
+          description: Game session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameSession"
+              examples:
+                ok:
+                  value:
+                    id: cuid_gs01
+                    ownerId: cuid_user01
+                    name: The Long Night
+                    description: null
+                    status: active
+                    dpCount: 0
+                    characterIds: [cuid_char01]
+                    shipId: null
+                    createdAt: "2026-05-08T10:00:00Z"
+                    updatedAt: "2026-05-08T10:00:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this game session
+                    instance: /api/v1/game-sessions/cuid_gs01
+                    code: GAME_SESSION_NOT_OWNER
+        "404":
+          description: Game session not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Game session cuid_gs01 does not exist
+                    instance: /api/v1/game-sessions/cuid_gs01
+                    code: GAME_SESSION_NOT_FOUND
+
+    patch:
+      operationId: updateGameSession
+      summary: Update a game session
+      description: |
+        Applies PATCH semantics to a game session. All fields are optional.
+        Status transitions: `active → archived` and `archived → active` are
+        both permitted.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameSessionUpdate"
+            examples:
+              archive:
+                value:
+                  status: archived
+              rename:
+                value:
+                  name: The Long Night — Act II
+      responses:
+        "200":
+          description: Updated game session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameSession"
+        "400":
+          description: |
+            Validation error. Possible codes:
+            - `GAME_SESSION_NAME_EMPTY` — name is an empty string.
+            - `GAME_SESSION_NAME_TOO_LONG` — name exceeds 80 characters.
+            - `INVALID_GAME_SESSION_STATUS_TRANSITION` — invalid status transition.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this game session
+                    instance: /api/v1/game-sessions/cuid_gs01
+                    code: GAME_SESSION_NOT_OWNER
+        "404":
+          description: Game session not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Game session cuid_gs01 does not exist
+                    instance: /api/v1/game-sessions/cuid_gs01
+                    code: GAME_SESSION_NOT_FOUND
+
+    delete:
+      operationId: deleteGameSession
+      summary: Delete a game session
+      description: |
+        Permanently deletes a game session. Cascades to the character
+        assignment join table. The session must be owned by the caller.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+      responses:
+        "204":
+          description: Game session deleted
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this game session
+                    instance: /api/v1/game-sessions/cuid_gs01
+                    code: GAME_SESSION_NOT_OWNER
+        "404":
+          description: Game session not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Game session cuid_gs01 does not exist
+                    instance: /api/v1/game-sessions/cuid_gs01
+                    code: GAME_SESSION_NOT_FOUND
+
+  /api/v1/game-sessions/{id}/characters:
+    post:
+      operationId: assignCharacterToSession
+      summary: Assign a character to a game session
+      description: |
+        Assigns one of the caller's own characters to the game session.
+        The character must be owned by the same user as the session (GM).
+        Assigning an already-assigned character is idempotent — returns the
+        current session state without creating a duplicate.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignCharacterToSession"
+            examples:
+              assign:
+                value:
+                  characterId: cuid_char01
+      responses:
+        "201":
+          description: Character assigned; returns updated session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameSession"
+              examples:
+                assigned:
+                  value:
+                    id: cuid_gs01
+                    ownerId: cuid_user01
+                    name: The Long Night
+                    description: null
+                    status: active
+                    dpCount: 0
+                    characterIds: [cuid_char01]
+                    shipId: null
+                    createdAt: "2026-05-08T10:00:00Z"
+                    updatedAt: "2026-05-08T10:00:00Z"
+        "400":
+          description: |
+            Validation error. Possible codes:
+            - `CHARACTER_NOT_OWNED` — character does not belong to the caller.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: Character cuid_char01 does not belong to you
+                    instance: /api/v1/game-sessions/cuid_gs01/characters
+                    code: CHARACTER_NOT_OWNED
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: Game session or character not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /api/v1/game-sessions/{id}/characters/{characterId}:
+    delete:
+      operationId: unassignCharacterFromSession
+      summary: Remove a character from a game session
+      description: |
+        Removes the character from the session's character list.
+        The session must be owned by the caller. Silently succeeds if the
+        character was not assigned.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+        - name: characterId
+          in: path
+          required: true
+          description: Character identifier (cuid2)
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Character removed from session
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: Game session not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  # ---------------------------------------------------------------------------
   # Share links (Epic 6 Feature 6.1)
   # ---------------------------------------------------------------------------
 
@@ -3270,6 +3726,14 @@ components:
       in: path
       required: true
       description: Roll identifier (cuid2)
+      schema:
+        type: string
+
+    GameSessionId:
+      name: id
+      in: path
+      required: true
+      description: Game session identifier (cuid2)
       schema:
         type: string
 
@@ -5675,6 +6139,120 @@ components:
           description: |
             UI theme preference. Must be one of `dark` or `high-contrast`.
             Omitting the field preserves the current value.
+
+    # -------------------------------------------------------------------------
+    # Game Sessions (Epic 7 Feature 7.2)
+    # -------------------------------------------------------------------------
+
+    GameSessionStatus:
+      type: string
+      enum: [active, archived]
+      description: |
+        Lifecycle state of a game session.
+        - `active` — session is in progress or available.
+        - `archived` — session is closed; hidden from the default list.
+        Both directions of the transition are permitted.
+
+    GameSession:
+      type: object
+      description: A campaign session container owned by a GM.
+      required:
+        [id, ownerId, name, status, dpCount, characterIds, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: Opaque session identifier (cuid2)
+        ownerId:
+          type: string
+          readOnly: true
+          description: User identifier of the GM who owns this session
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Short name for the session
+        description:
+          type: ["string", "null"]
+          maxLength: 600
+          description: Optional longer description
+        status:
+          $ref: "#/components/schemas/GameSessionStatus"
+        dpCount:
+          type: integer
+          minimum: 0
+          readOnly: true
+          description: Darkness Points counter; mutated by Feature 7.3
+        characterIds:
+          type: array
+          items:
+            type: string
+          readOnly: true
+          description: |
+            Character ids assigned to this session. Manage via the join
+            endpoint (POST / DELETE on /game-sessions/{id}/characters).
+        shipId:
+          type: ["string", "null"]
+          description: Optional ship linked to the session (Epic 8)
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    GameSessionCreate:
+      type: object
+      description: Payload for creating a new game session
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        description:
+          type: ["string", "null"]
+          maxLength: 600
+        shipId:
+          type: ["string", "null"]
+
+    GameSessionUpdate:
+      type: object
+      description: PATCH payload for a game session — all fields optional
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        description:
+          type: ["string", "null"]
+          maxLength: 600
+        status:
+          $ref: "#/components/schemas/GameSessionStatus"
+        shipId:
+          type: ["string", "null"]
+
+    GameSessionList:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/GameSession"
+        nextCursor:
+          type: ["string", "null"]
+          description: Cursor for the next page; null when there are no more results
+
+    AssignCharacterToSession:
+      type: object
+      required: [characterId]
+      properties:
+        characterId:
+          type: string
+          description: Identifier of the character to assign
 
     RealtimeToken:
       type: object
