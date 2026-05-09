@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { json, urlencoded } from 'express';
 import helmet from 'helmet';
 
 import { AppModule } from './app.module';
@@ -28,6 +29,16 @@ async function bootstrap(): Promise<void> {
 
   app.set('trust proxy', 'loopback');
   app.use(nodeEnv === 'production' ? helmet() : helmet({ contentSecurityPolicy: false }));
+
+  // Register the body parser explicitly so it sits BEFORE the OpenAPI
+  // validator in the express middleware stack. NestJS's own body parser is
+  // installed during `app.init()` (i.e. inside `listen()`), which is too
+  // late — `app.use(...)` middleware added in this bootstrap function
+  // already runs first. Without an upfront parser, `req.body` is undefined
+  // when express-openapi-validator inspects it and every JSON POST fails
+  // with "request must have required property 'body'".
+  app.use(json());
+  app.use(urlencoded({ extended: true }));
 
   app.setGlobalPrefix('api');
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });

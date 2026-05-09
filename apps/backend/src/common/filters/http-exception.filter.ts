@@ -84,12 +84,42 @@ export class HttpExceptionFilter implements ExceptionFilter {
       return problem;
     }
 
+    // express-openapi-validator throws BadRequest / Unauthorized / etc., which
+    // carry a numeric `status` (or `statusCode`) plus a human-readable message
+    // but are NOT NestJS HttpExceptions. Without this branch they fall through
+    // to a generic 500 and the validator's actual diagnostic is hidden.
+    if (this.isHttpLikeError(exception)) {
+      const status = exception.status ?? exception.statusCode ?? 400;
+      const title = this.titleFor(status);
+      const problem: ProblemDocument = {
+        type: 'about:blank',
+        title,
+        status,
+        instance,
+      };
+      if (typeof exception.message === 'string' && exception.message.length > 0) {
+        problem.detail = exception.message;
+      }
+      if (Array.isArray(exception.errors)) {
+        problem.errors = exception.errors;
+      }
+      return problem;
+    }
+
     return {
       type: 'about:blank',
       title: 'Internal Server Error',
       status: HttpStatus.INTERNAL_SERVER_ERROR,
       instance,
     };
+  }
+
+  private isHttpLikeError(
+    e: unknown,
+  ): e is { status?: number; statusCode?: number; message?: string; errors?: unknown[] } {
+    if (typeof e !== 'object' || e === null) return false;
+    const obj = e as Record<string, unknown>;
+    return typeof obj['status'] === 'number' || typeof obj['statusCode'] === 'number';
   }
 
   private titleFor(status: number): string {
