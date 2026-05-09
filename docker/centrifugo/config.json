@@ -16,7 +16,8 @@
   },
   "channel": {
     "namespaces": [
-      { "name": "system", "presence": true, "history_size": 10, "history_ttl": "60s" }
+      { "name": "system", "presence": true, "history_size": 10, "history_ttl": "60s" },
+      { "name": "session", "presence": false, "history_size": 100, "history_ttl": "300s" }
     ]
   },
   "log": {
