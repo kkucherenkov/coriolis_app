@@ -34,19 +34,24 @@
         (`0dc1f87`). Resolved in the renderer rather than via a Talent
         `catalogId` migration: `@app/specs` gained
         `findCatalogTalentByName(name, kind)` + `pickLocalized(field,
-        locale)`, and `apps/web` grew a `useTalentLocalization`
+    locale)`, and `apps/web` grew a `useTalentLocalization`
         composable shared by `[id].vue` and `AppShareViewer.vue`. Tests
         430/430 backend, 53/53 web. Both surfaces now switch catalog
         talent name **and** description on locale change; user-edited
         rows fall through to stored fields. Touches: `AppShareViewer`,
-        `[id].vue`, new `useTalentLocalization.ts`, `talents.ts` index
-        + helpers, 5 new specs in `talents-catalog.spec.ts`.
-  - [ ] Block 2 — Personal-talent pool filtered by amplua in
-        `Step6Talents.vue`. Add a `recommendedFor?: ConceptCode[]` field to
-        `PersonalTalentCatalogEntry`, populate it from the rulebook
-        (ГЛАВА 2 + ГЛАВА 4), and gate the picker behind an opt-in
-        "Show only talents recommended for {amplua}" toggle (default ON,
-        toggle OFF restores the full 26).
+        `[id].vue`, new `useTalentLocalization.ts`, `talents.ts` index + helpers, 5 new specs in `talents-catalog.spec.ts`.
+  - [x] Block 2 — Personal-talent pool filtered by amplua in
+        `Step6Talents.vue` (`41f61c5`). Implemented as a separate
+        `RECOMMENDED_PERSONAL_TALENTS_BY_CONCEPT` map in `@app/specs`
+        rather than a `recommendedFor` field on each entry — keeps the
+        rulebook source-of-truth in one place and lets the helper
+        return entries in the order the rulebook prints them.
+        Toggle defaults ON when an amplua is set, auto-drops if the
+        player swaps amplua to one whose recommended list does not
+        contain their already-picked talent. Tests 434/434 backend
+        (430 → 434), 53/53 web. uk/el strings ship as
+        `[uk-todo]/[el-todo]` placeholders consistent with the
+        deferred translator pass.
   - [ ] Block 3 — "Forgot password?" link on `login.vue` + a new
         `/auth/reset-password` page that consumes the Better Auth reset
         token and calls `auth.resetPassword`. Wire `auth.forgetPassword`
