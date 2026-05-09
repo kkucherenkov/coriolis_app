@@ -1,7 +1,7 @@
 # Coriolis Companion App
 
-Character sheets, ship sheets, dice, and GM tools for the *Coriolis: The
-Third Horizon* tabletop RPG (Free League Publishing). A fan project — not
+Character sheets, ship sheets, dice, and GM tools for the _Coriolis: The
+Third Horizon_ tabletop RPG (Free League Publishing). A fan project — not
 affiliated with the publisher.
 
 Three first-class clients on day one served by a single backend:
@@ -45,7 +45,7 @@ flowchart LR
   end
 
   subgraph backend_group[" "]
-    backend["backend<br/><sub>NestJS 11 · :3000/api/v1</sub>"]
+    backend["backend<br/><sub>NestJS 11 · :3010/api/v1</sub>"]
   end
 
   subgraph infra["local stack · docker/compose.yml"]
@@ -139,14 +139,14 @@ clients (`packages/api-client-{ts,dart}`) are read-only — codegen owns them.
 
 ### Local stack — `docker/compose.yml`
 
-| Service    | Version        | Port | Notes                          |
-| ---------- | -------------- | ---- | ------------------------------ |
-| postgres   | 18.1-alpine    | 5432 | init SQL in `postgres/init.sql`|
-| redis      | 8.6-alpine     | 6379 | appendonly                     |
-| centrifugo | v6             | 8000 | config in `centrifugo/`        |
+| Service    | Version        | Port | Notes                              |
+| ---------- | -------------- | ---- | ---------------------------------- |
+| postgres   | 18.1-alpine    | 5432 | init SQL in `postgres/init.sql`    |
+| redis      | 8.6-alpine     | 6379 | appendonly                         |
+| centrifugo | v6             | 8000 | config in `centrifugo/`            |
 | backend    | Dockerfile.dev | 3000 | waits on postgres/redis/centrifugo |
-| web        | Dockerfile.dev | 3001 | Nuxt dev server                |
-| otel-lgtm  | grafana        | 3200 | local Grafana + LGTM stack     |
+| web        | Dockerfile.dev | 3001 | Nuxt dev server                    |
+| otel-lgtm  | grafana        | 3200 | local Grafana + LGTM stack         |
 
 Containers mount the repo as a volume, so edits reach the container without
 a rebuild. Matching `pnpm dev` and `docker compose up` at the same time
@@ -164,17 +164,17 @@ would fight over host ports — pick one.
 
 ## Drift protections — at a glance
 
-| What could drift                      | What stops it                                            |
-| ------------------------------------- | -------------------------------------------------------- |
-| API route not in spec                 | `express-openapi-validator` rejects at runtime           |
-| Generated TS / Dart client out of sync| `codegen-drift` CI job runs `spec:codegen` and diffs     |
-| Hex colour snuck into a component     | Stylelint `color-no-hex: true` in `stylelint.config.mjs` |
-| Inline `style=""` / `!important`      | Stylelint rules                                          |
-| Component without story or spec       | `pnpm --filter @app/ui audit:components` in CI           |
-| Design token used but not documented  | `pnpm design:audit` cross-checks inventory               |
-| Missing translations in a locale      | `pnpm check:i18n` key-parity check                       |
-| Secret committed                      | TruffleHog on every PR                                   |
-| Unapproved license                    | `license-checker` allowlist                              |
+| What could drift                       | What stops it                                            |
+| -------------------------------------- | -------------------------------------------------------- |
+| API route not in spec                  | `express-openapi-validator` rejects at runtime           |
+| Generated TS / Dart client out of sync | `codegen-drift` CI job runs `spec:codegen` and diffs     |
+| Hex colour snuck into a component      | Stylelint `color-no-hex: true` in `stylelint.config.mjs` |
+| Inline `style=""` / `!important`       | Stylelint rules                                          |
+| Component without story or spec        | `pnpm --filter @app/ui audit:components` in CI           |
+| Design token used but not documented   | `pnpm design:audit` cross-checks inventory               |
+| Missing translations in a locale       | `pnpm check:i18n` key-parity check                       |
+| Secret committed                       | TruffleHog on every PR                                   |
+| Unapproved license                     | `license-checker` allowlist                              |
 
 ## Quick start
 
@@ -183,7 +183,7 @@ pnpm install
 pnpm spec:codegen                # generate TS + Dart API clients from the spec
 pnpm design:build                # generate CSS / TS / Dart tokens
 docker compose -f docker/compose.yml up -d
-curl localhost:3000/api/v1/health
+curl localhost:3010/api/v1/health
 # → {"status":"ok","dependencies":{"db":"ok","redis":"ok","centrifugo":"ok"}}
 ```
 
@@ -223,22 +223,22 @@ docker/             compose.yml + service configs
 
 ## Scripts reference
 
-| Command                | What it does                                             |
-| ---------------------- | -------------------------------------------------------- |
-| `pnpm spec:validate`   | Redocly + AsyncAPI lint                                  |
-| `pnpm spec:bundle`     | Bundle OpenAPI to a single JSON                          |
-| `pnpm spec:codegen`    | Regenerate every client from the spec                    |
-| `pnpm spec:contract-test` | Run Dredd/Prism-style contract tests                  |
-| `pnpm design:build`    | Regenerate CSS / TS / Dart tokens                        |
-| `pnpm design:audit`    | Inventory drift report                                   |
-| `pnpm lint`            | Turbo — ESLint across every workspace                    |
-| `pnpm typecheck`       | Turbo — tsc / nuxt typecheck                             |
-| `pnpm test`            | Turbo — vitest across every workspace                    |
-| `pnpm build`           | Turbo — production build                                 |
-| `pnpm storybook`       | `@app/ui` Storybook on :6006                             |
-| `pnpm check:i18n`      | Locale key-parity across backend / web / mobile          |
-| `pnpm format`          | Prettier                                                 |
-| `pnpm stylelint`       | Stylelint (SCSS + Vue)                                   |
+| Command                   | What it does                                    |
+| ------------------------- | ----------------------------------------------- |
+| `pnpm spec:validate`      | Redocly + AsyncAPI lint                         |
+| `pnpm spec:bundle`        | Bundle OpenAPI to a single JSON                 |
+| `pnpm spec:codegen`       | Regenerate every client from the spec           |
+| `pnpm spec:contract-test` | Run Dredd/Prism-style contract tests            |
+| `pnpm design:build`       | Regenerate CSS / TS / Dart tokens               |
+| `pnpm design:audit`       | Inventory drift report                          |
+| `pnpm lint`               | Turbo — ESLint across every workspace           |
+| `pnpm typecheck`          | Turbo — tsc / nuxt typecheck                    |
+| `pnpm test`               | Turbo — vitest across every workspace           |
+| `pnpm build`              | Turbo — production build                        |
+| `pnpm storybook`          | `@app/ui` Storybook on :6006                    |
+| `pnpm check:i18n`         | Locale key-parity across backend / web / mobile |
+| `pnpm format`             | Prettier                                        |
+| `pnpm stylelint`          | Stylelint (SCSS + Vue)                          |
 
 ## Requirements
 
@@ -249,18 +249,18 @@ docker/             compose.yml + service configs
 
 ## Documentation
 
-| Topic                                          | File                                                 |
-| ---------------------------------------------- | ---------------------------------------------------- |
-| Product requirements                           | [`docs/PRD.md`](docs/PRD.md)                         |
-| Visual design language                         | [`docs/DESIGN.md`](docs/DESIGN.md)                   |
-| Phased delivery plan                           | [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md) |
-| Agent operating manual (cross-vendor)          | [`AGENTS.md`](AGENTS.md)                             |
-| Backend, CQRS, Prisma, API conventions         | [`.claude/docs/handbook.md`](.claude/docs/handbook.md) |
-| Design system, @app/ui, tokens, BEM            | [`.claude/docs/design-system.md`](.claude/docs/design-system.md) |
-| i18n (web + mobile + backend)                  | [`.claude/docs/i18n.md`](.claude/docs/i18n.md)       |
-| Testing pyramid, DoD, PR checklist             | [`.claude/docs/testing.md`](.claude/docs/testing.md) |
-| Security, observability, a11y, performance     | [`.claude/docs/security.md`](.claude/docs/security.md) |
-| Local-stack troubleshooting                    | [`docs/troubleshooting.md`](docs/troubleshooting.md) |
+| Topic                                      | File                                                             |
+| ------------------------------------------ | ---------------------------------------------------------------- |
+| Product requirements                       | [`docs/PRD.md`](docs/PRD.md)                                     |
+| Visual design language                     | [`docs/DESIGN.md`](docs/DESIGN.md)                               |
+| Phased delivery plan                       | [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md)     |
+| Agent operating manual (cross-vendor)      | [`AGENTS.md`](AGENTS.md)                                         |
+| Backend, CQRS, Prisma, API conventions     | [`.claude/docs/handbook.md`](.claude/docs/handbook.md)           |
+| Design system, @app/ui, tokens, BEM        | [`.claude/docs/design-system.md`](.claude/docs/design-system.md) |
+| i18n (web + mobile + backend)              | [`.claude/docs/i18n.md`](.claude/docs/i18n.md)                   |
+| Testing pyramid, DoD, PR checklist         | [`.claude/docs/testing.md`](.claude/docs/testing.md)             |
+| Security, observability, a11y, performance | [`.claude/docs/security.md`](.claude/docs/security.md)           |
+| Local-stack troubleshooting                | [`docs/troubleshooting.md`](docs/troubleshooting.md)             |
 
 ## Contributing
 
@@ -282,6 +282,6 @@ Workflow shaped for [Claude Code](https://claude.com/claude-code).
 
 Bootstrapped from [`claude-driven-nest-nuxt-flutter-monorepo`](https://github.com/) — the upstream boilerplate's conventions are kept intact and CI-enforced.
 
-This is a fan project. *Coriolis: The Third Horizon* is a trademark of Free
+This is a fan project. _Coriolis: The Third Horizon_ is a trademark of Free
 League Publishing — this app is not affiliated with or endorsed by the
 publisher.

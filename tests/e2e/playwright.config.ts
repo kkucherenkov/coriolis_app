@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 /**
  * E2E smoke config. Runs against the local Docker stack or whatever is
- * exposed on :3000 (backend) and :3001 (web). We do NOT start the stack
+ * exposed on :3010 (backend) and :3001 (web). We do NOT start the stack
  * from Playwright — CI is responsible for `docker compose up -d` before
  * the run, local devs either have it running or get a clear failure.
  *

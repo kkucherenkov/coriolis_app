@@ -8,7 +8,7 @@
 
 ## 1. Executive Summary
 
-The Coriolis Companion App is a cross-platform application that helps players and Game Masters of *Coriolis: The Third Horizon* (Free League Publishing) create, manage, and play characters digitally. It replaces the paper character sheet with a responsive, share-friendly digital sheet, adds GM-side tooling for running sessions (combat tracker, NPC library, Darkness Points), and supports ship sheets for crews operating starships in the Third Horizon.
+The Coriolis Companion App is a cross-platform application that helps players and Game Masters of _Coriolis: The Third Horizon_ (Free League Publishing) create, manage, and play characters digitally. It replaces the paper character sheet with a responsive, share-friendly digital sheet, adds GM-side tooling for running sessions (combat tracker, NPC library, Darkness Points), and supports ship sheets for crews operating starships in the Third Horizon.
 
 The product ships as **three first-class clients on day one**, served by a single backend:
 
@@ -27,6 +27,7 @@ This document defines the product, user experience, and technical architecture i
 ## 2. Goals & Non-Goals
 
 ### 2.1 Goals
+
 - Replace the paper character sheet with a fully digital, mobile-friendly equivalent on web and mobile.
 - Reduce bookkeeping during play: auto-calculated derived stats, push tracking, condition tracking, encumbrance.
 - Make characters easy to share with a GM or fellow player via a single link, no account needed for the viewer.
@@ -36,9 +37,10 @@ This document defines the product, user experience, and technical architecture i
 - Ship in two locales (en / ru) at v1. The boilerplate's i18n pipeline already wires four locales (en / ru / uk / el); we populate two and leave the uk / el stubs for a later release.
 
 ### 2.2 Non-Goals (v1)
+
 - Adventure module distribution or campaign management.
 - Voice / video integration.
-- Real-time collaborative *editing* (CRDT / multiplayer cursors). Sharing is read-only; combat tracker pushes are one-way GM → players via Centrifugo.
+- Real-time collaborative _editing_ (CRDT / multiplayer cursors). Sharing is read-only; combat tracker pushes are one-way GM → players via Centrifugo.
 - Marketplace or paid content.
 - Foundry VTT / Roll20 integrations.
 - AI-assisted character generation or NPC writing.
@@ -49,12 +51,12 @@ This document defines the product, user experience, and technical architecture i
 
 ## 3. Personas & Roles
 
-| Role | Description | Primary needs |
-|---|---|---|
-| **Player** | Active in a Coriolis campaign, owns 1–3 characters. | Fast sheet edits at the table, roll dice, push rolls, share sheet with GM. |
-| **GM** | Runs the campaign. Often also a Player at other tables. | Combat tracker, NPC quick-stats, Darkness Points, view player sheets via shared links. |
-| **Anonymous Viewer** | Receives a share link, no account. | Read-only access to a character or ship sheet. |
-| **New Player** | Trying the system for the first time. | Guided character creation, in-context rule explanations. |
+| Role                 | Description                                             | Primary needs                                                                          |
+| -------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **Player**           | Active in a Coriolis campaign, owns 1–3 characters.     | Fast sheet edits at the table, roll dice, push rolls, share sheet with GM.             |
+| **GM**               | Runs the campaign. Often also a Player at other tables. | Combat tracker, NPC quick-stats, Darkness Points, view player sheets via shared links. |
+| **Anonymous Viewer** | Receives a share link, no account.                      | Read-only access to a character or ship sheet.                                         |
+| **New Player**       | Trying the system for the first time.                   | Guided character creation, in-context rule explanations.                               |
 
 System roles map cleanly: `USER` (registered), `ADMIN` (system maintenance, defined in v1.1+). Anonymous viewers carry no role — they hold a signed share token, validated server-side per request.
 
@@ -63,44 +65,52 @@ System roles map cleanly: `USER` (registered), `ADMIN` (system maintenance, defi
 ## 4. User Stories (by epic)
 
 ### Epic A — Account & Identity
+
 - As a new user, I can register with email and password and receive a verification email.
 - As a registered user, I can log in, log out, reset my password, edit my display name, and delete my account.
 - As any user, my session persists across reloads but expires after 30 days of inactivity.
 
 ### Epic B — Character Creation
+
 - As a player, I can create a new character via a guided wizard (Concept → People & Background → Icon → Attributes → Skills → Talents → Gear → Relationships).
 - As a player, I can skip the wizard and start with a blank sheet for fast entry.
 - As a player, I can save a draft mid-creation and return to it later.
 
 ### Epic C — Character Sheet
+
 - As a player, I can view and edit any field on my sheet, with auto-save.
 - As a player, derived stats (HP max, MP max, encumbrance limit, initiative bonus) recalculate live as I edit base attributes.
 - As a player, I can mark conditions (Exhausted, Sleepless, Thirsty, Hungry) and apply their −1 dice penalty automatically when rolling.
 - As a player, I can track current HP, current MP, critical injuries, and reputation in a persistent header.
 
 ### Epic D — Inventory & Gear
+
 - As a player, I can add weapons, armor, gear, cybernetics, and birr to my inventory.
 - As a player, I can edit any item's name, description, weight, quantity, and stats (damage / crit / range for weapons; armor rating for armor).
 - As a player, I see total encumbrance and a warning when over the limit.
 - As a player, I can mark items as equipped / stowed.
 
 ### Epic E — Dice & Mechanics
+
 - As a player, I can roll a dice pool (Attribute + Skill + Gear bonus + situational modifier), see successes (6s), and see prayer-eligible state.
 - As a player, I can push a roll: rerolling non-6s at the cost of generating one Darkness Point — sent live to the active session via Centrifugo if connected, logged on the character otherwise.
 - As a player, I can roll initiative and store the result for the GM to import into the combat tracker.
 
 ### Epic F — Sharing
+
 - As a player, I can generate a public share link for a character or ship.
 - As a player, I can revoke any share link, immediately invalidating it.
 - As a viewer, I can open a share link without an account and see a read-only sheet.
 - As a player, I can see which links are active and when they were last viewed.
 
 ### Epic G — Ship Sheets
+
 - As a crew, we can create a ship and assign owner crew members.
 - As a player, I can view the ship sheet from my dashboard if I'm assigned crew.
 - As crew, we can edit hull, signature, modules, weapons, problems, and history.
 
 ### Epic H — GM Tools
+
 - As a GM, I can create a `GameSession` that links the player characters at my table.
 - As a GM, I can launch a combat tracker for the session: build initiative, track HP / MP / conditions for PCs and NPCs side by side, advance rounds.
 - As a GM, I can maintain a private NPC library with full stat blocks and pull NPCs into combat.
@@ -183,7 +193,7 @@ Each character and ship has a `ShareLink` record with a URL-safe random slug (24
 
 Because Nuxt runs in **SPA mode (`ssr: false`)**, the share-link route (`/shared/character/:slug`) is a client-rendered page that fetches the public payload from `GET /api/v1/public/character/:slug` on mount. To preserve link previews on social/Discord, the API surfaces an `OpenGraph` rendering route (`GET /api/v1/public/og/character/:slug.png`) that produces a static 1200×630 image with the character's name and Icon glyph, served with long cache headers and revalidated when the sheet changes. The HTML page itself sets dynamic `<meta>` tags on the client; bots see the OG image regardless.
 
-Anonymous viewers see a banner: *"Shared by [display name] — last updated [time]. This view is read-only."* No edit affordances are rendered. Notes flagged "GM-only" are hidden from share views unless the link was generated with the `includeGmNotes` flag.
+Anonymous viewers see a banner: _"Shared by [display name] — last updated [time]. This view is read-only."_ No edit affordances are rendered. Notes flagged "GM-only" are hidden from share views unless the link was generated with the `includeGmNotes` flag.
 
 ### 5.5 Ship Sheets
 
@@ -275,7 +285,7 @@ Every feature on the API surface follows this loop, enforced by the boilerplate'
 
 ```mermaid
 flowchart LR
-    Web[apps/web<br/>Nuxt 4 SPA :3001] -->|"Authorization: Bearer (JWT)"| API[apps/backend<br/>NestJS 11 :3000/api/v1]
+    Web[apps/web<br/>Nuxt 4 SPA :3001] -->|"Authorization: Bearer (JWT)"| API[apps/backend<br/>NestJS 11 :3010/api/v1]
     Mobile[apps/mobile<br/>Flutter 3.41] -->|"Authorization: Bearer (JWT)"| API
     Web -.->|WebSocket subscribe| Centrifugo[Centrifugo v6 :8000]
     Mobile -.->|WebSocket subscribe| Centrifugo
@@ -619,10 +629,10 @@ GET    /api/v1/public/og/ship/:slug.png
 
 Defined in `packages/specs/asyncapi/centrifugo.yaml`:
 
-| Channel | Direction | Payload |
-|---|---|---|
-| `session.<gameSessionId>` | Server → subscribers | `dp.changed`, `encounter.updated`, `combatant.updated`, `roll.pushed` |
-| `character.<characterId>.private` | Server → owner | `sheet.updated` (auto-save echo for cross-tab sync) |
+| Channel                           | Direction            | Payload                                                               |
+| --------------------------------- | -------------------- | --------------------------------------------------------------------- |
+| `session.<gameSessionId>`         | Server → subscribers | `dp.changed`, `encounter.updated`, `combatant.updated`, `roll.pushed` |
+| `character.<characterId>.private` | Server → owner       | `sheet.updated` (auto-save echo for cross-tab sync)                   |
 
 Channel ACL is enforced server-side: a Centrifugo connection token (`POST /api/v1/realtime/token`) is signed only for channels the user is authorized to subscribe to.
 
@@ -655,16 +665,16 @@ A change to any formula is a single edit in `RulesEngineModule` + a version bump
 
 Each phase ends with a green CI run (lint / typecheck / test / spec-validate / codegen-drift / design-audit / i18n-parity), every feature recorded as a `done.md` entry with its PR link.
 
-| Phase | Scope | Rough effort |
-|---|---|---|
-| **Phase 0 — Adoption** | Run `scripts/setup.sh` with Coriolis name/slug, replace starter Prisma schema with §8 domain, seed `specs/design/tokens/*.json` from DESIGN.md, replace placeholder copy in `<i18n>` blocks. | ~1 week |
-| **Phase 1 — Foundation** | Empty-sheet CRUD on backend (OpenAPI-first), Nuxt sheet skeleton, Flutter sheet skeleton, `@app/ui` foundation primitives needed (Button, Card, Input, Badge, Chip, StatBlock). | ~3 weeks |
-| **Phase 2 — Character Sheet** | Full sheet (attributes, skills, talents, conditions), inventory, derived stats, auto-save, character creation wizard, Cyrillic string review for the wizard. | ~4 weeks |
-| **Phase 3 — Sharing & Polish** | Share links, public read-only views (SPA + OG image route), mobile pass, accessibility audit, addon-a11y panel clean across `@app/ui`. | ~2 weeks |
-| **Phase 4 — Dice & Sessions** | Dice roller (web + mobile), push mechanic, `GameSession`s, Darkness Points, Centrifugo channels for live DP. | ~2 weeks |
-| **Phase 5 — Ships** | Ship sheets, crew assignment, ship sharing. | ~2 weeks |
-| **Phase 6 — GM Tools** | Combat tracker (desktop-shaped; mobile read-along card), NPC library, GM session view. Realtime combatant updates. | ~3 weeks |
-| **Phase 7 — Hardening** | Offline support (web SW + Flutter SQLite), JSON export, performance tuning, beta release. | ~2 weeks |
+| Phase                          | Scope                                                                                                                                                                                        | Rough effort |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| **Phase 0 — Adoption**         | Run `scripts/setup.sh` with Coriolis name/slug, replace starter Prisma schema with §8 domain, seed `specs/design/tokens/*.json` from DESIGN.md, replace placeholder copy in `<i18n>` blocks. | ~1 week      |
+| **Phase 1 — Foundation**       | Empty-sheet CRUD on backend (OpenAPI-first), Nuxt sheet skeleton, Flutter sheet skeleton, `@app/ui` foundation primitives needed (Button, Card, Input, Badge, Chip, StatBlock).              | ~3 weeks     |
+| **Phase 2 — Character Sheet**  | Full sheet (attributes, skills, talents, conditions), inventory, derived stats, auto-save, character creation wizard, Cyrillic string review for the wizard.                                 | ~4 weeks     |
+| **Phase 3 — Sharing & Polish** | Share links, public read-only views (SPA + OG image route), mobile pass, accessibility audit, addon-a11y panel clean across `@app/ui`.                                                       | ~2 weeks     |
+| **Phase 4 — Dice & Sessions**  | Dice roller (web + mobile), push mechanic, `GameSession`s, Darkness Points, Centrifugo channels for live DP.                                                                                 | ~2 weeks     |
+| **Phase 5 — Ships**            | Ship sheets, crew assignment, ship sharing.                                                                                                                                                  | ~2 weeks     |
+| **Phase 6 — GM Tools**         | Combat tracker (desktop-shaped; mobile read-along card), NPC library, GM session view. Realtime combatant updates.                                                                           | ~3 weeks     |
+| **Phase 7 — Hardening**        | Offline support (web SW + Flutter SQLite), JSON export, performance tuning, beta release.                                                                                                    | ~2 weeks     |
 
 Total: ~19 weeks for a single full-stack engineer at a steady pace. Faster with a team of two splitting backend (NestJS + Prisma) from frontend (Nuxt + Flutter sharing the generated clients).
 
@@ -692,7 +702,7 @@ The boilerplate's CI already enforces these — no v1 PR merges without:
 - **Free League IP:** verify whether the project needs to operate under Free League's [Free League Workshop](https://freeleaguepublishing.com) community-content license, or stay engine-agnostic enough to avoid trademarks. Recommended v1 stance: non-commercial with a clear "fan project, not affiliated with Free League" attribution in the landing footer.
 - **Rule supplements:** Atlas Compendium and other books extend skills, talents, and gear. The schema accommodates user-added talents and items from day one (free-form `name` + `description`); v2 ships a "supplement pack" toggle behind a feature flag.
 - **Real-time GM/player sync:** v1 uses Centrifugo broadcasts, which is one-way (server → client). True multiplayer cursors during combat would require CRDT — defer to v2 if user feedback demands it.
-- **Mobile-first vs. desktop-first:** the design philosophy is mobile-first for the *player* (table play happens on phones) but the *GM combat tracker* is desktop-shaped. Validate the tracker at 768px and confirm the simplified mobile card meets GM expectations.
+- **Mobile-first vs. desktop-first:** the design philosophy is mobile-first for the _player_ (table play happens on phones) but the _GM combat tracker_ is desktop-shaped. Validate the tracker at 768px and confirm the simplified mobile card meets GM expectations.
 
 ---
 

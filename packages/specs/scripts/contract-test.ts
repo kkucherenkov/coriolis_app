@@ -6,7 +6,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
 const openapi = path.resolve(root, 'openapi/openapi.yaml');
 
-const baseUrl = process.env['CONTRACT_TEST_BASE_URL'] ?? 'http://host.docker.internal:3000';
+const baseUrl = process.env['CONTRACT_TEST_BASE_URL'] ?? 'http://host.docker.internal:3010';
 
 const cmd = [
   'docker run --rm',

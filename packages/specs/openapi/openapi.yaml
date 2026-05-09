@@ -22,7 +22,7 @@ info:
   contact:
     name: Coriolis Companion
 servers:
-  - url: http://localhost:3000
+  - url: http://localhost:3010
     description: Local development
   - url: https://api.example.com
     description: Production (placeholder)

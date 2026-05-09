@@ -4,6 +4,7 @@
 
   const { t } = useI18n({ useScope: 'local' });
   const auth = useAuth();
+  const route = useRoute();
 
   const email = ref('');
   const password = ref('');
@@ -29,10 +30,18 @@
       const result = await auth.signIn.email({ email: email.value, password: password.value });
       if (result.error) {
         const msg = result.error.message?.toLowerCase() ?? '';
-        errorMsg.value = msg.includes('invalid') || msg.includes('credential') || msg.includes('password') ? t('errorCredentials') : t('errorGeneric');
+        errorMsg.value =
+          msg.includes('invalid') || msg.includes('credential') || msg.includes('password')
+            ? t('errorCredentials')
+            : t('errorGeneric');
         return;
       }
-      globalThis.location.href = '/';
+      // Honour `?redirect=` set by auth-required middleware; fall back to the
+      // authenticated home (characters list). Plain `/` would land on the
+      // public landing page and look like sign-in failed.
+      const raw = route.query.redirect;
+      const target = typeof raw === 'string' && raw.startsWith('/') ? raw : '/app/characters';
+      globalThis.location.href = target;
     } catch {
       errorMsg.value = t('errorGeneric');
     } finally {
@@ -44,6 +53,7 @@
 <i18n lang="json">
 {
   "en": {
+    "wordmark": "Coriolis Companion",
     "title": "Sign in",
     "subtitle": "Enter your email and password to continue.",
     "emailLabel": "Email",
@@ -60,6 +70,7 @@
     "errorGeneric": "Something went wrong. Please try again."
   },
   "ru": {
+    "wordmark": "Coriolis Companion",
     "title": "Войти",
     "subtitle": "Введите email и пароль для входа.",
     "emailLabel": "Email",
@@ -76,6 +87,7 @@
     "errorGeneric": "Что-то пошло не так. Попробуйте ещё раз."
   },
   "uk": {
+    "wordmark": "Coriolis Companion",
     "title": "[uk-todo] Sign in",
     "subtitle": "[uk-todo] Enter email and password",
     "emailLabel": "[uk-todo] Email",
@@ -92,6 +104,7 @@
     "errorGeneric": "[uk-todo] Generic error"
   },
   "el": {
+    "wordmark": "Coriolis Companion",
     "title": "[el-todo] Sign in",
     "subtitle": "[el-todo] Enter email and password",
     "emailLabel": "[el-todo] Email",
@@ -111,89 +124,73 @@
 </i18n>
 
 <template>
-  <div
-    class="page-login"
-    data-testid="page-login"
-  >
-    <div class="page-login__card">
-      <div class="page-login__header">
-        <h1 class="page-login__title">
-          {{ t('title') }}
-        </h1>
-        <p class="page-login__subtitle">
-          {{ t('subtitle') }}
+  <div class="page-login" data-testid="page-login">
+    <div class="page-login__shell">
+      <h1 class="page-login__wordmark">
+        {{ t('wordmark') }}
+      </h1>
+
+      <div class="page-login__card">
+        <div class="page-login__header">
+          <h2 class="page-login__title">
+            {{ t('title') }}
+          </h2>
+          <p class="page-login__subtitle">
+            {{ t('subtitle') }}
+          </p>
+        </div>
+
+        <p v-if="errorMsg" role="alert" class="page-login__error">
+          {{ errorMsg }}
+        </p>
+
+        <form class="page-login__form" novalidate @submit.prevent="onSignIn">
+          <AppField :label="t('emailLabel')" :help="t('emailHint')" required>
+            <template #default="slotAttrs">
+              <AppInput
+                v-bind="slotAttrs"
+                v-model="email"
+                type="email"
+                autocomplete="email"
+                inputmode="email"
+                placeholder="user@example.com"
+              />
+            </template>
+          </AppField>
+
+          <AppField :label="t('passwordLabel')" :help="t('passwordHint')" required>
+            <template #default="slotAttrs">
+              <AppInput
+                v-bind="slotAttrs"
+                v-model="password"
+                type="password"
+                autocomplete="current-password"
+              />
+            </template>
+          </AppField>
+
+          <AppButton
+            type="submit"
+            variant="primary"
+            class="page-login__submit"
+            :loading="loading"
+            :disabled="loading || !formValid"
+          >
+            {{ t('signInButton') }}
+          </AppButton>
+        </form>
+
+        <p class="page-login__footnote-link">
+          {{ t('noAccount') }}
+          <NuxtLink to="/signup" class="page-login__link">
+            {{ t('signUpLink') }}
+          </NuxtLink>
+        </p>
+
+        <p class="page-login__legal">
+          {{ t('legalFootnote') }}
         </p>
       </div>
-
-      <p
-        v-if="errorMsg"
-        role="alert"
-        class="page-login__error"
-      >
-        {{ errorMsg }}
-      </p>
-
-      <form
-        class="page-login__form"
-        novalidate
-        @submit.prevent="onSignIn"
-      >
-        <AppField
-          :label="t('emailLabel')"
-          :help="t('emailHint')"
-          required
-        >
-          <template #default="slotAttrs">
-            <AppInput
-              v-bind="slotAttrs"
-              v-model="email"
-              type="email"
-              autocomplete="email"
-              inputmode="email"
-              placeholder="user@example.com"
-            />
-          </template>
-        </AppField>
-
-        <AppField
-          :label="t('passwordLabel')"
-          :help="t('passwordHint')"
-          required
-        >
-          <template #default="slotAttrs">
-            <AppInput
-              v-bind="slotAttrs"
-              v-model="password"
-              type="password"
-              autocomplete="current-password"
-            />
-          </template>
-        </AppField>
-
-        <AppButton
-          type="submit"
-          variant="primary"
-          class="page-login__submit"
-          :loading="loading"
-          :disabled="loading || !formValid"
-        >
-          {{ t('signInButton') }}
-        </AppButton>
-      </form>
-
-      <p class="page-login__footnote-link">
-        {{ t('noAccount') }}
-        <NuxtLink
-          to="/signup"
-          class="page-login__link"
-        >
-          {{ t('signUpLink') }}
-        </NuxtLink>
-      </p>
-
-      <p class="page-login__legal">
-        {{ t('legalFootnote') }}
-      </p>
     </div>
   </div>
 </template>
@@ -201,33 +198,51 @@
 <style lang="scss" scoped>
   // Page-scoped layout cap. Boilerplate left-over — proper restyling against
   // Coriolis tokens lands in Phase 1 Epic 4 auth-vertical extensions.
-  $card-max-width: 400px;
+  $card-max-width: 480px;
 
   .page-login {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100dvh;
-    padding: var(--space-8);
+    padding: var(--space-9) var(--space-6);
     background: var(--surface-bg);
 
-    &__card {
+    &__shell {
       width: 100%;
       max-width: $card-max-width;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-6);
+    }
+
+    &__wordmark {
+      margin: 0;
+      text-align: center;
+      font-family: var(--font-display);
+      font-size: var(--type-display-md-font-size);
+      line-height: var(--type-display-md-line-height);
+      font-weight: var(--type-display-md-font-weight);
+      letter-spacing: var(--type-display-md-letter-spacing);
+      text-transform: uppercase;
+      color: var(--brand-brass-light);
+    }
+
+    &__card {
       background: var(--surface-surface);
       border: 1px solid var(--border-default);
       border-radius: var(--radius-xl);
-      padding: var(--space-12);
+      padding: var(--space-10) var(--space-9);
       box-shadow: var(--shadow-md);
     }
 
     &__header {
-      margin-bottom: var(--space-8);
+      margin-bottom: var(--space-6);
     }
 
     &__title {
       margin: 0 0 var(--space-2);
-      font-size: var(--text-3xl);
+      font-size: var(--text-2xl);
       font-weight: var(--fw-bold);
       letter-spacing: var(--tracking-tight);
       color: var(--text-fg);
@@ -259,7 +274,7 @@
     }
 
     &__footnote-link {
-      margin: var(--space-4) 0 0;
+      margin: var(--space-5) 0 0;
       font-size: var(--text-sm);
       color: var(--text-fg-muted);
       text-align: center;
@@ -275,7 +290,7 @@
     }
 
     &__legal {
-      margin: var(--space-4) 0 0;
+      margin: var(--space-3) 0 0;
       font-size: var(--text-xs);
       color: var(--text-fg-subtle);
       text-align: center;

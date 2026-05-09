@@ -49,7 +49,44 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [
+      tailwindcss(),
+      // unplugin-vue-i18n@11 (vendored by @nuxtjs/i18n v10) tries to neuter
+      // `vite:json` so it doesn't double-process SFC `<i18n>` virtual ids
+      // (`?vue&type=i18n&...&lang.json`). Its patch (lib/index.mjs:288–305)
+      // assumes the old Vite plugin form `transform: Function` — but Vite 7
+      // ships `vite:json` with the new `transform: { filter, handler }`
+      // shape, so the patch overwrites `transform` with a plain function,
+      // discarding `.handler`, and the follow-up `if ("handler" in ...)`
+      // branch can never re-attach. Net result: `vite:json` runs unpatched,
+      // tries to `JSON.parse` the `export default` output produced by
+      // unplugin-vue-i18n's SFC transform, and crashes with "Failed to
+      // parse JSON file" / "Unexpected token 'export'". We re-apply the
+      // patch correctly here: skip `vite:json` for any `?vue` virtual id.
+      {
+        name: 'coriolis-fix-vite-json-sfc',
+        configResolved(config) {
+          const jsonPlugin = config.plugins.find(
+            (p): p is { name: string; transform: unknown } =>
+              !!p && (p as { name?: string }).name === 'vite:json',
+          );
+          if (!jsonPlugin) return;
+          const t = jsonPlugin.transform as
+            | ((code: string, id: string) => unknown)
+            | { filter?: unknown; handler: (code: string, id: string) => unknown };
+          const orgHandler = typeof t === 'function' ? t : t.handler;
+          const wrapped = function (this: unknown, code: string, id: string) {
+            if (/[?&]vue\b/.test(id)) return null;
+            return orgHandler.call(this, code, id);
+          };
+          if (typeof t === 'function') {
+            (jsonPlugin as { transform: unknown }).transform = wrapped;
+          } else {
+            t.handler = wrapped;
+          }
+        },
+      },
+    ],
     // Pre-bundle libs Vite would otherwise discover at runtime and trigger
     // a full dev-server reload for.
     optimizeDeps: {
@@ -64,8 +101,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3000/api/v1',
-      authBaseUrl: process.env.NUXT_PUBLIC_AUTH_BASE_URL ?? 'http://localhost:3000',
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3010/api/v1',
+      authBaseUrl: process.env.NUXT_PUBLIC_AUTH_BASE_URL ?? 'http://localhost:3010',
     },
   },
 

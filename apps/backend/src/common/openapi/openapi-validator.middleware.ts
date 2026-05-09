@@ -30,7 +30,6 @@ export function registerOpenApiValidator(app: INestApplication, nodeEnv: string)
   }
 
   app.use(
-    '/api',
     OpenApiValidator.middleware({
       apiSpec,
       validateRequests: true,
@@ -51,11 +50,9 @@ export function registerOpenApiValidator(app: INestApplication, nodeEnv: string)
       // schemes for clients and generated code.
       validateSecurity: false,
       // Better Auth owns its own wire protocol — the validator has no OpenAPI
-      // schema for these routes and must not reject them. `/api/v1/auth` is
-      // mounted inside URI versioning so the namespace is consistent.
-      // `ignorePaths` is tested against `req.path`, which is relative to the
-      // middleware mount point (`/api`), so the `/api` prefix must be omitted.
-      ignorePaths: /\/v1\/auth(\/|$)/,
+      // schema for these routes and must not reject them. The validator is
+      // mounted at root so `req.path` is the full path including `/api/v1/`.
+      ignorePaths: /\/api\/v1\/auth(\/|$)/,
     }),
   );
 

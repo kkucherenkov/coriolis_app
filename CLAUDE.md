@@ -9,7 +9,7 @@ in [`AGENTS.md`](AGENTS.md); the canonical, deep rules live in
 ## What this repo is
 
 The **Coriolis Companion App** — fan-built character sheet, ship sheet,
-dice, and GM tools for *Coriolis: The Third Horizon* (Free League
+dice, and GM tools for _Coriolis: The Third Horizon_ (Free League
 Publishing). Three first-class clients on day one served by a single
 backend.
 
@@ -33,9 +33,11 @@ docker/         local stack (postgres / redis / centrifugo / otel-lgtm)
 
 2. **Spec-first.** Any wire change starts in `packages/specs/openapi/openapi.yaml`
    or `packages/specs/asyncapi/centrifugo.yaml`. Then:
+
    ```sh
    pnpm spec:codegen   # turbo chains validate → bundle → codegen
    ```
+
    Then implement. `express-openapi-validator` rejects drift at runtime; CI
    rejects drift in generated clients.
 
@@ -69,9 +71,9 @@ docker ps --format '{{.Names}} {{.Status}} {{.Ports}}'
 ```
 
 | Service    | Port | URL                          |
-|------------|------|------------------------------|
+| ---------- | ---- | ---------------------------- |
 | web        | 3001 | http://localhost:3001        |
-| backend    | 3000 | http://localhost:3000/api/v1 |
+| backend    | 3010 | http://localhost:3010/api/v1 |
 | centrifugo | 8000 | ws://localhost:8000          |
 | grafana    | 3200 | http://localhost:3200        |
 

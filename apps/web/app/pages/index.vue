@@ -1,12 +1,26 @@
 <script setup lang="ts">
   const { t } = useI18n({ useScope: 'local' });
+  const auth = useAuth();
+
+  // Already-authenticated visitors should never see the public landing —
+  // bounce them straight to the characters home. The app is SPA-only
+  // (nuxt.config.ts ssr: false), so this only runs in the browser.
+  try {
+    const result = await auth.getSession();
+    const data = result.data as { user?: { id?: string } } | null;
+    if (data?.user?.id) {
+      await navigateTo('/app/characters', { replace: true });
+    }
+  } catch {
+    // Network/session failure — leave the visitor on the landing.
+  }
 
   function onSignIn(): void {
     void navigateTo('/login');
   }
 
   function onCreateAccount(): void {
-    void navigateTo('/login?mode=register');
+    void navigateTo('/signup');
   }
 </script>
 

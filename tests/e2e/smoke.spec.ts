@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const backendUrl = process.env.E2E_BACKEND_URL ?? 'http://localhost:3000';
+const backendUrl = process.env.E2E_BACKEND_URL ?? 'http://localhost:3010';
 
 test('backend health endpoint responds', async ({ request }) => {
   const res = await request.get(`${backendUrl}/api/v1/health`);

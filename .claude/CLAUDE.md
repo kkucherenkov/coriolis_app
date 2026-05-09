@@ -57,7 +57,7 @@ Stack is **normally running**. Check first: `docker ps --format '{{.Names}} {{.S
 | Service        | Port | URL                          |
 | -------------- | ---- | ---------------------------- |
 | web            | 3001 | http://localhost:3001        |
-| backend        | 3000 | http://localhost:3000/api/v1 |
+| backend        | 3010 | http://localhost:3010/api/v1 |
 | postgres       | 5432 | —                            |
 | redis          | 6379 | —                            |
 | centrifugo     | 8000 | ws://localhost:8000          |
