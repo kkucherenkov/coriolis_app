@@ -1,3 +1,80 @@
+## T-2026-05-09-005 — character creation rules alignment with ST3001
+
+- Created: 2026-05-09
+- Owner: claude
+- Spec: Coriolis ST3001 — `ГЛАВА 2 Персонажи игроков` + `ГЛАВА 4 Достоинства`
+  (Russian rulebook, canonical per `.claude/projects/.../memory/coriolis-rulebook-ru.md`).
+  PRD §5.2 is silent / partially wrong on these mechanics.
+- Goal: make web character creation enforce the rulebook's budget,
+  caps, and talent model. User-reported gaps: skill points + attribute
+  budget should depend on origin (really: **upbringing**); origin
+  should drive a hint panel; talent catalog is incomplete; Icon gift
+  + Crew talent are missing entirely.
+- Acceptance:
+  - **Upbringing field** (Plebeian/Stationary/Aristocrat) drives the
+    attribute budget (15/14/13), skill budget (8/10/12), reputation
+    (2/4/6), and starting wealth (500/1000/5000 birrs). Origin is
+    narrative-only (free text, optional).
+  - **Concept (Amplua)** is a structured enum (11 amplua per ch.2)
+    with key attribute (cap 5, others cap 4) and key skills (cap 3
+    at creation, others cap 1).
+  - **Talents at creation = 3** (4 if mutant): one personal (from
+    amplua list), one crew (from crew amplua list), one icon gift
+    (auto-derived from chosen icon). Stigma if mutant.
+  - **Talent catalog** populated from ch.4: 5 crew amplua × 3
+    talents = 15; 9 icon gifts; ~30 personal talents.
+  - Backend rejects budget violations with structured 400 + i18n.
+  - Web wizard surfaces budgets/caps as hints on each step.
+  - Mobile is OUT OF SCOPE — only spec/backend/web.
+- Spec diff: `packages/specs/openapi/openapi.yaml` minor → 0.9.0.
+  Adds Upbringing, Concept enums; Talent.kind discriminator (personal
+  | crew | iconGift | stigma); CrewConcept enum; talent catalog
+  reference under `components.examples` for client display.
+- Codegen impact: yes (TS + Dart clients).
+- Design impact: Step1/Step2/Step6 wizard pages need redesigned hint
+  panels and structured pickers; stays inside existing tokens.
+
+- Sub-steps:
+  - [x] Push task to active.md
+  - [x] Read ST3001 ch.2 (upbringing 15/8 — 14/10 — 13/12) and ch.4
+        (5 crew × 3 + 9 icons + ~30 personal talents)
+  - [ ] **Block 1 — Upbringing + budgets** (smallest valuable step)
+    - openapi: Upbringing enum, CharacterCreate.upbringing required,
+      Character.upbringing/reputation/startingWealth (already partial)
+    - codegen
+    - RulesEngine: UPBRINGING_BUDGETS table; CreateCharacterHandler
+      validation
+    - Step2Background: select + hint panel
+    - Step4/Step5: derive budget from upbringing
+    - i18n: en + ru, leave [uk-todo]/[el-todo] placeholders
+  - [ ] **Block 2 — Concept (amplua) enum**
+    - openapi: Concept enum (11 amplua), key attribute / key skills
+      mapping (server-side, not in spec)
+    - RulesEngine: per-amplua key attr + key skills caps
+    - Step1Concept: replace free-text with structured picker; show
+      key attr/skills hint
+  - [ ] **Block 3 — Talent kind discriminator**
+    - openapi: Talent.kind (personal | crew | iconGift | stigma);
+      Character.crewConcept (CrewConcept enum)
+    - codegen
+    - RulesEngine: validate exactly 1 of each kind at create
+    - Step6Talents: split into 3 sections; auto-add iconGift from
+      iconId; crew talent from selected CrewConcept
+  - [ ] **Block 4 — Talent catalog data**
+    - 9 icon gifts, 15 crew talents, ~30 personal talents — i18n
+      strings (en+ru) per talent; rules text in detail field
+    - Seed dev DB or static catalog file
+  - [ ] **Block 5 — Mutant flag + stigma (defer if scope blows up)**
+    - openapi: Character.mutant, mutant lineage enum (zirba | shingura
+      | nerida) → 1 of 3 stigma talents
+  - [ ] tests: backend rules-engine specs (≥15), web wizard specs
+  - [ ] lint + typecheck + format
+  - [ ] PR with all blocks (per user's "single big PR" preference)
+- Status: in-progress (block 1 next)
+- Blockers: —
+- Estimate: 22–34 hours total. Will commit per block to keep diff
+  reviewable; merge as one PR.
+
 ## T-2026-05-09-004 — web: signup page + auth layout fixes
 
 - Created: 2026-05-09
