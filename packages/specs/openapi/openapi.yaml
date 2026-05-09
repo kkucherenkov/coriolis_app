@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 0.8.0
+  version: 0.8.1
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -3128,6 +3128,161 @@ paths:
                 $ref: "#/components/schemas/Problem"
 
   # ---------------------------------------------------------------------------
+  # Darkness Points (Epic 7 Feature 7.3)
+  # ---------------------------------------------------------------------------
+
+  /api/v1/game-sessions/{id}/dp:
+    post:
+      operationId: adjustDp
+      summary: Adjust Darkness Points for a game session
+      description: |
+        Atomically adjusts the Darkness Points counter for the session.
+
+        **ACL rules:**
+        - Negative `delta`: only the GM who owns the session may apply.
+        - Positive `delta`: the GM owner may apply; the system applies
+          automatically via the roll-push pipeline.
+
+        **Error codes:**
+        - `DP_INVALID_DELTA` (422) — `delta` is 0.
+        - `DP_BELOW_ZERO` (422) — applying `delta` would take `dpCount` below 0.
+        - `GAME_SESSION_NOT_OWNER` (403) — negative delta from non-owner.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DpAdjustment"
+            examples:
+              addOne:
+                value:
+                  delta: 1
+                  reason: Roll pushed by player
+              removeThree:
+                value:
+                  delta: -3
+                  reason: GM fudge
+      responses:
+        "200":
+          description: Updated game session with new dpCount
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameSession"
+              examples:
+                ok:
+                  value:
+                    id: cuid_gs01
+                    ownerId: cuid_user01
+                    name: The Long Night
+                    description: null
+                    status: active
+                    dpCount: 4
+                    characterIds: []
+                    shipId: null
+                    createdAt: "2026-05-08T10:00:00Z"
+                    updatedAt: "2026-05-09T10:00:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this session (negative delta only)
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: Game session not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "422":
+          description: |
+            Validation error. Possible codes:
+            - `DP_INVALID_DELTA` — delta is 0.
+            - `DP_BELOW_ZERO` — would result in a negative dpCount.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /api/v1/game-sessions/{id}/dp/events:
+    get:
+      operationId: listDpEvents
+      summary: List Darkness Point audit events for a session
+      description: |
+        Returns a cursor-paginated audit log of all DP adjustments made to
+        the session, ordered newest-first. Only accessible by the GM owner.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque pagination cursor from the previous page
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          description: Number of events to return (1–100, default 20)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: Paginated DP event list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DpEventList"
+              examples:
+                ok:
+                  value:
+                    items:
+                      - id: cuid_dpe01
+                        gameSessionId: cuid_gs01
+                        delta: 1
+                        reason: Roll pushed
+                        source: roll-push
+                        rollId: cuid_roll01
+                        createdAt: "2026-05-09T10:01:00Z"
+                    nextCursor: null
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: Game session not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  # ---------------------------------------------------------------------------
   # Share links (Epic 6 Feature 6.1)
   # ---------------------------------------------------------------------------
 
@@ -6156,8 +6311,7 @@ components:
     GameSession:
       type: object
       description: A campaign session container owned by a GM.
-      required:
-        [id, ownerId, name, status, dpCount, characterIds, createdAt, updatedAt]
+      required: [id, ownerId, name, status, dpCount, characterIds, createdAt, updatedAt]
       properties:
         id:
           type: string
@@ -6253,6 +6407,78 @@ components:
         characterId:
           type: string
           description: Identifier of the character to assign
+
+    # -------------------------------------------------------------------------
+    # Darkness Points (Epic 7 Feature 7.3)
+    # -------------------------------------------------------------------------
+
+    DpAdjustment:
+      type: object
+      description: Payload for adjusting Darkness Points on a game session
+      required: [delta]
+      properties:
+        delta:
+          type: integer
+          minimum: -99
+          maximum: 99
+          description: |
+            Positive to add DP, negative to remove DP. Must be non-zero.
+            A negative delta is only accepted from the GM owner of the session.
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Optional human-readable reason for the adjustment
+
+    DpSource:
+      type: string
+      enum: [gm-manual, roll-push, system]
+      description: |
+        Source that originated the DP adjustment.
+        - `gm-manual` — GM applied the delta via the HTTP endpoint.
+        - `roll-push` — Automatic +1 from a player pushing a roll.
+        - `system` — Applied by internal automation.
+
+    DpEvent:
+      type: object
+      description: A single Darkness Points audit event
+      required: [id, gameSessionId, delta, source, createdAt]
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: Opaque event identifier (cuid2)
+        gameSessionId:
+          type: string
+          readOnly: true
+          description: Session the event belongs to
+        delta:
+          type: integer
+          description: How many DP were added (positive) or removed (negative)
+        reason:
+          type: ["string", "null"]
+          description: Optional human-readable reason
+        source:
+          $ref: "#/components/schemas/DpSource"
+        rollId:
+          type: ["string", "null"]
+          description: Roll identifier when source is roll-push
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    DpEventList:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/DpEvent"
+        nextCursor:
+          type: ["string", "null"]
+          description: Cursor for the next page; null when there are no more results
 
     RealtimeToken:
       type: object
