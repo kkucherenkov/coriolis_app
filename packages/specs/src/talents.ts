@@ -21,6 +21,7 @@ export type LocalizedString = Readonly<Record<CatalogLocale, string>>;
 
 type IconId = components['schemas']['IconId'];
 type CrewConcept = components['schemas']['CrewConcept'];
+type Concept = components['schemas']['Concept'];
 type TalentKind = components['schemas']['TalentKind'];
 
 export interface CatalogTalentBase {
@@ -1056,6 +1057,70 @@ export function getCrewTalentsByConcept(
   crewConcept: CrewConcept,
 ): readonly CrewTalentCatalogEntry[] {
   return CREW_TALENTS.filter((t) => t.crewConcept === crewConcept);
+}
+
+/**
+ * Per-amplua list of personal talents recommended by the rulebook
+ * (ST3001 ch.2 §АМПЛУА ПЕРСОНАЖЕЙ — each amplua's "ДОСТОИНСТВА" subsection).
+ *
+ * The rulebook also lists implant talents (Бионические модификации /
+ * имплантаты — `Прекрасная внешность`, `Интерпретатор`, `Детектор лжи`,
+ * `Целеуказатель`, `Усиленные мышцы`, `Оптимизированный метаболизм`) and
+ * mystic practices in the same per-amplua block. Those sit outside the
+ * personal-talent catalog (cybernetics live on the Item table; mystic
+ * powers are gated by the Mysticism skill rather than the talent system),
+ * so they're excluded from this map. Each amplua therefore exposes 1–3
+ * IDs even though the rulebook lists three picks.
+ *
+ * Used by the wizard's Step 6 picker to render a default-on filter
+ * ("show only talents recommended for {amplua}"); toggling the filter
+ * off restores the full 26-talent personal pool.
+ */
+export const RECOMMENDED_PERSONAL_TALENTS_BY_CONCEPT: Readonly<Record<Concept, readonly string[]>> =
+  Object.freeze({
+    artist: Object.freeze(['personal-defensive-stance', 'personal-seducer']),
+    networker: Object.freeze([
+      'personal-faction-member',
+      'personal-truth-spotter',
+      'personal-sixth-sense',
+    ]),
+    fugitive: Object.freeze(['personal-menacing', 'personal-nine-lives']),
+    negotiator: Object.freeze(['personal-faction-member']),
+    operative: Object.freeze(['personal-executioner', 'personal-menacing', 'personal-licensee']),
+    pilot: Object.freeze(['personal-zero-g-adept', 'personal-exo-technician']),
+    preacher: Object.freeze([
+      'personal-blesser',
+      'personal-faction-member',
+      'personal-consecrator',
+    ]),
+    scientist: Object.freeze([
+      'personal-field-medic',
+      'personal-inventor',
+      'personal-wealthy-family',
+    ]),
+    sailor: Object.freeze(['personal-exo-technician', 'personal-tough', 'personal-zero-g-adept']),
+    soldier: Object.freeze(['personal-veteran-warrior', 'personal-tough']),
+    pioneer: Object.freeze(['personal-nine-lives', 'personal-hardened']),
+  });
+
+const PERSONAL_BY_ID: ReadonlyMap<string, PersonalTalentCatalogEntry> = new Map(
+  PERSONAL_TALENTS.map((t) => [t.id, t]),
+);
+
+/**
+ * Returns the personal-talent catalog entries the rulebook recommends for a
+ * given amplua, in the order the rulebook lists them. Unknown IDs are
+ * silently dropped (defence in depth — the recommendation map is hand-
+ * authored against the catalog so a typo would surface as a missing card
+ * in the wizard UI, but a runtime drop is preferable to a thrown error).
+ */
+export function getRecommendedPersonalTalents(
+  concept: Concept,
+): readonly PersonalTalentCatalogEntry[] {
+  const ids = RECOMMENDED_PERSONAL_TALENTS_BY_CONCEPT[concept];
+  return ids
+    .map((id) => PERSONAL_BY_ID.get(id))
+    .filter((t): t is PersonalTalentCatalogEntry => t !== undefined);
 }
 
 const SUPPORTED_LOCALES: readonly CatalogLocale[] = Object.freeze(['en', 'ru', 'uk', 'el']);

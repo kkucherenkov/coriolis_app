@@ -528,6 +528,7 @@
         :crew-talent-id="draftCrewTalentId"
         :stigma-talent-id="draftStigmaTalentId"
         :icon-id="draftIconId"
+        :concept="draftConcept"
         :crew-concept="draftCrewConcept"
         :mutant="draftMutant"
         @update:personal-talent-id="onPersonalTalentUpdate"

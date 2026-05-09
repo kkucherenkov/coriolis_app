@@ -1,13 +1,14 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { computed, ref, watch } from 'vue';
   import {
     PERSONAL_TALENTS,
     STIGMA_TALENTS,
     getCrewTalentsByConcept,
     getIconGiftByIconId,
+    getRecommendedPersonalTalents,
     type CatalogLocale,
   } from '@app/specs';
-  import type { IconId, CrewConcept } from '@app/api-client-ts';
+  import type { IconId, Concept, CrewConcept } from '@app/api-client-ts';
 
   // TODO(wizard-step-7-relationships): Relationships step deferred to v1.1+.
 
@@ -16,6 +17,7 @@
     crewTalentId: string | null;
     stigmaTalentId: string | null;
     iconId: IconId | null;
+    concept: Concept | null;
     crewConcept: CrewConcept | null;
     mutant: boolean;
   }
@@ -48,6 +50,35 @@
   // Icon gift is auto-derived from the chosen Icon; characters never pick it.
   const iconGift = computed(() => (props.iconId ? getIconGiftByIconId(props.iconId) : null));
 
+  // Personal-pool filtering — defaults to ON when an amplua is chosen so
+  // the player sees the rulebook's 1–3 picks first; toggling off restores
+  // the full 26-talent pool. The rulebook is suggestive rather than
+  // prescriptive here, so we never *force* the filter — the toggle is
+  // always visible.
+  const showOnlyRecommendedForConcept = ref(true);
+
+  const recommendedPersonalIds = computed<readonly string[]>(() =>
+    props.concept ? getRecommendedPersonalTalents(props.concept).map((t) => t.id) : [],
+  );
+
+  const personalOptions = computed(() => {
+    if (!props.concept || !showOnlyRecommendedForConcept.value) return PERSONAL_TALENTS;
+    const ids = new Set(recommendedPersonalIds.value);
+    return PERSONAL_TALENTS.filter((t) => ids.has(t.id));
+  });
+
+  // If the player had a recommended-only filter on but their already-picked
+  // talent isn't in the recommended pool (e.g. they switched amplua after
+  // picking), drop the filter rather than silently hiding their selection.
+  watch(
+    () => [props.concept, props.personalTalentId] as const,
+    ([concept, picked]) => {
+      if (!concept || !picked || !showOnlyRecommendedForConcept.value) return;
+      const ids = new Set(getRecommendedPersonalTalents(concept).map((t) => t.id));
+      if (!ids.has(picked)) showOnlyRecommendedForConcept.value = false;
+    },
+  );
+
   function isPersonalPicked(id: string): boolean {
     return props.personalTalentId === id;
   }
@@ -79,8 +110,11 @@
     "intro": "Each character begins with three talents — one personal, one shared by your crew, and one icon gift derived from your patron Icon.",
     "personal": {
       "title": "Personal talent",
-      "help": "Pick one talent that fits your character. The full ST3001 ch.4 personal pool is available.",
-      "counter": "{count} / 1 selected"
+      "help": "Pick one talent that fits your character.",
+      "counter": "{count} / 1 selected",
+      "filterRecommendedLabel": "Show only talents recommended for this amplua",
+      "filterPoolMeta": "{shown} of {total}",
+      "noConceptHint": "Pick an amplua on Step 1 to see the rulebook's recommended talents."
     },
     "crew": {
       "title": "Crew talent",
@@ -103,8 +137,11 @@
     "intro": "Каждый персонаж получает три таланта — одно личное достоинство, одно от амплуа команды и один дар Иконы.",
     "personal": {
       "title": "Личное достоинство",
-      "help": "Выберите одно достоинство для своего персонажа. Доступен полный список из ST3001 гл.4.",
-      "counter": "Выбрано {count} / 1"
+      "help": "Выберите одно достоинство для своего персонажа.",
+      "counter": "Выбрано {count} / 1",
+      "filterRecommendedLabel": "Только достоинства, рекомендованные для амплуа",
+      "filterPoolMeta": "{shown} из {total}",
+      "noConceptHint": "Выберите амплуа на шаге 1, чтобы увидеть рекомендации книги правил."
     },
     "crew": {
       "title": "Достоинство команды",
@@ -128,7 +165,10 @@
     "personal": {
       "title": "[uk-todo] Personal talent",
       "help": "[uk-todo] Pick one talent.",
-      "counter": "[uk-todo] {count} / 1 selected"
+      "counter": "[uk-todo] {count} / 1 selected",
+      "filterRecommendedLabel": "[uk-todo] Only recommended for amplua",
+      "filterPoolMeta": "[uk-todo] {shown} / {total}",
+      "noConceptHint": "[uk-todo] Pick an amplua on Step 1."
     },
     "crew": {
       "title": "[uk-todo] Crew talent",
@@ -152,7 +192,10 @@
     "personal": {
       "title": "[el-todo] Personal talent",
       "help": "[el-todo] Pick one talent.",
-      "counter": "[el-todo] {count} / 1 selected"
+      "counter": "[el-todo] {count} / 1 selected",
+      "filterRecommendedLabel": "[el-todo] Only recommended for amplua",
+      "filterPoolMeta": "[el-todo] {shown} / {total}",
+      "noConceptHint": "[el-todo] Pick an amplua on Step 1."
     },
     "crew": {
       "title": "[el-todo] Crew talent",
@@ -192,9 +235,34 @@
       <p class="step-talents__section-help">
         {{ t('personal.help') }}
       </p>
+
+      <div v-if="concept" class="step-talents__filter">
+        <label class="step-talents__filter-toggle">
+          <input
+            v-model="showOnlyRecommendedForConcept"
+            type="checkbox"
+            class="step-talents__filter-checkbox"
+          />
+          <span class="step-talents__filter-text">
+            {{ t('personal.filterRecommendedLabel') }}
+          </span>
+        </label>
+        <span class="step-talents__filter-meta">
+          {{
+            t('personal.filterPoolMeta', {
+              shown: personalOptions.length,
+              total: PERSONAL_TALENTS.length,
+            })
+          }}
+        </span>
+      </div>
+      <p v-else class="step-talents__section-help step-talents__section-help--hint">
+        {{ t('personal.noConceptHint') }}
+      </p>
+
       <div class="step-talents__grid">
         <div
-          v-for="talent in PERSONAL_TALENTS"
+          v-for="talent in personalOptions"
           :key="talent.id"
           class="step-talents__card"
           :class="{
@@ -361,12 +429,56 @@
       font-family: var(--font-body);
       font-size: var(--type-body-sm-font-size);
       color: var(--text-secondary);
+
+      &--hint {
+        font-style: italic;
+        color: var(--text-tertiary);
+      }
     }
 
     &__counter {
       font-family: var(--font-mono);
       font-size: var(--type-body-sm-font-size);
       color: var(--brand-brass-light);
+    }
+
+    &__filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-2) var(--space-3);
+      border: 1px dashed var(--brand-brass-shadow);
+      border-radius: var(--radius-sm);
+      background-color: color-mix(in srgb, var(--brand-brass-shadow) 25%, transparent);
+    }
+
+    &__filter-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--text-primary);
+    }
+
+    &__filter-checkbox {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--brand-brass);
+      cursor: pointer;
+    }
+
+    &__filter-text {
+      user-select: none;
+    }
+
+    &__filter-meta {
+      font-family: var(--font-mono);
+      font-size: var(--type-body-xs-font-size);
+      color: var(--text-tertiary);
     }
 
     &__grid {

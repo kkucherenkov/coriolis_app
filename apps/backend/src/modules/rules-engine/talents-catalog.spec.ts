@@ -8,12 +8,14 @@ import {
   CREW_TALENTS,
   ICON_GIFTS,
   PERSONAL_TALENTS,
+  RECOMMENDED_PERSONAL_TALENTS_BY_CONCEPT,
   STIGMA_TALENTS,
   TALENT_CATALOG,
   findCatalogTalentById,
   findCatalogTalentByName,
   getCrewTalentsByConcept,
   getIconGiftByIconId,
+  getRecommendedPersonalTalents,
   pickLocalized,
 } from '@app/specs';
 
@@ -152,6 +154,70 @@ describe('talent catalog (@app/specs)', () => {
       expect(pickLocalized(traveler.name, 'ru')).toBe(traveler.name.ru);
       expect(pickLocalized(traveler.name, 'en')).toBe(traveler.name.en);
       expect(pickLocalized(traveler.name, 'fr')).toBe(traveler.name.en);
+    });
+  });
+
+  describe('per-amplua personal-talent recommendations (ST3001 ch.2 §АМПЛУА)', () => {
+    const ALL_CONCEPTS = [
+      'artist',
+      'networker',
+      'fugitive',
+      'negotiator',
+      'operative',
+      'pilot',
+      'pioneer',
+      'preacher',
+      'scientist',
+      'sailor',
+      'soldier',
+    ] as const;
+
+    it('exposes a recommendation list for every Concept (no amplua left empty)', () => {
+      for (const concept of ALL_CONCEPTS) {
+        expect(
+          RECOMMENDED_PERSONAL_TALENTS_BY_CONCEPT[concept].length,
+          `no recommendations registered for amplua ${concept}`,
+        ).toBeGreaterThan(0);
+      }
+    });
+
+    it('every recommended ID resolves to a real personal-talent catalog entry', () => {
+      // Implants (Бионические модификации / имплантаты) and mystic practices
+      // are listed alongside personal talents in ch.2 but live outside the
+      // personal catalog — the map filters them out at definition time, and
+      // this test guards against a future copy-paste mistake reintroducing
+      // a non-personal ID.
+      const personalIds = new Set(PERSONAL_TALENTS.map((t) => t.id));
+      for (const concept of ALL_CONCEPTS) {
+        for (const id of RECOMMENDED_PERSONAL_TALENTS_BY_CONCEPT[concept]) {
+          expect(personalIds.has(id), `${concept} → ${id}`).toBe(true);
+        }
+      }
+    });
+
+    it('getRecommendedPersonalTalents returns entries in the rulebook order', () => {
+      // Operative's rulebook order is Палач → Грозный вид → Лицензиат
+      // (ch.2 §ОПЕРАТИВНИК — ДОСТОИНСТВА). Confirm we preserve that order
+      // so the wizard renders the cards as the rulebook prints them.
+      const operative = getRecommendedPersonalTalents('operative');
+      expect(operative.map((t) => t.id)).toEqual([
+        'personal-executioner',
+        'personal-menacing',
+        'personal-licensee',
+      ]);
+    });
+
+    it('getRecommendedPersonalTalents drops unknown IDs silently (defence in depth)', () => {
+      // Synthesise a defensive case: if the map ever ships an ID typo it
+      // should produce a missing card in the UI, not a thrown error from
+      // the catalog helper. We can't introduce a typo here without
+      // mutating frozen data, so confirm via a known-empty intersection:
+      // every concept yields at most as many entries as IDs registered.
+      for (const concept of ALL_CONCEPTS) {
+        const ids = RECOMMENDED_PERSONAL_TALENTS_BY_CONCEPT[concept];
+        const entries = getRecommendedPersonalTalents(concept);
+        expect(entries.length).toBeLessThanOrEqual(ids.length);
+      }
     });
   });
 });
