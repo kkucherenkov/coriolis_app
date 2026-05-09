@@ -286,11 +286,20 @@ enum GameSessionStatus {
   @@map("game_session_status")
 }
 
+/// Source of a DpEvent row.
+enum DpSource {
+  GM_MANUAL
+  ROLL_PUSH
+  SYSTEM
+
+  @@map("dp_source")
+}
+
 /// A campaign session container owned by a GM.
 ///
 /// Design notes:
-/// - `dpCount` is always mutated atomically by incrementDP/decrementDP domain
-///   commands (Feature 7.3). Never written directly from the PATCH endpoint.
+/// - `dpCount` is always mutated atomically by UpdateDpCommand (Feature 7.3).
+///   Never written directly from the PATCH endpoint.
 /// - Characters are linked via the `CharacterGameSession` join table so the
 ///   many-to-many relation stays clean. The array of characterIds is assembled
 ///   at read time by the repo.
@@ -307,11 +316,32 @@ model GameSession {
   dpCount     Int                   @default(0)
   shipId      String?
   characters  CharacterGameSession[]
+  dpEvents    DpEvent[]
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @updatedAt
 
   @@index([ownerId, status])
   @@map("game_session")
+}
+
+/// An audit event for a Darkness Points adjustment on a GameSession.
+///
+/// Design notes:
+/// - Inserted in the same transaction as the dpCount update (UpdateDpCommand).
+/// - `rollId` is a nullable loose FK — set when source = ROLL_PUSH.
+/// - `@@index([gameSessionId, createdAt])` supports the paginated list query.
+model DpEvent {
+  id            String      @id @default(cuid())
+  gameSessionId String
+  gameSession   GameSession @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+  delta         Int
+  reason        String?
+  source        DpSource
+  rollId        String?
+  createdAt     DateTime    @default(now())
+
+  @@index([gameSessionId, createdAt])
+  @@map("dp_event")
 }
 
 /// Join table linking characters to game sessions.
