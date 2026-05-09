@@ -23,6 +23,7 @@ import { PrismaModule } from './common/prisma/prisma.module';
 import { RedisModule } from './common/redis/redis.module';
 import { SmsModule } from './common/sms/sms.module';
 import { CharactersModule } from './modules/characters/characters.module';
+import { DiceModule } from './modules/dice/dice.module';
 import { SharingModule } from './modules/sharing/sharing.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { HealthModule } from './modules/health/health.module';
@@ -69,6 +70,7 @@ const devOnlyModules: ImportableModule[] = [];
     RealtimeModule,
     UsersModule,
     CharactersModule,
+    DiceModule,
     SharingModule,
     ...devOnlyModules,
   ],
