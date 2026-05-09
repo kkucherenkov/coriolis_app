@@ -1671,6 +1671,67 @@ export type AssignCharacterToSession = {
     characterId: string;
 };
 
+/**
+ * Payload for adjusting Darkness Points on a game session
+ */
+export type DpAdjustment = {
+    /**
+     * Positive to add DP, negative to remove DP. Must be non-zero.
+     * A negative delta is only accepted from the GM owner of the session.
+     *
+     */
+    delta: number;
+    /**
+     * Optional human-readable reason for the adjustment
+     */
+    reason?: string;
+};
+
+/**
+ * Source that originated the DP adjustment.
+ * - `gm-manual` — GM applied the delta via the HTTP endpoint.
+ * - `roll-push` — Automatic +1 from a player pushing a roll.
+ * - `system` — Applied by internal automation.
+ *
+ */
+export type DpSource = 'gm-manual' | 'roll-push' | 'system';
+
+/**
+ * A single Darkness Points audit event
+ */
+export type DpEvent = {
+    /**
+     * Opaque event identifier (cuid2)
+     */
+    readonly id: string;
+    /**
+     * Session the event belongs to
+     */
+    readonly gameSessionId: string;
+    /**
+     * How many DP were added (positive) or removed (negative)
+     */
+    delta: number;
+    /**
+     * Optional human-readable reason
+     */
+    reason?: string | null;
+    source: DpSource;
+    /**
+     * Roll identifier when source is roll-push
+     */
+    rollId?: string | null;
+    readonly createdAt: string;
+};
+
+export type DpEventList = {
+    items: Array<DpEvent>;
+    /**
+     * Cursor for the next page; null when there are no more results
+     */
+    nextCursor: string | null;
+};
+
 export type RealtimeToken = {
     /**
      * Short-lived HMAC-signed JWT for Centrifugo
@@ -2024,6 +2085,33 @@ export type GameSessionWritable = {
 
 export type GameSessionListWritable = {
     items: Array<GameSessionWritable>;
+    /**
+     * Cursor for the next page; null when there are no more results
+     */
+    nextCursor: string | null;
+};
+
+/**
+ * A single Darkness Points audit event
+ */
+export type DpEventWritable = {
+    /**
+     * How many DP were added (positive) or removed (negative)
+     */
+    delta: number;
+    /**
+     * Optional human-readable reason
+     */
+    reason?: string | null;
+    source: DpSource;
+    /**
+     * Roll identifier when source is roll-push
+     */
+    rollId?: string | null;
+};
+
+export type DpEventListWritable = {
+    items: Array<DpEventWritable>;
     /**
      * Cursor for the next page; null when there are no more results
      */
@@ -3496,6 +3584,98 @@ export type UnassignCharacterFromSessionResponses = {
 };
 
 export type UnassignCharacterFromSessionResponse = UnassignCharacterFromSessionResponses[keyof UnassignCharacterFromSessionResponses];
+
+export type AdjustDpData = {
+    body: DpAdjustment;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}/dp';
+};
+
+export type AdjustDpErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this session (negative delta only)
+     */
+    403: Problem;
+    /**
+     * Game session not found
+     */
+    404: Problem;
+    /**
+     * Validation error. Possible codes:
+     * - `DP_INVALID_DELTA` — delta is 0.
+     * - `DP_BELOW_ZERO` — would result in a negative dpCount.
+     *
+     */
+    422: Problem;
+};
+
+export type AdjustDpError = AdjustDpErrors[keyof AdjustDpErrors];
+
+export type AdjustDpResponses = {
+    /**
+     * Updated game session with new dpCount
+     */
+    200: GameSession;
+};
+
+export type AdjustDpResponse = AdjustDpResponses[keyof AdjustDpResponses];
+
+export type ListDpEventsData = {
+    body?: never;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: {
+        /**
+         * Opaque pagination cursor from the previous page
+         */
+        cursor?: string;
+        /**
+         * Number of events to return (1–100, default 20)
+         */
+        limit?: number;
+    };
+    url: '/api/v1/game-sessions/{id}/dp/events';
+};
+
+export type ListDpEventsErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this session
+     */
+    403: Problem;
+    /**
+     * Game session not found
+     */
+    404: Problem;
+};
+
+export type ListDpEventsError = ListDpEventsErrors[keyof ListDpEventsErrors];
+
+export type ListDpEventsResponses = {
+    /**
+     * Paginated DP event list
+     */
+    200: DpEventList;
+};
+
+export type ListDpEventsResponse = ListDpEventsResponses[keyof ListDpEventsResponses];
 
 export type CreateShareLinkData = {
     body: ShareLinkCreate;

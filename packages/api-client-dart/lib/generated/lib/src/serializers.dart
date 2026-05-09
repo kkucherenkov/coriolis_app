@@ -31,6 +31,10 @@ import 'package:app_api_client/src/model/crew_slot.dart';
 import 'package:app_api_client/src/model/critical_injury.dart';
 import 'package:app_api_client/src/model/critical_injury_severity.dart';
 import 'package:app_api_client/src/model/dependency_status.dart';
+import 'package:app_api_client/src/model/dp_adjustment.dart';
+import 'package:app_api_client/src/model/dp_event.dart';
+import 'package:app_api_client/src/model/dp_event_list.dart';
+import 'package:app_api_client/src/model/dp_source.dart';
 import 'package:app_api_client/src/model/game_session.dart';
 import 'package:app_api_client/src/model/game_session_create.dart';
 import 'package:app_api_client/src/model/game_session_list.dart';
@@ -131,6 +135,10 @@ part 'serializers.g.dart';
   CriticalInjury,
   CriticalInjurySeverity,
   DependencyStatus,
+  DpAdjustment,
+  DpEvent,
+  DpEventList,
+  DpSource,
   GameSession,
   GameSessionCreate,
   GameSessionList,

@@ -636,6 +636,57 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/game-sessions/{id}/dp': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Adjust Darkness Points for a game session
+     * @description Atomically adjusts the Darkness Points counter for the session.
+     *
+     *     **ACL rules:**
+     *     - Negative `delta`: only the GM who owns the session may apply.
+     *     - Positive `delta`: the GM owner may apply; the system applies
+     *       automatically via the roll-push pipeline.
+     *
+     *     **Error codes:**
+     *     - `DP_INVALID_DELTA` (422) — `delta` is 0.
+     *     - `DP_BELOW_ZERO` (422) — applying `delta` would take `dpCount` below 0.
+     *     - `GAME_SESSION_NOT_OWNER` (403) — negative delta from non-owner.
+     */
+    post: operations['adjustDp'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/game-sessions/{id}/dp/events': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Darkness Point audit events for a session
+     * @description Returns a cursor-paginated audit log of all DP adjustments made to
+     *     the session, ordered newest-first. Only accessible by the GM owner.
+     */
+    get: operations['listDpEvents'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/characters/{id}/share': {
     parameters: {
       query?: never;
@@ -2465,6 +2516,45 @@ export interface components {
     AssignCharacterToSession: {
       /** @description Identifier of the character to assign */
       characterId: string;
+    };
+    /** @description Payload for adjusting Darkness Points on a game session */
+    DpAdjustment: {
+      /**
+       * @description Positive to add DP, negative to remove DP. Must be non-zero.
+       *     A negative delta is only accepted from the GM owner of the session.
+       */
+      delta: number;
+      /** @description Optional human-readable reason for the adjustment */
+      reason?: string;
+    };
+    /**
+     * @description Source that originated the DP adjustment.
+     *     - `gm-manual` — GM applied the delta via the HTTP endpoint.
+     *     - `roll-push` — Automatic +1 from a player pushing a roll.
+     *     - `system` — Applied by internal automation.
+     * @enum {string}
+     */
+    DpSource: 'gm-manual' | 'roll-push' | 'system';
+    /** @description A single Darkness Points audit event */
+    DpEvent: {
+      /** @description Opaque event identifier (cuid2) */
+      readonly id: string;
+      /** @description Session the event belongs to */
+      readonly gameSessionId: string;
+      /** @description How many DP were added (positive) or removed (negative) */
+      delta: number;
+      /** @description Optional human-readable reason */
+      reason?: string | null;
+      source: components['schemas']['DpSource'];
+      /** @description Roll identifier when source is roll-push */
+      rollId?: string | null;
+      /** Format: date-time */
+      readonly createdAt: string;
+    };
+    DpEventList: {
+      items: components['schemas']['DpEvent'][];
+      /** @description Cursor for the next page; null when there are no more results */
+      nextCursor: string | null;
     };
     RealtimeToken: {
       /** @description Short-lived HMAC-signed JWT for Centrifugo */
@@ -4361,6 +4451,128 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this session */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Game session not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  adjustDp: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DpAdjustment'];
+      };
+    };
+    responses: {
+      /** @description Updated game session with new dpCount */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['GameSession'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this session (negative delta only) */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Game session not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /**
+       * @description Validation error. Possible codes:
+       *     - `DP_INVALID_DELTA` — delta is 0.
+       *     - `DP_BELOW_ZERO` — would result in a negative dpCount.
+       */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  listDpEvents: {
+    parameters: {
+      query?: {
+        /** @description Opaque pagination cursor from the previous page */
+        cursor?: string;
+        /** @description Number of events to return (1–100, default 20) */
+        limit?: number;
+      };
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Paginated DP event list */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['DpEventList'];
+        };
       };
       /** @description No active session */
       401: {
