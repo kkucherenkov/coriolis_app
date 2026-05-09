@@ -7,6 +7,9 @@ import {
   CharacterNotOwnedError,
   CrewConceptImmutableError,
   InvalidStatusTransitionError,
+  MutantImmutableError,
+  MutantLineageForbiddenError,
+  MutantLineageRequiredError,
   ReadOnlyFieldError,
   SkillOutOfRangeError,
 } from '../domain/character.errors';
@@ -43,6 +46,8 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     reputation: 2,
     startingWealth: 500,
     crewConcept: null,
+    mutant: false,
+    mutantLineage: null,
     attributes: { strength: 3, agility: 3, wits: 3, empathy: 3 },
     skills: { ...DEFAULT_SKILLS },
     hp: { current: 14, max: 14 },
@@ -322,5 +327,79 @@ describe('UpdateCharacterHandler', () => {
 
     const updateArg = vi.mocked(repo.update).mock.calls[0]?.[1] ?? {};
     expect(Object.hasOwn(updateArg, 'crewConcept')).toBe(false);
+  });
+
+  describe('mutant flag (ST3001 ch.4)', () => {
+    it('persists mutant + lineage while draft', async () => {
+      vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter({ status: 'draft' }));
+      vi.mocked(repo.update).mockResolvedValue(
+        makeCharacter({ status: 'draft', mutant: true, mutantLineage: 'zirba' }),
+      );
+
+      const dto = Object.assign(new UpdateCharacterDto(), {
+        mutant: true,
+        mutantLineage: 'zirba',
+      });
+      await handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto));
+
+      expect(repo.update).toHaveBeenCalledWith(
+        'char-1',
+        expect.objectContaining({ mutant: true, mutantLineage: 'zirba' }),
+      );
+    });
+
+    it('rejects toggling mutant on an active character (MUTANT_IMMUTABLE)', async () => {
+      vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter({ status: 'active' }));
+
+      const dto = Object.assign(new UpdateCharacterDto(), {
+        mutant: true,
+        mutantLineage: 'shingura',
+      });
+
+      await expect(
+        handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+      ).rejects.toBeInstanceOf(MutantImmutableError);
+      expect(repo.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects mutant=true without lineage even on a draft', async () => {
+      vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter({ status: 'draft' }));
+
+      const dto = Object.assign(new UpdateCharacterDto(), { mutant: true });
+
+      await expect(
+        handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+      ).rejects.toBeInstanceOf(MutantLineageRequiredError);
+      expect(repo.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects clearing mutant while keeping a non-null lineage', async () => {
+      vi.mocked(repo.findActiveById).mockResolvedValue(
+        makeCharacter({ status: 'draft', mutant: true, mutantLineage: 'nerida' }),
+      );
+
+      const dto = Object.assign(new UpdateCharacterDto(), { mutant: false });
+
+      await expect(
+        handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+      ).rejects.toBeInstanceOf(MutantLineageForbiddenError);
+      expect(repo.update).not.toHaveBeenCalled();
+    });
+
+    it('skips mutant fields in update when DTO omits them', async () => {
+      vi.mocked(repo.findActiveById).mockResolvedValue(
+        makeCharacter({ status: 'active', mutant: true, mutantLineage: 'zirba' }),
+      );
+      vi.mocked(repo.update).mockResolvedValue(
+        makeCharacter({ status: 'active', mutant: true, mutantLineage: 'zirba', name: 'New' }),
+      );
+
+      const dto = Object.assign(new UpdateCharacterDto(), { name: 'New' });
+      await handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto));
+
+      const updateArg = vi.mocked(repo.update).mock.calls[0]?.[1] ?? {};
+      expect(Object.hasOwn(updateArg, 'mutant')).toBe(false);
+      expect(Object.hasOwn(updateArg, 'mutantLineage')).toBe(false);
+    });
   });
 });

@@ -20,6 +20,8 @@
 
   type AttributeKey = 'strength' | 'agility' | 'wits' | 'empathy';
 
+  type MutantLineage = 'zirba' | 'shingura' | 'nerida';
+
   interface ConceptInfo {
     keyAttribute: AttributeKey;
     keySkills: string[];
@@ -31,6 +33,8 @@
   const emit = defineEmits<{
     'update:name': [value: string];
     'update:concept': [value: Concept | null];
+    'update:mutant': [value: boolean];
+    'update:mutantLineage': [value: MutantLineage | null];
   }>();
 
   const CONCEPT_INFO: Record<Concept, ConceptInfo> = {
@@ -105,9 +109,13 @@
     'soldier',
   ];
 
+  const LINEAGE_ORDER: MutantLineage[] = ['zirba', 'shingura', 'nerida'];
+
   interface Props {
     name: string;
     concept: Concept | null;
+    mutant: boolean;
+    mutantLineage: MutantLineage | null;
   }
 
   const { t } = useI18n({ useScope: 'local' });
@@ -124,6 +132,18 @@
 
   function pickConcept(c: Concept): void {
     emit('update:concept', props.concept === c ? null : c);
+  }
+
+  function toggleMutant(): void {
+    const next = !props.mutant;
+    emit('update:mutant', next);
+    // Lineage and mutant flag must stay aligned. Default to the first
+    // lineage when toggling on; clear it when toggling off.
+    emit('update:mutantLineage', next ? (props.mutantLineage ?? 'zirba') : null);
+  }
+
+  function pickLineage(lineage: MutantLineage): void {
+    emit('update:mutantLineage', lineage);
   }
 
   function repBadge(modifier: number): string {
@@ -185,6 +205,23 @@
       "keyAttribute": "Key attribute",
       "keySkills": "Key skills",
       "reputation": "Reputation modifier"
+    },
+    "mutant": {
+      "label": "Mutant (Pasynok)",
+      "help": "Mutants — пасынки — carry one of three stigmas in addition to a personal, crew, and icon-gift talent. ST3001 ch.4.",
+      "toggleOn": "Mutant",
+      "toggleOff": "Pure-blood",
+      "lineageLabel": "Mutant lineage",
+      "lineage": {
+        "zirba": "Zirba",
+        "shingura": "Shingura",
+        "nerida": "Nerida"
+      },
+      "lineageHelp": {
+        "zirba": "Children of the Earth, born of unwanted experiments — they bear the resilience of the deep stations.",
+        "shingura": "Reverently called the Whispered. Their breath blends with the air of foreign worlds.",
+        "nerida": "Bearers of the song of the spheres — their pheromone glands sway minds and tides."
+      }
     }
   },
   "ru": {
@@ -237,6 +274,23 @@
       "keyAttribute": "Ключевая характеристика",
       "keySkills": "Ключевые навыки",
       "reputation": "Модификатор репутации"
+    },
+    "mutant": {
+      "label": "Пасынок",
+      "help": "Пасынки несут одну из трёх стигм помимо обычных трёх талантов (личного, командного и дара Иконы). ST3001 гл.4.",
+      "toggleOn": "Пасынок",
+      "toggleOff": "Чистая кровь",
+      "lineageLabel": "Родословная пасынков",
+      "lineage": {
+        "zirba": "Зирба",
+        "shingura": "Шингура",
+        "nerida": "Нерида"
+      },
+      "lineageHelp": {
+        "zirba": "Дети Земли, потомки нежеланных опытов — стойкие к стихиям глубоких станций.",
+        "shingura": "Тех, кого зовут Шёпотом. Их дыхание сливается с воздухом чужих миров.",
+        "nerida": "Хранители песни сфер — их феромонные железы качают разумы и приливы."
+      }
     }
   },
   "uk": {
@@ -289,6 +343,23 @@
       "keyAttribute": "[uk-todo] Key attribute",
       "keySkills": "[uk-todo] Key skills",
       "reputation": "[uk-todo] Reputation modifier"
+    },
+    "mutant": {
+      "label": "[uk-todo] Mutant",
+      "help": "[uk-todo] Mutants carry stigmas",
+      "toggleOn": "[uk-todo] Mutant",
+      "toggleOff": "[uk-todo] Pure-blood",
+      "lineageLabel": "[uk-todo] Lineage",
+      "lineage": {
+        "zirba": "[uk-todo] Zirba",
+        "shingura": "[uk-todo] Shingura",
+        "nerida": "[uk-todo] Nerida"
+      },
+      "lineageHelp": {
+        "zirba": "[uk-todo] Resilience",
+        "shingura": "[uk-todo] Aquatic breathing",
+        "nerida": "[uk-todo] Pheromones"
+      }
     }
   },
   "el": {
@@ -341,6 +412,23 @@
       "keyAttribute": "[el-todo] Key attribute",
       "keySkills": "[el-todo] Key skills",
       "reputation": "[el-todo] Reputation modifier"
+    },
+    "mutant": {
+      "label": "[el-todo] Mutant",
+      "help": "[el-todo] Mutants carry stigmas",
+      "toggleOn": "[el-todo] Mutant",
+      "toggleOff": "[el-todo] Pure-blood",
+      "lineageLabel": "[el-todo] Lineage",
+      "lineage": {
+        "zirba": "[el-todo] Zirba",
+        "shingura": "[el-todo] Shingura",
+        "nerida": "[el-todo] Nerida"
+      },
+      "lineageHelp": {
+        "zirba": "[el-todo] Resilience",
+        "shingura": "[el-todo] Aquatic breathing",
+        "nerida": "[el-todo] Pheromones"
+      }
     }
   }
 }
@@ -407,12 +495,54 @@
     <p v-else class="step-concept__select-prompt">
       {{ t('selectPrompt') }}
     </p>
+
+    <AppField :label="t('mutant.label')" :help-text="t('mutant.help')">
+      <button
+        type="button"
+        role="switch"
+        :aria-checked="mutant"
+        class="step-concept__toggle"
+        :class="{ 'step-concept__toggle--on': mutant }"
+        @click="toggleMutant"
+      >
+        <span class="step-concept__toggle-track" />
+        <span class="step-concept__toggle-label">
+          {{ mutant ? t('mutant.toggleOn') : t('mutant.toggleOff') }}
+        </span>
+      </button>
+
+      <div
+        v-if="mutant"
+        class="step-concept__lineage-grid"
+        role="radiogroup"
+        :aria-label="t('mutant.lineageLabel')"
+      >
+        <button
+          v-for="lineage in LINEAGE_ORDER"
+          :key="lineage"
+          type="button"
+          role="radio"
+          :aria-checked="mutantLineage === lineage"
+          class="step-concept__lineage-card"
+          :class="{ 'step-concept__lineage-card--active': mutantLineage === lineage }"
+          @click="pickLineage(lineage)"
+        >
+          <span class="step-concept__lineage-name">{{ t(`mutant.lineage.${lineage}`) }}</span>
+          <span class="step-concept__lineage-help">{{ t(`mutant.lineageHelp.${lineage}`) }}</span>
+        </button>
+      </div>
+    </AppField>
   </div>
 </template>
 
 <style lang="scss" scoped>
   $step-form-max-width: 720px;
   $chip-min-width: 130px;
+  $toggle-track-width: 32px;
+  $toggle-track-height: 16px;
+  $toggle-knob-size: 12px;
+  $toggle-knob-travel: 16px;
+  $lineage-card-min-width: 200px;
 
   .step-concept {
     display: flex;
@@ -525,6 +655,117 @@
       background-color: var(--surface-night);
       border: 1px dashed var(--brand-brass-shadow);
       border-radius: var(--radius-md);
+    }
+
+    &__toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-4);
+      background: transparent;
+      border: 1px solid var(--brand-brass-shadow);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: var(--type-body-md-font-size);
+      color: var(--brand-brass-light);
+      transition: border-color var(--motion-duration-fast) var(--motion-ease-standard);
+
+      &:hover {
+        border-color: var(--brand-brass);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--brand-brass);
+        outline-offset: 2px;
+      }
+
+      &--on {
+        border-color: var(--brand-brass);
+        background-color: var(--brand-brass-deep);
+      }
+    }
+
+    &__toggle-track {
+      width: $toggle-track-width;
+      height: $toggle-track-height;
+      border-radius: var(--radius-pill);
+      background-color: var(--brand-brass-shadow);
+      position: relative;
+      transition: background-color var(--motion-duration-fast) var(--motion-ease-standard);
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: $toggle-knob-size;
+        height: $toggle-knob-size;
+        border-radius: var(--radius-pill);
+        background-color: var(--brand-brass-light);
+        transition: transform var(--motion-duration-fast) var(--motion-ease-standard);
+      }
+    }
+
+    &__toggle--on &__toggle-track {
+      background-color: var(--brand-brass);
+
+      &::after {
+        transform: translateX($toggle-knob-travel);
+      }
+    }
+
+    &__toggle-label {
+      font-family: var(--font-display);
+    }
+
+    &__lineage-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax($lineage-card-min-width, 1fr));
+      gap: var(--space-2);
+      margin-top: var(--space-3);
+    }
+
+    &__lineage-card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      padding: var(--space-3) var(--space-4);
+      background-color: var(--surface-night);
+      border: 1px solid var(--brand-brass-shadow);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      text-align: left;
+      transition:
+        border-color var(--motion-duration-fast) var(--motion-ease-standard),
+        background-color var(--motion-duration-fast) var(--motion-ease-standard);
+
+      &:hover {
+        border-color: var(--brand-brass);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--brand-brass);
+        outline-offset: 2px;
+      }
+
+      &--active {
+        border-color: var(--brand-brass);
+        background-color: var(--brand-brass-deep);
+      }
+    }
+
+    &__lineage-name {
+      font-family: var(--font-display);
+      font-size: var(--type-body-md-font-size);
+      color: var(--brand-brass-light);
+    }
+
+    &__lineage-help {
+      font-family: var(--font-body);
+      font-size: var(--type-body-xs-font-size);
+      color: var(--text-secondary);
+      line-height: 1.45;
     }
   }
 </style>

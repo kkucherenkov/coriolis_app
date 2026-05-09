@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsIn,
   IsInt,
   IsNotEmpty,
@@ -20,6 +21,7 @@ import type {
   CrewConcept,
   CriticalInjurySeverity,
   IconId,
+  MutantLineage,
   Skills,
   Upbringing,
 } from '../domain/character.ports';
@@ -68,6 +70,8 @@ const VALID_CREW_CONCEPTS: CrewConcept[] = [
   'pilgrim',
 ];
 
+const VALID_MUTANT_LINEAGES: MutantLineage[] = ['zirba', 'shingura', 'nerida'];
+
 export class UpdateHpDto {
   @IsOptional() @IsInt() @Min(0) current?: number;
 }
@@ -103,6 +107,14 @@ export class UpdateCharacterDto {
   @IsOptional()
   @IsIn(VALID_CREW_CONCEPTS)
   crewConcept?: CrewConcept | null;
+
+  @IsOptional()
+  @IsBoolean()
+  mutant?: boolean;
+
+  @IsOptional()
+  @IsIn(VALID_MUTANT_LINEAGES)
+  mutantLineage?: MutantLineage | null;
 
   @IsOptional()
   @IsInt()

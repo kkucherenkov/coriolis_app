@@ -157,35 +157,71 @@
           `create-character.handler.spec.ts` so the iconGift assertion
           checks catalog-hydrated description (regression guard against
           reverting to empty placeholder). 412/412 backend, 53/53 web.
-  - [ ] **Block 5 — Mutant flag + stigma (defer if scope blows up)**
-    - openapi: Character.mutant, mutant lineage enum (zirba | shingura
-      | nerida) → 1 of 3 stigma talents
-  - [ ] tests: backend rules-engine specs (≥15), web wizard specs
-  - [ ] lint + typecheck + format
+  - [x] **Block 5 — Mutant flag + stigma** (committed 2026-05-10)
+    - [x] openapi 0.11.0 → 0.12.0: new `MutantLineage` enum
+          (`zirba | shingura | nerida`); `Character.mutant: boolean`
+          (default false, required) + `Character.mutantLineage:
+          MutantLineage | null`; same fields on `CharacterCreate` and
+          `CharacterUpdate` (draft-only on update). New error codes
+          documented: `MUTANT_LINEAGE_REQUIRED`,
+          `MUTANT_LINEAGE_FORBIDDEN`, `MUTANT_IMMUTABLE`,
+          `STIGMA_REQUIRES_MUTANT`. `addTalent` 400-block updated with
+          the stigma example.
+    - [x] codegen
+    - [x] Prisma migration `20260510000001_mutant_fields` — adds
+          `MutantLineage` enum and `mutant Boolean @default(false)` /
+          `mutantLineage MutantLineage?` columns to `character`.
+    - [x] Domain ports + DTOs: `MutantLineage` exported from
+          `character.ports`; `CreateCharacterDto` / `UpdateCharacterDto`
+          gain `mutant?: boolean` + `mutantLineage?: MutantLineage | null`
+          with `class-validator` decorators.
+    - [x] `CreateCharacterHandler`: persists `mutant` + `mutantLineage`,
+          validates the pair (`MUTANT_LINEAGE_REQUIRED` /
+          `MUTANT_LINEAGE_FORBIDDEN`), and rejects unknown lineage
+          values defensively. Stigma is **not** auto-seeded — the
+          player picks one in the wizard like personal/crew.
+    - [x] `UpdateCharacterHandler`: mutant + lineage mutable while
+          draft, frozen on active (`MutantImmutableError`); recomputes
+          the consistency check on partial updates.
+    - [x] `AddTalentHandler`: stigma kind requires
+          `character.mutant=true` (`StigmaRequiresMutantError`); falls
+          back to `findOwnerIdById` for non-stigma kinds (no extra
+          query cost).
+    - [x] `CharacterRepo` + `ShareLinkRepo`: extended SELECT /
+          PrismaCharacterFull / mappers / create signature with
+          `mutant`/`mutantLineage` (no Prisma enum kebab-case mapping
+          needed — `MutantLineage` values are already plain
+          identifiers).
+    - [x] `DuplicateCharacterHandler`: copies `mutant`+`mutantLineage`
+          to the duplicate.
+    - [x] Web Step1Concept: mutant toggle (switch role) + 3-card
+          lineage radiogroup (zirba / shingura / nerida) with EN/RU
+          flavor descriptions. Toggling on auto-defaults the lineage
+          to `zirba`; toggling off clears the lineage.
+    - [x] Web Step6Talents: new stigma section visible only when
+          `mutant=true`, renders the 3 catalog stigmas with the same
+          card UX as personal/crew. iconGift + crew sections stay
+          unchanged (mutants get **4** talents, not 3 — ST3001 ch.4).
+    - [x] `new.vue`: tracks `draftMutant` / `draftMutantLineage` /
+          `draftStigmaTalentId`; flushes them through autosave +
+          forge() payload; posts the picked stigma after forge() via
+          the existing `addCharacterTalent` SDK call (kind `stigma`).
+          Hydrates from existing draft on resume.
+    - [x] i18n: en+ru complete for the mutant toggle, lineage labels,
+          and stigma section; uk/el placeholders.
+    - [x] Tests: 13 new backend unit specs — 4 stigma-kind specs in
+          `add-talent.handler.spec.ts` (allowed for mutant; rejected
+          for non-mutant; not-found / not-owned guards), 4 in
+          `create-character.handler.spec.ts` (persistence, default,
+          required-lineage, forbidden-lineage), 5 in
+          `update-character.handler.spec.ts` (draft persistence,
+          active-immutable, lineage-required on draft,
+          lineage-forbidden when clearing mutant, no-op when DTO
+          omits mutant fields). 7 fixture files updated with the new
+          required `mutant` / `mutantLineage` Character fields.
+          425/425 backend, 53/53 web.
   - [ ] PR with all blocks (per user's "single big PR" preference)
-- Status: in-progress (block 5 next — mutant flag + stigma)
-- Block 5 follow-up (start in fresh session):
-  - openapi 0.11.0 → 0.12.0: `Character.mutant: boolean` (default
-    false), new `MutantLineage` enum (`zirba | shingura | nerida`,
-    nullable), and a `CharacterCreate.mutant` field. Codegen.
-  - Prisma migration adding `mutant Boolean @default(false)` and
-    `mutantLineage MutantLineage?` to Character. Match
-    kebab/snake-case mapping pattern already used by CrewConcept
-    (Block 3) if any enum identifier needs translation.
-  - `CreateCharacterHandler`: when `mutant=true`, auto-seed one
-    stigma talent (the player picks the stigma — UI selection from
-    the 3 catalog entries). Validate that non-mutants cannot carry
-    a `kind: stigma` talent (`AddTalentHandler` already enforces
-    "≤1 of each non-personal kind", extend with a mutant-required
-    check).
-  - Web wizard: add a Mutant toggle on Step1 (or a new mini-step
-    after Step3) that, when on, swaps Step6 crew section with a
-    stigma-picker section showing the 3 stigma talents from the
-    catalog. iconGift stays the same. Personal pool stays the same.
-  - i18n: 3 stigma names already in catalog en+ru; Step1 mutant
-    toggle copy en+ru with [uk-todo]/[el-todo].
-  - Tests: ≥6 unit specs covering mutant flag persistence, stigma
-    auto-pick, non-mutant rejection of stigma talents.
+- Status: in-progress (all 5 blocks shipped; PR opening pending)
 - Blockers: —
 - Estimate: 22–34 hours total. Will commit per block to keep diff
   reviewable; merge as one PR.

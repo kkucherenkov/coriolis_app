@@ -2,6 +2,7 @@
   import { computed } from 'vue';
   import {
     PERSONAL_TALENTS,
+    STIGMA_TALENTS,
     getCrewTalentsByConcept,
     getIconGiftByIconId,
     type CatalogLocale,
@@ -13,8 +14,10 @@
   interface Props {
     personalTalentId: string | null;
     crewTalentId: string | null;
+    stigmaTalentId: string | null;
     iconId: IconId | null;
     crewConcept: CrewConcept | null;
+    mutant: boolean;
   }
 
   const props = defineProps<Props>();
@@ -22,6 +25,7 @@
   const emit = defineEmits<{
     'update:personalTalentId': [value: string | null];
     'update:crewTalentId': [value: string | null];
+    'update:stigmaTalentId': [value: string | null];
   }>();
 
   const { t, locale } = useI18n({ useScope: 'local' });
@@ -59,6 +63,14 @@
   function toggleCrew(id: string): void {
     emit('update:crewTalentId', isCrewPicked(id) ? null : id);
   }
+
+  function isStigmaPicked(id: string): boolean {
+    return props.stigmaTalentId === id;
+  }
+
+  function toggleStigma(id: string): void {
+    emit('update:stigmaTalentId', isStigmaPicked(id) ? null : id);
+  }
 </script>
 
 <i18n lang="json">
@@ -80,6 +92,11 @@
       "help": "Auto-derived from the Icon you chose on Step 3. The gift is added to your sheet automatically when you forge the character.",
       "noIcon": "Pick an Icon on Step 3 first."
     },
+    "stigma": {
+      "title": "Stigma (Pasynok)",
+      "help": "Mutants carry one stigma in addition to the three regular talents. Pick the one that fits your lineage.",
+      "counter": "{count} / 1 selected"
+    },
     "pickedBadge": "Picked"
   },
   "ru": {
@@ -98,6 +115,11 @@
       "title": "Дар Иконы",
       "help": "Выводится из Иконы, выбранной на шаге 3. Дар добавляется к листу персонажа автоматически при создании.",
       "noIcon": "Сначала выберите Икону на шаге 3."
+    },
+    "stigma": {
+      "title": "Стигма (Пасынок)",
+      "help": "Пасынки получают одну стигму вдобавок к трём обычным талантам. Выберите подходящую вашей родословной.",
+      "counter": "Выбрано {count} / 1"
     },
     "pickedBadge": "Выбрано"
   },
@@ -118,6 +140,11 @@
       "help": "[uk-todo] Derived from chosen Icon.",
       "noIcon": "[uk-todo] Pick Icon on Step 3."
     },
+    "stigma": {
+      "title": "[uk-todo] Stigma",
+      "help": "[uk-todo] Mutants pick one stigma.",
+      "counter": "[uk-todo] {count} / 1 selected"
+    },
     "pickedBadge": "[uk-todo] Picked"
   },
   "el": {
@@ -136,6 +163,11 @@
       "title": "[el-todo] Icon gift",
       "help": "[el-todo] Derived from chosen Icon.",
       "noIcon": "[el-todo] Pick Icon on Step 3."
+    },
+    "stigma": {
+      "title": "[el-todo] Stigma",
+      "help": "[el-todo] Mutants pick one stigma.",
+      "counter": "[el-todo] {count} / 1 selected"
     },
     "pickedBadge": "[el-todo] Picked"
   }
@@ -241,6 +273,45 @@
       </div>
       <div v-else class="step-talents__slot step-talents__slot--empty">
         {{ t('iconGift.noIcon') }}
+      </div>
+    </section>
+
+    <section v-if="mutant" class="step-talents__section">
+      <header class="step-talents__section-head">
+        <h3 class="step-talents__section-title">
+          {{ t('stigma.title') }}
+        </h3>
+        <span class="step-talents__counter">
+          {{ t('stigma.counter', { count: stigmaTalentId ? 1 : 0 }) }}
+        </span>
+      </header>
+      <p class="step-talents__section-help">
+        {{ t('stigma.help') }}
+      </p>
+      <div class="step-talents__grid">
+        <div
+          v-for="talent in STIGMA_TALENTS"
+          :key="talent.id"
+          class="step-talents__card"
+          :class="{
+            'step-talents__card--picked': isStigmaPicked(talent.id),
+          }"
+          role="checkbox"
+          :aria-checked="isStigmaPicked(talent.id)"
+          tabindex="0"
+          @click="toggleStigma(talent.id)"
+          @keydown.enter.space.prevent="toggleStigma(talent.id)"
+        >
+          <div class="step-talents__card-head">
+            <span class="step-talents__talent-name">{{ l10n(talent.name) }}</span>
+            <span v-if="isStigmaPicked(talent.id)" class="step-talents__badge">
+              {{ t('pickedBadge') }}
+            </span>
+          </div>
+          <p class="step-talents__desc">
+            {{ l10n(talent.description) }}
+          </p>
+        </div>
       </div>
     </section>
   </div>

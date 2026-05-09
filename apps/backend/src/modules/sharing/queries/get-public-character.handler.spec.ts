@@ -26,6 +26,8 @@ const MOCK_CHARACTER: CharacterReadModel = {
   reputation: 2,
   startingWealth: 500,
   crewConcept: null,
+  mutant: false,
+  mutantLineage: null,
   attributes: { strength: 2, agility: 2, wits: 2, empathy: 2 },
   skills: {
     dexterity: 0,

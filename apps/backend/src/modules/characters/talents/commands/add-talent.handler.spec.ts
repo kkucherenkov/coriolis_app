@@ -3,14 +3,69 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   CharacterNotFoundError,
   CharacterNotOwnedError,
+  StigmaRequiresMutantError,
   TalentKindDuplicateError,
 } from '../../domain/character.errors';
 
 import { AddTalentCommand, AddTalentDto } from './add-talent.command';
 import { AddTalentHandler } from './add-talent.handler';
 
-import type { ICharacterRepo, TalentReadModel } from '../../domain/character.ports';
+import type {
+  CharacterReadModel,
+  ICharacterRepo,
+  TalentReadModel,
+} from '../../domain/character.ports';
 import type { ITalentRepo } from '../domain/talent.ports';
+
+function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterReadModel {
+  return {
+    id: 'char-1',
+    ownerId: 'user-1',
+    name: 'Test',
+    concept: null,
+    iconId: null,
+    upbringing: 'plebeian',
+    origin: null,
+    reputation: 2,
+    startingWealth: 500,
+    crewConcept: null,
+    mutant: false,
+    mutantLineage: null,
+    attributes: { strength: 2, agility: 2, wits: 2, empathy: 2 },
+    skills: {
+      dexterity: 0,
+      force: 0,
+      infiltration: 0,
+      manipulation: 0,
+      meleeCombat: 0,
+      observation: 0,
+      rangedCombat: 0,
+      survival: 0,
+      command: 0,
+      culture: 0,
+      dataDjinn: 0,
+      medicurgy: 0,
+      mysticPowers: 0,
+      pilot: 0,
+      science: 0,
+      technology: 0,
+    },
+    hp: { current: 14, max: 4 },
+    mp: { current: 10, max: 4 },
+    encumbrance: { current: 0, max: 4 },
+    experience: 0,
+    conditions: { exhausted: false, sleepless: false, thirsty: false, hungry: false },
+    criticalInjuries: [],
+    talents: [],
+    relationships: [],
+    inventory: [],
+    notes: null,
+    status: 'active',
+    createdAt: '2026-01-15T00:00:00.000Z',
+    updatedAt: '2026-01-15T00:00:00.000Z',
+    ...overrides,
+  };
+}
 
 function makeCharacterRepo(): ICharacterRepo {
   return {
@@ -208,5 +263,72 @@ describe('AddTalentHandler', () => {
     await handler.execute(new AddTalentCommand('char-1', 'user-1', dto));
 
     expect(talentRepo.listByCharacterId).not.toHaveBeenCalled();
+  });
+
+  describe('stigma kind (mutant flag, ST3001 ch.4)', () => {
+    it('allows a stigma talent for a mutant character', async () => {
+      vi.mocked(characterRepo.findActiveById).mockResolvedValue(
+        makeCharacter({ mutant: true, mutantLineage: 'zirba' }),
+      );
+      vi.mocked(talentRepo.create).mockResolvedValue(makeTalent({ kind: 'stigma' }));
+
+      const dto = Object.assign(new AddTalentDto(), {
+        kind: 'stigma' as const,
+        name: 'stigma-resilience',
+        description: 'AR 6 vs environmental damage',
+      });
+
+      await expect(
+        handler.execute(new AddTalentCommand('char-1', 'user-1', dto)),
+      ).resolves.toBeDefined();
+      expect(talentRepo.create).toHaveBeenCalledWith(expect.objectContaining({ kind: 'stigma' }));
+    });
+
+    it('rejects a stigma talent on a non-mutant character with STIGMA_REQUIRES_MUTANT', async () => {
+      vi.mocked(characterRepo.findActiveById).mockResolvedValue(
+        makeCharacter({ mutant: false, mutantLineage: null }),
+      );
+
+      const dto = Object.assign(new AddTalentDto(), {
+        kind: 'stigma' as const,
+        name: 'stigma-resilience',
+        description: 'AR 6',
+      });
+
+      await expect(
+        handler.execute(new AddTalentCommand('char-1', 'user-1', dto)),
+      ).rejects.toBeInstanceOf(StigmaRequiresMutantError);
+      expect(talentRepo.create).not.toHaveBeenCalled();
+    });
+
+    it('rejects a stigma talent when the character does not exist', async () => {
+      vi.mocked(characterRepo.findActiveById).mockResolvedValue(null);
+
+      const dto = Object.assign(new AddTalentDto(), {
+        kind: 'stigma' as const,
+        name: 'stigma-resilience',
+        description: 'AR 6',
+      });
+
+      await expect(
+        handler.execute(new AddTalentCommand('missing', 'user-1', dto)),
+      ).rejects.toBeInstanceOf(CharacterNotFoundError);
+    });
+
+    it('rejects a stigma talent when the character belongs to another user', async () => {
+      vi.mocked(characterRepo.findActiveById).mockResolvedValue(
+        makeCharacter({ ownerId: 'other-user', mutant: true, mutantLineage: 'nerida' }),
+      );
+
+      const dto = Object.assign(new AddTalentDto(), {
+        kind: 'stigma' as const,
+        name: 'stigma-pheromones',
+        description: 'Pheromones',
+      });
+
+      await expect(
+        handler.execute(new AddTalentCommand('char-1', 'user-1', dto)),
+      ).rejects.toBeInstanceOf(CharacterNotOwnedError);
+    });
   });
 });

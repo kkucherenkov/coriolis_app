@@ -71,6 +71,7 @@ import 'package:app_api_client/src/model/item_weapon_create.dart';
 import 'package:app_api_client/src/model/item_weapon_update.dart';
 import 'package:app_api_client/src/model/me.dart';
 import 'package:app_api_client/src/model/me_update.dart';
+import 'package:app_api_client/src/model/mutant_lineage.dart';
 import 'package:app_api_client/src/model/problem.dart';
 import 'package:app_api_client/src/model/realtime_token.dart';
 import 'package:app_api_client/src/model/relationship.dart';
@@ -179,6 +180,7 @@ part 'serializers.g.dart';
   ItemWeaponUpdate,
   Me,
   MeUpdate,
+  MutantLineage,
   Problem,
   RealtimeToken,
   Relationship,

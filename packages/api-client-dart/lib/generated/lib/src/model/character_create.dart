@@ -8,6 +8,7 @@ import 'package:app_api_client/src/model/skills.dart';
 import 'package:app_api_client/src/model/upbringing.dart';
 import 'package:app_api_client/src/model/attributes.dart';
 import 'package:app_api_client/src/model/condition_flags.dart';
+import 'package:app_api_client/src/model/mutant_lineage.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:app_api_client/src/model/character_create_hp.dart';
 import 'package:app_api_client/src/model/concept.dart';
@@ -26,6 +27,8 @@ part 'character_create.g.dart';
 /// * [upbringing] 
 /// * [origin] 
 /// * [crewConcept] 
+/// * [mutant] - Whether the character is a mutant (пасынок). When `true`, `mutantLineage` must be supplied; the player then picks one stigma talent from the catalog through the regular `addTalent` endpoint (kind `stigma`). When `false` (default), `mutantLineage` must be `null` or omitted and stigma talents are rejected with `STIGMA_REQUIRES_MUTANT`. 
+/// * [mutantLineage] 
 /// * [attributes] 
 /// * [skills] 
 /// * [hp] 
@@ -57,6 +60,14 @@ abstract class CharacterCreate implements Built<CharacterCreate, CharacterCreate
   @BuiltValueField(wireName: r'crewConcept')
   CrewConcept? get crewConcept;
   // enum crewConceptEnum {  free-trader,  mercenary,  explorer,  agents,  pilgrim,  };
+
+  /// Whether the character is a mutant (пасынок). When `true`, `mutantLineage` must be supplied; the player then picks one stigma talent from the catalog through the regular `addTalent` endpoint (kind `stigma`). When `false` (default), `mutantLineage` must be `null` or omitted and stigma talents are rejected with `STIGMA_REQUIRES_MUTANT`. 
+  @BuiltValueField(wireName: r'mutant')
+  bool? get mutant;
+
+  @BuiltValueField(wireName: r'mutantLineage')
+  MutantLineage? get mutantLineage;
+  // enum mutantLineageEnum {  zirba,  shingura,  nerida,  };
 
   @BuiltValueField(wireName: r'attributes')
   Attributes? get attributes;
@@ -90,6 +101,7 @@ abstract class CharacterCreate implements Built<CharacterCreate, CharacterCreate
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CharacterCreateBuilder b) => b
+      ..mutant = false
       ..experience = 0
       ..status = CharacterCreateStatusEnum.valueOf('active');
 
@@ -145,6 +157,20 @@ class _$CharacterCreateSerializer implements PrimitiveSerializer<CharacterCreate
       yield serializers.serialize(
         object.crewConcept,
         specifiedType: const FullType.nullable(CrewConcept),
+      );
+    }
+    if (object.mutant != null) {
+      yield r'mutant';
+      yield serializers.serialize(
+        object.mutant,
+        specifiedType: const FullType(bool),
+      );
+    }
+    if (object.mutantLineage != null) {
+      yield r'mutantLineage';
+      yield serializers.serialize(
+        object.mutantLineage,
+        specifiedType: const FullType.nullable(MutantLineage),
       );
     }
     if (object.attributes != null) {
@@ -271,6 +297,21 @@ class _$CharacterCreateSerializer implements PrimitiveSerializer<CharacterCreate
           ) as CrewConcept?;
           if (valueDes == null) continue;
           result.crewConcept = valueDes;
+          break;
+        case r'mutant':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
+          result.mutant = valueDes;
+          break;
+        case r'mutantLineage':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(MutantLineage),
+          ) as MutantLineage?;
+          if (valueDes == null) continue;
+          result.mutantLineage = valueDes;
           break;
         case r'attributes':
           final valueDes = serializers.deserialize(

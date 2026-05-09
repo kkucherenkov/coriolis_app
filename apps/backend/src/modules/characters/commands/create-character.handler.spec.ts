@@ -11,6 +11,8 @@ import {
   CharacterNameEmptyError,
   CharacterNameTooLongError,
   IconUnknownError,
+  MutantLineageForbiddenError,
+  MutantLineageRequiredError,
   SkillBudgetExceededError,
   SkillOutOfRangeError,
 } from '../domain/character.errors';
@@ -47,6 +49,8 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     reputation: 2,
     startingWealth: 500,
     crewConcept: null,
+    mutant: false,
+    mutantLineage: null,
     attributes: { strength: 3, agility: 3, wits: 3, empathy: 3 },
     skills: { ...DEFAULT_SKILLS },
     hp: { current: 14, max: 14 },
@@ -571,5 +575,51 @@ describe('CreateCharacterHandler', () => {
     // a tight enough invariant to catch regressions if the seed reverts to
     // the old empty-string placeholder while still allowing prose tweaks.
     expect(createArgs?.talents?.[0]?.description).toMatch(/sixes/i);
+  });
+
+  describe('mutant flag (ST3001 ch.4)', () => {
+    it('persists mutant=true with a lineage', async () => {
+      vi.mocked(repo.create).mockResolvedValue(makeCharacter());
+      await handler.execute(
+        new CreateCharacterCommand(
+          'user-1',
+          makeDto({ upbringing: 'plebeian', mutant: true, mutantLineage: 'zirba' }),
+        ),
+      );
+      expect(repo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ mutant: true, mutantLineage: 'zirba' }),
+      );
+    });
+
+    it('defaults to mutant=false / lineage=null when omitted', async () => {
+      vi.mocked(repo.create).mockResolvedValue(makeCharacter());
+      await handler.execute(
+        new CreateCharacterCommand('user-1', makeDto({ upbringing: 'plebeian' })),
+      );
+      expect(repo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ mutant: false, mutantLineage: null }),
+      );
+    });
+
+    it('rejects mutant=true without a lineage with MUTANT_LINEAGE_REQUIRED', async () => {
+      await expect(
+        handler.execute(
+          new CreateCharacterCommand('user-1', makeDto({ upbringing: 'plebeian', mutant: true })),
+        ),
+      ).rejects.toBeInstanceOf(MutantLineageRequiredError);
+      expect(repo.create).not.toHaveBeenCalled();
+    });
+
+    it('rejects mutant=false with a lineage with MUTANT_LINEAGE_FORBIDDEN', async () => {
+      await expect(
+        handler.execute(
+          new CreateCharacterCommand(
+            'user-1',
+            makeDto({ upbringing: 'plebeian', mutant: false, mutantLineage: 'shingura' }),
+          ),
+        ),
+      ).rejects.toBeInstanceOf(MutantLineageForbiddenError);
+      expect(repo.create).not.toHaveBeenCalled();
+    });
   });
 });

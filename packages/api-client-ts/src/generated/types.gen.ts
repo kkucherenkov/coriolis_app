@@ -152,6 +152,22 @@ export type Upbringing = 'plebeian' | 'stationary' | 'aristocrat';
 export type CrewConcept = 'free-trader' | 'mercenary' | 'explorer' | 'agents' | 'pilgrim';
 
 /**
+ * Mutant lineage (родословная пасынков) per Coriolis ST3001 ch.4
+ * §Стигмы пасынков. Three canonical lineages —
+ * `zirba` (Зирба), `shingura` (Шингура), `nerida` (Нерида) —
+ * each backed by a stigma talent in the catalog
+ * (`stigma-zirba`, `stigma-shingura`, `stigma-nerida`).
+ *
+ * Set together with `Character.mutant=true` at creation; both
+ * fields are mutable while `status: draft` and immutable once the
+ * character is `active`. A non-mutant character must not carry a
+ * `stigma` talent — `AddTalent` rejects this combination with
+ * `STIGMA_REQUIRES_MUTANT`.
+ *
+ */
+export type MutantLineage = 'zirba' | 'shingura' | 'nerida';
+
+/**
  * Discriminator for `Talent.kind` per Coriolis ST3001 ch.2 (3
  * starting talents: one personal from amplua, one crew from
  * crew-amplua, one icon gift from chosen icon) and ch.4
@@ -164,8 +180,11 @@ export type CrewConcept = 'free-trader' | 'mercenary' | 'explorer' | 'agents' | 
  * - `personal`  — picked from the amplua's personal talent list
  * - `crew`      — picked from the team's crew amplua list
  * - `iconGift`  — auto-derived from the character's `iconId`
- * - `stigma`    — only for mutants; picked from the mutant
- * lineage's stigma list (Block 5)
+ * - `stigma`    — only for mutants (`Character.mutant=true`);
+ * picked from the catalog's three lineage
+ * stigmas — see `MutantLineage`. Adding a
+ * `stigma` talent to a non-mutant character is
+ * rejected with `STIGMA_REQUIRES_MUTANT`.
  *
  */
 export type TalentKind = 'personal' | 'crew' | 'iconGift' | 'stigma';
@@ -859,6 +878,24 @@ export type Character = {
      *
      */
     crewConcept: CrewConcept | null;
+    /**
+     * Whether this character is a mutant (пасынок) per Coriolis
+     * ST3001 ch.4 §Стигмы пасынков. Mutants additionally pick one
+     * starting talent of `kind: stigma` from the catalog (any of
+     * the three stigmas) through the regular `addTalent`
+     * endpoint. Mutable while `status: draft` and immutable once
+     * `active` — `MUTANT_IMMUTABLE`. When `true`, `mutantLineage`
+     * must be set; when `false`, `mutantLineage` must be `null`.
+     *
+     */
+    mutant: boolean;
+    /**
+     * Mutant lineage. `null` for non-mutants; one of `zirba`,
+     * `shingura`, `nerida` when `mutant=true`. Mutable while
+     * `status: draft` and immutable once `active`.
+     *
+     */
+    mutantLineage: MutantLineage | null;
     attributes: Attributes;
     skills: Skills;
     hp: {
@@ -953,6 +990,25 @@ export type CharacterCreate = {
      *
      */
     crewConcept?: CrewConcept | null;
+    /**
+     * Whether the character is a mutant (пасынок). When `true`,
+     * `mutantLineage` must be supplied; the player then picks one
+     * stigma talent from the catalog through the regular
+     * `addTalent` endpoint (kind `stigma`). When `false`
+     * (default), `mutantLineage` must be `null` or omitted and
+     * stigma talents are rejected with `STIGMA_REQUIRES_MUTANT`.
+     *
+     */
+    mutant?: boolean;
+    /**
+     * Mutant lineage (only valid when `mutant=true`). One of
+     * `zirba`, `shingura`, `nerida`. `MUTANT_LINEAGE_REQUIRED` is
+     * returned if `mutant=true` and lineage is missing;
+     * `MUTANT_LINEAGE_FORBIDDEN` is returned if `mutant=false`
+     * and a lineage is supplied.
+     *
+     */
+    mutantLineage?: MutantLineage | null;
     attributes?: Attributes;
     skills?: Skills;
     hp?: {
@@ -1026,6 +1082,23 @@ export type CharacterUpdate = {
      *
      */
     crewConcept?: CrewConcept | null;
+    /**
+     * Allowed only while `status` is `draft`. Toggling on/off
+     * while drafting also clears any incompatible stigma talents
+     * picked previously. Once the character is `active`, this
+     * field is immutable and any attempt to change it is rejected
+     * with `MUTANT_IMMUTABLE`.
+     *
+     */
+    mutant?: boolean;
+    /**
+     * Allowed only while `status` is `draft`. Must be `null` when
+     * `mutant=false` and one of `zirba|shingura|nerida` when
+     * `mutant=true`. Frozen alongside `mutant` once the character
+     * is `active`.
+     *
+     */
+    mutantLineage?: MutantLineage | null;
     /**
      * Update the character's current reputation (e.g. after a
      * roleplay event). Initial value is set from `upbringing` at
@@ -2035,6 +2108,24 @@ export type CharacterWritable = {
      *
      */
     crewConcept: CrewConcept | null;
+    /**
+     * Whether this character is a mutant (пасынок) per Coriolis
+     * ST3001 ch.4 §Стигмы пасынков. Mutants additionally pick one
+     * starting talent of `kind: stigma` from the catalog (any of
+     * the three stigmas) through the regular `addTalent`
+     * endpoint. Mutable while `status: draft` and immutable once
+     * `active` — `MUTANT_IMMUTABLE`. When `true`, `mutantLineage`
+     * must be set; when `false`, `mutantLineage` must be `null`.
+     *
+     */
+    mutant: boolean;
+    /**
+     * Mutant lineage. `null` for non-mutants; one of `zirba`,
+     * `shingura`, `nerida` when `mutant=true`. Mutable while
+     * `status: draft` and immutable once `active`.
+     *
+     */
+    mutantLineage: MutantLineage | null;
     attributes: Attributes;
     skills: Skills;
     hp: {
@@ -2456,6 +2547,10 @@ export type CreateCharacterErrors = {
      * budget allowed by the chosen `upbringing`.
      * - `SKILL_BUDGET_EXCEEDED` — sum of skills exceeds the budget
      * allowed by the chosen `upbringing`.
+     * - `MUTANT_LINEAGE_REQUIRED` — `mutant=true` was supplied
+     * without a `mutantLineage`.
+     * - `MUTANT_LINEAGE_FORBIDDEN` — `mutant=false` (or omitted)
+     * with a non-null `mutantLineage`.
      *
      */
     400: Problem;
@@ -2739,6 +2834,8 @@ export type AddCharacterTalentErrors = {
      * - `TALENT_KIND_DUPLICATE` — character already has a talent
      * of this non-`personal` kind (e.g. trying to add a second
      * `iconGift`).
+     * - `STIGMA_REQUIRES_MUTANT` — `kind: stigma` may only be
+     * added to a character with `mutant=true`.
      *
      */
     400: Problem;

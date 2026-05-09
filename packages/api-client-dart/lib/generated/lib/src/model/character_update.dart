@@ -8,6 +8,7 @@ import 'package:app_api_client/src/model/skills.dart';
 import 'package:app_api_client/src/model/upbringing.dart';
 import 'package:app_api_client/src/model/attributes.dart';
 import 'package:app_api_client/src/model/condition_flags.dart';
+import 'package:app_api_client/src/model/mutant_lineage.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:app_api_client/src/model/character_create_hp.dart';
 import 'package:app_api_client/src/model/concept.dart';
@@ -27,6 +28,8 @@ part 'character_update.g.dart';
 /// * [upbringing] - Allowed only while `status` is `draft` — used by the wizard to let players reconsider their pick before forging. Once the character is `active`, this field is immutable. 
 /// * [origin] 
 /// * [crewConcept] 
+/// * [mutant] - Allowed only while `status` is `draft`. Toggling on/off while drafting also clears any incompatible stigma talents picked previously. Once the character is `active`, this field is immutable and any attempt to change it is rejected with `MUTANT_IMMUTABLE`. 
+/// * [mutantLineage] 
 /// * [reputation] - Update the character's current reputation (e.g. after a roleplay event). Initial value is set from `upbringing` at creation time; while the character is a `draft`, changing `upbringing` resets `reputation` to the new upbringing's baseline. 
 /// * [attributes] 
 /// * [skills] 
@@ -61,6 +64,14 @@ abstract class CharacterUpdate implements Built<CharacterUpdate, CharacterUpdate
   @BuiltValueField(wireName: r'crewConcept')
   CrewConcept? get crewConcept;
   // enum crewConceptEnum {  free-trader,  mercenary,  explorer,  agents,  pilgrim,  };
+
+  /// Allowed only while `status` is `draft`. Toggling on/off while drafting also clears any incompatible stigma talents picked previously. Once the character is `active`, this field is immutable and any attempt to change it is rejected with `MUTANT_IMMUTABLE`. 
+  @BuiltValueField(wireName: r'mutant')
+  bool? get mutant;
+
+  @BuiltValueField(wireName: r'mutantLineage')
+  MutantLineage? get mutantLineage;
+  // enum mutantLineageEnum {  zirba,  shingura,  nerida,  };
 
   /// Update the character's current reputation (e.g. after a roleplay event). Initial value is set from `upbringing` at creation time; while the character is a `draft`, changing `upbringing` resets `reputation` to the new upbringing's baseline. 
   @BuiltValueField(wireName: r'reputation')
@@ -159,6 +170,20 @@ class _$CharacterUpdateSerializer implements PrimitiveSerializer<CharacterUpdate
       yield serializers.serialize(
         object.crewConcept,
         specifiedType: const FullType.nullable(CrewConcept),
+      );
+    }
+    if (object.mutant != null) {
+      yield r'mutant';
+      yield serializers.serialize(
+        object.mutant,
+        specifiedType: const FullType(bool),
+      );
+    }
+    if (object.mutantLineage != null) {
+      yield r'mutantLineage';
+      yield serializers.serialize(
+        object.mutantLineage,
+        specifiedType: const FullType.nullable(MutantLineage),
       );
     }
     if (object.reputation != null) {
@@ -299,6 +324,21 @@ class _$CharacterUpdateSerializer implements PrimitiveSerializer<CharacterUpdate
           ) as CrewConcept?;
           if (valueDes == null) continue;
           result.crewConcept = valueDes;
+          break;
+        case r'mutant':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
+          result.mutant = valueDes;
+          break;
+        case r'mutantLineage':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(MutantLineage),
+          ) as MutantLineage?;
+          if (valueDes == null) continue;
+          result.mutantLineage = valueDes;
           break;
         case r'reputation':
           final valueDes = serializers.deserialize(

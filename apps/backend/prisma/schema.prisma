@@ -132,6 +132,17 @@ enum CrewConcept {
   @@map("crew_concept")
 }
 
+/// Mutant lineage (родословная пасынков) per Coriolis ST3001 ch.4 §Стигмы пасынков.
+/// Three canonical lineages — Зирба / Шингура / Нерида. Set together with
+/// `Character.mutant=true`; null otherwise.
+enum MutantLineage {
+  zirba
+  shingura
+  nerida
+
+  @@map("mutant_lineage")
+}
+
 /// Discriminator for Talent.kind. At creation each character has one
 /// of each non-`personal` kind plus one personal; further talents
 /// acquired during play are always `personal`.
@@ -201,6 +212,12 @@ model Character {
   /// Optional crew amplua (амплуа команды). Mutable while draft, frozen
   /// once active. Drives the crew-talent picker on the wizard.
   crewConcept         CrewConcept?
+  /// Mutant flag (пасынок). When true, character carries a stigma talent
+  /// from the catalog matching `mutantLineage`. Mutable while draft,
+  /// frozen once active.
+  mutant              Boolean          @default(false)
+  /// Mutant lineage. Null for non-mutants; set together with `mutant=true`.
+  mutantLineage       MutantLineage?
   /// JSON column: { strength, agility, wits, empathy } — each 1–5.
   attributes          Json
   /// JSON column: { dexterity, force, infiltration, manipulation, meleeCombat,

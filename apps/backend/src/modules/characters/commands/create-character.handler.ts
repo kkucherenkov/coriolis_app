@@ -11,6 +11,8 @@ import {
   CharacterNameEmptyError,
   CharacterNameTooLongError,
   IconUnknownError,
+  MutantLineageForbiddenError,
+  MutantLineageRequiredError,
   SkillBudgetExceededError,
   SkillOutOfRangeError,
 } from '../domain/character.errors';
@@ -25,6 +27,7 @@ import {
   DEFAULT_CONDITIONS,
   DEFAULT_SKILLS,
   IconId,
+  MutantLineage,
   Skills,
   Upbringing,
 } from '../domain/character.ports';
@@ -56,6 +59,8 @@ const VALID_CREW_CONCEPTS = new Set<CrewConcept>([
   'agents',
   'pilgrim',
 ]);
+
+const VALID_MUTANT_LINEAGES = new Set<MutantLineage>(['zirba', 'shingura', 'nerida']);
 
 // Per Coriolis core book ch.2: at creation each attribute is between 2 and 4
 // (the amplua's key attribute may reach 5 — concept-aware exception).
@@ -126,6 +131,19 @@ export class CreateCharacterHandler implements ICommandHandler<
       throw new AttributeOutOfRangeError('crewConcept', 0);
     }
 
+    const mutant = dto.mutant ?? false;
+    const mutantLineage = dto.mutantLineage ?? null;
+    if (mutantLineage && !VALID_MUTANT_LINEAGES.has(mutantLineage)) {
+      // ValidationPipe should reject this; defence-in-depth.
+      throw new AttributeOutOfRangeError('mutantLineage', 0);
+    }
+    if (mutant && !mutantLineage) {
+      throw new MutantLineageRequiredError();
+    }
+    if (!mutant && mutantLineage) {
+      throw new MutantLineageForbiddenError();
+    }
+
     const attributes = { ...DEFAULT_ATTRIBUTES, ...dto.attributes };
     const skills = { ...DEFAULT_SKILLS, ...dto.skills };
     const conditions: ConditionFlags = { ...DEFAULT_CONDITIONS, ...dto.conditions };
@@ -175,6 +193,8 @@ export class CreateCharacterHandler implements ICommandHandler<
       reputation,
       startingWealth: budget.startingWealth,
       crewConcept,
+      mutant,
+      mutantLineage,
       attributes,
       skills,
       hpCurrent: dto.hp?.current ?? 14,

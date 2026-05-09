@@ -18,6 +18,8 @@ Name | Type | Description | Notes
 **reputation** | **int** | Current social reputation. Initial value is derived from `upbringing` (plebeian=2, stationary=4, aristocrat=6) and may change during play.  | 
 **startingWealth** | **int** | The number of birrs (currency) the character started with at creation. Derived from `upbringing` (plebeian=500, stationary=1000, aristocrat=5000). Immutable historical record.  | 
 **crewConcept** | [**CrewConcept**](CrewConcept.md) |  | 
+**mutant** | **bool** | Whether this character is a mutant (пасынок) per Coriolis ST3001 ch.4 §Стигмы пасынков. Mutants additionally pick one starting talent of `kind: stigma` from the catalog (any of the three stigmas) through the regular `addTalent` endpoint. Mutable while `status: draft` and immutable once `active` — `MUTANT_IMMUTABLE`. When `true`, `mutantLineage` must be set; when `false`, `mutantLineage` must be `null`.  | [default to false]
+**mutantLineage** | [**MutantLineage**](MutantLineage.md) |  | 
 **attributes** | [**Attributes**](Attributes.md) |  | 
 **skills** | [**Skills**](Skills.md) |  | 
 **hp** | [**CharacterHp**](CharacterHp.md) |  | 

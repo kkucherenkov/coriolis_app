@@ -42,6 +42,7 @@ import type {
   ItemReadModel,
   ItemType,
   ListCharactersOptions,
+  MutantLineage,
   RelationshipKind,
   RelationshipReadModel,
   Skills,
@@ -63,6 +64,8 @@ const CHARACTER_FULL_SELECT = {
   reputation: true,
   startingWealth: true,
   crewConcept: true,
+  mutant: true,
+  mutantLineage: true,
   attributes: true,
   skills: true,
   hpCurrent: true,
@@ -119,6 +122,8 @@ interface PrismaCharacterFull {
   reputation: number;
   startingWealth: number;
   crewConcept: string | null;
+  mutant: boolean;
+  mutantLineage: string | null;
   attributes: unknown;
   skills: unknown;
   hpCurrent: number;
@@ -221,6 +226,8 @@ function toReadModel(row: PrismaCharacterFull): CharacterReadModel {
     reputation: row.reputation,
     startingWealth: row.startingWealth,
     crewConcept: fromCrewConceptEnum(row.crewConcept),
+    mutant: row.mutant,
+    mutantLineage: row.mutantLineage as MutantLineage | null,
     attributes: attrs,
     skills: row.skills as Skills,
     hp: {
@@ -331,6 +338,8 @@ export class CharacterRepo implements ICharacterRepo {
     reputation: number;
     startingWealth: number;
     crewConcept?: CrewConcept | null;
+    mutant?: boolean;
+    mutantLineage?: MutantLineage | null;
     attributes: Attributes;
     skills: Skills;
     hpCurrent: number;
@@ -355,6 +364,8 @@ export class CharacterRepo implements ICharacterRepo {
         reputation: data.reputation,
         startingWealth: data.startingWealth,
         crewConcept: this.toCrewConceptEnum(data.crewConcept ?? null),
+        mutant: data.mutant ?? false,
+        mutantLineage: data.mutantLineage ?? null,
         attributes: data.attributes as unknown as import('@prisma/client').Prisma.InputJsonValue,
         skills: data.skills as unknown as import('@prisma/client').Prisma.InputJsonValue,
         hpCurrent: data.hpCurrent,
@@ -396,6 +407,8 @@ export class CharacterRepo implements ICharacterRepo {
       origin: string | null;
       reputation: number;
       crewConcept: CrewConcept | null;
+      mutant: boolean;
+      mutantLineage: MutantLineage | null;
       attributes: Attributes;
       skills: Skills;
       hpCurrent: number;

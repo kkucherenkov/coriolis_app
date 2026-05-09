@@ -78,7 +78,7 @@ Name | Type | Description  | Notes
 
 Add a talent to a character
 
-Creates a talent record attached to the character. Talents are free-form (name + description + rank); there is no server-side talent library in v1.  `kind` defaults to `personal`. Each character can have at most one talent of each non-`personal` kind (`crew`, `iconGift`, `stigma`); a duplicate non-personal kind is rejected with 400 `TALENT_KIND_DUPLICATE`. 
+Creates a talent record attached to the character. Talents are free-form (name + description + rank); there is no server-side talent library in v1.  `kind` defaults to `personal`. Each character can have at most one talent of each non-`personal` kind (`crew`, `iconGift`, `stigma`); a duplicate non-personal kind is rejected with 400 `TALENT_KIND_DUPLICATE`. A `kind: stigma` talent on a non-mutant character is rejected with 400 `STIGMA_REQUIRES_MUTANT`. 
 
 ### Example
 ```dart

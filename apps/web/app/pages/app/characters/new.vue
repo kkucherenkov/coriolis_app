@@ -7,6 +7,7 @@
     findCatalogTalentById,
     type CrewTalentCatalogEntry,
     type PersonalTalentCatalogEntry,
+    type StigmaTalentCatalogEntry,
   } from '@app/specs';
   import type {
     Attributes,
@@ -14,6 +15,7 @@
     IconId,
     Concept,
     CrewConcept,
+    MutantLineage,
     Upbringing,
   } from '@app/api-client-ts';
   import WizardShell from '~/components/wizard/WizardShell.vue';
@@ -80,12 +82,15 @@
   const draftOrigin = ref<string | null>(null);
   const draftUpbringing = ref<Upbringing>(DEFAULT_UPBRINGING);
   const draftCrewConcept = ref<CrewConcept | null>(null);
+  const draftMutant = ref<boolean>(false);
+  const draftMutantLineage = ref<MutantLineage | null>(null);
   const draftAge = ref<number | null>(null);
   const draftIconId = ref<IconId | null>(null);
   const draftAttributes = ref<Attributes>({ ...DEFAULT_ATTRS });
   const draftSkills = ref<Skills>({ ...DEFAULT_SKILLS });
   const draftPersonalTalentId = ref<string | null>(null);
   const draftCrewTalentId = ref<string | null>(null);
+  const draftStigmaTalentId = ref<string | null>(null);
 
   // ── AutoSave ─────────────────────────────────────────────────────────────────
 
@@ -98,6 +103,8 @@
       upbringing: draftUpbringing.value,
       origin: draftOrigin.value,
       crewConcept: draftCrewConcept.value,
+      mutant: draftMutant.value,
+      mutantLineage: draftMutantLineage.value,
       attributes: draftAttributes.value,
       skills: draftSkills.value,
     };
@@ -159,6 +166,8 @@
     draftUpbringing.value = char.upbringing;
     draftOrigin.value = char.origin ?? null;
     draftCrewConcept.value = char.crewConcept ?? null;
+    draftMutant.value = char.mutant;
+    draftMutantLineage.value = char.mutantLineage ?? null;
     draftAttributes.value = { ...char.attributes };
     draftSkills.value = { ...char.skills };
   }
@@ -207,6 +216,8 @@
         iconId: draftIconId.value,
         origin: draftOrigin.value,
         crewConcept: draftCrewConcept.value,
+        mutant: draftMutant.value,
+        mutantLineage: draftMutantLineage.value,
         attributes: draftAttributes.value,
         skills: draftSkills.value,
         status: 'active',
@@ -218,6 +229,9 @@
       // renderers resolve the locale via the catalog ID stored in `name`.
       await postPickedTalent(draftPersonalTalentId.value, 'personal');
       await postPickedTalent(draftCrewTalentId.value, 'crew');
+      if (draftMutant.value) {
+        await postPickedTalent(draftStigmaTalentId.value, 'stigma');
+      }
 
       await navigateTo(`/app/characters/${draftId.value}`);
     } catch {
@@ -226,11 +240,17 @@
     }
   }
 
-  async function postPickedTalent(id: string | null, kind: 'personal' | 'crew'): Promise<void> {
+  async function postPickedTalent(
+    id: string | null,
+    kind: 'personal' | 'crew' | 'stigma',
+  ): Promise<void> {
     if (!id) return;
     const entry = findCatalogTalentById(id);
     if (entry?.kind !== kind) return;
-    const typed = entry as PersonalTalentCatalogEntry | CrewTalentCatalogEntry;
+    const typed = entry as
+      | PersonalTalentCatalogEntry
+      | CrewTalentCatalogEntry
+      | StigmaTalentCatalogEntry;
     await api.addTalent(draftId.value, {
       kind,
       name: typed.id,
@@ -294,6 +314,26 @@
   function onCrewTalentUpdate(val: string | null): void {
     draftCrewTalentId.value = val;
     // Picks are persisted at forge() time, not on every change.
+  }
+
+  function onMutantUpdate(val: boolean): void {
+    draftMutant.value = val;
+    // Clearing the flag in Step1 must also clear any stigma the player
+    // already picked — backend rejects stigma-on-non-mutant via
+    // `STIGMA_REQUIRES_MUTANT`, and we don't want to retain a dangling
+    // selection across toggles.
+    if (!val) draftStigmaTalentId.value = null;
+    scheduleSave();
+  }
+
+  function onMutantLineageUpdate(val: MutantLineage | null): void {
+    draftMutantLineage.value = val;
+    scheduleSave();
+  }
+
+  function onStigmaTalentUpdate(val: string | null): void {
+    draftStigmaTalentId.value = val;
+    // Picks are persisted at forge() time.
   }
 
   // ── Step metadata ─────────────────────────────────────────────────────────────
@@ -444,8 +484,12 @@
         v-if="step === 1"
         :name="draftName"
         :concept="draftConcept"
+        :mutant="draftMutant"
+        :mutant-lineage="draftMutantLineage"
         @update:name="onNameUpdate"
         @update:concept="onConceptUpdate"
+        @update:mutant="onMutantUpdate"
+        @update:mutant-lineage="onMutantLineageUpdate"
       />
 
       <Step2Background
@@ -482,10 +526,13 @@
         v-if="step === 6"
         :personal-talent-id="draftPersonalTalentId"
         :crew-talent-id="draftCrewTalentId"
+        :stigma-talent-id="draftStigmaTalentId"
         :icon-id="draftIconId"
         :crew-concept="draftCrewConcept"
+        :mutant="draftMutant"
         @update:personal-talent-id="onPersonalTalentUpdate"
         @update:crew-talent-id="onCrewTalentUpdate"
+        @update:stigma-talent-id="onStigmaTalentUpdate"
       />
     </WizardShell>
   </div>

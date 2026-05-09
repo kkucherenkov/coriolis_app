@@ -43,6 +43,8 @@ export function makeCharacterFixture(overrides: Partial<Character> = {}): Charac
     reputation: 4,
     startingWealth: 1000,
     crewConcept: null,
+    mutant: false,
+    mutantLineage: null,
     attributes: {
       strength: 3,
       agility: 5,

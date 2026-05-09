@@ -20,6 +20,7 @@ import type {
   Concept,
   CrewConcept,
   IconId,
+  MutantLineage,
   Skills,
   Upbringing,
 } from '../domain/character.ports';
@@ -93,6 +94,8 @@ const VALID_CREW_CONCEPTS: CrewConcept[] = [
   'pilgrim',
 ];
 
+const VALID_MUTANT_LINEAGES: MutantLineage[] = ['zirba', 'shingura', 'nerida'];
+
 export class HpDto {
   @IsOptional() @IsInt() @Min(0) current?: number;
 }
@@ -126,6 +129,14 @@ export class CreateCharacterDto {
   @IsOptional()
   @IsIn(VALID_CREW_CONCEPTS)
   crewConcept?: CrewConcept | null;
+
+  @IsOptional()
+  @IsBoolean()
+  mutant?: boolean;
+
+  @IsOptional()
+  @IsIn(VALID_MUTANT_LINEAGES)
+  mutantLineage?: MutantLineage | null;
 
   @IsOptional()
   @IsObject()

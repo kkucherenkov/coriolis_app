@@ -136,7 +136,7 @@ class CharactersApi {
   }
 
   /// Add a talent to a character
-  /// Creates a talent record attached to the character. Talents are free-form (name + description + rank); there is no server-side talent library in v1.  &#x60;kind&#x60; defaults to &#x60;personal&#x60;. Each character can have at most one talent of each non-&#x60;personal&#x60; kind (&#x60;crew&#x60;, &#x60;iconGift&#x60;, &#x60;stigma&#x60;); a duplicate non-personal kind is rejected with 400 &#x60;TALENT_KIND_DUPLICATE&#x60;. 
+  /// Creates a talent record attached to the character. Talents are free-form (name + description + rank); there is no server-side talent library in v1.  &#x60;kind&#x60; defaults to &#x60;personal&#x60;. Each character can have at most one talent of each non-&#x60;personal&#x60; kind (&#x60;crew&#x60;, &#x60;iconGift&#x60;, &#x60;stigma&#x60;); a duplicate non-personal kind is rejected with 400 &#x60;TALENT_KIND_DUPLICATE&#x60;. A &#x60;kind: stigma&#x60; talent on a non-mutant character is rejected with 400 &#x60;STIGMA_REQUIRES_MUTANT&#x60;. 
   ///
   /// Parameters:
   /// * [id] - Character identifier (cuid2)

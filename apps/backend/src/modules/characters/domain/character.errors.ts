@@ -196,6 +196,67 @@ export class TalentKindDuplicateError extends DomainError {
 }
 
 /**
+ * Thrown when `mutant=true` is supplied without a `mutantLineage`. ST3001
+ * ch.4 §Стигмы пасынков: every пасынок belongs to one of three родословных
+ * (zirba | shingura | nerida) and carries the matching stigma talent.
+ */
+export class MutantLineageRequiredError extends DomainError {
+  constructor() {
+    super({
+      code: 'MUTANT_LINEAGE_REQUIRED',
+      status: 400,
+      title: 'Validation Error',
+      detail: 'A mutant character must declare a lineage (zirba, shingura, or nerida).',
+    });
+  }
+}
+
+/**
+ * Thrown when `mutant=false` is paired with a non-null `mutantLineage`.
+ * Lineage is meaningless for non-mutants — keep the two fields aligned.
+ */
+export class MutantLineageForbiddenError extends DomainError {
+  constructor() {
+    super({
+      code: 'MUTANT_LINEAGE_FORBIDDEN',
+      status: 400,
+      title: 'Validation Error',
+      detail: 'Mutant lineage may only be set when mutant is true.',
+    });
+  }
+}
+
+/**
+ * Thrown when an active character's mutant flag (or its lineage) is changed.
+ * Mutable while draft; immutable once the character is forged.
+ */
+export class MutantImmutableError extends DomainError {
+  constructor() {
+    super({
+      code: 'MUTANT_IMMUTABLE',
+      status: 422,
+      title: 'Validation Error',
+      detail: 'Mutant status and lineage cannot be changed once the character has been forged.',
+    });
+  }
+}
+
+/**
+ * Thrown when a `kind: stigma` talent is added to a non-mutant character.
+ * Stigmas are reserved for пасынки per ST3001 ch.4.
+ */
+export class StigmaRequiresMutantError extends DomainError {
+  constructor() {
+    super({
+      code: 'STIGMA_REQUIRES_MUTANT',
+      status: 400,
+      title: 'Validation Error',
+      detail: 'A stigma talent may only be added to a mutant character.',
+    });
+  }
+}
+
+/**
  * Thrown when the client attempts to set a server-computed read-only field.
  * Belt-and-suspenders defence on top of the OpenAPI spec's readOnly markers.
  * PRD §5.2: hp.max, mp.max, encumbrance.max are derived — never user-writable.

@@ -32,6 +32,8 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     reputation: 2,
     startingWealth: 500,
     crewConcept: null,
+    mutant: false,
+    mutantLineage: null,
     attributes: { strength: 3, agility: 3, wits: 3, empathy: 3 },
     skills: { ...DEFAULT_SKILLS },
     hp: { current: 14, max: 14 },

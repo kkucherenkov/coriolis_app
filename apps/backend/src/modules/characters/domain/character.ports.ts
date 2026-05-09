@@ -105,6 +105,8 @@ export type Concept =
 
 export type CrewConcept = 'free-trader' | 'mercenary' | 'explorer' | 'agents' | 'pilgrim';
 
+export type MutantLineage = 'zirba' | 'shingura' | 'nerida';
+
 export type TalentKind = 'personal' | 'crew' | 'iconGift' | 'stigma';
 
 /**
@@ -165,6 +167,8 @@ export interface CharacterReadModel {
   reputation: number;
   startingWealth: number;
   crewConcept: CrewConcept | null;
+  mutant: boolean;
+  mutantLineage: MutantLineage | null;
   attributes: Attributes;
   skills: Skills;
   hp: {
@@ -251,6 +255,8 @@ export interface ICharacterRepo {
     reputation: number;
     startingWealth: number;
     crewConcept?: CrewConcept | null;
+    mutant?: boolean;
+    mutantLineage?: MutantLineage | null;
     attributes: Attributes;
     skills: Skills;
     hpCurrent: number;
@@ -274,6 +280,8 @@ export interface ICharacterRepo {
       origin: string | null;
       reputation: number;
       crewConcept: CrewConcept | null;
+      mutant: boolean;
+      mutantLineage: MutantLineage | null;
       attributes: Attributes;
       skills: Skills;
       hpCurrent: number;

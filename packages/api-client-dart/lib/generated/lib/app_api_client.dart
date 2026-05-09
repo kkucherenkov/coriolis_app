@@ -77,6 +77,7 @@ export 'package:app_api_client/src/model/item_weapon_create.dart';
 export 'package:app_api_client/src/model/item_weapon_update.dart';
 export 'package:app_api_client/src/model/me.dart';
 export 'package:app_api_client/src/model/me_update.dart';
+export 'package:app_api_client/src/model/mutant_lineage.dart';
 export 'package:app_api_client/src/model/problem.dart';
 export 'package:app_api_client/src/model/realtime_token.dart';
 export 'package:app_api_client/src/model/relationship.dart';

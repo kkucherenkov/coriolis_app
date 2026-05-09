@@ -14,6 +14,8 @@ Name | Type | Description | Notes
 **upbringing** | [**Upbringing**](Upbringing.md) |  | 
 **origin** | **String** |  | [optional] 
 **crewConcept** | [**CrewConcept**](CrewConcept.md) |  | [optional] 
+**mutant** | **bool** | Whether the character is a mutant (пасынок). When `true`, `mutantLineage` must be supplied; the player then picks one stigma talent from the catalog through the regular `addTalent` endpoint (kind `stigma`). When `false` (default), `mutantLineage` must be `null` or omitted and stigma talents are rejected with `STIGMA_REQUIRES_MUTANT`.  | [optional] [default to false]
+**mutantLineage** | [**MutantLineage**](MutantLineage.md) |  | [optional] 
 **attributes** | [**Attributes**](Attributes.md) |  | [optional] 
 **skills** | [**Skills**](Skills.md) |  | [optional] 
 **hp** | [**CharacterCreateHp**](CharacterCreateHp.md) |  | [optional] 

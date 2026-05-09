@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 0.11.0
+  version: 0.12.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -108,6 +108,8 @@ paths:
                         reputation: 4
                         startingWealth: 1000
                         crewConcept: free-trader
+                        mutant: false
+                        mutantLineage: null
                         attributes:
                           strength: 3
                           agility: 5
@@ -219,6 +221,8 @@ paths:
                     reputation: 4
                     startingWealth: 1000
                     crewConcept: agents
+                    mutant: false
+                    mutantLineage: null
                     attributes:
                       strength: 4
                       agility: 4
@@ -277,6 +281,10 @@ paths:
               budget allowed by the chosen `upbringing`.
             - `SKILL_BUDGET_EXCEEDED` — sum of skills exceeds the budget
               allowed by the chosen `upbringing`.
+            - `MUTANT_LINEAGE_REQUIRED` — `mutant=true` was supplied
+              without a `mutantLineage`.
+            - `MUTANT_LINEAGE_FORBIDDEN` — `mutant=false` (or omitted)
+              with a non-null `mutantLineage`.
           content:
             application/problem+json:
               schema:
@@ -364,6 +372,8 @@ paths:
                     reputation: 4
                     startingWealth: 1000
                     crewConcept: free-trader
+                    mutant: false
+                    mutantLineage: null
                     attributes:
                       strength: 3
                       agility: 5
@@ -531,6 +541,8 @@ paths:
                     reputation: 4
                     startingWealth: 1000
                     crewConcept: free-trader
+                    mutant: false
+                    mutantLineage: null
                     attributes:
                       strength: 3
                       agility: 5
@@ -721,6 +733,8 @@ paths:
                     reputation: 4
                     startingWealth: 1000
                     crewConcept: free-trader
+                    mutant: false
+                    mutantLineage: null
                     attributes:
                       strength: 3
                       agility: 5
@@ -838,6 +852,8 @@ paths:
                     reputation: 4
                     startingWealth: 1000
                     crewConcept: free-trader
+                    mutant: false
+                    mutantLineage: null
                     attributes:
                       strength: 3
                       agility: 5
@@ -1046,7 +1062,9 @@ paths:
         `kind` defaults to `personal`. Each character can have at most
         one talent of each non-`personal` kind (`crew`, `iconGift`,
         `stigma`); a duplicate non-personal kind is rejected with 400
-        `TALENT_KIND_DUPLICATE`.
+        `TALENT_KIND_DUPLICATE`. A `kind: stigma` talent on a
+        non-mutant character is rejected with 400
+        `STIGMA_REQUIRES_MUTANT`.
       tags: [characters]
       security:
         - cookieAuth: []
@@ -1089,6 +1107,8 @@ paths:
             - `TALENT_KIND_DUPLICATE` — character already has a talent
               of this non-`personal` kind (e.g. trying to add a second
               `iconGift`).
+            - `STIGMA_REQUIRES_MUTANT` — `kind: stigma` may only be
+              added to a character with `mutant=true`.
           content:
             application/problem+json:
               schema:
@@ -1110,6 +1130,14 @@ paths:
                     detail: Character already has a talent of kind iconGift
                     instance: /api/v1/characters/cuid_tariq01/talents
                     code: TALENT_KIND_DUPLICATE
+                stigmaRequiresMutant:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: A stigma talent may only be added to a mutant character
+                    instance: /api/v1/characters/cuid_tariq01/talents
+                    code: STIGMA_REQUIRES_MUTANT
         "401":
           description: No active session
           content:
@@ -3604,6 +3632,13 @@ paths:
                     name: Tariq al-Asari
                     concept: pilot
                     iconId: traveler
+                    upbringing: stationary
+                    origin: Cinder Quarter, Coriolis Station
+                    reputation: 4
+                    startingWealth: 1000
+                    crewConcept: free-trader
+                    mutant: false
+                    mutantLineage: null
                     attributes:
                       strength: 3
                       agility: 5
@@ -4185,6 +4220,25 @@ components:
         kind talent — see `TalentKind`). Crew concept is mutable while
         the character is `draft` and immutable once `active`.
 
+    MutantLineage:
+      type: string
+      enum:
+        - zirba
+        - shingura
+        - nerida
+      description: |
+        Mutant lineage (родословная пасынков) per Coriolis ST3001 ch.4
+        §Стигмы пасынков. Three canonical lineages —
+        `zirba` (Зирба), `shingura` (Шингура), `nerida` (Нерида) —
+        each backed by a stigma talent in the catalog
+        (`stigma-zirba`, `stigma-shingura`, `stigma-nerida`).
+
+        Set together with `Character.mutant=true` at creation; both
+        fields are mutable while `status: draft` and immutable once the
+        character is `active`. A non-mutant character must not carry a
+        `stigma` talent — `AddTalent` rejects this combination with
+        `STIGMA_REQUIRES_MUTANT`.
+
     TalentKind:
       type: string
       enum: [personal, crew, iconGift, stigma]
@@ -4201,8 +4255,11 @@ components:
         - `personal`  — picked from the amplua's personal talent list
         - `crew`      — picked from the team's crew amplua list
         - `iconGift`  — auto-derived from the character's `iconId`
-        - `stigma`    — only for mutants; picked from the mutant
-                        lineage's stigma list (Block 5)
+        - `stigma`    — only for mutants (`Character.mutant=true`);
+                        picked from the catalog's three lineage
+                        stigmas — see `MutantLineage`. Adding a
+                        `stigma` talent to a non-mutant character is
+                        rejected with `STIGMA_REQUIRES_MUTANT`.
 
     ItemRangeEnum:
       type: string
@@ -5080,6 +5137,8 @@ components:
         - reputation
         - startingWealth
         - crewConcept
+        - mutant
+        - mutantLineage
         - attributes
         - skills
         - hp
@@ -5160,6 +5219,25 @@ components:
             The crew (амплуа команды) this character belongs to.
             Mutable while `status: draft` (the wizard is still in
             progress); immutable once the character is `active`.
+        mutant:
+          type: boolean
+          default: false
+          description: |
+            Whether this character is a mutant (пасынок) per Coriolis
+            ST3001 ch.4 §Стигмы пасынков. Mutants additionally pick one
+            starting talent of `kind: stigma` from the catalog (any of
+            the three stigmas) through the regular `addTalent`
+            endpoint. Mutable while `status: draft` and immutable once
+            `active` — `MUTANT_IMMUTABLE`. When `true`, `mutantLineage`
+            must be set; when `false`, `mutantLineage` must be `null`.
+        mutantLineage:
+          oneOf:
+            - $ref: "#/components/schemas/MutantLineage"
+            - type: "null"
+          description: |
+            Mutant lineage. `null` for non-mutants; one of `zirba`,
+            `shingura`, `nerida` when `mutant=true`. Mutable while
+            `status: draft` and immutable once `active`.
         attributes:
           $ref: "#/components/schemas/Attributes"
         skills:
@@ -5302,6 +5380,26 @@ components:
             Optional crew concept the character belongs to. May be set
             in the wizard before forging or updated later while the
             character is `draft`.
+        mutant:
+          type: boolean
+          default: false
+          description: |
+            Whether the character is a mutant (пасынок). When `true`,
+            `mutantLineage` must be supplied; the player then picks one
+            stigma talent from the catalog through the regular
+            `addTalent` endpoint (kind `stigma`). When `false`
+            (default), `mutantLineage` must be `null` or omitted and
+            stigma talents are rejected with `STIGMA_REQUIRES_MUTANT`.
+        mutantLineage:
+          oneOf:
+            - $ref: "#/components/schemas/MutantLineage"
+            - type: "null"
+          description: |
+            Mutant lineage (only valid when `mutant=true`). One of
+            `zirba`, `shingura`, `nerida`. `MUTANT_LINEAGE_REQUIRED` is
+            returned if `mutant=true` and lineage is missing;
+            `MUTANT_LINEAGE_FORBIDDEN` is returned if `mutant=false`
+            and a lineage is supplied.
         attributes:
           $ref: "#/components/schemas/Attributes"
         skills:
@@ -5398,6 +5496,23 @@ components:
             forging. Once the character is `active`, this field is
             immutable and any attempt to change it is rejected with
             `CREW_CONCEPT_IMMUTABLE`.
+        mutant:
+          type: boolean
+          description: |
+            Allowed only while `status` is `draft`. Toggling on/off
+            while drafting also clears any incompatible stigma talents
+            picked previously. Once the character is `active`, this
+            field is immutable and any attempt to change it is rejected
+            with `MUTANT_IMMUTABLE`.
+        mutantLineage:
+          oneOf:
+            - $ref: "#/components/schemas/MutantLineage"
+            - type: "null"
+          description: |
+            Allowed only while `status` is `draft`. Must be `null` when
+            `mutant=false` and one of `zirba|shingura|nerida` when
+            `mutant=true`. Frozen alongside `mutant` once the character
+            is `active`.
         reputation:
           type: integer
           minimum: 0

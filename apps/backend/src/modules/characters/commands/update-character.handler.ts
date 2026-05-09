@@ -12,6 +12,9 @@ import {
   CrewConceptImmutableError,
   IconUnknownError,
   InvalidStatusTransitionError,
+  MutantImmutableError,
+  MutantLineageForbiddenError,
+  MutantLineageRequiredError,
   ReadOnlyFieldError,
   SkillOutOfRangeError,
   UpbringingImmutableError,
@@ -135,6 +138,23 @@ export class UpdateCharacterHandler implements ICommandHandler<
       throw new CrewConceptImmutableError();
     }
 
+    // Mutant flag + lineage are mutable only while draft (mirrors crewConcept).
+    // The two fields must remain consistent: mutant=true requires a lineage,
+    // mutant=false forbids one. We compute the post-update pair and validate.
+    const mutantChanging = dto.mutant !== undefined && dto.mutant !== existing.mutant;
+    const lineageChanging =
+      dto.mutantLineage !== undefined && dto.mutantLineage !== existing.mutantLineage;
+    if ((mutantChanging || lineageChanging) && existing.status !== 'draft') {
+      throw new MutantImmutableError();
+    }
+    if (mutantChanging || lineageChanging) {
+      const nextMutant = dto.mutant ?? existing.mutant;
+      const nextLineage =
+        dto.mutantLineage === undefined ? existing.mutantLineage : dto.mutantLineage;
+      if (nextMutant && !nextLineage) throw new MutantLineageRequiredError();
+      if (!nextMutant && nextLineage) throw new MutantLineageForbiddenError();
+    }
+
     let derivedReputation: number | undefined;
     if (
       (dto.upbringing !== undefined && dto.upbringing !== existing.upbringing) ||
@@ -161,6 +181,8 @@ export class UpdateCharacterHandler implements ICommandHandler<
       ...(dto.upbringing === undefined ? {} : { upbringing: dto.upbringing }),
       ...(dto.origin === undefined ? {} : { origin: dto.origin }),
       ...(dto.crewConcept === undefined ? {} : { crewConcept: dto.crewConcept }),
+      ...(dto.mutant === undefined ? {} : { mutant: dto.mutant }),
+      ...(dto.mutantLineage === undefined ? {} : { mutantLineage: dto.mutantLineage }),
       ...(derivedReputation === undefined
         ? dto.reputation === undefined
           ? {}

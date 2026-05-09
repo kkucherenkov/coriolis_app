@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:app_api_client/src/model/item.dart';
 import 'package:app_api_client/src/model/upbringing.dart';
+import 'package:app_api_client/src/model/mutant_lineage.dart';
 import 'package:app_api_client/src/model/character_mp.dart';
 import 'package:app_api_client/src/model/talent.dart';
 import 'package:app_api_client/src/model/critical_injury.dart';
@@ -36,6 +37,8 @@ part 'character.g.dart';
 /// * [reputation] - Current social reputation. Initial value is derived from `upbringing` (plebeian=2, stationary=4, aristocrat=6) and may change during play. 
 /// * [startingWealth] - The number of birrs (currency) the character started with at creation. Derived from `upbringing` (plebeian=500, stationary=1000, aristocrat=5000). Immutable historical record. 
 /// * [crewConcept] 
+/// * [mutant] - Whether this character is a mutant (пасынок) per Coriolis ST3001 ch.4 §Стигмы пасынков. Mutants additionally pick one starting talent of `kind: stigma` from the catalog (any of the three stigmas) through the regular `addTalent` endpoint. Mutable while `status: draft` and immutable once `active` — `MUTANT_IMMUTABLE`. When `true`, `mutantLineage` must be set; when `false`, `mutantLineage` must be `null`. 
+/// * [mutantLineage] 
 /// * [attributes] 
 /// * [skills] 
 /// * [hp] 
@@ -94,6 +97,14 @@ abstract class Character implements Built<Character, CharacterBuilder> {
   CrewConcept? get crewConcept;
   // enum crewConceptEnum {  free-trader,  mercenary,  explorer,  agents,  pilgrim,  };
 
+  /// Whether this character is a mutant (пасынок) per Coriolis ST3001 ch.4 §Стигмы пасынков. Mutants additionally pick one starting talent of `kind: stigma` from the catalog (any of the three stigmas) through the regular `addTalent` endpoint. Mutable while `status: draft` and immutable once `active` — `MUTANT_IMMUTABLE`. When `true`, `mutantLineage` must be set; when `false`, `mutantLineage` must be `null`. 
+  @BuiltValueField(wireName: r'mutant')
+  bool get mutant;
+
+  @BuiltValueField(wireName: r'mutantLineage')
+  MutantLineage? get mutantLineage;
+  // enum mutantLineageEnum {  zirba,  shingura,  nerida,  };
+
   @BuiltValueField(wireName: r'attributes')
   Attributes get attributes;
 
@@ -148,7 +159,8 @@ abstract class Character implements Built<Character, CharacterBuilder> {
   factory Character([void updates(CharacterBuilder b)]) = _$Character;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CharacterBuilder b) => b;
+  static void _defaults(CharacterBuilder b) => b
+      ..mutant = false;
 
   @BuiltValueSerializer(custom: true)
   static Serializer<Character> get serializer => _$CharacterSerializer();
@@ -215,6 +227,16 @@ class _$CharacterSerializer implements PrimitiveSerializer<Character> {
     yield object.crewConcept == null ? null : serializers.serialize(
       object.crewConcept,
       specifiedType: const FullType.nullable(CrewConcept),
+    );
+    yield r'mutant';
+    yield serializers.serialize(
+      object.mutant,
+      specifiedType: const FullType(bool),
+    );
+    yield r'mutantLineage';
+    yield object.mutantLineage == null ? null : serializers.serialize(
+      object.mutantLineage,
+      specifiedType: const FullType.nullable(MutantLineage),
     );
     yield r'attributes';
     yield serializers.serialize(
@@ -387,6 +409,21 @@ class _$CharacterSerializer implements PrimitiveSerializer<Character> {
           ) as CrewConcept?;
           if (valueDes == null) continue;
           result.crewConcept = valueDes;
+          break;
+        case r'mutant':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
+          result.mutant = valueDes;
+          break;
+        case r'mutantLineage':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(MutantLineage),
+          ) as MutantLineage?;
+          if (valueDes == null) continue;
+          result.mutantLineage = valueDes;
           break;
         case r'attributes':
           final valueDes = serializers.deserialize(

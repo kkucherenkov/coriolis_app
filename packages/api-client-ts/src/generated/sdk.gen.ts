@@ -195,7 +195,9 @@ export const addCharacterItem = <ThrowOnError extends boolean = false>(options: 
  * `kind` defaults to `personal`. Each character can have at most
  * one talent of each non-`personal` kind (`crew`, `iconGift`,
  * `stigma`); a duplicate non-personal kind is rejected with 400
- * `TALENT_KIND_DUPLICATE`.
+ * `TALENT_KIND_DUPLICATE`. A `kind: stigma` talent on a
+ * non-mutant character is rejected with 400
+ * `STIGMA_REQUIRES_MUTANT`.
  *
  */
 export const addCharacterTalent = <ThrowOnError extends boolean = false>(options: Options<AddCharacterTalentData, ThrowOnError>) => (options.client ?? client).post<AddCharacterTalentResponses, AddCharacterTalentErrors, ThrowOnError>({

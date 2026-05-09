@@ -25,6 +25,7 @@ import type {
   IconId,
   ItemReadModel,
   ItemType,
+  MutantLineage,
   RelationshipKind,
   RelationshipReadModel,
   Skills,
@@ -66,6 +67,8 @@ const CHARACTER_FULL_SELECT = {
   reputation: true,
   startingWealth: true,
   crewConcept: true,
+  mutant: true,
+  mutantLineage: true,
   attributes: true,
   skills: true,
   hpCurrent: true,
@@ -121,6 +124,8 @@ interface PrismaCharacterFull {
   reputation: number;
   startingWealth: number;
   crewConcept: string | null;
+  mutant: boolean;
+  mutantLineage: string | null;
   attributes: unknown;
   skills: unknown;
   hpCurrent: number;
@@ -216,6 +221,8 @@ function mapCharacter(row: PrismaCharacterFull): CharacterReadModel {
     reputation: row.reputation,
     startingWealth: row.startingWealth,
     crewConcept: row.crewConcept ? (row.crewConcept.replaceAll('_', '-') as CrewConcept) : null,
+    mutant: row.mutant,
+    mutantLineage: row.mutantLineage as MutantLineage | null,
     attributes,
     skills,
     hp: { current: row.hpCurrent, max: computeHpMax(attributes.strength, attributes.agility) },
