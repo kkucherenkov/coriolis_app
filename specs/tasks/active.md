@@ -40,13 +40,19 @@
   as `share-viewer.spec.ts`.
 - Sub-blocks (one commit + push + new session per block, per
   `feedback_block_workflow.md`):
-  - [ ] Block 1 — `useRollsApi` composable + dice roller widget on the
-        character sheet. Pool selection (1–10 d6), label input,
-        "Roll" button, result strip with sixes highlighted, "Push"
-        button (disabled when ineligible — exhausted condition or
-        already pushed). Wire into the existing "Recent Rolls" panel
-        placeholder at `[id].vue`. Server holds the RNG; client just
-        displays.
+  - [x] Block 1 — `useRollsApi` composable + dice roller widget on
+        the character sheet (commit pending push at start of Block 2).
+        New `SheetDiceRoller` component reuses `@app/ui`'s
+        `AppDiePool`; replaces the comingSoon placeholder in the
+        Recent Rolls panel. Push gating mirrors `RulesEngine.canPush`
+        server-side (already-pushed + exhausted), with inline
+        "Exhausted — push not available" hint rather than a 422
+        round-trip. Drive-by: prettier swept the long-standing
+        vue/max-attributes-per-line warnings across the wizard, share
+        viewer, and auth pages — folded into the same commit.
+        Outstanding for next blocks: the widget keeps only the
+        last roll in local state; full reverse-chrono history is
+        Block 2's job.
   - [ ] Block 2 — Roll history. Replace the "Recent Rolls" placeholder
         with the live list (last 50, reverse-chrono, hits + pushed
         flag + timestamp). Row click opens an `AppModal` showing the
