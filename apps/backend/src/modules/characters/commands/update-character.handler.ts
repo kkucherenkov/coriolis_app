@@ -1,13 +1,14 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 
-import { UPBRINGING_BUDGETS } from '../../rules-engine';
+import { CONCEPT_KEYS, UPBRINGING_BUDGETS } from '../../rules-engine';
 import {
   AttributeOutOfRangeError,
   CharacterNameEmptyError,
   CharacterNameTooLongError,
   CharacterNotFoundError,
   CharacterNotOwnedError,
+  ConceptImmutableError,
   IconUnknownError,
   InvalidStatusTransitionError,
   ReadOnlyFieldError,
@@ -113,20 +114,31 @@ export class UpdateCharacterHandler implements ICommandHandler<
     if (dto.attributes) validateAttributes(dto.attributes);
     if (dto.skills) validateSkills(dto.skills);
 
-    // Upbringing is mutable while the character is a draft (the wizard) and
-    // immutable once forged. Changing it during the draft also resets the
-    // derived reputation baseline so the wizard reflects the new budget;
-    // startingWealth is left untouched once set.
-    let upbringingChange:
-      | { upbringing: typeof existing.upbringing; reputation: number }
-      | undefined;
-    if (dto.upbringing !== undefined && dto.upbringing !== existing.upbringing) {
-      if (existing.status !== 'draft') throw new UpbringingImmutableError();
-      const baseline = UPBRINGING_BUDGETS[dto.upbringing];
-      upbringingChange = {
-        upbringing: dto.upbringing,
-        reputation: dto.reputation ?? baseline.reputation,
-      };
+    // Upbringing and concept are mutable only while status === draft. Any
+    // change to either recomputes the reputation baseline:
+    //   reputation = upbringingBudget.reputation + concept.modifier (or 0)
+    // clamped at 0 so a -2 modifier on a 2-rep plebeian doesn't go negative.
+    if (
+      dto.upbringing !== undefined &&
+      dto.upbringing !== existing.upbringing &&
+      existing.status !== 'draft'
+    )
+      throw new UpbringingImmutableError();
+    const conceptChanging = dto.concept !== undefined && dto.concept !== existing.concept;
+    if (conceptChanging && existing.status !== 'draft') {
+      throw new ConceptImmutableError();
+    }
+
+    let derivedReputation: number | undefined;
+    if (
+      (dto.upbringing !== undefined && dto.upbringing !== existing.upbringing) ||
+      conceptChanging
+    ) {
+      const upbringing = dto.upbringing ?? existing.upbringing;
+      const concept = conceptChanging ? (dto.concept ?? null) : existing.concept;
+      const baseline = UPBRINGING_BUDGETS[upbringing].reputation;
+      const modifier = concept ? CONCEPT_KEYS[concept].reputationModifier : 0;
+      derivedReputation = Math.max(0, baseline + modifier);
     }
 
     const criticalInjuries = dto.criticalInjuries?.map((inj) => ({
@@ -140,9 +152,13 @@ export class UpdateCharacterHandler implements ICommandHandler<
       ...(dto.name === undefined ? {} : { name: dto.name.trim() }),
       ...(dto.concept === undefined ? {} : { concept: dto.concept }),
       ...(dto.iconId === undefined ? {} : { iconId: dto.iconId }),
-      ...upbringingChange,
+      ...(dto.upbringing === undefined ? {} : { upbringing: dto.upbringing }),
       ...(dto.origin === undefined ? {} : { origin: dto.origin }),
-      ...(dto.reputation === undefined || upbringingChange ? {} : { reputation: dto.reputation }),
+      ...(derivedReputation === undefined
+        ? dto.reputation === undefined
+          ? {}
+          : { reputation: dto.reputation }
+        : { reputation: derivedReputation }),
       ...(dto.attributes ? { attributes: dto.attributes } : {}),
       ...(dto.skills ? { skills: dto.skills } : {}),
       ...(dto.hp?.current === undefined ? {} : { hpCurrent: dto.hp.current }),

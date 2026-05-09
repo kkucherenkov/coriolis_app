@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 0.9.0
+  version: 0.10.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -101,7 +101,7 @@ paths:
                       - id: cuid_tariq01
                         ownerId: cuid_user01
                         name: Tariq al-Asari
-                        concept: Veteran fringe pilot
+                        concept: pilot
                         iconId: traveler
                         upbringing: stationary
                         origin: Cinder Quarter, Coriolis Station
@@ -189,7 +189,7 @@ paths:
               withAttributes:
                 value:
                   name: Said al-Khatib
-                  concept: Mercenary from the Far Quarter
+                  concept: operative
                   iconId: judge
                   upbringing: stationary
                   origin: Coriolis Station, Cinder Quarter
@@ -211,7 +211,7 @@ paths:
                     id: cuid_said01
                     ownerId: cuid_user01
                     name: Said al-Khatib
-                    concept: Mercenary from the Far Quarter
+                    concept: operative
                     iconId: judge
                     upbringing: stationary
                     origin: Coriolis Station, Cinder Quarter
@@ -355,7 +355,7 @@ paths:
                     id: cuid_tariq01
                     ownerId: cuid_user01
                     name: Tariq al-Asari
-                    concept: Veteran fringe pilot
+                    concept: pilot
                     iconId: traveler
                     upbringing: stationary
                     origin: Cinder Quarter, Coriolis Station
@@ -520,7 +520,7 @@ paths:
                     id: cuid_tariq01
                     ownerId: cuid_user01
                     name: Tariq al-Asari (Pilot)
-                    concept: Veteran fringe pilot
+                    concept: pilot
                     iconId: traveler
                     upbringing: stationary
                     origin: Cinder Quarter, Coriolis Station
@@ -709,7 +709,7 @@ paths:
                     id: cuid_tariq02
                     ownerId: cuid_user01
                     name: Tariq al-Asari (copy)
-                    concept: Veteran fringe pilot
+                    concept: pilot
                     iconId: traveler
                     upbringing: stationary
                     origin: Cinder Quarter, Coriolis Station
@@ -825,7 +825,7 @@ paths:
                     id: cuid_tariq01
                     ownerId: cuid_user01
                     name: Tariq al-Asari
-                    concept: Veteran fringe pilot
+                    concept: pilot
                     iconId: traveler
                     upbringing: stationary
                     origin: Cinder Quarter, Coriolis Station
@@ -3574,7 +3574,7 @@ paths:
                     id: cuid_tariq01
                     ownerId: cuid_user01
                     name: Tariq al-Asari
-                    concept: Veteran fringe pilot
+                    concept: pilot
                     iconId: traveler
                     attributes:
                       strength: 3
@@ -4084,6 +4084,42 @@ components:
       description: |
         One of the Nine Icons of the Third Horizon. Kebab-case names match
         the asset filenames in `packages/ui/src/assets/icons/`.
+
+    Concept:
+      type: string
+      enum:
+        - artist
+        - networker
+        - fugitive
+        - negotiator
+        - operative
+        - pilot
+        - pioneer
+        - preacher
+        - scientist
+        - sailor
+        - soldier
+      description: |
+        The 11 character archetypes (амплуа) from Coriolis ST3001 ch.2.
+        Each concept has a key attribute (capped at 5 instead of 4 at
+        creation) and a set of key skills (capped at 3 instead of 1 at
+        creation), and applies a reputation modifier to the upbringing
+        baseline. Mappings live server-side in the RulesEngine
+        (`CONCEPT_KEYS`).
+
+        | Concept     | Key attribute | Reputation modifier |
+        | ----------- | ------------- | ------------------- |
+        | artist      | empathy       | +1                  |
+        | networker   | wits          |  0                  |
+        | fugitive    | empathy       | −2                  |
+        | negotiator  | empathy       | +1                  |
+        | operative   | agility       |  0                  |
+        | pilot       | agility       |  0                  |
+        | pioneer     | wits          |  0                  |
+        | preacher    | empathy       | +1                  |
+        | scientist   | wits          | +1                  |
+        | sailor      | strength      | −1                  |
+        | soldier     | agility       | −1                  |
 
     Upbringing:
       type: string
@@ -4985,10 +5021,15 @@ components:
           maxLength: 80
           description: Character name (1–80 characters)
         concept:
-          type: ["string", "null"]
-          minLength: 1
-          maxLength: 120
-          description: Short concept phrase — the role the character plays at the table (1–120 chars when non-null)
+          oneOf:
+            - $ref: "#/components/schemas/Concept"
+            - type: "null"
+          description: |
+            One of the 11 character archetypes (амплуа). May be `null`
+            during the creation wizard before the user has chosen an
+            archetype; required for an `active` character. Determines the
+            key attribute / key skills caps applied at creation and the
+            reputation modifier applied on top of `upbringing`.
         iconId:
           oneOf:
             - $ref: "#/components/schemas/IconId"
@@ -5144,9 +5185,9 @@ components:
           minLength: 1
           maxLength: 80
         concept:
-          type: ["string", "null"]
-          minLength: 1
-          maxLength: 120
+          oneOf:
+            - $ref: "#/components/schemas/Concept"
+            - type: "null"
         iconId:
           oneOf:
             - $ref: "#/components/schemas/IconId"
@@ -5220,9 +5261,15 @@ components:
           minLength: 1
           maxLength: 80
         concept:
-          type: ["string", "null"]
-          minLength: 1
-          maxLength: 120
+          oneOf:
+            - $ref: "#/components/schemas/Concept"
+            - type: "null"
+          description: |
+            Switching the concept while `status` is `draft` recomputes
+            the per-attribute / per-skill caps for validation and
+            adjusts the reputation by the new concept's modifier
+            (relative to upbringing's baseline). Once active, concept
+            becomes immutable.
         iconId:
           oneOf:
             - $ref: "#/components/schemas/IconId"

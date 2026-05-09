@@ -94,7 +94,7 @@ import type { CharacterReadModel } from '../../characters/domain/character.ports
 
 const BASE_CHARACTER: Pick<CharacterReadModel, 'name' | 'concept' | 'iconId'> = {
   name: 'Amira Nassar',
-  concept: 'Free-trader pilot from the Third Horizon',
+  concept: 'pilot',
   iconId: 'traveler',
 };
 

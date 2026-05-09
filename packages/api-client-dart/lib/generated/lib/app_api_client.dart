@@ -31,6 +31,7 @@ export 'package:app_api_client/src/model/character_hp.dart';
 export 'package:app_api_client/src/model/character_list.dart';
 export 'package:app_api_client/src/model/character_mp.dart';
 export 'package:app_api_client/src/model/character_update.dart';
+export 'package:app_api_client/src/model/concept.dart';
 export 'package:app_api_client/src/model/condition_flags.dart';
 export 'package:app_api_client/src/model/crew_position.dart';
 export 'package:app_api_client/src/model/crew_slot.dart';

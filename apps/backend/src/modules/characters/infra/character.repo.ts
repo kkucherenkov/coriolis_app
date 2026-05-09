@@ -32,6 +32,7 @@ import type {
   CharacterListItem,
   CharacterReadModel,
   CharacterStatus,
+  Concept,
   ConditionFlags,
   CriticalInjuryReadModel,
   CriticalInjurySeverity,
@@ -195,7 +196,7 @@ function toReadModel(row: PrismaCharacterFull): CharacterReadModel {
     id: row.id,
     ownerId: row.ownerId,
     name: row.name,
-    concept: row.concept,
+    concept: row.concept as Concept | null,
     iconId: row.iconId as unknown as IconId | null,
     upbringing: row.upbringing as Upbringing,
     origin: row.origin,
@@ -281,7 +282,7 @@ export class CharacterRepo implements ICharacterRepo {
           id: row.id,
           ownerId: row.ownerId,
           name: row.name,
-          concept: row.concept,
+          concept: row.concept as Concept | null,
           iconId: row.iconId as unknown as IconId | null,
           hp: {
             current: row.hpCurrent,
@@ -304,7 +305,7 @@ export class CharacterRepo implements ICharacterRepo {
   async create(data: {
     ownerId: string;
     name: string;
-    concept?: string | null;
+    concept?: Concept | null;
     iconId?: IconId | null;
     upbringing: Upbringing;
     origin?: string | null;
@@ -350,7 +351,7 @@ export class CharacterRepo implements ICharacterRepo {
     id: string,
     data: Partial<{
       name: string;
-      concept: string | null;
+      concept: Concept | null;
       iconId: IconId | null;
       upbringing: Upbringing;
       origin: string | null;

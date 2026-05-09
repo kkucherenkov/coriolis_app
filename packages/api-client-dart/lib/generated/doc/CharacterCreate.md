@@ -9,7 +9,7 @@ import 'package:app_api_client/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **name** | **String** |  | 
-**concept** | **String** |  | [optional] 
+**concept** | [**Concept**](Concept.md) |  | [optional] 
 **iconId** | [**IconId**](IconId.md) |  | [optional] 
 **upbringing** | [**Upbringing**](Upbringing.md) |  | 
 **origin** | **String** |  | [optional] 

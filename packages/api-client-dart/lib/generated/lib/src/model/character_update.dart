@@ -9,6 +9,7 @@ import 'package:app_api_client/src/model/attributes.dart';
 import 'package:app_api_client/src/model/condition_flags.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:app_api_client/src/model/character_create_hp.dart';
+import 'package:app_api_client/src/model/concept.dart';
 import 'package:app_api_client/src/model/critical_injury.dart';
 import 'package:app_api_client/src/model/icon_id.dart';
 import 'package:built_value/built_value.dart';
@@ -40,7 +41,8 @@ abstract class CharacterUpdate implements Built<CharacterUpdate, CharacterUpdate
   String? get name;
 
   @BuiltValueField(wireName: r'concept')
-  String? get concept;
+  Concept? get concept;
+  // enum conceptEnum {  artist,  networker,  fugitive,  negotiator,  operative,  pilot,  pioneer,  preacher,  scientist,  sailor,  soldier,  };
 
   @BuiltValueField(wireName: r'iconId')
   IconId? get iconId;
@@ -122,7 +124,7 @@ class _$CharacterUpdateSerializer implements PrimitiveSerializer<CharacterUpdate
       yield r'concept';
       yield serializers.serialize(
         object.concept,
-        specifiedType: const FullType.nullable(String),
+        specifiedType: const FullType.nullable(Concept),
       );
     }
     if (object.iconId != null) {
@@ -249,8 +251,8 @@ class _$CharacterUpdateSerializer implements PrimitiveSerializer<CharacterUpdate
         case r'concept':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+            specifiedType: const FullType.nullable(Concept),
+          ) as Concept?;
           if (valueDes == null) continue;
           result.concept = valueDes;
           break;

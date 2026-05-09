@@ -11,6 +11,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  CONCEPT_KEYS,
   UPBRINGING_BUDGETS,
   applyConditions,
   canPush,
@@ -344,5 +345,52 @@ describe('sumAttributes', () => {
 describe('sumSkills', () => {
   it('sums all skill values', () => {
     expect(sumSkills({ a: 1, b: 2, c: 3 })).toBe(6);
+  });
+});
+
+// --------------- CONCEPT_KEYS ---------------
+
+describe('CONCEPT_KEYS', () => {
+  it('exposes exactly the 11 amplua from ST3001 ch.2', () => {
+    expect(Object.keys(CONCEPT_KEYS).toSorted()).toEqual([
+      'artist',
+      'fugitive',
+      'negotiator',
+      'networker',
+      'operative',
+      'pilot',
+      'pioneer',
+      'preacher',
+      'sailor',
+      'scientist',
+      'soldier',
+    ]);
+  });
+
+  it.each([
+    ['artist', 'empathy', 1],
+    ['networker', 'wits', 0],
+    ['fugitive', 'empathy', -2],
+    ['negotiator', 'empathy', 1],
+    ['operative', 'agility', 0],
+    ['pilot', 'agility', 0],
+    ['pioneer', 'wits', 0],
+    ['preacher', 'empathy', 1],
+    ['scientist', 'wits', 1],
+    ['sailor', 'strength', -1],
+    ['soldier', 'agility', -1],
+  ] as const)('%s — keyAttribute=%s, reputationModifier=%i', (concept, attr, mod) => {
+    expect(CONCEPT_KEYS[concept].keyAttribute).toBe(attr);
+    expect(CONCEPT_KEYS[concept].reputationModifier).toBe(mod);
+  });
+
+  it('every amplua exposes a non-empty key-skills list', () => {
+    for (const c of Object.values(CONCEPT_KEYS)) {
+      expect(c.keySkills.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('is frozen — accidental mutation throws in strict mode', () => {
+    expect(Object.isFrozen(CONCEPT_KEYS)).toBe(true);
   });
 });

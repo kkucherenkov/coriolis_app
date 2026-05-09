@@ -149,6 +149,21 @@ export class UpbringingImmutableError extends DomainError {
 }
 
 /**
+ * Thrown when an active character's concept (амплуа) is changed.
+ * Mutable while draft; immutable once the character is forged.
+ */
+export class ConceptImmutableError extends DomainError {
+  constructor() {
+    super({
+      code: 'CONCEPT_IMMUTABLE',
+      status: 422,
+      title: 'Validation Error',
+      detail: 'Concept cannot be changed once the character has been forged.',
+    });
+  }
+}
+
+/**
  * Thrown when the client attempts to set a server-computed read-only field.
  * Belt-and-suspenders defence on top of the OpenAPI spec's readOnly markers.
  * PRD §5.2: hp.max, mp.max, encumbrance.max are derived — never user-writable.

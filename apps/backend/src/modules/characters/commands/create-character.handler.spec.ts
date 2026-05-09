@@ -384,4 +384,118 @@ describe('CreateCharacterHandler', () => {
       ),
     ).rejects.toBeInstanceOf(SkillBudgetExceededError);
   });
+
+  // -------- Concept-aware caps (Block 2) --------
+
+  it('soldier (key attr agility): allows agility=5 at creation', async () => {
+    vi.mocked(repo.create).mockResolvedValue(
+      makeCharacter({
+        upbringing: 'plebeian',
+        concept: 'soldier',
+        attributes: { strength: 4, agility: 5, wits: 3, empathy: 3 },
+      }),
+    );
+    await expect(
+      handler.execute(
+        new CreateCharacterCommand(
+          'user-1',
+          makeDto({
+            upbringing: 'plebeian',
+            concept: 'soldier',
+            attributes: { strength: 4, agility: 5, wits: 3, empathy: 3 },
+          }),
+        ),
+      ),
+    ).resolves.toBeDefined();
+  });
+
+  it('soldier: rejects strength=5 (non-key) even though agility=5 is allowed', async () => {
+    await expect(
+      handler.execute(
+        new CreateCharacterCommand(
+          'user-1',
+          makeDto({
+            upbringing: 'plebeian',
+            concept: 'soldier',
+            attributes: { strength: 5, agility: 4, wits: 3, empathy: 3 },
+          }),
+        ),
+      ),
+    ).rejects.toBeInstanceOf(AttributeOutOfCreationRangeError);
+  });
+
+  it('pilot: allows pilot skill at rank 3 (key skill)', async () => {
+    vi.mocked(repo.create).mockResolvedValue(
+      makeCharacter({ upbringing: 'stationary', concept: 'pilot' }),
+    );
+    await expect(
+      handler.execute(
+        new CreateCharacterCommand(
+          'user-1',
+          makeDto({
+            upbringing: 'stationary',
+            concept: 'pilot',
+            skills: { ...DEFAULT_SKILLS, pilot: 3 },
+          }),
+        ),
+      ),
+    ).resolves.toBeDefined();
+  });
+
+  it('pilot: rejects culture=2 (non-key skill exceeds cap of 1)', async () => {
+    await expect(
+      handler.execute(
+        new CreateCharacterCommand(
+          'user-1',
+          makeDto({
+            upbringing: 'stationary',
+            concept: 'pilot',
+            skills: { ...DEFAULT_SKILLS, culture: 2 },
+          }),
+        ),
+      ),
+    ).rejects.toBeInstanceOf(SkillOutOfRangeError);
+  });
+
+  it('artist on plebeian: reputation = 2 + 1 = 3', async () => {
+    vi.mocked(repo.create).mockResolvedValue(
+      makeCharacter({ upbringing: 'plebeian', concept: 'artist', reputation: 3 }),
+    );
+    await handler.execute(
+      new CreateCharacterCommand('user-1', makeDto({ upbringing: 'plebeian', concept: 'artist' })),
+    );
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ concept: 'artist', reputation: 3 }),
+    );
+  });
+
+  it('fugitive on plebeian: reputation clamped to 0 (2 + -2 = 0)', async () => {
+    vi.mocked(repo.create).mockResolvedValue(
+      makeCharacter({ upbringing: 'plebeian', concept: 'fugitive', reputation: 0 }),
+    );
+    await handler.execute(
+      new CreateCharacterCommand(
+        'user-1',
+        makeDto({ upbringing: 'plebeian', concept: 'fugitive' }),
+      ),
+    );
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ concept: 'fugitive', reputation: 0 }),
+    );
+  });
+
+  it('scientist on aristocrat: reputation = 6 + 1 = 7', async () => {
+    vi.mocked(repo.create).mockResolvedValue(
+      makeCharacter({ upbringing: 'aristocrat', concept: 'scientist', reputation: 7 }),
+    );
+    await handler.execute(
+      new CreateCharacterCommand(
+        'user-1',
+        makeDto({ upbringing: 'aristocrat', concept: 'scientist' }),
+      ),
+    );
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ concept: 'scientist', reputation: 7 }),
+    );
+  });
 });

@@ -10,7 +10,17 @@ export {
   canPush,
   applyConditions,
   UPBRINGING_BUDGETS,
+  CONCEPT_KEYS,
   sumAttributes,
   sumSkills,
 } from './rules-engine';
-export type { CanPushResult, ConditionFlags, Upbringing, UpbringingBudget } from './rules-engine';
+export type {
+  AttributeKey,
+  CanPushResult,
+  ConditionFlags,
+  Concept,
+  ConceptKeys,
+  SkillKey,
+  Upbringing,
+  UpbringingBudget,
+} from './rules-engine';

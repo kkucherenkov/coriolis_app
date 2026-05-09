@@ -9,7 +9,7 @@ import 'package:app_api_client/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **name** | **String** |  | [optional] 
-**concept** | **String** |  | [optional] 
+**concept** | [**Concept**](Concept.md) |  | [optional] 
 **iconId** | [**IconId**](IconId.md) |  | [optional] 
 **upbringing** | [**Upbringing**](Upbringing.md) | Allowed only while `status` is `draft` — used by the wizard to let players reconsider their pick before forging. Once the character is `active`, this field is immutable.  | [optional] 
 **origin** | **String** |  | [optional] 

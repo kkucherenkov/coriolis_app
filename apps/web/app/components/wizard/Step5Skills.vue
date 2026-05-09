@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import { computed } from 'vue';
-  import type { Skills } from '@app/api-client-ts';
+  import type { Concept, Skills } from '@app/api-client-ts';
 
   // ST3001 ch.2 table 2.4 — skill-point pool per upbringing. The rulebook
   // does not split the pool between general and advanced; that split here
-  // is a UI affordance pending the amplua picker (Block 2), which will
-  // introduce per-amplua key skills with a cap of 3.
+  // is a UI affordance. Per-skill caps depend on the chosen concept:
+  // key skills cap at 3, every other skill caps at 1 at creation.
   type Upbringing = 'plebeian' | 'stationary' | 'aristocrat';
 
   const props = defineProps<Props>();
@@ -20,11 +20,37 @@
     aristocrat: { general: 9, advanced: 3 },
   };
 
-  const MAX_RANK = 3;
+  const CONCEPT_KEY_SKILLS: Record<Concept, readonly (keyof Skills)[]> = {
+    artist: ['manipulation', 'culture', 'dexterity', 'observation', 'infiltration'],
+    networker: ['dataDjinn', 'culture', 'manipulation', 'observation', 'infiltration'],
+    fugitive: ['meleeCombat', 'infiltration', 'culture', 'mysticPowers', 'manipulation'],
+    negotiator: ['manipulation', 'culture', 'observation', 'command', 'infiltration'],
+    operative: ['meleeCombat', 'rangedCombat', 'infiltration', 'observation', 'manipulation'],
+    pilot: ['pilot', 'rangedCombat', 'technology', 'observation', 'dataDjinn'],
+    pioneer: ['survival', 'observation', 'technology', 'infiltration', 'science'],
+    preacher: ['culture', 'mysticPowers', 'manipulation', 'command', 'observation'],
+    scientist: ['science', 'culture', 'technology', 'medicurgy', 'dataDjinn'],
+    sailor: ['meleeCombat', 'force', 'technology', 'observation', 'pilot'],
+    soldier: ['rangedCombat', 'meleeCombat', 'force', 'command', 'observation'],
+  };
+
+  const KEY_SKILL_MAX = 3;
+  const NONKEY_SKILL_MAX = 1;
+  /** Total dots rendered for every skill row — enough to cover key skills (3 ranks). */
+  const DOT_COUNT = 3;
 
   interface Props {
     skills: Skills;
     upbringing: Upbringing | null;
+    concept: Concept | null;
+  }
+
+  const keySkillSet = computed<ReadonlySet<keyof Skills>>(
+    () => new Set(props.concept ? CONCEPT_KEY_SKILLS[props.concept] : []),
+  );
+
+  function maxRank(key: keyof Skills): number {
+    return keySkillSet.value.has(key) ? KEY_SKILL_MAX : NONKEY_SKILL_MAX;
   }
 
   const generalPool = computed<number>(() =>
@@ -110,7 +136,7 @@
 
   function canIncrement(key: keyof Skills, pool: 'general' | 'advanced'): boolean {
     const rem = pool === 'general' ? generalRemaining.value : advancedRemaining.value;
-    return props.skills[key] < MAX_RANK && rem > 0;
+    return props.skills[key] < maxRank(key) && rem > 0;
   }
 
   function canDecrement(key: keyof Skills): boolean {
@@ -129,7 +155,7 @@
     const delta = newVal - props.skills[key];
     if (delta > 0) {
       const rem = pool === 'general' ? generalRemaining.value : advancedRemaining.value;
-      if (newVal > MAX_RANK || delta > rem) return;
+      if (newVal > maxRank(key) || delta > rem) return;
     }
     emit('update:skills', { ...props.skills, [key]: newVal });
   }
@@ -141,7 +167,7 @@
     "generalTitle": "General Skills",
     "advancedTitle": "Advanced Skills",
     "pointsLeft": "Points left",
-    "hint": "General: {genPool} pts · Advanced: {advPool} pts · Max rank {max} each.",
+    "hint": "General: {genPool} pts · Advanced: {advPool} pts · Key skills up to {max}, others up to {nonKeyMax}.",
     "skill": {
       "force": "Force",
       "meleeCombat": "Melee Combat",
@@ -167,7 +193,7 @@
     "generalTitle": "Общие навыки",
     "advancedTitle": "Продвинутые навыки",
     "pointsLeft": "Осталось",
-    "hint": "Общие: {genPool} оч. · Продвинутые: {advPool} оч. · Макс. ранг {max}.",
+    "hint": "Общие: {genPool} оч. · Продвинутые: {advPool} оч. · Ключевые до {max}, остальные до {nonKeyMax}.",
     "skill": {
       "force": "Сила",
       "meleeCombat": "Рукопашный бой",
@@ -247,7 +273,14 @@
 <template>
   <div class="step-skills">
     <p class="step-skills__hint">
-      {{ t('hint', { genPool: generalPool, advPool: advancedPool, max: MAX_RANK }) }}
+      {{
+        t('hint', {
+          genPool: generalPool,
+          advPool: advancedPool,
+          max: KEY_SKILL_MAX,
+          nonKeyMax: NONKEY_SKILL_MAX,
+        })
+      }}
     </p>
 
     <div class="step-skills__cols">
@@ -268,7 +301,7 @@
           <span class="step-skills__attr">{{ SKILL_ATTR[key] }}</span>
           <div class="step-skills__dots" role="group" :aria-label="t(`skill.${key}`)">
             <span
-              v-for="i in MAX_RANK"
+              v-for="i in DOT_COUNT"
               :key="i"
               class="step-skills__dot"
               :class="{ 'step-skills__dot--filled': i - 1 < skills[key] }"
@@ -320,7 +353,7 @@
           <span class="step-skills__attr">{{ SKILL_ATTR[key] }}</span>
           <div class="step-skills__dots" role="group" :aria-label="t(`skill.${key}`)">
             <span
-              v-for="i in MAX_RANK"
+              v-for="i in DOT_COUNT"
               :key="i"
               class="step-skills__dot"
               :class="{ 'step-skills__dot--filled': i - 1 < skills[key] }"

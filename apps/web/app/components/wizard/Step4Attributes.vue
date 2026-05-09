@@ -1,11 +1,13 @@
 <script setup lang="ts">
   import { AppDots } from '@app/ui';
   import { computed } from 'vue';
-  import type { Attributes } from '@app/api-client-ts';
+  import type { Attributes, Concept } from '@app/api-client-ts';
 
   // ST3001 ch.2 table 2.2: attribute-point pool per upbringing.
-  // Per-attribute creation cap is 2..4 (key-attribute exception 5 lands in Block 2).
+  // Per-attribute creation cap is 2..4 — except for the concept's key
+  // attribute, which is capped at 5 instead.
   type Upbringing = 'plebeian' | 'stationary' | 'aristocrat';
+  type AttrKey = keyof Attributes;
 
   const props = defineProps<Props>();
 
@@ -19,21 +21,39 @@
     aristocrat: 13,
   };
 
+  const CONCEPT_KEY_ATTR: Record<Concept, AttrKey> = {
+    artist: 'empathy',
+    networker: 'wits',
+    fugitive: 'empathy',
+    negotiator: 'empathy',
+    operative: 'agility',
+    pilot: 'agility',
+    pioneer: 'wits',
+    preacher: 'empathy',
+    scientist: 'wits',
+    sailor: 'strength',
+    soldier: 'agility',
+  };
+
   const MIN_VAL = 2;
-  const MAX_VAL = 4;
+  const NONKEY_MAX = 4;
+  const KEY_MAX = 5;
 
   interface Props {
     attributes: Attributes;
     upbringing: Upbringing | null;
+    concept: Concept | null;
   }
 
   const totalPoints = computed<number>(() =>
     props.upbringing ? ATTR_BUDGET[props.upbringing] : 13,
   );
 
-  const { t } = useI18n({ useScope: 'local' });
+  const keyAttribute = computed<AttrKey | null>(() =>
+    props.concept ? CONCEPT_KEY_ATTR[props.concept] : null,
+  );
 
-  type AttrKey = keyof Attributes;
+  const { t } = useI18n({ useScope: 'local' });
 
   const ATTR_KEYS: AttrKey[] = ['strength', 'agility', 'wits', 'empathy'];
 
@@ -42,6 +62,10 @@
   const remaining = computed<number>(() => totalPoints.value - spent.value);
 
   const isAllSpent = computed<boolean>(() => remaining.value === 0);
+
+  function maxFor(key: AttrKey): number {
+    return key === keyAttribute.value ? KEY_MAX : NONKEY_MAX;
+  }
 
   function attrLabel(key: AttrKey): string {
     return t(`attr.${key}`);
@@ -52,7 +76,7 @@
   }
 
   function canIncrement(key: AttrKey): boolean {
-    return props.attributes[key] < MAX_VAL && remaining.value > 0;
+    return props.attributes[key] < maxFor(key) && remaining.value > 0;
   }
 
   function canDecrement(key: AttrKey): boolean {
@@ -75,7 +99,7 @@
   "en": {
     "pointsRemaining": "Points remaining",
     "allSpent": "All points spent",
-    "hint": "Distribute {total} points. Min {min}, max {max} per attribute.",
+    "hint": "Distribute {total} points. {min}–{max} per attribute (key attribute up to {keyMax}).",
     "incrementAria": "Increase {attr}",
     "decrementAria": "Decrease {attr}",
     "attr": {
@@ -94,7 +118,7 @@
   "ru": {
     "pointsRemaining": "Осталось очков",
     "allSpent": "Все очки распределены",
-    "hint": "Распределите {total} очков. Мин. {min}, макс. {max} на атрибут.",
+    "hint": "Распределите {total} очков. По {min}–{max} на каждую характеристику (ключевая — до {keyMax}).",
     "incrementAria": "Увеличить {attr}",
     "decrementAria": "Уменьшить {attr}",
     "attr": {
@@ -159,7 +183,7 @@
     </div>
 
     <p class="step-attrs__hint">
-      {{ t('hint', { total: totalPoints, min: MIN_VAL, max: MAX_VAL }) }}
+      {{ t('hint', { total: totalPoints, min: MIN_VAL, max: NONKEY_MAX, keyMax: KEY_MAX }) }}
     </p>
 
     <div class="step-attrs__list">
@@ -171,7 +195,7 @@
 
         <AppDots
           :value="attributes[key]"
-          :max="MAX_VAL"
+          :max="maxFor(key)"
           tone="brass"
           size="md"
           :label="attrLabel(key)"

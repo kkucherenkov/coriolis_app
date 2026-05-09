@@ -1,7 +1,8 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 
-import { UPBRINGING_BUDGETS, sumAttributes, sumSkills } from '../../rules-engine';
+import { CONCEPT_KEYS, UPBRINGING_BUDGETS, sumAttributes, sumSkills } from '../../rules-engine';
+import type { AttributeKey, SkillKey } from '../../rules-engine';
 import {
   AttributeBudgetExceededError,
   AttributeOutOfCreationRangeError,
@@ -16,6 +17,7 @@ import {
   Attributes,
   CHARACTER_REPO,
   CharacterReadModel,
+  Concept,
   ConditionFlags,
   DEFAULT_ATTRIBUTES,
   DEFAULT_CONDITIONS,
@@ -46,24 +48,34 @@ const VALID_ICONS = new Set<IconId>([
 const VALID_UPBRINGINGS = new Set<Upbringing>(['plebeian', 'stationary', 'aristocrat']);
 
 // Per Coriolis core book ch.2: at creation each attribute is between 2 and 4
-// (the amplua's key attribute may reach 5 — Block 2 introduces that exception).
+// (the amplua's key attribute may reach 5 — concept-aware exception).
 const CREATION_ATTR_MIN = 2;
-const CREATION_ATTR_MAX = 4;
+const CREATION_ATTR_NONKEY_MAX = 4;
+const CREATION_ATTR_KEY_MAX = 5;
+const CREATION_SKILL_NONKEY_MAX = 1;
+const CREATION_SKILL_KEY_MAX = 3;
 
-function validateAttributesAtCreation(attrs: Attributes): void {
-  for (const [key, val] of Object.entries(attrs) as [string, number][]) {
+function validateAttributesAtCreation(attrs: Attributes, concept: Concept | null): void {
+  const keyAttribute = concept ? CONCEPT_KEYS[concept].keyAttribute : null;
+  for (const [key, val] of Object.entries(attrs) as [AttributeKey, number][]) {
     if (val < 1 || val > 5) {
       throw new AttributeOutOfRangeError(key, val);
     }
-    if (val < CREATION_ATTR_MIN || val > CREATION_ATTR_MAX) {
+    const max = key === keyAttribute ? CREATION_ATTR_KEY_MAX : CREATION_ATTR_NONKEY_MAX;
+    if (val < CREATION_ATTR_MIN || val > max) {
       throw new AttributeOutOfCreationRangeError(key, val);
     }
   }
 }
 
-function validateSkills(skills: Skills): void {
-  for (const [key, val] of Object.entries(skills) as [string, number][]) {
+function validateSkillsAtCreation(skills: Skills, concept: Concept | null): void {
+  const keySet: ReadonlySet<SkillKey> = new Set(concept ? CONCEPT_KEYS[concept].keySkills : []);
+  for (const [key, val] of Object.entries(skills) as [SkillKey, number][]) {
     if (val < 0 || val > 5) {
+      throw new SkillOutOfRangeError(key, val);
+    }
+    const max = keySet.has(key) ? CREATION_SKILL_KEY_MAX : CREATION_SKILL_NONKEY_MAX;
+    if (val > max) {
       throw new SkillOutOfRangeError(key, val);
     }
   }
@@ -96,13 +108,15 @@ export class CreateCharacterHandler implements ICommandHandler<
     }
     const upbringing = dto.upbringing;
     const budget = UPBRINGING_BUDGETS[upbringing];
+    const concept = dto.concept ?? null;
+    const conceptKeys = concept ? CONCEPT_KEYS[concept] : null;
 
     const attributes = { ...DEFAULT_ATTRIBUTES, ...dto.attributes };
     const skills = { ...DEFAULT_SKILLS, ...dto.skills };
     const conditions: ConditionFlags = { ...DEFAULT_CONDITIONS, ...dto.conditions };
 
-    validateAttributesAtCreation(attributes);
-    validateSkills(skills);
+    validateAttributesAtCreation(attributes, concept);
+    validateSkillsAtCreation(skills, concept);
 
     const attributeTotal = sumAttributes(attributes);
     if (attributeTotal > budget.attributes) {
@@ -115,15 +129,18 @@ export class CreateCharacterHandler implements ICommandHandler<
     }
 
     const status: CharacterStatus = dto.status ?? 'active';
+    // Reputation = upbringing baseline + concept modifier, clamped at 0 so
+    // a -2 modifier on a 2-rep plebeian doesn't go negative.
+    const reputation = Math.max(0, budget.reputation + (conceptKeys?.reputationModifier ?? 0));
 
     const character = await this.repo.create({
       ownerId,
       name: dto.name.trim(),
-      concept: dto.concept ?? null,
+      concept,
       iconId: dto.iconId ?? null,
       upbringing,
       origin: dto.origin ?? null,
-      reputation: budget.reputation,
+      reputation,
       startingWealth: budget.startingWealth,
       attributes,
       skills,

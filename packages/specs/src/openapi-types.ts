@@ -953,6 +953,41 @@ export interface components {
       | 'faceless-one'
       | 'deckhand';
     /**
+     * @description The 11 character archetypes (амплуа) from Coriolis ST3001 ch.2.
+     *     Each concept has a key attribute (capped at 5 instead of 4 at
+     *     creation) and a set of key skills (capped at 3 instead of 1 at
+     *     creation), and applies a reputation modifier to the upbringing
+     *     baseline. Mappings live server-side in the RulesEngine
+     *     (`CONCEPT_KEYS`).
+     *
+     *     | Concept     | Key attribute | Reputation modifier |
+     *     | ----------- | ------------- | ------------------- |
+     *     | artist      | empathy       | +1                  |
+     *     | networker   | wits          |  0                  |
+     *     | fugitive    | empathy       | −2                  |
+     *     | negotiator  | empathy       | +1                  |
+     *     | operative   | agility       |  0                  |
+     *     | pilot       | agility       |  0                  |
+     *     | pioneer     | wits          |  0                  |
+     *     | preacher    | empathy       | +1                  |
+     *     | scientist   | wits          | +1                  |
+     *     | sailor      | strength      | −1                  |
+     *     | soldier     | agility       | −1                  |
+     * @enum {string}
+     */
+    Concept:
+      | 'artist'
+      | 'networker'
+      | 'fugitive'
+      | 'negotiator'
+      | 'operative'
+      | 'pilot'
+      | 'pioneer'
+      | 'preacher'
+      | 'scientist'
+      | 'sailor'
+      | 'soldier';
+    /**
      * @description Social stratum a character was raised in (Coriolis core book ch.2,
      *     table 2.2 — "Воспитание"). Upbringing is set once at character
      *     creation and is **immutable**; it determines the starting
@@ -1538,8 +1573,14 @@ export interface components {
       readonly ownerId: string;
       /** @description Character name (1–80 characters) */
       name: string;
-      /** @description Short concept phrase — the role the character plays at the table (1–120 chars when non-null) */
-      concept: string | null;
+      /**
+       * @description One of the 11 character archetypes (амплуа). May be `null`
+       *     during the creation wizard before the user has chosen an
+       *     archetype; required for an `active` character. Determines the
+       *     key attribute / key skills caps applied at creation and the
+       *     reputation modifier applied on top of `upbringing`.
+       */
+      concept: components['schemas']['Concept'] | null;
       /** @description One of the Nine Icons, or null if not chosen yet */
       iconId: components['schemas']['IconId'] | null;
       /**
@@ -1637,7 +1678,7 @@ export interface components {
      */
     CharacterCreate: {
       name: string;
-      concept?: string | null;
+      concept?: components['schemas']['Concept'] | null;
       iconId?: components['schemas']['IconId'] | null;
       upbringing: components['schemas']['Upbringing'];
       origin?: string | null;
@@ -1687,7 +1728,14 @@ export interface components {
      */
     CharacterUpdate: {
       name?: string;
-      concept?: string | null;
+      /**
+       * @description Switching the concept while `status` is `draft` recomputes
+       *     the per-attribute / per-skill caps for validation and
+       *     adjusts the reputation by the new concept's modifier
+       *     (relative to upbringing's baseline). Once active, concept
+       *     becomes immutable.
+       */
+      concept?: components['schemas']['Concept'] | null;
       iconId?: components['schemas']['IconId'] | null;
       /**
        * @description Allowed only while `status` is `draft` — used by the wizard

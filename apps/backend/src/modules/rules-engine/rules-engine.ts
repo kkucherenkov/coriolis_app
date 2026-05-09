@@ -51,6 +51,123 @@ export const UPBRINGING_BUDGETS: Readonly<Record<Upbringing, UpbringingBudget>> 
 });
 
 /**
+ * Coriolis core book ch.2 — character archetypes (амплуа). Each concept
+ * has:
+ *   - one **key attribute**, capped at 5 instead of 4 at creation;
+ *   - a set of **key skills** (union of the 3 roles' key skills),
+ *     capped at 3 instead of 1 at creation;
+ *   - a **reputation modifier** added to the upbringing baseline.
+ *
+ * Skills mapped from the Russian rulebook to the project's 16-skill
+ * schema (PRD §5.2):
+ *   влияние→manipulation, мудрость→culture, проворство→dexterity,
+ *   наблюдательность→observation, скрытность→infiltration,
+ *   инфомантия→dataDjinn, ближний бой→meleeCombat, стрельба→rangedCombat,
+ *   выживание→survival, лидерство→command, сила→force, медикургия→medicurgy,
+ *   психомистицизм→mysticPowers, пилотирование→pilot, наука→science,
+ *   технология→technology.
+ */
+export type Concept =
+  | 'artist'
+  | 'networker'
+  | 'fugitive'
+  | 'negotiator'
+  | 'operative'
+  | 'pilot'
+  | 'pioneer'
+  | 'preacher'
+  | 'scientist'
+  | 'sailor'
+  | 'soldier';
+
+export type AttributeKey = 'strength' | 'agility' | 'wits' | 'empathy';
+
+export type SkillKey =
+  | 'dexterity'
+  | 'force'
+  | 'infiltration'
+  | 'manipulation'
+  | 'meleeCombat'
+  | 'observation'
+  | 'rangedCombat'
+  | 'survival'
+  | 'command'
+  | 'culture'
+  | 'dataDjinn'
+  | 'medicurgy'
+  | 'mysticPowers'
+  | 'pilot'
+  | 'science'
+  | 'technology';
+
+export interface ConceptKeys {
+  /** Capped at 5 instead of 4 at creation. */
+  keyAttribute: AttributeKey;
+  /** Each capped at 3 instead of 1 at creation. */
+  keySkills: readonly SkillKey[];
+  /** Added to `UPBRINGING_BUDGETS[u].reputation`. */
+  reputationModifier: number;
+}
+
+export const CONCEPT_KEYS: Readonly<Record<Concept, ConceptKeys>> = Object.freeze({
+  artist: {
+    keyAttribute: 'empathy',
+    keySkills: ['manipulation', 'culture', 'dexterity', 'observation', 'infiltration'],
+    reputationModifier: 1,
+  },
+  networker: {
+    keyAttribute: 'wits',
+    keySkills: ['dataDjinn', 'culture', 'manipulation', 'observation', 'infiltration'],
+    reputationModifier: 0,
+  },
+  fugitive: {
+    keyAttribute: 'empathy',
+    keySkills: ['meleeCombat', 'infiltration', 'culture', 'mysticPowers', 'manipulation'],
+    reputationModifier: -2,
+  },
+  negotiator: {
+    keyAttribute: 'empathy',
+    keySkills: ['manipulation', 'culture', 'observation', 'command', 'infiltration'],
+    reputationModifier: 1,
+  },
+  operative: {
+    keyAttribute: 'agility',
+    keySkills: ['meleeCombat', 'rangedCombat', 'infiltration', 'observation', 'manipulation'],
+    reputationModifier: 0,
+  },
+  pilot: {
+    keyAttribute: 'agility',
+    keySkills: ['pilot', 'rangedCombat', 'technology', 'observation', 'dataDjinn'],
+    reputationModifier: 0,
+  },
+  pioneer: {
+    keyAttribute: 'wits',
+    keySkills: ['survival', 'observation', 'technology', 'infiltration', 'science'],
+    reputationModifier: 0,
+  },
+  preacher: {
+    keyAttribute: 'empathy',
+    keySkills: ['culture', 'mysticPowers', 'manipulation', 'command', 'observation'],
+    reputationModifier: 1,
+  },
+  scientist: {
+    keyAttribute: 'wits',
+    keySkills: ['science', 'culture', 'technology', 'medicurgy', 'dataDjinn'],
+    reputationModifier: 1,
+  },
+  sailor: {
+    keyAttribute: 'strength',
+    keySkills: ['meleeCombat', 'force', 'technology', 'observation', 'pilot'],
+    reputationModifier: -1,
+  },
+  soldier: {
+    keyAttribute: 'agility',
+    keySkills: ['rangedCombat', 'meleeCombat', 'force', 'command', 'observation'],
+    reputationModifier: -1,
+  },
+});
+
+/**
  * Sum of attribute values, used for budget validation.
  * Per ch.2 every attribute must be 2..4 (or 5 for the amplua's key attribute,
  * enforced in Block 2). Sum must not exceed UPBRINGING_BUDGETS[u].attributes.

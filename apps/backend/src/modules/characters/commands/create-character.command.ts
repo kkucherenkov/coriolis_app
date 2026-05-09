@@ -17,6 +17,7 @@ import type {
   Attributes,
   CharacterStatus,
   ConditionFlags,
+  Concept,
   IconId,
   Skills,
   Upbringing,
@@ -69,6 +70,20 @@ const VALID_ICONS: IconId[] = [
 
 const VALID_UPBRINGINGS: Upbringing[] = ['plebeian', 'stationary', 'aristocrat'];
 
+const VALID_CONCEPTS: Concept[] = [
+  'artist',
+  'networker',
+  'fugitive',
+  'negotiator',
+  'operative',
+  'pilot',
+  'pioneer',
+  'preacher',
+  'scientist',
+  'sailor',
+  'soldier',
+];
+
 export class HpDto {
   @IsOptional() @IsInt() @Min(0) current?: number;
 }
@@ -84,9 +99,8 @@ export class CreateCharacterDto {
   name!: string;
 
   @IsOptional()
-  @IsString()
-  @MaxLength(120)
-  concept?: string | null;
+  @IsIn(VALID_CONCEPTS)
+  concept?: Concept | null;
 
   @IsOptional()
   @IsIn(VALID_ICONS)

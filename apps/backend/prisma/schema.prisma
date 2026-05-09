@@ -100,6 +100,25 @@ enum Upbringing {
   @@map("upbringing")
 }
 
+/// One of the 11 character archetypes (амплуа) per Coriolis core book ch.2.
+/// Determines the key attribute (cap 5 at creation), key skills (cap 3),
+/// and reputation modifier. Mapped to lowercase wire values.
+enum Concept {
+  artist
+  networker
+  fugitive
+  negotiator
+  operative
+  pilot
+  pioneer
+  preacher
+  scientist
+  sailor
+  soldier
+
+  @@map("concept")
+}
+
 /// One of the nine Coriolis Icons (enum mirrors the OpenAPI IconId type).
 enum IconId {
   lady_of_tears  @map("lady-of-tears")
@@ -136,7 +155,9 @@ model Character {
   ownerId             String
   owner               User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   name                String
-  concept             String?
+  /// One of 11 archetypes (амплуа). Nullable so the wizard can save a
+  /// draft before the user picks; required (validated) on `active`.
+  concept             Concept?
   iconId              IconId?
   /// Social stratum at birth — drives the creation-time attribute / skill
   /// budgets, starting reputation, and starting wealth (ch.2 table 2.2).

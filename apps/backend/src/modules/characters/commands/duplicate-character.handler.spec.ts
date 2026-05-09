@@ -27,7 +27,7 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     id: 'char-1',
     ownerId: 'user-1',
     name: 'Kalim al-Rashid',
-    concept: 'Mercenary',
+    concept: 'operative',
     iconId: 'traveler',
     upbringing: 'stationary',
     origin: 'Coriolis Station',

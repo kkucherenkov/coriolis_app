@@ -90,6 +90,19 @@ export type IconId =
 
 export type Upbringing = 'plebeian' | 'stationary' | 'aristocrat';
 
+export type Concept =
+  | 'artist'
+  | 'networker'
+  | 'fugitive'
+  | 'negotiator'
+  | 'operative'
+  | 'pilot'
+  | 'pioneer'
+  | 'preacher'
+  | 'scientist'
+  | 'sailor'
+  | 'soldier';
+
 /**
  * Lifecycle state of a character.
  * Matches the OpenAPI enum `draft | active` (lowercase wire) and maps
@@ -140,7 +153,7 @@ export interface CharacterReadModel {
   id: string;
   ownerId: string;
   name: string;
-  concept: string | null;
+  concept: Concept | null;
   iconId: IconId | null;
   upbringing: Upbringing;
   origin: string | null;
@@ -184,7 +197,7 @@ export interface CharacterListItem {
   id: string;
   ownerId: string;
   name: string;
-  concept: string | null;
+  concept: Concept | null;
   iconId: IconId | null;
   hp: { current: number; max: number };
   mp: { current: number; max: number };
@@ -225,7 +238,7 @@ export interface ICharacterRepo {
   create(data: {
     ownerId: string;
     name: string;
-    concept?: string | null;
+    concept?: Concept | null;
     iconId?: IconId | null;
     upbringing: Upbringing;
     origin?: string | null;
@@ -246,7 +259,7 @@ export interface ICharacterRepo {
     id: string,
     data: Partial<{
       name: string;
-      concept: string | null;
+      concept: Concept | null;
       iconId: IconId | null;
       upbringing: Upbringing;
       origin: string | null;

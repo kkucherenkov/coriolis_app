@@ -291,7 +291,6 @@
       if (!trimmedName) return;
       const updated = await api.update(characterId.value, {
         name: trimmedName,
-        concept: conceptValue.value.trim() || null,
       });
       character.value = updated;
       localHpCurrent.value = updated.hp.current;
@@ -306,10 +305,6 @@
   const saveState = computed<SaveState>(() => _saveState.value ?? 'idle');
 
   watch(nameValue, () => {
-    if (state.value !== 'loaded') return;
-    scheduleIdentitySave();
-  });
-  watch(conceptValue, () => {
     if (state.value !== 'loaded') return;
     scheduleIdentitySave();
   });
@@ -709,6 +704,19 @@
     "popoverClose": "Close",
     "comingSoon": "Coming in a future update.",
     "identityConcept": "Concept",
+    "concept": {
+      "artist": "Artist",
+      "networker": "Networker",
+      "fugitive": "Fugitive",
+      "negotiator": "Negotiator",
+      "operative": "Operative",
+      "pilot": "Pilot",
+      "pioneer": "Pioneer",
+      "preacher": "Preacher",
+      "scientist": "Scientist",
+      "sailor": "Sailor",
+      "soldier": "Soldier"
+    },
     "condition": {
       "exhausted": "Exhausted",
       "sleepless": "Sleepless",
@@ -830,7 +838,20 @@
     "labelIncrease": "Увеличить",
     "popoverClose": "Закрыть",
     "comingSoon": "Появится в будущем обновлении.",
-    "identityConcept": "Концепция",
+    "identityConcept": "Амплуа",
+    "concept": {
+      "artist": "Артист",
+      "networker": "Сетевой паук",
+      "fugitive": "Беглец",
+      "negotiator": "Негоциант",
+      "operative": "Оперативник",
+      "pilot": "Пилот",
+      "pioneer": "Первопроходец",
+      "preacher": "Проповедник",
+      "scientist": "Учёный",
+      "sailor": "Матрос",
+      "soldier": "Солдат"
+    },
     "condition": {
       "exhausted": "Истощение",
       "sleepless": "Бессонница",
@@ -953,6 +974,19 @@
     "popoverClose": "[uk-todo] Close",
     "comingSoon": "[uk-todo] Coming in a future update.",
     "identityConcept": "[uk-todo] Concept",
+    "concept": {
+      "artist": "[uk-todo] Artist",
+      "networker": "[uk-todo] Networker",
+      "fugitive": "[uk-todo] Fugitive",
+      "negotiator": "[uk-todo] Negotiator",
+      "operative": "[uk-todo] Operative",
+      "pilot": "[uk-todo] Pilot",
+      "pioneer": "[uk-todo] Pioneer",
+      "preacher": "[uk-todo] Preacher",
+      "scientist": "[uk-todo] Scientist",
+      "sailor": "[uk-todo] Sailor",
+      "soldier": "[uk-todo] Soldier"
+    },
     "condition": {
       "exhausted": "[uk-todo] Exhausted",
       "sleepless": "[uk-todo] Sleepless",
@@ -1075,6 +1109,19 @@
     "popoverClose": "[el-todo] Close",
     "comingSoon": "[el-todo] Coming in a future update.",
     "identityConcept": "[el-todo] Concept",
+    "concept": {
+      "artist": "[el-todo] Artist",
+      "networker": "[el-todo] Networker",
+      "fugitive": "[el-todo] Fugitive",
+      "negotiator": "[el-todo] Negotiator",
+      "operative": "[el-todo] Operative",
+      "pilot": "[el-todo] Pilot",
+      "pioneer": "[el-todo] Pioneer",
+      "preacher": "[el-todo] Preacher",
+      "scientist": "[el-todo] Scientist",
+      "sailor": "[el-todo] Sailor",
+      "soldier": "[el-todo] Soldier"
+    },
     "condition": {
       "exhausted": "[el-todo] Exhausted",
       "sleepless": "[el-todo] Sleepless",
@@ -1204,10 +1251,10 @@
           {{ initials(nameValue || character.name) }}
         </div>
 
-        <!-- Identity (editable name + concept + save status) -->
+        <!-- Identity (editable name + read-only concept + save status) -->
         <div class="page-sheet__identity">
           <div class="page-sheet__concept-label">
-            {{ conceptValue || t('identityConcept') }}
+            {{ conceptValue ? t(`concept.${conceptValue}`) : t('identityConcept') }}
           </div>
           <AppInput
             v-model="nameValue"
@@ -1216,14 +1263,6 @@
             :aria-label="t('namePlaceholder')"
             autocomplete="off"
             class="page-sheet__name-input"
-          />
-          <AppInput
-            v-model="conceptValue"
-            size="md"
-            :placeholder="t('conceptPlaceholder')"
-            :aria-label="t('conceptPlaceholder')"
-            autocomplete="off"
-            class="page-sheet__concept-input"
           />
           <!-- Feature 5.5 — AppSavePulse indicator -->
           <div class="page-sheet__save-status" aria-live="polite" aria-atomic="true">

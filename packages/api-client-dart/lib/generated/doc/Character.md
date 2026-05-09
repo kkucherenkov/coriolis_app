@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 **id** | **String** | Opaque character identifier (cuid2) | 
 **ownerId** | **String** | Identifier of the owning user (cuid2) | 
 **name** | **String** | Character name (1–80 characters) | 
-**concept** | **String** | Short concept phrase — the role the character plays at the table (1–120 chars when non-null) | 
+**concept** | [**Concept**](Concept.md) |  | 
 **iconId** | [**IconId**](IconId.md) |  | 
 **upbringing** | [**Upbringing**](Upbringing.md) | Social stratum the character was raised in. Set at creation and **immutable** — drives the starting attribute / skill point budgets and the initial values of `reputation` and `startingWealth`.  | 
 **origin** | **String** | Free-text narrative description of where the character is from (home station, planet, or region). Has no mechanical effect.  | 

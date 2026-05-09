@@ -3,7 +3,7 @@
   import { useCharactersApi } from '~/composables/useCharactersApi';
   import { useAutoSave } from '~/composables/useAutoSave';
   import type { Character, CharacterUpdate } from '~/composables/useCharactersApi';
-  import type { Attributes, Skills, IconId, Upbringing } from '@app/api-client-ts';
+  import type { Attributes, Skills, IconId, Concept, Upbringing } from '@app/api-client-ts';
   import WizardShell from '~/components/wizard/WizardShell.vue';
   import Step1Concept from '~/components/wizard/Step1Concept.vue';
   import Step2Background from '~/components/wizard/Step2Background.vue';
@@ -64,7 +64,7 @@
   const DEFAULT_UPBRINGING: Upbringing = 'stationary';
   const draftId = ref<string>('');
   const draftName = ref<string>('Untitled');
-  const draftConcept = ref<string | null>(null);
+  const draftConcept = ref<Concept | null>(null);
   const draftOrigin = ref<string | null>(null);
   const draftUpbringing = ref<Upbringing>(DEFAULT_UPBRINGING);
   const draftAge = ref<number | null>(null);
@@ -208,7 +208,7 @@
     scheduleSave();
   }
 
-  function onConceptUpdate(val: string | null): void {
+  function onConceptUpdate(val: Concept | null): void {
     draftConcept.value = val;
     scheduleSave();
   }
@@ -416,6 +416,7 @@
         v-if="step === 4"
         :attributes="draftAttributes"
         :upbringing="draftUpbringing"
+        :concept="draftConcept"
         @update:attributes="onAttributesUpdate"
       />
 
@@ -423,6 +424,7 @@
         v-if="step === 5"
         :skills="draftSkills"
         :upbringing="draftUpbringing"
+        :concept="draftConcept"
         @update:skills="onSkillsUpdate"
       />
 
