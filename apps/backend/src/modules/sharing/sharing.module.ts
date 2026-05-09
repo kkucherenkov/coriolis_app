@@ -21,6 +21,7 @@ import { SHARE_LINK_REPO } from './domain/share-link.ports';
 import { ShareLinkRepo } from './infra/share-link.repo';
 import { ViewTracker } from './infra/view-tracker';
 import { FlushViewTrackerJob } from './jobs/flush-view-tracker.job';
+import { OgService } from './og/og.service';
 import { PublicSharingController } from './public-sharing.controller';
 import { GetPublicCharacterHandler } from './queries/get-public-character.handler';
 import { ListShareLinksHandler } from './queries/list-share-links.handler';
@@ -39,6 +40,7 @@ import { SharingController } from './sharing.controller';
     // Infrastructure
     { provide: SHARE_LINK_REPO, useClass: ShareLinkRepo },
     ViewTracker,
+    OgService,
     // Jobs
     FlushViewTrackerJob,
   ],
