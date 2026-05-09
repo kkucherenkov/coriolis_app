@@ -1,27 +1,3 @@
-## T-2026-05-09-004 — web: signup page + auth layout fixes
-
-- Created: 2026-05-09
-- Owner: claude
-- Spec: bug-fix on existing auth UI (no PRD/epic)
-- Goal: Add missing /signup page, fix landing CTA wiring, improve auth-page layout proportions.
-- Acceptance:
-  - `/signup` route exists and renders email + password + confirm form
-  - Successful submit calls `auth.signUp.email` and redirects to `/`
-  - Landing "Create account" button navigates to `/signup`
-  - Login (and signup) page no longer feels narrow/tall: wider card, no 100dvh stretching, wordmark above card
-- Spec diff: none (no wire change)
-- Codegen impact: none
-- Design impact: web-only — page-scoped CSS, design-token aligned
-- Sub-steps:
-  - [x] Push task to active.md
-  - [ ] Fix index.vue onCreateAccount → /signup
-  - [ ] Extend AuthClientLike (useAuth.ts) with signUp.email
-  - [ ] Create apps/web/app/pages/signup.vue (mirror login.vue, add confirm-password)
-  - [ ] Update login.vue layout (max-width 480px, drop 100dvh, wordmark above card)
-  - [ ] lint --fix + stylelint:fix + format + typecheck
-- Status: in-progress
-- Blockers: —
-
 ## T-2026-05-09-003 — Epic 7 Feature 7.3: Darkness Points + push wiring (T-7.3.1.a, .b, .c)
 
 - Created: 2026-05-09

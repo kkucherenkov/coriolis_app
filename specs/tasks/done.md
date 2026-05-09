@@ -2,6 +2,43 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-09-004 — web: signup page + auth layout fixes
+
+- Completed: 2026-05-10
+- Owner: claude
+- Spec: bug-fix on existing auth UI (no PRD/epic)
+- Goal: Add missing `/signup` page, fix landing CTA wiring, improve auth-page
+  layout proportions.
+- Result: shipped on `main` across five commits as the work expanded into a
+  full bearer-token migration (Better Auth's session cookie did not survive
+  the SPA → backend round-trip on Forgejo's reverse proxy, so the signup
+  flow had to switch to `Authorization: Bearer <token>` end-to-end before it
+  could land green).
+  - `91169bb` `fix(web): /signup page, landing CTA, and post-auth redirect`
+  - `c962b8f` `fix(web): auth-required reads getSession() result directly`
+  - `193c8e6` `fix(web): SDK client singleton sends session cookie`
+  - `7e4ea73` `fix(backend): JSON body parser before OpenAPI validator`
+  - `772509e` `feat(web): switch auth from session cookie to bearer token`
+- Spec diff: none (auth surface untouched — the signup form was already
+  served by Better Auth's `/api/v1/auth/sign-up/email` endpoint).
+- Acceptance check (against the original list):
+  - ✅ `/signup` route renders email + password + confirm form
+    (`apps/web/app/pages/signup.vue`).
+  - ✅ Successful submit calls `auth.signUp.email` and redirects (to
+    `/app/characters` rather than `/` — `autoSignIn` is on, so dropping
+    new accounts on the public landing felt wrong).
+  - ✅ Landing "Create account" button navigates to `/signup`
+    (`onCreateAccount → navigateTo('/signup')` in `app/pages/index.vue`).
+  - ✅ Login + signup cards capped at 480 px, no `100dvh`, wordmark above
+    card. Both pages share the same BEM scaffold (`page-login__shell` /
+    `page-signup__shell`) so future restyles touch one set of tokens.
+- Open follow-ups (carried in the feature backlog, not blockers):
+  - `uk` and `el` strings on `/signup` are still `[uk-todo]` /
+    `[el-todo]` placeholders — translator pass when those locales come
+    online.
+  - "Forgot password" link is not on the login card yet (Better Auth
+    `forgetPassword` endpoint exists; the UI lands in Phase 1 Epic 4).
+
 ## T-2026-05-09-005 — character creation rules alignment with ST3001
 
 - Completed: 2026-05-10
