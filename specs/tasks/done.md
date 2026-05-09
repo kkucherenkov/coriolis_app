@@ -2,6 +2,75 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-09-005 — character creation rules alignment with ST3001
+
+- Completed: 2026-05-10
+- Owner: claude
+- Spec: Coriolis ST3001 — `ГЛАВА 2 Персонажи игроков` + `ГЛАВА 4 Достоинства`
+  (Russian rulebook, canonical per
+  `.claude/projects/.../memory/coriolis-rulebook-ru.md`). PRD §5.2 was silent
+  / partially wrong on these mechanics.
+- Goal: make web character creation enforce the rulebook's budget, caps,
+  and talent model — upbringing-driven point pools, structured concept
+  enum (амплуа), full talent catalog (icon gifts + crew + personal +
+  stigmas), and the mutant flag.
+- Result: shipped as 6 commits directly on `main` (ff push to
+  `origin/main`). The original "single big PR" plan was abandoned in
+  favour of per-block direct-to-main commits per the saved
+  `feedback_block_workflow.md` rule (each block = its own commit + push +
+  follow-up note + new session). The repo lives on a self-hosted
+  Forgejo (`code.homelab.local`) — no GitHub PR equivalent was created.
+  - `cf47ef1` `feat(character): T-2026-05-09-005 Block 1 — upbringing
+field & budgets`
+  - `91dac1d` `feat(character): T-2026-05-09-005 Block 2 — Concept
+(amplua) enum`
+  - `250e918` `feat(character): T-2026-05-09-005 Block 3 — Talent kind +
+CrewConcept`
+  - `db52555` `feat(character): T-2026-05-09-005 Block 4 — Talent
+catalog data`
+  - `8cd30ac` `feat(character): T-2026-05-09-005 Block 5 — Mutant flag +
+stigma`
+- Spec evolution: openapi `0.8.1 → 0.12.0` (4 minor bumps); asyncapi
+  unchanged. Prisma migrations: `upbringing_fields`, `concept_enum`,
+  `talent_kind_and_crew_concept`, `mutant_fields`. New
+  `packages/specs/src/talents.ts` ships the canonical ST3001 ch.4
+  catalog (9 icon gifts + 15 crew + 26 personal + 3 stigmas) and is the
+  single source of truth for both backend seeding and web rendering.
+- Test totals at end: **425/425** backend, **53/53** web. All 5 blocks
+  cleared lint / typecheck / format on each commit.
+- Acceptance check (against the original list):
+  - ✅ Upbringing drives attribute/skill budgets, reputation, starting
+    wealth (15/8 — 14/10 — 13/12; 2/4/6; 500/1000/5000 birrs).
+  - ✅ Concept is a structured 11-amplua enum with key-attribute cap 5,
+    other-attr cap 4, key-skill cap 3, other-skill cap 1, plus
+    reputation modifier.
+  - ✅ Talents at creation: personal + crew + iconGift; stigma when
+    mutant=true. iconGift auto-seeded from icon; rest picked by player
+    via the regular `addTalent` flow after `forge()`.
+  - ✅ Talent catalog: 9 icon gifts, 15 crew (5 amplua × 3), 26
+    personal, 3 stigmas — en/ru complete, uk/el placeholders.
+  - ✅ Backend rejects budget / kind / mutant violations with structured
+    400/422 + RFC 9457 codes (`ATTRIBUTE_BUDGET_EXCEEDED`,
+    `SKILL_BUDGET_EXCEEDED`, `TALENT_KIND_DUPLICATE`,
+    `MUTANT_LINEAGE_REQUIRED`, `MUTANT_LINEAGE_FORBIDDEN`,
+    `MUTANT_IMMUTABLE`, `STIGMA_REQUIRES_MUTANT`,
+    `UPBRINGING_IMMUTABLE`, `CONCEPT_IMMUTABLE`,
+    `CREW_CONCEPT_IMMUTABLE`).
+  - ✅ Web wizard surfaces budgets/caps/hints on Step 1/2/4/5/6.
+  - ✅ Mobile out of scope (untouched).
+- Follow-ups (open as separate tasks if/when needed):
+  - `uk` and `el` translations across new i18n keys (Step1Concept
+    mutant copy, Step2Background upbringing/crew copy, Step6Talents
+    sections, talent catalog `name` + `description`) currently carry
+    `[uk-todo]`/`[el-todo]` placeholders.
+  - Personal-talent pool is rendered as a flat 26-card list. A future
+    enhancement could filter by amplua per ST3001 if/when player
+    feedback says the full pool is overwhelming.
+  - Read-side localization: character sheet (`[id].vue`) renders
+    `talent.name` raw — when the catalog ID convention is universal,
+    we can resolve it through `findCatalogTalentById` for
+    locale-aware display.
+
 ## Mobile flutter analyze cleanup (Phase 3 tail)
 
 - Completed: 2026-05-09
