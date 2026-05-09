@@ -10,4 +10,4 @@ export {
   canPush,
   applyConditions,
 } from './rules-engine';
-export type { ConditionFlags } from './rules-engine';
+export type { CanPushResult, ConditionFlags } from './rules-engine';

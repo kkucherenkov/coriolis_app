@@ -227,24 +227,39 @@ describe('applyConditions', () => {
 // --------------- canPush ---------------
 
 describe('canPush', () => {
-  it('returns true when not exhausted and not already pushed', () => {
-    expect(canPush({ exhausted: false }, false)).toBe(true);
+  it('returns ok=true when not exhausted and not already pushed', () => {
+    expect(canPush({ pushed: false }, { exhausted: false })).toEqual({ ok: true });
   });
 
-  it('returns false when exhausted (PRD §10: Exhausted blocks push)', () => {
-    expect(canPush({ exhausted: true }, false)).toBe(false);
+  it('returns ok=false, reason=EXHAUSTED when exhausted (PRD §10: Exhausted blocks push)', () => {
+    expect(canPush({ pushed: false }, { exhausted: true })).toEqual({ ok: false, reason: 'EXHAUSTED' });
   });
 
-  it('returns false when already pushed (PRD §10: one push per roll)', () => {
-    expect(canPush({ exhausted: false }, true)).toBe(false);
+  it('returns ok=false, reason=ALREADY_PUSHED when already pushed (PRD §10: one push per roll)', () => {
+    expect(canPush({ pushed: true }, { exhausted: false })).toEqual({ ok: false, reason: 'ALREADY_PUSHED' });
   });
 
-  it('returns false when both exhausted and already pushed', () => {
-    expect(canPush({ exhausted: true }, true)).toBe(false);
+  it('returns ok=false, reason=ALREADY_PUSHED when both exhausted and already pushed (pushed checked first)', () => {
+    expect(canPush({ pushed: true }, { exhausted: true })).toEqual({ ok: false, reason: 'ALREADY_PUSHED' });
   });
 
   it('is independent of other condition flags — only exhausted matters', () => {
     // sleepless, thirsty, hungry do not block push per PRD §10
-    expect(canPush({ exhausted: false }, false)).toBe(true);
+    // exhausted=false + pushed=false → ok regardless of other flags
+    expect(canPush({ pushed: false }, { exhausted: false })).toEqual({ ok: true });
+  });
+
+  it('exhausted character with fresh roll → cannot push', () => {
+    expect(canPush({ pushed: false }, { exhausted: true })).toMatchObject({ ok: false, reason: 'EXHAUSTED' });
+  });
+
+  it('non-exhausted character with pushed roll → cannot push', () => {
+    expect(canPush({ pushed: true }, { exhausted: false })).toMatchObject({ ok: false, reason: 'ALREADY_PUSHED' });
+  });
+
+  it('fresh roll (pushed=false) and not exhausted → ok=true, no reason', () => {
+    const result = canPush({ pushed: false }, { exhausted: false });
+    expect(result.ok).toBe(true);
+    expect(result.reason).toBeUndefined();
   });
 });

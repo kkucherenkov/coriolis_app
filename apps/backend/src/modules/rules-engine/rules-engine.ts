@@ -111,20 +111,27 @@ export function applyConditions(
 
 // --------------- Push eligibility ---------------
 
+export interface CanPushResult {
+  ok: boolean;
+  reason?: 'ALREADY_PUSHED' | 'EXHAUSTED';
+}
+
 /**
  * PRD §10: A roll can be pushed if:
  *   1. The character is not Exhausted (Exhausted blocks push).
  *   2. The roll has not already been pushed (one push per roll).
  *
- * For v1 this function takes a plain `conditions` object and a boolean
- * `alreadyPushed`. The dice-roller in Phase 4 (Feature 7.1) will wire the
- * full `Roll` entity here.
+ * Only the `exhausted` condition flag blocks push; sleepless / thirsty / hungry
+ * do not (PRD §10 explicitly singles out Exhausted).
+ *
+ * Returns `{ ok: true }` when the push is allowed, or `{ ok: false, reason }`
+ * with a machine-readable code when it is blocked.
  */
 export function canPush(
+  roll: { pushed: boolean },
   conditions: { exhausted: boolean },
-  alreadyPushed: boolean,
-): boolean {
-  if (conditions.exhausted) return false;
-  if (alreadyPushed) return false;
-  return true;
+): CanPushResult {
+  if (roll.pushed) return { ok: false, reason: 'ALREADY_PUSHED' };
+  if (conditions.exhausted) return { ok: false, reason: 'EXHAUSTED' };
+  return { ok: true };
 }
