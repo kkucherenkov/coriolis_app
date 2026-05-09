@@ -1,12 +1,17 @@
 <script setup lang="ts">
   import { AppCard, AppButton, AppInput, AppField, AppBanner, AppBadge } from '@app/ui';
-  import { ref, onMounted, computed, watch } from 'vue';
+  import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
   import { useGameSessionsApi } from '~/composables/useGameSessionsApi';
   import { useDpApi } from '~/composables/useDpApi';
   import { useMeApi } from '~/composables/useMeApi';
   import { useCharactersApi } from '~/composables/useCharactersApi';
+  import {
+    useSessionRealtime,
+    type DpChangedPayload,
+    type RollPushedPayload,
+  } from '~/composables/useSessionRealtime';
   import type { GameSession } from '~/composables/useGameSessionsApi';
-  import type { DpEvent } from '~/composables/useDpApi';
+  import type { DpEvent, DpSource } from '~/composables/useDpApi';
   import type { Me } from '~/composables/useMeApi';
   import type { Character, Problem } from '@app/api-client-ts';
 
@@ -74,6 +79,62 @@
   const assignBusy = ref(false);
   const assignError = ref('');
 
+  // ── Realtime (Phase 4 Feature 7.4) ────────────────────────────────────────
+  // Single subscription per session — torn down on unmount. The handle's
+  // refs drive a small "live" indicator on the DP card; we also watch them
+  // to push DP / roll-pushed events into the visible state.
+  const realtime = useSessionRealtime(sessionId.value);
+  const recentRollPushed = ref<RollPushedPayload | null>(null);
+
+  watch(
+    () => realtime.lastDpChanged.value,
+    (payload: DpChangedPayload | null) => {
+      if (!payload || !session.value) return;
+      // Patch the visible counter even if we just sent the adjust ourselves —
+      // the round-trip already returned the new value, so this is mostly a
+      // no-op for the GM's own clicks but the right thing for everyone else
+      // sharing the session.
+      session.value = { ...session.value, dpCount: payload.dpCount };
+      if (isGm.value) {
+        // Prepend a synthetic audit row so the trail updates without a
+        // refetch. The next page reload (or any subsequent adjust) will
+        // pull the canonical row from the server, including its real id.
+        const synthetic: DpEvent = {
+          id: `live-${String(Date.now())}`,
+          gameSessionId: payload.gameSessionId,
+          delta: payload.delta,
+          source: payload.source as DpSource,
+          reason: null,
+          rollId: null,
+          createdAt: payload.at ?? new Date().toISOString(),
+        };
+        // Skip if our own adjust just ran — the post-adjust refetch will
+        // bring the real row in within ~100 ms.
+        const top = dpEvents.value[0];
+        if (
+          top?.delta !== synthetic.delta ||
+          Math.abs(new Date(top.createdAt).getTime() - new Date(synthetic.createdAt).getTime()) >
+            5000
+        ) {
+          dpEvents.value = [synthetic, ...dpEvents.value].slice(0, 20);
+        }
+      }
+    },
+  );
+
+  watch(
+    () => realtime.lastRollPushed.value,
+    (payload: RollPushedPayload | null) => {
+      if (!payload) return;
+      // Surface the most recent push for ~5 s. A toast component would be
+      // nicer; deferring to a later UX pass.
+      recentRollPushed.value = payload;
+      globalThis.setTimeout(() => {
+        if (recentRollPushed.value === payload) recentRollPushed.value = null;
+      }, 5000);
+    },
+  );
+
   async function loadSession(): Promise<void> {
     state.value = 'loading';
     errorMsg.value = '';
@@ -112,7 +173,19 @@
     }
   }
 
-  onMounted(loadSession);
+  onMounted(async () => {
+    await loadSession();
+    // Open the websocket only after the session resolved — on error /
+    // notfound the channel doesn't exist server-side and the subscription
+    // would be rejected on subscribe().
+    if (state.value === 'loaded') {
+      void realtime.start();
+    }
+  });
+
+  onBeforeUnmount(() => {
+    void realtime.stop();
+  });
 
   // Once the session resolves and we know whether the user is the GM,
   // pull in the audit log.
@@ -235,6 +308,9 @@
     "removeButton": "Remove",
     "gmBadge": "GM owner",
     "playerBadge": "Player view",
+    "liveBadge": "Live",
+    "liveDisconnected": "Reconnecting…",
+    "rollPushedToast": "Roll pushed: character {character} got {hits} hits.",
     "source": {
       "gmManual": "GM",
       "rollPush": "Roll push",
@@ -272,6 +348,9 @@
     "removeButton": "Снять",
     "gmBadge": "ГМ-владелец",
     "playerBadge": "Вид игрока",
+    "liveBadge": "Live",
+    "liveDisconnected": "Переподключение…",
+    "rollPushedToast": "Бросок дожат: персонаж {character} получил {hits} успехов.",
     "source": {
       "gmManual": "ГМ",
       "rollPush": "Дожим броска",
@@ -309,6 +388,9 @@
     "removeButton": "[uk-todo] Remove",
     "gmBadge": "[uk-todo] GM owner",
     "playerBadge": "[uk-todo] Player view",
+    "liveBadge": "[uk-todo] Live",
+    "liveDisconnected": "[uk-todo] Reconnecting",
+    "rollPushedToast": "[uk-todo] Roll pushed: {character} got {hits} hits.",
     "source": {
       "gmManual": "[uk-todo] GM",
       "rollPush": "[uk-todo] Roll push",
@@ -346,6 +428,9 @@
     "removeButton": "[el-todo] Remove",
     "gmBadge": "[el-todo] GM owner",
     "playerBadge": "[el-todo] Player view",
+    "liveBadge": "[el-todo] Live",
+    "liveDisconnected": "[el-todo] Reconnecting",
+    "rollPushedToast": "[el-todo] Roll pushed: {character} got {hits} hits.",
     "source": {
       "gmManual": "[el-todo] GM",
       "rollPush": "[el-todo] Roll push",
@@ -415,6 +500,22 @@
         </p>
       </header>
 
+      <Transition name="fade">
+        <AppBanner
+          v-if="recentRollPushed"
+          tone="success"
+          role="status"
+          class="page-session-detail__toast"
+        >
+          {{
+            t('rollPushedToast', {
+              character: assignedCharacters.find((c) => c.id === recentRollPushed?.characterId)?.name ?? '#',
+              hits: recentRollPushed.hits,
+            })
+          }}
+        </AppBanner>
+      </Transition>
+
       <div class="page-session-detail__top">
         <AppCard class="page-session-detail__dp">
           <span class="page-session-detail__dp-label">
@@ -423,6 +524,13 @@
           <span class="page-session-detail__dp-value">
             {{ session.dpCount }}
           </span>
+          <AppBadge
+            :variant="realtime.connected.value ? 'success' : 'brass'"
+            size="sm"
+            class="page-session-detail__live-badge"
+          >
+            {{ realtime.connected.value ? t('liveBadge') : t('liveDisconnected') }}
+          </AppBadge>
         </AppCard>
 
         <AppCard
@@ -727,6 +835,16 @@
       font-family: var(--font-display);
       font-size: var(--type-display-xl-font-size);
       color: var(--brand-brass-light);
+    }
+
+    &__live-badge {
+      align-self: center;
+    }
+
+    &__toast {
+      // Toast-style banner pinned above the DP card. Animated by the
+      // <Transition name="fade"> wrapper.
+      margin-bottom: 0;
     }
 
     &__dp-controls {

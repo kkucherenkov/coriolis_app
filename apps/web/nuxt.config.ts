@@ -102,6 +102,12 @@ export default defineNuxtConfig({
     public: {
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3010/api/v1',
       authBaseUrl: process.env.NUXT_PUBLIC_AUTH_BASE_URL ?? 'http://localhost:3010',
+      // Centrifugo websocket endpoint. The default mirrors the docker-compose
+      // container (`docker/compose.yml`) at port 8000; production overrides via
+      // env. The session-detail page subscribes to `session.{id}` here for
+      // live DP / roll-pushed updates (Phase 4 Feature 7.4).
+      realtimeWsUrl:
+        process.env.NUXT_PUBLIC_REALTIME_WS_URL ?? 'ws://localhost:8000/connection/websocket',
     },
   },
 
