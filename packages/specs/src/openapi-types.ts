@@ -661,10 +661,116 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/characters/{id}/rolls': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List roll history for a character
+     * @description Returns the most recent rolls for the character, ordered newest-first.
+     *     Default limit is 50; maximum is 100.
+     */
+    get: operations['listRolls'];
+    put?: never;
+    /**
+     * Roll dice for a character
+     * @description Rolls `pool` d6 server-side using a cryptographically secure RNG.
+     *     Hits are counted as the number of 6s. The caller provides a human-readable
+     *     `label` (e.g. "Pilot · Evade") and an optional `gameSessionId` (reserved for
+     *     Feature 7.2 — pass null until GameSession lands).
+     *
+     *     Pool is clamped by the server from the submitted value. Condition penalties
+     *     must be pre-applied by the caller before sending `pool`; the server does not
+     *     re-apply them from character state.
+     */
+    post: operations['createRoll'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/rolls/{id}/push': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Push (reroll) a roll
+     * @description Rerolls all non-6 dice exactly once. After a push the roll cannot be
+     *     pushed again (`pushed` becomes `true`). Returns 422 with code
+     *     `ROLL_NOT_PUSHABLE` if:
+     *     - The roll has already been pushed.
+     *     - The owning character has the Exhausted condition (PRD §10).
+     */
+    patch: operations['pushRoll'];
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    /**
+     * @description A single Coriolis dice roll. Dice are rolled server-side using a
+     *     cryptographically secure RNG. Hits = count of 6s. A roll can be pushed
+     *     at most once (PRD §10). `gameSessionId` is null until Feature 7.2 lands.
+     */
+    Roll: {
+      /** @description Opaque roll identifier (cuid2) */
+      readonly id: string;
+      /** @description Identifier of the character who made the roll */
+      readonly characterId: string;
+      /**
+       * @description Game session this roll belongs to. Null until Feature 7.2
+       *     (GameSession resource) ships. Clients should tolerate null.
+       */
+      gameSessionId?: string | null;
+      /** @description Human-readable roll label, e.g. "Pilot · Evade" */
+      label: string;
+      /** @description Number of d6 rolled (after condition penalties applied by caller) */
+      pool: number;
+      /**
+       * @description Current face values of all dice. After a push, rerolled non-6 values
+       *     are updated in place; the array always has `pool` elements.
+       */
+      dice: number[];
+      /** @description Number of 6s in the current dice array */
+      readonly hits: number;
+      /** @description Whether this roll has been pushed. Once true, further pushes are rejected. */
+      pushed: boolean;
+      /** Format: date-time */
+      readonly createdAt: string;
+    };
+    /** @description Payload for POST /api/v1/characters/{id}/rolls */
+    RollCreate: {
+      /** @description Human-readable roll label, e.g. "Pilot · Evade" */
+      label: string;
+      /**
+       * @description Number of d6 to roll. Must be between 1 and 10 inclusive.
+       *     Condition pool penalties must be pre-applied by the caller before
+       *     submitting.
+       */
+      pool: number;
+      /**
+       * @description Optional game session identifier. Reserved for Feature 7.2.
+       *     Pass null or omit until GameSession lands.
+       */
+      gameSessionId?: string | null;
+    };
+    RollList: {
+      items: components['schemas']['Roll'][];
+    };
     /**
      * @description Severity tier of a critical injury per Coriolis core rules.
      *     - `light` — minor wound, no long-term mechanical effect.
@@ -2226,6 +2332,8 @@ export interface components {
     ShareLinkId: string;
     /** @description 24-character unambiguous nanoid slug identifying a share link */
     ShareSlug: string;
+    /** @description Roll identifier (cuid2) */
+    RollId: string;
   };
   requestBodies: never;
   headers: never;
@@ -3973,6 +4081,181 @@ export interface operations {
       };
       /** @description OG image renderer not yet implemented (ships in Feature 6.3) */
       501: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  listRolls: {
+    parameters: {
+      query?: {
+        /** @description Number of rolls to return (1–100, default 50) */
+        limit?: number;
+      };
+      header?: never;
+      path: {
+        /** @description Character identifier (cuid2) */
+        id: components['parameters']['CharacterId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Roll history */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['RollList'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this character */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Character not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  createRoll: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Character identifier (cuid2) */
+        id: components['parameters']['CharacterId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RollCreate'];
+      };
+    };
+    responses: {
+      /** @description Roll created successfully */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Roll'];
+        };
+      };
+      /** @description Validation error (pool out of range, label too long, etc.) */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this character */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Character not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  pushRoll: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Roll identifier (cuid2) */
+        id: components['parameters']['RollId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Roll pushed successfully */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Roll'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own the character this roll belongs to */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Roll not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Roll cannot be pushed (already pushed or character is exhausted) */
+      422: {
         headers: {
           [name: string]: unknown;
         };

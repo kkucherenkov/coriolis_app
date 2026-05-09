@@ -5,6 +5,79 @@ export type ClientOptions = {
 };
 
 /**
+ * A single Coriolis dice roll. Dice are rolled server-side using a
+ * cryptographically secure RNG. Hits = count of 6s. A roll can be pushed
+ * at most once (PRD §10). `gameSessionId` is null until Feature 7.2 lands.
+ *
+ */
+export type Roll = {
+    /**
+     * Opaque roll identifier (cuid2)
+     */
+    readonly id: string;
+    /**
+     * Identifier of the character who made the roll
+     */
+    readonly characterId: string;
+    /**
+     * Game session this roll belongs to. Null until Feature 7.2
+     * (GameSession resource) ships. Clients should tolerate null.
+     *
+     */
+    gameSessionId?: string | null;
+    /**
+     * Human-readable roll label, e.g. "Pilot · Evade"
+     */
+    label: string;
+    /**
+     * Number of d6 rolled (after condition penalties applied by caller)
+     */
+    pool: number;
+    /**
+     * Current face values of all dice. After a push, rerolled non-6 values
+     * are updated in place; the array always has `pool` elements.
+     *
+     */
+    dice: Array<number>;
+    /**
+     * Number of 6s in the current dice array
+     */
+    readonly hits: number;
+    /**
+     * Whether this roll has been pushed. Once true, further pushes are rejected.
+     */
+    pushed: boolean;
+    readonly createdAt: string;
+};
+
+/**
+ * Payload for POST /api/v1/characters/{id}/rolls
+ */
+export type RollCreate = {
+    /**
+     * Human-readable roll label, e.g. "Pilot · Evade"
+     */
+    label: string;
+    /**
+     * Number of d6 to roll. Must be between 1 and 10 inclusive.
+     * Condition pool penalties must be pre-applied by the caller before
+     * submitting.
+     *
+     */
+    pool: number;
+    /**
+     * Optional game session identifier. Reserved for Feature 7.2.
+     * Pass null or omit until GameSession lands.
+     *
+     */
+    gameSessionId?: string | null;
+};
+
+export type RollList = {
+    items: Array<Roll>;
+};
+
+/**
  * Severity tier of a critical injury per Coriolis core rules.
  * - `light` — minor wound, no long-term mechanical effect.
  * - `severe` — significant injury; may impose ongoing penalties.
@@ -1528,6 +1601,43 @@ export type RealtimeToken = {
 };
 
 /**
+ * A single Coriolis dice roll. Dice are rolled server-side using a
+ * cryptographically secure RNG. Hits = count of 6s. A roll can be pushed
+ * at most once (PRD §10). `gameSessionId` is null until Feature 7.2 lands.
+ *
+ */
+export type RollWritable = {
+    /**
+     * Game session this roll belongs to. Null until Feature 7.2
+     * (GameSession resource) ships. Clients should tolerate null.
+     *
+     */
+    gameSessionId?: string | null;
+    /**
+     * Human-readable roll label, e.g. "Pilot · Evade"
+     */
+    label: string;
+    /**
+     * Number of d6 rolled (after condition penalties applied by caller)
+     */
+    pool: number;
+    /**
+     * Current face values of all dice. After a push, rerolled non-6 values
+     * are updated in place; the array always has `pool` elements.
+     *
+     */
+    dice: Array<number>;
+    /**
+     * Whether this roll has been pushed. Once true, further pushes are rejected.
+     */
+    pushed: boolean;
+};
+
+export type RollListWritable = {
+    items: Array<RollWritable>;
+};
+
+/**
  * Full character DTO as returned by the v1 API. Server-derived fields
  * (`hp.max`, `mp.max`, `encumbrance.max`) are computed by the
  * RulesEngine on every write and are marked `readOnly`.
@@ -1845,6 +1955,11 @@ export type ShareLinkId = string;
  * 24-character unambiguous nanoid slug identifying a share link
  */
 export type ShareSlug = string;
+
+/**
+ * Roll identifier (cuid2)
+ */
+export type RollId = string;
 
 export type ListCharactersData = {
     body?: never;
@@ -3167,3 +3282,130 @@ export type GetCharacterOgImageResponses = {
 };
 
 export type GetCharacterOgImageResponse = GetCharacterOgImageResponses[keyof GetCharacterOgImageResponses];
+
+export type ListRollsData = {
+    body?: never;
+    path: {
+        /**
+         * Character identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: {
+        /**
+         * Number of rolls to return (1–100, default 50)
+         */
+        limit?: number;
+    };
+    url: '/api/v1/characters/{id}/rolls';
+};
+
+export type ListRollsErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this character
+     */
+    403: Problem;
+    /**
+     * Character not found
+     */
+    404: Problem;
+};
+
+export type ListRollsError = ListRollsErrors[keyof ListRollsErrors];
+
+export type ListRollsResponses = {
+    /**
+     * Roll history
+     */
+    200: RollList;
+};
+
+export type ListRollsResponse = ListRollsResponses[keyof ListRollsResponses];
+
+export type CreateRollData = {
+    body: RollCreate;
+    path: {
+        /**
+         * Character identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/characters/{id}/rolls';
+};
+
+export type CreateRollErrors = {
+    /**
+     * Validation error (pool out of range, label too long, etc.)
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this character
+     */
+    403: Problem;
+    /**
+     * Character not found
+     */
+    404: Problem;
+};
+
+export type CreateRollError = CreateRollErrors[keyof CreateRollErrors];
+
+export type CreateRollResponses = {
+    /**
+     * Roll created successfully
+     */
+    201: Roll;
+};
+
+export type CreateRollResponse = CreateRollResponses[keyof CreateRollResponses];
+
+export type PushRollData = {
+    body?: never;
+    path: {
+        /**
+         * Roll identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/rolls/{id}/push';
+};
+
+export type PushRollErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the character this roll belongs to
+     */
+    403: Problem;
+    /**
+     * Roll not found
+     */
+    404: Problem;
+    /**
+     * Roll cannot be pushed (already pushed or character is exhausted)
+     */
+    422: Problem;
+};
+
+export type PushRollError = PushRollErrors[keyof PushRollErrors];
+
+export type PushRollResponses = {
+    /**
+     * Roll pushed successfully
+     */
+    200: Roll;
+};
+
+export type PushRollResponse = PushRollResponses[keyof PushRollResponses];

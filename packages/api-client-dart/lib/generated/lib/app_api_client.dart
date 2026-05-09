@@ -11,6 +11,7 @@ export 'package:app_api_client/src/serializers.dart';
 export 'package:app_api_client/src/model/date.dart';
 
 export 'package:app_api_client/src/api/characters_api.dart';
+export 'package:app_api_client/src/api/dice_api.dart';
 export 'package:app_api_client/src/api/public_api.dart';
 export 'package:app_api_client/src/api/realtime_api.dart';
 export 'package:app_api_client/src/api/sharing_api.dart';
@@ -67,6 +68,9 @@ export 'package:app_api_client/src/model/problem.dart';
 export 'package:app_api_client/src/model/realtime_token.dart';
 export 'package:app_api_client/src/model/relationship.dart';
 export 'package:app_api_client/src/model/relationship_kind.dart';
+export 'package:app_api_client/src/model/roll.dart';
+export 'package:app_api_client/src/model/roll_create.dart';
+export 'package:app_api_client/src/model/roll_list.dart';
 export 'package:app_api_client/src/model/share_link.dart';
 export 'package:app_api_client/src/model/share_link_create.dart';
 export 'package:app_api_client/src/model/share_link_list.dart';

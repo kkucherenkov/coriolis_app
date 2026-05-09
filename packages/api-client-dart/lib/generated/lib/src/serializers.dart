@@ -63,6 +63,9 @@ import 'package:app_api_client/src/model/problem.dart';
 import 'package:app_api_client/src/model/realtime_token.dart';
 import 'package:app_api_client/src/model/relationship.dart';
 import 'package:app_api_client/src/model/relationship_kind.dart';
+import 'package:app_api_client/src/model/roll.dart';
+import 'package:app_api_client/src/model/roll_create.dart';
+import 'package:app_api_client/src/model/roll_list.dart';
 import 'package:app_api_client/src/model/share_link.dart';
 import 'package:app_api_client/src/model/share_link_create.dart';
 import 'package:app_api_client/src/model/share_link_list.dart';
@@ -154,6 +157,9 @@ part 'serializers.g.dart';
   RealtimeToken,
   Relationship,
   RelationshipKind,
+  Roll,
+  RollCreate,
+  RollList,
   ShareLink,
   ShareLinkCreate,
   ShareLinkList,
