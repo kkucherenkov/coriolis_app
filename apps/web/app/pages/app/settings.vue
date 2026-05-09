@@ -53,36 +53,68 @@
 
   // ── Theme ─────────────────────────────────────────────────────────────────
 
-  // v1 persistence: localStorage only.
-  // Gap: DESIGN §6.5.d calls for server-side persistence via PATCH /me in a
-  // future release. When that lands, mirror the toggle to updateMe({ theme }).
+  // Server-side truth (T-6.5.d): theme is persisted via PATCH /me { theme }.
+  // localStorage is used as a hint-only fallback so the page can apply the
+  // correct theme before the /me response arrives (avoids flash of wrong theme).
   const THEME_KEY = 'coriolis.theme';
   const HIGH_CONTRAST_VALUE = 'high-contrast';
 
   const highContrast = ref(false);
 
+  type ThemeSaveState = 'idle' | 'saving' | 'error';
+  const themeSaveState = ref<ThemeSaveState>('idle');
+  const themeSaveError = ref('');
+
   function applyTheme(active: boolean): void {
     if (active) {
       document.documentElement.dataset.theme = HIGH_CONTRAST_VALUE;
+      localStorage.setItem(THEME_KEY, HIGH_CONTRAST_VALUE);
     } else {
       delete document.documentElement.dataset.theme;
+      localStorage.removeItem(THEME_KEY);
     }
   }
 
-  function initTheme(): void {
+  function applyThemeFromServer(serverTheme: string): void {
+    const active = serverTheme === HIGH_CONTRAST_VALUE;
+    highContrast.value = active;
+    applyTheme(active);
+  }
+
+  function initThemeHint(): void {
+    // Apply stored hint immediately so there is no flash while /me loads.
     const stored = localStorage.getItem(THEME_KEY);
     highContrast.value = stored === HIGH_CONTRAST_VALUE;
     applyTheme(highContrast.value);
   }
 
-  function toggleHighContrast(value: boolean): void {
+  async function toggleHighContrast(value: boolean): Promise<void> {
+    if (!me.value) return;
+
+    // Optimistic update — apply immediately.
+    const previousValue = highContrast.value;
     highContrast.value = value;
     applyTheme(value);
-    if (value) {
-      localStorage.setItem(THEME_KEY, HIGH_CONTRAST_VALUE);
-    } else {
-      localStorage.removeItem(THEME_KEY);
+
+    themeSaveState.value = 'saving';
+    themeSaveError.value = '';
+    try {
+      const newTheme = value ? 'high-contrast' : 'dark';
+      const updated = await api.update({ theme: newTheme });
+      me.value = updated;
+      themeSaveState.value = 'idle';
+    } catch (error) {
+      // Rollback on error.
+      highContrast.value = previousValue;
+      applyTheme(previousValue);
+      const problem = error as Problem;
+      themeSaveError.value = problem.detail ?? t('errorThemeSave');
+      themeSaveState.value = 'error';
     }
+  }
+
+  function onToggleHighContrast(value: boolean): void {
+    void toggleHighContrast(value);
   }
 
   // ── Load ──────────────────────────────────────────────────────────────────
@@ -94,6 +126,8 @@
       const data = await api.get();
       me.value = data;
       displayNameValue.value = data.displayName ?? '';
+      // Reconcile server theme with the hint applied during init.
+      applyThemeFromServer(data.theme ?? 'dark');
       loadState.value = 'loaded';
     } catch (error) {
       const problem = error as Problem;
@@ -103,7 +137,7 @@
   }
 
   onMounted(() => {
-    initTheme();
+    initThemeHint();
     void load();
   });
 
@@ -212,6 +246,7 @@
     deleteError.value = '';
     try {
       await api.deleteMe();
+      // Clear theme hint from localStorage on account deletion.
       localStorage.removeItem(THEME_KEY);
       await navigateTo('/');
     } catch (error) {
@@ -243,7 +278,8 @@
     "localeEl": "Ελληνικά [el-todo]",
     "sectionTheme": "Appearance",
     "highContrastLabel": "High contrast",
-    "highContrastHelp": "Increases contrast for improved readability. Persists to this device only — server-side persistence arrives in a future release (T-6.5.d).",
+    "highContrastHelp": "Increases contrast for improved readability. Synced across all your devices.",
+    "errorThemeSave": "Could not save theme preference.",
     "sectionAccount": "Account",
     "deleteAccountButton": "Delete account…",
     "deleteAccountHelp": "Your sessions revoke immediately. Characters, ships, and share links stay accessible for 30 days, then they're cascade-deleted. There's no undo.",
@@ -277,7 +313,8 @@
     "localeEl": "Ελληνικά [el-todo]",
     "sectionTheme": "Оформление",
     "highContrastLabel": "Высокий контраст",
-    "highContrastHelp": "Повышает контрастность для удобства чтения. Сохраняется только на этом устройстве — серверное сохранение появится в будущем релизе (T-6.5.d).",
+    "highContrastHelp": "Повышает контрастность для удобства чтения. Синхронизируется на всех устройствах.",
+    "errorThemeSave": "Не удалось сохранить настройку темы.",
     "sectionAccount": "Аккаунт",
     "deleteAccountButton": "Удалить аккаунт…",
     "deleteAccountHelp": "Сессии отзываются немедленно. Персонажи, корабли и ссылки на шаринг остаются доступными 30 дней, после чего удаляются каскадно. Это необратимо.",
@@ -312,6 +349,7 @@
     "sectionTheme": "[uk-todo] Appearance",
     "highContrastLabel": "[uk-todo] High contrast",
     "highContrastHelp": "[uk-todo] High contrast help text",
+    "errorThemeSave": "[uk-todo] Could not save theme preference.",
     "sectionAccount": "[uk-todo] Account",
     "deleteAccountButton": "[uk-todo] Delete account…",
     "deleteAccountHelp": "[uk-todo] Sessions revoke immediately. Data kept 30 days.",
@@ -346,6 +384,7 @@
     "sectionTheme": "[el-todo] Appearance",
     "highContrastLabel": "[el-todo] High contrast",
     "highContrastHelp": "[el-todo] High contrast help text",
+    "errorThemeSave": "[el-todo] Could not save theme preference.",
     "sectionAccount": "[el-todo] Account",
     "deleteAccountButton": "[el-todo] Delete account…",
     "deleteAccountHelp": "[el-todo] Sessions revoke immediately. Data kept 30 days.",
@@ -529,10 +568,18 @@
             :model-value="highContrast"
             :label="t('highContrastLabel')"
             size="md"
-            @update:model-value="toggleHighContrast"
+            :disabled="themeSaveState === 'saving'"
+            @update:model-value="onToggleHighContrast"
           />
           <p class="page-settings__theme-help">
             {{ t('highContrastHelp') }}
+          </p>
+          <p
+            v-if="themeSaveError && themeSaveState === 'error'"
+            class="page-settings__theme-error"
+            role="alert"
+          >
+            {{ themeSaveError }}
           </p>
         </div>
       </AppCard>
@@ -777,6 +824,13 @@
       font-family: var(--font-body);
       font-size: var(--type-body-sm-font-size);
       color: var(--text-secondary);
+    }
+
+    &__theme-error {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--state-crimson-bright);
     }
 
     // ── Account section (danger zone) ──────────────────────────────────────────
