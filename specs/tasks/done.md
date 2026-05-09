@@ -2,6 +2,40 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## Mobile flutter analyze cleanup (Phase 3 tail)
+
+- Completed: 2026-05-09
+- Owner: claude (parent session)
+- Spec: open follow-up from Epic 6 Feature 6.4 bookkeeping (mobile flutter
+  analyze drift after Flutter 3.41 SDK upgrade + dart codegen change).
+- Result: ff-merged to main as `<mobile range>` (2 commits).
+  - `<head-1>` `fix(mobile): repoint app_api_client at the inner generated
+    package + repo_impl`. Three structural fixes that cleared 166 errors:
+    - `mobile/pubspec.yaml`: `app_api_client.path` now points at
+      `packages/api-client-dart/lib/generated` (the inner Dart package
+      produced by openapi-generator). The outer `packages/api-client-dart/`
+      lib has only `generated/` subfolder — Dart resolves
+      `package:app_api_client/app_api_client.dart` against the OUTER `lib/`,
+      which has no barrel file. The inner package is the real one.
+    - `character_repository_impl.dart`: split the `Character as
+      ApiCharacter` show-with-as combination (Dart syntax error) into two
+      imports; drop `quantity` references on `ItemOther` (spec doesn't
+      have the field); switch to top-level `updateTalent`/`deleteTalent`/
+      `updateItem`/`deleteItem` API methods (the repo had been calling
+      non-existent `updateCharacterTalent` etc).
+    - Ran `dart run build_runner build` inside
+      `packages/api-client-dart/lib/generated` to produce the missing
+      `*.g.dart` built_value generated code (88 files committed; without
+      them the builder fields type-resolve as nullable and 100+ cascade
+      assignments fail to type-check).
+  - `<head>` `chore(mobile): clear remaining flutter analyze info + warning`:
+    drop unused `_weaponTypes` field; `withOpacity` → `withValues(alpha:)`;
+    `dart fix --apply` (12 `prefer_const_constructors` auto-fixes); capture
+    `Navigator` before `.then()` async gap; declare `built_collection` +
+    `one_of` as mobile direct deps.
+- Verification: `flutter analyze` reports **No issues found!** Mobile
+  52/52 tests; ui_flutter 153/153 tests.
+
 ## Mobile pass + a11y audit + HC theme persist (Epic 6 Features 6.4, 6.5)
 
 - Completed: 2026-05-09
