@@ -16,6 +16,7 @@ import {
   getCharacter,
   updateCharacter,
   deleteCharacter,
+  addCharacterTalent,
 } from '@app/api-client-ts';
 import type {
   Character,
@@ -23,6 +24,8 @@ import type {
   CharacterList,
   CharacterUpdate,
   Problem,
+  Talent,
+  TalentCreate,
 } from '@app/api-client-ts';
 
 export interface CharactersApiClient {
@@ -31,6 +34,7 @@ export interface CharactersApiClient {
   create(body: CharacterCreate): Promise<Character>;
   update(id: string, body: CharacterUpdate): Promise<Character>;
   delete(id: string): Promise<void>;
+  addTalent(id: string, body: TalentCreate): Promise<Talent>;
 }
 
 export function useCharactersApi(): CharactersApiClient {
@@ -74,6 +78,13 @@ export function useCharactersApi(): CharactersApiClient {
       // eslint-disable-next-line @typescript-eslint/only-throw-error
       if (res.error) throw res.error as Problem;
     },
+
+    async addTalent(id, body) {
+      const res = await addCharacterTalent({ path: { id }, body });
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
+      if (res.error) throw res.error as Problem;
+      return res.data;
+    },
   };
 }
 
@@ -83,4 +94,6 @@ export {
   type CharacterList,
   type CharacterUpdate,
   type Problem,
+  type Talent,
+  type TalentCreate,
 } from '@app/api-client-ts';

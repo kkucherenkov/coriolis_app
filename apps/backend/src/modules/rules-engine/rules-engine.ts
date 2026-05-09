@@ -180,43 +180,9 @@ export type CrewConcept = 'free-trader' | 'mercenary' | 'explorer' | 'agents' | 
  * Discriminator for `Talent.kind`. Each character has at most one of each
  * non-`personal` kind at creation; further talents acquired during play are
  * always `personal`. `iconGift` is auto-derived from the character's icon
- * (one talent per icon — see ICON_GIFT_TALENT_IDS).
+ * (one talent per icon — see `@app/specs#getIconGiftByIconId`).
  */
 export type TalentKind = 'personal' | 'crew' | 'iconGift' | 'stigma';
-
-/**
- * Catalog data for talents lives in Block 4 (seed file or static catalog).
- * For Block 3 we only need the icon → iconGift talent ID mapping so
- * CreateCharacterHandler can auto-create the iconGift slot on forge. The
- * mapping is canonical (one icon = one gift per Coriolis ch.4); the actual
- * talent name + description for each ID lives in the catalog seeded later.
- *
- * Talent IDs are kebab-case for stability across i18n keys and DB rows.
- */
-export const ICON_GIFT_TALENT_IDS: Readonly<
-  Record<
-    | 'lady-of-tears'
-    | 'traveler'
-    | 'messenger'
-    | 'merchant'
-    | 'dancer'
-    | 'gambler'
-    | 'judge'
-    | 'faceless-one'
-    | 'deckhand',
-    string
-  >
-> = Object.freeze({
-  'lady-of-tears': 'gift-lady-of-tears',
-  traveler: 'gift-traveler',
-  messenger: 'gift-messenger',
-  merchant: 'gift-merchant',
-  dancer: 'gift-dancer',
-  gambler: 'gift-gambler',
-  judge: 'gift-judge',
-  'faceless-one': 'gift-faceless-one',
-  deckhand: 'gift-deckhand',
-});
 
 /**
  * Sum of attribute values, used for budget validation.

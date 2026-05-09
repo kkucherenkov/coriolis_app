@@ -1,13 +1,8 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { getIconGiftByIconId } from '@app/specs';
 
-import {
-  CONCEPT_KEYS,
-  ICON_GIFT_TALENT_IDS,
-  UPBRINGING_BUDGETS,
-  sumAttributes,
-  sumSkills,
-} from '../../rules-engine';
+import { CONCEPT_KEYS, UPBRINGING_BUDGETS, sumAttributes, sumSkills } from '../../rules-engine';
 import type { AttributeKey, SkillKey } from '../../rules-engine';
 import {
   AttributeBudgetExceededError,
@@ -154,17 +149,18 @@ export class CreateCharacterHandler implements ICommandHandler<
     const reputation = Math.max(0, budget.reputation + (conceptKeys?.reputationModifier ?? 0));
 
     // iconGift talent is auto-derived from the chosen icon (one gift per icon
-    // per Coriolis ch.4). We seed a placeholder talent record so the wizard's
-    // Step 6 can render the iconGift slot; Block 4 will replace name/desc with
-    // catalog data and i18n.
+    // per Coriolis ch.4). The talent record stores the catalog ID in `name`
+    // (renderers resolve it to the localized name + description via the
+    // `@app/specs` catalog) and falls back to the canonical English description
+    // for non-catalog consumers.
     const seedTalents: { kind: TalentKind; name: string; description: string; rank?: number }[] =
       [];
     if (dto.iconId) {
-      const giftId = ICON_GIFT_TALENT_IDS[dto.iconId];
+      const gift = getIconGiftByIconId(dto.iconId);
       seedTalents.push({
         kind: 'iconGift',
-        name: giftId,
-        description: '',
+        name: gift.id,
+        description: gift.description.en,
         rank: 1,
       });
     }

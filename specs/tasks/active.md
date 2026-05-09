@@ -88,65 +88,104 @@
           and 53/53 web tests green
   - [x] **Block 3 — Talent kind discriminator** (committed 2026-05-09)
     - [x] openapi 0.10.0 → 0.11.0: `Talent.kind` enum (personal | crew
-      | iconGift | stigma); new `CrewConcept` enum (free-trader /
-      mercenary / explorer / agents / pilgrim — ST3001 ch.2
-      §АМПЛУА КОМАНДЫ); `Character.crewConcept` field;
-      `TalentCreate.kind` (defaults to personal); 400
-      `TALENT_KIND_DUPLICATE` documented
+          | iconGift | stigma); new `CrewConcept` enum (free-trader /
+          mercenary / explorer / agents / pilgrim — ST3001 ch.2
+          §АМПЛУА КОМАНДЫ); `Character.crewConcept` field;
+          `TalentCreate.kind` (defaults to personal); 400
+          `TALENT_KIND_DUPLICATE` documented
     - [x] codegen
     - [x] Prisma migration
-      `20260509000007_talent_kind_and_crew_concept` — adds CrewConcept
-      and TalentKind enums, `character.crewConcept` column, `talent.kind`
-      column (default `personal`)
+          `20260509000007_talent_kind_and_crew_concept` — adds CrewConcept
+          and TalentKind enums, `character.crewConcept` column, `talent.kind`
+          column (default `personal`)
     - [x] RulesEngine: `CrewConcept` / `TalentKind` types,
-      `ICON_GIFT_TALENT_IDS` mapping (icon → gift-talent ID)
+          `ICON_GIFT_TALENT_IDS` mapping (icon → gift-talent ID)
     - [x] CreateCharacterHandler accepts `crewConcept` and auto-seeds
-      an `iconGift` talent from the chosen icon (placeholder name/desc
-      until Block 4 catalog ships); duplicate non-personal kind rejected
-      via `TalentKindDuplicateError`
+          an `iconGift` talent from the chosen icon (placeholder name/desc
+          until Block 4 catalog ships); duplicate non-personal kind rejected
+          via `TalentKindDuplicateError`
     - [x] UpdateCharacterHandler: `crewConcept` mutable while draft,
-      frozen on active (`CrewConceptImmutableError`)
+          frozen on active (`CrewConceptImmutableError`)
     - [x] AddTalentHandler: persists `kind` (defaults to personal),
-      enforces "≤1 of each non-personal kind" via
-      `TalentRepo.listByCharacterId`
+          enforces "≤1 of each non-personal kind" via
+          `TalentRepo.listByCharacterId`
     - [x] CharacterRepo + ShareLinkRepo: extended SELECT, mappers, and
-      kebab→snake mapping for the Prisma `CrewConcept` enum identifier;
-      `talents.create` nested write seeds iconGift on create
+          kebab→snake mapping for the Prisma `CrewConcept` enum identifier;
+          `talents.create` nested write seeds iconGift on create
     - [x] Web Step2Background: chip-style CrewConcept picker (5 amplua)
-      with EN/RU labels and per-amplua descriptions
+          with EN/RU labels and per-amplua descriptions
     - [x] Web Step6Talents: 3-section split (personal pool / crew slot
-      derived from selected CrewConcept / icon-gift slot derived from
-      chosen icon); empty placeholders prompt the player back to
-      Step 2/3
+          derived from selected CrewConcept / icon-gift slot derived from
+          chosen icon); empty placeholders prompt the player back to
+          Step 2/3
     - [x] new.vue wires `draftCrewConcept` through autosave + forge
-      payload; hydrates from existing draft on resume
+          payload; hydrates from existing draft on resume
     - [x] Tests: AddTalentHandler (+5), CreateCharacterHandler (+5),
-      UpdateCharacterHandler (+3) — 397/397 backend, 53/53 web green
-  - [ ] **Block 4 — Talent catalog data**
-    - 9 icon gifts, 15 crew talents, ~30 personal talents — i18n
-      strings (en+ru) per talent; rules text in detail field
-    - Seed dev DB or static catalog file
+          UpdateCharacterHandler (+3) — 397/397 backend, 53/53 web green
+  - [x] **Block 4 — Talent catalog data** (committed 2026-05-09)
+    - [x] New `packages/specs/src/talents.ts` ships the canonical
+          ST3001 ch.4 catalog: 9 icon gifts (one per icon, kebab IDs match
+          the existing `gift-{iconId}` convention), 15 crew talents
+          (5 amplua × 3), 26 personal talents, 3 pasynok stigmas. Each
+          entry carries stable `id`, `kind`, `name`/`description` in
+          en+ru with `[uk-todo]/[el-todo]` placeholders, and `rankCap`
+          1..3.
+    - [x] Helpers: `getIconGiftByIconId`, `getCrewTalentsByConcept`,
+          `findCatalogTalentById`. `@app/specs` package gained `main` +
+          `types` so backend's classic `moduleResolution: Node` resolves
+          the workspace barrel cleanly.
+    - [x] Backend `CreateCharacterHandler` now hydrates the iconGift
+          seed via `getIconGiftByIconId(iconId)` — talent record stores
+          catalog ID in `name` and the canonical EN description as
+          readable fallback for non-catalog consumers. Old
+          `ICON_GIFT_TALENT_IDS` constant removed from rules-engine
+          (catalog is the single source of truth).
+    - [x] Web `Step6Talents.vue` rewritten on top of the catalog:
+          personal pool renders all 26 entries with rule text; crew
+          section renders 3 cards from the chosen amplua; iconGift slot
+          shows localized name + full rule text. New emits
+          `update:personalTalentId` / `update:crewTalentId` (single-pick).
+    - [x] `apps/web/app/pages/app/characters/new.vue`: tracks
+          `draftPersonalTalentId` + `draftCrewTalentId`, posts each pick
+          via `addCharacterTalent` after `forge()` succeeds (iconGift
+          stays auto-seeded server-side). `useCharactersApi` gained
+          `addTalent`.
+    - [x] Tests: new `talents-catalog.spec.ts` (15 specs covering
+          catalog shape — 9 icons covered, 5 amplua × 3 crew, ≥26
+          personal, 3 stigmas, unique IDs, en+ru non-empty,
+          uk/el placeholders, rankCap range, helpers); updated
+          `create-character.handler.spec.ts` so the iconGift assertion
+          checks catalog-hydrated description (regression guard against
+          reverting to empty placeholder). 412/412 backend, 53/53 web.
   - [ ] **Block 5 — Mutant flag + stigma (defer if scope blows up)**
     - openapi: Character.mutant, mutant lineage enum (zirba | shingura
       | nerida) → 1 of 3 stigma talents
   - [ ] tests: backend rules-engine specs (≥15), web wizard specs
   - [ ] lint + typecheck + format
   - [ ] PR with all blocks (per user's "single big PR" preference)
-- Status: in-progress (block 4 next — talent catalog data)
-- Block 4 follow-up (start in fresh session):
-  - Catalog data: 9 icon gifts (one per icon — kebab-case IDs match
-    `ICON_GIFT_TALENT_IDS`), 15 crew talents (5 amplua × 3 per ST3001
-    ch.4), ~30 personal talents (per-amplua pools).
-  - Each entry: stable `id`, display `name` (en/ru), `description`
-    (en/ru), `rank` 1–3 cap. Recommend a static JSON file under
-    `packages/specs/data/talents.json` consumed by both web (renderer)
-    and backend (iconGift hydration on create).
-  - Replace the placeholder `name: gift-traveler, description: ''`
-    seed in `CreateCharacterHandler` with catalog lookup.
-  - Update Step6Talents to render the full crew-talent picker (3 per
-    crew amplua) and a per-concept personal pool (currently flat 12).
-  - i18n: en + ru per talent ID, [uk-todo]/[el-todo] placeholders.
-- Block 5 still pending; revisit after Block 4 lands.
+- Status: in-progress (block 5 next — mutant flag + stigma)
+- Block 5 follow-up (start in fresh session):
+  - openapi 0.11.0 → 0.12.0: `Character.mutant: boolean` (default
+    false), new `MutantLineage` enum (`zirba | shingura | nerida`,
+    nullable), and a `CharacterCreate.mutant` field. Codegen.
+  - Prisma migration adding `mutant Boolean @default(false)` and
+    `mutantLineage MutantLineage?` to Character. Match
+    kebab/snake-case mapping pattern already used by CrewConcept
+    (Block 3) if any enum identifier needs translation.
+  - `CreateCharacterHandler`: when `mutant=true`, auto-seed one
+    stigma talent (the player picks the stigma — UI selection from
+    the 3 catalog entries). Validate that non-mutants cannot carry
+    a `kind: stigma` talent (`AddTalentHandler` already enforces
+    "≤1 of each non-personal kind", extend with a mutant-required
+    check).
+  - Web wizard: add a Mutant toggle on Step1 (or a new mini-step
+    after Step3) that, when on, swaps Step6 crew section with a
+    stigma-picker section showing the 3 stigma talents from the
+    catalog. iconGift stays the same. Personal pool stays the same.
+  - i18n: 3 stigma names already in catalog en+ru; Step1 mutant
+    toggle copy en+ru with [uk-todo]/[el-todo].
+  - Tests: ≥6 unit specs covering mutant flag persistence, stigma
+    auto-pick, non-mutant rejection of stigma talents.
 - Blockers: —
 - Estimate: 22–34 hours total. Will commit per block to keep diff
   reviewable; merge as one PR.

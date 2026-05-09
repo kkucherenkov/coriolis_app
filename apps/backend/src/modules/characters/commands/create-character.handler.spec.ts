@@ -544,7 +544,7 @@ describe('CreateCharacterHandler', () => {
     expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ talents: [] }));
   });
 
-  it('iconGift talent ID matches ICON_GIFT_TALENT_IDS for kebab-case icons', async () => {
+  it('iconGift talent ID is the canonical gift-{iconId} for every IconId', async () => {
     vi.mocked(repo.create).mockResolvedValue(makeCharacter({ iconId: 'lady-of-tears' }));
     await handler.execute(
       new CreateCharacterCommand(
@@ -557,5 +557,19 @@ describe('CreateCharacterHandler', () => {
         talents: [expect.objectContaining({ kind: 'iconGift', name: 'gift-lady-of-tears' })],
       }),
     );
+  });
+
+  it('hydrates the iconGift seed with the catalog English description (not an empty string)', async () => {
+    vi.mocked(repo.create).mockResolvedValue(makeCharacter({ iconId: 'gambler' }));
+    await handler.execute(
+      new CreateCharacterCommand('user-1', makeDto({ upbringing: 'plebeian', iconId: 'gambler' })),
+    );
+    const createArgs = vi.mocked(repo.create).mock.calls[0]?.[0];
+    expect(createArgs?.talents?.[0]?.kind).toBe('iconGift');
+    expect(createArgs?.talents?.[0]?.name).toBe('gift-gambler');
+    // The catalog description for the Gambler gift mentions "three sixes" —
+    // a tight enough invariant to catch regressions if the seed reverts to
+    // the old empty-string placeholder while still allowing prose tweaks.
+    expect(createArgs?.talents?.[0]?.description).toMatch(/sixes/i);
   });
 });

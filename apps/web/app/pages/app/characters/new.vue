@@ -3,6 +3,11 @@
   import { useCharactersApi } from '~/composables/useCharactersApi';
   import { useAutoSave } from '~/composables/useAutoSave';
   import type { Character, CharacterUpdate } from '~/composables/useCharactersApi';
+  import {
+    findCatalogTalentById,
+    type CrewTalentCatalogEntry,
+    type PersonalTalentCatalogEntry,
+  } from '@app/specs';
   import type {
     Attributes,
     Skills,
@@ -79,7 +84,8 @@
   const draftIconId = ref<IconId | null>(null);
   const draftAttributes = ref<Attributes>({ ...DEFAULT_ATTRS });
   const draftSkills = ref<Skills>({ ...DEFAULT_SKILLS });
-  const draftTalentIds = ref<string[]>([]);
+  const draftPersonalTalentId = ref<string | null>(null);
+  const draftCrewTalentId = ref<string | null>(null);
 
   // ── AutoSave ─────────────────────────────────────────────────────────────────
 
@@ -205,11 +211,32 @@
         skills: draftSkills.value,
         status: 'active',
       });
+
+      // Persist the player's picks (the iconGift is auto-seeded server-side).
+      // We post one talent per pick, hydrating its name/description from the
+      // shared catalog so backend rows carry the canonical EN fallback while
+      // renderers resolve the locale via the catalog ID stored in `name`.
+      await postPickedTalent(draftPersonalTalentId.value, 'personal');
+      await postPickedTalent(draftCrewTalentId.value, 'crew');
+
       await navigateTo(`/app/characters/${draftId.value}`);
     } catch {
       errorMsg.value = t('errorForge');
       forging.value = false;
     }
+  }
+
+  async function postPickedTalent(id: string | null, kind: 'personal' | 'crew'): Promise<void> {
+    if (!id) return;
+    const entry = findCatalogTalentById(id);
+    if (entry?.kind !== kind) return;
+    const typed = entry as PersonalTalentCatalogEntry | CrewTalentCatalogEntry;
+    await api.addTalent(draftId.value, {
+      kind,
+      name: typed.id,
+      description: typed.description.en,
+      rank: 1,
+    });
   }
 
   // ── Field mutations — schedule auto-save on every change ─────────────────────
@@ -259,9 +286,14 @@
     scheduleSave();
   }
 
-  function onTalentIdsUpdate(val: string[]): void {
-    draftTalentIds.value = val;
-    // Talents are created via POST /talents on the sheet — stored locally for v1.
+  function onPersonalTalentUpdate(val: string | null): void {
+    draftPersonalTalentId.value = val;
+    // Picks are persisted at forge() time, not on every change.
+  }
+
+  function onCrewTalentUpdate(val: string | null): void {
+    draftCrewTalentId.value = val;
+    // Picks are persisted at forge() time, not on every change.
   }
 
   // ── Step metadata ─────────────────────────────────────────────────────────────
@@ -448,10 +480,12 @@
 
       <Step6Talents
         v-if="step === 6"
-        :picked-talent-ids="draftTalentIds"
+        :personal-talent-id="draftPersonalTalentId"
+        :crew-talent-id="draftCrewTalentId"
         :icon-id="draftIconId"
         :crew-concept="draftCrewConcept"
-        @update:picked-talent-ids="onTalentIdsUpdate"
+        @update:personal-talent-id="onPersonalTalentUpdate"
+        @update:crew-talent-id="onCrewTalentUpdate"
       />
     </WizardShell>
   </div>
