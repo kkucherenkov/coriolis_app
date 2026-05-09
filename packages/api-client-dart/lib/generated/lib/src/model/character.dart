@@ -11,6 +11,7 @@ import 'package:app_api_client/src/model/critical_injury.dart';
 import 'package:app_api_client/src/model/icon_id.dart';
 import 'package:app_api_client/src/model/character_hp.dart';
 import 'package:app_api_client/src/model/relationship.dart';
+import 'package:app_api_client/src/model/crew_concept.dart';
 import 'package:app_api_client/src/model/skills.dart';
 import 'package:app_api_client/src/model/attributes.dart';
 import 'package:app_api_client/src/model/condition_flags.dart';
@@ -34,6 +35,7 @@ part 'character.g.dart';
 /// * [origin] - Free-text narrative description of where the character is from (home station, planet, or region). Has no mechanical effect. 
 /// * [reputation] - Current social reputation. Initial value is derived from `upbringing` (plebeian=2, stationary=4, aristocrat=6) and may change during play. 
 /// * [startingWealth] - The number of birrs (currency) the character started with at creation. Derived from `upbringing` (plebeian=500, stationary=1000, aristocrat=5000). Immutable historical record. 
+/// * [crewConcept] 
 /// * [attributes] 
 /// * [skills] 
 /// * [hp] 
@@ -87,6 +89,10 @@ abstract class Character implements Built<Character, CharacterBuilder> {
   /// The number of birrs (currency) the character started with at creation. Derived from `upbringing` (plebeian=500, stationary=1000, aristocrat=5000). Immutable historical record. 
   @BuiltValueField(wireName: r'startingWealth')
   int get startingWealth;
+
+  @BuiltValueField(wireName: r'crewConcept')
+  CrewConcept? get crewConcept;
+  // enum crewConceptEnum {  free-trader,  mercenary,  explorer,  agents,  pilgrim,  };
 
   @BuiltValueField(wireName: r'attributes')
   Attributes get attributes;
@@ -204,6 +210,11 @@ class _$CharacterSerializer implements PrimitiveSerializer<Character> {
     yield serializers.serialize(
       object.startingWealth,
       specifiedType: const FullType(int),
+    );
+    yield r'crewConcept';
+    yield object.crewConcept == null ? null : serializers.serialize(
+      object.crewConcept,
+      specifiedType: const FullType.nullable(CrewConcept),
     );
     yield r'attributes';
     yield serializers.serialize(
@@ -368,6 +379,14 @@ class _$CharacterSerializer implements PrimitiveSerializer<Character> {
             specifiedType: const FullType(int),
           ) as int;
           result.startingWealth = valueDes;
+          break;
+        case r'crewConcept':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(CrewConcept),
+          ) as CrewConcept?;
+          if (valueDes == null) continue;
+          result.crewConcept = valueDes;
           break;
         case r'attributes':
           final valueDes = serializers.deserialize(

@@ -34,6 +34,7 @@ import type {
   CharacterStatus,
   Concept,
   ConditionFlags,
+  CrewConcept,
   CriticalInjuryReadModel,
   CriticalInjurySeverity,
   IconId,
@@ -44,6 +45,7 @@ import type {
   RelationshipKind,
   RelationshipReadModel,
   Skills,
+  TalentKind,
   TalentReadModel,
   Upbringing,
 } from '../domain/character.ports';
@@ -60,6 +62,7 @@ const CHARACTER_FULL_SELECT = {
   origin: true,
   reputation: true,
   startingWealth: true,
+  crewConcept: true,
   attributes: true,
   skills: true,
   hpCurrent: true,
@@ -75,7 +78,7 @@ const CHARACTER_FULL_SELECT = {
     orderBy: { id: 'asc' as const },
   },
   talents: {
-    select: { id: true, name: true, description: true, rank: true, acquiredAt: true },
+    select: { id: true, kind: true, name: true, description: true, rank: true, acquiredAt: true },
     orderBy: { acquiredAt: 'asc' as const },
   },
   relationships: {
@@ -115,6 +118,7 @@ interface PrismaCharacterFull {
   origin: string | null;
   reputation: number;
   startingWealth: number;
+  crewConcept: string | null;
   attributes: unknown;
   skills: unknown;
   hpCurrent: number;
@@ -127,7 +131,14 @@ interface PrismaCharacterFull {
   createdAt: Date;
   updatedAt: Date;
   items: { id: string; type: string; data: unknown }[];
-  talents: { id: string; name: string; description: string; rank: number; acquiredAt: Date }[];
+  talents: {
+    id: string;
+    kind: string;
+    name: string;
+    description: string;
+    rank: number;
+    acquiredAt: Date;
+  }[];
   relationships: { id: string; targetName: string; kind: string; notes: string | null }[];
   criticalInjuries: {
     id: string;
@@ -145,6 +156,7 @@ function toCharacterStatus(s: string): CharacterStatus {
 
 function mapTalent(t: {
   id: string;
+  kind: string;
   name: string;
   description: string;
   rank: number;
@@ -152,6 +164,7 @@ function mapTalent(t: {
 }): TalentReadModel {
   return {
     id: t.id,
+    kind: t.kind as TalentKind,
     name: t.name,
     description: t.description,
     rank: t.rank,
@@ -189,6 +202,11 @@ function mapItem(item: { id: string; type: string; data: unknown }): ItemReadMod
   return { id: item.id, type: item.type as ItemType, ...data };
 }
 
+function fromCrewConceptEnum(s: string | null): CrewConcept | null {
+  if (s === null) return null;
+  return s.replaceAll('_', '-') as CrewConcept;
+}
+
 function toReadModel(row: PrismaCharacterFull): CharacterReadModel {
   const attrs = row.attributes as Attributes;
   const inventory = row.items.map((it) => mapItem(it));
@@ -202,6 +220,7 @@ function toReadModel(row: PrismaCharacterFull): CharacterReadModel {
     origin: row.origin,
     reputation: row.reputation,
     startingWealth: row.startingWealth,
+    crewConcept: fromCrewConceptEnum(row.crewConcept),
     attributes: attrs,
     skills: row.skills as Skills,
     hp: {
@@ -282,7 +301,7 @@ export class CharacterRepo implements ICharacterRepo {
           id: row.id,
           ownerId: row.ownerId,
           name: row.name,
-          concept: row.concept as Concept | null,
+          concept: row.concept,
           iconId: row.iconId as unknown as IconId | null,
           hp: {
             current: row.hpCurrent,
@@ -311,6 +330,7 @@ export class CharacterRepo implements ICharacterRepo {
     origin?: string | null;
     reputation: number;
     startingWealth: number;
+    crewConcept?: CrewConcept | null;
     attributes: Attributes;
     skills: Skills;
     hpCurrent: number;
@@ -318,12 +338,13 @@ export class CharacterRepo implements ICharacterRepo {
     experience: number;
     conditions: ConditionFlags;
     notes?: string | null;
+    talents?: { kind: TalentKind; name: string; description: string; rank?: number }[];
     status?: CharacterStatus;
   }): Promise<CharacterReadModel> {
     // Map lowercase wire status to Prisma UPPERCASE enum value.
     const statusEnum = (data.status?.toUpperCase() ?? 'ACTIVE') as 'ACTIVE' | 'DRAFT';
 
-    const row = await this.prisma.character.create({
+    const created = await this.prisma.character.create({
       data: {
         ownerId: data.ownerId,
         name: data.name,
@@ -333,6 +354,7 @@ export class CharacterRepo implements ICharacterRepo {
         origin: data.origin ?? null,
         reputation: data.reputation,
         startingWealth: data.startingWealth,
+        crewConcept: this.toCrewConceptEnum(data.crewConcept ?? null),
         attributes: data.attributes as unknown as import('@prisma/client').Prisma.InputJsonValue,
         skills: data.skills as unknown as import('@prisma/client').Prisma.InputJsonValue,
         hpCurrent: data.hpCurrent,
@@ -341,10 +363,27 @@ export class CharacterRepo implements ICharacterRepo {
         conditions: data.conditions as unknown as import('@prisma/client').Prisma.InputJsonValue,
         notes: data.notes ?? null,
         status: statusEnum,
+        ...(data.talents && data.talents.length > 0
+          ? {
+              talents: {
+                create: data.talents.map((t) => ({
+                  kind: t.kind,
+                  name: t.name,
+                  description: t.description,
+                  rank: t.rank ?? 1,
+                })),
+              },
+            }
+          : {}),
       },
-      select: CHARACTER_FULL_SELECT,
+      select: { id: true },
     });
-    return toReadModel(row);
+
+    const full = await this.findActiveById(created.id);
+    if (!full) {
+      throw new Error(`Character ${created.id} not found after create — race condition.`);
+    }
+    return full;
   }
 
   async update(
@@ -356,6 +395,7 @@ export class CharacterRepo implements ICharacterRepo {
       upbringing: Upbringing;
       origin: string | null;
       reputation: number;
+      crewConcept: CrewConcept | null;
       attributes: Attributes;
       skills: Skills;
       hpCurrent: number;
@@ -394,6 +434,9 @@ export class CharacterRepo implements ICharacterRepo {
       const updateData: Record<string, unknown> = { ...rest };
       if (iconId !== undefined) {
         updateData['iconId'] = iconId ? this.toIconIdEnum(iconId) : null;
+      }
+      if ('crewConcept' in rest) {
+        updateData['crewConcept'] = this.toCrewConceptEnum(rest.crewConcept ?? null);
       }
       if (rest.attributes) updateData['attributes'] = rest.attributes;
       if (rest.skills) updateData['skills'] = rest.skills;
@@ -436,5 +479,17 @@ export class CharacterRepo implements ICharacterRepo {
     // Prisma client handles the enum mapping automatically when using
     // string literals that match the @map values in schema.
     return iconId as unknown as import('@prisma/client').IconId;
+  }
+
+  /**
+   * Maps domain `CrewConcept` (kebab-case wire value, e.g. `'free-trader'`) to
+   * the Prisma client's enum identifier (`'free_trader'`). The DB still stores
+   * the @map value (`'free-trader'`); Prisma translates at the SQL boundary.
+   */
+  private toCrewConceptEnum(
+    crewConcept: CrewConcept | null,
+  ): import('@prisma/client').CrewConcept | null {
+    if (crewConcept === null) return null;
+    return crewConcept.replaceAll('-', '_') as import('@prisma/client').CrewConcept;
   }
 }

@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:app_api_client/src/model/crew_concept.dart';
 import 'package:app_api_client/src/model/skills.dart';
 import 'package:app_api_client/src/model/upbringing.dart';
 import 'package:app_api_client/src/model/attributes.dart';
@@ -24,6 +25,7 @@ part 'character_create.g.dart';
 /// * [iconId] 
 /// * [upbringing] 
 /// * [origin] 
+/// * [crewConcept] 
 /// * [attributes] 
 /// * [skills] 
 /// * [hp] 
@@ -51,6 +53,10 @@ abstract class CharacterCreate implements Built<CharacterCreate, CharacterCreate
 
   @BuiltValueField(wireName: r'origin')
   String? get origin;
+
+  @BuiltValueField(wireName: r'crewConcept')
+  CrewConcept? get crewConcept;
+  // enum crewConceptEnum {  free-trader,  mercenary,  explorer,  agents,  pilgrim,  };
 
   @BuiltValueField(wireName: r'attributes')
   Attributes? get attributes;
@@ -132,6 +138,13 @@ class _$CharacterCreateSerializer implements PrimitiveSerializer<CharacterCreate
       yield serializers.serialize(
         object.origin,
         specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.crewConcept != null) {
+      yield r'crewConcept';
+      yield serializers.serialize(
+        object.crewConcept,
+        specifiedType: const FullType.nullable(CrewConcept),
       );
     }
     if (object.attributes != null) {
@@ -250,6 +263,14 @@ class _$CharacterCreateSerializer implements PrimitiveSerializer<CharacterCreate
           ) as String?;
           if (valueDes == null) continue;
           result.origin = valueDes;
+          break;
+        case r'crewConcept':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(CrewConcept),
+          ) as CrewConcept?;
+          if (valueDes == null) continue;
+          result.crewConcept = valueDes;
           break;
         case r'attributes':
           final valueDes = serializers.deserialize(

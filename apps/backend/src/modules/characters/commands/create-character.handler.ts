@@ -1,7 +1,13 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 
-import { CONCEPT_KEYS, UPBRINGING_BUDGETS, sumAttributes, sumSkills } from '../../rules-engine';
+import {
+  CONCEPT_KEYS,
+  ICON_GIFT_TALENT_IDS,
+  UPBRINGING_BUDGETS,
+  sumAttributes,
+  sumSkills,
+} from '../../rules-engine';
 import type { AttributeKey, SkillKey } from '../../rules-engine';
 import {
   AttributeBudgetExceededError,
@@ -19,6 +25,7 @@ import {
   CharacterReadModel,
   Concept,
   ConditionFlags,
+  CrewConcept,
   DEFAULT_ATTRIBUTES,
   DEFAULT_CONDITIONS,
   DEFAULT_SKILLS,
@@ -26,7 +33,7 @@ import {
   Skills,
   Upbringing,
 } from '../domain/character.ports';
-import type { CharacterStatus } from '../domain/character.ports';
+import type { CharacterStatus, TalentKind } from '../domain/character.ports';
 import { CharacterUpdatedEvent } from '../events/character-updated.event';
 
 import { CreateCharacterCommand } from './create-character.command';
@@ -46,6 +53,14 @@ const VALID_ICONS = new Set<IconId>([
 ]);
 
 const VALID_UPBRINGINGS = new Set<Upbringing>(['plebeian', 'stationary', 'aristocrat']);
+
+const VALID_CREW_CONCEPTS = new Set<CrewConcept>([
+  'free-trader',
+  'mercenary',
+  'explorer',
+  'agents',
+  'pilgrim',
+]);
 
 // Per Coriolis core book ch.2: at creation each attribute is between 2 and 4
 // (the amplua's key attribute may reach 5 — concept-aware exception).
@@ -110,6 +125,11 @@ export class CreateCharacterHandler implements ICommandHandler<
     const budget = UPBRINGING_BUDGETS[upbringing];
     const concept = dto.concept ?? null;
     const conceptKeys = concept ? CONCEPT_KEYS[concept] : null;
+    const crewConcept = dto.crewConcept ?? null;
+    if (crewConcept && !VALID_CREW_CONCEPTS.has(crewConcept)) {
+      // ValidationPipe should reject this; defence-in-depth.
+      throw new AttributeOutOfRangeError('crewConcept', 0);
+    }
 
     const attributes = { ...DEFAULT_ATTRIBUTES, ...dto.attributes };
     const skills = { ...DEFAULT_SKILLS, ...dto.skills };
@@ -133,6 +153,22 @@ export class CreateCharacterHandler implements ICommandHandler<
     // a -2 modifier on a 2-rep plebeian doesn't go negative.
     const reputation = Math.max(0, budget.reputation + (conceptKeys?.reputationModifier ?? 0));
 
+    // iconGift talent is auto-derived from the chosen icon (one gift per icon
+    // per Coriolis ch.4). We seed a placeholder talent record so the wizard's
+    // Step 6 can render the iconGift slot; Block 4 will replace name/desc with
+    // catalog data and i18n.
+    const seedTalents: { kind: TalentKind; name: string; description: string; rank?: number }[] =
+      [];
+    if (dto.iconId) {
+      const giftId = ICON_GIFT_TALENT_IDS[dto.iconId];
+      seedTalents.push({
+        kind: 'iconGift',
+        name: giftId,
+        description: '',
+        rank: 1,
+      });
+    }
+
     const character = await this.repo.create({
       ownerId,
       name: dto.name.trim(),
@@ -142,6 +178,7 @@ export class CreateCharacterHandler implements ICommandHandler<
       origin: dto.origin ?? null,
       reputation,
       startingWealth: budget.startingWealth,
+      crewConcept,
       attributes,
       skills,
       hpCurrent: dto.hp?.current ?? 14,
@@ -149,6 +186,7 @@ export class CreateCharacterHandler implements ICommandHandler<
       experience: dto.experience ?? 0,
       conditions,
       notes: dto.notes ?? null,
+      talents: seedTalents,
       status,
     });
 

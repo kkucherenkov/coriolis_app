@@ -33,6 +33,7 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     origin: 'Coriolis Station',
     reputation: 4,
     startingWealth: 1000,
+    crewConcept: null,
     attributes: { strength: 4, agility: 3, wits: 2, empathy: 3 },
     skills: { ...DEFAULT_SKILLS, force: 3 },
     hp: { current: 12, max: 14 },

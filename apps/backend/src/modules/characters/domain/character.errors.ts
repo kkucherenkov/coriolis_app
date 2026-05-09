@@ -164,6 +164,38 @@ export class ConceptImmutableError extends DomainError {
 }
 
 /**
+ * Thrown when an active character's crew concept (амплуа команды) is changed.
+ * Mutable while draft; immutable once the character is forged.
+ */
+export class CrewConceptImmutableError extends DomainError {
+  constructor() {
+    super({
+      code: 'CREW_CONCEPT_IMMUTABLE',
+      status: 422,
+      title: 'Validation Error',
+      detail: 'Crew concept cannot be changed once the character has been forged.',
+    });
+  }
+}
+
+/**
+ * Thrown when adding a second talent of a non-`personal` kind to a character.
+ * Per Coriolis ch.2 each character has at most one of each crew, iconGift,
+ * and stigma talent at character creation; further talents acquired during
+ * play are always `personal`.
+ */
+export class TalentKindDuplicateError extends DomainError {
+  constructor(kind: string) {
+    super({
+      code: 'TALENT_KIND_DUPLICATE',
+      status: 400,
+      title: 'Validation Error',
+      detail: `Character already has a talent of kind ${kind}.`,
+    });
+  }
+}
+
+/**
  * Thrown when the client attempts to set a server-computed read-only field.
  * Belt-and-suspenders defence on top of the OpenAPI spec's readOnly markers.
  * PRD §5.2: hp.max, mp.max, encumbrance.max are derived — never user-writable.

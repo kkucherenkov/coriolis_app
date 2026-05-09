@@ -27,6 +27,7 @@ import 'package:app_api_client/src/model/character_mp.dart';
 import 'package:app_api_client/src/model/character_update.dart';
 import 'package:app_api_client/src/model/concept.dart';
 import 'package:app_api_client/src/model/condition_flags.dart';
+import 'package:app_api_client/src/model/crew_concept.dart';
 import 'package:app_api_client/src/model/crew_position.dart';
 import 'package:app_api_client/src/model/crew_slot.dart';
 import 'package:app_api_client/src/model/critical_injury.dart';
@@ -114,6 +115,7 @@ import 'package:app_api_client/src/model/ship_weapon_range.dart';
 import 'package:app_api_client/src/model/skills.dart';
 import 'package:app_api_client/src/model/talent.dart';
 import 'package:app_api_client/src/model/talent_create.dart';
+import 'package:app_api_client/src/model/talent_kind.dart';
 import 'package:app_api_client/src/model/talent_update.dart';
 import 'package:app_api_client/src/model/upbringing.dart';
 
@@ -133,6 +135,7 @@ part 'serializers.g.dart';
   CharacterUpdate,
   Concept,
   ConditionFlags,
+  CrewConcept,
   CrewPosition,
   CrewSlot,
   CriticalInjury,
@@ -220,6 +223,7 @@ part 'serializers.g.dart';
   Skills,
   Talent,
   TalentCreate,
+  TalentKind,
   TalentUpdate,
   Upbringing,
 ])

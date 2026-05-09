@@ -4,6 +4,25 @@
 
   // ST3001 ch.2, table 2.2 — three canonical upbringings.
   type Upbringing = 'plebeian' | 'stationary' | 'aristocrat';
+  // ST3001 ch.2 §АМПЛУА КОМАНДЫ — five canonical crew amplua.
+  type CrewConcept = 'free-trader' | 'mercenary' | 'explorer' | 'agents' | 'pilgrim';
+
+  const props = defineProps<Props>();
+
+  const emit = defineEmits<{
+    'update:origin': [value: string | null];
+    'update:upbringing': [value: Upbringing];
+    'update:crewConcept': [value: CrewConcept | null];
+    'update:age': [value: number | null];
+  }>();
+
+  const CREW_CONCEPTS: readonly CrewConcept[] = [
+    'free-trader',
+    'mercenary',
+    'explorer',
+    'agents',
+    'pilgrim',
+  ];
 
   interface UpbringingBudget {
     attributes: number;
@@ -11,14 +30,6 @@
     reputation: number;
     wealth: number;
   }
-
-  const props = defineProps<Props>();
-
-  const emit = defineEmits<{
-    'update:origin': [value: string | null];
-    'update:upbringing': [value: Upbringing];
-    'update:age': [value: number | null];
-  }>();
 
   const UPBRINGING_BUDGETS: Record<Upbringing, UpbringingBudget> = {
     plebeian: { attributes: 15, skills: 8, reputation: 2, wealth: 500 },
@@ -29,6 +40,7 @@
   interface Props {
     origin: string | null;
     upbringing: Upbringing | null;
+    crewConcept: CrewConcept | null;
     age: number | null;
   }
 
@@ -55,6 +67,14 @@
     if (val === 'plebeian' || val === 'stationary' || val === 'aristocrat') {
       emit('update:upbringing', val);
     }
+  }
+
+  function onCrewToggle(value: CrewConcept): void {
+    emit('update:crewConcept', props.crewConcept === value ? null : value);
+  }
+
+  function isCrewSelected(value: CrewConcept): boolean {
+    return props.crewConcept === value;
   }
 
   function onAgeInput(val: string | number | null): void {
@@ -89,6 +109,22 @@
       "wealth": "Birrs",
       "selectPrompt": "Select an upbringing to see your starting budget."
     },
+    "crewLabel": "Crew",
+    "crewHelp": "What sort of crew are you part of? The whole team shares one — pick whichever you'd like.",
+    "crew": {
+      "free-trader": "Free Traders",
+      "mercenary": "Mercenaries",
+      "explorer": "Explorers",
+      "agents": "Agents",
+      "pilgrim": "Pilgrims"
+    },
+    "crewDesc": {
+      "free-trader": "Merchants and smugglers running cargo across the Horizon.",
+      "mercenary": "Soldiers of fortune, pirates, and revolutionaries who fight for pay or cause.",
+      "explorer": "Truth-seekers, prospectors, colonists, journalists chasing the unknown.",
+      "agents": "Faction operatives — enforcers, spies, assassins working in the shadows.",
+      "pilgrim": "Believers and travellers walking the holy routes of the Horizon."
+    },
     "ageLabel": "Age",
     "agePlaceholder": "e.g. 28",
     "ageHelp": "Optional. Any positive integer."
@@ -116,6 +152,22 @@
       "reputation": "Репутация",
       "wealth": "Бирры",
       "selectPrompt": "Выберите воспитание, чтобы увидеть стартовый бюджет."
+    },
+    "crewLabel": "Команда",
+    "crewHelp": "К какой команде вы относитесь? Все игроки делят одну — выберите подходящую.",
+    "crew": {
+      "free-trader": "Вольные торговцы",
+      "mercenary": "Наёмники",
+      "explorer": "Исследователи",
+      "agents": "Агенты",
+      "pilgrim": "Пилигримы"
+    },
+    "crewDesc": {
+      "free-trader": "Купцы и контрабандисты, перевозящие грузы по Горизонту.",
+      "mercenary": "Солдаты удачи, пираты и повстанцы — за деньги или идею.",
+      "explorer": "Искатели истины, старатели, колонисты, журналисты.",
+      "agents": "Оперативники фракций — каратели, шпионы, ассасины в тени.",
+      "pilgrim": "Верующие и странники, идущие по святым путям Горизонта."
     },
     "ageLabel": "Возраст",
     "agePlaceholder": "напр. 28",
@@ -145,6 +197,22 @@
       "wealth": "[uk-todo] Birrs",
       "selectPrompt": "[uk-todo] Select an upbringing."
     },
+    "crewLabel": "[uk-todo] Crew",
+    "crewHelp": "[uk-todo] Pick the team's crew amplua.",
+    "crew": {
+      "free-trader": "[uk-todo] Free Traders",
+      "mercenary": "[uk-todo] Mercenaries",
+      "explorer": "[uk-todo] Explorers",
+      "agents": "[uk-todo] Agents",
+      "pilgrim": "[uk-todo] Pilgrims"
+    },
+    "crewDesc": {
+      "free-trader": "[uk-todo] Merchants and smugglers.",
+      "mercenary": "[uk-todo] Soldiers of fortune.",
+      "explorer": "[uk-todo] Truth-seekers and prospectors.",
+      "agents": "[uk-todo] Faction operatives.",
+      "pilgrim": "[uk-todo] Believers and travellers."
+    },
     "ageLabel": "[uk-todo] Age",
     "agePlaceholder": "[uk-todo] e.g. 28",
     "ageHelp": "[uk-todo] Optional."
@@ -172,6 +240,22 @@
       "reputation": "[el-todo] Reputation",
       "wealth": "[el-todo] Birrs",
       "selectPrompt": "[el-todo] Select an upbringing."
+    },
+    "crewLabel": "[el-todo] Crew",
+    "crewHelp": "[el-todo] Pick the team's crew amplua.",
+    "crew": {
+      "free-trader": "[el-todo] Free Traders",
+      "mercenary": "[el-todo] Mercenaries",
+      "explorer": "[el-todo] Explorers",
+      "agents": "[el-todo] Agents",
+      "pilgrim": "[el-todo] Pilgrims"
+    },
+    "crewDesc": {
+      "free-trader": "[el-todo] Merchants and smugglers.",
+      "mercenary": "[el-todo] Soldiers of fortune.",
+      "explorer": "[el-todo] Truth-seekers and prospectors.",
+      "agents": "[el-todo] Faction operatives.",
+      "pilgrim": "[el-todo] Believers and travellers."
     },
     "ageLabel": "[el-todo] Age",
     "agePlaceholder": "[el-todo] e.g. 28",
@@ -232,6 +316,25 @@
     <p v-else class="step-background__budget-prompt">
       {{ t('budget.selectPrompt') }}
     </p>
+
+    <AppField :label="t('crewLabel')" :help-text="t('crewHelp')">
+      <div class="step-background__crew-grid">
+        <button
+          v-for="crew in CREW_CONCEPTS"
+          :key="crew"
+          type="button"
+          class="step-background__crew-chip"
+          :class="{
+            'step-background__crew-chip--selected': isCrewSelected(crew),
+          }"
+          :aria-pressed="isCrewSelected(crew)"
+          @click="onCrewToggle(crew)"
+        >
+          <span class="step-background__crew-name">{{ t(`crew.${crew}`) }}</span>
+          <span class="step-background__crew-desc">{{ t(`crewDesc.${crew}`) }}</span>
+        </button>
+      </div>
+    </AppField>
 
     <AppField :label="t('ageLabel')" :help-text="t('ageHelp')">
       <template #default="slotAttrs">
@@ -326,6 +429,55 @@
       background-color: var(--surface-night);
       border: 1px dashed var(--brand-brass-shadow);
       border-radius: var(--radius-md);
+    }
+
+    &__crew-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--space-2);
+    }
+
+    &__crew-chip {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      padding: var(--space-3) var(--space-4);
+      text-align: left;
+      background-color: var(--surface-night);
+      border: 1px solid var(--brand-brass-shadow);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition:
+        border-color var(--motion-duration-fast) var(--motion-ease-standard),
+        background-color var(--motion-duration-fast) var(--motion-ease-standard);
+
+      &:hover {
+        border-color: var(--brand-brass-deep);
+        background-color: var(--surface-dawn);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--brand-brass);
+        outline-offset: 2px;
+      }
+
+      &--selected {
+        border-color: var(--brand-brass);
+        background-color: var(--surface-dawn);
+      }
+    }
+
+    &__crew-name {
+      font-family: var(--font-display);
+      font-size: var(--type-body-md-font-size);
+      color: var(--brand-brass-light);
+    }
+
+    &__crew-desc {
+      font-family: var(--font-body);
+      font-size: var(--type-body-xs-font-size);
+      color: var(--text-secondary);
+      line-height: 1.45;
     }
   }
 </style>

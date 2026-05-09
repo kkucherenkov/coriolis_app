@@ -119,6 +119,31 @@ enum Concept {
   @@map("concept")
 }
 
+/// Crew (амплуа команды) per Coriolis core book ch.2 §АМПЛУА КОМАНДЫ.
+/// Five canonical crews — the team picks one, all members share it.
+/// Mapped to kebab-case wire values via @map.
+enum CrewConcept {
+  free_trader @map("free-trader")
+  mercenary
+  explorer
+  agents
+  pilgrim
+
+  @@map("crew_concept")
+}
+
+/// Discriminator for Talent.kind. At creation each character has one
+/// of each non-`personal` kind plus one personal; further talents
+/// acquired during play are always `personal`.
+enum TalentKind {
+  personal
+  crew
+  iconGift
+  stigma
+
+  @@map("talent_kind")
+}
+
 /// One of the nine Coriolis Icons (enum mirrors the OpenAPI IconId type).
 enum IconId {
   lady_of_tears  @map("lady-of-tears")
@@ -173,6 +198,9 @@ model Character {
   /// Birrs the character started with. Derived from upbringing and frozen
   /// at creation (plebeian=500, stationary=1000, aristocrat=5000).
   startingWealth      Int              @default(500)
+  /// Optional crew amplua (амплуа команды). Mutable while draft, frozen
+  /// once active. Drives the crew-talent picker on the wizard.
+  crewConcept         CrewConcept?
   /// JSON column: { strength, agility, wits, empathy } — each 1–5.
   attributes          Json
   /// JSON column: { dexterity, force, infiltration, manipulation, meleeCombat,
@@ -248,13 +276,18 @@ model Item {
 
 /// A talent (special ability) owned by a character.
 model Talent {
-  id          String    @id @default(cuid())
+  id          String     @id @default(cuid())
   characterId String
-  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  character   Character  @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  /// Discriminator (personal | crew | iconGift | stigma). Defaults to
+  /// `personal` for legacy rows and the common case (talents acquired
+  /// during play are always personal). Each character can have at most
+  /// one of each non-`personal` kind — enforced at the application layer.
+  kind        TalentKind @default(personal)
   name        String
   description String
-  rank        Int       @default(1)
-  acquiredAt  DateTime  @default(now())
+  rank        Int        @default(1)
+  acquiredAt  DateTime   @default(now())
 
   @@index([characterId])
   @@map("talent")

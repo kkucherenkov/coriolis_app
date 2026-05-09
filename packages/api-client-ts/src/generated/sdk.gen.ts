@@ -192,6 +192,11 @@ export const addCharacterItem = <ThrowOnError extends boolean = false>(options: 
  * free-form (name + description + rank); there is no server-side
  * talent library in v1.
  *
+ * `kind` defaults to `personal`. Each character can have at most
+ * one talent of each non-`personal` kind (`crew`, `iconGift`,
+ * `stigma`); a duplicate non-personal kind is rejected with 400
+ * `TALENT_KIND_DUPLICATE`.
+ *
  */
 export const addCharacterTalent = <ThrowOnError extends boolean = false>(options: Options<AddCharacterTalentData, ThrowOnError>) => (options.client ?? client).post<AddCharacterTalentResponses, AddCharacterTalentErrors, ThrowOnError>({
     security: [{

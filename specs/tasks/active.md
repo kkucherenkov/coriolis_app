@@ -58,41 +58,70 @@
     - [x] Tests: rules-engine (+5) and CreateCharacterHandler (+8)
   - [x] **Block 2 — Concept (amplua) enum** (committed 2026-05-09)
     - [x] openapi 0.9.0 → 0.10.0: Concept enum (11 amplua); Character.concept
-      and CharacterCreate/Update.concept replace free-text string with
-      `Concept | null`; CharacterUpdate.concept draft-only (immutable
-      once active); spec table documents key-attr / rep-modifier per amplua
+          and CharacterCreate/Update.concept replace free-text string with
+          `Concept | null`; CharacterUpdate.concept draft-only (immutable
+          once active); spec table documents key-attr / rep-modifier per amplua
     - [x] codegen
     - [x] Prisma migration `20260509000006_concept_enum` — drops the old
-      `concept TEXT?` column, adds `concept Concept?` enum
+          `concept TEXT?` column, adds `concept Concept?` enum
     - [x] RulesEngine: CONCEPT_KEYS table (keyAttribute, keySkills,
-      reputationModifier per concept), AttributeKey / SkillKey types
+          reputationModifier per concept), AttributeKey / SkillKey types
     - [x] CreateCharacterHandler: per-attribute cap = 5 if key (else 4),
-      per-skill cap = 3 if key (else 1); reputation =
-      upbringing.reputation + concept.reputationModifier (clamped ≥ 0)
+          per-skill cap = 3 if key (else 1); reputation =
+          upbringing.reputation + concept.reputationModifier (clamped ≥ 0)
     - [x] UpdateCharacterHandler: concept mutable while draft, frozen on
-      active (ConceptImmutableError); recomputes derived reputation when
-      either upbringing or concept changes during draft
+          active (ConceptImmutableError); recomputes derived reputation when
+          either upbringing or concept changes during draft
     - [x] Step1Concept: replaced free-text concept input with an 11-chip
-      structured picker + hint panel showing key attribute, key skills,
-      and reputation modifier
+          structured picker + hint panel showing key attribute, key skills,
+          and reputation modifier
     - [x] Step4Attributes: key-attribute cap 5 on the concept's
-      keyAttribute, 4 elsewhere; AppDots :max bound to maxFor(key)
+          keyAttribute, 4 elsewhere; AppDots :max bound to maxFor(key)
     - [x] Step5Skills: key-skill cap 3, non-key cap 1, looked up per row
-      from the concept's keySkills set
+          from the concept's keySkills set
     - [x] Character sheet ([id].vue): concept rendered as a localized
-      readonly badge (was a free-text input that could no longer round-trip)
+          readonly badge (was a free-text input that could no longer round-trip)
     - [x] i18n: en + ru concept labels in Step1Concept and the sheet,
-      [uk-todo]/[el-todo] placeholders elsewhere
+          [uk-todo]/[el-todo] placeholders elsewhere
     - [x] Tests: rules-engine CONCEPT_KEYS specs (+15) and
-      CreateCharacterHandler concept-aware specs (+6) — 384/384 backend
-      and 53/53 web tests green
-  - [ ] **Block 3 — Talent kind discriminator**
-    - openapi: Talent.kind (personal | crew | iconGift | stigma);
-      Character.crewConcept (CrewConcept enum)
-    - codegen
-    - RulesEngine: validate exactly 1 of each kind at create
-    - Step6Talents: split into 3 sections; auto-add iconGift from
-      iconId; crew talent from selected CrewConcept
+          CreateCharacterHandler concept-aware specs (+6) — 384/384 backend
+          and 53/53 web tests green
+  - [x] **Block 3 — Talent kind discriminator** (committed 2026-05-09)
+    - [x] openapi 0.10.0 → 0.11.0: `Talent.kind` enum (personal | crew
+      | iconGift | stigma); new `CrewConcept` enum (free-trader /
+      mercenary / explorer / agents / pilgrim — ST3001 ch.2
+      §АМПЛУА КОМАНДЫ); `Character.crewConcept` field;
+      `TalentCreate.kind` (defaults to personal); 400
+      `TALENT_KIND_DUPLICATE` documented
+    - [x] codegen
+    - [x] Prisma migration
+      `20260509000007_talent_kind_and_crew_concept` — adds CrewConcept
+      and TalentKind enums, `character.crewConcept` column, `talent.kind`
+      column (default `personal`)
+    - [x] RulesEngine: `CrewConcept` / `TalentKind` types,
+      `ICON_GIFT_TALENT_IDS` mapping (icon → gift-talent ID)
+    - [x] CreateCharacterHandler accepts `crewConcept` and auto-seeds
+      an `iconGift` talent from the chosen icon (placeholder name/desc
+      until Block 4 catalog ships); duplicate non-personal kind rejected
+      via `TalentKindDuplicateError`
+    - [x] UpdateCharacterHandler: `crewConcept` mutable while draft,
+      frozen on active (`CrewConceptImmutableError`)
+    - [x] AddTalentHandler: persists `kind` (defaults to personal),
+      enforces "≤1 of each non-personal kind" via
+      `TalentRepo.listByCharacterId`
+    - [x] CharacterRepo + ShareLinkRepo: extended SELECT, mappers, and
+      kebab→snake mapping for the Prisma `CrewConcept` enum identifier;
+      `talents.create` nested write seeds iconGift on create
+    - [x] Web Step2Background: chip-style CrewConcept picker (5 amplua)
+      with EN/RU labels and per-amplua descriptions
+    - [x] Web Step6Talents: 3-section split (personal pool / crew slot
+      derived from selected CrewConcept / icon-gift slot derived from
+      chosen icon); empty placeholders prompt the player back to
+      Step 2/3
+    - [x] new.vue wires `draftCrewConcept` through autosave + forge
+      payload; hydrates from existing draft on resume
+    - [x] Tests: AddTalentHandler (+5), CreateCharacterHandler (+5),
+      UpdateCharacterHandler (+3) — 397/397 backend, 53/53 web green
   - [ ] **Block 4 — Talent catalog data**
     - 9 icon gifts, 15 crew talents, ~30 personal talents — i18n
       strings (en+ru) per talent; rules text in detail field
@@ -103,24 +132,21 @@
   - [ ] tests: backend rules-engine specs (≥15), web wizard specs
   - [ ] lint + typecheck + format
   - [ ] PR with all blocks (per user's "single big PR" preference)
-- Status: in-progress (block 3 next — talent kind discriminator + crew amplua)
-- Block 3 follow-up (start in fresh session):
-  - openapi 0.10.0 → 0.11.0: introduce `Talent.kind` enum (`personal`
-    | `crew` | `iconGift` | `stigma`), make `Character.crewConcept`
-    a new `CrewConcept` enum (free-trader / mercenary / explorer /
-    agents / pilgrim — see ST3001 ch.2 §АМПЛУА КОМАНДЫ); regenerate
-    clients.
-  - Backend: `Talent` model gains `kind` column; CreateCharacterHandler
-    accepts up to 1 of each kind at creation (auto-derives `iconGift`
-    from `iconId` if a catalog entry exists); update Prisma migration.
-  - Web Step6Talents: split into 3 sections (personal / crew / icon
-    gift), pre-filled iconGift derived from `draftIconId`, crew talent
-    derived from selected `CrewConcept` (this needs a new picker on
-    the wizard — likely Step2 or a new Step2.5).
-  - Step6 talent catalog data lives in Block 4; for Block 3 the schema
-    + handler logic suffice — show empty pickers when catalog absent.
-  - Tests: ≥ 6 unit specs covering kind validation + iconGift auto-derivation.
-- Block 4-5 still pending; revisit after Block 3 lands.
+- Status: in-progress (block 4 next — talent catalog data)
+- Block 4 follow-up (start in fresh session):
+  - Catalog data: 9 icon gifts (one per icon — kebab-case IDs match
+    `ICON_GIFT_TALENT_IDS`), 15 crew talents (5 amplua × 3 per ST3001
+    ch.4), ~30 personal talents (per-amplua pools).
+  - Each entry: stable `id`, display `name` (en/ru), `description`
+    (en/ru), `rank` 1–3 cap. Recommend a static JSON file under
+    `packages/specs/data/talents.json` consumed by both web (renderer)
+    and backend (iconGift hydration on create).
+  - Replace the placeholder `name: gift-traveler, description: ''`
+    seed in `CreateCharacterHandler` with catalog lookup.
+  - Update Step6Talents to render the full crew-talent picker (3 per
+    crew amplua) and a per-concept personal pool (currently flat 12).
+  - i18n: en + ru per talent ID, [uk-todo]/[el-todo] placeholders.
+- Block 5 still pending; revisit after Block 4 lands.
 - Blockers: —
 - Estimate: 22–34 hours total. Will commit per block to keep diff
   reviewable; merge as one PR.

@@ -18,6 +18,7 @@ import type {
   CharacterStatus,
   ConditionFlags,
   Concept,
+  CrewConcept,
   IconId,
   Skills,
   Upbringing,
@@ -84,6 +85,14 @@ const VALID_CONCEPTS: Concept[] = [
   'soldier',
 ];
 
+const VALID_CREW_CONCEPTS: CrewConcept[] = [
+  'free-trader',
+  'mercenary',
+  'explorer',
+  'agents',
+  'pilgrim',
+];
+
 export class HpDto {
   @IsOptional() @IsInt() @Min(0) current?: number;
 }
@@ -113,6 +122,10 @@ export class CreateCharacterDto {
   @IsString()
   @MaxLength(200)
   origin?: string | null;
+
+  @IsOptional()
+  @IsIn(VALID_CREW_CONCEPTS)
+  crewConcept?: CrewConcept | null;
 
   @IsOptional()
   @IsObject()

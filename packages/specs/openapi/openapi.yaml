@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 0.10.0
+  version: 0.11.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -107,6 +107,7 @@ paths:
                         origin: Cinder Quarter, Coriolis Station
                         reputation: 4
                         startingWealth: 1000
+                        crewConcept: free-trader
                         attributes:
                           strength: 3
                           agility: 5
@@ -217,6 +218,7 @@ paths:
                     origin: Coriolis Station, Cinder Quarter
                     reputation: 4
                     startingWealth: 1000
+                    crewConcept: agents
                     attributes:
                       strength: 4
                       agility: 4
@@ -361,6 +363,7 @@ paths:
                     origin: Cinder Quarter, Coriolis Station
                     reputation: 4
                     startingWealth: 1000
+                    crewConcept: free-trader
                     attributes:
                       strength: 3
                       agility: 5
@@ -406,6 +409,7 @@ paths:
                         acquiredAt: "2026-03-20T19:00:00Z"
                     talents:
                       - id: cuid_tal01
+                        kind: personal
                         name: Wing-Mate
                         description: Re-roll one die when assisting a fellow pilot.
                         rank: 2
@@ -526,6 +530,7 @@ paths:
                     origin: Cinder Quarter, Coriolis Station
                     reputation: 4
                     startingWealth: 1000
+                    crewConcept: free-trader
                     attributes:
                       strength: 3
                       agility: 5
@@ -715,6 +720,7 @@ paths:
                     origin: Cinder Quarter, Coriolis Station
                     reputation: 4
                     startingWealth: 1000
+                    crewConcept: free-trader
                     attributes:
                       strength: 3
                       agility: 5
@@ -831,6 +837,7 @@ paths:
                     origin: Cinder Quarter, Coriolis Station
                     reputation: 4
                     startingWealth: 1000
+                    crewConcept: free-trader
                     attributes:
                       strength: 3
                       agility: 5
@@ -1035,6 +1042,11 @@ paths:
         Creates a talent record attached to the character. Talents are
         free-form (name + description + rank); there is no server-side
         talent library in v1.
+
+        `kind` defaults to `personal`. Each character can have at most
+        one talent of each non-`personal` kind (`crew`, `iconGift`,
+        `stigma`); a duplicate non-personal kind is rejected with 400
+        `TALENT_KIND_DUPLICATE`.
       tags: [characters]
       security:
         - cookieAuth: []
@@ -1050,6 +1062,7 @@ paths:
             examples:
               addTalent:
                 value:
+                  kind: personal
                   name: Wing-Mate
                   description: Re-roll one die when assisting a fellow pilot.
                   rank: 2
@@ -1064,12 +1077,18 @@ paths:
                 created:
                   value:
                     id: cuid_tal02
+                    kind: personal
                     name: Wing-Mate
                     description: Re-roll one die when assisting a fellow pilot.
                     rank: 2
                     acquiredAt: "2026-05-08T10:30:00Z"
         "400":
-          description: Validation error (name empty, rank out of 1–3 range)
+          description: |
+            Validation error. Possible codes:
+            - `CHARACTER_NAME_EMPTY` — talent name is an empty string.
+            - `TALENT_KIND_DUPLICATE` — character already has a talent
+              of this non-`personal` kind (e.g. trying to add a second
+              `iconGift`).
           content:
             application/problem+json:
               schema:
@@ -1083,6 +1102,14 @@ paths:
                     detail: Talent name must not be empty
                     instance: /api/v1/characters/cuid_tariq01/talents
                     code: CHARACTER_NAME_EMPTY
+                kindDuplicate:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: Character already has a talent of kind iconGift
+                    instance: /api/v1/characters/cuid_tariq01/talents
+                    code: TALENT_KIND_DUPLICATE
         "401":
           description: No active session
           content:
@@ -2614,6 +2641,7 @@ paths:
                 ok:
                   value:
                     id: cuid_tal01
+                    kind: personal
                     name: Wing-Mate
                     description: Re-roll one die and add +1 when assisting a fellow pilot.
                     rank: 3
@@ -4137,6 +4165,45 @@ components:
         | stationary  | 14            | 10        | 4          |  1000          |
         | aristocrat  | 13            | 12        | 6          |  5000          |
 
+    CrewConcept:
+      type: string
+      enum:
+        - free-trader
+        - mercenary
+        - explorer
+        - agents
+        - pilgrim
+      description: |
+        Crew archetype (амплуа команды) per Coriolis ST3001 ch.2
+        §АМПЛУА КОМАНДЫ. Five canonical crews — `free-trader`
+        (Вольные торговцы), `mercenary` (Наёмники), `explorer`
+        (Исследователи), `agents` (Агенты), `pilgrim` (Пилигримы).
+
+        The crew concept is shared by all heroes in a campaign and
+        determines the pool of three crew talents the team picks from
+        at creation (one of which becomes each hero's starting "crew"
+        kind talent — see `TalentKind`). Crew concept is mutable while
+        the character is `draft` and immutable once `active`.
+
+    TalentKind:
+      type: string
+      enum: [personal, crew, iconGift, stigma]
+      description: |
+        Discriminator for `Talent.kind` per Coriolis ST3001 ch.2 (3
+        starting talents: one personal from amplua, one crew from
+        crew-amplua, one icon gift from chosen icon) and ch.4
+        (mutants additionally pick one `stigma`).
+
+        Each character has at most one talent of each `personal`,
+        `crew`, `iconGift`, `stigma` at character creation; further
+        talents acquired during play are always `personal`.
+
+        - `personal`  — picked from the amplua's personal talent list
+        - `crew`      — picked from the team's crew amplua list
+        - `iconGift`  — auto-derived from the character's `iconId`
+        - `stigma`    — only for mutants; picked from the mutant
+                        lineage's stigma list (Block 5)
+
     ItemRangeEnum:
       type: string
       enum: [arm, near, short, long, distant]
@@ -4345,11 +4412,17 @@ components:
     Talent:
       type: object
       description: A talent owned by a character
-      required: [id, name, description, rank, acquiredAt]
+      required: [id, kind, name, description, rank, acquiredAt]
       properties:
         id:
           type: string
           description: Opaque identifier (cuid2)
+        kind:
+          $ref: "#/components/schemas/TalentKind"
+          description: |
+            Discriminator describing where this talent came from
+            (personal amplua, crew amplua, icon gift, or mutant stigma).
+            Set on creation and immutable thereafter.
         name:
           type: string
           description: Talent name (e.g. "Wing-Mate", "Stunt Pilot")
@@ -4368,9 +4441,21 @@ components:
 
     TalentCreate:
       type: object
-      description: Payload for creating a new talent
+      description: |
+        Payload for creating a new talent. `kind` defaults to `personal`
+        when omitted (the most common case for talents acquired during
+        play). At character creation, the wizard picks one talent of
+        each kind (`personal`, `crew`, `iconGift`); the server rejects a
+        second talent of the same non-`personal` kind with
+        `TALENT_KIND_DUPLICATE`.
       required: [name, description]
       properties:
+        kind:
+          $ref: "#/components/schemas/TalentKind"
+          description: |
+            Defaults to `personal`. Pass `crew` / `iconGift` / `stigma`
+            to record a starting-talent slot of that kind (only one of
+            each non-`personal` kind is allowed per character).
         name:
           type: string
           minLength: 1
@@ -4387,7 +4472,10 @@ components:
 
     TalentUpdate:
       type: object
-      description: PATCH payload for updating a talent — all fields optional
+      description: |
+        PATCH payload for updating a talent — all fields optional.
+        `kind` is immutable and cannot be changed after a talent has
+        been recorded.
       properties:
         name:
           type: string
@@ -4991,6 +5079,7 @@ components:
         - origin
         - reputation
         - startingWealth
+        - crewConcept
         - attributes
         - skills
         - hp
@@ -5063,6 +5152,14 @@ components:
             The number of birrs (currency) the character started with at
             creation. Derived from `upbringing` (plebeian=500,
             stationary=1000, aristocrat=5000). Immutable historical record.
+        crewConcept:
+          oneOf:
+            - $ref: "#/components/schemas/CrewConcept"
+            - type: "null"
+          description: |
+            The crew (амплуа команды) this character belongs to.
+            Mutable while `status: draft` (the wizard is still in
+            progress); immutable once the character is `active`.
         attributes:
           $ref: "#/components/schemas/Attributes"
         skills:
@@ -5197,6 +5294,14 @@ components:
         origin:
           type: ["string", "null"]
           maxLength: 200
+        crewConcept:
+          oneOf:
+            - $ref: "#/components/schemas/CrewConcept"
+            - type: "null"
+          description: |
+            Optional crew concept the character belongs to. May be set
+            in the wizard before forging or updated later while the
+            character is `draft`.
         attributes:
           $ref: "#/components/schemas/Attributes"
         skills:
@@ -5283,6 +5388,16 @@ components:
         origin:
           type: ["string", "null"]
           maxLength: 200
+        crewConcept:
+          oneOf:
+            - $ref: "#/components/schemas/CrewConcept"
+            - type: "null"
+          description: |
+            Allowed only while `status` is `draft` — used by the wizard
+            to let players pick their team's crew concept before
+            forging. Once the character is `active`, this field is
+            immutable and any attempt to change it is rejected with
+            `CREW_CONCEPT_IMMUTABLE`.
         reputation:
           type: integer
           minimum: 0

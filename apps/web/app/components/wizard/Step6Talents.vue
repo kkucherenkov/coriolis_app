@@ -1,17 +1,10 @@
 <script setup lang="ts">
   import { computed } from 'vue';
-
-  const props = defineProps<Props>();
-
-  const emit = defineEmits<{
-    'update:pickedTalentIds': [value: string[]];
-  }>();
+  import type { IconId, CrewConcept } from '@app/api-client-ts';
 
   // TODO(wizard-step-7-relationships): Relationships step deferred to v1.1+.
 
-  const MAX_FREE_PICKS = 3;
-
-  interface TalentEntry {
+  interface PersonalTalent {
     id: string;
     name: string;
     description: string;
@@ -19,12 +12,23 @@
 
   interface Props {
     pickedTalentIds: string[];
+    iconId: IconId | null;
+    crewConcept: CrewConcept | null;
   }
+
+  const props = defineProps<Props>();
+
+  const emit = defineEmits<{
+    'update:pickedTalentIds': [value: string[]];
+  }>();
+
+  const MAX_PERSONAL_PICKS = 1;
 
   const { t } = useI18n({ useScope: 'local' });
 
-  // Static talent pool for v1. Sourced from Coriolis core rulebook general talents.
-  const TALENT_POOL: TalentEntry[] = [
+  // ST3001 ch.4 — placeholder personal talent pool. The full catalog is
+  // populated in Block 4 (Talent catalog data + i18n).
+  const PERSONAL_POOL: PersonalTalent[] = [
     { id: 'combat-veteran', name: 'combatVeteran', description: 'combatVeteranDesc' },
     { id: 'defender-of-faith', name: 'defenderOfFaith', description: 'defenderOfFaithDesc' },
     { id: 'everyday-hero', name: 'everydayHero', description: 'everydayHeroDesc' },
@@ -39,14 +43,28 @@
     { id: 'nine-lives', name: 'nineLives', description: 'nineLivesDesc' },
   ];
 
-  const pickedCount = computed<number>(() => props.pickedTalentIds.length);
-  const canPickMore = computed<boolean>(() => pickedCount.value < MAX_FREE_PICKS);
+  // Auto-derived iconGift label — actual talent ID is recorded server-side.
+  const iconGiftLabel = computed<string>(() =>
+    props.iconId ? t(`iconGiftName.${props.iconId}`) : '',
+  );
+
+  // Crew talent placeholder: catalog data is Block 4. For now we just label
+  // the section with the chosen crew concept so the player sees the slot.
+  const crewLabel = computed<string>(() =>
+    props.crewConcept ? t(`crewName.${props.crewConcept}`) : '',
+  );
+
+  const personalPicked = computed<string[]>(() =>
+    props.pickedTalentIds.filter((id) => PERSONAL_POOL.some((p) => p.id === id)),
+  );
+
+  const canPickMore = computed<boolean>(() => personalPicked.value.length < MAX_PERSONAL_PICKS);
 
   function isPicked(id: string): boolean {
-    return props.pickedTalentIds.includes(id);
+    return personalPicked.value.includes(id);
   }
 
-  function toggle(id: string): void {
+  function togglePersonal(id: string): void {
     if (isPicked(id)) {
       emit(
         'update:pickedTalentIds',
@@ -61,8 +79,22 @@
 <i18n lang="json">
 {
   "en": {
-    "counter": "{count} / {max} selected",
-    "pickPrompt": "Pick up to {max} starting talents. You can add more later on the character sheet.",
+    "intro": "Each character begins with three talents — one personal, one shared by your crew, and one icon gift derived from your patron Icon.",
+    "personal": {
+      "title": "Personal talent",
+      "help": "Pick {max} talent that fits your character. (Block 4 will narrow this list to your concept's personal pool.)",
+      "counter": "{count} / {max} selected"
+    },
+    "crew": {
+      "title": "Crew talent",
+      "help": "Shared by your team. Catalog comes in Block 4 — for now your crew gets one of the talents from the {label} amplua.",
+      "noCrew": "Pick a crew amplua on Step 2 first."
+    },
+    "iconGift": {
+      "title": "Icon gift",
+      "help": "Auto-derived from the Icon you chose on Step 3. The full gift description loads on the character sheet once Block 4 catalog is in.",
+      "noIcon": "Pick an Icon on Step 3 first."
+    },
     "pickedBadge": "Picked",
     "talentName": {
       "combatVeteran": "Combat Veteran",
@@ -91,11 +123,43 @@
       "killerInstinctDesc": "+1 to all Melee Combat damage rolls.",
       "linguistDesc": "You speak every Horizon language well enough to bargain.",
       "nineLivesDesc": "When reduced to 0 HP, spend 1 DP to remain on 1 HP instead."
+    },
+    "iconGiftName": {
+      "lady-of-tears": "Gift of the Lady of Tears",
+      "traveler": "Gift of the Traveler",
+      "messenger": "Gift of the Messenger",
+      "merchant": "Gift of the Merchant",
+      "dancer": "Gift of the Dancer",
+      "gambler": "Gift of the Gambler",
+      "judge": "Gift of the Judge",
+      "faceless-one": "Gift of the Faceless One",
+      "deckhand": "Gift of the Deckhand"
+    },
+    "crewName": {
+      "free-trader": "Free Traders",
+      "mercenary": "Mercenaries",
+      "explorer": "Explorers",
+      "agents": "Agents",
+      "pilgrim": "Pilgrims"
     }
   },
   "ru": {
-    "counter": "Выбрано {count} / {max}",
-    "pickPrompt": "Выберите до {max} начальных талантов. Остальные можно добавить позже.",
+    "intro": "Каждый персонаж получает три таланта — одно личное достоинство, одно от амплуа команды и один дар Иконы.",
+    "personal": {
+      "title": "Личное достоинство",
+      "help": "Выберите {max} достоинство для своего персонажа. (Block 4 ограничит этот список достоинствами вашего амплуа.)",
+      "counter": "Выбрано {count} / {max}"
+    },
+    "crew": {
+      "title": "Достоинство команды",
+      "help": "Общее на всю команду. Каталог появится в Block 4 — пока что ваша команда получает одно из достоинств амплуа «{label}».",
+      "noCrew": "Сначала выберите амплуа команды на шаге 2."
+    },
+    "iconGift": {
+      "title": "Дар Иконы",
+      "help": "Выводится из Иконы, выбранной на шаге 3. Полное описание подгрузится на листе персонажа после Block 4.",
+      "noIcon": "Сначала выберите Икону на шаге 3."
+    },
     "pickedBadge": "Выбрано",
     "talentName": {
       "combatVeteran": "Ветеран боёв",
@@ -124,11 +188,43 @@
       "killerInstinctDesc": "+1 урон во всех бросках Рукопашного боя.",
       "linguistDesc": "Вы говорите на всех языках Горизонта достаточно для торга.",
       "nineLivesDesc": "При снижении ОЗ до 0 потратьте 1 ОС, чтобы остаться с 1 ОЗ."
+    },
+    "iconGiftName": {
+      "lady-of-tears": "Дар Владычицы Слёз",
+      "traveler": "Дар Странника",
+      "messenger": "Дар Вестника",
+      "merchant": "Дар Купца",
+      "dancer": "Дар Плясуньи",
+      "gambler": "Дар Игрока",
+      "judge": "Дар Судьи",
+      "faceless-one": "Дар Безликого",
+      "deckhand": "Дар Палубного"
+    },
+    "crewName": {
+      "free-trader": "Вольные торговцы",
+      "mercenary": "Наёмники",
+      "explorer": "Исследователи",
+      "agents": "Агенты",
+      "pilgrim": "Пилигримы"
     }
   },
   "uk": {
-    "counter": "[uk-todo] {count} / {max} selected",
-    "pickPrompt": "[uk-todo] Pick up to {max} starting talents.",
+    "intro": "[uk-todo] Three starting talents.",
+    "personal": {
+      "title": "[uk-todo] Personal talent",
+      "help": "[uk-todo] Pick {max} talent.",
+      "counter": "[uk-todo] {count} / {max} selected"
+    },
+    "crew": {
+      "title": "[uk-todo] Crew talent",
+      "help": "[uk-todo] Shared by team. Crew amplua: {label}.",
+      "noCrew": "[uk-todo] Pick crew on Step 2."
+    },
+    "iconGift": {
+      "title": "[uk-todo] Icon gift",
+      "help": "[uk-todo] Derived from chosen Icon.",
+      "noIcon": "[uk-todo] Pick Icon on Step 3."
+    },
     "pickedBadge": "[uk-todo] Picked",
     "talentName": {
       "combatVeteran": "[uk-todo] Combat Veteran",
@@ -145,23 +241,55 @@
       "nineLives": "[uk-todo] Nine Lives"
     },
     "talentDesc": {
-      "combatVeteranDesc": "[uk-todo] Once per turn, ignore the first point of damage.",
-      "defenderOfFaithDesc": "[uk-todo] +2 to Mystic Powers for believers.",
-      "everydayHeroDesc": "[uk-todo] When pushing, 5 also counts.",
-      "executionerDesc": "[uk-todo] +1 damage vs prone.",
-      "facelessDesc": "[uk-todo] Disappear from a scene.",
-      "gunfighterDesc": "[uk-todo] Draw sidearm free; +1 init.",
-      "hardToKillDesc": "[uk-todo] +1 HP from Medicurgy.",
-      "investigatorDesc": "[uk-todo] Learn place history.",
-      "juryRiggerDesc": "[uk-todo] Repair tech +1.",
-      "killerInstinctDesc": "[uk-todo] +1 melee damage.",
-      "linguistDesc": "[uk-todo] Speak all languages.",
-      "nineLivesDesc": "[uk-todo] Stay on 1 HP."
+      "combatVeteranDesc": "[uk-todo] ...",
+      "defenderOfFaithDesc": "[uk-todo] ...",
+      "everydayHeroDesc": "[uk-todo] ...",
+      "executionerDesc": "[uk-todo] ...",
+      "facelessDesc": "[uk-todo] ...",
+      "gunfighterDesc": "[uk-todo] ...",
+      "hardToKillDesc": "[uk-todo] ...",
+      "investigatorDesc": "[uk-todo] ...",
+      "juryRiggerDesc": "[uk-todo] ...",
+      "killerInstinctDesc": "[uk-todo] ...",
+      "linguistDesc": "[uk-todo] ...",
+      "nineLivesDesc": "[uk-todo] ..."
+    },
+    "iconGiftName": {
+      "lady-of-tears": "[uk-todo] Gift of Lady",
+      "traveler": "[uk-todo] Gift of Traveler",
+      "messenger": "[uk-todo] Gift of Messenger",
+      "merchant": "[uk-todo] Gift of Merchant",
+      "dancer": "[uk-todo] Gift of Dancer",
+      "gambler": "[uk-todo] Gift of Gambler",
+      "judge": "[uk-todo] Gift of Judge",
+      "faceless-one": "[uk-todo] Gift of Faceless",
+      "deckhand": "[uk-todo] Gift of Deckhand"
+    },
+    "crewName": {
+      "free-trader": "[uk-todo] Free Traders",
+      "mercenary": "[uk-todo] Mercenaries",
+      "explorer": "[uk-todo] Explorers",
+      "agents": "[uk-todo] Agents",
+      "pilgrim": "[uk-todo] Pilgrims"
     }
   },
   "el": {
-    "counter": "[el-todo] {count} / {max} selected",
-    "pickPrompt": "[el-todo] Pick up to {max} starting talents.",
+    "intro": "[el-todo] Three starting talents.",
+    "personal": {
+      "title": "[el-todo] Personal talent",
+      "help": "[el-todo] Pick {max} talent.",
+      "counter": "[el-todo] {count} / {max} selected"
+    },
+    "crew": {
+      "title": "[el-todo] Crew talent",
+      "help": "[el-todo] Shared by team. Crew amplua: {label}.",
+      "noCrew": "[el-todo] Pick crew on Step 2."
+    },
+    "iconGift": {
+      "title": "[el-todo] Icon gift",
+      "help": "[el-todo] Derived from chosen Icon.",
+      "noIcon": "[el-todo] Pick Icon on Step 3."
+    },
     "pickedBadge": "[el-todo] Picked",
     "talentName": {
       "combatVeteran": "[el-todo] Combat Veteran",
@@ -178,18 +306,36 @@
       "nineLives": "[el-todo] Nine Lives"
     },
     "talentDesc": {
-      "combatVeteranDesc": "[el-todo] Once per turn, ignore the first point of damage.",
-      "defenderOfFaithDesc": "[el-todo] +2 to Mystic Powers for believers.",
-      "everydayHeroDesc": "[el-todo] When pushing, 5 also counts.",
-      "executionerDesc": "[el-todo] +1 damage vs prone.",
-      "facelessDesc": "[el-todo] Disappear from a scene.",
-      "gunfighterDesc": "[el-todo] Draw sidearm free; +1 init.",
-      "hardToKillDesc": "[el-todo] +1 HP from Medicurgy.",
-      "investigatorDesc": "[el-todo] Learn place history.",
-      "juryRiggerDesc": "[el-todo] Repair tech +1.",
-      "killerInstinctDesc": "[el-todo] +1 melee damage.",
-      "linguistDesc": "[el-todo] Speak all languages.",
-      "nineLivesDesc": "[el-todo] Stay on 1 HP."
+      "combatVeteranDesc": "[el-todo] ...",
+      "defenderOfFaithDesc": "[el-todo] ...",
+      "everydayHeroDesc": "[el-todo] ...",
+      "executionerDesc": "[el-todo] ...",
+      "facelessDesc": "[el-todo] ...",
+      "gunfighterDesc": "[el-todo] ...",
+      "hardToKillDesc": "[el-todo] ...",
+      "investigatorDesc": "[el-todo] ...",
+      "juryRiggerDesc": "[el-todo] ...",
+      "killerInstinctDesc": "[el-todo] ...",
+      "linguistDesc": "[el-todo] ...",
+      "nineLivesDesc": "[el-todo] ..."
+    },
+    "iconGiftName": {
+      "lady-of-tears": "[el-todo] Gift of Lady",
+      "traveler": "[el-todo] Gift of Traveler",
+      "messenger": "[el-todo] Gift of Messenger",
+      "merchant": "[el-todo] Gift of Merchant",
+      "dancer": "[el-todo] Gift of Dancer",
+      "gambler": "[el-todo] Gift of Gambler",
+      "judge": "[el-todo] Gift of Judge",
+      "faceless-one": "[el-todo] Gift of Faceless",
+      "deckhand": "[el-todo] Gift of Deckhand"
+    },
+    "crewName": {
+      "free-trader": "[el-todo] Free Traders",
+      "mercenary": "[el-todo] Mercenaries",
+      "explorer": "[el-todo] Explorers",
+      "agents": "[el-todo] Agents",
+      "pilgrim": "[el-todo] Pilgrims"
     }
   }
 }
@@ -197,43 +343,86 @@
 
 <template>
   <div class="step-talents">
-    <div class="step-talents__meta">
-      <span class="step-talents__counter">
-        {{ t('counter', { count: pickedCount, max: MAX_FREE_PICKS }) }}
-      </span>
-      <p class="step-talents__prompt">
-        {{ t('pickPrompt', { max: MAX_FREE_PICKS }) }}
-      </p>
-    </div>
+    <p class="step-talents__intro">
+      {{ t('intro') }}
+    </p>
 
-    <div class="step-talents__grid">
-      <div
-        v-for="talent in TALENT_POOL"
-        :key="talent.id"
-        class="step-talents__card"
-        :class="{
-          'step-talents__card--picked': isPicked(talent.id),
-          'step-talents__card--disabled': !isPicked(talent.id) && !canPickMore,
-        }"
-        role="checkbox"
-        :aria-checked="isPicked(talent.id)"
-        tabindex="0"
-        @click="toggle(talent.id)"
-        @keydown.enter.space.prevent="toggle(talent.id)"
-      >
-        <div class="step-talents__card-head">
-          <span class="step-talents__talent-name">
-            {{ t(`talentName.${talent.name}`) }}
-          </span>
-          <span v-if="isPicked(talent.id)" class="step-talents__badge">
-            {{ t('pickedBadge') }}
-          </span>
+    <section class="step-talents__section">
+      <header class="step-talents__section-head">
+        <h3 class="step-talents__section-title">
+          {{ t('personal.title') }}
+        </h3>
+        <span class="step-talents__counter">
+          {{
+            t('personal.counter', {
+              count: personalPicked.length,
+              max: MAX_PERSONAL_PICKS,
+            })
+          }}
+        </span>
+      </header>
+      <p class="step-talents__section-help">
+        {{ t('personal.help', { max: MAX_PERSONAL_PICKS }) }}
+      </p>
+      <div class="step-talents__grid">
+        <div
+          v-for="talent in PERSONAL_POOL"
+          :key="talent.id"
+          class="step-talents__card"
+          :class="{
+            'step-talents__card--picked': isPicked(talent.id),
+            'step-talents__card--disabled': !isPicked(talent.id) && !canPickMore,
+          }"
+          role="checkbox"
+          :aria-checked="isPicked(talent.id)"
+          tabindex="0"
+          @click="togglePersonal(talent.id)"
+          @keydown.enter.space.prevent="togglePersonal(talent.id)"
+        >
+          <div class="step-talents__card-head">
+            <span class="step-talents__talent-name">{{ t(`talentName.${talent.name}`) }}</span>
+            <span v-if="isPicked(talent.id)" class="step-talents__badge">
+              {{ t('pickedBadge') }}
+            </span>
+          </div>
+          <p class="step-talents__desc">
+            {{ t(`talentDesc.${talent.description}`) }}
+          </p>
         </div>
-        <p class="step-talents__desc">
-          {{ t(`talentDesc.${talent.description}`) }}
-        </p>
       </div>
-    </div>
+    </section>
+
+    <section class="step-talents__section">
+      <header class="step-talents__section-head">
+        <h3 class="step-talents__section-title">
+          {{ t('crew.title') }}
+        </h3>
+      </header>
+      <div v-if="crewConcept" class="step-talents__slot step-talents__slot--filled">
+        <span class="step-talents__slot-label">{{ crewLabel }}</span>
+        <span class="step-talents__slot-help">
+          {{ t('crew.help', { label: crewLabel }) }}
+        </span>
+      </div>
+      <div v-else class="step-talents__slot step-talents__slot--empty">
+        {{ t('crew.noCrew') }}
+      </div>
+    </section>
+
+    <section class="step-talents__section">
+      <header class="step-talents__section-head">
+        <h3 class="step-talents__section-title">
+          {{ t('iconGift.title') }}
+        </h3>
+      </header>
+      <div v-if="iconId" class="step-talents__slot step-talents__slot--filled">
+        <span class="step-talents__slot-label">{{ iconGiftLabel }}</span>
+        <span class="step-talents__slot-help">{{ t('iconGift.help') }}</span>
+      </div>
+      <div v-else class="step-talents__slot step-talents__slot--empty">
+        {{ t('iconGift.noIcon') }}
+      </div>
+    </section>
   </div>
 </template>
 
@@ -243,24 +432,50 @@
   .step-talents {
     max-width: $talents-max-width;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
 
-    &__meta {
-      margin-bottom: var(--space-6);
+    &__intro {
+      margin: 0;
       text-align: center;
-    }
-
-    &__counter {
-      font-family: var(--font-mono);
-      font-size: var(--type-body-md-font-size);
-      color: var(--brand-brass-light);
-    }
-
-    &__prompt {
-      margin: var(--space-2) 0 0;
       font-family: var(--font-body);
       font-size: var(--type-body-sm-font-size);
       color: var(--text-secondary);
       font-style: italic;
+    }
+
+    &__section {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    &__section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-3);
+    }
+
+    &__section-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--type-body-md-font-size);
+      color: var(--brand-brass-light);
+    }
+
+    &__section-help {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--text-secondary);
+    }
+
+    &__counter {
+      font-family: var(--font-mono);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--brand-brass-light);
     }
 
     &__grid {
@@ -339,6 +554,39 @@
       font-size: var(--type-body-sm-font-size);
       color: var(--text-secondary);
       line-height: 1.5;
+    }
+
+    &__slot {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+
+      &--filled {
+        background-color: var(--surface-dawn);
+        border: 1px solid var(--brand-brass);
+      }
+
+      &--empty {
+        background-color: var(--surface-night);
+        border: 1px dashed var(--brand-brass-shadow);
+        color: var(--text-secondary);
+        font-style: italic;
+      }
+    }
+
+    &__slot-label {
+      font-family: var(--font-display);
+      font-size: var(--type-body-md-font-size);
+      color: var(--brand-brass-light);
+    }
+
+    &__slot-help {
+      color: var(--text-secondary);
+      font-style: italic;
     }
   }
 </style>

@@ -9,6 +9,7 @@ import 'package:app_api_client/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** | Opaque identifier (cuid2) | 
+**kind** | [**TalentKind**](TalentKind.md) | Discriminator describing where this talent came from (personal amplua, crew amplua, icon gift, or mutant stigma). Set on creation and immutable thereafter.  | 
 **name** | **String** | Talent name (e.g. \"Wing-Mate\", \"Stunt Pilot\") | 
 **description** | **String** | Rules text or flavour description of the talent | 
 **rank** | **int** | Talent rank (1 = basic, 2 = journeyman, 3 = master) | 

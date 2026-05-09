@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:app_api_client/src/model/talent_kind.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -12,6 +13,7 @@ part 'talent.g.dart';
 ///
 /// Properties:
 /// * [id] - Opaque identifier (cuid2)
+/// * [kind] - Discriminator describing where this talent came from (personal amplua, crew amplua, icon gift, or mutant stigma). Set on creation and immutable thereafter. 
 /// * [name] - Talent name (e.g. \"Wing-Mate\", \"Stunt Pilot\")
 /// * [description] - Rules text or flavour description of the talent
 /// * [rank] - Talent rank (1 = basic, 2 = journeyman, 3 = master)
@@ -21,6 +23,11 @@ abstract class Talent implements Built<Talent, TalentBuilder> {
   /// Opaque identifier (cuid2)
   @BuiltValueField(wireName: r'id')
   String get id;
+
+  /// Discriminator describing where this talent came from (personal amplua, crew amplua, icon gift, or mutant stigma). Set on creation and immutable thereafter. 
+  @BuiltValueField(wireName: r'kind')
+  TalentKind get kind;
+  // enum kindEnum {  personal,  crew,  iconGift,  stigma,  };
 
   /// Talent name (e.g. \"Wing-Mate\", \"Stunt Pilot\")
   @BuiltValueField(wireName: r'name')
@@ -65,6 +72,11 @@ class _$TalentSerializer implements PrimitiveSerializer<Talent> {
     yield serializers.serialize(
       object.id,
       specifiedType: const FullType(String),
+    );
+    yield r'kind';
+    yield serializers.serialize(
+      object.kind,
+      specifiedType: const FullType(TalentKind),
     );
     yield r'name';
     yield serializers.serialize(
@@ -115,6 +127,13 @@ class _$TalentSerializer implements PrimitiveSerializer<Talent> {
             specifiedType: const FullType(String),
           ) as String;
           result.id = valueDes;
+          break;
+        case r'kind':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(TalentKind),
+          ) as TalentKind;
+          result.kind = valueDes;
           break;
         case r'name':
           final valueDes = serializers.deserialize(

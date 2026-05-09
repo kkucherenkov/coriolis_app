@@ -46,6 +46,7 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     origin: null,
     reputation: 2,
     startingWealth: 500,
+    crewConcept: null,
     attributes: { strength: 3, agility: 3, wits: 3, empathy: 3 },
     skills: { ...DEFAULT_SKILLS },
     hp: { current: 14, max: 14 },
@@ -496,6 +497,65 @@ describe('CreateCharacterHandler', () => {
     );
     expect(repo.create).toHaveBeenCalledWith(
       expect.objectContaining({ concept: 'scientist', reputation: 7 }),
+    );
+  });
+
+  // -------- Block 3: Talent kind + crewConcept --------
+
+  it('passes crewConcept through to the repo when provided in the DTO', async () => {
+    vi.mocked(repo.create).mockResolvedValue(
+      makeCharacter({ upbringing: 'plebeian', crewConcept: 'free-trader' }),
+    );
+    await handler.execute(
+      new CreateCharacterCommand(
+        'user-1',
+        makeDto({ upbringing: 'plebeian', crewConcept: 'free-trader' }),
+      ),
+    );
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ crewConcept: 'free-trader' }),
+    );
+  });
+
+  it('defaults crewConcept to null when not provided', async () => {
+    vi.mocked(repo.create).mockResolvedValue(makeCharacter());
+    await handler.execute(new CreateCharacterCommand('user-1', makeDto()));
+    expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ crewConcept: null }));
+  });
+
+  it('auto-derives an iconGift talent from the chosen icon', async () => {
+    vi.mocked(repo.create).mockResolvedValue(makeCharacter({ iconId: 'traveler' }));
+    await handler.execute(
+      new CreateCharacterCommand('user-1', makeDto({ upbringing: 'plebeian', iconId: 'traveler' })),
+    );
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        iconId: 'traveler',
+        talents: [expect.objectContaining({ kind: 'iconGift', name: 'gift-traveler' })],
+      }),
+    );
+  });
+
+  it('seeds no talents when no icon is chosen', async () => {
+    vi.mocked(repo.create).mockResolvedValue(makeCharacter());
+    await handler.execute(
+      new CreateCharacterCommand('user-1', makeDto({ upbringing: 'plebeian' })),
+    );
+    expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ talents: [] }));
+  });
+
+  it('iconGift talent ID matches ICON_GIFT_TALENT_IDS for kebab-case icons', async () => {
+    vi.mocked(repo.create).mockResolvedValue(makeCharacter({ iconId: 'lady-of-tears' }));
+    await handler.execute(
+      new CreateCharacterCommand(
+        'user-1',
+        makeDto({ upbringing: 'plebeian', iconId: 'lady-of-tears' }),
+      ),
+    );
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        talents: [expect.objectContaining({ kind: 'iconGift', name: 'gift-lady-of-tears' })],
+      }),
     );
   });
 });

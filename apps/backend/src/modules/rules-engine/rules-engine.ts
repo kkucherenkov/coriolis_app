@@ -168,6 +168,57 @@ export const CONCEPT_KEYS: Readonly<Record<Concept, ConceptKeys>> = Object.freez
 });
 
 /**
+ * Coriolis core book ch.2 §АМПЛУА КОМАНДЫ — five canonical crews. The team
+ * picks one at character creation; all heroes in the campaign share it.
+ * Members of the crew share access to one crew talent (one of the three the
+ * crew amplua offers); on each character's sheet that talent is recorded as
+ * `kind: crew`.
+ */
+export type CrewConcept = 'free-trader' | 'mercenary' | 'explorer' | 'agents' | 'pilgrim';
+
+/**
+ * Discriminator for `Talent.kind`. Each character has at most one of each
+ * non-`personal` kind at creation; further talents acquired during play are
+ * always `personal`. `iconGift` is auto-derived from the character's icon
+ * (one talent per icon — see ICON_GIFT_TALENT_IDS).
+ */
+export type TalentKind = 'personal' | 'crew' | 'iconGift' | 'stigma';
+
+/**
+ * Catalog data for talents lives in Block 4 (seed file or static catalog).
+ * For Block 3 we only need the icon → iconGift talent ID mapping so
+ * CreateCharacterHandler can auto-create the iconGift slot on forge. The
+ * mapping is canonical (one icon = one gift per Coriolis ch.4); the actual
+ * talent name + description for each ID lives in the catalog seeded later.
+ *
+ * Talent IDs are kebab-case for stability across i18n keys and DB rows.
+ */
+export const ICON_GIFT_TALENT_IDS: Readonly<
+  Record<
+    | 'lady-of-tears'
+    | 'traveler'
+    | 'messenger'
+    | 'merchant'
+    | 'dancer'
+    | 'gambler'
+    | 'judge'
+    | 'faceless-one'
+    | 'deckhand',
+    string
+  >
+> = Object.freeze({
+  'lady-of-tears': 'gift-lady-of-tears',
+  traveler: 'gift-traveler',
+  messenger: 'gift-messenger',
+  merchant: 'gift-merchant',
+  dancer: 'gift-dancer',
+  gambler: 'gift-gambler',
+  judge: 'gift-judge',
+  'faceless-one': 'gift-faceless-one',
+  deckhand: 'gift-deckhand',
+});
+
+/**
  * Sum of attribute values, used for budget validation.
  * Per ch.2 every attribute must be 2..4 (or 5 for the amplua's key attribute,
  * enforced in Block 2). Sum must not exceed UPBRINGING_BUDGETS[u].attributes.

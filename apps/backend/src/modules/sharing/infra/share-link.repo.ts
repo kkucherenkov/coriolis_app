@@ -20,6 +20,7 @@ import type {
   CharacterStatus,
   Concept,
   ConditionFlags,
+  CrewConcept,
   CriticalInjurySeverity,
   IconId,
   ItemReadModel,
@@ -27,6 +28,7 @@ import type {
   RelationshipKind,
   RelationshipReadModel,
   Skills,
+  TalentKind,
   TalentReadModel,
   Upbringing,
 } from '../../characters/domain/character.ports';
@@ -63,6 +65,7 @@ const CHARACTER_FULL_SELECT = {
   origin: true,
   reputation: true,
   startingWealth: true,
+  crewConcept: true,
   attributes: true,
   skills: true,
   hpCurrent: true,
@@ -78,7 +81,7 @@ const CHARACTER_FULL_SELECT = {
     orderBy: { id: 'asc' as const },
   },
   talents: {
-    select: { id: true, name: true, description: true, rank: true, acquiredAt: true },
+    select: { id: true, kind: true, name: true, description: true, rank: true, acquiredAt: true },
     orderBy: { acquiredAt: 'asc' as const },
   },
   relationships: {
@@ -117,6 +120,7 @@ interface PrismaCharacterFull {
   origin: string | null;
   reputation: number;
   startingWealth: number;
+  crewConcept: string | null;
   attributes: unknown;
   skills: unknown;
   hpCurrent: number;
@@ -128,7 +132,14 @@ interface PrismaCharacterFull {
   createdAt: Date;
   updatedAt: Date;
   items: { id: string; type: string; data: unknown }[];
-  talents: { id: string; name: string; description: string; rank: number; acquiredAt: Date }[];
+  talents: {
+    id: string;
+    kind: string;
+    name: string;
+    description: string;
+    rank: number;
+    acquiredAt: Date;
+  }[];
   relationships: { id: string; targetName: string; kind: string; notes: string | null }[];
   criticalInjuries: {
     id: string;
@@ -171,6 +182,7 @@ function mapCharacter(row: PrismaCharacterFull): CharacterReadModel {
   const talents = row.talents.map(
     (t): TalentReadModel => ({
       id: t.id,
+      kind: t.kind as TalentKind,
       name: t.name,
       description: t.description,
       rank: t.rank,
@@ -203,6 +215,7 @@ function mapCharacter(row: PrismaCharacterFull): CharacterReadModel {
     origin: row.origin,
     reputation: row.reputation,
     startingWealth: row.startingWealth,
+    crewConcept: row.crewConcept ? (row.crewConcept.replaceAll('_', '-') as CrewConcept) : null,
     attributes,
     skills,
     hp: { current: row.hpCurrent, max: computeHpMax(attributes.strength, attributes.agility) },

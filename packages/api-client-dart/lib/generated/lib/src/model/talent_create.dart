@@ -3,19 +3,26 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:app_api_client/src/model/talent_kind.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'talent_create.g.dart';
 
-/// Payload for creating a new talent
+/// Payload for creating a new talent. `kind` defaults to `personal` when omitted (the most common case for talents acquired during play). At character creation, the wizard picks one talent of each kind (`personal`, `crew`, `iconGift`); the server rejects a second talent of the same non-`personal` kind with `TALENT_KIND_DUPLICATE`. 
 ///
 /// Properties:
+/// * [kind] - Defaults to `personal`. Pass `crew` / `iconGift` / `stigma` to record a starting-talent slot of that kind (only one of each non-`personal` kind is allowed per character). 
 /// * [name] - Talent name
 /// * [description] - Rules text or flavour description
 /// * [rank] - Talent rank (defaults to 1 when not provided)
 @BuiltValue()
 abstract class TalentCreate implements Built<TalentCreate, TalentCreateBuilder> {
+  /// Defaults to `personal`. Pass `crew` / `iconGift` / `stigma` to record a starting-talent slot of that kind (only one of each non-`personal` kind is allowed per character). 
+  @BuiltValueField(wireName: r'kind')
+  TalentKind? get kind;
+  // enum kindEnum {  personal,  crew,  iconGift,  stigma,  };
+
   /// Talent name
   @BuiltValueField(wireName: r'name')
   String get name;
@@ -52,6 +59,13 @@ class _$TalentCreateSerializer implements PrimitiveSerializer<TalentCreate> {
     TalentCreate object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.kind != null) {
+      yield r'kind';
+      yield serializers.serialize(
+        object.kind,
+        specifiedType: const FullType(TalentKind),
+      );
+    }
     yield r'name';
     yield serializers.serialize(
       object.name,
@@ -92,6 +106,13 @@ class _$TalentCreateSerializer implements PrimitiveSerializer<TalentCreate> {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'kind':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(TalentKind),
+          ) as TalentKind;
+          result.kind = valueDes;
+          break;
         case r'name':
           final valueDes = serializers.deserialize(
             value,

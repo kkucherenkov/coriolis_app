@@ -11,6 +11,7 @@ export {
   applyConditions,
   UPBRINGING_BUDGETS,
   CONCEPT_KEYS,
+  ICON_GIFT_TALENT_IDS,
   sumAttributes,
   sumSkills,
 } from './rules-engine';
@@ -20,7 +21,9 @@ export type {
   ConditionFlags,
   Concept,
   ConceptKeys,
+  CrewConcept,
   SkillKey,
+  TalentKind,
   Upbringing,
   UpbringingBudget,
 } from './rules-engine';

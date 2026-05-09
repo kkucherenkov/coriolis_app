@@ -5,6 +5,7 @@ import {
   CharacterNameEmptyError,
   CharacterNotFoundError,
   CharacterNotOwnedError,
+  CrewConceptImmutableError,
   InvalidStatusTransitionError,
   ReadOnlyFieldError,
   SkillOutOfRangeError,
@@ -41,6 +42,7 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     origin: null,
     reputation: 2,
     startingWealth: 500,
+    crewConcept: null,
     attributes: { strength: 3, agility: 3, wits: 3, empathy: 3 },
     skills: { ...DEFAULT_SKILLS },
     hp: { current: 14, max: 14 },
@@ -273,5 +275,52 @@ describe('UpdateCharacterHandler', () => {
     await expect(
       handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
     ).resolves.toBeDefined();
+  });
+
+  // ── Block 3: crewConcept lifecycle ──────────────────────────────────────────
+
+  it('allows crewConcept change while character is draft', async () => {
+    vi.mocked(repo.findActiveById).mockResolvedValue(
+      makeCharacter({ status: 'draft', crewConcept: null }),
+    );
+    vi.mocked(repo.update).mockResolvedValue(
+      makeCharacter({ status: 'draft', crewConcept: 'free-trader' }),
+    );
+
+    const dto = Object.assign(new UpdateCharacterDto(), { crewConcept: 'free-trader' as const });
+    await expect(
+      handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+    ).resolves.toBeDefined();
+    expect(repo.update).toHaveBeenCalledWith(
+      'char-1',
+      expect.objectContaining({ crewConcept: 'free-trader' }),
+    );
+  });
+
+  it('throws CrewConceptImmutableError when changing crewConcept on an active character', async () => {
+    vi.mocked(repo.findActiveById).mockResolvedValue(
+      makeCharacter({ status: 'active', crewConcept: 'free-trader' }),
+    );
+
+    const dto = Object.assign(new UpdateCharacterDto(), { crewConcept: 'mercenary' as const });
+    await expect(
+      handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+    ).rejects.toBeInstanceOf(CrewConceptImmutableError);
+    expect(repo.update).not.toHaveBeenCalled();
+  });
+
+  it('does not call update with crewConcept when DTO omits it', async () => {
+    vi.mocked(repo.findActiveById).mockResolvedValue(
+      makeCharacter({ status: 'active', crewConcept: 'free-trader' }),
+    );
+    vi.mocked(repo.update).mockResolvedValue(
+      makeCharacter({ status: 'active', crewConcept: 'free-trader', name: 'New' }),
+    );
+
+    const dto = Object.assign(new UpdateCharacterDto(), { name: 'New' });
+    await handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto));
+
+    const updateArg = vi.mocked(repo.update).mock.calls[0]?.[1] ?? {};
+    expect(Object.hasOwn(updateArg, 'crewConcept')).toBe(false);
   });
 });

@@ -17,6 +17,7 @@ Name | Type | Description | Notes
 **origin** | **String** | Free-text narrative description of where the character is from (home station, planet, or region). Has no mechanical effect.  | 
 **reputation** | **int** | Current social reputation. Initial value is derived from `upbringing` (plebeian=2, stationary=4, aristocrat=6) and may change during play.  | 
 **startingWealth** | **int** | The number of birrs (currency) the character started with at creation. Derived from `upbringing` (plebeian=500, stationary=1000, aristocrat=5000). Immutable historical record.  | 
+**crewConcept** | [**CrewConcept**](CrewConcept.md) |  | 
 **attributes** | [**Attributes**](Attributes.md) |  | 
 **skills** | [**Skills**](Skills.md) |  | 
 **hp** | [**CharacterHp**](CharacterHp.md) |  | 

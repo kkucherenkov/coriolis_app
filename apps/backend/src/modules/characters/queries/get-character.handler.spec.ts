@@ -31,6 +31,7 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     origin: null,
     reputation: 2,
     startingWealth: 500,
+    crewConcept: null,
     attributes: { strength: 3, agility: 3, wits: 3, empathy: 3 },
     skills: { ...DEFAULT_SKILLS },
     hp: { current: 14, max: 14 },
@@ -107,6 +108,7 @@ describe('GetCharacterHandler', () => {
       talents: [
         {
           id: 't-1',
+          kind: 'personal',
           name: 'Wing-Mate',
           description: 'Desc',
           rank: 1,

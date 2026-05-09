@@ -1,6 +1,14 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
+
+import type { TalentKind } from '../../domain/character.ports';
+
+const VALID_TALENT_KINDS: TalentKind[] = ['personal', 'crew', 'iconGift', 'stigma'];
 
 export class AddTalentDto {
+  @IsOptional()
+  @IsIn(VALID_TALENT_KINDS)
+  kind?: TalentKind;
+
   @IsString()
   @IsNotEmpty()
   name!: string;

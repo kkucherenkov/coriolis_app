@@ -47,6 +47,7 @@ export class DuplicateCharacterHandler implements ICommandHandler<
       origin: source.origin,
       reputation: source.reputation,
       startingWealth: source.startingWealth,
+      crewConcept: source.crewConcept,
       attributes: source.attributes,
       skills: source.skills,
       // TODO(rules-engine, T-3.2.2): replace constants with computeHpMax / computeMpMax

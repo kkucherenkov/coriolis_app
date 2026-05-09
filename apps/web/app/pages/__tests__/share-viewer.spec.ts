@@ -42,6 +42,7 @@ export function makeCharacterFixture(overrides: Partial<Character> = {}): Charac
     origin: 'Coriolis Station',
     reputation: 4,
     startingWealth: 1000,
+    crewConcept: null,
     attributes: {
       strength: 3,
       agility: 5,
@@ -88,6 +89,7 @@ export function makeCharacterFixture(overrides: Partial<Character> = {}): Charac
     talents: [
       {
         id: 'talent-001',
+        kind: 'personal',
         name: 'Wing-Mate',
         description: 'When flying alongside an ally, both gain +1 die.',
         rank: 1,

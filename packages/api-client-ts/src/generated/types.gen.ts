@@ -137,6 +137,40 @@ export type Concept = 'artist' | 'networker' | 'fugitive' | 'negotiator' | 'oper
 export type Upbringing = 'plebeian' | 'stationary' | 'aristocrat';
 
 /**
+ * Crew archetype (амплуа команды) per Coriolis ST3001 ch.2
+ * §АМПЛУА КОМАНДЫ. Five canonical crews — `free-trader`
+ * (Вольные торговцы), `mercenary` (Наёмники), `explorer`
+ * (Исследователи), `agents` (Агенты), `pilgrim` (Пилигримы).
+ *
+ * The crew concept is shared by all heroes in a campaign and
+ * determines the pool of three crew talents the team picks from
+ * at creation (one of which becomes each hero's starting "crew"
+ * kind talent — see `TalentKind`). Crew concept is mutable while
+ * the character is `draft` and immutable once `active`.
+ *
+ */
+export type CrewConcept = 'free-trader' | 'mercenary' | 'explorer' | 'agents' | 'pilgrim';
+
+/**
+ * Discriminator for `Talent.kind` per Coriolis ST3001 ch.2 (3
+ * starting talents: one personal from amplua, one crew from
+ * crew-amplua, one icon gift from chosen icon) and ch.4
+ * (mutants additionally pick one `stigma`).
+ *
+ * Each character has at most one talent of each `personal`,
+ * `crew`, `iconGift`, `stigma` at character creation; further
+ * talents acquired during play are always `personal`.
+ *
+ * - `personal`  — picked from the amplua's personal talent list
+ * - `crew`      — picked from the team's crew amplua list
+ * - `iconGift`  — auto-derived from the character's `iconId`
+ * - `stigma`    — only for mutants; picked from the mutant
+ * lineage's stigma list (Block 5)
+ *
+ */
+export type TalentKind = 'personal' | 'crew' | 'iconGift' | 'stigma';
+
+/**
  * Effective range band for a weapon. Matches the Coriolis core book
  * range terminology:
  * - `arm` — Engaged / hand-to-hand.
@@ -310,6 +344,13 @@ export type Talent = {
      */
     id: string;
     /**
+     * Discriminator describing where this talent came from
+     * (personal amplua, crew amplua, icon gift, or mutant stigma).
+     * Set on creation and immutable thereafter.
+     *
+     */
+    kind: TalentKind;
+    /**
      * Talent name (e.g. "Wing-Mate", "Stunt Pilot")
      */
     name: string;
@@ -328,9 +369,22 @@ export type Talent = {
 };
 
 /**
- * Payload for creating a new talent
+ * Payload for creating a new talent. `kind` defaults to `personal`
+ * when omitted (the most common case for talents acquired during
+ * play). At character creation, the wizard picks one talent of
+ * each kind (`personal`, `crew`, `iconGift`); the server rejects a
+ * second talent of the same non-`personal` kind with
+ * `TALENT_KIND_DUPLICATE`.
+ *
  */
 export type TalentCreate = {
+    /**
+     * Defaults to `personal`. Pass `crew` / `iconGift` / `stigma`
+     * to record a starting-talent slot of that kind (only one of
+     * each non-`personal` kind is allowed per character).
+     *
+     */
+    kind?: TalentKind;
     /**
      * Talent name
      */
@@ -346,7 +400,10 @@ export type TalentCreate = {
 };
 
 /**
- * PATCH payload for updating a talent — all fields optional
+ * PATCH payload for updating a talent — all fields optional.
+ * `kind` is immutable and cannot be changed after a talent has
+ * been recorded.
+ *
  */
 export type TalentUpdate = {
     name?: string;
@@ -795,6 +852,13 @@ export type Character = {
      *
      */
     readonly startingWealth: number;
+    /**
+     * The crew (амплуа команды) this character belongs to.
+     * Mutable while `status: draft` (the wizard is still in
+     * progress); immutable once the character is `active`.
+     *
+     */
+    crewConcept: CrewConcept | null;
     attributes: Attributes;
     skills: Skills;
     hp: {
@@ -882,6 +946,13 @@ export type CharacterCreate = {
     iconId?: IconId | null;
     upbringing: Upbringing;
     origin?: string | null;
+    /**
+     * Optional crew concept the character belongs to. May be set
+     * in the wizard before forging or updated later while the
+     * character is `draft`.
+     *
+     */
+    crewConcept?: CrewConcept | null;
     attributes?: Attributes;
     skills?: Skills;
     hp?: {
@@ -946,6 +1017,15 @@ export type CharacterUpdate = {
      */
     upbringing?: Upbringing;
     origin?: string | null;
+    /**
+     * Allowed only while `status` is `draft` — used by the wizard
+     * to let players pick their team's crew concept before
+     * forging. Once the character is `active`, this field is
+     * immutable and any attempt to change it is rejected with
+     * `CREW_CONCEPT_IMMUTABLE`.
+     *
+     */
+    crewConcept?: CrewConcept | null;
     /**
      * Update the character's current reputation (e.g. after a
      * roleplay event). Initial value is set from `upbringing` at
@@ -1948,6 +2028,13 @@ export type CharacterWritable = {
      *
      */
     reputation: number;
+    /**
+     * The crew (амплуа команды) this character belongs to.
+     * Mutable while `status: draft` (the wizard is still in
+     * progress); immutable once the character is `active`.
+     *
+     */
+    crewConcept: CrewConcept | null;
     attributes: Attributes;
     skills: Skills;
     hp: {
@@ -2647,7 +2734,12 @@ export type AddCharacterTalentData = {
 
 export type AddCharacterTalentErrors = {
     /**
-     * Validation error (name empty, rank out of 1–3 range)
+     * Validation error. Possible codes:
+     * - `CHARACTER_NAME_EMPTY` — talent name is an empty string.
+     * - `TALENT_KIND_DUPLICATE` — character already has a talent
+     * of this non-`personal` kind (e.g. trying to add a second
+     * `iconGift`).
+     *
      */
     400: Problem;
     /**

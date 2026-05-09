@@ -8,7 +8,7 @@ import 'package:built_value/serializer.dart';
 
 part 'talent_update.g.dart';
 
-/// PATCH payload for updating a talent — all fields optional
+/// PATCH payload for updating a talent — all fields optional. `kind` is immutable and cannot be changed after a talent has been recorded. 
 ///
 /// Properties:
 /// * [name] 

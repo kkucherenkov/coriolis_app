@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **iconId** | [**IconId**](IconId.md) |  | [optional] 
 **upbringing** | [**Upbringing**](Upbringing.md) |  | 
 **origin** | **String** |  | [optional] 
+**crewConcept** | [**CrewConcept**](CrewConcept.md) |  | [optional] 
 **attributes** | [**Attributes**](Attributes.md) |  | [optional] 
 **skills** | [**Skills**](Skills.md) |  | [optional] 
 **hp** | [**CharacterCreateHp**](CharacterCreateHp.md) |  | [optional] 

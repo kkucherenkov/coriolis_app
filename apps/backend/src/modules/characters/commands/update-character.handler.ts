@@ -9,6 +9,7 @@ import {
   CharacterNotFoundError,
   CharacterNotOwnedError,
   ConceptImmutableError,
+  CrewConceptImmutableError,
   IconUnknownError,
   InvalidStatusTransitionError,
   ReadOnlyFieldError,
@@ -128,6 +129,11 @@ export class UpdateCharacterHandler implements ICommandHandler<
     if (conceptChanging && existing.status !== 'draft') {
       throw new ConceptImmutableError();
     }
+    const crewConceptChanging =
+      dto.crewConcept !== undefined && dto.crewConcept !== existing.crewConcept;
+    if (crewConceptChanging && existing.status !== 'draft') {
+      throw new CrewConceptImmutableError();
+    }
 
     let derivedReputation: number | undefined;
     if (
@@ -154,6 +160,7 @@ export class UpdateCharacterHandler implements ICommandHandler<
       ...(dto.iconId === undefined ? {} : { iconId: dto.iconId }),
       ...(dto.upbringing === undefined ? {} : { upbringing: dto.upbringing }),
       ...(dto.origin === undefined ? {} : { origin: dto.origin }),
+      ...(dto.crewConcept === undefined ? {} : { crewConcept: dto.crewConcept }),
       ...(derivedReputation === undefined
         ? dto.reputation === undefined
           ? {}

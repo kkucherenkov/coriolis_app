@@ -3,7 +3,14 @@
   import { useCharactersApi } from '~/composables/useCharactersApi';
   import { useAutoSave } from '~/composables/useAutoSave';
   import type { Character, CharacterUpdate } from '~/composables/useCharactersApi';
-  import type { Attributes, Skills, IconId, Concept, Upbringing } from '@app/api-client-ts';
+  import type {
+    Attributes,
+    Skills,
+    IconId,
+    Concept,
+    CrewConcept,
+    Upbringing,
+  } from '@app/api-client-ts';
   import WizardShell from '~/components/wizard/WizardShell.vue';
   import Step1Concept from '~/components/wizard/Step1Concept.vue';
   import Step2Background from '~/components/wizard/Step2Background.vue';
@@ -67,6 +74,7 @@
   const draftConcept = ref<Concept | null>(null);
   const draftOrigin = ref<string | null>(null);
   const draftUpbringing = ref<Upbringing>(DEFAULT_UPBRINGING);
+  const draftCrewConcept = ref<CrewConcept | null>(null);
   const draftAge = ref<number | null>(null);
   const draftIconId = ref<IconId | null>(null);
   const draftAttributes = ref<Attributes>({ ...DEFAULT_ATTRS });
@@ -83,6 +91,7 @@
       iconId: draftIconId.value,
       upbringing: draftUpbringing.value,
       origin: draftOrigin.value,
+      crewConcept: draftCrewConcept.value,
       attributes: draftAttributes.value,
       skills: draftSkills.value,
     };
@@ -143,6 +152,7 @@
     draftIconId.value = char.iconId ?? null;
     draftUpbringing.value = char.upbringing;
     draftOrigin.value = char.origin ?? null;
+    draftCrewConcept.value = char.crewConcept ?? null;
     draftAttributes.value = { ...char.attributes };
     draftSkills.value = { ...char.skills };
   }
@@ -190,6 +200,7 @@
         concept: draftConcept.value,
         iconId: draftIconId.value,
         origin: draftOrigin.value,
+        crewConcept: draftCrewConcept.value,
         attributes: draftAttributes.value,
         skills: draftSkills.value,
         status: 'active',
@@ -220,6 +231,11 @@
 
   function onUpbringingUpdate(val: Upbringing): void {
     draftUpbringing.value = val;
+    scheduleSave();
+  }
+
+  function onCrewConceptUpdate(val: CrewConcept | null): void {
+    draftCrewConcept.value = val;
     scheduleSave();
   }
 
@@ -404,9 +420,11 @@
         v-if="step === 2"
         :origin="draftOrigin"
         :upbringing="draftUpbringing"
+        :crew-concept="draftCrewConcept"
         :age="draftAge"
         @update:origin="onOriginUpdate"
         @update:upbringing="onUpbringingUpdate"
+        @update:crew-concept="onCrewConceptUpdate"
         @update:age="onAgeUpdate"
       />
 
@@ -431,6 +449,8 @@
       <Step6Talents
         v-if="step === 6"
         :picked-talent-ids="draftTalentIds"
+        :icon-id="draftIconId"
+        :crew-concept="draftCrewConcept"
         @update:picked-talent-ids="onTalentIdsUpdate"
       />
     </WizardShell>

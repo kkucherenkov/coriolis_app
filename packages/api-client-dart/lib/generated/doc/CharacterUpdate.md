@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **iconId** | [**IconId**](IconId.md) |  | [optional] 
 **upbringing** | [**Upbringing**](Upbringing.md) | Allowed only while `status` is `draft` — used by the wizard to let players reconsider their pick before forging. Once the character is `active`, this field is immutable.  | [optional] 
 **origin** | **String** |  | [optional] 
+**crewConcept** | [**CrewConcept**](CrewConcept.md) |  | [optional] 
 **reputation** | **int** | Update the character's current reputation (e.g. after a roleplay event). Initial value is set from `upbringing` at creation time; while the character is a `draft`, changing `upbringing` resets `reputation` to the new upbringing's baseline.  | [optional] 
 **attributes** | [**Attributes**](Attributes.md) |  | [optional] 
 **skills** | [**Skills**](Skills.md) |  | [optional] 

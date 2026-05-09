@@ -103,6 +103,10 @@ export type Concept =
   | 'sailor'
   | 'soldier';
 
+export type CrewConcept = 'free-trader' | 'mercenary' | 'explorer' | 'agents' | 'pilgrim';
+
+export type TalentKind = 'personal' | 'crew' | 'iconGift' | 'stigma';
+
 /**
  * Lifecycle state of a character.
  * Matches the OpenAPI enum `draft | active` (lowercase wire) and maps
@@ -116,6 +120,7 @@ export type ItemType = 'WEAPON' | 'ARMOR' | 'GEAR' | 'CYBERNETIC' | 'SHIP_MODULE
 
 export interface TalentReadModel {
   id: string;
+  kind: TalentKind;
   name: string;
   description: string;
   rank: number;
@@ -159,6 +164,7 @@ export interface CharacterReadModel {
   origin: string | null;
   reputation: number;
   startingWealth: number;
+  crewConcept: CrewConcept | null;
   attributes: Attributes;
   skills: Skills;
   hp: {
@@ -244,6 +250,7 @@ export interface ICharacterRepo {
     origin?: string | null;
     reputation: number;
     startingWealth: number;
+    crewConcept?: CrewConcept | null;
     attributes: Attributes;
     skills: Skills;
     hpCurrent: number;
@@ -251,6 +258,8 @@ export interface ICharacterRepo {
     experience: number;
     conditions: ConditionFlags;
     notes?: string | null;
+    /** Talents recorded at character creation (e.g. iconGift auto-derived from icon). */
+    talents?: { kind: TalentKind; name: string; description: string; rank?: number }[];
     /** Lifecycle state. Defaults to 'active' when omitted. */
     status?: CharacterStatus;
   }): Promise<CharacterReadModel>;
@@ -264,6 +273,7 @@ export interface ICharacterRepo {
       upbringing: Upbringing;
       origin: string | null;
       reputation: number;
+      crewConcept: CrewConcept | null;
       attributes: Attributes;
       skills: Skills;
       hpCurrent: number;

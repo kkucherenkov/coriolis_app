@@ -23,6 +23,7 @@ function makeCharacterRepo(): ICharacterRepo {
 function makeTalentRepo(): ITalentRepo {
   return {
     findById: vi.fn(),
+    listByCharacterId: vi.fn().mockResolvedValue([]),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
@@ -35,6 +36,7 @@ function makeTalent(
   return {
     id: 'talent-1',
     characterId: 'char-1',
+    kind: 'personal',
     name: 'Wing-Mate',
     description: 'Bonus',
     rank: 1,
