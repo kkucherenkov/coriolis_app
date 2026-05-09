@@ -38,11 +38,14 @@ import {
   UpdateGameSessionCommand,
   UpdateGameSessionDto,
 } from './commands/update-game-session.command';
+import { UpdateDpCommand, UpdateDpDto } from './dp/commands/update-dp.command';
+import { ListDpEventsQuery } from './dp/queries/list-dp-events.query';
 import { GetGameSessionQuery } from './queries/get-game-session.query';
 import { ListGameSessionsQuery } from './queries/list-game-sessions.query';
 
 import type { AuthenticatedRequest } from '../../common/auth/auth.guard';
 import type { GameSessionReadModel } from './domain/game-session.ports';
+import type { DpEventListResult } from './dp/queries/list-dp-events.handler';
 import type { GameSessionListResult } from './queries/list-game-sessions.handler';
 
 @UseGuards(SessionGuard)
@@ -123,5 +126,30 @@ export class GameSessionsController {
     @Param('characterId') characterId: string,
   ): Promise<void> {
     return this.commandBus.execute(new UnassignCharacterCommand(id, req.userId, characterId));
+  }
+
+  /** POST /api/v1/game-sessions/:id/dp */
+  @Post(':id/dp')
+  @HttpCode(HttpStatus.OK)
+  async adjustDp(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() body: UpdateDpDto,
+  ): Promise<GameSessionReadModel> {
+    return this.commandBus.execute(
+      new UpdateDpCommand(id, req.userId, body.delta, 'GM_MANUAL', body.reason ?? null),
+    );
+  }
+
+  /** GET /api/v1/game-sessions/:id/dp/events */
+  @Get(':id/dp/events')
+  async listDpEvents(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Query('limit') limitRaw?: string,
+    @Query('cursor') cursor?: string,
+  ): Promise<DpEventListResult> {
+    const limit = Math.min(Math.max(Number.parseInt(limitRaw ?? '20', 10) || 20, 1), 100);
+    return this.queryBus.execute(new ListDpEventsQuery(id, req.userId, limit, cursor));
   }
 }

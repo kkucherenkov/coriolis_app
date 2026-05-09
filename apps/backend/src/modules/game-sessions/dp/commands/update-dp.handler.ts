@@ -1,0 +1,72 @@
+/**
+ * WHY this file exists:
+ * Handles the UpdateDpCommand — the single write path for Darkness Points.
+ *
+ * Validation order:
+ *  1. delta != 0 (DP_INVALID_DELTA)
+ *  2. Session exists (GAME_SESSION_NOT_FOUND)
+ *  3. If delta < 0 and !internal → caller must be the GM owner (GAME_SESSION_NOT_OWNER)
+ *  4. dpCount + delta >= 0 (DP_BELOW_ZERO)
+ *  5. Delegate to IDpRepo.applyDelta (atomic update + audit insert in a transaction)
+ *  6. Re-fetch and return the updated GameSession read model
+ */
+import { Inject } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+
+import {
+  GameSessionNotFoundError,
+  GameSessionNotOwnerError,
+} from '../../domain/game-session.errors';
+import { GAME_SESSION_REPO } from '../../domain/game-session.ports';
+import { DpBelowZeroError, DpInvalidDeltaError } from '../domain/dp.errors';
+import { DP_REPO } from '../domain/dp.ports';
+
+import { UpdateDpCommand } from './update-dp.command';
+
+import type { GameSessionReadModel, IGameSessionRepo } from '../../domain/game-session.ports';
+import type { IDpRepo } from '../domain/dp.ports';
+
+@CommandHandler(UpdateDpCommand)
+export class UpdateDpHandler implements ICommandHandler<UpdateDpCommand, GameSessionReadModel> {
+  constructor(
+    @Inject(GAME_SESSION_REPO) private readonly sessionRepo: IGameSessionRepo,
+    @Inject(DP_REPO) private readonly dpRepo: IDpRepo,
+  ) {}
+
+  async execute(command: UpdateDpCommand): Promise<GameSessionReadModel> {
+    const { gameSessionId, callerId, delta, source, reason, internal, rollId } = command;
+
+    // 1. delta must be non-zero
+    if (delta === 0) throw new DpInvalidDeltaError();
+
+    // 2. Session must exist
+    const session = await this.sessionRepo.findById(gameSessionId);
+    if (!session) throw new GameSessionNotFoundError(gameSessionId);
+
+    // 3. Negative delta ACL — only the GM owner may remove DP (internal callers bypass)
+    if (delta < 0 && !internal && session.ownerId !== callerId) {
+      throw new GameSessionNotOwnerError(gameSessionId);
+    }
+
+    // 4. Would go below zero?
+    if (session.dpCount + delta < 0) {
+      throw new DpBelowZeroError(session.dpCount, delta);
+    }
+
+    // 5. Apply atomically — dpRepo handles the transaction
+    await this.dpRepo.applyDelta({
+      gameSessionId,
+      delta,
+      reason: reason ?? null,
+      source,
+      rollId: rollId ?? null,
+    });
+
+    // 6. Return the refreshed session
+    // Session cannot have disappeared between the two calls in a healthy system;
+    // but we guard for the type checker.
+    const updated = await this.sessionRepo.findById(gameSessionId);
+    if (!updated) throw new GameSessionNotFoundError(gameSessionId);
+    return updated;
+  }
+}
