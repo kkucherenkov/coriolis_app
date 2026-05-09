@@ -66,10 +66,14 @@
         `/app/sessions/[id]` page renders basic session stats so the
         navigation and post-create redirect don't 404 — Block 4 fills
         in DP controls, audit log, character-assignment UX.
-  - [ ] Block 4 — `/app/sessions/[id]` detail page: assigned
-        characters list, DP counter, DP-adjustment controls
-        (GM-only — owner check from session payload), DP audit log
-        tail. `useDpApi` composable. Character assign / unassign UX.
+  - [x] Block 4 — Full session detail. GM gets DP +/- + free-form
+        delta-with-reason form, audit log tail (zebra rows, coloured
+        delta, localised source), and `<select>`-based character
+        assign / unassign. Players see read-only DP + assigned list.
+        Page resolves session + me + characters in parallel on mount.
+        Each adjust patches the session from the POST response and
+        refetches the audit list — Block 5 will replace the
+        post-adjust refetch with the Centrifugo `dp.changed` push.
   - [ ] Block 5 — Centrifugo subscription on the session detail page.
         Reuse the realtime-token endpoint already in the spec; on
         `dp.changed` patch the local DP counter and prepend an audit
