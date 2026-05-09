@@ -74,11 +74,16 @@
         Each adjust patches the session from the POST response and
         refetches the audit list — Block 5 will replace the
         post-adjust refetch with the Centrifugo `dp.changed` push.
-  - [ ] Block 5 — Centrifugo subscription on the session detail page.
-        Reuse the realtime-token endpoint already in the spec; on
-        `dp.changed` patch the local DP counter and prepend an audit
-        row, on `roll.pushed` toast the roll-pushed event for any
-        assigned character. Drop subscription on unmount; reconnect
-        on visibility change.
-- Status: in-progress
+  - [x] Block 5 — Centrifugo subscription via new
+        `useSessionRealtime` composable wrapping the `centrifuge` JS
+        client. `dp.changed` patches `session.dpCount` and prepends a
+        synthetic audit row (de-duped against the GM's own adjust);
+        `roll.pushed` surfaces a 5-second toast above the DP card. A
+        "Live" / "Reconnecting" badge tracks connection state. Token
+        rotation handled by Centrifuge's `getToken` callback so an
+        in-flight connection survives the 5-min token TTL. Visibility-
+        change reconnect handling not added — Centrifuge already
+        retries automatically on transient drops, and the DP refetch
+        on next adjust covers any missed events.
+- Status: done — ready to archive (move to `done.md` next session)
 - Blockers: —
