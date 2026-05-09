@@ -257,9 +257,10 @@ describe('canPush', () => {
     expect(canPush({ pushed: true }, { exhausted: false })).toMatchObject({ ok: false, reason: 'ALREADY_PUSHED' });
   });
 
-  it('fresh roll (pushed=false) and not exhausted → ok=true, no reason', () => {
+  it('fresh roll (pushed=false) and not exhausted → ok=true', () => {
     const result = canPush({ pushed: false }, { exhausted: false });
     expect(result.ok).toBe(true);
-    expect(result.reason).toBeUndefined();
+    // Discriminated union: when ok=true the variant has no `reason` field.
+    expect('reason' in result).toBe(false);
   });
 });

@@ -111,10 +111,9 @@ export function applyConditions(
 
 // --------------- Push eligibility ---------------
 
-export interface CanPushResult {
-  ok: boolean;
-  reason?: 'ALREADY_PUSHED' | 'EXHAUSTED';
-}
+export type CanPushResult =
+  | { ok: true }
+  | { ok: false; reason: 'ALREADY_PUSHED' | 'EXHAUSTED' };
 
 /**
  * PRD §10: A roll can be pushed if:
