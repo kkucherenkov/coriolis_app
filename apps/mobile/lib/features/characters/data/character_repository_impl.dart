@@ -48,8 +48,8 @@ import 'package:app_api_client/app_api_client.dart'
         ItemCybernetic,
         ItemOther,
         ItemShipModule,
-        Talent,
-        Character as ApiCharacter;
+        Talent;
+import 'package:app_api_client/app_api_client.dart' as api_client show Character;
 
 import 'package:built_collection/built_collection.dart';
 import 'package:one_of/one_of.dart';
@@ -69,7 +69,7 @@ class CharacterRepositoryImpl implements CharacterRepository {
 
   // ── Mapping: API → Domain ────────────────────────────────────────────────
 
-  static Character _toDomain(ApiCharacter src) => Character(
+  static Character _toDomain(api_client.Character src) => Character(
         id: src.id,
         ownerId: src.ownerId,
         name: src.name,
@@ -119,7 +119,7 @@ class CharacterRepositoryImpl implements CharacterRepository {
         createdAt: src.createdAt,
       );
 
-  static CharacterSummary _toSummary(ApiCharacter src) => CharacterSummary(
+  static CharacterSummary _toSummary(api_client.Character src) => CharacterSummary(
         id: src.id,
         name: src.name,
         concept: src.concept,
@@ -203,7 +203,6 @@ class CharacterRepositoryImpl implements CharacterRepository {
       type: ItemType.other,
       name: other.name,
       weight: other.weight,
-      quantity: other.quantity,
       notes: other.notes,
     );
   }
@@ -382,9 +381,8 @@ class CharacterRepositoryImpl implements CharacterRepository {
       if (description != null) b.description = description;
       if (rank != null) b.rank = rank;
     });
-    final response = await _api.updateCharacterTalent(
-      id: characterId,
-      talentId: talentId,
+    final response = await _api.updateTalent(
+      id: talentId,
       talentUpdate: payload,
     );
     final body = response.data;
@@ -394,7 +392,7 @@ class CharacterRepositoryImpl implements CharacterRepository {
 
   @override
   Future<void> removeTalent(String characterId, String talentId) async {
-    await _api.deleteCharacterTalent(id: characterId, talentId: talentId);
+    await _api.deleteTalent(id: talentId);
   }
 
   // ── Inventory ────────────────────────────────────────────────────────────
@@ -418,9 +416,8 @@ class CharacterRepositoryImpl implements CharacterRepository {
     DomainItem patch,
   ) async {
     final payload = _domainItemToUpdate(patch);
-    final response = await _api.updateCharacterItem(
-      id: characterId,
-      itemId: itemId,
+    final response = await _api.updateItem(
+      id: itemId,
       itemUpdate: payload,
     );
     final body = response.data;
@@ -430,7 +427,7 @@ class CharacterRepositoryImpl implements CharacterRepository {
 
   @override
   Future<void> removeItem(String characterId, String itemId) async {
-    await _api.deleteCharacterItem(id: characterId, itemId: itemId);
+    await _api.deleteItem(id: itemId);
   }
 
   // ── Internal helpers ─────────────────────────────────────────────────────
@@ -524,7 +521,6 @@ class CharacterRepositoryImpl implements CharacterRepository {
           ..type = ItemOtherCreateTypeEnum.OTHER
           ..name = item.name
           ..weight = item.weight ?? 0
-          ..quantity = item.quantity ?? 1
           ..notes = item.notes);
         return ItemCreate((b) => b
           ..oneOf = OneOfDynamic(
@@ -611,7 +607,6 @@ class CharacterRepositoryImpl implements CharacterRepository {
           ..type = ItemOtherUpdateTypeEnum.OTHER
           ..name = item.name
           ..weight = item.weight
-          ..quantity = item.quantity
           ..notes = item.notes);
         return ItemUpdate((b) => b
           ..oneOf = OneOfDynamic(
