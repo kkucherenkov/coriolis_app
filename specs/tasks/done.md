@@ -2,6 +2,45 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## Open Graph image renderer (Epic 6 Feature 6.3)
+
+- Completed: 2026-05-09
+- Owner: claude (backend-engineer agent + parent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Epic 6 Feature 6.3, T-6.3.1.{a,b,d,e}.
+  T-6.3.1.c (ship OG) deferred until ship-share endpoints exist.
+- Result: ff-merged to main as `<og range>` (3 commits).
+  - `9b05ed6` `chore(backend): add satori + @resvg/resvg-js + react deps
+    for OG renderer`. Versions: `satori@0.26.0`, `@resvg/resvg-js@2.6.2`
+    (prebuilt binaries for `darwin-arm64` + `linux-x64-gnu`),
+    `react@19.2.6` (used only for `React.createElement` in the Satori
+    template).
+  - `17859f1` `feat(backend): OG image renderer service + character
+    template`. `og.service.ts` is stateless (Satori → Resvg pipeline) +
+    embedded fallback PNG (1200×630 solid surface-void) for renderer
+    failures. `og.fonts.ts` lazy-loads Forum + Inter from Google Fonts
+    with in-process caching and graceful network degradation.
+    `templates/character-og.ts` is the brass-on-indigo card layout via
+    `React.createElement`.
+  - `3b155b7` `feat(backend): GET /public/og/character/:slug.png
+    replaces 501 stub`. `OgService` injected via DI; cache headers
+    `Cache-Control: public, max-age=3600,
+    stale-while-revalidate=86400`.
+- 8 snapshot specs cover: PNG magic bytes, 1200×630 dimensions,
+  non-empty pixel sum, long-name wrapping, null concept, null iconId,
+  fallback on Satori error, the static fallback PNG. Backend total: 260
+  tests passing.
+- Notable design constraints (documented inline):
+  - Satori CSS subset doesn't support `border` shorthand → use
+    `border{Top,Bottom,Left,Right}{Width,Style,Color}`.
+  - Satori doesn't support font fallback stacks (`'Forum, serif'`) → use
+    primary family only.
+  - Hex literals are explicitly justified inside the OG template
+    (Satori needs concrete colors; can't read CSS custom properties).
+- Open follow-ups (Phase 3+):
+  - T-6.3.1.c ship OG endpoint (deferred with ship-share work).
+  - Cache-warmup / persistent cache (currently the Cache-Control window
+    is the only cache layer).
+
 ## Public read-only viewer — web (Epic 6 Feature 6.2)
 
 - Completed: 2026-05-09
