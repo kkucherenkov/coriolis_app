@@ -140,14 +140,14 @@ continuous or triggered animations. The allowed fallbacks are:
 
 **Verified components (T-6.5.1.e — 2026-05-09):**
 
-| Component | Motion type | Reduce fallback |
-|---|---|---|
-| `AppSavePulse` | scale + opacity pulse | fade-only keyframe |
-| `AppPopover` | scale + fade entrance | `animation: none` |
-| `AppModal` | scale + fade (Vue Transition) | opacity-only transition |
-| `Step3Icon` (wizard) | aura box-shadow pulse | static box-shadow, `animation: none` |
-| `AppButton` spinner | continuous rotation | opacity pulse, no rotation |
-| skeleton animations | shimmer / opacity pulse | `animation: none` |
+| Component            | Motion type                   | Reduce fallback                      |
+| -------------------- | ----------------------------- | ------------------------------------ |
+| `AppSavePulse`       | scale + opacity pulse         | fade-only keyframe                   |
+| `AppPopover`         | scale + fade entrance         | `animation: none`                    |
+| `AppModal`           | scale + fade (Vue Transition) | opacity-only transition              |
+| `Step3Icon` (wizard) | aura box-shadow pulse         | static box-shadow, `animation: none` |
+| `AppButton` spinner  | continuous rotation           | opacity pulse, no rotation           |
+| skeleton animations  | shimmer / opacity pulse       | `animation: none`                    |
 
 Any new motion introduced in `@app/ui` or `apps/web` must include a
 `prefers-reduced-motion: reduce` fallback before the PR is merged.
@@ -158,34 +158,34 @@ Populated as components ship. `pnpm design:audit` compares the rows below
 against the actual folders under `packages/ui/src/components/` (Vue) and
 `packages/ui_flutter/lib/src/` (Flutter), and fails CI on drift.
 
-| Category | Component | Vue (`@app/ui`) | Flutter (`app_ui`) |
-| -------- | --------- | --------------- | ------------------ |
-| Coriolis | `AppArabesqueCorner` | ✓ | — |
-| Primitive | `AppAvatar` | ✓ | — |
-| Primitive | `AppBadge` | ✓ | — |
-| Primitive | `AppBanner` | ✓ | — |
-| Primitive | `AppButton` | ✓ | — |
-| Primitive | `AppCard` | ✓ | — |
-| Primitive | `AppChip` | ✓ | — |
-| Coriolis | `AppConditionPill` | ✓ | — |
-| Coriolis | `AppDie` | ✓ | — |
-| Coriolis | `AppDiePool` | ✓ | — |
-| Primitive | `AppDivider` | ✓ | — |
-| Primitive | `AppDots` | ✓ | — |
-| Primitive | `AppField` | ✓ | — |
-| Coriolis | `AppIconCoriolis` | ✓ | — |
-| Primitive | `AppIcon` | ✓ | — |
-| Primitive | `AppInput` | ✓ | — |
-| Primitive | `AppKbd` | ✓ | — |
-| Primitive | `AppLabel` | ✓ | — |
-| Primitive | `AppProgress` | ✓ | — |
-| Primitive | `AppSegControl` | ✓ | — |
-| Primitive | `AppSelect` | ✓ | — |
-| Coriolis | `AppStarOrnament` | ✓ | — |
-| Primitive | `AppSwitch` | ✓ | — |
-| Primitive | `AppTab` | ✓ | — |
-| Primitive | `AppTextarea` | ✓ | — |
-| Primitive | `AppTooltip` | ✓ | — |
-| Coriolis | `AppStatBlock` | ✓ | — |
-| Primitive | `AppModal` | ✓ | — |
-| Primitive | `AppPopover` | ✓ | — |
+| Category  | Component            | Vue (`@app/ui`) | Flutter (`app_ui`) |
+| --------- | -------------------- | --------------- | ------------------ |
+| Coriolis  | `AppArabesqueCorner` | ✓               | —                  |
+| Primitive | `AppAvatar`          | ✓               | —                  |
+| Primitive | `AppBadge`           | ✓               | —                  |
+| Primitive | `AppBanner`          | ✓               | —                  |
+| Primitive | `AppButton`          | ✓               | —                  |
+| Primitive | `AppCard`            | ✓               | —                  |
+| Primitive | `AppChip`            | ✓               | —                  |
+| Coriolis  | `AppConditionPill`   | ✓               | —                  |
+| Coriolis  | `AppDie`             | ✓               | —                  |
+| Coriolis  | `AppDiePool`         | ✓               | —                  |
+| Primitive | `AppDivider`         | ✓               | —                  |
+| Primitive | `AppDots`            | ✓               | —                  |
+| Primitive | `AppField`           | ✓               | —                  |
+| Coriolis  | `AppIconCoriolis`    | ✓               | —                  |
+| Primitive | `AppIcon`            | ✓               | —                  |
+| Primitive | `AppInput`           | ✓               | —                  |
+| Primitive | `AppKbd`             | ✓               | —                  |
+| Primitive | `AppLabel`           | ✓               | —                  |
+| Primitive | `AppProgress`        | ✓               | —                  |
+| Primitive | `AppSegControl`      | ✓               | —                  |
+| Primitive | `AppSelect`          | ✓               | —                  |
+| Coriolis  | `AppStarOrnament`    | ✓               | —                  |
+| Primitive | `AppSwitch`          | ✓               | —                  |
+| Primitive | `AppTab`             | ✓               | —                  |
+| Primitive | `AppTextarea`        | ✓               | —                  |
+| Primitive | `AppTooltip`         | ✓               | —                  |
+| Coriolis  | `AppStatBlock`       | ✓               | —                  |
+| Primitive | `AppModal`           | ✓               | —                  |
+| Primitive | `AppPopover`         | ✓               | —                  |

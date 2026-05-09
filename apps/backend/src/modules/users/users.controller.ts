@@ -10,7 +10,17 @@
  * `AuthenticatedRequest.userId`. It is never taken from the request body or
  * query string.
  */
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Patch,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 
 import { SessionGuard } from '../../common/auth/auth.guard';

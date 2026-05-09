@@ -61,8 +61,7 @@ export class UpdateMeHandler implements ICommandHandler<UpdateMeCommand, MeReadM
 
     // `displayName` undefined means the field was omitted from the PATCH body —
     // preserve the existing value.
-    const nextDisplayName =
-      displayName === undefined ? existing.displayName : displayName;
+    const nextDisplayName = displayName === undefined ? existing.displayName : displayName;
 
     const nextTheme: UserTheme = theme ?? existing.theme;
 

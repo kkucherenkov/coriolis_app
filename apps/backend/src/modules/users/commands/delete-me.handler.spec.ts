@@ -111,7 +111,7 @@ describe('DeleteMeHandler', () => {
 
     await handler.execute(new DeleteMeCommand('user-1'));
 
-    expect(auth.revokeAllSessions).not.toHaveBeenCalled();  
+    expect(auth.revokeAllSessions).not.toHaveBeenCalled();
   });
 
   it('does NOT publish UserDeletedEvent when user was already deleted', async () => {

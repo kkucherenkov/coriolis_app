@@ -22,16 +22,16 @@ Public pages are audited directly. Auth-gated pages require a valid session cook
 
 ### Per-page summary
 
-| Page | Auth required | axe critical | axe serious | axe moderate | Status |
-|------|:---:|:---:|:---:|:---:|---|
-| `/` (landing) | No | 0 | — | — | Automated ✓ |
-| `/login` | No | 0 | — | — | Automated ✓ |
-| `/signup` | No | 0 | — | — | Automated ✓ |
-| `/app/characters` (dashboard) | Yes | deferred | — | — | Deferred — pre-launch |
-| `/app/characters/new` (wizard steps 1–6) | Yes | deferred | — | — | Deferred — pre-launch |
-| `/app/characters/<id>` (sheet) | Yes | deferred | — | — | Deferred — pre-launch |
-| `/app/settings` | Yes | deferred | — | — | Deferred — pre-launch |
-| `/shared/character/<slug>` | No (public) | deferred | — | — | Deferred — stub endpoint |
+| Page                                     | Auth required | axe critical | axe serious | axe moderate | Status                   |
+| ---------------------------------------- | :-----------: | :----------: | :---------: | :----------: | ------------------------ |
+| `/` (landing)                            |      No       |      0       |      —      |      —       | Automated ✓              |
+| `/login`                                 |      No       |      0       |      —      |      —       | Automated ✓              |
+| `/signup`                                |      No       |      0       |      —      |      —       | Automated ✓              |
+| `/app/characters` (dashboard)            |      Yes      |   deferred   |      —      |      —       | Deferred — pre-launch    |
+| `/app/characters/new` (wizard steps 1–6) |      Yes      |   deferred   |      —      |      —       | Deferred — pre-launch    |
+| `/app/characters/<id>` (sheet)           |      Yes      |   deferred   |      —      |      —       | Deferred — pre-launch    |
+| `/app/settings`                          |      Yes      |   deferred   |      —      |      —       | Deferred — pre-launch    |
+| `/shared/character/<slug>`               |  No (public)  |   deferred   |      —      |      —       | Deferred — stub endpoint |
 
 ### Notes on deferred pages
 
@@ -60,12 +60,12 @@ Public pages are audited directly. Auth-gated pages require a valid session cook
 
 ### Fixes applied in this batch
 
-| Component / Page | Issue | Fix |
-|---|---|---|
-| `AppButton` spinner | No `prefers-reduced-motion` fallback — continuous rotate under reduce preference | Added opacity-pulse animation under `@media (prefers-reduced-motion: reduce)` |
-| `settings.vue` skeleton | Shimmer animation not suppressed under reduce | Added `animation: none` in reduce media query |
-| `characters/index.vue` skeleton | Same as above | Same fix |
-| `shared/character/[slug].vue` skeleton | Shimmer gradient animation not suppressed | Added `animation: none` + static gradient fallback |
+| Component / Page                       | Issue                                                                            | Fix                                                                           |
+| -------------------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `AppButton` spinner                    | No `prefers-reduced-motion` fallback — continuous rotate under reduce preference | Added opacity-pulse animation under `@media (prefers-reduced-motion: reduce)` |
+| `settings.vue` skeleton                | Shimmer animation not suppressed under reduce                                    | Added `animation: none` in reduce media query                                 |
+| `characters/index.vue` skeleton        | Same as above                                                                    | Same fix                                                                      |
+| `shared/character/[slug].vue` skeleton | Shimmer gradient animation not suppressed                                        | Added `animation: none` + static gradient fallback                            |
 
 ---
 
@@ -90,18 +90,18 @@ following the W3C Design Token Community Group format.
 All motion-bearing components have been verified against
 `@media (prefers-reduced-motion: reduce)`.
 
-| Component | Motion | Reduce fallback | Status |
-|---|---|---|---|
-| `AppSavePulse` | scale + opacity pulse (saving state) | fade-only (`app-save-pulse-fade` keyframe, no scale) | PASS |
-| `AppPopover` | entrance scale+fade (`app-popover-enter`) | `animation: none` | PASS |
-| `AppModal` | entrance/exit scale+fade (Vue `<Transition>`) | `scale: 1` — opacity-only transition | PASS |
-| `Step3Icon` (wizard step 3) | aura pulse box-shadow | `animation: none` + static box-shadow at 0.4 opacity | PASS |
-| `AppButton` spinner | continuous 360° rotation | opacity pulse (no rotation) — **fixed in this batch** | FIXED |
-| `settings.vue` skeleton | opacity shimmer | `animation: none` — **fixed in this batch** | FIXED |
-| `characters/index.vue` skeleton | opacity shimmer | `animation: none` — **fixed in this batch** | FIXED |
-| `characters/new.vue` wizard spinner | continuous rotation | `animation: none` (static border) | PASS (pre-existing) |
-| `characters/[id].vue` skeleton | opacity shimmer | `animation: none` (pre-existing) | PASS (pre-existing) |
-| `shared/character/[slug].vue` skeleton | gradient shimmer | `animation: none` + static gradient — **fixed in this batch** | FIXED |
+| Component                              | Motion                                        | Reduce fallback                                               | Status              |
+| -------------------------------------- | --------------------------------------------- | ------------------------------------------------------------- | ------------------- |
+| `AppSavePulse`                         | scale + opacity pulse (saving state)          | fade-only (`app-save-pulse-fade` keyframe, no scale)          | PASS                |
+| `AppPopover`                           | entrance scale+fade (`app-popover-enter`)     | `animation: none`                                             | PASS                |
+| `AppModal`                             | entrance/exit scale+fade (Vue `<Transition>`) | `scale: 1` — opacity-only transition                          | PASS                |
+| `Step3Icon` (wizard step 3)            | aura pulse box-shadow                         | `animation: none` + static box-shadow at 0.4 opacity          | PASS                |
+| `AppButton` spinner                    | continuous 360° rotation                      | opacity pulse (no rotation) — **fixed in this batch**         | FIXED               |
+| `settings.vue` skeleton                | opacity shimmer                               | `animation: none` — **fixed in this batch**                   | FIXED               |
+| `characters/index.vue` skeleton        | opacity shimmer                               | `animation: none` — **fixed in this batch**                   | FIXED               |
+| `characters/new.vue` wizard spinner    | continuous rotation                           | `animation: none` (static border)                             | PASS (pre-existing) |
+| `characters/[id].vue` skeleton         | opacity shimmer                               | `animation: none` (pre-existing)                              | PASS (pre-existing) |
+| `shared/character/[slug].vue` skeleton | gradient shimmer                              | `animation: none` + static gradient — **fixed in this batch** | FIXED               |
 
 ---
 
@@ -140,7 +140,7 @@ Test: open the delete-account confirmation dialog in `/app/settings`.
 Test: edit the display name field in `/app/settings`.
 
 - [ ] `aria-live="polite"` region announces "Saving…", "Saved", "Save failed"
-  without interrupting ongoing speech.
+      without interrupting ongoing speech.
 - [ ] The region is not `aria-hidden`.
 - [ ] On error, the error message is also announced.
 
@@ -154,17 +154,17 @@ Test: toggle the high-contrast switch in `/app/settings`.
 ### 5.5 Wizard focus management — `/app/characters/new`
 
 - [ ] "Next" button click moves focus to the new step's heading or first
-  interactive element.
+      interactive element.
 - [ ] Step progress indicator reads current step number and total.
 - [ ] Icon grid (step 3) has `role="radiogroup"` with `aria-label`;
-  each icon cell reads `role="radio"` + `aria-checked`.
+      each icon cell reads `role="radio"` + `aria-checked`.
 
 ### 5.6 Share viewer — `/shared/character/<slug>`
 
 - [ ] Page title includes character name.
 - [ ] Stats are in a meaningful reading order (not purely visual table).
 - [ ] "Gone" (410) and "Not Found" (404) states have descriptive headings
-  and offer a navigation action.
+      and offer a navigation action.
 
 ---
 

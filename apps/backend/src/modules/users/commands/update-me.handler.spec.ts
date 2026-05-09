@@ -51,7 +51,9 @@ describe('UpdateMeHandler', () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(existing);
     vi.mocked(repo.updateProfile).mockResolvedValue(updated);
 
-    const result = await handler.execute(new UpdateMeCommand('user-1', 'Kalim al-Rashid', undefined));
+    const result = await handler.execute(
+      new UpdateMeCommand('user-1', 'Kalim al-Rashid', undefined),
+    );
 
     expect(result).toEqual(updated);
     expect(repo.updateProfile).toHaveBeenCalledWith('user-1', {
@@ -112,9 +114,9 @@ describe('UpdateMeHandler', () => {
   it('throws DisplayNameEmptyError when displayName is an empty string', async () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(makeMeReadModel());
 
-    await expect(handler.execute(new UpdateMeCommand('user-1', '', undefined))).rejects.toBeInstanceOf(
-      DisplayNameEmptyError,
-    );
+    await expect(
+      handler.execute(new UpdateMeCommand('user-1', '', undefined)),
+    ).rejects.toBeInstanceOf(DisplayNameEmptyError);
     // Should not reach the repo write
     expect(repo.updateProfile).not.toHaveBeenCalled();
   });
@@ -122,7 +124,9 @@ describe('UpdateMeHandler', () => {
   it('throws DisplayNameEmptyError with 400 status and DISPLAY_NAME_EMPTY code', async () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(makeMeReadModel());
 
-    await expect(handler.execute(new UpdateMeCommand('user-1', '', undefined))).rejects.toMatchObject({
+    await expect(
+      handler.execute(new UpdateMeCommand('user-1', '', undefined)),
+    ).rejects.toMatchObject({
       status: 400,
       code: 'DISPLAY_NAME_EMPTY',
     });

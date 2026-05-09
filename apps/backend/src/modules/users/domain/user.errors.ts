@@ -28,7 +28,8 @@ export class DisplayNameEmptyError extends DomainError {
       code: 'DISPLAY_NAME_EMPTY',
       status: 400,
       title: 'Validation Error',
-      detail: 'Your display name must be between 1 and 80 characters — give your fellow Companions something to call you.',
+      detail:
+        'Your display name must be between 1 and 80 characters — give your fellow Companions something to call you.',
     });
   }
 }
@@ -40,7 +41,8 @@ export class DisplayNameTooLongError extends DomainError {
       code: 'DISPLAY_NAME_TOO_LONG',
       status: 400,
       title: 'Validation Error',
-      detail: 'That display name is too long for the ship manifest — keep it to 80 characters or fewer.',
+      detail:
+        'That display name is too long for the ship manifest — keep it to 80 characters or fewer.',
     });
   }
 }

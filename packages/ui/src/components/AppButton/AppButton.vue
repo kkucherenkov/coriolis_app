@@ -52,13 +52,21 @@
     @click="onClick"
   >
     <span v-if="loading" class="app-button__spinner" aria-hidden="true" />
-    <span v-if="$slots['icon-leading'] && !loading" class="app-button__icon app-button__icon--leading" aria-hidden="true">
+    <span
+      v-if="$slots['icon-leading'] && !loading"
+      class="app-button__icon app-button__icon--leading"
+      aria-hidden="true"
+    >
       <slot name="icon-leading" />
     </span>
     <span v-if="$slots['default']" class="app-button__label">
       <slot />
     </span>
-    <span v-if="$slots['icon-trailing']" class="app-button__icon app-button__icon--trailing" aria-hidden="true">
+    <span
+      v-if="$slots['icon-trailing']"
+      class="app-button__icon app-button__icon--trailing"
+      aria-hidden="true"
+    >
       <slot name="icon-trailing" />
     </span>
   </button>

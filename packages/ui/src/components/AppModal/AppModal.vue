@@ -124,10 +124,7 @@
 
   // ── Computed ────────────────────────────────────────────────────────────────
 
-  const panelClasses = computed(() => [
-    'app-modal__panel',
-    `app-modal__panel--${props.size}`,
-  ]);
+  const panelClasses = computed(() => ['app-modal__panel', `app-modal__panel--${props.size}`]);
 </script>
 
 <template>
