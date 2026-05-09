@@ -30,11 +30,17 @@
   asserting the amplua filter shrinks the personal pool (Block 2).
 - Sub-blocks (one commit + push + new session per block, per
   `feedback_block_workflow.md`):
-  - [ ] Block 1 — Locale-aware talent rendering on the character sheet
-        (`apps/web/app/pages/app/characters/[id].vue`). Match
-        `kind ≠ personal` talents against the `@app/specs` catalog by
-        kebab-cased name and use the localised entry; user-edited or
-        unknown rows fall through to the stored name/description.
+  - [x] Block 1 — Locale-aware talent rendering on the character sheet
+        (`0dc1f87`). Resolved in the renderer rather than via a Talent
+        `catalogId` migration: `@app/specs` gained
+        `findCatalogTalentByName(name, kind)` + `pickLocalized(field,
+        locale)`, and `apps/web` grew a `useTalentLocalization`
+        composable shared by `[id].vue` and `AppShareViewer.vue`. Tests
+        430/430 backend, 53/53 web. Both surfaces now switch catalog
+        talent name **and** description on locale change; user-edited
+        rows fall through to stored fields. Touches: `AppShareViewer`,
+        `[id].vue`, new `useTalentLocalization.ts`, `talents.ts` index
+        + helpers, 5 new specs in `talents-catalog.spec.ts`.
   - [ ] Block 2 — Personal-talent pool filtered by amplua in
         `Step6Talents.vue`. Add a `recommendedFor?: ConceptCode[]` field to
         `PersonalTalentCatalogEntry`, populate it from the rulebook
