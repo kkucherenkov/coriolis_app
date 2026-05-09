@@ -26,6 +26,8 @@
   import { useAutoSave } from '~/composables/useAutoSave';
   import type { SaveState } from '~/composables/useAutoSave';
   import SheetDiceRoller from '~/components/sheet/SheetDiceRoller.vue';
+  import SheetRollHistory from '~/components/sheet/SheetRollHistory.vue';
+  import type { Roll } from '~/composables/useRollsApi';
 
   const { t } = useI18n({ useScope: 'local' });
   const { displayTalentName } = useTalentLocalization();
@@ -256,6 +258,26 @@
     if (item.type === 'SHIP_MODULE') return item.slot;
     // OTHER — always has weight field
     return `${String(item.weight)} enc`;
+  }
+
+  // ── Rolls (Phase 4 Feature 7.1) ────────────────────────────────────────────────
+  // SheetDiceRoller emits rollCreated / rollPushed; we forward both to the
+  // sibling SheetRollHistory via its exposed `prependRoll` / `updateRoll`
+  // methods so a fresh roll lands at the top of the list immediately
+  // without a refetch (which would race against the still-being-persisted
+  // INSERT on the server).
+  interface RollHistoryHandle {
+    prependRoll: (roll: Roll) => void;
+    updateRoll: (roll: Roll) => void;
+  }
+  const rollHistoryRef = ref<RollHistoryHandle | null>(null);
+
+  function onRollCreated(roll: Roll): void {
+    rollHistoryRef.value?.prependRoll(roll);
+  }
+
+  function onRollPushed(roll: Roll): void {
+    rollHistoryRef.value?.updateRoll(roll);
   }
 
   // ── Talents (Feature 5.2) ────────────────────────────────────────────────────
@@ -1960,6 +1982,12 @@
             <SheetDiceRoller
               :character-id="characterId"
               :exhausted="localConditions.exhausted"
+              @roll-created="onRollCreated"
+              @roll-pushed="onRollPushed"
+            />
+            <SheetRollHistory
+              ref="rollHistoryRef"
+              :character-id="characterId"
             />
           </AppCard>
         </div>
