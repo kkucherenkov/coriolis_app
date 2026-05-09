@@ -98,6 +98,13 @@ Class | Method | HTTP request | Description
 [*DiceApi*](doc/DiceApi.md) | [**createRoll**](doc/DiceApi.md#createroll) | **POST** /api/v1/characters/{id}/rolls | Roll dice for a character
 [*DiceApi*](doc/DiceApi.md) | [**listRolls**](doc/DiceApi.md#listrolls) | **GET** /api/v1/characters/{id}/rolls | List roll history for a character
 [*DiceApi*](doc/DiceApi.md) | [**pushRoll**](doc/DiceApi.md#pushroll) | **PATCH** /api/v1/rolls/{id}/push | Push (reroll) a roll
+[*GameSessionsApi*](doc/GameSessionsApi.md) | [**assignCharacterToSession**](doc/GameSessionsApi.md#assigncharactertosession) | **POST** /api/v1/game-sessions/{id}/characters | Assign a character to a game session
+[*GameSessionsApi*](doc/GameSessionsApi.md) | [**createGameSession**](doc/GameSessionsApi.md#creategamesession) | **POST** /api/v1/game-sessions | Create a new game session
+[*GameSessionsApi*](doc/GameSessionsApi.md) | [**deleteGameSession**](doc/GameSessionsApi.md#deletegamesession) | **DELETE** /api/v1/game-sessions/{id} | Delete a game session
+[*GameSessionsApi*](doc/GameSessionsApi.md) | [**getGameSession**](doc/GameSessionsApi.md#getgamesession) | **GET** /api/v1/game-sessions/{id} | Get a game session by ID
+[*GameSessionsApi*](doc/GameSessionsApi.md) | [**listGameSessions**](doc/GameSessionsApi.md#listgamesessions) | **GET** /api/v1/game-sessions | List the authenticated GM&#39;s game sessions
+[*GameSessionsApi*](doc/GameSessionsApi.md) | [**unassignCharacterFromSession**](doc/GameSessionsApi.md#unassigncharacterfromsession) | **DELETE** /api/v1/game-sessions/{id}/characters/{characterId} | Remove a character from a game session
+[*GameSessionsApi*](doc/GameSessionsApi.md) | [**updateGameSession**](doc/GameSessionsApi.md#updategamesession) | **PATCH** /api/v1/game-sessions/{id} | Update a game session
 [*PublicApi*](doc/PublicApi.md) | [**getCharacterOgImage**](doc/PublicApi.md#getcharacterogimage) | **GET** /api/v1/public/og/character/{slug}.png | OG image for a shared character (Feature 6.3 — not yet implemented)
 [*PublicApi*](doc/PublicApi.md) | [**getPublicCharacter**](doc/PublicApi.md#getpubliccharacter) | **GET** /api/v1/public/character/{slug} | Get a publicly-shared character by slug
 [*RealtimeApi*](doc/RealtimeApi.md) | [**issueRealtimeToken**](doc/RealtimeApi.md#issuerealtimetoken) | **POST** /api/v1/realtime/token | Issue a short-lived Centrifugo connection token
@@ -124,6 +131,7 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
+ - [AssignCharacterToSession](doc/AssignCharacterToSession.md)
  - [AssignCrewRequest](doc/AssignCrewRequest.md)
  - [Attributes](doc/Attributes.md)
  - [Character](doc/Character.md)
@@ -140,6 +148,11 @@ Class | Method | HTTP request | Description
  - [CriticalInjury](doc/CriticalInjury.md)
  - [CriticalInjurySeverity](doc/CriticalInjurySeverity.md)
  - [DependencyStatus](doc/DependencyStatus.md)
+ - [GameSession](doc/GameSession.md)
+ - [GameSessionCreate](doc/GameSessionCreate.md)
+ - [GameSessionList](doc/GameSessionList.md)
+ - [GameSessionStatus](doc/GameSessionStatus.md)
+ - [GameSessionUpdate](doc/GameSessionUpdate.md)
  - [HealthStatus](doc/HealthStatus.md)
  - [HealthStatusDependencies](doc/HealthStatusDependencies.md)
  - [IconId](doc/IconId.md)

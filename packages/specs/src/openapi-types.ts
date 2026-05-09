@@ -531,6 +531,111 @@ export interface paths {
     patch: operations['updateTalent'];
     trace?: never;
   };
+  '/api/v1/game-sessions': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List the authenticated GM's game sessions
+     * @description Returns a cursor-paginated list of game sessions owned by the
+     *     authenticated user. Pass `cursor` from a previous response's
+     *     `nextCursor` to retrieve the following page. Results are ordered
+     *     newest-first by `createdAt`. Optionally filter by `status`.
+     */
+    get: operations['listGameSessions'];
+    put?: never;
+    /**
+     * Create a new game session
+     * @description Creates a game session owned by the authenticated user (the GM).
+     *     `name` is the only required field; all other fields are optional.
+     */
+    post: operations['createGameSession'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/game-sessions/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get a game session by ID
+     * @description Returns the full game session DTO. Returns 404 if the session does not
+     *     exist or is not owned by the authenticated user.
+     */
+    get: operations['getGameSession'];
+    put?: never;
+    post?: never;
+    /**
+     * Delete a game session
+     * @description Permanently deletes a game session. Cascades to the character
+     *     assignment join table. The session must be owned by the caller.
+     */
+    delete: operations['deleteGameSession'];
+    options?: never;
+    head?: never;
+    /**
+     * Update a game session
+     * @description Applies PATCH semantics to a game session. All fields are optional.
+     *     Status transitions: `active → archived` and `archived → active` are
+     *     both permitted.
+     */
+    patch: operations['updateGameSession'];
+    trace?: never;
+  };
+  '/api/v1/game-sessions/{id}/characters': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Assign a character to a game session
+     * @description Assigns one of the caller's own characters to the game session.
+     *     The character must be owned by the same user as the session (GM).
+     *     Assigning an already-assigned character is idempotent — returns the
+     *     current session state without creating a duplicate.
+     */
+    post: operations['assignCharacterToSession'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/game-sessions/{id}/characters/{characterId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Remove a character from a game session
+     * @description Removes the character from the session's character list.
+     *     The session must be owned by the caller. Silently succeeds if the
+     *     character was not assigned.
+     */
+    delete: operations['unassignCharacterFromSession'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/characters/{id}/share': {
     parameters: {
       query?: never;
@@ -2306,6 +2411,61 @@ export interface components {
        */
       theme?: 'dark' | 'high-contrast';
     };
+    /**
+     * @description Lifecycle state of a game session.
+     *     - `active` — session is in progress or available.
+     *     - `archived` — session is closed; hidden from the default list.
+     *     Both directions of the transition are permitted.
+     * @enum {string}
+     */
+    GameSessionStatus: 'active' | 'archived';
+    /** @description A campaign session container owned by a GM. */
+    GameSession: {
+      /** @description Opaque session identifier (cuid2) */
+      readonly id: string;
+      /** @description User identifier of the GM who owns this session */
+      readonly ownerId: string;
+      /** @description Short name for the session */
+      name: string;
+      /** @description Optional longer description */
+      description?: string | null;
+      status: components['schemas']['GameSessionStatus'];
+      /** @description Darkness Points counter; mutated by Feature 7.3 */
+      readonly dpCount: number;
+      /**
+       * @description Character ids assigned to this session. Manage via the join
+       *     endpoint (POST / DELETE on /game-sessions/{id}/characters).
+       */
+      readonly characterIds: string[];
+      /** @description Optional ship linked to the session (Epic 8) */
+      shipId?: string | null;
+      /** Format: date-time */
+      readonly createdAt: string;
+      /** Format: date-time */
+      readonly updatedAt: string;
+    };
+    /** @description Payload for creating a new game session */
+    GameSessionCreate: {
+      name: string;
+      description?: string | null;
+      shipId?: string | null;
+    };
+    /** @description PATCH payload for a game session — all fields optional */
+    GameSessionUpdate: {
+      name?: string;
+      description?: string | null;
+      status?: components['schemas']['GameSessionStatus'];
+      shipId?: string | null;
+    };
+    GameSessionList: {
+      items: components['schemas']['GameSession'][];
+      /** @description Cursor for the next page; null when there are no more results */
+      nextCursor: string | null;
+    };
+    AssignCharacterToSession: {
+      /** @description Identifier of the character to assign */
+      characterId: string;
+    };
     RealtimeToken: {
       /** @description Short-lived HMAC-signed JWT for Centrifugo */
       token: string | null;
@@ -2334,6 +2494,8 @@ export interface components {
     ShareSlug: string;
     /** @description Roll identifier (cuid2) */
     RollId: string;
+    /** @description Game session identifier (cuid2) */
+    GameSessionId: string;
   };
   requestBodies: never;
   headers: never;
@@ -3855,6 +4017,370 @@ export interface operations {
         };
       };
       /** @description Talent not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  listGameSessions: {
+    parameters: {
+      query?: {
+        /** @description Opaque pagination cursor returned by the previous page */
+        cursor?: string;
+        /** @description Number of sessions to return (1–100, default 20) */
+        limit?: number;
+        /** @description Filter sessions by status */
+        status?: components['schemas']['GameSessionStatus'];
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Paginated game session list */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['GameSessionList'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  createGameSession: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['GameSessionCreate'];
+      };
+    };
+    responses: {
+      /** @description Game session created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['GameSession'];
+        };
+      };
+      /**
+       * @description Validation error. Possible codes:
+       *     - `GAME_SESSION_NAME_EMPTY` — name is an empty string.
+       *     - `GAME_SESSION_NAME_TOO_LONG` — name exceeds 80 characters.
+       */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  getGameSession: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Game session */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['GameSession'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this session */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Game session not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  deleteGameSession: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Game session deleted */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this session */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Game session not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  updateGameSession: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['GameSessionUpdate'];
+      };
+    };
+    responses: {
+      /** @description Updated game session */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['GameSession'];
+        };
+      };
+      /**
+       * @description Validation error. Possible codes:
+       *     - `GAME_SESSION_NAME_EMPTY` — name is an empty string.
+       *     - `GAME_SESSION_NAME_TOO_LONG` — name exceeds 80 characters.
+       *     - `INVALID_GAME_SESSION_STATUS_TRANSITION` — invalid status transition.
+       */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this session */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Game session not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  assignCharacterToSession: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AssignCharacterToSession'];
+      };
+    };
+    responses: {
+      /** @description Character assigned; returns updated session */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['GameSession'];
+        };
+      };
+      /**
+       * @description Validation error. Possible codes:
+       *     - `CHARACTER_NOT_OWNED` — character does not belong to the caller.
+       */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this session */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Game session or character not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  unassignCharacterFromSession: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+        /** @description Character identifier (cuid2) */
+        characterId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Character removed from session */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this session */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Game session not found */
       404: {
         headers: {
           [name: string]: unknown;

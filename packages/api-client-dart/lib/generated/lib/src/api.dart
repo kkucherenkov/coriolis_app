@@ -11,6 +11,7 @@ import 'package:app_api_client/src/auth/bearer_auth.dart';
 import 'package:app_api_client/src/auth/oauth.dart';
 import 'package:app_api_client/src/api/characters_api.dart';
 import 'package:app_api_client/src/api/dice_api.dart';
+import 'package:app_api_client/src/api/game_sessions_api.dart';
 import 'package:app_api_client/src/api/public_api.dart';
 import 'package:app_api_client/src/api/realtime_api.dart';
 import 'package:app_api_client/src/api/sharing_api.dart';
@@ -82,6 +83,12 @@ class AppApiClient {
   /// by doing that all interceptors will not be executed
   DiceApi getDiceApi() {
     return DiceApi(dio, serializers);
+  }
+
+  /// Get GameSessionsApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  GameSessionsApi getGameSessionsApi() {
+    return GameSessionsApi(dio, serializers);
   }
 
   /// Get PublicApi instance, base route and serializer can be overridden by a given but be careful,

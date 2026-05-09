@@ -1589,6 +1589,88 @@ export type MeUpdate = {
     theme?: 'dark' | 'high-contrast';
 };
 
+/**
+ * Lifecycle state of a game session.
+ * - `active` — session is in progress or available.
+ * - `archived` — session is closed; hidden from the default list.
+ * Both directions of the transition are permitted.
+ *
+ */
+export type GameSessionStatus = 'active' | 'archived';
+
+/**
+ * A campaign session container owned by a GM.
+ */
+export type GameSession = {
+    /**
+     * Opaque session identifier (cuid2)
+     */
+    readonly id: string;
+    /**
+     * User identifier of the GM who owns this session
+     */
+    readonly ownerId: string;
+    /**
+     * Short name for the session
+     */
+    name: string;
+    /**
+     * Optional longer description
+     */
+    description?: string | null;
+    status: GameSessionStatus;
+    /**
+     * Darkness Points counter; mutated by Feature 7.3
+     */
+    readonly dpCount: number;
+    /**
+     * Character ids assigned to this session. Manage via the join
+     * endpoint (POST / DELETE on /game-sessions/{id}/characters).
+     *
+     */
+    readonly characterIds: Array<string>;
+    /**
+     * Optional ship linked to the session (Epic 8)
+     */
+    shipId?: string | null;
+    readonly createdAt: string;
+    readonly updatedAt: string;
+};
+
+/**
+ * Payload for creating a new game session
+ */
+export type GameSessionCreate = {
+    name: string;
+    description?: string | null;
+    shipId?: string | null;
+};
+
+/**
+ * PATCH payload for a game session — all fields optional
+ */
+export type GameSessionUpdate = {
+    name?: string;
+    description?: string | null;
+    status?: GameSessionStatus;
+    shipId?: string | null;
+};
+
+export type GameSessionList = {
+    items: Array<GameSession>;
+    /**
+     * Cursor for the next page; null when there are no more results
+     */
+    nextCursor: string | null;
+};
+
+export type AssignCharacterToSession = {
+    /**
+     * Identifier of the character to assign
+     */
+    characterId: string;
+};
+
 export type RealtimeToken = {
     /**
      * Short-lived HMAC-signed JWT for Centrifugo
@@ -1922,6 +2004,33 @@ export type ShipListWritable = {
 };
 
 /**
+ * A campaign session container owned by a GM.
+ */
+export type GameSessionWritable = {
+    /**
+     * Short name for the session
+     */
+    name: string;
+    /**
+     * Optional longer description
+     */
+    description?: string | null;
+    status: GameSessionStatus;
+    /**
+     * Optional ship linked to the session (Epic 8)
+     */
+    shipId?: string | null;
+};
+
+export type GameSessionListWritable = {
+    items: Array<GameSessionWritable>;
+    /**
+     * Cursor for the next page; null when there are no more results
+     */
+    nextCursor: string | null;
+};
+
+/**
  * Character identifier (cuid2)
  */
 export type CharacterId = string;
@@ -1960,6 +2069,11 @@ export type ShareSlug = string;
  * Roll identifier (cuid2)
  */
 export type RollId = string;
+
+/**
+ * Game session identifier (cuid2)
+ */
+export type GameSessionId = string;
 
 export type ListCharactersData = {
     body?: never;
@@ -3104,6 +3218,284 @@ export type UpdateTalentResponses = {
 };
 
 export type UpdateTalentResponse = UpdateTalentResponses[keyof UpdateTalentResponses];
+
+export type ListGameSessionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Opaque pagination cursor returned by the previous page
+         */
+        cursor?: string;
+        /**
+         * Number of sessions to return (1–100, default 20)
+         */
+        limit?: number;
+        /**
+         * Filter sessions by status
+         */
+        status?: GameSessionStatus;
+    };
+    url: '/api/v1/game-sessions';
+};
+
+export type ListGameSessionsErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+};
+
+export type ListGameSessionsError = ListGameSessionsErrors[keyof ListGameSessionsErrors];
+
+export type ListGameSessionsResponses = {
+    /**
+     * Paginated game session list
+     */
+    200: GameSessionList;
+};
+
+export type ListGameSessionsResponse = ListGameSessionsResponses[keyof ListGameSessionsResponses];
+
+export type CreateGameSessionData = {
+    body: GameSessionCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/game-sessions';
+};
+
+export type CreateGameSessionErrors = {
+    /**
+     * Validation error. Possible codes:
+     * - `GAME_SESSION_NAME_EMPTY` — name is an empty string.
+     * - `GAME_SESSION_NAME_TOO_LONG` — name exceeds 80 characters.
+     *
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+};
+
+export type CreateGameSessionError = CreateGameSessionErrors[keyof CreateGameSessionErrors];
+
+export type CreateGameSessionResponses = {
+    /**
+     * Game session created
+     */
+    201: GameSession;
+};
+
+export type CreateGameSessionResponse = CreateGameSessionResponses[keyof CreateGameSessionResponses];
+
+export type DeleteGameSessionData = {
+    body?: never;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}';
+};
+
+export type DeleteGameSessionErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this session
+     */
+    403: Problem;
+    /**
+     * Game session not found
+     */
+    404: Problem;
+};
+
+export type DeleteGameSessionError = DeleteGameSessionErrors[keyof DeleteGameSessionErrors];
+
+export type DeleteGameSessionResponses = {
+    /**
+     * Game session deleted
+     */
+    204: void;
+};
+
+export type DeleteGameSessionResponse = DeleteGameSessionResponses[keyof DeleteGameSessionResponses];
+
+export type GetGameSessionData = {
+    body?: never;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}';
+};
+
+export type GetGameSessionErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this session
+     */
+    403: Problem;
+    /**
+     * Game session not found
+     */
+    404: Problem;
+};
+
+export type GetGameSessionError = GetGameSessionErrors[keyof GetGameSessionErrors];
+
+export type GetGameSessionResponses = {
+    /**
+     * Game session
+     */
+    200: GameSession;
+};
+
+export type GetGameSessionResponse = GetGameSessionResponses[keyof GetGameSessionResponses];
+
+export type UpdateGameSessionData = {
+    body: GameSessionUpdate;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}';
+};
+
+export type UpdateGameSessionErrors = {
+    /**
+     * Validation error. Possible codes:
+     * - `GAME_SESSION_NAME_EMPTY` — name is an empty string.
+     * - `GAME_SESSION_NAME_TOO_LONG` — name exceeds 80 characters.
+     * - `INVALID_GAME_SESSION_STATUS_TRANSITION` — invalid status transition.
+     *
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this session
+     */
+    403: Problem;
+    /**
+     * Game session not found
+     */
+    404: Problem;
+};
+
+export type UpdateGameSessionError = UpdateGameSessionErrors[keyof UpdateGameSessionErrors];
+
+export type UpdateGameSessionResponses = {
+    /**
+     * Updated game session
+     */
+    200: GameSession;
+};
+
+export type UpdateGameSessionResponse = UpdateGameSessionResponses[keyof UpdateGameSessionResponses];
+
+export type AssignCharacterToSessionData = {
+    body: AssignCharacterToSession;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}/characters';
+};
+
+export type AssignCharacterToSessionErrors = {
+    /**
+     * Validation error. Possible codes:
+     * - `CHARACTER_NOT_OWNED` — character does not belong to the caller.
+     *
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this session
+     */
+    403: Problem;
+    /**
+     * Game session or character not found
+     */
+    404: Problem;
+};
+
+export type AssignCharacterToSessionError = AssignCharacterToSessionErrors[keyof AssignCharacterToSessionErrors];
+
+export type AssignCharacterToSessionResponses = {
+    /**
+     * Character assigned; returns updated session
+     */
+    201: GameSession;
+};
+
+export type AssignCharacterToSessionResponse = AssignCharacterToSessionResponses[keyof AssignCharacterToSessionResponses];
+
+export type UnassignCharacterFromSessionData = {
+    body?: never;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+        /**
+         * Character identifier (cuid2)
+         */
+        characterId: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}/characters/{characterId}';
+};
+
+export type UnassignCharacterFromSessionErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this session
+     */
+    403: Problem;
+    /**
+     * Game session not found
+     */
+    404: Problem;
+};
+
+export type UnassignCharacterFromSessionError = UnassignCharacterFromSessionErrors[keyof UnassignCharacterFromSessionErrors];
+
+export type UnassignCharacterFromSessionResponses = {
+    /**
+     * Character removed from session
+     */
+    204: void;
+};
+
+export type UnassignCharacterFromSessionResponse = UnassignCharacterFromSessionResponses[keyof UnassignCharacterFromSessionResponses];
 
 export type CreateShareLinkData = {
     body: ShareLinkCreate;

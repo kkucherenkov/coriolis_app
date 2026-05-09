@@ -14,6 +14,7 @@ import 'package:built_value/iso_8601_date_time_serializer.dart';
 import 'package:app_api_client/src/date_serializer.dart';
 import 'package:app_api_client/src/model/date.dart';
 
+import 'package:app_api_client/src/model/assign_character_to_session.dart';
 import 'package:app_api_client/src/model/assign_crew_request.dart';
 import 'package:app_api_client/src/model/attributes.dart';
 import 'package:app_api_client/src/model/character.dart';
@@ -30,6 +31,11 @@ import 'package:app_api_client/src/model/crew_slot.dart';
 import 'package:app_api_client/src/model/critical_injury.dart';
 import 'package:app_api_client/src/model/critical_injury_severity.dart';
 import 'package:app_api_client/src/model/dependency_status.dart';
+import 'package:app_api_client/src/model/game_session.dart';
+import 'package:app_api_client/src/model/game_session_create.dart';
+import 'package:app_api_client/src/model/game_session_list.dart';
+import 'package:app_api_client/src/model/game_session_status.dart';
+import 'package:app_api_client/src/model/game_session_update.dart';
 import 'package:app_api_client/src/model/health_status.dart';
 import 'package:app_api_client/src/model/health_status_dependencies.dart';
 import 'package:app_api_client/src/model/icon_id.dart';
@@ -108,6 +114,7 @@ import 'package:app_api_client/src/model/talent_update.dart';
 part 'serializers.g.dart';
 
 @SerializersFor([
+  AssignCharacterToSession,
   AssignCrewRequest,
   Attributes,
   Character,
@@ -124,6 +131,11 @@ part 'serializers.g.dart';
   CriticalInjury,
   CriticalInjurySeverity,
   DependencyStatus,
+  GameSession,
+  GameSessionCreate,
+  GameSessionList,
+  GameSessionStatus,
+  GameSessionUpdate,
   HealthStatus,
   HealthStatusDependencies,
   IconId,

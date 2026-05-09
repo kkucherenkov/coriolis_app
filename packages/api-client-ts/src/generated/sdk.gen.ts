@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddCharacterItemData, AddCharacterItemErrors, AddCharacterItemResponses, AddCharacterTalentData, AddCharacterTalentErrors, AddCharacterTalentResponses, AddShipModuleData, AddShipModuleErrors, AddShipModuleResponses, AssignCrewData, AssignCrewErrors, AssignCrewResponses, CreateCharacterData, CreateCharacterErrors, CreateCharacterResponses, CreateRollData, CreateRollErrors, CreateRollResponses, CreateShareLinkData, CreateShareLinkErrors, CreateShareLinkResponses, CreateShipData, CreateShipErrors, CreateShipResponses, DeleteCharacterData, DeleteCharacterErrors, DeleteCharacterResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteShipData, DeleteShipErrors, DeleteShipModuleData, DeleteShipModuleErrors, DeleteShipModuleResponses, DeleteShipResponses, DeleteTalentData, DeleteTalentErrors, DeleteTalentResponses, DuplicateCharacterData, DuplicateCharacterErrors, DuplicateCharacterResponses, DuplicateShipData, DuplicateShipErrors, DuplicateShipResponses, ExportCharacterData, ExportCharacterErrors, ExportCharacterResponses, ExportShipData, ExportShipErrors, ExportShipResponses, GetCharacterData, GetCharacterErrors, GetCharacterOgImageData, GetCharacterOgImageErrors, GetCharacterOgImageResponses, GetCharacterResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetMeData, GetMeErrors, GetMeResponses, GetPublicCharacterData, GetPublicCharacterErrors, GetPublicCharacterResponses, GetShipData, GetShipErrors, GetShipResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, ListCharactersData, ListCharactersErrors, ListCharactersResponses, ListRollsData, ListRollsErrors, ListRollsResponses, ListShareLinksData, ListShareLinksErrors, ListShareLinksResponses, ListShipsData, ListShipsErrors, ListShipsResponses, PushRollData, PushRollErrors, PushRollResponses, RevokeShareLinkData, RevokeShareLinkErrors, RevokeShareLinkResponses, UnassignCrewData, UnassignCrewErrors, UnassignCrewResponses, UpdateCharacterData, UpdateCharacterErrors, UpdateCharacterResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses, UpdateShipData, UpdateShipErrors, UpdateShipModuleData, UpdateShipModuleErrors, UpdateShipModuleResponses, UpdateShipResponses, UpdateTalentData, UpdateTalentErrors, UpdateTalentResponses } from './types.gen';
+import type { AddCharacterItemData, AddCharacterItemErrors, AddCharacterItemResponses, AddCharacterTalentData, AddCharacterTalentErrors, AddCharacterTalentResponses, AddShipModuleData, AddShipModuleErrors, AddShipModuleResponses, AssignCharacterToSessionData, AssignCharacterToSessionErrors, AssignCharacterToSessionResponses, AssignCrewData, AssignCrewErrors, AssignCrewResponses, CreateCharacterData, CreateCharacterErrors, CreateCharacterResponses, CreateGameSessionData, CreateGameSessionErrors, CreateGameSessionResponses, CreateRollData, CreateRollErrors, CreateRollResponses, CreateShareLinkData, CreateShareLinkErrors, CreateShareLinkResponses, CreateShipData, CreateShipErrors, CreateShipResponses, DeleteCharacterData, DeleteCharacterErrors, DeleteCharacterResponses, DeleteGameSessionData, DeleteGameSessionErrors, DeleteGameSessionResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteShipData, DeleteShipErrors, DeleteShipModuleData, DeleteShipModuleErrors, DeleteShipModuleResponses, DeleteShipResponses, DeleteTalentData, DeleteTalentErrors, DeleteTalentResponses, DuplicateCharacterData, DuplicateCharacterErrors, DuplicateCharacterResponses, DuplicateShipData, DuplicateShipErrors, DuplicateShipResponses, ExportCharacterData, ExportCharacterErrors, ExportCharacterResponses, ExportShipData, ExportShipErrors, ExportShipResponses, GetCharacterData, GetCharacterErrors, GetCharacterOgImageData, GetCharacterOgImageErrors, GetCharacterOgImageResponses, GetCharacterResponses, GetGameSessionData, GetGameSessionErrors, GetGameSessionResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetMeData, GetMeErrors, GetMeResponses, GetPublicCharacterData, GetPublicCharacterErrors, GetPublicCharacterResponses, GetShipData, GetShipErrors, GetShipResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, ListCharactersData, ListCharactersErrors, ListCharactersResponses, ListGameSessionsData, ListGameSessionsErrors, ListGameSessionsResponses, ListRollsData, ListRollsErrors, ListRollsResponses, ListShareLinksData, ListShareLinksErrors, ListShareLinksResponses, ListShipsData, ListShipsErrors, ListShipsResponses, PushRollData, PushRollErrors, PushRollResponses, RevokeShareLinkData, RevokeShareLinkErrors, RevokeShareLinkResponses, UnassignCharacterFromSessionData, UnassignCharacterFromSessionErrors, UnassignCharacterFromSessionResponses, UnassignCrewData, UnassignCrewErrors, UnassignCrewResponses, UpdateCharacterData, UpdateCharacterErrors, UpdateCharacterResponses, UpdateGameSessionData, UpdateGameSessionErrors, UpdateGameSessionResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses, UpdateShipData, UpdateShipErrors, UpdateShipModuleData, UpdateShipModuleErrors, UpdateShipModuleResponses, UpdateShipResponses, UpdateTalentData, UpdateTalentErrors, UpdateTalentResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -639,6 +639,143 @@ export const updateTalent = <ThrowOnError extends boolean = false>(options: Opti
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * List the authenticated GM's game sessions
+ *
+ * Returns a cursor-paginated list of game sessions owned by the
+ * authenticated user. Pass `cursor` from a previous response's
+ * `nextCursor` to retrieve the following page. Results are ordered
+ * newest-first by `createdAt`. Optionally filter by `status`.
+ *
+ */
+export const listGameSessions = <ThrowOnError extends boolean = false>(options?: Options<ListGameSessionsData, ThrowOnError>) => (options?.client ?? client).get<ListGameSessionsResponses, ListGameSessionsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/game-sessions',
+    ...options
+});
+
+/**
+ * Create a new game session
+ *
+ * Creates a game session owned by the authenticated user (the GM).
+ * `name` is the only required field; all other fields are optional.
+ *
+ */
+export const createGameSession = <ThrowOnError extends boolean = false>(options: Options<CreateGameSessionData, ThrowOnError>) => (options.client ?? client).post<CreateGameSessionResponses, CreateGameSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/game-sessions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a game session
+ *
+ * Permanently deletes a game session. Cascades to the character
+ * assignment join table. The session must be owned by the caller.
+ *
+ */
+export const deleteGameSession = <ThrowOnError extends boolean = false>(options: Options<DeleteGameSessionData, ThrowOnError>) => (options.client ?? client).delete<DeleteGameSessionResponses, DeleteGameSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/game-sessions/{id}',
+    ...options
+});
+
+/**
+ * Get a game session by ID
+ *
+ * Returns the full game session DTO. Returns 404 if the session does not
+ * exist or is not owned by the authenticated user.
+ *
+ */
+export const getGameSession = <ThrowOnError extends boolean = false>(options: Options<GetGameSessionData, ThrowOnError>) => (options.client ?? client).get<GetGameSessionResponses, GetGameSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/game-sessions/{id}',
+    ...options
+});
+
+/**
+ * Update a game session
+ *
+ * Applies PATCH semantics to a game session. All fields are optional.
+ * Status transitions: `active → archived` and `archived → active` are
+ * both permitted.
+ *
+ */
+export const updateGameSession = <ThrowOnError extends boolean = false>(options: Options<UpdateGameSessionData, ThrowOnError>) => (options.client ?? client).patch<UpdateGameSessionResponses, UpdateGameSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/game-sessions/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Assign a character to a game session
+ *
+ * Assigns one of the caller's own characters to the game session.
+ * The character must be owned by the same user as the session (GM).
+ * Assigning an already-assigned character is idempotent — returns the
+ * current session state without creating a duplicate.
+ *
+ */
+export const assignCharacterToSession = <ThrowOnError extends boolean = false>(options: Options<AssignCharacterToSessionData, ThrowOnError>) => (options.client ?? client).post<AssignCharacterToSessionResponses, AssignCharacterToSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/game-sessions/{id}/characters',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove a character from a game session
+ *
+ * Removes the character from the session's character list.
+ * The session must be owned by the caller. Silently succeeds if the
+ * character was not assigned.
+ *
+ */
+export const unassignCharacterFromSession = <ThrowOnError extends boolean = false>(options: Options<UnassignCharacterFromSessionData, ThrowOnError>) => (options.client ?? client).delete<UnassignCharacterFromSessionResponses, UnassignCharacterFromSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/game-sessions/{id}/characters/{characterId}',
+    ...options
 });
 
 /**

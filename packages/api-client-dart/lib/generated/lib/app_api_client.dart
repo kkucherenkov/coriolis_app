@@ -12,6 +12,7 @@ export 'package:app_api_client/src/model/date.dart';
 
 export 'package:app_api_client/src/api/characters_api.dart';
 export 'package:app_api_client/src/api/dice_api.dart';
+export 'package:app_api_client/src/api/game_sessions_api.dart';
 export 'package:app_api_client/src/api/public_api.dart';
 export 'package:app_api_client/src/api/realtime_api.dart';
 export 'package:app_api_client/src/api/sharing_api.dart';
@@ -19,6 +20,7 @@ export 'package:app_api_client/src/api/ships_api.dart';
 export 'package:app_api_client/src/api/system_api.dart';
 export 'package:app_api_client/src/api/users_api.dart';
 
+export 'package:app_api_client/src/model/assign_character_to_session.dart';
 export 'package:app_api_client/src/model/assign_crew_request.dart';
 export 'package:app_api_client/src/model/attributes.dart';
 export 'package:app_api_client/src/model/character.dart';
@@ -35,6 +37,11 @@ export 'package:app_api_client/src/model/crew_slot.dart';
 export 'package:app_api_client/src/model/critical_injury.dart';
 export 'package:app_api_client/src/model/critical_injury_severity.dart';
 export 'package:app_api_client/src/model/dependency_status.dart';
+export 'package:app_api_client/src/model/game_session.dart';
+export 'package:app_api_client/src/model/game_session_create.dart';
+export 'package:app_api_client/src/model/game_session_list.dart';
+export 'package:app_api_client/src/model/game_session_status.dart';
+export 'package:app_api_client/src/model/game_session_update.dart';
 export 'package:app_api_client/src/model/health_status.dart';
 export 'package:app_api_client/src/model/health_status_dependencies.dart';
 export 'package:app_api_client/src/model/icon_id.dart';
