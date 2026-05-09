@@ -262,6 +262,14 @@
       }
     }
 
+    @media (prefers-reduced-motion: reduce) {
+      &__skeleton-hero,
+      &__skeleton-body {
+        animation: none;
+        background: $skeleton-base;
+      }
+    }
+
     // ── State banners ───────────────────────────────────────────────────────────
 
     &__state-wrap {

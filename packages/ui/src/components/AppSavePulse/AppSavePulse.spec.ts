@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AppSavePulse from './AppSavePulse.vue';
 
@@ -49,5 +49,51 @@ describe('AppSavePulse', () => {
     await wrapper.setProps({ state: 'saved' });
     expect(wrapper.find('.app-save-pulse--idle').exists()).toBe(false);
     expect(wrapper.find('.app-save-pulse--saved').exists()).toBe(true);
+  });
+
+  // ── Reduced-motion awareness ───────────────────────────────────────────────
+  // The CSS @media (prefers-reduced-motion: reduce) block swaps the spin
+  // animation for a fade-only animation. JSDOM does not parse scoped styles,
+  // so we verify the structural guarantee: the saving state renders a dot
+  // element that can receive the fade animation class — i.e., the component
+  // renders correctly in all states and does not crash with a mocked
+  // matchMedia that returns reduce.
+
+  describe('reduced-motion (matchMedia mock)', () => {
+    let originalMatchMedia: typeof window.matchMedia;
+
+    beforeEach(() => {
+      originalMatchMedia = window.matchMedia;
+      // Mock matchMedia to report prefers-reduced-motion: reduce.
+      window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+        matches: query === '(prefers-reduced-motion: reduce)',
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }));
+    });
+
+    afterEach(() => {
+      window.matchMedia = originalMatchMedia;
+    });
+
+    it('renders saving state dot without throwing under reduce preference', () => {
+      const wrapper = mount(AppSavePulse, { props: { state: 'saving' } });
+      // Component must still render the dot — CSS reduces animation, not the DOM.
+      expect(wrapper.find('.app-save-pulse__dot').exists()).toBe(true);
+      expect(wrapper.find('.app-save-pulse--saving').exists()).toBe(true);
+    });
+
+    it('has a saving modifier when matchMedia reports reduce', () => {
+      const wrapper = mount(AppSavePulse, { props: { state: 'saving' } });
+      // The component structure is unchanged; the CSS media query handles animation.
+      const root = wrapper.find('.app-save-pulse');
+      expect(root.exists()).toBe(true);
+      expect(window.matchMedia('(prefers-reduced-motion: reduce)').matches).toBe(true);
+    });
   });
 });

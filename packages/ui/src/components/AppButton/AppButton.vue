@@ -202,4 +202,22 @@
       transform: rotate(360deg);
     }
   }
+
+  // Respect reduced-motion — replace continuous spin with a static pulse.
+  @media (prefers-reduced-motion: reduce) {
+    .app-button__spinner {
+      animation: app-button-pulse $btn-spin-dur ease-in-out infinite alternate;
+      border-right-color: currentcolor;
+    }
+  }
+
+  @keyframes app-button-pulse {
+    from {
+      opacity: 0.4;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
 </style>

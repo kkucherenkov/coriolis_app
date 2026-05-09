@@ -926,4 +926,11 @@
       opacity: 0.18;
     }
   }
+
+  // Skeleton animation — static when motion is reduced.
+  @media (prefers-reduced-motion: reduce) {
+    .page-settings__skeleton {
+      animation: none;
+    }
+  }
 </style>

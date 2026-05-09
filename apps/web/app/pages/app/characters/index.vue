@@ -405,4 +405,10 @@
       opacity: 0.18;
     }
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page-characters__skeleton {
+      animation: none;
+    }
+  }
 </style>
