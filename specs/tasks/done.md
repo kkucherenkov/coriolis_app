@@ -2,6 +2,34 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## Mobile pass + a11y audit + HC theme persist (Epic 6 Features 6.4, 6.5)
+
+- Completed: 2026-05-09
+- Owner: claude (flutter-engineer + frontend-engineer agents + parent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Epic 6 Features 6.4 (T-6.4.1.{a,b,c}) and 6.5 (T-6.5.1.{c,d,e}).
+- Result: ff-merged to main as `<6.4 + 6.5 range>`.
+
+  **6.4 — Mobile pass:**
+  - `f38792e` `docs(mobile): MOBILE_AUDIT — sheet vs sheet-mobile.jsx`. 8-item audit; 2 high-impact gaps fixed (bottom tab bar, RankStepperSheet extraction); 6 already match. Cyrillic decision: rely on Flutter's system-fallback (Roboto on Android, SF/Helvetica on iOS — both have full Cyrillic). Forum bundling deferred per audit. Cold-start measurement plan documented (no Android emulator at the bench; PRD NFR §6 target ≤ 2.0s, baseline Pixel 4).
+  - `<head>` `feat(mobile): bottom tab bar + private-class extractions per MOBILE_AUDIT`. `_SheetTabBar` moved to `Scaffold.bottomNavigationBar`, `_RankStepperSheet` extracted to public `RankStepperSheet`, wizard `_StepHeader` made `WizardStepHeader` (private symbols don't cross library boundaries via `show`).
+
+  **6.5 — A11y audit + HC theme:**
+  - `4ff0e8c` `feat(specs): Me.theme dark|high-contrast (v0.7.1)`. Required field on Me with default `dark`; allowed transitions documented inline.
+  - `270f73f` `chore(codegen): regenerate clients after Me.theme`.
+  - `b80b489` `feat(backend): persist theme on User + Me query/update`. Prisma migration `me_theme`. `UpdateMeCommand` validates the enum with a new `InvalidThemeError`.
+  - `cedc394` `feat(web): persist HC toggle via PATCH /me`. `settings.vue` now drives the toggle through `updateMe({ theme })` with optimistic UI + rollback. localStorage kept only as a hint to avoid FOIT during reload.
+  - `302f234` `fix(ui): reduced-motion fallbacks audit + missing fixes`. AppButton spinner gained an opacity-pulse fallback; `settings.vue`, `characters/index.vue`, `shared/character/[slug].vue` skeletons gained `animation: none` under `prefers-reduced-motion: reduce`.
+  - `d845fc7` `docs(a11y): A11Y_AUDIT — page-level axe + SR pass plan`. Playwright + axe smoke at `tests/e2e/a11y.spec.ts` covering `/`, `/login`, `/signup` (auth-gated routes documented as deferred with bypass instructions). Manual VoiceOver / NVDA checklist included.
+  - `cd469ef` `chore: apply prettier + stylelint auto-format`.
+  - `<head>` `style(web): apply ESLint auto-fixes (vue formatting, batch 2)` — 45 vue/max-attributes-per-line warnings introduced by the HC toggle wiring.
+
+- Verification at merge time: backend 264 specs + lint clean + typecheck clean; web 53 specs + lint zero warnings; ui 713 specs.
+- Open follow-ups (Phase 3 / Phase 4):
+  - Mobile flutter analyze drift (codegen-related): the dart-codegen output is missing nullable annotations in some places; `character_repository_impl.dart` references API symbols that resolve through the inner generated package. **Pre-existing** (predates this batch). Move api-client-dart's outer `pubspec.yaml` to forward to `lib/generated` OR re-point mobile at `path: ../../packages/api-client-dart/lib/generated` and audit non-null access in the repo impl. Tracked separately.
+  - Page-level axe pass on auth-gated routes — needs a session-cookie bypass in CI or a test account fixture (documented in `A11Y_AUDIT.md` §2).
+  - Manual SR pass — checklist in `A11Y_AUDIT.md` §5; needs human runner.
+  - Cyrillic Forum subset bundling — deferred per `MOBILE_AUDIT.md`.
+
 ## Open Graph image renderer (Epic 6 Feature 6.3)
 
 - Completed: 2026-05-09
