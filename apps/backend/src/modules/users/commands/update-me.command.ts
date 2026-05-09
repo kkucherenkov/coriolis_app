@@ -2,12 +2,15 @@
  * A Command is a plain data object. Validation (class-validator) runs on the
  * DTO in the controller before dispatch; the handler trusts the values here.
  */
-import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+
+import type { UserTheme } from '../domain/user.ports';
 
 export class UpdateMeCommand {
   constructor(
     public readonly userId: string,
     public readonly displayName: string | null | undefined,
+    public readonly theme: UserTheme | undefined,
   ) {}
 }
 
@@ -30,4 +33,8 @@ export class UpdateMeDto {
   @IsNotEmpty()
   @MaxLength(80)
   displayName?: string | null;
+
+  @IsOptional()
+  @IsEnum(['dark', 'high-contrast'])
+  theme?: UserTheme;
 }

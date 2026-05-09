@@ -20,20 +20,23 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import {
   DisplayNameEmptyError,
   DisplayNameTooLongError,
+  InvalidThemeError,
   UserNotFoundError,
 } from '../domain/user.errors';
 import { USER_REPO } from '../domain/user.ports';
 
 import { UpdateMeCommand } from './update-me.command';
 
-import type { IUserRepo, MeReadModel } from '../domain/user.ports';
+import type { IUserRepo, MeReadModel, UserTheme } from '../domain/user.ports';
+
+const ALLOWED_THEMES: ReadonlySet<string> = new Set<UserTheme>(['dark', 'high-contrast']);
 
 @CommandHandler(UpdateMeCommand)
 export class UpdateMeHandler implements ICommandHandler<UpdateMeCommand, MeReadModel> {
   constructor(@Inject(USER_REPO) private readonly repo: IUserRepo) {}
 
   async execute(command: UpdateMeCommand): Promise<MeReadModel> {
-    const { userId, displayName } = command;
+    const { userId, displayName, theme } = command;
 
     // Defence-in-depth validation (DTO layer already enforces these via
     // class-validator, but programmatic callers may bypass the pipe).
@@ -44,6 +47,10 @@ export class UpdateMeHandler implements ICommandHandler<UpdateMeCommand, MeReadM
       if (displayName.length > 80) {
         throw new DisplayNameTooLongError();
       }
+    }
+
+    if (theme !== undefined && !ALLOWED_THEMES.has(theme)) {
+      throw new InvalidThemeError(theme);
     }
 
     // Verify user exists before writing (findActiveById respects soft-delete).
@@ -57,6 +64,11 @@ export class UpdateMeHandler implements ICommandHandler<UpdateMeCommand, MeReadM
     const nextDisplayName =
       displayName === undefined ? existing.displayName : displayName;
 
-    return this.repo.updateDisplayName(userId, nextDisplayName);
+    const nextTheme: UserTheme = theme ?? existing.theme;
+
+    return this.repo.updateProfile(userId, {
+      displayName: nextDisplayName,
+      theme: nextTheme,
+    });
   }
 }

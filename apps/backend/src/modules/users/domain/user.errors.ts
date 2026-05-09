@@ -45,6 +45,18 @@ export class DisplayNameTooLongError extends DomainError {
   }
 }
 
+/** Thrown when `theme` is set to a value outside the allowed enum. */
+export class InvalidThemeError extends DomainError {
+  constructor(value: string) {
+    super({
+      code: 'INVALID_THEME',
+      status: 400,
+      title: 'Validation Error',
+      detail: `'${value}' is not a valid theme — allowed values are 'dark' and 'high-contrast'.`,
+    });
+  }
+}
+
 /**
  * Thrown when the request body contains read-only fields (`email`, `createdAt`).
  * The global ValidationPipe with `forbidNonWhitelisted: true` will handle

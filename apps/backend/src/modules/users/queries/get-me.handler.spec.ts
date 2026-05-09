@@ -16,6 +16,7 @@ function makeRepo(): IUserRepo {
   return {
     findActiveById: vi.fn(),
     updateDisplayName: vi.fn(),
+    updateProfile: vi.fn(),
     softDelete: vi.fn(),
   };
 }
@@ -26,6 +27,7 @@ function makeMeReadModel(overrides: Partial<MeReadModel> = {}): MeReadModel {
     email: 'kalim@example.com',
     displayName: null,
     createdAt: '2026-01-15T09:30:00.000Z',
+    theme: 'dark',
     ...overrides,
   };
 }

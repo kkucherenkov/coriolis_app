@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   DisplayNameEmptyError,
   DisplayNameTooLongError,
+  InvalidThemeError,
   UserNotFoundError,
 } from '../domain/user.errors';
 
@@ -19,6 +20,7 @@ function makeRepo(): IUserRepo {
   return {
     findActiveById: vi.fn(),
     updateDisplayName: vi.fn(),
+    updateProfile: vi.fn(),
     softDelete: vi.fn(),
   };
 }
@@ -29,6 +31,7 @@ function makeMeReadModel(overrides: Partial<MeReadModel> = {}): MeReadModel {
     email: 'kalim@example.com',
     displayName: null,
     createdAt: '2026-01-15T09:30:00.000Z',
+    theme: 'dark',
     ...overrides,
   };
 }
@@ -46,36 +49,45 @@ describe('UpdateMeHandler', () => {
     const existing = makeMeReadModel({ displayName: null });
     const updated = makeMeReadModel({ displayName: 'Kalim al-Rashid' });
     vi.mocked(repo.findActiveById).mockResolvedValue(existing);
-    vi.mocked(repo.updateDisplayName).mockResolvedValue(updated);
+    vi.mocked(repo.updateProfile).mockResolvedValue(updated);
 
-    const result = await handler.execute(new UpdateMeCommand('user-1', 'Kalim al-Rashid'));
+    const result = await handler.execute(new UpdateMeCommand('user-1', 'Kalim al-Rashid', undefined));
 
     expect(result).toEqual(updated);
-    expect(repo.updateDisplayName).toHaveBeenCalledWith('user-1', 'Kalim al-Rashid');
+    expect(repo.updateProfile).toHaveBeenCalledWith('user-1', {
+      displayName: 'Kalim al-Rashid',
+      theme: 'dark',
+    });
   });
 
   it('clears displayName when null is passed', async () => {
     const existing = makeMeReadModel({ displayName: 'Old Name' });
     const updated = makeMeReadModel({ displayName: null });
     vi.mocked(repo.findActiveById).mockResolvedValue(existing);
-    vi.mocked(repo.updateDisplayName).mockResolvedValue(updated);
+    vi.mocked(repo.updateProfile).mockResolvedValue(updated);
 
-    const result = await handler.execute(new UpdateMeCommand('user-1', null));
+    const result = await handler.execute(new UpdateMeCommand('user-1', null, undefined));
 
     expect(result.displayName).toBeNull();
-    expect(repo.updateDisplayName).toHaveBeenCalledWith('user-1', null);
+    expect(repo.updateProfile).toHaveBeenCalledWith('user-1', {
+      displayName: null,
+      theme: 'dark',
+    });
   });
 
   it('preserves existing displayName when field is omitted (undefined)', async () => {
     const existing = makeMeReadModel({ displayName: 'Existing Name' });
     const updated = makeMeReadModel({ displayName: 'Existing Name' });
     vi.mocked(repo.findActiveById).mockResolvedValue(existing);
-    vi.mocked(repo.updateDisplayName).mockResolvedValue(updated);
+    vi.mocked(repo.updateProfile).mockResolvedValue(updated);
 
-    await handler.execute(new UpdateMeCommand('user-1', undefined));
+    await handler.execute(new UpdateMeCommand('user-1', undefined, undefined));
 
     // When displayName is undefined the handler uses the existing value
-    expect(repo.updateDisplayName).toHaveBeenCalledWith('user-1', 'Existing Name');
+    expect(repo.updateProfile).toHaveBeenCalledWith('user-1', {
+      displayName: 'Existing Name',
+      theme: 'dark',
+    });
   });
 
   it('preserves createdAt and email (does not mutate them)', async () => {
@@ -89,9 +101,9 @@ describe('UpdateMeHandler', () => {
       displayName: 'New Name',
     });
     vi.mocked(repo.findActiveById).mockResolvedValue(existing);
-    vi.mocked(repo.updateDisplayName).mockResolvedValue(updated);
+    vi.mocked(repo.updateProfile).mockResolvedValue(updated);
 
-    const result = await handler.execute(new UpdateMeCommand('user-1', 'New Name'));
+    const result = await handler.execute(new UpdateMeCommand('user-1', 'New Name', undefined));
 
     expect(result.email).toBe('kalim@example.com');
     expect(result.createdAt).toBe('2026-01-15T09:30:00.000Z');
@@ -100,17 +112,17 @@ describe('UpdateMeHandler', () => {
   it('throws DisplayNameEmptyError when displayName is an empty string', async () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(makeMeReadModel());
 
-    await expect(handler.execute(new UpdateMeCommand('user-1', ''))).rejects.toBeInstanceOf(
+    await expect(handler.execute(new UpdateMeCommand('user-1', '', undefined))).rejects.toBeInstanceOf(
       DisplayNameEmptyError,
     );
     // Should not reach the repo write
-    expect(repo.updateDisplayName).not.toHaveBeenCalled();
+    expect(repo.updateProfile).not.toHaveBeenCalled();
   });
 
   it('throws DisplayNameEmptyError with 400 status and DISPLAY_NAME_EMPTY code', async () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(makeMeReadModel());
 
-    await expect(handler.execute(new UpdateMeCommand('user-1', ''))).rejects.toMatchObject({
+    await expect(handler.execute(new UpdateMeCommand('user-1', '', undefined))).rejects.toMatchObject({
       status: 400,
       code: 'DISPLAY_NAME_EMPTY',
     });
@@ -121,9 +133,9 @@ describe('UpdateMeHandler', () => {
     const tooLong = 'a'.repeat(81);
 
     await expect(
-      handler.execute(new UpdateMeCommand('user-1', tooLong)),
+      handler.execute(new UpdateMeCommand('user-1', tooLong, undefined)),
     ).rejects.toBeInstanceOf(DisplayNameTooLongError);
-    expect(repo.updateDisplayName).not.toHaveBeenCalled();
+    expect(repo.updateProfile).not.toHaveBeenCalled();
   });
 
   it('throws DisplayNameTooLongError with 400 status and DISPLAY_NAME_TOO_LONG code', async () => {
@@ -131,7 +143,7 @@ describe('UpdateMeHandler', () => {
     const tooLong = 'a'.repeat(81);
 
     await expect(
-      handler.execute(new UpdateMeCommand('user-1', tooLong)),
+      handler.execute(new UpdateMeCommand('user-1', tooLong, undefined)),
     ).rejects.toMatchObject({
       status: 400,
       code: 'DISPLAY_NAME_TOO_LONG',
@@ -142,7 +154,7 @@ describe('UpdateMeHandler', () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(null);
 
     await expect(
-      handler.execute(new UpdateMeCommand('missing', 'Name')),
+      handler.execute(new UpdateMeCommand('missing', 'Name', undefined)),
     ).rejects.toBeInstanceOf(UserNotFoundError);
   });
 
@@ -151,10 +163,66 @@ describe('UpdateMeHandler', () => {
     const existing = makeMeReadModel();
     const updated = makeMeReadModel({ displayName: maxLength });
     vi.mocked(repo.findActiveById).mockResolvedValue(existing);
-    vi.mocked(repo.updateDisplayName).mockResolvedValue(updated);
+    vi.mocked(repo.updateProfile).mockResolvedValue(updated);
 
-    const result = await handler.execute(new UpdateMeCommand('user-1', maxLength));
+    const result = await handler.execute(new UpdateMeCommand('user-1', maxLength, undefined));
 
     expect(result.displayName).toBe(maxLength);
+  });
+
+  // ── theme field tests ────────────────────────────────────────────────────────
+
+  it('sets theme to high-contrast when provided', async () => {
+    const existing = makeMeReadModel({ theme: 'dark' });
+    const updated = makeMeReadModel({ theme: 'high-contrast' });
+    vi.mocked(repo.findActiveById).mockResolvedValue(existing);
+    vi.mocked(repo.updateProfile).mockResolvedValue(updated);
+
+    const result = await handler.execute(new UpdateMeCommand('user-1', undefined, 'high-contrast'));
+
+    expect(result.theme).toBe('high-contrast');
+    expect(repo.updateProfile).toHaveBeenCalledWith('user-1', {
+      displayName: null,
+      theme: 'high-contrast',
+    });
+  });
+
+  it('preserves existing theme when theme is omitted (undefined)', async () => {
+    const existing = makeMeReadModel({ theme: 'high-contrast' });
+    const updated = makeMeReadModel({ theme: 'high-contrast' });
+    vi.mocked(repo.findActiveById).mockResolvedValue(existing);
+    vi.mocked(repo.updateProfile).mockResolvedValue(updated);
+
+    await handler.execute(new UpdateMeCommand('user-1', undefined, undefined));
+
+    expect(repo.updateProfile).toHaveBeenCalledWith('user-1', {
+      displayName: null,
+      theme: 'high-contrast',
+    });
+  });
+
+  it('defaults theme to dark when user has no stored theme', async () => {
+    const existing = makeMeReadModel({ theme: 'dark' });
+    const updated = makeMeReadModel({ theme: 'dark' });
+    vi.mocked(repo.findActiveById).mockResolvedValue(existing);
+    vi.mocked(repo.updateProfile).mockResolvedValue(updated);
+
+    await handler.execute(new UpdateMeCommand('user-1', undefined, undefined));
+
+    expect(repo.updateProfile).toHaveBeenCalledWith('user-1', {
+      displayName: null,
+      theme: 'dark',
+    });
+  });
+
+  it('throws InvalidThemeError with 400 status for an invalid theme value', async () => {
+    // Bypass DTO validation — simulate a programmatic caller.
+    vi.mocked(repo.findActiveById).mockResolvedValue(makeMeReadModel());
+
+    await expect(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- intentional invalid input for defence-in-depth test
+      handler.execute(new UpdateMeCommand('user-1', undefined, 'neon' as any)),
+    ).rejects.toBeInstanceOf(InvalidThemeError);
+    expect(repo.updateProfile).not.toHaveBeenCalled();
   });
 });

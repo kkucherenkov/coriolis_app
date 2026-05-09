@@ -7,15 +7,20 @@
 
 export const USER_REPO = Symbol('USER_REPO');
 
+/** Allowed theme values — must match the OpenAPI `Me.theme` enum. */
+export type UserTheme = 'dark' | 'high-contrast';
+
 /**
  * Read model returned by getMe / updateMe — maps exactly to the OpenAPI `Me` schema.
  * `displayName` is `null` when the user has not set one.
+ * `theme` defaults to `dark` and is always present.
  */
 export interface MeReadModel {
   id: string;
   email: string;
   displayName: string | null;
   createdAt: string; // ISO-8601
+  theme: UserTheme;
 }
 
 /**
@@ -34,6 +39,16 @@ export interface IUserRepo {
    * model. Throws if the row is gone (should not happen in normal flow).
    */
   updateDisplayName(id: string, displayName: string | null): Promise<MeReadModel>;
+
+  /**
+   * Update the `displayName` and/or `theme` fields on the user row.
+   * Only fields present in the payload are written; absent fields are preserved.
+   * Returns the refreshed read model.
+   */
+  updateProfile(
+    id: string,
+    patch: { displayName?: string | null; theme?: UserTheme },
+  ): Promise<MeReadModel>;
 
   /**
    * Stamp `deletedAt` on the user row. Idempotent: if the row is already

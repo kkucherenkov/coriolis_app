@@ -12,7 +12,7 @@ import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../../common/prisma/prisma.service';
 
-import type { IUserRepo, MeReadModel } from '../domain/user.ports';
+import type { IUserRepo, MeReadModel, UserTheme } from '../domain/user.ports';
 
 @Injectable()
 export class UserRepo implements IUserRepo {
@@ -26,6 +26,7 @@ export class UserRepo implements IUserRepo {
         email: true,
         displayName: true,
         createdAt: true,
+        theme: true,
       },
     });
     if (!row) return null;
@@ -41,6 +42,25 @@ export class UserRepo implements IUserRepo {
         email: true,
         displayName: true,
         createdAt: true,
+        theme: true,
+      },
+    });
+    return this.toReadModel(row);
+  }
+
+  async updateProfile(
+    id: string,
+    patch: { displayName?: string | null; theme?: UserTheme },
+  ): Promise<MeReadModel> {
+    const row = await this.prisma.user.update({
+      where: { id },
+      data: { ...patch, updatedAt: new Date() },
+      select: {
+        id: true,
+        email: true,
+        displayName: true,
+        createdAt: true,
+        theme: true,
       },
     });
     return this.toReadModel(row);
@@ -65,12 +85,15 @@ export class UserRepo implements IUserRepo {
     email: string;
     displayName: string | null;
     createdAt: Date;
+    theme: string | null;
   }): MeReadModel {
     return {
       id: row.id,
       email: row.email,
       displayName: row.displayName,
       createdAt: row.createdAt.toISOString(),
+      // Coerce stored string to UserTheme; DB constraint prevents invalid values.
+      theme: (row.theme as UserTheme | null) ?? 'dark',
     };
   }
 }
