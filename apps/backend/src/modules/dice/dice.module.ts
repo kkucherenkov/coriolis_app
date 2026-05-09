@@ -17,10 +17,12 @@ import { CharactersModule } from '../characters/characters.module';
 import { CreateRollHandler } from './commands/create-roll.handler';
 import { PushRollHandler } from './commands/push-roll.handler';
 import { DiceController } from './dice.controller';
-import { RollPushedHandler } from './events/roll-pushed.event';
 import { ROLL_REPO } from './domain/roll.ports';
 import { RollRepo } from './infra/roll.repo';
 import { ListRollsHandler } from './queries/list-rolls.handler';
+
+// RollPushedEvent is consumed by RollPushedDpHandler registered in GameSessionsModule.
+// The dice module only publishes the event; it does not own a handler for it.
 
 @Module({
   imports: [CqrsModule, CharactersModule],
@@ -31,8 +33,6 @@ import { ListRollsHandler } from './queries/list-rolls.handler';
     PushRollHandler,
     // Queries
     ListRollsHandler,
-    // Events
-    RollPushedHandler,
     // Infrastructure
     { provide: ROLL_REPO, useClass: RollRepo },
   ],

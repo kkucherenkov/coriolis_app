@@ -1,6 +1,10 @@
-import { Logger } from '@nestjs/common';
-import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-
+/**
+ * Emitted by PushRollHandler after a roll has been pushed.
+ *
+ * Consumers:
+ *  - RollPushedDpHandler (game-sessions/dp) — applies +1 DP to the linked session.
+ *  - TODO(epic-7-4-realtime): Centrifugo publisher.
+ */
 export class RollPushedEvent {
   constructor(
     public readonly rollId: string,
@@ -8,21 +12,4 @@ export class RollPushedEvent {
     public readonly gameSessionId: string | null,
     public readonly hits: number,
   ) {}
-}
-
-/**
- * Stub handler — logs the event for now.
- *
- * TODO(epic-7-3-dp): wire to UpdateDpCommand once GameSession exists.
- * TODO(epic-7-4-realtime): publish to Centrifugo session channel.
- */
-@EventsHandler(RollPushedEvent)
-export class RollPushedHandler implements IEventHandler<RollPushedEvent> {
-  private readonly logger = new Logger(RollPushedHandler.name);
-
-  handle(event: RollPushedEvent): void {
-    this.logger.log(`Roll pushed: ${JSON.stringify(event)}`);
-    // TODO(epic-7-3-dp): wire to UpdateDpCommand once GameSession exists.
-    // TODO(epic-7-4-realtime): publish to Centrifugo session channel.
-  }
 }

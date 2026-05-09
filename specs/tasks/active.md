@@ -1,3 +1,33 @@
+## T-2026-05-09-003 — Epic 7 Feature 7.3: Darkness Points + push wiring (T-7.3.1.a, .b, .c)
+
+- Created: 2026-05-09
+- Owner: claude
+- Spec: Epic 7, Feature 7.3, tasks T-7.3.1.a, T-7.3.1.b, T-7.3.1.c
+- Goal: DP adjustment endpoint, DpEvent audit log, RollPushedEvent → +1 DP wiring.
+- Acceptance:
+  - `POST /api/v1/game-sessions/{id}/dp` adjusts Darkness Points atomically
+  - `GET /api/v1/game-sessions/{id}/dp/events` returns paginated DpEvent audit log
+  - DpEvent persisted per adjustment (source: GM_MANUAL | ROLL_PUSH | SYSTEM)
+  - Only GM owner may apply negative deltas; +1 from roll push bypasses ACL via internal flag
+  - RollPushedHandler emits UpdateDpCommand when gameSessionId != null
+  - ≥12 new unit specs
+- Spec diff: openapi.yaml 0.8.0 → 0.8.1 (additive)
+- Codegen impact: yes
+- Design impact: none (backend only)
+- Sub-steps:
+  - [x] Push task to active.md
+  - [ ] openapi.yaml bump + DP paths/schemas
+  - [ ] pnpm spec:validate && pnpm spec:bundle && pnpm spec:codegen
+  - [ ] Prisma DpEvent model + DpSource enum + migration dp-events
+  - [ ] dp/ subdirectory under game-sessions — domain, commands, queries, events, infra
+  - [ ] UpdateDpCommand handler + DpRepo
+  - [ ] ListDpEventsQuery handler
+  - [ ] Wire RollPushedEvent → UpdateDpCommand (drop TODO(epic-7-3-dp))
+  - [ ] Controller endpoint POST dp + GET dp/events
+  - [ ] lint + typecheck + test
+- Status: in-progress
+- Blockers: —
+
 ## T-2026-05-09-002 — Epic 7 Feature 7.1 backend: DiceModule (T-7.1.1.a, .b, .e)
 
 - Created: 2026-05-09
