@@ -225,7 +225,10 @@
           <span class="step-talents__talent-name">
             {{ t(`talentName.${talent.name}`) }}
           </span>
-          <span v-if="isPicked(talent.id)" class="step-talents__badge">
+          <span
+            v-if="isPicked(talent.id)"
+            class="step-talents__badge"
+          >
             {{ t('pickedBadge') }}
           </span>
         </div>

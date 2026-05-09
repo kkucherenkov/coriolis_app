@@ -101,7 +101,9 @@
 <template>
   <section class="page-characters">
     <div class="page-characters__header">
-      <h1 class="page-characters__title">{{ t('pageTitle') }}</h1>
+      <h1 class="page-characters__title">
+        {{ t('pageTitle') }}
+      </h1>
       <AppButton
         variant="primary"
         size="md"
@@ -132,8 +134,14 @@
       class="page-characters__error"
       role="alert"
     >
-      <p class="page-characters__error-text">{{ errorMsg }}</p>
-      <AppButton variant="ghost" size="sm" @click="load">
+      <p class="page-characters__error-text">
+        {{ errorMsg }}
+      </p>
+      <AppButton
+        variant="ghost"
+        size="sm"
+        @click="load"
+      >
         {{ t('retry') }}
       </AppButton>
     </div>
@@ -145,8 +153,12 @@
     >
       <AppCard class="page-characters__empty-card">
         <div class="page-characters__empty-body">
-          <p class="page-characters__empty-heading">{{ t('emptyHeading') }}</p>
-          <p class="page-characters__empty-sub">{{ t('emptyBody') }}</p>
+          <p class="page-characters__empty-heading">
+            {{ t('emptyHeading') }}
+          </p>
+          <p class="page-characters__empty-sub">
+            {{ t('emptyBody') }}
+          </p>
           <AppButton
             variant="primary"
             size="md"
@@ -170,7 +182,10 @@
         class="page-characters__card"
         @click="navigateTo(`/app/characters/${char.id}`)"
       >
-        <div class="page-characters__avatar" aria-hidden="true">
+        <div
+          class="page-characters__avatar"
+          aria-hidden="true"
+        >
           {{ initials(char.name) }}
         </div>
         <div class="page-characters__card-info">

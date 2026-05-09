@@ -105,7 +105,10 @@
 
 <template>
   <div class="step-background">
-    <AppField :label="t('originLabel')" :help-text="t('originHelp')">
+    <AppField
+      :label="t('originLabel')"
+      :help-text="t('originHelp')"
+    >
       <template #default="slotAttrs">
         <AppInput
           v-bind="slotAttrs"
@@ -127,7 +130,10 @@
       />
     </AppField>
 
-    <AppField :label="t('ageLabel')" :help-text="t('ageHelp')">
+    <AppField
+      :label="t('ageLabel')"
+      :help-text="t('ageHelp')"
+    >
       <template #default="slotAttrs">
         <AppInput
           v-bind="slotAttrs"

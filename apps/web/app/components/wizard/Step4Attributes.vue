@@ -137,7 +137,10 @@
 
 <template>
   <div class="step-attrs">
-    <div class="step-attrs__pool" :class="{ 'step-attrs__pool--done': isAllSpent }">
+    <div
+      class="step-attrs__pool"
+      :class="{ 'step-attrs__pool--done': isAllSpent }"
+    >
       <span class="step-attrs__pool-label">{{ t('pointsRemaining') }}</span>
       <span class="step-attrs__pool-value">{{ remaining }}</span>
     </div>
@@ -147,7 +150,11 @@
     </p>
 
     <div class="step-attrs__list">
-      <div v-for="key in ATTR_KEYS" :key="key" class="step-attrs__row">
+      <div
+        v-for="key in ATTR_KEYS"
+        :key="key"
+        class="step-attrs__row"
+      >
         <div class="step-attrs__meta">
           <span class="step-attrs__name">{{ attrLabel(key) }}</span>
           <span class="step-attrs__badge">{{ attrBadge(key) }}</span>

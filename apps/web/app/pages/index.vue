@@ -42,8 +42,12 @@
 <template>
   <section class="page-landing">
     <div class="page-landing__hero">
-      <h1 class="page-landing__wordmark">{{ t('wordmark') }}</h1>
-      <p class="page-landing__tagline">{{ t('tagline') }}</p>
+      <h1 class="page-landing__wordmark">
+        {{ t('wordmark') }}
+      </h1>
+      <p class="page-landing__tagline">
+        {{ t('tagline') }}
+      </p>
 
       <div class="page-landing__cta">
         <button
