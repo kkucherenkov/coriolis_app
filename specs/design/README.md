@@ -120,8 +120,37 @@ lift) · `--shadow-icon-glow` (mystic teal halo) · `--shadow-brass-bevel`
 | `--brand-brass`  | `#D4A95C` | `#FFD773`     |
 | `--text-primary` | `#F2E8D0` | `#FFFFFF`     |
 
-User preference is persisted in `AppConfig` on the backend so web + mobile
-stay in sync (DESIGN §2.2).
+**Persistence guarantee (v0.7.1):** User preference is stored server-side as
+`Me.theme` (enum: `dark` | `high-contrast`, default `dark`). The web app
+reads the server value on load and applies it to `document.documentElement`
+via `data-theme="high-contrast"`. A localStorage hint (`coriolis.theme`) is
+applied immediately on page load to avoid a flash of the default theme before
+the `/me` response arrives; the server value reconciles the hint after load.
+Web + mobile stay in sync because both read from the same `PATCH /api/v1/me`
+endpoint.
+
+## Reduced-motion guarantee
+
+Every motion-bearing component in `@app/ui` and in `apps/web` must declare a
+`@media (prefers-reduced-motion: reduce)` override that eliminates all
+continuous or triggered animations. The allowed fallbacks are:
+
+- **Fade-only:** opacity transition/animation without scale or translate.
+- **Static state:** `animation: none` with a visible static visual equivalent.
+
+**Verified components (T-6.5.1.e — 2026-05-09):**
+
+| Component | Motion type | Reduce fallback |
+|---|---|---|
+| `AppSavePulse` | scale + opacity pulse | fade-only keyframe |
+| `AppPopover` | scale + fade entrance | `animation: none` |
+| `AppModal` | scale + fade (Vue Transition) | opacity-only transition |
+| `Step3Icon` (wizard) | aura box-shadow pulse | static box-shadow, `animation: none` |
+| `AppButton` spinner | continuous rotation | opacity pulse, no rotation |
+| skeleton animations | shimmer / opacity pulse | `animation: none` |
+
+Any new motion introduced in `@app/ui` or `apps/web` must include a
+`prefers-reduced-motion: reduce` fallback before the PR is merged.
 
 ## Component inventory
 
