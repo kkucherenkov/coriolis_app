@@ -13,21 +13,22 @@ datasource db {
 // ----- Better Auth -----
 
 model User {
-  id                  String      @id
+  id                  String        @id
   name                String
-  email               String      @unique
+  email               String        @unique
   emailVerified       Boolean
   image               String?
   createdAt           DateTime
   updatedAt           DateTime
-  phoneNumber         String?     @unique
+  phoneNumber         String?       @unique
   phoneNumberVerified Boolean?
   displayName         String?
-  theme               String?   @default("dark")
+  theme               String?       @default("dark")
   deletedAt           DateTime?
   sessions            Session[]
   accounts            Account[]
   characters          Character[]
+  gameSessions        GameSession[]
 
   @@map("user")
 }
@@ -148,6 +149,7 @@ model Character {
   criticalInjuries    CriticalInjury[]
   shareLinks          ShareLink[]
   rolls               Roll[]
+  gameSessions        CharacterGameSession[]
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
 
@@ -272,6 +274,60 @@ model ShareLink {
   @@index([characterId])
   @@index([revokedAt])
   @@map("share_link")
+}
+
+/// Lifecycle state of a GameSession row.
+/// ACTIVE   — session in progress or available.
+/// ARCHIVED — session closed; excluded from the default list query.
+enum GameSessionStatus {
+  ACTIVE
+  ARCHIVED
+
+  @@map("game_session_status")
+}
+
+/// A campaign session container owned by a GM.
+///
+/// Design notes:
+/// - `dpCount` is always mutated atomically by incrementDP/decrementDP domain
+///   commands (Feature 7.3). Never written directly from the PATCH endpoint.
+/// - Characters are linked via the `CharacterGameSession` join table so the
+///   many-to-many relation stays clean. The array of characterIds is assembled
+///   at read time by the repo.
+/// - `shipId` is a loose foreign-key string; the Ship model is added in Epic 8.
+///   It is not declared as a Prisma relation here to avoid a circular dep on a
+///   model that doesn't exist yet.
+model GameSession {
+  id          String                @id @default(cuid())
+  ownerId     String
+  owner       User                  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  status      GameSessionStatus     @default(ACTIVE)
+  dpCount     Int                   @default(0)
+  shipId      String?
+  characters  CharacterGameSession[]
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  @@index([ownerId, status])
+  @@map("game_session")
+}
+
+/// Join table linking characters to game sessions.
+///
+/// The composite primary key prevents duplicate assignments.
+/// Cascade-deletes ensure the join row is removed when either side is deleted.
+model CharacterGameSession {
+  characterId   String
+  gameSessionId String
+  character     Character   @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  gameSession   GameSession @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+  assignedAt    DateTime    @default(now())
+
+  @@id([characterId, gameSessionId])
+  @@index([gameSessionId])
+  @@map("character_game_session")
 }
 
 /// A critical injury recorded on a character's sheet.
