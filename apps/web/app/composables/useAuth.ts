@@ -35,6 +35,29 @@ interface AuthClientLike {
     currentPassword?: string;
     revokeOtherSessions?: boolean;
   }): Promise<{ data: unknown; error: { message?: string } | null }>;
+  /**
+   * Triggers Better Auth's password-reset email. `redirectTo` is the URL
+   * BA bounces the user back to after verifying the token from the email
+   * link — BA appends `?token=<token>` so the SPA can finish the flow
+   * with `resetPassword`.
+   *
+   * Hits POST `/api/v1/auth/request-password-reset`. `forgetPassword` is
+   * BA's older / OTP-plugin name; the email-and-password method is
+   * `requestPasswordReset`.
+   */
+  requestPasswordReset(opts: {
+    email: string;
+    redirectTo?: string;
+  }): Promise<{ data: unknown; error: { message?: string } | null }>;
+  /**
+   * Completes the password-reset flow with the token captured from the
+   * URL the user landed on (BA forwards it as `?token=...`). Hits POST
+   * `/api/v1/auth/reset-password`.
+   */
+  resetPassword(opts: {
+    newPassword: string;
+    token: string;
+  }): Promise<{ data: unknown; error: { message?: string } | null }>;
   getSession(): Promise<{ data: unknown; error: { message?: string } | null }>;
   signOut(): Promise<{ data: unknown; error: { message?: string } | null }>;
   useSession(): Ref<SessionState>;

@@ -61,6 +61,7 @@
     "passwordLabel": "Password",
     "passwordHint": "At least 8 characters.",
     "signInButton": "Sign in",
+    "forgotLink": "Forgot password?",
     "noAccount": "Don't have an account?",
     "signUpLink": "Sign up",
     "legalFootnote": "By continuing, you agree to our Terms and Privacy Policy.",
@@ -78,6 +79,7 @@
     "passwordLabel": "Пароль",
     "passwordHint": "Не менее 8 символов.",
     "signInButton": "Войти",
+    "forgotLink": "Забыли пароль?",
     "noAccount": "Нет аккаунта?",
     "signUpLink": "Зарегистрироваться",
     "legalFootnote": "Продолжая, вы соглашаетесь с условиями и политикой конфиденциальности.",
@@ -95,6 +97,7 @@
     "passwordLabel": "[uk-todo] Password",
     "passwordHint": "[uk-todo] Password hint",
     "signInButton": "[uk-todo] Sign in",
+    "forgotLink": "[uk-todo] Forgot password",
     "noAccount": "[uk-todo] No account",
     "signUpLink": "[uk-todo] Sign up",
     "legalFootnote": "[uk-todo] Legal",
@@ -112,6 +115,7 @@
     "passwordLabel": "[el-todo] Password",
     "passwordHint": "[el-todo] Password hint",
     "signInButton": "[el-todo] Sign in",
+    "forgotLink": "[el-todo] Forgot password",
     "noAccount": "[el-todo] No account",
     "signUpLink": "[el-todo] Sign up",
     "legalFootnote": "[el-todo] Legal",
@@ -179,6 +183,12 @@
             {{ t('signInButton') }}
           </AppButton>
         </form>
+
+        <p class="page-login__footnote-link page-login__footnote-link--forgot">
+          <NuxtLink to="/forgot-password" class="page-login__link">
+            {{ t('forgotLink') }}
+          </NuxtLink>
+        </p>
 
         <p class="page-login__footnote-link">
           {{ t('noAccount') }}
@@ -278,6 +288,13 @@
       font-size: var(--text-sm);
       color: var(--text-fg-muted);
       text-align: center;
+
+      // Place the standalone "Forgot password?" link tight under the
+      // submit button, then leave the wider gap before "Don't have an
+      // account?". Two stacked links read as one block instead of two.
+      &--forgot {
+        margin-top: var(--space-3);
+      }
     }
 
     &__link {
