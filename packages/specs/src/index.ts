@@ -6,8 +6,10 @@ export {
   STIGMA_TALENTS,
   TALENT_CATALOG,
   findCatalogTalentById,
+  findCatalogTalentByName,
   getCrewTalentsByConcept,
   getIconGiftByIconId,
+  pickLocalized,
 } from './talents.js';
 export type {
   CatalogLocale,

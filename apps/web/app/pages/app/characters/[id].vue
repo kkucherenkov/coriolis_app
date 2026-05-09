@@ -22,10 +22,12 @@
   import type { Talent } from '~/composables/useTalentsApi';
   import type { Item } from '~/composables/useItemsApi';
   import type { Attributes, Skills, ConditionFlags, CriticalInjury } from '@app/api-client-ts';
+  import { useTalentLocalization } from '~/composables/useTalentLocalization';
   import { useAutoSave } from '~/composables/useAutoSave';
   import type { SaveState } from '~/composables/useAutoSave';
 
   const { t } = useI18n({ useScope: 'local' });
+  const { displayTalentName } = useTalentLocalization();
   const api = useCharactersApi();
   const talentsApi = useTalentsApi();
   const route = useRoute();
@@ -605,7 +607,7 @@
 
   async function deleteTalentConfirm(talent: Talent): Promise<void> {
     // v1: native confirm() — AppModal primitive is a separate batch
-    if (!confirm(t('talentDeleteConfirm', { name: talent.name }))) return;
+    if (!confirm(t('talentDeleteConfirm', { name: displayTalentName(talent) }))) return;
     talentEditorError.value = '';
     try {
       await talentsApi.removeTalent(talent.id);
@@ -1798,7 +1800,7 @@
             <ul v-if="localTalents.length > 0" class="page-sheet__talents-list">
               <li v-for="talent in localTalents" :key="talent.id" class="page-sheet__talent-row">
                 <button class="page-sheet__talent-btn" @click="openEditTalent(talent)">
-                  <span class="page-sheet__talent-name">{{ talent.name }}</span>
+                  <span class="page-sheet__talent-name">{{ displayTalentName(talent) }}</span>
                   <span class="page-sheet__talent-chevron" aria-hidden="true">›</span>
                 </button>
               </li>

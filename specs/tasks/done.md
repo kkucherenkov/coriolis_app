@@ -29,7 +29,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
   - ✅ `GET /api/v1/game-sessions/{id}/dp/events` returns paginated
     `DpEvent` audit log (`list-dp-events.handler.ts`).
   - ✅ `DpEvent` persisted per adjustment with `source: GM_MANUAL |
-    ROLL_PUSH`. The original spec also listed `SYSTEM` — dropped during
+ROLL_PUSH`. The original spec also listed `SYSTEM` — dropped during
     implementation because no caller path emits it; can be added later
     if a maintenance script needs it.
   - ✅ Only the GM owner may apply a negative delta; internal `ROLL_PUSH`
@@ -66,13 +66,13 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
   - ✅ `GET /api/v1/characters/{id}/rolls?limit=50` → 200 `RollList`,
     last 50 ordered desc (`list-rolls.handler.ts`).
   - ✅ `PATCH /api/v1/rolls/{id}/push` → 200 `Roll | 422
-    ROLL_NOT_PUSHABLE` (`push-roll.handler.ts` +
+ROLL_NOT_PUSHABLE` (`push-roll.handler.ts` +
     `roll.errors.ts:ROLL_NOT_PUSHABLE`).
   - ✅ `canPush(roll, conditions)` returns `{ ok, reason? }`, gated on
     exhausted + already-pushed (`rules-engine` in
     `apps/backend/src/modules/rules-engine`).
   - ✅ `RollPushedEvent` emitted on the bus with `{ rollId, characterId,
-    gameSessionId, hits }` (`roll-pushed.event.ts`); both the DP
+gameSessionId, hits }` (`roll-pushed.event.ts`); both the DP
     handler and the Centrifugo `roll.pushed` publisher subscribe to it.
   - ✅ 20 new unit specs (6 create-roll + 8 push-roll + 6 list-rolls —
     above the ≥18 floor).

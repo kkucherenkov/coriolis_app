@@ -9,6 +9,7 @@
     AppBadge,
   } from '@app/ui';
   import type { Character, Item } from '@app/api-client-ts';
+  import { useTalentLocalization } from '~/composables/useTalentLocalization';
 
   interface Props {
     character: Character;
@@ -17,6 +18,10 @@
   const props = defineProps<Props>();
 
   const { t } = useI18n({ useScope: 'local' });
+  // Both the editable sheet and this read-only viewer render rows from the
+  // same Talent table, so the locale-switch logic lives in one composable
+  // (see `useTalentLocalization` for the catalog-match rationale).
+  const { displayTalentName, displayTalentDescription } = useTalentLocalization();
 
   // ── Skill / Attribute constants ─────────────────────────────────────────────
 
@@ -396,9 +401,9 @@
               :key="talent.id"
               class="share-viewer__talent-row"
             >
-              <span class="share-viewer__talent-name">{{ talent.name }}</span>
+              <span class="share-viewer__talent-name">{{ displayTalentName(talent) }}</span>
               <span v-if="talent.description" class="share-viewer__talent-desc">{{
-                talent.description
+                displayTalentDescription(talent)
               }}</span>
             </li>
           </ul>

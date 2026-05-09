@@ -11,8 +11,10 @@ import {
   STIGMA_TALENTS,
   TALENT_CATALOG,
   findCatalogTalentById,
+  findCatalogTalentByName,
   getCrewTalentsByConcept,
   getIconGiftByIconId,
+  pickLocalized,
 } from '@app/specs';
 
 const ICON_IDS = [
@@ -114,6 +116,42 @@ describe('talent catalog (@app/specs)', () => {
         const gift = getIconGiftByIconId(iconId);
         expect(gift.iconId).toBe(iconId);
       }
+    });
+
+    it('findCatalogTalentByName resolves the same entry from any locale', () => {
+      const traveler = getIconGiftByIconId('traveler');
+      const fromEn = findCatalogTalentByName(traveler.name.en, 'iconGift');
+      const fromRu = findCatalogTalentByName(traveler.name.ru, 'iconGift');
+      const fromUk = findCatalogTalentByName(traveler.name.uk, 'iconGift');
+      expect(fromEn?.id).toBe('gift-traveler');
+      expect(fromRu?.id).toBe('gift-traveler');
+      expect(fromUk?.id).toBe('gift-traveler');
+    });
+
+    it('findCatalogTalentByName is case-insensitive and trims whitespace', () => {
+      const traveler = getIconGiftByIconId('traveler');
+      const noisy = `  ${traveler.name.ru.toUpperCase()}  `;
+      expect(findCatalogTalentByName(noisy, 'iconGift')?.id).toBe('gift-traveler');
+    });
+
+    it('findCatalogTalentByName respects kind — same name on a different kind misses', () => {
+      const traveler = getIconGiftByIconId('traveler');
+      // The traveler gift's name only exists on iconGift; asking for the same
+      // string under personal must return undefined so personal talents that
+      // happen to share a noun never collide with an icon-gift entry.
+      expect(findCatalogTalentByName(traveler.name.en, 'personal')).toBeUndefined();
+    });
+
+    it('findCatalogTalentByName returns undefined for user-authored names', () => {
+      expect(findCatalogTalentByName('Wing-Mate', 'personal')).toBeUndefined();
+      expect(findCatalogTalentByName('', 'iconGift')).toBeUndefined();
+    });
+
+    it('pickLocalized returns the requested locale and falls back to en for unknowns', () => {
+      const traveler = getIconGiftByIconId('traveler');
+      expect(pickLocalized(traveler.name, 'ru')).toBe(traveler.name.ru);
+      expect(pickLocalized(traveler.name, 'en')).toBe(traveler.name.en);
+      expect(pickLocalized(traveler.name, 'fr')).toBe(traveler.name.en);
     });
   });
 });
