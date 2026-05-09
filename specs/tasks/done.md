@@ -2,6 +2,45 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## Share-link backend (Epic 6 Feature 6.1)
+
+- Completed: 2026-05-09
+- Owner: claude (backend-engineer agent + parent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Epic 6 Feature 6.1, T-6.1.1.{a,b,c,d,e}.
+- Result: ff-merged to main as `<sharing range>` (6 commits).
+  - `d990682` `docs(adr): 0003 — character draft state`. Covers slug
+    strategy (`nanoid(24)` w/ ambiguous-char-free alphabet), soft
+    revocation (`revokedAt` → 410 Gone), lazy view tracking (in-memory
+    ring-buffer flushed by 1-min cron), multi-link per character,
+    `includeGmNotes` filter.
+  - `99a9d07` `feat(specs): ShareLink + share endpoints + public read
+    paths (v0.7.0)`. New schemas (`ShareLink`, `ShareLinkCreate`,
+    `ShareLinkList`); endpoints `POST /characters/{id}/share`, `GET
+    /characters/{id}/shares`, `DELETE /share-links/{id}`, `GET
+    /public/character/{slug}`; OG image path stubbed at 501.
+  - `31d81d1` `chore(codegen): regenerate clients after share-link
+    spec`.
+  - `cbbfe09` `feat(backend): Prisma ShareLink migration` — `ShareLink`
+    model, FK to `Character` (cascade), `slug` UNIQUE,
+    `@@index([characterId])` + `@@index([revokedAt])`.
+  - `93b1d96` `feat(backend): SharingModule — slug + create + list +
+    revoke`. Includes the public-read query with notes filter +
+    revoked/expired status checks, `view-tracker.ts` (in-memory
+    `Map<slug, count>`), `flush-view-tracker.job.ts` (`@Cron('* * * *
+    *')` flushes via batched Prisma transaction), and `OG_NOT_IMPLEMENTED`
+    501 stub for the OG image route.
+  - `7d79173` `chore(backend): apply lint --fix auto-corrections`.
+- 28 new vitest specs across the SharingModule. Backend total: 252 tests
+  passing. Spec at v0.7.0; codegen up to date for both TS and Dart
+  clients.
+- Open follow-ups (Phase 3):
+  - Feature 6.2 — public web viewer pages (`/shared/character/[slug].vue`,
+    `/shared/ship/[slug].vue`).
+  - Feature 6.3 — OG image renderer (Satori + Resvg) replacing the 501
+    stub.
+  - Ship-share endpoints (`/public/ship/{slug}`) — symmetric to character;
+    deferred until ship feature is shipped (Phase 5 currently).
+
 ## Mobile sheet + wizard — Flutter tail (Epic 5 Features 5.1–5.6)
 
 - Completed: 2026-05-09
