@@ -5,8 +5,8 @@ import 'package:app_ui/app_ui.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
-import 'step_1_concept.dart' show WizardStepHeader;
-import 'step_4_attributes.dart' show _PointPoolBanner, _StepperButton;
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_1_concept.dart' show WizardStepHeader;
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/wizard_shared.dart';
 
 /// Wizard step 5 — Skill distribution.
 ///
@@ -14,7 +14,7 @@ import 'step_4_attributes.dart' show _PointPoolBanner, _StepperButton;
 /// - General skills (8 skills, 8 points total, max rank 5).
 /// - Advanced skills (8 skills, 2 points total, max rank 3).
 ///
-/// Each row uses the shared [_StepperButton] from step 4.
+/// Each row uses the shared [WizardStepperButton] from wizard_shared.dart.
 class Step5Skills extends StatelessWidget {
   const Step5Skills({super.key});
 
@@ -237,13 +237,13 @@ class _SkillRow extends StatelessWidget {
             ),
           ),
           // − / +
-          _StepperButton(
+          WizardStepperButton(
             icon: '−',
             enabled: canDecrement,
             onTap: onDecrement,
           ),
           const SizedBox(width: 4),
-          _StepperButton(
+          WizardStepperButton(
             icon: '+',
             enabled: canIncrement,
             onTap: onIncrement,

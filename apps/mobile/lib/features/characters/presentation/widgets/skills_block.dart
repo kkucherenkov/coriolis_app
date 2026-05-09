@@ -4,8 +4,7 @@ import 'package:app_ui/app_ui.dart';
 
 import 'package:coriolis_companion/features/characters/domain/character.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_sheet/character_sheet_cubit.dart';
-import 'package:coriolis_companion/features/characters/presentation/widgets/attributes_block.dart'
-    show _RankStepperSheet;
+import 'package:coriolis_companion/features/characters/presentation/widgets/rank_stepper_sheet.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
 
 /// Skills block rendered inside the Stats tab.
@@ -223,7 +222,7 @@ class _SkillRow extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
-      builder: (_) => _RankStepperSheet(
+      builder: (_) => RankStepperSheet(
         title: name,
         currentValue: value,
         min: 0,

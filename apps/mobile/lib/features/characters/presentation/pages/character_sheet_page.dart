@@ -79,6 +79,8 @@ class _CharacterSheetView extends StatelessWidget {
               ),
             ],
           ),
+          // Bottom tab bar — fixed at screen bottom, matching the mockup.
+          bottomNavigationBar: _SheetTabBar(activeTab: state.activeTab),
           body: Column(
             children: [
               // Sticky header: avatar, name, save pulse, HP/MP, conditions
@@ -86,16 +88,7 @@ class _CharacterSheetView extends StatelessWidget {
                 character: character,
                 saveStatus: state.saveStatus,
               ),
-              // Tab bar
-              _SheetTabBar(activeTab: state.activeTab),
-              // Tab content — scrollable
-              Expanded(
-                child: _SheetTabContent(
-                  character: character,
-                  activeTab: state.activeTab,
-                ),
-              ),
-              // Save error banner
+              // Save error banner (stays just below the header)
               if (state.hasSaveError)
                 Material(
                   color: AppColors.stateCrimson,
@@ -120,6 +113,13 @@ class _CharacterSheetView extends StatelessWidget {
                     ),
                   ),
                 ),
+              // Tab content — scrolls under the sticky header
+              Expanded(
+                child: _SheetTabContent(
+                  character: character,
+                  activeTab: state.activeTab,
+                ),
+              ),
             ],
           ),
         );
@@ -171,6 +171,9 @@ class _CharacterSheetView extends StatelessWidget {
 }
 
 /// Bottom tab bar (Stats / Gear / Talents / Notes).
+///
+/// Rendered as [Scaffold.bottomNavigationBar] so it overlays at the bottom
+/// while the scroll area fills the space above, matching the mockup.
 class _SheetTabBar extends StatelessWidget {
   const _SheetTabBar({required this.activeTab});
 
@@ -191,30 +194,28 @@ class _SheetTabBar extends StatelessWidget {
       decoration: const BoxDecoration(
         color: AppColors.surfaceNight,
         border: Border(
-          bottom: BorderSide(color: AppColors.brandBrassDeep),
+          top: BorderSide(color: AppColors.brandBrassDeep),
         ),
       ),
-      child: Row(
-        children: tabs
-            .map((entry) => Expanded(
-                  child: Semantics(
-                    button: true,
-                    selected: activeTab == entry.tab,
-                    child: GestureDetector(
-                      onTap: () => cubit.emit(
-                        context
-                            .read<CharacterSheetCubit>()
-                            .state
-                            .copyWith(activeTab: entry.tab),
-                      ),
-                      child: _TabItem(
-                        label: entry.label,
-                        isActive: activeTab == entry.tab,
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: tabs
+              .map((entry) => Expanded(
+                    child: Semantics(
+                      button: true,
+                      selected: activeTab == entry.tab,
+                      child: GestureDetector(
+                        onTap: () => cubit.switchTab(entry.tab),
+                        child: _TabItem(
+                          label: entry.label,
+                          isActive: activeTab == entry.tab,
+                        ),
                       ),
                     ),
-                  ),
-                ))
-            .toList(),
+                  ))
+              .toList(),
+        ),
       ),
     );
   }
@@ -231,23 +232,34 @@ class _TabItem extends StatelessWidget {
     final color =
         isActive ? AppColors.brandBrassLight : AppColors.textSecondary;
     return SizedBox(
-      height: 48,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      height: 56,
+      child: Stack(
+        alignment: Alignment.bottomCenter,
         children: [
-          Text(
-            label,
-            style: AppTypography.bodySm.copyWith(color: color, fontSize: 11),
+          // Tab content centred vertically.
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style:
+                      AppTypography.bodySm.copyWith(color: color, fontSize: 11),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: AppSpacing.s1),
+          // Active indicator pinned to the top edge of the bar (matches mockup
+          // bottom-of-bar ornament style).
           if (isActive)
-            Container(
-              width: AppSpacing.s4,
-              height: 2,
-              color: AppColors.brandBrass,
-            )
-          else
-            const SizedBox(height: 2),
+            Positioned(
+              top: 0,
+              child: Container(
+                width: AppSpacing.s4,
+                height: 2,
+                color: AppColors.brandBrass,
+              ),
+            ),
         ],
       ),
     );
@@ -266,8 +278,6 @@ class _SheetTabContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.t.characters;
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.s4),
       child: switch (activeTab) {

@@ -89,6 +89,14 @@ class CharacterSheetCubit extends Cubit<CharacterSheetState> {
     _scheduleDebounce(current.id);
   }
 
+  // ── Tab navigation ───────────────────────────────────────────────────────
+
+  /// Switches the active tab without affecting any other state.
+  void switchTab(CharacterSheetTab tab) {
+    if (state.activeTab == tab) return;
+    emit(state.copyWith(activeTab: tab));
+  }
+
   // ── Attribute / Skill edits ──────────────────────────────────────────────
 
   /// Updates a single attribute by key name ('strength', 'agility', 'wits', 'empathy').

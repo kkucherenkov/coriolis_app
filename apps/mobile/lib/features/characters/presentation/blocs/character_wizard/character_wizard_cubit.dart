@@ -279,7 +279,7 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
       );
 
       // Persist pending talents via discrete repository calls.
-      for (final t in (d.pendingTalents ?? [])) {
+      for (final t in (d.pendingTalents ?? <PendingTalent>[])) {
         await _repository.addTalent(
           id,
           name: t.name,

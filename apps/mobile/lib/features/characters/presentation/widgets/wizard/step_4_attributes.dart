@@ -5,7 +5,8 @@ import 'package:app_ui/app_ui.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
-import 'step_1_concept.dart' show WizardStepHeader;
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_1_concept.dart' show WizardStepHeader;
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/wizard_shared.dart';
 
 /// Wizard step 4 — Attribute distribution.
 ///
@@ -49,7 +50,7 @@ class Step4Attributes extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.s4),
               // ── Point pool banner ──────────────────────────────────────
-              _PointPoolBanner(
+              PointPoolBanner(
                 label: t.wizardAttrPointsRemaining,
                 remaining: remaining,
                 total: _total,
@@ -76,58 +77,6 @@ class Step4Attributes extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-/// Point-pool status banner.
-class _PointPoolBanner extends StatelessWidget {
-  const _PointPoolBanner({
-    required this.label,
-    required this.remaining,
-    required this.total,
-  });
-
-  final String label;
-  final int remaining;
-  final int total;
-
-  @override
-  Widget build(BuildContext context) {
-    final isComplete = remaining == 0;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceNight,
-        border: Border.all(color: AppColors.brandBrassDeep),
-        borderRadius: BorderRadius.circular(AppRadius.md),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.s4,
-          vertical: AppSpacing.s3,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label.toUpperCase(),
-              style: AppTypography.bodySm.copyWith(
-                fontSize: 11,
-                letterSpacing: 0.18 * 11,
-                color: AppColors.brandBrass,
-              ),
-            ),
-            Text(
-              '$remaining',
-              style: AppTypography.monoStatMd.copyWith(
-                color: isComplete
-                    ? AppColors.stateSuccess
-                    : AppColors.brandBrassLight,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -220,13 +169,13 @@ class _AttributeRow extends StatelessWidget {
             ),
           ),
           // − / + buttons
-          _StepperButton(
+          WizardStepperButton(
             icon: '−',
             enabled: canDecrement,
             onTap: onDecrement,
           ),
           const SizedBox(width: AppSpacing.s1),
-          _StepperButton(
+          WizardStepperButton(
             icon: '+',
             enabled: canIncrement,
             onTap: onIncrement,
@@ -237,45 +186,3 @@ class _AttributeRow extends StatelessWidget {
   }
 }
 
-/// Small stepper button (−/+). Tap target ≥ 44×44.
-class _StepperButton extends StatelessWidget {
-  const _StepperButton({
-    required this.icon,
-    required this.enabled,
-    required this.onTap,
-  });
-
-  final String icon;
-  final bool enabled;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      enabled: enabled,
-      child: GestureDetector(
-        onTap: enabled ? onTap : null,
-        child: Opacity(
-          opacity: enabled ? AppOpacity.o100 : AppOpacity.disabled,
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              border: Border.all(color: AppColors.brandBrassDeep),
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-            child: Center(
-              child: Text(
-                icon,
-                style: AppTypography.bodyMd.copyWith(
-                  color: AppColors.brandBrass,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
