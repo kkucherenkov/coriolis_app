@@ -1,0 +1,127 @@
+/**
+ * WHY this file exists:
+ * Thin HTTP entry point for the game-sessions bounded context. Jobs:
+ *  1. Authenticate via SessionGuard.
+ *  2. Receive validated DTO (ValidationPipe + class-validator).
+ *  3. Dispatch the appropriate Query or Command via the bus.
+ *  4. Return the result — no mapping, no Prisma, no business logic.
+ *
+ * The user id is sourced exclusively from the authenticated session via
+ * req.userId. It is never taken from the request body or path params.
+ */
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+
+import { SessionGuard } from '../../common/auth/auth.guard';
+
+import { AssignCharacterCommand, AssignCharacterDto } from './commands/assign-character.command';
+import {
+  CreateGameSessionCommand,
+  CreateGameSessionDto,
+} from './commands/create-game-session.command';
+import { DeleteGameSessionCommand } from './commands/delete-game-session.command';
+import { UnassignCharacterCommand } from './commands/unassign-character.command';
+import {
+  UpdateGameSessionCommand,
+  UpdateGameSessionDto,
+} from './commands/update-game-session.command';
+import { GetGameSessionQuery } from './queries/get-game-session.query';
+import { ListGameSessionsQuery } from './queries/list-game-sessions.query';
+
+import type { AuthenticatedRequest } from '../../common/auth/auth.guard';
+import type { GameSessionReadModel } from './domain/game-session.ports';
+import type { GameSessionListResult } from './queries/list-game-sessions.handler';
+
+@UseGuards(SessionGuard)
+@Controller({ path: 'game-sessions', version: '1' })
+export class GameSessionsController {
+  constructor(
+    private readonly queryBus: QueryBus,
+    private readonly commandBus: CommandBus,
+  ) {}
+
+  /** GET /api/v1/game-sessions */
+  @Get()
+  async list(
+    @Req() req: AuthenticatedRequest,
+    @Query('limit') limitRaw?: string,
+    @Query('cursor') cursor?: string,
+    @Query('status') statusRaw?: string,
+  ): Promise<GameSessionListResult> {
+    const limit = Math.min(Math.max(Number.parseInt(limitRaw ?? '20', 10) || 20, 1), 100);
+    const status = statusRaw === 'active' || statusRaw === 'archived' ? statusRaw : undefined;
+    return this.queryBus.execute(new ListGameSessionsQuery(req.userId, limit, cursor, status));
+  }
+
+  /** POST /api/v1/game-sessions */
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async create(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: CreateGameSessionDto,
+  ): Promise<GameSessionReadModel> {
+    return this.commandBus.execute(new CreateGameSessionCommand(req.userId, body));
+  }
+
+  /** GET /api/v1/game-sessions/:id */
+  @Get(':id')
+  async getOne(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ): Promise<GameSessionReadModel> {
+    return this.queryBus.execute(new GetGameSessionQuery(id, req.userId));
+  }
+
+  /** PATCH /api/v1/game-sessions/:id */
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  async update(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() body: UpdateGameSessionDto,
+  ): Promise<GameSessionReadModel> {
+    return this.commandBus.execute(new UpdateGameSessionCommand(id, req.userId, body));
+  }
+
+  /** DELETE /api/v1/game-sessions/:id */
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<void> {
+    return this.commandBus.execute(new DeleteGameSessionCommand(id, req.userId));
+  }
+
+  /** POST /api/v1/game-sessions/:id/characters */
+  @Post(':id/characters')
+  @HttpCode(HttpStatus.CREATED)
+  async assignCharacter(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() body: AssignCharacterDto,
+  ): Promise<GameSessionReadModel> {
+    return this.commandBus.execute(new AssignCharacterCommand(id, req.userId, body.characterId));
+  }
+
+  /** DELETE /api/v1/game-sessions/:id/characters/:characterId */
+  @Delete(':id/characters/:characterId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async unassignCharacter(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Param('characterId') characterId: string,
+  ): Promise<void> {
+    return this.commandBus.execute(new UnassignCharacterCommand(id, req.userId, characterId));
+  }
+}
