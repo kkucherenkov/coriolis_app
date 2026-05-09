@@ -1,27 +1,28 @@
 /**
  * auth-required.global — guards every route under /app/*.
  *
- * Waits for the Better Auth session to settle (isPending → false) before
- * deciding whether to allow navigation. If the session has no authenticated
- * user the visitor is redirected to /login with a `redirect` query param so
- * the login page can send them back after successful sign-in.
+ * Calls Better Auth `getSession()` and inspects its return value directly.
+ * The reactive `useSession()` ref is not always synchronously updated after
+ * a fresh page load (it's driven by an internal nanostore), so on the very
+ * first navigation after sign-in it can still report `data: null` even
+ * though the cookie is valid. Reading the explicit fetch result avoids that
+ * race entirely.
  */
 export default defineNuxtRouteMiddleware(async (to) => {
   if (!to.path.startsWith('/app')) return;
 
   const auth = useAuth();
-  const session = auth.useSession();
 
-  // If the reactive state is still resolving, do an explicit fetch to settle it.
-  if (session.value.isPending) {
-    try {
-      await auth.getSession();
-    } catch {
-      // Network failure — treat as unauthenticated.
-    }
+  let userId: string | undefined;
+  try {
+    const result = await auth.getSession();
+    const data = result.data as { user?: { id?: string } } | null;
+    userId = data?.user?.id;
+  } catch {
+    // Network failure — treat as unauthenticated.
   }
 
-  if (!session.value.data?.user) {
+  if (!userId) {
     const redirect = encodeURIComponent(to.fullPath);
     return navigateTo(`/login?redirect=${redirect}`);
   }
