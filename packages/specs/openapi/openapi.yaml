@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 0.7.1
+  version: 0.8.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -41,6 +41,8 @@ tags:
     description: Share-link management for character owners (create, list, revoke)
   - name: public
     description: Public read-only endpoints — no authentication required
+  - name: dice
+    description: Dice rolls — create, push, and roll history
 
 paths:
   /api/v1/characters:
@@ -3036,6 +3038,173 @@ paths:
                     detail: The OG image renderer ships in Epic 6 Feature 6.3.
                     code: OG_NOT_IMPLEMENTED
 
+  /api/v1/characters/{id}/rolls:
+    post:
+      operationId: createRoll
+      summary: Roll dice for a character
+      description: |
+        Rolls `pool` d6 server-side using a cryptographically secure RNG.
+        Hits are counted as the number of 6s. The caller provides a human-readable
+        `label` (e.g. "Pilot · Evade") and an optional `gameSessionId` (reserved for
+        Feature 7.2 — pass null until GameSession lands).
+
+        Pool is clamped by the server from the submitted value. Condition penalties
+        must be pre-applied by the caller before sending `pool`; the server does not
+        re-apply them from character state.
+      tags: [dice]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CharacterId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RollCreate"
+      responses:
+        "201":
+          description: Roll created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Roll"
+        "400":
+          description: Validation error (pool out of range, label too long, etc.)
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this character
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: Character not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+    get:
+      operationId: listRolls
+      summary: List roll history for a character
+      description: |
+        Returns the most recent rolls for the character, ordered newest-first.
+        Default limit is 50; maximum is 100.
+      tags: [dice]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CharacterId"
+        - name: limit
+          in: query
+          required: false
+          description: Number of rolls to return (1–100, default 50)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        "200":
+          description: Roll history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RollList"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this character
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: Character not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /api/v1/rolls/{id}/push:
+    patch:
+      operationId: pushRoll
+      summary: Push (reroll) a roll
+      description: |
+        Rerolls all non-6 dice exactly once. After a push the roll cannot be
+        pushed again (`pushed` becomes `true`). Returns 422 with code
+        `ROLL_NOT_PUSHABLE` if:
+        - The roll has already been pushed.
+        - The owning character has the Exhausted condition (PRD §10).
+      tags: [dice]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RollId"
+      responses:
+        "200":
+          description: Roll pushed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Roll"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the character this roll belongs to
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: Roll not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "422":
+          description: Roll cannot be pushed (already pushed or character is exhausted)
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                alreadyPushed:
+                  value:
+                    type: about:blank
+                    title: Roll cannot be pushed
+                    status: 422
+                    detail: This roll has already been pushed once. Dice are final.
+                    code: ROLL_NOT_PUSHABLE
+                exhausted:
+                  value:
+                    type: about:blank
+                    title: Roll cannot be pushed
+                    status: 422
+                    detail: The character is Exhausted and cannot push rolls (PRD §10).
+                    code: ROLL_NOT_PUSHABLE
+
 components:
   parameters:
     CharacterId:
@@ -3096,6 +3265,14 @@ components:
         minLength: 24
         maxLength: 24
 
+    RollId:
+      name: id
+      in: path
+      required: true
+      description: Roll identifier (cuid2)
+      schema:
+        type: string
+
   securitySchemes:
     cookieAuth:
       type: apiKey
@@ -3107,6 +3284,106 @@ components:
       bearerFormat: Better Auth bearer token
 
   schemas:
+    # -------------------------------------------------------------------------
+    # Dice roll schemas (Epic 7, Feature 7.1)
+    # -------------------------------------------------------------------------
+
+    Roll:
+      type: object
+      description: |
+        A single Coriolis dice roll. Dice are rolled server-side using a
+        cryptographically secure RNG. Hits = count of 6s. A roll can be pushed
+        at most once (PRD §10). `gameSessionId` is null until Feature 7.2 lands.
+      required:
+        - id
+        - characterId
+        - label
+        - pool
+        - dice
+        - hits
+        - pushed
+        - createdAt
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: Opaque roll identifier (cuid2)
+        characterId:
+          type: string
+          readOnly: true
+          description: Identifier of the character who made the roll
+        gameSessionId:
+          type: ["string", "null"]
+          description: |
+            Game session this roll belongs to. Null until Feature 7.2
+            (GameSession resource) ships. Clients should tolerate null.
+        label:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Human-readable roll label, e.g. "Pilot · Evade"
+        pool:
+          type: integer
+          minimum: 1
+          maximum: 10
+          description: Number of d6 rolled (after condition penalties applied by caller)
+        dice:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 6
+          description: |
+            Current face values of all dice. After a push, rerolled non-6 values
+            are updated in place; the array always has `pool` elements.
+        hits:
+          type: integer
+          readOnly: true
+          minimum: 0
+          description: Number of 6s in the current dice array
+        pushed:
+          type: boolean
+          description: Whether this roll has been pushed. Once true, further pushes are rejected.
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    RollCreate:
+      type: object
+      description: Payload for POST /api/v1/characters/{id}/rolls
+      required:
+        - label
+        - pool
+      properties:
+        label:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Human-readable roll label, e.g. "Pilot · Evade"
+        pool:
+          type: integer
+          minimum: 1
+          maximum: 10
+          description: |
+            Number of d6 to roll. Must be between 1 and 10 inclusive.
+            Condition pool penalties must be pre-applied by the caller before
+            submitting.
+        gameSessionId:
+          type: ["string", "null"]
+          description: |
+            Optional game session identifier. Reserved for Feature 7.2.
+            Pass null or omit until GameSession lands.
+
+    RollList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Roll"
+
     # -------------------------------------------------------------------------
     # Enumerations — define once, reference everywhere
     # -------------------------------------------------------------------------

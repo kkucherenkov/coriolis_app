@@ -1,3 +1,31 @@
+## T-2026-05-09-002 — Epic 7 Feature 7.1 backend: DiceModule (T-7.1.1.a, .b, .e)
+
+- Created: 2026-05-09
+- Owner: claude
+- Spec: Epic 7, Feature 7.1, tasks T-7.1.1.a, T-7.1.1.b, T-7.1.1.e
+- Goal: Server-side Coriolis dice roller with push mechanic. Create roll, list history, push reroll.
+- Acceptance:
+  - `POST /api/v1/characters/{id}/rolls` → 201 Roll (server rolls pool d6 with crypto.randomInt)
+  - `GET /api/v1/characters/{id}/rolls?limit=50` → 200 RollList (last 50, ordered desc)
+  - `PATCH /api/v1/rolls/{id}/push` → 200 Roll (pushed dice, pushed=true) | 422 ROLL_NOT_PUSHABLE
+  - RulesEngine `canPush()` returns `{ ok, reason? }`, gated on exhausted + already-pushed
+  - `RollPushedEvent` emitted on event bus with `{ rollId, characterId, gameSessionId, hits }`
+  - ≥18 new unit specs
+- Spec diff: openapi.yaml 0.7.1 → 0.8.0; new Roll, RollCreate, RollList schemas + 3 paths
+- Codegen impact: yes
+- Design impact: none (backend only)
+- Tests: ≥18 new specs
+- Sub-steps:
+  - [x] Push task to active.md
+  - [ ] openapi.yaml bump + Roll paths/schemas
+  - [ ] pnpm spec:validate && pnpm spec:bundle && pnpm spec:codegen
+  - [ ] RulesEngine canPush update (new signature)
+  - [ ] Prisma Roll model + migration rolls
+  - [ ] DiceModule — domain, commands, queries, events, infra, controller
+  - [ ] lint + typecheck + test
+- Status: in-progress
+- Blockers: —
+
 ## T-2026-05-09-001 — implement share-link backend (Epic 6 Feature 6.1)
 
 - Created: 2026-05-09
