@@ -2,6 +2,36 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## Public read-only viewer — web (Epic 6 Feature 6.2)
+
+- Completed: 2026-05-09
+- Owner: claude (frontend-engineer agent + parent)
+- Spec: docs/IMPLEMENTATION_PLAN.md Epic 6 Feature 6.2, T-6.2.1.{a,c,d,e}.
+  T-6.2.1.b (ship variant) shipped as a coming-soon placeholder; full
+  implementation lands when ship-share endpoints exist.
+- Result: ff-merged to main as `<viewer range>` (5 commits).
+  - `d2c771f` `feat(web): usePublicSharingApi composable` — typed wrapper
+    over `getPublicCharacter` from the generated SDK.
+  - `1f1fbbb` `feat(web): AppShareViewer composition (read-only sheet)`
+    — parchment AppBanner disclaimer, hero header, three-column layout
+    with display-only AppConditionPill / AppStatBlock / AppDots /
+    talents / inventory. NO edit affordances rendered.
+  - `e0b20e4` `feat(web): /shared/character/[slug] page with OG meta`
+    — SPA-friendly fetch, status routing (404 not-found, 410 revoked,
+    5xx error). `useHead` reactively sets `og:title`, `og:description`,
+    `og:image` → `/api/v1/public/og/character/:slug.png` (renderer
+    landed in 6.3).
+  - `744c2fc` `feat(web): /shared/ship/[slug] page placeholder`
+    — coming-soon banner; no fetch (ship endpoints not yet shipped).
+  - `cb9ca90` `test(web): share viewer snapshot + api specs` — 13 specs
+    covering composable success/404/410, no-edit-affordance assertion
+    (T-6.2.1.d), page status routing.
+- Verification: web typecheck/lint/test all green; 53 web specs pass.
+- Open follow-ups (Phase 3):
+  - Lighthouse measurement on the share route (target ≥ 90 across all
+    scores). Bundle-size and font-subset polishing land here.
+  - Ship-share full implementation when the public ship endpoint exists.
+
 ## Share-link backend (Epic 6 Feature 6.1)
 
 - Completed: 2026-05-09
