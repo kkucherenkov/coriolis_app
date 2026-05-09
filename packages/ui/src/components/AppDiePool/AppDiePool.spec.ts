@@ -106,9 +106,9 @@ describe('AppDiePool', () => {
     const wrapper = mount(AppDiePool, {
       props: { values: [6, 3] as DieValue[], pushedIndices: [] },
     });
-    wrapper.findAll('li.app-die-pool__item').forEach((item) => {
+    for (const item of wrapper.findAll('li.app-die-pool__item')) {
       expect(item.classes()).not.toContain('app-die-pool__item--pushed');
-    });
+    }
   });
 
   // ── Size modifiers ────────────────────────────────────────────────────────

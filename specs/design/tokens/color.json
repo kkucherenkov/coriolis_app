@@ -2,43 +2,135 @@
   "$schema": "https://design-tokens.github.io/community-group/format/",
   "color": {
     "surface": {
-      "void":       { "$value": "#0B0E2C", "$type": "color", "$description": "Deepest indigo. App background, dice canvas, voids of space." },
-      "night":      { "$value": "#15193F", "$type": "color", "$description": "Card and panel background." },
-      "dawn":       { "$value": "#252B5C", "$type": "color", "$description": "Elevated surface — modals, hovered cards." },
-      "parchment":  { "$value": "#F2E8D0", "$type": "color", "$description": "Warm light surface for printed-feeling overlays." }
+      "void": {
+        "$value": "#0B0E2C",
+        "$type": "color",
+        "$description": "Deepest indigo. App background, dice canvas, voids of space."
+      },
+      "night": {
+        "$value": "#15193F",
+        "$type": "color",
+        "$description": "Card and panel background."
+      },
+      "dawn": {
+        "$value": "#252B5C",
+        "$type": "color",
+        "$description": "Elevated surface — modals, hovered cards."
+      },
+      "parchment": {
+        "$value": "#F2E8D0",
+        "$type": "color",
+        "$description": "Warm light surface for printed-feeling overlays."
+      }
     },
     "brand": {
-      "brass-50":     { "$value": "#FFFEF8", "$type": "color", "$description": "Off-white — Tailwind primary-50 (Nuxt UI scale). DESIGN §2 doesn't enumerate this stop; emitted as a named token so consumers aren't authoring hex literals in @theme blocks." },
-      "brass-100":    { "$value": "#FCF6E5", "$type": "color", "$description": "Cream — Tailwind primary-100 / Nuxt UI scale stop." },
-      "brass-light":  { "$value": "#F4E4B8", "$type": "color", "$description": "Brass highlight. Headings, focused brass on dark. Tailwind primary-200." },
-      "brass-300":    { "$value": "#ECD49E", "$type": "color", "$description": "Tailwind primary-300 — interpolated between brass-light and brass." },
-      "brass-400":    { "$value": "#DEBB72", "$type": "color", "$description": "Tailwind primary-400 — interpolated between brass-light and brass." },
-      "brass":        { "$value": "#D4A95C", "$type": "color", "$description": "Primary brass. Borders, key UI. Tailwind primary-500." },
-      "brass-deep":   { "$value": "#A67C28", "$type": "color", "$description": "Aged brass. Hairline rules, secondary borders. Tailwind primary-600." },
-      "brass-shadow": { "$value": "#6B4E1A", "$type": "color", "$description": "Brass shadow. Inset shadows, deep dividers. Tailwind primary-700." },
-      "brass-800":    { "$value": "#4A3712", "$type": "color", "$description": "Tailwind primary-800 — between brass-shadow and near-black." },
-      "brass-900":    { "$value": "#2D2208", "$type": "color", "$description": "Tailwind primary-900 — near-black brass." },
-      "brass-950":    { "$value": "#1A1306", "$type": "color", "$description": "Tailwind primary-950 — deepest brass before void." }
+      "brass-50": {
+        "$value": "#FFFEF8",
+        "$type": "color",
+        "$description": "Off-white — Tailwind primary-50 (Nuxt UI scale). DESIGN §2 doesn't enumerate this stop; emitted as a named token so consumers aren't authoring hex literals in @theme blocks."
+      },
+      "brass-100": {
+        "$value": "#FCF6E5",
+        "$type": "color",
+        "$description": "Cream — Tailwind primary-100 / Nuxt UI scale stop."
+      },
+      "brass-light": {
+        "$value": "#F4E4B8",
+        "$type": "color",
+        "$description": "Brass highlight. Headings, focused brass on dark. Tailwind primary-200."
+      },
+      "brass-300": {
+        "$value": "#ECD49E",
+        "$type": "color",
+        "$description": "Tailwind primary-300 — interpolated between brass-light and brass."
+      },
+      "brass-400": {
+        "$value": "#DEBB72",
+        "$type": "color",
+        "$description": "Tailwind primary-400 — interpolated between brass-light and brass."
+      },
+      "brass": {
+        "$value": "#D4A95C",
+        "$type": "color",
+        "$description": "Primary brass. Borders, key UI. Tailwind primary-500."
+      },
+      "brass-deep": {
+        "$value": "#A67C28",
+        "$type": "color",
+        "$description": "Aged brass. Hairline rules, secondary borders. Tailwind primary-600."
+      },
+      "brass-shadow": {
+        "$value": "#6B4E1A",
+        "$type": "color",
+        "$description": "Brass shadow. Inset shadows, deep dividers. Tailwind primary-700."
+      },
+      "brass-800": {
+        "$value": "#4A3712",
+        "$type": "color",
+        "$description": "Tailwind primary-800 — between brass-shadow and near-black."
+      },
+      "brass-900": {
+        "$value": "#2D2208",
+        "$type": "color",
+        "$description": "Tailwind primary-900 — near-black brass."
+      },
+      "brass-950": {
+        "$value": "#1A1306",
+        "$type": "color",
+        "$description": "Tailwind primary-950 — deepest brass before void."
+      }
     },
     "text": {
-      "primary":   { "$value": "#F2E8D0", "$type": "color", "$description": "Primary body text on dark surfaces." },
-      "secondary": { "$value": "#D9CDB0", "$type": "color", "$description": "Secondary text — captions, helper copy." },
-      "ink":       { "$value": "#1A1810", "$type": "color", "$description": "Ink on parchment surfaces." },
-      "on-brass":  { "$value": "#0B0E2C", "$type": "color", "$description": "Text rendered on brass fills." }
+      "primary": {
+        "$value": "#F2E8D0",
+        "$type": "color",
+        "$description": "Primary body text on dark surfaces."
+      },
+      "secondary": {
+        "$value": "#D9CDB0",
+        "$type": "color",
+        "$description": "Secondary text — captions, helper copy."
+      },
+      "ink": {
+        "$value": "#1A1810",
+        "$type": "color",
+        "$description": "Ink on parchment surfaces."
+      },
+      "on-brass": {
+        "$value": "#0B0E2C",
+        "$type": "color",
+        "$description": "Text rendered on brass fills."
+      }
     },
     "state": {
-      "crimson":         { "$value": "#A8324A", "$type": "color", "$description": "Danger fill. Crit failures, destructive actions." },
-      "crimson-bright":  { "$value": "#E54E6B", "$type": "color", "$description": "Danger emphasis. Crit text and chip foreground." },
-      "mystic-teal":     { "$value": "#2BA3A0", "$type": "color", "$description": "Mystic / Icon-related accent." },
-      "success":         { "$value": "#5A8A3A", "$type": "color", "$description": "Success / completion." },
-      "darkness":        { "$value": "#5B2A78", "$type": "color", "$description": "The Darkness — corruption, dark points." }
+      "crimson": {
+        "$value": "#A8324A",
+        "$type": "color",
+        "$description": "Danger fill. Crit failures, destructive actions."
+      },
+      "crimson-bright": {
+        "$value": "#E54E6B",
+        "$type": "color",
+        "$description": "Danger emphasis. Crit text and chip foreground."
+      },
+      "mystic-teal": {
+        "$value": "#2BA3A0",
+        "$type": "color",
+        "$description": "Mystic / Icon-related accent."
+      },
+      "success": { "$value": "#5A8A3A", "$type": "color", "$description": "Success / completion." },
+      "darkness": {
+        "$value": "#5B2A78",
+        "$type": "color",
+        "$description": "The Darkness — corruption, dark points."
+      }
     }
   },
   "theme": {
     "high-contrast": {
       "color": {
         "surface": {
-          "void":  { "$value": "#000018", "$type": "color" }
+          "void": { "$value": "#000018", "$type": "color" }
         },
         "brand": {
           "brass": { "$value": "#FFD773", "$type": "color" }

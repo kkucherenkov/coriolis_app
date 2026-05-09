@@ -2,7 +2,11 @@ import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import type { CharacterReadModel } from '../../characters/domain/character.ports';
-import { ShareLinkExpiredError, ShareLinkNotFoundError, ShareLinkRevokedError } from '../domain/share-link.errors';
+import {
+  ShareLinkExpiredError,
+  ShareLinkNotFoundError,
+  ShareLinkRevokedError,
+} from '../domain/share-link.errors';
 import { SHARE_LINK_REPO } from '../domain/share-link.ports';
 import { ViewTracker } from '../infra/view-tracker';
 
@@ -11,7 +15,10 @@ import { GetPublicCharacterQuery } from './get-public-character.query';
 import type { IShareLinkRepo } from '../domain/share-link.ports';
 
 @QueryHandler(GetPublicCharacterQuery)
-export class GetPublicCharacterHandler implements IQueryHandler<GetPublicCharacterQuery, CharacterReadModel> {
+export class GetPublicCharacterHandler implements IQueryHandler<
+  GetPublicCharacterQuery,
+  CharacterReadModel
+> {
   constructor(
     @Inject(SHARE_LINK_REPO) private readonly repo: IShareLinkRepo,
     private readonly viewTracker: ViewTracker,

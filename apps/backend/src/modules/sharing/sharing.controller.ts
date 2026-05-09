@@ -50,9 +50,7 @@ export class SharingController {
     @Param('id') characterId: string,
     @Body() body: CreateShareLinkDto,
   ): Promise<ShareLinkReadModel> {
-    return this.commandBus.execute(
-      new CreateShareLinkCommand(req.userId, characterId, body),
-    );
+    return this.commandBus.execute(new CreateShareLinkCommand(req.userId, characterId, body));
   }
 
   /** GET /api/v1/characters/:id/shares */

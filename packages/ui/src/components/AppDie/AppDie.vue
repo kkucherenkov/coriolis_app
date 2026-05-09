@@ -5,6 +5,12 @@
   type DieState = 'normal' | 'hit' | 'pushed' | 'failed';
   type DieSize = 'sm' | 'md' | 'lg';
 
+  const props = withDefaults(defineProps<Props>(), {
+    state: 'normal',
+    size: 'md',
+    ariaLabel: undefined,
+  });
+
   // SVG canvas dimensions per size.
   // SCSS variables below mirror these for px-only layout; kept here for SVG attrs.
   const SIZE_PX: Record<DieSize, number> = {
@@ -26,7 +32,10 @@
    *   5: four corners + centre
    *   6: two columns of 3 (top/mid/bot left, top/mid/bot right)
    */
-  type Point = { cx: number; cy: number };
+  interface Point {
+    cx: number;
+    cy: number;
+  }
 
   const TL: Point = { cx: 28, cy: 28 };
   const TR: Point = { cx: 72, cy: 28 };
@@ -54,12 +63,6 @@
     ariaLabel?: string;
   }
 
-  const props = withDefaults(defineProps<Props>(), {
-    state: 'normal',
-    size: 'md',
-    ariaLabel: undefined,
-  });
-
   if (!VALID_VALUES.includes(props.value)) {
     console.warn(`[AppDie] Invalid value "${props.value}". Must be 1–6.`);
   }
@@ -71,9 +74,9 @@
   const computedAriaLabel = computed(() => {
     if (props.ariaLabel) return props.ariaLabel;
     const stateLabel =
-      props.state !== 'normal'
-        ? ` — ${props.state.charAt(0).toUpperCase() + props.state.slice(1)}`
-        : '';
+      props.state === 'normal'
+        ? ''
+        : ` — ${props.state.charAt(0).toUpperCase() + props.state.slice(1)}`;
     return `Die showing ${props.value}${stateLabel}`;
   });
 
@@ -102,14 +105,7 @@
     >
       <defs>
         <!-- Hit: mystic-teal glow filter -->
-        <filter
-          v-if="state === 'hit'"
-          :id="filterId"
-          x="-30%"
-          y="-30%"
-          width="160%"
-          height="160%"
-        >
+        <filter v-if="state === 'hit'" :id="filterId" x="-30%" y="-30%" width="160%" height="160%">
           <feGaussianBlur stdDeviation="3" result="blur" />
           <feFlood flood-color="var(--state-mystic-teal)" flood-opacity="0.6" result="color" />
           <feComposite in="color" in2="blur" operator="in" result="teal-glow" />

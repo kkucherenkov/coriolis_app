@@ -90,12 +90,8 @@ export class ResendMailer implements IMailer {
 
     if (!response.ok) {
       const text = await response.text().catch(() => '(no body)');
-      this.logger.error(
-        `Resend API error: status=${response.status.toString()} body=${text}`,
-      );
-      throw new Error(
-        `Resend API returned ${response.status.toString()}: ${text}`,
-      );
+      this.logger.error(`Resend API error: status=${response.status.toString()} body=${text}`);
+      throw new Error(`Resend API returned ${response.status.toString()}: ${text}`);
     }
 
     this.logger.log(`Email sent successfully via Resend to=${body.to.join(', ')}`);

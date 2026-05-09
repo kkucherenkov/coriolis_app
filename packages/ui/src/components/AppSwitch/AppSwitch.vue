@@ -31,7 +31,7 @@
   // When a visible label is present, it serves as the accessible name via the
   // <label for=""> association.
   const ariaLabel = computed<string | undefined>(() => {
-    if (hasVisibleLabel.value) return undefined;
+    if (hasVisibleLabel.value) return;
     return props.label;
   });
 

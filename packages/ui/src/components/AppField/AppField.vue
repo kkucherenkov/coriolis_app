@@ -31,7 +31,7 @@
   const activeDescId = computed<string | undefined>(() => {
     if (props.error) return `${fieldId.value}-error`;
     if (props.helpText) return `${fieldId.value}-help`;
-    return undefined;
+    return;
   });
 
   // Attrs spread onto the slotted control so the consumer wires a11y for free.
@@ -63,17 +63,10 @@
     </div>
 
     <!-- error wins over helpText when both are set -->
-    <span
-      v-if="error"
-      :id="`${fieldId}-error`"
-      class="app-field__error"
-      role="alert"
-    >{{ error }}</span>
-    <span
-      v-else-if="helpText"
-      :id="`${fieldId}-help`"
-      class="app-field__help"
-    >{{ helpText }}</span>
+    <span v-if="error" :id="`${fieldId}-error`" class="app-field__error" role="alert">{{
+      error
+    }}</span>
+    <span v-else-if="helpText" :id="`${fieldId}-help`" class="app-field__help">{{ helpText }}</span>
   </div>
 </template>
 

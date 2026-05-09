@@ -26,7 +26,7 @@ fundamentally different:
   Borders are derived from `--brand-brass-*` and opacity, not their own token
   group.
 - Typography composites are `--type-{display-xl,display-lg,display-md,display-sm,
-  body-lg,body-md,body-sm,mono-stat-xl,mono-stat-md}` decomposed to their CSS
+body-lg,body-md,body-sm,mono-stat-xl,mono-stat-md}` decomposed to their CSS
   properties (DESIGN §3.2). The role-via-slot indirection used by the
   boilerplate doesn't carry the composite naming the JSX mockups already
   assume.
@@ -118,7 +118,7 @@ Have the new emitter output Coriolis tokens **plus** a block of aliases
 backwards-compat shims (`# Don't add backwards-compatibility hacks`). The
 alias block would be ~40 lines of debt, easy to lean on, hard to remove
 without tracking every consumer. The unstyled boilerplate components are a
-*more visible* signal that Phase 1's foundation work is the next step.
+_more visible_ signal that Phase 1's foundation work is the next step.
 
 ### Option C — Adapter loader
 

@@ -86,7 +86,7 @@ export const LargePoolPushed: Story = {
     components: { AppDiePool },
     setup() {
       return {
-        values: [6, 3, 1, 5, 4, 6, 2, 4] as Array<1 | 2 | 3 | 4 | 5 | 6>,
+        values: [6, 3, 1, 5, 4, 6, 2, 4] as (1 | 2 | 3 | 4 | 5 | 6)[],
         pushedIndices: [1, 2, 4],
       };
     },

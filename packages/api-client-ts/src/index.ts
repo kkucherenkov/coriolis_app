@@ -15,4 +15,3 @@ export * from './realtime/channels.js';
 // only exposes operation functions and types; the client itself lives in
 // `client.gen.ts` and is forwarded here without modifying generated code.
 export { client } from './generated/client.gen.js';
-

@@ -32,7 +32,7 @@ Concretely:
   i18n config registers all four locales (`en`, `ru`, `uk`, `el`); en + ru
   active in v1, uk + el wired but not populated (PRD §6).
 - **Coriolis design pipeline.** `packages/design-tokens/src/{types,load,
-  emit-scss,emit-typescript,emit-dart}.ts` rewritten from the boilerplate's
+emit-scss,emit-typescript,emit-dart}.ts` rewritten from the boilerplate's
   multi-theme `light/dark/sepia/forest` shape to Coriolis's dark-first
   `surface/brand/text/state` schema with optional `theme.<name>`
   overrides. `--type-{role}-*` decomposed CSS custom properties per
@@ -114,14 +114,14 @@ Concretely:
 There is no remote `origin` yet, so Phase 0 was delivered through local
 branches that fast-forward-merged into `main`:
 
-| Branch | Topic | Final commit |
-|---|---|---|
-| `chore/baseline-docs` | PRD/DESIGN/IMPLEMENTATION_PLAN + JSX mockups + path-drift fixes | `aff3bcc` |
-| `chore/phase-0/adopt-boilerplate` | placeholder substitution, doc rebrand, `scripts/setup.sh` deletion, locale wiring | `2308207` |
-| `feat/phase-0/design-pipeline-coriolis` | emitter rewrite, JSON restructure, regenerated `tokens.g.dart`, layout/main.css/styles.css align, design README, ADR-0001 | `0d89205` |
-| `feat/phase-0/openapi-coriolis-title` | OpenAPI title rename | `6a70eaa` |
-| `chore/phase-0/coriolis-copy` | landing hero copy + `[uk-todo]`/`[el-todo]` markers in login.vue | `fe41a15` |
-| `chore/phase-0/runbook-update-and-tag` | this entry + `CLAUDE_CODE_KICKOFF.md` rewrite | (current) |
+| Branch                                  | Topic                                                                                                                     | Final commit |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `chore/baseline-docs`                   | PRD/DESIGN/IMPLEMENTATION_PLAN + JSX mockups + path-drift fixes                                                           | `aff3bcc`    |
+| `chore/phase-0/adopt-boilerplate`       | placeholder substitution, doc rebrand, `scripts/setup.sh` deletion, locale wiring                                         | `2308207`    |
+| `feat/phase-0/design-pipeline-coriolis` | emitter rewrite, JSON restructure, regenerated `tokens.g.dart`, layout/main.css/styles.css align, design README, ADR-0001 | `0d89205`    |
+| `feat/phase-0/openapi-coriolis-title`   | OpenAPI title rename                                                                                                      | `6a70eaa`    |
+| `chore/phase-0/coriolis-copy`           | landing hero copy + `[uk-todo]`/`[el-todo]` markers in login.vue                                                          | `fe41a15`    |
+| `chore/phase-0/runbook-update-and-tag`  | this entry + `CLAUDE_CODE_KICKOFF.md` rewrite                                                                             | (current)    |
 
 ## Follow-ups
 

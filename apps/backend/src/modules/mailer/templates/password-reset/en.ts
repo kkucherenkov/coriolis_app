@@ -83,7 +83,10 @@ If you did not request this reset, your account is safe — no changes have been
 
   return {
     subject,
-    html: wrapInEmailShell(htmlContent, 'Reset your Coriolis Companion password — link valid for 1 hour.'),
+    html: wrapInEmailShell(
+      htmlContent,
+      'Reset your Coriolis Companion password — link valid for 1 hour.',
+    ),
     text,
   };
 }

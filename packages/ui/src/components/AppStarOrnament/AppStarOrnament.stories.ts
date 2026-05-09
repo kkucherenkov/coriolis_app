@@ -25,7 +25,8 @@ export default meta;
 
 type Story = StoryObj<typeof AppStarOrnament>;
 
-const bg = 'padding:24px;background:var(--surface-void);display:inline-flex;gap:16px;align-items:center;';
+const bg =
+  'padding:24px;background:var(--surface-void);display:inline-flex;gap:16px;align-items:center;';
 
 // ── Default ───────────────────────────────────────────────────────────────────
 

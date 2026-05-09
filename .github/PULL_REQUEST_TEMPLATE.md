@@ -17,6 +17,7 @@
 ## Phase
 
 <!-- Per PRD §11. Mark the phase this lands in. -->
+
 - [ ] Phase 0 — Adoption
 - [ ] Phase 1 — Foundation
 - [ ] Phase 2 — Character Sheet

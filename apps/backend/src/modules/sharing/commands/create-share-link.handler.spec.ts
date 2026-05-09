@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { CharacterNotFoundError, CharacterNotOwnedError } from '../../characters/domain/character.errors';
+import {
+  CharacterNotFoundError,
+  CharacterNotOwnedError,
+} from '../../characters/domain/character.errors';
 
 import { CreateShareLinkCommand, CreateShareLinkDto } from './create-share-link.command';
 import { CreateShareLinkHandler } from './create-share-link.handler';
@@ -48,7 +51,10 @@ function makeHandler(): {
     flushViewCounts: vi.fn(),
   } as unknown as IShareLinkRepo;
 
-  const handler = new CreateShareLinkHandler(characterRepo as ICharacterRepo, shareLinkRepo as IShareLinkRepo);
+  const handler = new CreateShareLinkHandler(
+    characterRepo as ICharacterRepo,
+    shareLinkRepo as IShareLinkRepo,
+  );
 
   return { handler, characterRepo, shareLinkRepo };
 }

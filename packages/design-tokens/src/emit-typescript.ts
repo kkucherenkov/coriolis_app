@@ -1,10 +1,4 @@
-import type {
-  ColorFile,
-  ColorGroup,
-  DtcgLeaf,
-  TokenBundle,
-  TypographyFile,
-} from './types.ts';
+import type { ColorFile, ColorGroup, DtcgLeaf, TokenBundle, TypographyFile } from './types.ts';
 
 const COLOR_GROUPS: readonly ColorGroup[] = ['surface', 'brand', 'text', 'state'];
 

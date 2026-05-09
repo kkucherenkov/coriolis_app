@@ -20,8 +20,14 @@ const meta: Meta<typeof AppLabel> = {
       description:
         'default — body-sm/text-primary; eyebrow — Forum uppercase brass-light (stat-block titles); stat-block — uppercase brass for labels above numeric stats.',
     },
-    required: { control: 'boolean', description: 'Appends a brass `*` with aria-label="required".' },
-    helpText: { control: 'text', description: 'Optional secondary line in muted color below the label.' },
+    required: {
+      control: 'boolean',
+      description: 'Appends a brass `*` with aria-label="required".',
+    },
+    helpText: {
+      control: 'text',
+      description: 'Optional secondary line in muted color below the label.',
+    },
   },
   args: {
     tone: 'default',

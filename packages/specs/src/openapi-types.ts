@@ -953,6 +953,21 @@ export interface components {
       | 'faceless-one'
       | 'deckhand';
     /**
+     * @description Social stratum a character was raised in (Coriolis core book ch.2,
+     *     table 2.2 — "Воспитание"). Upbringing is set once at character
+     *     creation and is **immutable**; it determines the starting
+     *     attribute / skill point budgets, the starting reputation, and the
+     *     starting wealth (in birrs) the character is created with.
+     *
+     *     | Upbringing  | Attribute pts | Skill pts | Reputation | Wealth (birrs) |
+     *     | ----------- | ------------- | --------- | ---------- | -------------- |
+     *     | plebeian    | 15            | 8         | 2          |   500          |
+     *     | stationary  | 14            | 10        | 4          |  1000          |
+     *     | aristocrat  | 13            | 12        | 6          |  5000          |
+     * @enum {string}
+     */
+    Upbringing: 'plebeian' | 'stationary' | 'aristocrat';
+    /**
      * @description Effective range band for a weapon. Matches the Coriolis core book
      *     range terminology:
      *     - `arm` — Engaged / hand-to-hand.
@@ -1527,6 +1542,30 @@ export interface components {
       concept: string | null;
       /** @description One of the Nine Icons, or null if not chosen yet */
       iconId: components['schemas']['IconId'] | null;
+      /**
+       * @description Social stratum the character was raised in. Set at creation and
+       *     **immutable** — drives the starting attribute / skill point
+       *     budgets and the initial values of `reputation` and
+       *     `startingWealth`.
+       */
+      upbringing: components['schemas']['Upbringing'];
+      /**
+       * @description Free-text narrative description of where the character is from
+       *     (home station, planet, or region). Has no mechanical effect.
+       */
+      origin: string | null;
+      /**
+       * @description Current social reputation. Initial value is derived from
+       *     `upbringing` (plebeian=2, stationary=4, aristocrat=6) and may
+       *     change during play.
+       */
+      reputation: number;
+      /**
+       * @description The number of birrs (currency) the character started with at
+       *     creation. Derived from `upbringing` (plebeian=500,
+       *     stationary=1000, aristocrat=5000). Immutable historical record.
+       */
+      readonly startingWealth: number;
       attributes: components['schemas']['Attributes'];
       skills: components['schemas']['Skills'];
       hp: {
@@ -1575,13 +1614,23 @@ export interface components {
       readonly updatedAt: string;
     };
     /**
-     * @description Payload for `POST /api/v1/characters`. Only `name` is required.
-     *     Attribute values default to 2 if the `attributes` object is omitted
-     *     or a key within it is missing. Skill values default to 0.
+     * @description Payload for `POST /api/v1/characters`. Only `name` and `upbringing`
+     *     are required. Attribute values default to 2 if the `attributes`
+     *     object is omitted or a key within it is missing. Skill values
+     *     default to 0.
+     *
+     *     The server enforces the upbringing-based budgets at creation time:
+     *     - sum(attributes) ≤ attribute budget for upbringing
+     *     - each attribute is between 2 and 4
+     *     - sum(skills) ≤ skill budget for upbringing
+     *
+     *     `reputation` and `startingWealth` are **server-derived** from
+     *     `upbringing` and must not be set by the client.
      *
      *     Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
-     *     `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`)
-     *     must not be included; they are rejected with 400.
+     *     `encumbrance.max`, `encumbrance.current`, `startingWealth`,
+     *     `createdAt`, `updatedAt`) must not be included; they are
+     *     rejected with 400.
      *
      *     Set `status: 'draft'` to create a wizard-in-progress character.
      *     Omitting `status` defaults to `'active'`.
@@ -1590,6 +1639,8 @@ export interface components {
       name: string;
       concept?: string | null;
       iconId?: components['schemas']['IconId'] | null;
+      upbringing: components['schemas']['Upbringing'];
+      origin?: string | null;
       attributes?: components['schemas']['Attributes'];
       skills?: components['schemas']['Skills'];
       hp?: {
@@ -1613,8 +1664,15 @@ export interface components {
     /**
      * @description PATCH payload for `PATCH /api/v1/characters/{id}`. All fields are
      *     optional. Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
-     *     `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`)
-     *     are rejected with 400 if present.
+     *     `encumbrance.max`, `encumbrance.current`, `startingWealth`,
+     *     `createdAt`, `updatedAt`) are rejected with 400 if present.
+     *
+     *     `upbringing` may be changed **while the character's `status` is
+     *     `draft`** (the wizard is still in progress). When it is, the
+     *     server recomputes `reputation` and `startingWealth` from the new
+     *     upbringing. Once the character has been forged (`status: active`),
+     *     upbringing becomes immutable and any attempt to set it is
+     *     rejected with `UPBRINGING_IMMUTABLE`.
      *
      *     Derived stats (`hp.max`, `mp.max`, `encumbrance.max`) are
      *     recalculated automatically after each successful write.
@@ -1631,6 +1689,21 @@ export interface components {
       name?: string;
       concept?: string | null;
       iconId?: components['schemas']['IconId'] | null;
+      /**
+       * @description Allowed only while `status` is `draft` — used by the wizard
+       *     to let players reconsider their pick before forging. Once
+       *     the character is `active`, this field is immutable.
+       */
+      upbringing?: components['schemas']['Upbringing'];
+      origin?: string | null;
+      /**
+       * @description Update the character's current reputation (e.g. after a
+       *     roleplay event). Initial value is set from `upbringing` at
+       *     creation time; while the character is a `draft`, changing
+       *     `upbringing` resets `reputation` to the new upbringing's
+       *     baseline.
+       */
+      reputation?: number;
       attributes?: components['schemas']['Attributes'];
       skills?: components['schemas']['Skills'];
       hp?: {
@@ -2662,6 +2735,12 @@ export interface operations {
        *     - `CHARACTER_NAME_TOO_LONG` — name exceeds 80 characters.
        *     - `ATTRIBUTE_OUT_OF_RANGE` — an attribute value is outside 1–5.
        *     - `SKILL_OUT_OF_RANGE` — a skill value is outside its allowed range.
+       *     - `ATTRIBUTE_OUT_OF_CREATION_RANGE` — an attribute value at
+       *       creation is outside 2–4 (Coriolis core book ch.2).
+       *     - `ATTRIBUTE_BUDGET_EXCEEDED` — sum of attributes exceeds the
+       *       budget allowed by the chosen `upbringing`.
+       *     - `SKILL_BUDGET_EXCEEDED` — sum of skills exceeds the budget
+       *       allowed by the chosen `upbringing`.
        */
       400: {
         headers: {

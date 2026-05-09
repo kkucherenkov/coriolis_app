@@ -8,7 +8,7 @@
 
 ## 1. Design Philosophy
 
-The Coriolis universe is built on a deliberate paradox: deep-space science fiction wrapped in pre-modern, sacred, ornate visual language. Starships have arabesques etched into their hulls. Pilots whisper prayers to the Icons before pushing dice. The visual identity of the companion app must honour that paradox — feel like a *digital relic* rather than a generic SaaS dashboard.
+The Coriolis universe is built on a deliberate paradox: deep-space science fiction wrapped in pre-modern, sacred, ornate visual language. Starships have arabesques etched into their hulls. Pilots whisper prayers to the Icons before pushing dice. The visual identity of the companion app must honour that paradox — feel like a _digital relic_ rather than a generic SaaS dashboard.
 
 **Three non-negotiables:**
 
@@ -31,37 +31,41 @@ The boilerplate uses W3C Design Tokens. JSON groups in `specs/design/tokens/` ma
 All values verified for WCAG AA contrast in their documented usage. Token names are the only allowed reference inside `apps/web` and `packages/ui` SCSS.
 
 #### Surfaces (background hierarchy)
-| Token | Hex (dark) | Usage |
-|---|---|---|
-| `--surface-void` | `#0B0E2C` | Primary background, deep space. |
-| `--surface-night` | `#15193F` | Elevated surfaces (cards, panels). |
-| `--surface-dawn` | `#252B5C` | Hover states, secondary surfaces. |
-| `--surface-parchment` | `#F2E8D0` | Light-mode background; share-link viewer; banner surface on dark. |
+
+| Token                 | Hex (dark) | Usage                                                             |
+| --------------------- | ---------- | ----------------------------------------------------------------- |
+| `--surface-void`      | `#0B0E2C`  | Primary background, deep space.                                   |
+| `--surface-night`     | `#15193F`  | Elevated surfaces (cards, panels).                                |
+| `--surface-dawn`      | `#252B5C`  | Hover states, secondary surfaces.                                 |
+| `--surface-parchment` | `#F2E8D0`  | Light-mode background; share-link viewer; banner surface on dark. |
 
 #### Brand (brass)
-| Token | Hex | Usage |
-|---|---|---|
-| `--brand-brass-light` | `#F4E4B8` | Headlines on dark surfaces. |
-| `--brand-brass` | `#D4A95C` | Standard brass, primary accent. |
-| `--brand-brass-deep` | `#A67C28` | Borders and dividers. |
+
+| Token                  | Hex       | Usage                                        |
+| ---------------------- | --------- | -------------------------------------------- |
+| `--brand-brass-light`  | `#F4E4B8` | Headlines on dark surfaces.                  |
+| `--brand-brass`        | `#D4A95C` | Standard brass, primary accent.              |
+| `--brand-brass-deep`   | `#A67C28` | Borders and dividers.                        |
 | `--brand-brass-shadow` | `#6B4E1A` | Inset details, beveled "brass plate" effect. |
 
 #### Text
-| Token | Hex (dark) | Usage |
-|---|---|---|
-| `--text-primary` | `#F2E8D0` | Body text on dark. |
-| `--text-secondary` | `#D9CDB0` | Secondary text on dark. |
-| `--text-ink` | `#1A1810` | Body text on light surfaces, share-link viewer. |
-| `--text-on-brass` | `#0B0E2C` | Text rendered on a brass-filled element (primary buttons). |
+
+| Token              | Hex (dark) | Usage                                                      |
+| ------------------ | ---------- | ---------------------------------------------------------- |
+| `--text-primary`   | `#F2E8D0`  | Body text on dark.                                         |
+| `--text-secondary` | `#D9CDB0`  | Secondary text on dark.                                    |
+| `--text-ink`       | `#1A1810`  | Body text on light surfaces, share-link viewer.            |
+| `--text-on-brass`  | `#0B0E2C`  | Text rendered on a brass-filled element (primary buttons). |
 
 #### Semantic
-| Token | Hex | Usage |
-|---|---|---|
-| `--state-crimson` | `#A8324A` | HP loss, critical injuries, danger actions. |
-| `--state-crimson-bright` | `#E54E6B` | Critical injury icon, "wound" state. |
-| `--state-mystic-teal` | `#2BA3A0` | Mystic powers, MP, prayer-eligible state. |
-| `--state-success` | `#5A8A3A` | Successes (rolled 6s), positive feedback. |
-| `--state-darkness` | `#5B2A78` | Darkness Points, GM-only UI. |
+
+| Token                    | Hex       | Usage                                       |
+| ------------------------ | --------- | ------------------------------------------- |
+| `--state-crimson`        | `#A8324A` | HP loss, critical injuries, danger actions. |
+| `--state-crimson-bright` | `#E54E6B` | Critical injury icon, "wound" state.        |
+| `--state-mystic-teal`    | `#2BA3A0` | Mystic powers, MP, prayer-eligible state.   |
+| `--state-success`        | `#5A8A3A` | Successes (rolled 6s), positive feedback.   |
+| `--state-darkness`       | `#5B2A78` | Darkness Points, GM-only UI.                |
 
 ### 2.2 High-contrast accessibility variant
 
@@ -93,11 +97,11 @@ Tokens, never literals. All `px`, `ms`, and `z-index` values inside `apps/web` a
 
 v1 ships two locales: **English and Russian (en / ru)**. Every typeface below carries **Latin + Cyrillic** glyphs. The boilerplate also wires uk and el; the body and mono families below already cover uk, but the display face does not cover Greek — if `el` is populated in a later release, the display face will need a re-pick (see §3.1).
 
-| Role | Family | Weights | Scripts | Notes |
-|---|---|---|---|---|
-| **Display / Headings** | **Forum** | 400 | Latin + Latin Ext + Cyrillic + Cyrillic Ext | Roman-inscriptional, Trajan-inspired, by Denis Masharov. Replaces our original Cinzel choice (Latin-only). Used for character names, section headers, and the app wordmark. |
-| **Body** | **Inter** | 400, 500, 600, 700 | Latin + Latin Ext + Cyrillic + Cyrillic Ext + Greek | Highly legible at small sizes. Used for sheet labels, descriptions, all UI copy. |
-| **Numeric / Stats** | **JetBrains Mono** | 500, 700 | Latin + Cyrillic + Greek | Tabular figures, designed for technical UIs. Used for HP / MP / dice values and anything that benefits from columnar alignment. |
+| Role                   | Family             | Weights            | Scripts                                             | Notes                                                                                                                                                                       |
+| ---------------------- | ------------------ | ------------------ | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Display / Headings** | **Forum**          | 400                | Latin + Latin Ext + Cyrillic + Cyrillic Ext         | Roman-inscriptional, Trajan-inspired, by Denis Masharov. Replaces our original Cinzel choice (Latin-only). Used for character names, section headers, and the app wordmark. |
+| **Body**               | **Inter**          | 400, 500, 600, 700 | Latin + Latin Ext + Cyrillic + Cyrillic Ext + Greek | Highly legible at small sizes. Used for sheet labels, descriptions, all UI copy.                                                                                            |
+| **Numeric / Stats**    | **JetBrains Mono** | 500, 700           | Latin + Cyrillic + Greek                            | Tabular figures, designed for technical UIs. Used for HP / MP / dice values and anything that benefits from columnar alignment.                                             |
 
 All three are Google Fonts, free, served self-hosted via the boilerplate's font pipeline (no third-party CDN). Per-locale subset bundles keep the network cost down: a Russian-only user never downloads the Latin-Extended table.
 
@@ -127,7 +131,7 @@ Tokens authored in `specs/design/tokens/typography.json`, consumed via SCSS mixi
 
 ### 3.3 Usage rules
 
-- Forum is reserved. Never use it for buttons, tooltips, or table cells. It is for *naming* things, not *labeling* them.
+- Forum is reserved. Never use it for buttons, tooltips, or table cells. It is for _naming_ things, not _labeling_ them.
 - Inter handles 90% of UI surface.
 - JetBrains Mono is for any number a player will scan for, glance at, or update under pressure.
 - The same three families render across en and ru — no conditional font loading by locale.
@@ -175,6 +179,7 @@ Authored in `specs/design/tokens/layout.json`:
 **Mobile (web `sm` breakpoint and Flutter):** vertical stack with sticky header showing name, HP, MP, conditions. Tab bar at bottom: Stats | Gear | Talents | Notes.
 
 **Desktop:** three-column layout.
+
 - **Left column (28%):** identity (portrait, name, concept, group, Icon), conditions, push status.
 - **Center column (44%):** attributes and skills, large and central — the most-touched area.
 - **Right column (28%):** quick inventory (equipped only), talents, recent rolls.
@@ -216,6 +221,7 @@ All `AppButton`s round to `var(--radius-md)`. **Never pill-shaped** — pills fe
 ### 6.3 Sheet stat blocks (`AppStatBlock`)
 
 A repeating component used for attributes and skills. Renders as:
+
 - Label in Forum, uppercase (`text-transform: uppercase`), `--type-body-sm` with `letter-spacing: 0.08em`, `var(--brand-brass-light)`.
 - Value in JetBrains Mono `--type-mono-stat-md`, `var(--text-primary)`.
 - Optional rank dots — filled `var(--brand-brass)` circles in a row of 5, with text equivalents in `aria-valuenow` / `aria-valuemax`.
@@ -231,7 +237,7 @@ Floating panel anchored bottom-right on desktop, full-width sheet bottom on mobi
 3. On result: each die rendered as a 48px brass d6 face, 6s glowing teal.
 4. Push button only appears if push is legal. Push button uses `var(--state-mystic-teal)` background to signal the prayer / cost relationship.
 
-The pushed reroll dice appear *to the right* of originals, slightly translated, so the player sees "what changed." Rolled and pushed events broadcast over the session's Centrifugo channel — the GM screen's DP counter updates without polling.
+The pushed reroll dice appear _to the right_ of originals, slightly translated, so the player sees "what changed." Rolled and pushed events broadcast over the session's Centrifugo channel — the GM screen's DP counter updates without polling.
 
 ### 6.5 Combat tracker row (`AppCombatRow`)
 
@@ -246,7 +252,7 @@ Horizontal strip per combatant, height 64px:
 
 Public read-only sheets get a different chrome to make their nature obvious:
 
-- Top banner in `var(--surface-parchment)` background, `var(--text-ink)` text: *"Shared by [name] — last updated [time]. Read-only view."*
+- Top banner in `var(--surface-parchment)` background, `var(--text-ink)` text: _"Shared by [name] — last updated [time]. Read-only view."_
 - Watermark of the eight-pointed star at 5% opacity in the page background.
 - No edit affordances rendered at all (not disabled — absent).
 
@@ -327,7 +333,7 @@ Beyond the WCAG AA baseline in the PRD:
 
 - All Icon glyphs have `aria-label` with the Icon's full name (localized).
 - Stat-block dot indicators include text equivalents (`aria-valuenow`, `aria-valuemax`).
-- Color is never the sole signal — the active turn in combat uses a left border *and* a "▶" prefix, not just the brass border alone.
+- Color is never the sole signal — the active turn in combat uses a left border _and_ a "▶" prefix, not just the brass border alone.
 - Screen-reader-only headings structure the sheet for navigation: H1 character name, H2 per major section, H3 per subsection.
 - The floating dice roller is a `role="dialog"` with proper focus trap when open. Wrapped with `AppModal` (built on `UModal`).
 - Keyboard shortcuts (combat: `n` next turn, `r` end round, `d` apply damage to focused combatant) are documented in a `?` overlay.
@@ -398,12 +404,12 @@ Illustration brief: line weight 1.5pt at 24px reference size, no gradients, sing
 
 ## 14. What This Design Is Not
 
-To keep the team aligned, what we are explicitly *not* building visually:
+To keep the team aligned, what we are explicitly _not_ building visually:
 
 - Not a Notion clone — no floating menus, no slash commands, no minimal-grey aesthetic.
-- Not a Foundry / Roll20 GM screen — those are dense, technical, function-over-form. This app is *a digital character sheet that happens to have a combat tracker*, not a virtual tabletop.
+- Not a Foundry / Roll20 GM screen — those are dense, technical, function-over-form. This app is _a digital character sheet that happens to have a combat tracker_, not a virtual tabletop.
 - Not a generic dark mode — the indigo is specifically Coriolis-blue, not zinc / slate / neutral.
-- Not skeuomorphic — we are not faking paper or leather. The aesthetic is *digital made ceremonial*, not *digital pretending to be physical*.
+- Not skeuomorphic — we are not faking paper or leather. The aesthetic is _digital made ceremonial_, not _digital pretending to be physical_.
 - Not Western fantasy — no parchment-with-blood-spatter, no dragon iconography, no medieval longswords. The look is Arabian-sci-fi, not D&D.
 - Not Tailwind-utility-driven — utility classes are forbidden in `@app/ui` foundation primitives' rendered DOM. Tokens-via-SCSS is the path.
 

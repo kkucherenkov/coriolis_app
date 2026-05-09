@@ -1,14 +1,46 @@
 {
   "$schema": "https://design-tokens.github.io/community-group/format/",
   "z-index": {
-    "base":    { "$value": 0,   "$type": "number", "$description": "Default in-flow content." },
-    "raised":  { "$value": 1,   "$type": "number", "$description": "Slight lift — hovered cards, focused medallions." },
-    "sticky":  { "$value": 10,  "$type": "number", "$description": "Sticky headers, sheet tab strips, sticky footers." },
-    "dropdown":{ "$value": 20,  "$type": "number", "$description": "Menus, popovers, autocomplete." },
-    "overlay": { "$value": 50,  "$type": "number", "$description": "Backdrops and scrims behind modals." },
-    "modal":   { "$value": 100, "$type": "number", "$description": "Modal dialogs, dice-roller overlay, focus mode." },
-    "toast":   { "$value": 200, "$type": "number", "$description": "Transient notifications above modals." },
-    "tooltip": { "$value": 300, "$type": "number", "$description": "Tooltips and inline hint bubbles." },
-    "max":     { "$value": 999, "$type": "number", "$description": "Reserved — never use except for emergency layering." }
+    "base": { "$value": 0, "$type": "number", "$description": "Default in-flow content." },
+    "raised": {
+      "$value": 1,
+      "$type": "number",
+      "$description": "Slight lift — hovered cards, focused medallions."
+    },
+    "sticky": {
+      "$value": 10,
+      "$type": "number",
+      "$description": "Sticky headers, sheet tab strips, sticky footers."
+    },
+    "dropdown": {
+      "$value": 20,
+      "$type": "number",
+      "$description": "Menus, popovers, autocomplete."
+    },
+    "overlay": {
+      "$value": 50,
+      "$type": "number",
+      "$description": "Backdrops and scrims behind modals."
+    },
+    "modal": {
+      "$value": 100,
+      "$type": "number",
+      "$description": "Modal dialogs, dice-roller overlay, focus mode."
+    },
+    "toast": {
+      "$value": 200,
+      "$type": "number",
+      "$description": "Transient notifications above modals."
+    },
+    "tooltip": {
+      "$value": 300,
+      "$type": "number",
+      "$description": "Tooltips and inline hint bubbles."
+    },
+    "max": {
+      "$value": 999,
+      "$type": "number",
+      "$description": "Reserved — never use except for emergency layering."
+    }
   }
 }

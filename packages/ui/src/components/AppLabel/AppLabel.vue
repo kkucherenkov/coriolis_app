@@ -28,7 +28,7 @@
     text: undefined,
   });
 
-  const tag = computed(() => (props.for !== undefined ? 'label' : 'span'));
+  const tag = computed(() => (props.for === undefined ? 'span' : 'label'));
 
   const classes = computed(() => [
     'app-label',
@@ -42,7 +42,9 @@
     <span class="app-label__text">
       <slot>{{ text }}</slot>
     </span>
-    <span v-if="required" class="app-label__required" aria-label="required" aria-hidden="false">*</span>
+    <span v-if="required" class="app-label__required" aria-label="required" aria-hidden="false"
+      >*</span
+    >
     <span v-if="helpText" class="app-label__help">{{ helpText }}</span>
   </component>
 </template>

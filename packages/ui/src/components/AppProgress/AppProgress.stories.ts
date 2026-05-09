@@ -164,7 +164,15 @@ export const UnderMin: Story = {
 
 export const NonZeroMin: Story = {
   name: 'Non-zero min (range 10–20, value 15)',
-  args: { value: 15, max: 20, min: 10, tone: 'success', size: 'md', showLabel: true, label: 'Progress 15 of 20' },
+  args: {
+    value: 15,
+    max: 20,
+    min: 10,
+    tone: 'success',
+    size: 'md',
+    showLabel: true,
+    label: 'Progress 15 of 20',
+  },
 };
 
 export const AccessibleLabel: Story = {

@@ -68,7 +68,9 @@ describe('AppBadge', () => {
 
   it('applies exactly one variant class', () => {
     const wrapper = mount(AppBadge, { props: { variant: 'crimson' } });
-    const variantClasses = wrapper.classes().filter((c) => c.startsWith('app-badge--') && VARIANTS.some((v) => c.endsWith(v)));
+    const variantClasses = wrapper
+      .classes()
+      .filter((c) => c.startsWith('app-badge--') && VARIANTS.some((v) => c.endsWith(v)));
     expect(variantClasses).toHaveLength(1);
     expect(variantClasses[0]).toBe('app-badge--crimson');
   });

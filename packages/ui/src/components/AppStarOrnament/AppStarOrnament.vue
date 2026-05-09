@@ -4,6 +4,11 @@
   type StarSize = 'sm' | 'md' | 'lg';
   type StarColor = 'brass' | 'brass-deep' | 'brass-light';
 
+  const props = withDefaults(defineProps<Props>(), {
+    size: 'md',
+    color: 'brass',
+    opacity: 1,
+  });
   /**
    * Eight-pointed star (rub el hizb / Coriolis decorative motif).
    * Constructed from two squares rotated 45° apart, expressed as a 16-vertex
@@ -32,12 +37,6 @@
     color?: StarColor;
     opacity?: number;
   }
-
-  const props = withDefaults(defineProps<Props>(), {
-    size: 'md',
-    color: 'brass',
-    opacity: 1,
-  });
 
   const sizePx = computed(() => SIZE_PX[props.size]);
 

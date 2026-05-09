@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Something in the Coriolis Companion App is broken or misleading
-title: "bug: <short summary>"
+title: 'bug: <short summary>'
 labels: bug
 ---
 

@@ -94,7 +94,9 @@ describe('AppIconCoriolis', () => {
     const wrapper = mount(AppIconCoriolis, {
       props: { name: 'deckhand', size: 'lg', ariaLabel: 'The Deckhand' },
     });
-    const sizeClasses = wrapper.classes().filter((c) => SIZES.some((s) => c === `app-icon-coriolis--${s}`));
+    const sizeClasses = wrapper
+      .classes()
+      .filter((c) => SIZES.some((s) => c === `app-icon-coriolis--${s}`));
     expect(sizeClasses).toHaveLength(1);
     expect(sizeClasses[0]).toBe('app-icon-coriolis--lg');
   });

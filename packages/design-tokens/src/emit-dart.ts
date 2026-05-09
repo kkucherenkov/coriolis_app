@@ -98,9 +98,8 @@ function colorClass(
 }
 
 function bezierToDart(value: CubicBezierValue | string): string {
-  const tuple: [number, number, number, number] = typeof value === 'string'
-    ? parseCubicBezier(value)
-    : [value.x1, value.y1, value.x2, value.y2];
+  const tuple: [number, number, number, number] =
+    typeof value === 'string' ? parseCubicBezier(value) : [value.x1, value.y1, value.x2, value.y2];
   const [x1, y1, x2, y2] = tuple;
   return `Cubic(${x1}, ${y1}, ${x2}, ${y2})`;
 }
@@ -130,32 +129,32 @@ function familyValue(value: string | string[]): string {
   return JSON.stringify(primary);
 }
 
-function typeRoleField(
-  role: string,
-  value: TypographyValue,
-  typography: TypographyFile,
-): string[] {
+function typeRoleField(role: string, value: TypographyValue, typography: TypographyFile): string[] {
   const fieldName = camel(role);
   const familyKey = value.fontFamily;
-  const familyExpr = familyKey in typography.font.family
-    ? `AppFontFamily.${camel(familyKey)}`
-    : JSON.stringify(familyKey);
+  const familyExpr =
+    familyKey in typography.font.family
+      ? `AppFontFamily.${camel(familyKey)}`
+      : JSON.stringify(familyKey);
   const weightKey = value.fontWeight;
-  const weightExpr = typeof weightKey === 'number'
-    ? `FontWeight.w${weightKey}`
-    : weightKey in typography.font.weight
-      ? `AppFontWeight.${camel(weightKey)}`
-      : weightKey;
+  const weightExpr =
+    typeof weightKey === 'number'
+      ? `FontWeight.w${weightKey}`
+      : weightKey in typography.font.weight
+        ? `AppFontWeight.${camel(weightKey)}`
+        : weightKey;
   const fontSizePx = stripPxForDart(value.fontSize);
-  const lineHeightSrc = typeof value.lineHeight === 'number'
-    ? value.lineHeight
-    : value.lineHeight.endsWith('px')
-      ? Number(value.lineHeight.slice(0, -2)) / Number(value.fontSize.slice(0, -2))
-      : Number(value.lineHeight);
+  const lineHeightSrc =
+    typeof value.lineHeight === 'number'
+      ? value.lineHeight
+      : value.lineHeight.endsWith('px')
+        ? Number(value.lineHeight.slice(0, -2)) / Number(value.fontSize.slice(0, -2))
+        : Number(value.lineHeight);
   const height = dartDouble(lineHeightSrc);
-  const letterSpacing = value.letterSpacing === undefined || value.letterSpacing === 'normal'
-    ? '0.0'
-    : `${stripEmForDart(value.letterSpacing)} * ${fontSizePx}`;
+  const letterSpacing =
+    value.letterSpacing === undefined || value.letterSpacing === 'normal'
+      ? '0.0'
+      : `${stripEmForDart(value.letterSpacing)} * ${fontSizePx}`;
   const lines = [
     `  static const TextStyle ${fieldName} = TextStyle(`,
     `    fontFamily: ${familyExpr},`,
@@ -165,7 +164,9 @@ function typeRoleField(
     `    letterSpacing: ${letterSpacing},`,
   ];
   if (value.textCase !== undefined && value.textCase !== 'none') {
-    lines.push(`    // textCase: ${value.textCase} — apply via Text.toUpperCase() at the call site`);
+    lines.push(
+      `    // textCase: ${value.textCase} — apply via Text.toUpperCase() at the call site`,
+    );
   }
   lines.push('  );');
   return lines;

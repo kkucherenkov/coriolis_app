@@ -1,7 +1,7 @@
 ---
 name: Feature request
 about: Suggest a feature, guardrail, or improvement for the Coriolis Companion App
-title: "feat: <short summary>"
+title: 'feat: <short summary>'
 labels: enhancement
 ---
 

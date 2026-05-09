@@ -103,9 +103,7 @@ describe('AppTab', () => {
 
   it('applies exactly one tone class', () => {
     const wrapper = mount(AppTab, { props: { tone: 'mystic' }, slots: { default: 'x' } });
-    const toneClasses = wrapper
-      .classes()
-      .filter((c) => TONES.some((t) => c === `app-tab--${t}`));
+    const toneClasses = wrapper.classes().filter((c) => TONES.some((t) => c === `app-tab--${t}`));
     expect(toneClasses).toHaveLength(1);
     expect(toneClasses[0]).toBe('app-tab--mystic');
   });

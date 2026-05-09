@@ -160,21 +160,27 @@ describe('AppAvatar', () => {
 
   it('applies exactly one size class', () => {
     const wrapper = mount(AppAvatar, { props: { name: 'X', size: 'xl' } });
-    const sizeClasses = wrapper.classes().filter((c) => SIZES.some((s) => c === `app-avatar--${s}`));
+    const sizeClasses = wrapper
+      .classes()
+      .filter((c) => SIZES.some((s) => c === `app-avatar--${s}`));
     expect(sizeClasses).toHaveLength(1);
     expect(sizeClasses[0]).toBe('app-avatar--xl');
   });
 
   it('applies exactly one tone class', () => {
     const wrapper = mount(AppAvatar, { props: { name: 'X', tone: 'crimson' } });
-    const toneClasses = wrapper.classes().filter((c) => TONES.some((t) => c === `app-avatar--${t}`));
+    const toneClasses = wrapper
+      .classes()
+      .filter((c) => TONES.some((t) => c === `app-avatar--${t}`));
     expect(toneClasses).toHaveLength(1);
     expect(toneClasses[0]).toBe('app-avatar--crimson');
   });
 
   it('applies exactly one shape class', () => {
     const wrapper = mount(AppAvatar, { props: { name: 'X', shape: 'squircle' } });
-    const shapeClasses = wrapper.classes().filter((c) => SHAPES.some((s) => c === `app-avatar--${s}`));
+    const shapeClasses = wrapper
+      .classes()
+      .filter((c) => SHAPES.some((s) => c === `app-avatar--${s}`));
     expect(shapeClasses).toHaveLength(1);
     expect(shapeClasses[0]).toBe('app-avatar--squircle');
   });

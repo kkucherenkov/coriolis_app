@@ -71,10 +71,7 @@
       <li
         v-for="(value, index) in values"
         :key="index"
-        :class="[
-          'app-die-pool__item',
-          { 'app-die-pool__item--pushed': pushedSet.has(index) },
-        ]"
+        :class="['app-die-pool__item', { 'app-die-pool__item--pushed': pushedSet.has(index) }]"
       >
         <AppDie :value="value" :state="dieState(index, value)" :size="size" />
       </li>

@@ -10,24 +10,21 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
   analyze drift after Flutter 3.41 SDK upgrade + dart codegen change).
 - Result: ff-merged to main as `<mobile range>` (2 commits).
   - `<head-1>` `fix(mobile): repoint app_api_client at the inner generated
-    package + repo_impl`. Three structural fixes that cleared 166 errors:
-    - `mobile/pubspec.yaml`: `app_api_client.path` now points at
-      `packages/api-client-dart/lib/generated` (the inner Dart package
-      produced by openapi-generator). The outer `packages/api-client-dart/`
-      lib has only `generated/` subfolder — Dart resolves
-      `package:app_api_client/app_api_client.dart` against the OUTER `lib/`,
-      which has no barrel file. The inner package is the real one.
-    - `character_repository_impl.dart`: split the `Character as
-      ApiCharacter` show-with-as combination (Dart syntax error) into two
-      imports; drop `quantity` references on `ItemOther` (spec doesn't
-      have the field); switch to top-level `updateTalent`/`deleteTalent`/
-      `updateItem`/`deleteItem` API methods (the repo had been calling
-      non-existent `updateCharacterTalent` etc).
-    - Ran `dart run build_runner build` inside
-      `packages/api-client-dart/lib/generated` to produce the missing
-      `*.g.dart` built_value generated code (88 files committed; without
-      them the builder fields type-resolve as nullable and 100+ cascade
-      assignments fail to type-check).
+package + repo_impl`. Three structural fixes that cleared 166 errors: - `mobile/pubspec.yaml`: `app_api_client.path` now points at
+    `packages/api-client-dart/lib/generated` (the inner Dart package
+    produced by openapi-generator). The outer `packages/api-client-dart/`
+    lib has only `generated/` subfolder — Dart resolves
+    `package:app_api_client/app_api_client.dart` against the OUTER `lib/`,
+    which has no barrel file. The inner package is the real one. - `character_repository_impl.dart`: split the `Character as
+ApiCharacter` show-with-as combination (Dart syntax error) into two
+    imports; drop `quantity` references on `ItemOther` (spec doesn't
+    have the field); switch to top-level `updateTalent`/`deleteTalent`/
+    `updateItem`/`deleteItem` API methods (the repo had been calling
+    non-existent `updateCharacterTalent` etc). - Ran `dart run build_runner build` inside
+    `packages/api-client-dart/lib/generated` to produce the missing
+    `*.g.dart` built_value generated code (88 files committed; without
+    them the builder fields type-resolve as nullable and 100+ cascade
+    assignments fail to type-check).
   - `<head>` `chore(mobile): clear remaining flutter analyze info + warning`:
     drop unused `_weaponTypes` field; `withOpacity` → `withValues(alpha:)`;
     `dart fix --apply` (12 `prefer_const_constructors` auto-fixes); capture
@@ -72,21 +69,21 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
   T-6.3.1.c (ship OG) deferred until ship-share endpoints exist.
 - Result: ff-merged to main as `<og range>` (3 commits).
   - `9b05ed6` `chore(backend): add satori + @resvg/resvg-js + react deps
-    for OG renderer`. Versions: `satori@0.26.0`, `@resvg/resvg-js@2.6.2`
+for OG renderer`. Versions: `satori@0.26.0`, `@resvg/resvg-js@2.6.2`
     (prebuilt binaries for `darwin-arm64` + `linux-x64-gnu`),
     `react@19.2.6` (used only for `React.createElement` in the Satori
     template).
   - `17859f1` `feat(backend): OG image renderer service + character
-    template`. `og.service.ts` is stateless (Satori → Resvg pipeline) +
+template`. `og.service.ts` is stateless (Satori → Resvg pipeline) +
     embedded fallback PNG (1200×630 solid surface-void) for renderer
     failures. `og.fonts.ts` lazy-loads Forum + Inter from Google Fonts
     with in-process caching and graceful network degradation.
     `templates/character-og.ts` is the brass-on-indigo card layout via
     `React.createElement`.
   - `3b155b7` `feat(backend): GET /public/og/character/:slug.png
-    replaces 501 stub`. `OgService` injected via DI; cache headers
+replaces 501 stub`. `OgService` injected via DI; cache headers
     `Cache-Control: public, max-age=3600,
-    stale-while-revalidate=86400`.
+stale-while-revalidate=86400`.
 - 8 snapshot specs cover: PNG magic bytes, 1200×630 dimensions,
   non-empty pixel sum, long-name wrapping, null concept, null iconId,
   fallback on Satori error, the static fallback PNG. Backend total: 260
@@ -145,20 +142,20 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
     ring-buffer flushed by 1-min cron), multi-link per character,
     `includeGmNotes` filter.
   - `99a9d07` `feat(specs): ShareLink + share endpoints + public read
-    paths (v0.7.0)`. New schemas (`ShareLink`, `ShareLinkCreate`,
+paths (v0.7.0)`. New schemas (`ShareLink`, `ShareLinkCreate`,
     `ShareLinkList`); endpoints `POST /characters/{id}/share`, `GET
-    /characters/{id}/shares`, `DELETE /share-links/{id}`, `GET
-    /public/character/{slug}`; OG image path stubbed at 501.
+/characters/{id}/shares`, `DELETE /share-links/{id}`, `GET
+/public/character/{slug}`; OG image path stubbed at 501.
   - `31d81d1` `chore(codegen): regenerate clients after share-link
-    spec`.
+spec`.
   - `cbbfe09` `feat(backend): Prisma ShareLink migration` — `ShareLink`
     model, FK to `Character` (cascade), `slug` UNIQUE,
     `@@index([characterId])` + `@@index([revokedAt])`.
   - `93b1d96` `feat(backend): SharingModule — slug + create + list +
-    revoke`. Includes the public-read query with notes filter +
+revoke`. Includes the public-read query with notes filter +
     revoked/expired status checks, `view-tracker.ts` (in-memory
     `Map<slug, count>`), `flush-view-tracker.job.ts` (`@Cron('* * * *
-    *')` flushes via batched Prisma transaction), and `OG_NOT_IMPLEMENTED`
+*')` flushes via batched Prisma transaction), and `OG_NOT_IMPLEMENTED`
     501 stub for the OG image route.
   - `7d79173` `chore(backend): apply lint --fix auto-corrections`.
 - 28 new vitest specs across the SharingModule. Backend total: 252 tests
@@ -199,31 +196,21 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
       delete confirm dialog. Stats / Gear / Talents / Notes tabs.
     - `fecf343` `test(mobile): BLoC + widget tests` — 11 BLoC + 11 widget
       tests for the sheet edit surfaces.
-  - **Wizard (5.6.f):** 8 commits.
-    - `bf4b4e7` `feat(mobile): CharacterWizardCubit + state machine + draft
-      persistence`.
-    - `f99f7b8` `feat(mobile): wizard shell page` — brass progress, step
-      labels, Back/Save & exit/Next/Forge.
-    - `4070c17` `feat(mobile): wizard step 1+2` — concept + people /
-      background.
-    - `98857a7` `feat(mobile): wizard step 3 — Nine Icons grid + teal aura
-      pulse` (T-5.6.1.d). `MediaQuery.disableAnimations` →
-      static teal halo fallback.
-    - `6fd5713` `feat(mobile): wizard step 4+5` — attributes + skills point
-      pools.
-    - `7a6c164` `feat(mobile): wizard step 6 + Forge transition`.
-    - `1c21436` `i18n(mobile): wizard en + ru full, uk + el placeholders`.
-    - `08f2507` `test(mobile): wizard cubit + widget specs` — 8 cubit + 5
-      widget tests.
-  - **Codegen + status wiring**: 2 follow-up commits by parent.
-    - `<head-1>` `chore(codegen): regenerate dart client + bundled types
-      after spec v0.6.0` — backfills the missing `status` enum on
-      CharacterCreate / CharacterUpdate that the wizard-backend batch
-      didn't propagate to dart.
-    - `<head>` `fix(mobile): wire CharacterStatus through repo + wizard
-      forge` — wizard now creates with `status: 'draft'` and forges with
-      `status: 'active'` explicitly. The earlier "concept-as-sentinel"
-      workaround is removed.
+  - **Wizard (5.6.f):** 8 commits. - `bf4b4e7` `feat(mobile): CharacterWizardCubit + state machine + draft
+persistence`. - `f99f7b8` `feat(mobile): wizard shell page` — brass progress, step
+    labels, Back/Save & exit/Next/Forge. - `4070c17` `feat(mobile): wizard step 1+2` — concept + people /
+    background. - `98857a7` `feat(mobile): wizard step 3 — Nine Icons grid + teal aura
+pulse` (T-5.6.1.d). `MediaQuery.disableAnimations` →
+    static teal halo fallback. - `6fd5713` `feat(mobile): wizard step 4+5` — attributes + skills point
+    pools. - `7a6c164` `feat(mobile): wizard step 6 + Forge transition`. - `1c21436` `i18n(mobile): wizard en + ru full, uk + el placeholders`. - `08f2507` `test(mobile): wizard cubit + widget specs` — 8 cubit + 5
+    widget tests.
+  - **Codegen + status wiring**: 2 follow-up commits by parent. - `<head-1>` `chore(codegen): regenerate dart client + bundled types
+after spec v0.6.0` — backfills the missing `status` enum on
+    CharacterCreate / CharacterUpdate that the wizard-backend batch
+    didn't propagate to dart. - `<head>` `fix(mobile): wire CharacterStatus through repo + wizard
+forge` — wizard now creates with `status: 'draft'` and forges with
+    `status: 'active'` explicitly. The earlier "concept-as-sentinel"
+    workaround is removed.
 - Verification: `flutter test` / `flutter analyze` could NOT run locally
   (system Dart 3.5 vs project floor 3.8; `fvm` not configured). CI under
   the target SDK is authoritative.
@@ -250,7 +237,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
     chooses option B (status flag on Character) over a separate
     `/draft` resource. ADR enumerates the 5-point rationale.
   - `3a7a1c0` `feat(specs): add Character.status (draft|active) +
-    includeDrafts query` — bumps spec to **0.6.0**. Required `status` on
+includeDrafts query` — bumps spec to **0.6.0**. Required `status` on
     `Character`; optional on `CharacterCreate`/`CharacterUpdate`. New
     `?includeDrafts=false` query on `GET /characters`. Forge transition is
     a plain `PATCH` with `{ status: 'active' }`; `active → draft` is
@@ -260,23 +247,23 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
   - `4e2eb90` `feat(backend): Prisma Character.status migration` —
     `CharacterStatus` enum (`ACTIVE`, `DRAFT`), `@@index([status])`.
   - `459d453` `feat(backend): wizard support — draft status +
-    status-transition guard + listings + cleanup-abandoned-drafts cron`.
+status-transition guard + listings + cleanup-abandoned-drafts cron`.
     The cron runs at `EVERY_DAY_AT_3:05` (offset from user-cleanup) and
     deletes drafts older than 30 days. 22 new specs across 4 files.
   - `<head>` `fix(backend): align legacy list-characters specs with
-    includeDrafts param` — two pre-existing specs needed expectations
+includeDrafts param` — two pre-existing specs needed expectations
     updated since the handler now always passes the param.
 
   **Web wizard UI**:
   - `be06e2a` `feat(web): wizard shell — progress, header, footer,
-    navigation` — `WizardShell.vue` skeleton (AppProgress in
+navigation` — `WizardShell.vue` skeleton (AppProgress in
     `--brand-brass`, Back / Save & exit / Next + Forge footer).
   - `88c9eba` `feat(web): wizard step 1+2 — concept + people/background`.
   - `4307e65` `feat(web): wizard step 3 — Nine Icons grid + teal aura
-    pulse` (T-5.6.1.d). 3×3 grid; selected icon pulses
+pulse` (T-5.6.1.d). 3×3 grid; selected icon pulses
     `--state-mystic-teal`; `prefers-reduced-motion` strips animation.
   - `6c949f2` `feat(web): wizard step 4+5 — attributes + skills point
-    pools`. Soft point-pool guidance (rulebook-derived); enforcement is
+pools`. Soft point-pool guidance (rulebook-derived); enforcement is
     backend-side via `Attributes` 1–5 / `Skills` 0–5 schema bounds.
   - `19a9820` `feat(web): wizard step 6 — talents + Forge transition`
     (T-5.6.1.e). Final step PATCHes `{ status: 'active' }` and
@@ -318,14 +305,14 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
   - `0d4d15d` `feat(web): useItemsApi composable` — addItem / updateItem /
     removeItem against existing backend endpoints.
   - `3ceecc1` `feat(web): Gear tab + ItemEditor (6 types) + equipped
-    quick view + encumbrance warning` — adds the Gear tab to the sheet
+quick view + encumbrance warning` — adds the Gear tab to the sheet
     tab row; ItemEditor handles WEAPON / ARMOR / GEAR / CYBERNETIC /
     SHIP_MODULE / OTHER with per-type field sets; equipped right-column
     panel replaces the placeholder; encumbrance warning ("warn, do not
     block" per PRD §5.3) renders on `current > max`. TalentEditor
     refactored from native `<dialog>` to AppModal in the same diff.
   - `2fa8ada` `test(web): inventory orchestration specs + typecheck fix
-    in test union` — 11 new vitest specs (addItem, isEncumbered,
+in test union` — 11 new vitest specs (addItem, isEncumbered,
     equippedItems, type-discriminated payload).
 - Verification: `@app/ui` 711 tests, a11y smoke 306/306 green;
   `@app/web` 28 tests; typecheck/lint clean.
@@ -342,27 +329,23 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
 - Spec: docs/IMPLEMENTATION_PLAN.md Epic 5 Features 5.2 / 5.3 / 5.5.
 - Result: ff-merged to main as `cb58fcf..` (6 commits).
   - `55f17f7` `feat(backend): rules-engine.applyConditions — −1 die per active
-    condition` (Feature 5.3 T-5.3.1.d). Pure helper, 12 specs.
+condition` (Feature 5.3 T-5.3.1.d). Pure helper, 12 specs.
   - `9cf488c` `feat(ui): AppSavePulse primitive` — 4 lifecycle states
     (idle/saving/saved/error), pulse animation, `prefers-reduced-motion`
     fade fallback. 4 specs, 5 stories.
   - `e057615` `feat(web): useTalentsApi composable` — addTalent /
     updateTalent / removeTalent against the existing backend endpoints.
   - `9325608` `feat(web): conditions panel + critical injuries +
-    talents tab + AppSavePulse wire` — replaces three placeholders on
-    `[id].vue`:
-    - Conditions: 4 `AppConditionPill`s with optimistic toggle + rollback.
-    - Critical injuries: list + inline-input add + remove. PATCH the full
-      array.
-    - Talents: list + native `<dialog>` `TalentEditor` (add / edit / delete
-      with confirm).
-    - Save indicator: text → `AppSavePulse` with sr-only fallback.
+talents tab + AppSavePulse wire` — replaces three placeholders on
+    `[id].vue`: - Conditions: 4 `AppConditionPill`s with optimistic toggle + rollback. - Critical injuries: list + inline-input add + remove. PATCH the full
+    array. - Talents: list + native `<dialog>` `TalentEditor` (add / edit / delete
+    with confirm). - Save indicator: text → `AppSavePulse` with sr-only fallback.
   - `79982b8` `test(web): condition / talent / save-pulse orchestration
-    specs` — 11 new vitest specs (4 condition-toggle, 4 talent-list,
+specs` — 11 new vitest specs (4 condition-toggle, 4 talent-list,
     1 save-pulse perf — Feature 5.5 T-5.5.1.d, 100-cycle 50ms-per-call
     budget under fake timers, plus 2 misc).
   - `<head>` `fix(ui): drop redundant story-local a11y override on
-    AppSavePulse` — story used the array form of axe rules (broken) and
+AppSavePulse` — story used the array form of axe rules (broken) and
     duplicated the global `color-contrast` disable.
 - Verification at merge time: `@app/ui` 693 tests + a11y smoke 302/302
   green; `@app/web` 17 tests; backend 191 tests; typecheck/lint clean.
@@ -387,7 +370,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
     (4 placements, focus trap, Escape + click-outside close, reduced-motion
     aware). 14 specs, 4 stories.
   - `b508bac` `chore(ui): export AppStatBlock + AppPopover from @app/ui barrel`
-    + `specs/design/README.md` inventory rows.
+    - `specs/design/README.md` inventory rows.
   - `43d2e87` `fix(ui): align AppBanner spec with <div> root` (regression
     from the a11y CI batch — the `<aside>`→`<div>` change had not been
     mirrored in the spec).
@@ -395,7 +378,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
     — preempts Feature 5.5 T-5.5.1.a (composable only; no save-pulse
     component yet). Lifecycle: idle / saving / saved / error; flush + cancel.
   - `ba6b7ee` `feat(web): character sheet — three-column layout, hero
-    counters, attributes + skills panels`. Rewrites `[id].vue` from the
+counters, attributes + skills panels`. Rewrites `[id].vue` from the
     name+concept skeleton into the full sheet. Includes 8 vitest specs.
 - Backend: T-5.1.1.b is free — `express-openapi-validator` enforces
   Attributes 1–5 and Skills 0–5 bounds at runtime from the OpenAPI schema.

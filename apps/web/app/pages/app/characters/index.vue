@@ -104,11 +104,7 @@
       <h1 class="page-characters__title">
         {{ t('pageTitle') }}
       </h1>
-      <AppButton
-        variant="primary"
-        size="md"
-        @click="navigateTo('/app/characters/new')"
-      >
+      <AppButton variant="primary" size="md" @click="navigateTo('/app/characters/new')">
         {{ t('newCharacter') }}
       </AppButton>
     </div>
@@ -120,37 +116,21 @@
       :aria-label="t('skeletonAria')"
       aria-busy="true"
     >
-      <div
-        v-for="n in 4"
-        :key="n"
-        class="page-characters__skeleton"
-        aria-hidden="true"
-      />
+      <div v-for="n in 4" :key="n" class="page-characters__skeleton" aria-hidden="true" />
     </div>
 
     <!-- Error -->
-    <div
-      v-else-if="state === 'error'"
-      class="page-characters__error"
-      role="alert"
-    >
+    <div v-else-if="state === 'error'" class="page-characters__error" role="alert">
       <p class="page-characters__error-text">
         {{ errorMsg }}
       </p>
-      <AppButton
-        variant="ghost"
-        size="sm"
-        @click="load"
-      >
+      <AppButton variant="ghost" size="sm" @click="load">
         {{ t('retry') }}
       </AppButton>
     </div>
 
     <!-- Empty state -->
-    <div
-      v-else-if="characters.length === 0"
-      class="page-characters__empty"
-    >
+    <div v-else-if="characters.length === 0" class="page-characters__empty">
       <AppCard class="page-characters__empty-card">
         <div class="page-characters__empty-body">
           <p class="page-characters__empty-heading">
@@ -159,11 +139,7 @@
           <p class="page-characters__empty-sub">
             {{ t('emptyBody') }}
           </p>
-          <AppButton
-            variant="primary"
-            size="md"
-            @click="navigateTo('/app/characters/new')"
-          >
+          <AppButton variant="primary" size="md" @click="navigateTo('/app/characters/new')">
             {{ t('newCharacter') }}
           </AppButton>
         </div>
@@ -171,10 +147,7 @@
     </div>
 
     <!-- Character grid -->
-    <div
-      v-else
-      class="page-characters__grid"
-    >
+    <div v-else class="page-characters__grid">
       <button
         v-for="char in characters"
         :key="char.id"
@@ -182,22 +155,13 @@
         class="page-characters__card"
         @click="navigateTo(`/app/characters/${char.id}`)"
       >
-        <div
-          class="page-characters__avatar"
-          aria-hidden="true"
-        >
+        <div class="page-characters__avatar" aria-hidden="true">
           {{ initials(char.name) }}
         </div>
         <div class="page-characters__card-info">
           <span class="page-characters__card-name">{{ char.name }}</span>
-          <span
-            v-if="char.concept"
-            class="page-characters__card-concept"
-          >{{ char.concept }}</span>
-          <span
-            v-if="char.iconId"
-            class="page-characters__card-meta"
-          >
+          <span v-if="char.concept" class="page-characters__card-concept">{{ char.concept }}</span>
+          <span v-if="char.iconId" class="page-characters__card-meta">
             {{ t('iconLabel') }}: {{ char.iconId }}
           </span>
         </div>

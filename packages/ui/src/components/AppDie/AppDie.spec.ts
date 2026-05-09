@@ -72,7 +72,7 @@ describe('AppDie', () => {
     const wrapper = mount(AppDie, { props: { value: v } });
     const circles = wrapper.findAll('circle.app-die__pip');
     // PIP_COUNTS is keyed 1-6; v is from VALUES so the lookup always exists.
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- safe: v is always 1–6
+
     expect(circles).toHaveLength(PIP_COUNTS[v]!);
   });
 
@@ -119,9 +119,7 @@ describe('AppDie', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     // Cast required to bypass TypeScript — deliberate bad-value test.
     mount(AppDie, { props: { value: 0 as unknown as 1 } });
-    expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('[AppDie] Invalid value'),
-    );
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('[AppDie] Invalid value'));
     warn.mockRestore();
   });
 

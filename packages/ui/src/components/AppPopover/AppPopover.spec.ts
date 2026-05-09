@@ -4,10 +4,7 @@ import { describe, expect, it } from 'vitest';
 import AppPopover from './AppPopover.vue';
 
 // Helper: mount with a trigger slot and default slot content.
-function mountPopover(
-  props: Record<string, unknown> = {},
-  slots: Record<string, string> = {},
-) {
+function mountPopover(props: Record<string, unknown> = {}, slots: Record<string, string> = {}) {
   return mount(AppPopover, {
     props: { open: false, placement: 'bottom', ...props },
     slots: {

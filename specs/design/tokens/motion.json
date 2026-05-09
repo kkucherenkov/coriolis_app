@@ -2,10 +2,26 @@
   "$schema": "https://design-tokens.github.io/community-group/format/",
   "motion": {
     "duration": {
-      "fast":     { "$value": "100ms", "$type": "duration", "$description": "Hover, press, dot toggles." },
-      "default":  { "$value": "200ms", "$type": "duration", "$description": "Standard UI transitions." },
-      "slow":     { "$value": "400ms", "$type": "duration", "$description": "Panel enter/exit, drawer slides." },
-      "ceremony": { "$value": "600ms", "$type": "duration", "$description": "Dice settle, Icon glow pulse, ritual moments." }
+      "fast": {
+        "$value": "100ms",
+        "$type": "duration",
+        "$description": "Hover, press, dot toggles."
+      },
+      "default": {
+        "$value": "200ms",
+        "$type": "duration",
+        "$description": "Standard UI transitions."
+      },
+      "slow": {
+        "$value": "400ms",
+        "$type": "duration",
+        "$description": "Panel enter/exit, drawer slides."
+      },
+      "ceremony": {
+        "$value": "600ms",
+        "$type": "duration",
+        "$description": "Dice settle, Icon glow pulse, ritual moments."
+      }
     },
     "ease": {
       "standard": {

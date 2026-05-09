@@ -26,9 +26,7 @@
     showLabel: false,
   });
 
-  const clampedValue = computed(() =>
-    Math.max(props.min, Math.min(props.max, props.value)),
-  );
+  const clampedValue = computed(() => Math.max(props.min, Math.min(props.max, props.value)));
 
   const range = computed(() => props.max - props.min);
 
@@ -45,9 +43,7 @@
     `app-progress--${props.size}`,
   ]);
 
-  const labelText = computed(() =>
-    `${clampedValue.value} / ${props.max}`,
-  );
+  const labelText = computed(() => `${clampedValue.value} / ${props.max}`);
 </script>
 
 <template>

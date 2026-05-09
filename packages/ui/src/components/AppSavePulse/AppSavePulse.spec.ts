@@ -60,12 +60,12 @@ describe('AppSavePulse', () => {
   // matchMedia that returns reduce.
 
   describe('reduced-motion (matchMedia mock)', () => {
-    let originalMatchMedia: typeof window.matchMedia;
+    let originalMatchMedia: typeof globalThis.matchMedia;
 
     beforeEach(() => {
-      originalMatchMedia = window.matchMedia;
+      originalMatchMedia = globalThis.matchMedia;
       // Mock matchMedia to report prefers-reduced-motion: reduce.
-      window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      globalThis.matchMedia = vi.fn().mockImplementation((query: string) => ({
         matches: query === '(prefers-reduced-motion: reduce)',
         media: query,
         onchange: null,
@@ -78,7 +78,7 @@ describe('AppSavePulse', () => {
     });
 
     afterEach(() => {
-      window.matchMedia = originalMatchMedia;
+      globalThis.matchMedia = originalMatchMedia;
     });
 
     it('renders saving state dot without throwing under reduce preference', () => {
@@ -93,7 +93,7 @@ describe('AppSavePulse', () => {
       // The component structure is unchanged; the CSS media query handles animation.
       const root = wrapper.find('.app-save-pulse');
       expect(root.exists()).toBe(true);
-      expect(window.matchMedia('(prefers-reduced-motion: reduce)').matches).toBe(true);
+      expect(globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches).toBe(true);
     });
   });
 });

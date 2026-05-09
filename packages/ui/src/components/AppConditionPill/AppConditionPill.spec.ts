@@ -146,15 +146,12 @@ describe('AppConditionPill', () => {
 
   // ── Default label (no slot) ───────────────────────────────────────────────
 
-  it.each(CONDITIONS)(
-    'renders capitalised condition name as default label for %s',
-    (condition) => {
-      const wrapper = mount(AppConditionPill, { props: { condition } });
-      const label = wrapper.find('.app-condition-pill__label');
-      const expected = condition.charAt(0).toUpperCase() + condition.slice(1);
-      expect(label.text()).toContain(expected);
-    },
-  );
+  it.each(CONDITIONS)('renders capitalised condition name as default label for %s', (condition) => {
+    const wrapper = mount(AppConditionPill, { props: { condition } });
+    const label = wrapper.find('.app-condition-pill__label');
+    const expected = condition.charAt(0).toUpperCase() + condition.slice(1);
+    expect(label.text()).toContain(expected);
+  });
 
   // ── Slot label ────────────────────────────────────────────────────────────
 

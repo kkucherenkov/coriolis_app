@@ -73,7 +73,10 @@ ${resetUrl}
 
   return {
     subject,
-    html: wrapInEmailShell(htmlContent, 'Сброс пароля Coriolis Companion — ссылка действует 1 час.'),
+    html: wrapInEmailShell(
+      htmlContent,
+      'Сброс пароля Coriolis Companion — ссылка действует 1 час.',
+    ),
     text,
   };
 }

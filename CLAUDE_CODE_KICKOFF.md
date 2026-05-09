@@ -6,7 +6,7 @@ step has a definition of done that maps to a CI gate. Don't skip ahead —
 Phase 1 starts on the green tag, not before.
 
 Read [`AGENTS.md`](AGENTS.md), [`docs/PRD.md`](docs/PRD.md), and
-[`docs/DESIGN.md`](docs/DESIGN.md) before starting. They explain *why*
+[`docs/DESIGN.md`](docs/DESIGN.md) before starting. They explain _why_
 each step has the constraints it does. The phased delivery order is in
 [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md).
 
@@ -35,7 +35,7 @@ it's intact:
 - `AGENTS.md` at repo root
 - `.claude/settings.json` with permissions
 - `.claude/commands/{precheck,spec-endpoint,component-new,phase-status,
-  feature-preflight,codegen-regen}.md`
+feature-preflight,codegen-regen}.md`
 - `.github/PULL_REQUEST_TEMPLATE.md` mapped to the §12 quality gates
 - `docs/done/README.md` documenting the convention
 
@@ -85,6 +85,7 @@ all four locale keys; if a translation isn't ready, ship it as
 key.
 
 **Definition of done.**
+
 - `pnpm install` runs clean
 - `docker compose -f docker/compose.yml up -d` brings up postgres, redis, centrifugo, backend, web, otel-lgtm — all healthy
 - `coriolis-companion-backend-1` becomes `healthy`; `/api/v1/health` responds with `{"status":"ok",...}`
@@ -140,6 +141,7 @@ token names and **render unstyled until Phase 1's UI Foundation Library
 epic** rewrites them — this is intentional and recorded in ADR-0001.
 
 **Definition of done.**
+
 - `pnpm design:build` produces all five artefacts without error
 - `pnpm --filter @app/design-tokens typecheck` is green
 - A throwaway `<div style="background: var(--surface-void)">` in a Nuxt page renders the deep-space indigo
@@ -170,6 +172,7 @@ Reminder: the GM-side concept is `GameSession`, **never** `Session`.
 Better Auth owns the `Session` name.
 
 **Definition of done.**
+
 - `pnpm --filter @app/backend prisma:db:push` (run automatically by the
   backend container on startup) succeeds against the empty domain schema
 - Prisma Studio shows only Better Auth tables
@@ -204,6 +207,7 @@ The runtime `express-openapi-validator` will reject any request or
 response that drifts from the spec.
 
 **Definition of done.**
+
 - `pnpm --filter @app/specs run validate` is green for both OpenAPI and
   AsyncAPI documents
 - The title-only change does not affect generated TS/Dart clients
@@ -228,6 +232,7 @@ those markers in a release tag for those locales (Phase 0 is a Phase
 boundary; v1 ships en + ru active per PRD §6).
 
 **Definition of done.**
+
 - `pnpm check:i18n` (i.e. `node --experimental-strip-types scripts/check-i18n-parity.ts`) is green for all four locales × all SFC `<i18n>` blocks
 - The landing page renders the wordmark and tagline from `landing.jsx`
 - The "fan project · not affiliated with the publisher" disclaimer renders in the footer
@@ -269,7 +274,7 @@ For each Phase 1+ feature, prefer this loop:
 
 1. **Branch.** `git switch -c feat/<area>-<short-desc>`.
 2. **Open Claude Code.** `claude` in the repo root.
-3. **One-line brief, with citation.** *"Implement PRD §5.2 attribute editing on the desktop sheet, behind the existing `characters/[id]` route. Mockup: `specs/design/mockups/sheet-desktop.jsx`."*
+3. **One-line brief, with citation.** _"Implement PRD §5.2 attribute editing on the desktop sheet, behind the existing `characters/[id]` route. Mockup: `specs/design/mockups/sheet-desktop.jsx`."_
 4. **Let it run the loop autonomously**, reviewing each step:
    - For API surface changes: the five-step loop (§4 of `AGENTS.md`).
    - For UI changes: the design loop (§5 of `AGENTS.md`).

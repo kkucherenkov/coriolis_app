@@ -55,9 +55,9 @@ describe('AppSegControl', () => {
       props: { options: binaryOptions, modelValue: 'yes' },
     });
     const buttons = wrapper.findAll('.app-seg-control__option');
-    buttons.forEach((btn) => {
+    for (const btn of buttons) {
       expect(btn.attributes('role')).toBe('radio');
-    });
+    }
   });
 
   it('renders option labels as button text', () => {
@@ -192,9 +192,9 @@ describe('AppSegControl', () => {
     const wrapper = mount(AppSegControl, {
       props: { options: binaryOptions, modelValue: 'yes', size: 'lg' },
     });
-    wrapper.findAll('.app-seg-control__option').forEach((btn) => {
+    for (const btn of wrapper.findAll('.app-seg-control__option')) {
       expect(btn.classes()).toContain('app-seg-control__option--lg');
-    });
+    }
   });
 
   // ── Roving focus / tabindex ───────────────────────────────────────────────

@@ -5,6 +5,13 @@
   type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   type Color = 'brass' | 'mystic' | 'crimson' | 'success' | 'darkness' | 'inherit';
 
+  const props = withDefaults(defineProps<Props>(), {
+    size: 'md',
+    color: 'inherit',
+    strokeWidth: 1.5,
+    ariaLabel: undefined,
+  });
+
   // Pixel dimensions per size variant (xs=12, sm=16, md=20, lg=24, xl=32).
   // These are SVG attribute values forwarded to the Lucide component, not CSS.
   const SIZE_PX: Record<Size, number> = {
@@ -22,13 +29,6 @@
     strokeWidth?: number;
     ariaLabel?: string;
   }
-
-  const props = withDefaults(defineProps<Props>(), {
-    size: 'md',
-    color: 'inherit',
-    strokeWidth: 1.5,
-    ariaLabel: undefined,
-  });
 
   // kebab-case → PascalCase: "dice-3" → "Dice3", "arrow-up-right" → "ArrowUpRight"
   function toPascalCase(kebab: string): string {
@@ -57,7 +57,7 @@
   const classes = computed(() => [
     'app-icon',
     `app-icon--${props.size}`,
-    props.color !== 'inherit' ? `app-icon--${props.color}` : null,
+    props.color === 'inherit' ? null : `app-icon--${props.color}`,
   ]);
 </script>
 

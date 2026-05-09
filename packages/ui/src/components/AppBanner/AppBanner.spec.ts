@@ -41,7 +41,9 @@ describe('AppBanner', () => {
 
   it('applies exactly one tone class', () => {
     const wrapper = mount(AppBanner, { props: { tone: 'danger' } });
-    const toneClasses = wrapper.classes().filter((c) => TONES.some((t) => c === `app-banner--${t}`));
+    const toneClasses = wrapper
+      .classes()
+      .filter((c) => TONES.some((t) => c === `app-banner--${t}`));
     expect(toneClasses).toHaveLength(1);
     expect(toneClasses[0]).toBe('app-banner--danger');
   });

@@ -20,10 +20,7 @@
 </script>
 
 <template>
-  <component
-    :is="as"
-    :class="classes"
-  >
+  <component :is="as" :class="classes">
     <div v-if="$slots['header']" class="app-card__header">
       <slot name="header" />
     </div>
@@ -52,9 +49,7 @@
       box-shadow: var(--shadow-brass-bevel);
 
       &:hover {
-        box-shadow:
-          var(--shadow-brass-bevel),
-          var(--shadow-card-featured);
+        box-shadow: var(--shadow-brass-bevel), var(--shadow-card-featured);
       }
     }
 

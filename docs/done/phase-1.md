@@ -35,10 +35,10 @@ deferred Flutter primitives — see Follow-ups).
 
 #### Vue (`@app/ui`) — 26 primitives total, **all green at 655 vitest specs**
 
-| Family | Components |
-|---|---|
-| **Foundation (20)** | `AppButton`, `AppBadge`, `AppCard`, `AppChip`, `AppInput`, `AppSwitch`, `AppProgress`, `AppIcon`, `AppAvatar`, `AppBanner`, `AppTab`, `AppTooltip`, `AppKbd`, `AppDots`, `AppDivider`, `AppSegControl`, `AppLabel`, `AppField`, `AppSelect`, `AppTextarea` |
-| **Coriolis-specific (6)** | `AppDie`, `AppDiePool`, `AppConditionPill`, `AppIconCoriolis` (with 9 placeholder Icon SVGs), `AppStarOrnament`, `AppArabesqueCorner` |
+| Family                    | Components                                                                                                                                                                                                                                                 |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Foundation (20)**       | `AppButton`, `AppBadge`, `AppCard`, `AppChip`, `AppInput`, `AppSwitch`, `AppProgress`, `AppIcon`, `AppAvatar`, `AppBanner`, `AppTab`, `AppTooltip`, `AppKbd`, `AppDots`, `AppDivider`, `AppSegControl`, `AppLabel`, `AppField`, `AppSelect`, `AppTextarea` |
+| **Coriolis-specific (6)** | `AppDie`, `AppDiePool`, `AppConditionPill`, `AppIconCoriolis` (with 9 placeholder Icon SVGs), `AppStarOrnament`, `AppArabesqueCorner`                                                                                                                      |
 
 Each has `*.vue` + `*.stories.ts` + `*.spec.ts` + `index.ts`, BEM class
 names, Coriolis design tokens only (no hex literals; Stylelint enforces),
@@ -69,7 +69,7 @@ fine without them.
   full CQRS layout — commands (`create`, `update`, `delete`,
   `duplicate`), queries (`list` paginated/cursor, `get`, `export`),
   events (`character-updated.event`), ownership guards, nested
-  `items/` and `talents/` sub-modules.  Domain models in Prisma:
+  `items/` and `talents/` sub-modules. Domain models in Prisma:
   `Character`, `Item`, `Talent`, `Relationship`, `CriticalInjury`.
   JSON columns for attributes / skills / conditions / item.data
   (documented trade-off vs one-table-per-type).

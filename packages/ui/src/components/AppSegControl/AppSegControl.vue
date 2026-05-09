@@ -65,18 +65,34 @@
 
     let targetIdx: number | null = null;
 
-    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
-      event.preventDefault();
-      targetIdx = nextEnabledIndex(currentIdx, 1);
-    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      targetIdx = nextEnabledIndex(currentIdx, -1);
-    } else if (event.key === 'Home') {
-      event.preventDefault();
-      targetIdx = firstEnabledIndex();
-    } else if (event.key === 'End') {
-      event.preventDefault();
-      targetIdx = lastEnabledIndex();
+    switch (event.key) {
+      case 'ArrowRight':
+      case 'ArrowDown': {
+        event.preventDefault();
+        targetIdx = nextEnabledIndex(currentIdx, 1);
+
+        break;
+      }
+      case 'ArrowLeft':
+      case 'ArrowUp': {
+        event.preventDefault();
+        targetIdx = nextEnabledIndex(currentIdx, -1);
+
+        break;
+      }
+      case 'Home': {
+        event.preventDefault();
+        targetIdx = firstEnabledIndex();
+
+        break;
+      }
+      case 'End': {
+        event.preventDefault();
+        targetIdx = lastEnabledIndex();
+
+        break;
+      }
+      // No default
     }
 
     if (targetIdx !== null) {
@@ -126,11 +142,7 @@
 </script>
 
 <template>
-  <div
-    :class="rootClasses"
-    role="radiogroup"
-    :aria-disabled="disabled ? 'true' : undefined"
-  >
+  <div :class="rootClasses" role="radiogroup" :aria-disabled="disabled ? 'true' : undefined">
     <!--
       Roving focus pattern:
       - Only the checked option has tabindex="0"; all others have tabindex="-1".

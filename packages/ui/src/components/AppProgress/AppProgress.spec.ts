@@ -137,7 +137,9 @@ describe('AppProgress', () => {
 
   it('applies exactly one tone class', () => {
     const wrapper = mount(AppProgress, { props: { value: 50, tone: 'crimson' } });
-    const toneClasses = wrapper.classes().filter((c) => TONES.some((t) => c === `app-progress--${t}`));
+    const toneClasses = wrapper
+      .classes()
+      .filter((c) => TONES.some((t) => c === `app-progress--${t}`));
     expect(toneClasses).toHaveLength(1);
     expect(toneClasses[0]).toBe('app-progress--crimson');
   });
@@ -156,7 +158,9 @@ describe('AppProgress', () => {
 
   it('applies exactly one size class', () => {
     const wrapper = mount(AppProgress, { props: { value: 50, size: 'lg' } });
-    const sizeClasses = wrapper.classes().filter((c) => SIZES.some((s) => c === `app-progress--${s}`));
+    const sizeClasses = wrapper
+      .classes()
+      .filter((c) => SIZES.some((s) => c === `app-progress--${s}`));
     expect(sizeClasses).toHaveLength(1);
     expect(sizeClasses[0]).toBe('app-progress--lg');
   });

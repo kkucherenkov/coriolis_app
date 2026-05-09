@@ -84,8 +84,8 @@
 <template>
   <div :class="rootClasses">
     <select
-      class="app-select__control"
       :id="selectId"
+      class="app-select__control"
       :name="name"
       :value="boundValue"
       :disabled="disabled"

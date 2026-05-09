@@ -42,10 +42,13 @@ describe('AppArabesqueCorner', () => {
 
   // ── Orientation modifiers ─────────────────────────────────────────────────
 
-  it.each(ORIENTATIONS)('applies BEM orientation modifier app-arabesque-corner--%s', (orientation) => {
-    const wrapper = mount(AppArabesqueCorner, { props: { orientation } });
-    expect(wrapper.classes()).toContain(`app-arabesque-corner--${orientation}`);
-  });
+  it.each(ORIENTATIONS)(
+    'applies BEM orientation modifier app-arabesque-corner--%s',
+    (orientation) => {
+      const wrapper = mount(AppArabesqueCorner, { props: { orientation } });
+      expect(wrapper.classes()).toContain(`app-arabesque-corner--${orientation}`);
+    },
+  );
 
   // ── Rotation per orientation ──────────────────────────────────────────────
 

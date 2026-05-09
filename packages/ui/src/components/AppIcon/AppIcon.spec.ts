@@ -96,9 +96,7 @@ describe('AppIcon', () => {
   it('logs a console.warn for an unknown icon name (no crash)', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     mount(AppIcon, { props: { name: 'not-a-real-icon-xyz' } });
-    expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('[AppIcon] Unknown Lucide icon'),
-    );
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('[AppIcon] Unknown Lucide icon'));
     warn.mockRestore();
   });
 });

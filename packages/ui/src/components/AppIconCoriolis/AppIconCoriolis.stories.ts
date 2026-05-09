@@ -54,7 +54,7 @@ export const AllNineIcons: Story = {
   render: () => ({
     components: { AppIconCoriolis },
     setup() {
-      const icons: Array<{ name: IconCoriolisName; label: string }> = [
+      const icons: { name: IconCoriolisName; label: string }[] = [
         { name: 'lady-of-tears', label: 'The Lady of Tears' },
         { name: 'traveler', label: 'The Traveler' },
         { name: 'messenger', label: 'The Messenger' },
@@ -137,7 +137,7 @@ export const BrassRow: Story = {
   render: () => ({
     components: { AppIconCoriolis },
     setup() {
-      const icons: Array<{ name: IconCoriolisName; label: string }> = [
+      const icons: { name: IconCoriolisName; label: string }[] = [
         { name: 'lady-of-tears', label: 'Lady of Tears' },
         { name: 'traveler', label: 'Traveler' },
         { name: 'messenger', label: 'Messenger' },
@@ -172,7 +172,7 @@ export const MysticRow: Story = {
   render: () => ({
     components: { AppIconCoriolis },
     setup() {
-      const icons: Array<{ name: IconCoriolisName; label: string }> = [
+      const icons: { name: IconCoriolisName; label: string }[] = [
         { name: 'lady-of-tears', label: 'Lady of Tears' },
         { name: 'traveler', label: 'Traveler' },
         { name: 'messenger', label: 'Messenger' },
@@ -207,17 +207,63 @@ export const WizardGrid: Story = {
   render: () => ({
     components: { AppIconCoriolis },
     setup() {
-      const icons: Array<{ name: IconCoriolisName; label: string; domain: string; selected: boolean }> = [
-        { name: 'lady-of-tears', label: 'The Lady of Tears', domain: 'Patron of the sorrowful and the lost', selected: false },
-        { name: 'traveler', label: 'The Traveler', domain: 'Patron of explorers and pilots', selected: true },
-        { name: 'messenger', label: 'The Messenger', domain: 'Patron of diplomats and spies', selected: false },
-        { name: 'merchant', label: 'The Merchant', domain: 'Patron of trade and negotiation', selected: false },
-        { name: 'dancer', label: 'The Dancer', domain: 'Patron of artists and performers', selected: false },
-        { name: 'gambler', label: 'The Gambler', domain: 'Patron of risk and opportunity', selected: false },
-        { name: 'judge', label: 'The Judge', domain: 'Patron of justice and order', selected: false },
-        { name: 'faceless-one', label: 'The Faceless One', domain: 'Patron of mystics and the void', selected: false },
-        { name: 'deckhand', label: 'The Deckhand', domain: 'Patron of sailors and labourers', selected: false },
-      ];
+      const icons: { name: IconCoriolisName; label: string; domain: string; selected: boolean }[] =
+        [
+          {
+            name: 'lady-of-tears',
+            label: 'The Lady of Tears',
+            domain: 'Patron of the sorrowful and the lost',
+            selected: false,
+          },
+          {
+            name: 'traveler',
+            label: 'The Traveler',
+            domain: 'Patron of explorers and pilots',
+            selected: true,
+          },
+          {
+            name: 'messenger',
+            label: 'The Messenger',
+            domain: 'Patron of diplomats and spies',
+            selected: false,
+          },
+          {
+            name: 'merchant',
+            label: 'The Merchant',
+            domain: 'Patron of trade and negotiation',
+            selected: false,
+          },
+          {
+            name: 'dancer',
+            label: 'The Dancer',
+            domain: 'Patron of artists and performers',
+            selected: false,
+          },
+          {
+            name: 'gambler',
+            label: 'The Gambler',
+            domain: 'Patron of risk and opportunity',
+            selected: false,
+          },
+          {
+            name: 'judge',
+            label: 'The Judge',
+            domain: 'Patron of justice and order',
+            selected: false,
+          },
+          {
+            name: 'faceless-one',
+            label: 'The Faceless One',
+            domain: 'Patron of mystics and the void',
+            selected: false,
+          },
+          {
+            name: 'deckhand',
+            label: 'The Deckhand',
+            domain: 'Patron of sailors and labourers',
+            selected: false,
+          },
+        ];
       return { icons };
     },
     template: `
@@ -253,7 +299,7 @@ export const LargeSizeLabeled: Story = {
   render: () => ({
     components: { AppIconCoriolis },
     setup() {
-      const icons: Array<{ name: IconCoriolisName; label: string }> = [
+      const icons: { name: IconCoriolisName; label: string }[] = [
         { name: 'lady-of-tears', label: 'Lady of Tears' },
         { name: 'faceless-one', label: 'Faceless One' },
         { name: 'dancer', label: 'Dancer' },

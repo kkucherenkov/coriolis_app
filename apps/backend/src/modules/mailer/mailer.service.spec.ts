@@ -75,8 +75,18 @@ describe('MockMailer', () => {
   });
 
   it('getLastSent() returns all buffered records', async () => {
-    await mailer.sendVerificationEmail({ toEmail: 'a@test.com', locale: 'en', verificationUrl: VERIFICATION_URL, expiresAt: FUTURE });
-    await mailer.sendPasswordResetEmail({ toEmail: 'b@test.com', locale: 'ru', resetUrl: RESET_URL, expiresAt: FUTURE });
+    await mailer.sendVerificationEmail({
+      toEmail: 'a@test.com',
+      locale: 'en',
+      verificationUrl: VERIFICATION_URL,
+      expiresAt: FUTURE,
+    });
+    await mailer.sendPasswordResetEmail({
+      toEmail: 'b@test.com',
+      locale: 'ru',
+      resetUrl: RESET_URL,
+      expiresAt: FUTURE,
+    });
 
     expect(mailer.getLastSent()).toHaveLength(2);
   });
@@ -94,13 +104,23 @@ describe('MockMailer', () => {
   });
 
   it('clear() empties the buffer', async () => {
-    await mailer.sendVerificationEmail({ toEmail: RECIPIENT, locale: 'en', verificationUrl: VERIFICATION_URL, expiresAt: FUTURE });
+    await mailer.sendVerificationEmail({
+      toEmail: RECIPIENT,
+      locale: 'en',
+      verificationUrl: VERIFICATION_URL,
+      expiresAt: FUTURE,
+    });
     mailer.clear();
     expect(mailer.getLastSent()).toHaveLength(0);
   });
 
   it('each record has a sentAt Date', async () => {
-    await mailer.sendVerificationEmail({ toEmail: RECIPIENT, locale: 'en', verificationUrl: VERIFICATION_URL, expiresAt: FUTURE });
+    await mailer.sendVerificationEmail({
+      toEmail: RECIPIENT,
+      locale: 'en',
+      verificationUrl: VERIFICATION_URL,
+      expiresAt: FUTURE,
+    });
     const record: SentMailRecord = mailer.getLastSent()[0]!;
     expect(record.sentAt).toBeInstanceOf(Date);
   });
@@ -124,9 +144,9 @@ describe('ResendMailer', () => {
   });
 
   it('POSTs to the Resend API on sendVerificationEmail', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      Response.json({ id: 'email_123' }, { status: 200 }),
-    );
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(Response.json({ id: 'email_123' }, { status: 200 }));
 
     const config = makeConfig();
     const mailer = new ResendMailer(config);
@@ -152,9 +172,9 @@ describe('ResendMailer', () => {
   });
 
   it('POSTs to the Resend API on sendPasswordResetEmail (ru locale)', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      Response.json({ id: 'email_456' }, { status: 200 }),
-    );
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(Response.json({ id: 'email_456' }, { status: 200 }));
 
     const config = makeConfig();
     const mailer = new ResendMailer(config);
@@ -190,9 +210,9 @@ describe('ResendMailer', () => {
   });
 
   it('uses the fromAddress from AppConfig', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      Response.json({ id: 'email_789' }, { status: 200 }),
-    );
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(Response.json({ id: 'email_789' }, { status: 200 }));
 
     const config = makeConfig({ fromAddress: 'Custom <custom@example.app>' });
     const mailer = new ResendMailer(config);
@@ -228,7 +248,8 @@ describe('AppConfig.mailer provider guard', () => {
     const nodeEnv: string = mockConfigService.get('NODE_ENV') ?? 'development';
     const isProduction = nodeEnv === 'production';
     const rawProvider: string = mockConfigService.get('MAILER_PROVIDER') ?? '';
-    const provider: 'resend' | 'mock' = rawProvider === 'resend' ? 'resend' : isProduction ? 'resend' : 'mock';
+    const provider: 'resend' | 'mock' =
+      rawProvider === 'resend' ? 'resend' : isProduction ? 'resend' : 'mock';
     const resendApiKey = mockConfigService.get('RESEND_API_KEY') ?? '';
 
     expect(() => {

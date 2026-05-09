@@ -13,9 +13,7 @@
   });
 
   // Normalise to an array so the template is uniform.
-  const keyList = computed<string[]>(() =>
-    Array.isArray(props.keys) ? props.keys : [props.keys],
-  );
+  const keyList = computed<string[]>(() => (Array.isArray(props.keys) ? props.keys : [props.keys]));
 
   const rootClasses = computed(() => ['app-kbd', `app-kbd--${props.size}`]);
 </script>

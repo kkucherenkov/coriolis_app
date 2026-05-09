@@ -6,6 +6,16 @@
   type Condition = 'exhausted' | 'sleepless' | 'thirsty' | 'hungry';
   type PillSize = 'sm' | 'md';
 
+  const props = withDefaults(defineProps<Props>(), {
+    modelValue: false,
+    disabled: false,
+    size: 'md',
+  });
+
+  const emit = defineEmits<{
+    'update:modelValue': [value: boolean];
+  }>();
+
   const CONDITION_ICONS: Record<Condition, string> = {
     exhausted: 'battery-low',
     sleepless: 'moon',
@@ -21,16 +31,6 @@
     disabled?: boolean;
     size?: PillSize;
   }
-
-  const props = withDefaults(defineProps<Props>(), {
-    modelValue: false,
-    disabled: false,
-    size: 'md',
-  });
-
-  const emit = defineEmits<{
-    'update:modelValue': [value: boolean];
-  }>();
 
   const iconName = computed(() => CONDITION_ICONS[props.condition]);
 

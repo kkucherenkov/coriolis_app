@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { CharacterNotFoundError, CharacterNotOwnedError } from '../../characters/domain/character.errors';
+import {
+  CharacterNotFoundError,
+  CharacterNotOwnedError,
+} from '../../characters/domain/character.errors';
 
 import { ListShareLinksQuery } from './list-share-links.query';
 import { ListShareLinksHandler } from './list-share-links.handler';
@@ -75,16 +78,16 @@ describe('ListShareLinksHandler', () => {
   it('throws CharacterNotFoundError when character does not exist', async () => {
     vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue(null);
 
-    await expect(handler.execute(new ListShareLinksQuery('user_01', 'char_missing'))).rejects.toBeInstanceOf(
-      CharacterNotFoundError,
-    );
+    await expect(
+      handler.execute(new ListShareLinksQuery('user_01', 'char_missing')),
+    ).rejects.toBeInstanceOf(CharacterNotFoundError);
   });
 
   it('throws CharacterNotOwnedError when caller does not own the character', async () => {
     vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user_other' });
 
-    await expect(handler.execute(new ListShareLinksQuery('user_01', 'char_01'))).rejects.toBeInstanceOf(
-      CharacterNotOwnedError,
-    );
+    await expect(
+      handler.execute(new ListShareLinksQuery('user_01', 'char_01')),
+    ).rejects.toBeInstanceOf(CharacterNotOwnedError);
   });
 });

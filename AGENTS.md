@@ -8,7 +8,7 @@
 
 ## 1. What this is
 
-The **Coriolis Companion App** helps players and GMs of *Coriolis: The Third Horizon* (Free League Publishing) run characters, ships, and sessions digitally. It ships **three first-class clients on day one**, served by a single backend:
+The **Coriolis Companion App** helps players and GMs of _Coriolis: The Third Horizon_ (Free League Publishing) run characters, ships, and sessions digitally. It ships **three first-class clients on day one**, served by a single backend:
 
 - **`apps/web`** — Nuxt 4 SPA (`ssr: false`), Vue 3, Vite, Nuxt UI v4, Tailwind v4.
 - **`apps/mobile`** — Flutter 3.41 / Dart 3.8, `flutter_bloc` + `get_it`.
@@ -20,15 +20,15 @@ Built on the `claude-driven-nest-nuxt-flutter-monorepo` boilerplate. The boilerp
 
 ## 2. Where to look first
 
-| Question | Source of truth |
-|---|---|
-| What does this feature do? | `docs/PRD.md` (numbered sections) |
-| What does it look like? | `docs/DESIGN.md` + `specs/design/mockups/*.jsx` |
-| What's the API contract? | `packages/specs/openapi/openapi.yaml` |
-| What's the realtime contract? | `packages/specs/asyncapi/centrifugo.yaml` |
+| Question                       | Source of truth                                                |
+| ------------------------------ | -------------------------------------------------------------- |
+| What does this feature do?     | `docs/PRD.md` (numbered sections)                              |
+| What does it look like?        | `docs/DESIGN.md` + `specs/design/mockups/*.jsx`                |
+| What's the API contract?       | `packages/specs/openapi/openapi.yaml`                          |
+| What's the realtime contract?  | `packages/specs/asyncapi/centrifugo.yaml`                      |
 | What's a design token's value? | `specs/design/tokens/*.json` (NEVER edit `tokens.generated.*`) |
-| What's been shipped? | `docs/done/*.md` |
-| Why was X decided that way? | `docs/adr/*.md` |
+| What's been shipped?           | `docs/done/*.md`                                               |
+| Why was X decided that way?    | `docs/adr/*.md`                                                |
 
 **Conflict resolution:** if `docs/DESIGN.md` and a `.jsx` mockup disagree, the JSX wins (per DESIGN §12). If the JSX and `tokens.generated.css` disagree, the JSON token wins.
 
@@ -158,12 +158,15 @@ A PR cannot merge unless **all** of these are green (PRD §12):
 ## 9. Code conventions
 
 ### Backend (NestJS, CQRS)
+
 Domain modules under `src/modules/<domain>/`. Controllers are thin — they dispatch commands and queries through the bus. Cross-handler logic only goes in a service if it's genuinely reused. Exception filter is RFC 9457 problem+json. Don't duplicate validation: the OpenAPI runtime validator is authoritative for shape; class-validator is only for invariants the spec can't express.
 
 ### Web (Nuxt 4 SPA)
+
 Pages stay thin; logic lives in composables (`composables/use*.ts`). API access is **always** via `@app/api-client-ts` — never hand-write a `$fetch` to a route URL. SCSS uses BEM and design-token CSS custom properties. No Tailwind arbitrary values that bypass tokens.
 
 ### Mobile (Flutter)
+
 Feature folders are `domain/` + `data/` + `presentation/`. State via `flutter_bloc`, DI via `get_it`, HTTP via Dio (wrapping the generated `app_api_client`). Tokens come from `tokens.g.dart`. Tap targets ≥ 44×44 (DESIGN §8).
 
 ---
@@ -195,16 +198,16 @@ Feature folders are `domain/` + `data/` + `presentation/`. State via `flutter_bl
 
 Current target: **Phase 0 — Adoption** (PRD §11). Don't start Phase 1 work (empty-sheet CRUD, sheet skeletons, foundation primitives) until Phase 0 is tagged.
 
-| Phase | Scope | Effort |
-|---|---|---|
-| **0 — Adoption** | `setup.sh` substitutions, domain Prisma schema, seed tokens, replace placeholder copy | ~1 wk |
-| **1 — Foundation** | Empty-sheet CRUD, sheet skeletons (web + mobile), foundation `@app/ui` primitives | ~3 wks |
-| **2 — Character Sheet** | Full sheet, inventory, derived stats, auto-save, creation wizard | ~4 wks |
-| **3 — Sharing & Polish** | Share links, public read-only views, OG image route, a11y audit | ~2 wks |
-| **4 — Dice & Sessions** | Dice roller, push, `GameSession`, Darkness Points, Centrifugo | ~2 wks |
-| **5 — Ships** | Ship sheets, crew assignment, ship sharing | ~2 wks |
-| **6 — GM Tools** | Combat tracker, NPC library, GM session view | ~3 wks |
-| **7 — Hardening** | Offline (web SW + Flutter SQLite), JSON export, perf, beta | ~2 wks |
+| Phase                    | Scope                                                                                 | Effort |
+| ------------------------ | ------------------------------------------------------------------------------------- | ------ |
+| **0 — Adoption**         | `setup.sh` substitutions, domain Prisma schema, seed tokens, replace placeholder copy | ~1 wk  |
+| **1 — Foundation**       | Empty-sheet CRUD, sheet skeletons (web + mobile), foundation `@app/ui` primitives     | ~3 wks |
+| **2 — Character Sheet**  | Full sheet, inventory, derived stats, auto-save, creation wizard                      | ~4 wks |
+| **3 — Sharing & Polish** | Share links, public read-only views, OG image route, a11y audit                       | ~2 wks |
+| **4 — Dice & Sessions**  | Dice roller, push, `GameSession`, Darkness Points, Centrifugo                         | ~2 wks |
+| **5 — Ships**            | Ship sheets, crew assignment, ship sharing                                            | ~2 wks |
+| **6 — GM Tools**         | Combat tracker, NPC library, GM session view                                          | ~3 wks |
+| **7 — Hardening**        | Offline (web SW + Flutter SQLite), JSON export, perf, beta                            | ~2 wks |
 
 Each phase ends with a green CI run and a `phase-N-complete` git tag.
 

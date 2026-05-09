@@ -44,16 +44,16 @@ describe('RevokeShareLinkHandler', () => {
   it('throws ShareLinkNotFoundError when link does not exist', async () => {
     vi.mocked(repo.findOwnerIdByShareLinkId).mockResolvedValue(null);
 
-    await expect(handler.execute(new RevokeShareLinkCommand('user_01', 'sl_missing'))).rejects.toBeInstanceOf(
-      ShareLinkNotFoundError,
-    );
+    await expect(
+      handler.execute(new RevokeShareLinkCommand('user_01', 'sl_missing')),
+    ).rejects.toBeInstanceOf(ShareLinkNotFoundError);
   });
 
   it('throws ShareLinkNotOwnedError when caller does not own the link', async () => {
     vi.mocked(repo.findOwnerIdByShareLinkId).mockResolvedValue({ ownerId: 'user_other' });
 
-    await expect(handler.execute(new RevokeShareLinkCommand('user_01', 'sl_01'))).rejects.toBeInstanceOf(
-      ShareLinkNotOwnedError,
-    );
+    await expect(
+      handler.execute(new RevokeShareLinkCommand('user_01', 'sl_01')),
+    ).rejects.toBeInstanceOf(ShareLinkNotOwnedError);
   });
 });

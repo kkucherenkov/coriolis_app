@@ -5,6 +5,11 @@
   type ArabesqueSize = 'sm' | 'md' | 'lg';
   type ArabesqueColor = 'brass' | 'brass-deep';
 
+  const props = withDefaults(defineProps<Props>(), {
+    size: 'md',
+    color: 'brass',
+  });
+
   /**
    * The canonical arabesque path is drawn for the TL (top-left) orientation
    * on a 100×100 internal canvas. It traces a flowing arc from the left edge
@@ -69,11 +74,6 @@
     color?: ArabesqueColor;
   }
 
-  const props = withDefaults(defineProps<Props>(), {
-    size: 'md',
-    color: 'brass',
-  });
-
   const sizePx = computed(() => SIZE_PX[props.size]);
 
   const rotation = computed(() => ROTATION[props.orientation]);
@@ -106,10 +106,7 @@
       class="app-arabesque-corner__svg"
     >
       <g :transform="groupTransform">
-        <path
-          :d="ARABESQUE_PATH"
-          class="app-arabesque-corner__path"
-        />
+        <path :d="ARABESQUE_PATH" class="app-arabesque-corner__path" />
       </g>
     </svg>
   </span>

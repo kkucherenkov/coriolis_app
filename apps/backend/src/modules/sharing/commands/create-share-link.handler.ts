@@ -1,7 +1,10 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { CharacterNotFoundError, CharacterNotOwnedError } from '../../characters/domain/character.errors';
+import {
+  CharacterNotFoundError,
+  CharacterNotOwnedError,
+} from '../../characters/domain/character.errors';
 import { CHARACTER_REPO } from '../../characters/domain/character.ports';
 import { generateSlug } from '../domain/slug';
 
@@ -12,9 +15,10 @@ import type { ShareLinkReadModel, IShareLinkRepo } from '../domain/share-link.po
 import { SHARE_LINK_REPO } from '../domain/share-link.ports';
 
 @CommandHandler(CreateShareLinkCommand)
-export class CreateShareLinkHandler
-  implements ICommandHandler<CreateShareLinkCommand, ShareLinkReadModel>
-{
+export class CreateShareLinkHandler implements ICommandHandler<
+  CreateShareLinkCommand,
+  ShareLinkReadModel
+> {
   constructor(
     @Inject(CHARACTER_REPO) private readonly characterRepo: ICharacterRepo,
     @Inject(SHARE_LINK_REPO) private readonly shareLinkRepo: IShareLinkRepo,

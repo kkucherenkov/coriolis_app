@@ -14,6 +14,7 @@ Date: 2026-05-09. Auditor: agent-a8ae0852906e155a5.
 **Status: MATCHES**
 
 `sheet_header.dart` renders the condensed header with:
+
 - `AppAvatar` (portrait initials) + name + concept on the left
 - `AppSavePulse` dot on the right
 - HP / MP mini counters (`_MiniCounter`) next to the pulse dot
@@ -67,6 +68,7 @@ mockup, which shows a bottom-fixed bar:
 ```
 
 Fix applied in `character_sheet_page.dart`:
+
 - Moved `_SheetTabBar` to `Scaffold.bottomNavigationBar`.
 - Wrapped content in `SafeArea(top: false)` so it respects home indicator.
 - Border changed from `bottom:` to `top:` (divider above the bar).
@@ -76,6 +78,7 @@ Fix applied in `character_sheet_page.dart`:
 - `_TabItem` height increased from 48 → 56 px for comfortable bottom-bar feel.
 
 Also fixed in the same pass:
+
 - The `GestureDetector.onTap` was calling `cubit.emit()` directly (uses a
   `@visibleForTesting` / `@protected` member). Replaced with a new
   `CharacterSheetCubit.switchTab(tab)` method.
@@ -107,6 +110,7 @@ showing notes string" requirement for v1.
 
 Both `_TalentEditorSheet` (in `talent_editor.dart`) and the item editor
 (in `item_editor.dart`) use:
+
 - `AppColors.surfaceNight` background
 - `AppRadius.lg` top-border-radius
 - Drag handle (brass-deep pill, 64×4)
@@ -145,6 +149,7 @@ values but no `.ttf`/`.otf` files are bundled in either the `ui_flutter`
 package or the host app (`apps/mobile/pubspec.yaml`).
 
 Flutter's font resolution:
+
 1. Looks for a bundled family by the exact name declared in the `flutter.fonts`
    section of `pubspec.yaml`.
 2. If not found, falls back to the platform default: **Roboto** on Android,
@@ -254,12 +259,13 @@ adb shell am start -W -n com.coriolis.companion/.MainActivity
 
 #### Pass / fail criterion
 
-| Metric                  | Target  | Source         |
-| ----------------------- | ------- | -------------- |
-| `engine_init_to_first_frame_ms` | ≤ 2000 ms | PRD NFR §6 |
+| Metric                          | Target    | Source          |
+| ------------------------------- | --------- | --------------- |
+| `engine_init_to_first_frame_ms` | ≤ 2000 ms | PRD NFR §6      |
 | `adb am start TotalTime`        | ≤ 2000 ms | proxy for above |
 
 If the measurement exceeds 2.0s, the first candidates for optimisation are:
+
 - Lazy-load Firebase initialisation (defer until AuthGate resolves).
 - Move Sentry init to `after first frame` using `WidgetsBinding.instance.addPostFrameCallback`.
 - Profile with `flutter run --profile` + DevTools timeline to find frame-budget
@@ -269,20 +275,21 @@ If the measurement exceeds 2.0s, the first candidates for optimisation are:
 
 ## Summary
 
-| # | Item                              | Status   | Action        |
-|---|-----------------------------------|----------|---------------|
-| 1 | Sticky header layout              | MATCHES  | —             |
-| 2 | Condition strip placement         | MATCHES  | —             |
-| 3 | HP / MP / ENC counters            | MATCHES  | —             |
-| 4 | Bottom tab bar position           | GAP      | **FIXED**     |
-| 5 | Scroll behavior                   | MATCHES (post-fix) | —  |
-| 6 | Notes tab                         | MATCHES  | —             |
-| 7 | Talent / Item editor rhythm       | MATCHES  | —             |
-| 8 | `_RankStepperSheet` breakage      | GAP      | **FIXED**     |
+| #   | Item                         | Status             | Action    |
+| --- | ---------------------------- | ------------------ | --------- |
+| 1   | Sticky header layout         | MATCHES            | —         |
+| 2   | Condition strip placement    | MATCHES            | —         |
+| 3   | HP / MP / ENC counters       | MATCHES            | —         |
+| 4   | Bottom tab bar position      | GAP                | **FIXED** |
+| 5   | Scroll behavior              | MATCHES (post-fix) | —         |
+| 6   | Notes tab                    | MATCHES            | —         |
+| 7   | Talent / Item editor rhythm  | MATCHES            | —         |
+| 8   | `_RankStepperSheet` breakage | GAP                | **FIXED** |
 
 **8 gaps audited; 2 fixed; 0 deferred (cosmetic delta on ENC counter noted); Cyrillic: system-fallback safe, Forum bundling deferred; cold-start: measurement plan documented.**
 
 Additional fixes applied in the same pass:
+
 - `cubit.emit()` direct call replaced with `cubit.switchTab()` (new method).
 - Unused local variable `t` in `_SheetTabContent` removed.
 - Tab-bar border changed to `top:` (now sits at bottom of screen).

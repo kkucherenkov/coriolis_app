@@ -1,7 +1,10 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
-import { CharacterNotFoundError, CharacterNotOwnedError } from '../../characters/domain/character.errors';
+import {
+  CharacterNotFoundError,
+  CharacterNotOwnedError,
+} from '../../characters/domain/character.errors';
 import { CHARACTER_REPO } from '../../characters/domain/character.ports';
 import { SHARE_LINK_REPO } from '../domain/share-link.ports';
 
@@ -15,7 +18,10 @@ interface ShareLinkListResult {
 }
 
 @QueryHandler(ListShareLinksQuery)
-export class ListShareLinksHandler implements IQueryHandler<ListShareLinksQuery, ShareLinkListResult> {
+export class ListShareLinksHandler implements IQueryHandler<
+  ListShareLinksQuery,
+  ShareLinkListResult
+> {
   constructor(
     @Inject(CHARACTER_REPO) private readonly characterRepo: ICharacterRepo,
     @Inject(SHARE_LINK_REPO) private readonly shareLinkRepo: IShareLinkRepo,

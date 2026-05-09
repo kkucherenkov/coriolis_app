@@ -5,10 +5,7 @@ import AppModal from './AppModal.vue';
 
 // ── Helper ───────────────────────────────────────────────────────────────────
 
-function mountModal(
-  props: Record<string, unknown> = {},
-  slots: Record<string, string> = {},
-) {
+function mountModal(props: Record<string, unknown> = {}, slots: Record<string, string> = {}) {
   return mount(AppModal, {
     props: { open: false, ...props },
     slots: {
@@ -130,10 +127,7 @@ describe('AppModal', () => {
   // ── Footer slot ───────────────────────────────────────────────────────────
 
   it('renders footer slot when provided', () => {
-    const wrapper = mountModal(
-      { open: true },
-      { footer: '<div data-footer>Footer content</div>' },
-    );
+    const wrapper = mountModal({ open: true }, { footer: '<div data-footer>Footer content</div>' });
     expect(document.body.querySelector('[data-footer]')).not.toBeNull();
     wrapper.unmount();
   });

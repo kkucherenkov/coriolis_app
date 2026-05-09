@@ -45,6 +45,7 @@ The work is decomposed in four levels:
 **Story 1.1.1** — As a developer, I can clone the repo and run `scripts/setup.sh` with project name "coriolis" so that all package names, slugs, Docker container names, and CI badges reference Coriolis.
 
 **Tasks:**
+
 - T-1.1.1.a Run `scripts/setup.sh` with name=`coriolis`, slug=`coriolis-companion`. Verify it rewrites `package.json` names (`@app/*`), `pubspec.yaml`, Docker container names, and the `README` title.
 - T-1.1.1.b Update root `README.md`: replace boilerplate intro with one paragraph describing the Coriolis Companion App, link to `PRD.md` and `DESIGN.md`.
 - T-1.1.1.c Add `LICENSE` (MIT or chosen OSI license — confirm with PRD §13 risk on Free League IP) and a `NOTICE` file with the fan-project disclaimer required for the landing footer.
@@ -53,6 +54,7 @@ The work is decomposed in four levels:
 **Story 1.1.2** — As a developer, I can run the boilerplate's existing auth vertical (sign-up / sign-in / sign-out) on web and mobile and it still passes after the rename.
 
 **Tasks:**
+
 - T-1.1.2.a Run web e2e auth happy path. Fix any references to old project name that broke.
 - T-1.1.2.b Run mobile auth widget tests + manual sign-in on the Flutter app pointed at the local backend.
 - T-1.1.2.c Confirm `pnpm spec:validate && pnpm spec:codegen` produces no drift after the rename.
@@ -64,6 +66,7 @@ The work is decomposed in four levels:
 **Story 1.2.1** — As a designer/developer, all colors, typography scales, spacing, radii, motion, and z-index values from DESIGN §2 exist as W3C Design Tokens in `specs/design/tokens/`, and `pnpm design:build` emits them to web (`tokens.generated.css`, `design-tokens.generated.ts`) and Flutter (`tokens.g.dart`).
 
 **Tasks:**
+
 - T-1.2.1.a Author `specs/design/tokens/color.json`: surfaces (void/night/dawn/parchment), brand brass (light/standard/deep/shadow), text (primary/secondary/ink/on-brass), semantic (crimson/crimson-bright/mystic-teal/success/darkness). Hex values per DESIGN §2.1 — these are the only place hex literals are allowed.
 - T-1.2.1.b Author `specs/design/tokens/typography.json`: families (Forum, Inter, JetBrains Mono), the `--type-display-*`, `--type-body-*`, `--type-mono-stat-*` scale rows from `tokens.jsx`.
 - T-1.2.1.c Author `specs/design/tokens/spacing.json`: `--space-1` … `--space-12` (4/8/12/16/20/24/32/40/48/56/64/80).
@@ -75,6 +78,7 @@ The work is decomposed in four levels:
 **Story 1.2.2** — As a developer, the JSX mockups are placed in `specs/design/mockups/` so they remain the visual source of truth.
 
 **Tasks:**
+
 - T-1.2.2.a Place all 12 JSX files (landing, dashboard, wizard-icon, sheet-desktop, sheet-mobile, ship-sheet, combat-tracker, dice-roller, share-viewer, gm-session, primitives, tokens) into `specs/design/mockups/`.
 - T-1.2.2.b Update `specs/design/mockups/README.md` cross-referencing each mockup to its target screen and `@app/ui` composition.
 
@@ -85,6 +89,7 @@ The work is decomposed in four levels:
 **Story 1.3.1** — As a backend developer, the Prisma schema in `apps/backend/prisma/schema.prisma` contains all domain tables from PRD §8.2, alongside the Better-Auth-managed tables, with one migration that applies cleanly to a fresh database.
 
 **Tasks:**
+
 - T-1.3.1.a Run `npx @better-auth/cli generate` to (re)materialize `user`, `session`, `account`, `verification`, `jwks`. Add `displayName String?` and `deletedAt DateTime?` via Better Auth's `additionalFields` config — do not edit the generated tables directly.
 - T-1.3.1.b Append the domain models from PRD §8.2 verbatim: `Character`, `Item` + `ItemType` enum, `Talent`, `Relationship`, `Ship`, `CrewAssignment`, `ShareLink`, `GameSession`, `Encounter`, `Npc`, `Roll`, `DpEvent`. Use cuid IDs and the cascade rules shown.
 - T-1.3.1.c `pnpm prisma migrate dev --name init-domain` against the local Postgres. Confirm rollback works.
@@ -97,6 +102,7 @@ The work is decomposed in four levels:
 **Story 1.4.1** — As a developer, every existing user-facing string in the boilerplate is keyed in en + ru, and `pnpm check:i18n` passes for the two active locales.
 
 **Tasks:**
+
 - T-1.4.1.a Web: replace boilerplate copy in `<i18n lang="json">` blocks of every existing `apps/web/app/**` page/component with Coriolis-appropriate text. Both `en` and `ru` populated.
 - T-1.4.1.b Mobile: populate `apps/mobile/lib/i18n/<locale>/auth.i18n.json`, `common.i18n.json`, `settings.i18n.json` for en + ru. Add a new `coriolis.i18n.json` namespace stub (empty object) for upcoming Coriolis-specific strings.
 - T-1.4.1.c Backend: populate `apps/backend/src/i18n/en/*.json` and `ru/*.json` — error messages, email templates.
@@ -141,6 +147,7 @@ The work is decomposed in four levels:
 ## Feature 2.2 — Vue Coriolis-specific primitives (DESIGN §11.2)
 
 **Tasks:**
+
 - T-2.2.a `AppIconCoriolis` — renders one of the Nine Icon glyphs by name. SVGs live in `packages/ui/src/assets/icons/`. Aria-label uses the localized Icon name (passed in as prop).
 - T-2.2.b `AppDie` — single d6 face SVG. Variants for values 1–6 + "hit" (6 with teal glow per DESIGN asset list #6).
 - T-2.2.c `AppDiePool` — collection wrapper that takes an array of values and renders `AppDie` instances, counting hits, with pushed-die positioning per `dice-roller.jsx`.
@@ -153,6 +160,7 @@ The work is decomposed in four levels:
 ## Feature 2.3 — Vue compositions (DESIGN §11.3)
 
 **Tasks:**
+
 - T-2.3.a `AppPageHero` — generic page hero with brass plate treatment per the dashboard / sheet header. Slots: pre-title, title, swash, descriptor, right-aligned actions.
 - T-2.3.b `AppEmptyState` — centered illustration + headline + sub + CTA. Four illustration slots from DESIGN asset list #5.
 - T-2.3.c `AppSkeleton` — loading shimmer for cards, rows, stat blocks. Brass shimmer on night surface.
@@ -171,7 +179,8 @@ The work is decomposed in four levels:
 
 ## Feature 2.4 — Vue behavior-wrapping (DESIGN §11.4) — Nuxt UI inside, AppXxx outside
 
-**Tasks** (each wraps the named Nuxt UI primitive — that wrapper is the *only* place the Nuxt UI symbol is imported in the entire monorepo):
+**Tasks** (each wraps the named Nuxt UI primitive — that wrapper is the _only_ place the Nuxt UI symbol is imported in the entire monorepo):
+
 - T-2.4.a `AppModal` (over `UModal`) — used for confirm dialogs, dice roller on small screens, and any focus-trapped overlay.
 - T-2.4.b `AppSlideover` (over `USlideover`) — used for wizard steps on narrow viewports and the GM combat side panel.
 - T-2.4.c `AppDropdown` (over `UDropdownMenu`) — used for combatant action menu and avatar menu.
@@ -183,6 +192,7 @@ The work is decomposed in four levels:
 **Story 2.4.1** — As a reviewer, I can grep the entire `apps/web` tree for `from '#components'` Nuxt UI imports and find zero hits — every use goes through an `AppXxx` wrapper.
 
 **Tasks:**
+
 - T-2.4.1.a Add an ESLint rule (or a CI grep step) to fail on `import { U[A-Z]` from `#components` outside `packages/ui/src/components/App<Name>/`.
 
 ---
@@ -192,6 +202,7 @@ The work is decomposed in four levels:
 **Story 2.5.1** — As a Flutter developer, every Vue component listed in §2.1–§2.3 has a matching widget under `packages/ui_flutter/lib/src/widgets/<name>/` with widget tests.
 
 **Tasks:**
+
 - T-2.5.1.a Foundation widgets mirroring §2.1 (AppButton/Badge/Chip/Input/Switch/Progress/Icon/Card/Avatar/Banner/Tab/Tooltip/Kbd/Dots/Divider/SegControl). Reference `tokens.g.dart` for all values.
 - T-2.5.1.b Coriolis-specific widgets mirroring §2.2 (IconCoriolis/Die/DiePool/ConditionPill/StarOrnament/ArabesqueCorner).
 - T-2.5.1.c Compositions mirroring §2.3 (PageHero/EmptyState/Skeleton/StatBlock/SheetHeader/CombatRow/DiceRoller/ShareViewer/DpCounter/ShipStatBlock/CrewRow/NpcCard/RollHistoryItem).
@@ -212,6 +223,7 @@ The work is decomposed in four levels:
 **Story 3.1.1** — As a developer, the OpenAPI spec defines `/characters` CRUD with the v1 character DTO, validates clean, and codegens TS + Dart clients with no drift.
 
 **Tasks:**
+
 - T-3.1.1.a Edit `packages/specs/openapi/openapi.yaml`: add `Character`, `CharacterCreate`, `CharacterUpdate` schemas; the discriminated `Item` union (per PRD §5.3, with `oneOf` + `discriminator: type` covering WEAPON/ARMOR/GEAR/CYBERNETIC/SHIP_MODULE/OTHER); `Talent`, `Relationship`, `ConditionFlags`, `CriticalInjury` schemas.
 - T-3.1.1.b Add paths: `GET /characters` (list, paginated), `POST /characters`, `GET /characters/{id}`, `PATCH /characters/{id}`, `DELETE /characters/{id}`, `POST /characters/{id}/duplicate`, `GET /characters/{id}/export`.
 - T-3.1.1.c Add nested item/talent paths from PRD §9: `POST /characters/{id}/items`, `PATCH /items/{id}`, `DELETE /items/{id}`, and the talent equivalents.
@@ -225,6 +237,7 @@ The work is decomposed in four levels:
 **Story 3.2.1** — As a player, when I `POST /api/v1/characters` with a name, the server creates a character owned by my user and returns the canonical Character DTO with derived stats already populated.
 
 **Tasks:**
+
 - T-3.2.1.a Scaffold `apps/backend/src/modules/characters/` with `commands/`, `queries/`, `events/`, controller, module file. Wire into `AppModule`.
 - T-3.2.1.b Implement commands: `CreateCharacterCommand`, `UpdateCharacterCommand`, `DeleteCharacterCommand` (soft delete? — PRD says cascade-delete on user grace expiry, but character delete is hard delete; confirm in implementation), `DuplicateCharacterCommand`. Each is a class + handler.
 - T-3.2.1.c Implement queries: `GetCharacterQuery`, `ListCharactersQuery` (paginated, owner-scoped), `ExportCharacterQuery`.
@@ -235,6 +248,7 @@ The work is decomposed in four levels:
 **Story 3.2.2** — As a player, my character's `hpMax`, `mpMax`, and `encumbranceLimit` are computed server-side and present in every Character response.
 
 **Tasks:**
+
 - T-3.2.2.a Create `apps/backend/src/modules/rules-engine/rules-engine.module.ts` with pure functions: `computeHpMax(strength, agility)`, `computeMpMax(wits, empathy)`, `computeEncumbrance(items)`, `canPush(character, lastRoll)`. Per PRD §5.2 and §10.
 - T-3.2.2.b Add unit tests for every formula at the boundary (min/max attribute values, empty inventory, conditions effect, exhausted cap on push).
 - T-3.2.2.c In the Character read mapper, decorate the entity with the computed fields before returning.
@@ -247,6 +261,7 @@ The work is decomposed in four levels:
 **Story 3.3.1** — As a player, I can navigate to `/app/characters`, see my list, click "New", get a blank character, and edit `name` (no other fields yet) with auto-save.
 
 **Tasks:**
+
 - T-3.3.1.a Add page `apps/web/app/pages/app/characters/index.vue` — calls `apiClient.characters.list()`, renders `AppEmptyState` when empty or a grid of `AppCard`s otherwise.
 - T-3.3.1.b Add page `apps/web/app/pages/app/characters/[id].vue` — calls `apiClient.characters.get(id)`, renders `AppSheetHeader` with name editable inline. Wire `AppInput` debounced auto-save (500ms) → `apiClient.characters.patch(id, { name })`.
 - T-3.3.1.c Add page `apps/web/app/pages/app/characters/new.vue` — minimal "name + create" form for now. The full wizard arrives in Epic 5.
@@ -260,6 +275,7 @@ The work is decomposed in four levels:
 **Story 3.4.1** — As a player, I can open the Flutter app, sign in (already wired), and see a Characters list feature that mirrors §3.3.
 
 **Tasks:**
+
 - T-3.4.1.a Scaffold `apps/mobile/lib/features/characters/{domain,data,presentation}/`. The data layer uses the generated `app_api_client`; presentation uses `flutter_bloc`.
 - T-3.4.1.b `CharactersListCubit` — emits states for `loading`, `empty`, `loaded(List<CharacterSummary>)`, `error`. Page renders via `app_ui`'s widgets.
 - T-3.4.1.c `CharacterSheetCubit` — loads a character, debounces local edits (500ms), calls patch.
@@ -281,6 +297,7 @@ The work is decomposed in four levels:
 **Story 4.1.1** — As a user, I can set and update my display name, and it shows in the share-link banner and the avatar menu.
 
 **Tasks:**
+
 - T-4.1.1.a Spec: add `GET/PATCH /api/v1/me` to `openapi.yaml`. The `Me` schema includes `id`, `email`, `displayName`, `createdAt`. Codegen.
 - T-4.1.1.b Backend: implement `UsersModule` with `MeQuery` and `UpdateMeCommand`. Reads from / writes to the Better-Auth-owned `user` row via Prisma (writes only the additional fields like `displayName`, never the BA-managed columns).
 - T-4.1.1.c Web: add `/app/settings` page that loads `me` and edits `displayName`.
@@ -293,6 +310,7 @@ The work is decomposed in four levels:
 **Story 4.2.1** — As a user, I can delete my account; sessions revoke immediately, characters/ships persist for 30 days then cascade-delete.
 
 **Tasks:**
+
 - T-4.2.1.a Spec: add `DELETE /api/v1/me`. Codegen.
 - T-4.2.1.b Backend: implement `DeleteMeCommand` — sets `deletedAt = now()` on the user row, revokes all Better Auth sessions for the user (call BA's revocation API), and schedules a cascade-delete job 30 days out.
 - T-4.2.1.c Backend: add a daily cron job (`@nestjs/schedule`) that hard-deletes users whose `deletedAt < now - 30d`. Cascades through Prisma to characters, ships, etc.
@@ -306,6 +324,7 @@ The work is decomposed in four levels:
 **Story 4.3.1** — As a new user, the verification email and password-reset email read in the Coriolis voice in en + ru.
 
 **Tasks:**
+
 - T-4.3.1.a Email templates in `apps/backend/src/mailer/templates/` — verification + reset, both locales. Voice: warm, slightly ceremonial, no Star-Trek tech-speak.
 - T-4.3.1.b RFC 9457 problem-detail `title`/`detail` are English-canonical (per PRD NFR §6 errors); localized client-side via i18n keyed off `type`.
 - T-4.3.1.c Add the `MailerPort` mock implementation for dev (boilerplate-provided) and the Resend/Postmark adapter behind a feature flag in `AppConfig`.
@@ -325,6 +344,7 @@ The work is decomposed in four levels:
 **Story 5.1.1** — As a player, I can edit Strength, Agility, Wits, Empathy on the desktop sheet and watch HP max + MP max update live; I can also edit all general and advanced skills inline.
 
 **Tasks:**
+
 - T-5.1.1.a Spec: extend `Character` schema in OpenAPI with attribute fields (1–5 ints), `skills` JSON object (general 0–5, advanced 0–3), `derivedStats` read-only object. Codegen.
 - T-5.1.1.b Backend: extend `UpdateCharacterCommand` validation to enforce attribute and skill bounds. Reject out-of-range with RFC 9457 422.
 - T-5.1.1.c Web: build attribute and skill panels of `sheet-desktop.jsx` (center column) using `AppStatBlock` + `AppDots`. Inline-edit popover via `AppPopover`. Optimistic UI with rollback on error.
@@ -339,6 +359,7 @@ The work is decomposed in four levels:
 **Story 5.2.1** — As a player, I can add free-form talents (`name`, `description`, optional `iconAffinity`), edit, and remove them.
 
 **Tasks:**
+
 - T-5.2.1.a Spec: add talent paths from §3.1.1.c (already in spec from Epic 3). Confirm they're wired.
 - T-5.2.1.b Backend: implement `AddTalentCommand`, `UpdateTalentCommand`, `RemoveTalentCommand`.
 - T-5.2.1.c Web: Talents tab on the sheet renders a list of `AppCard` items with edit affordances. "Add talent" CTA opens an `AppModal` with the form.
@@ -352,6 +373,7 @@ The work is decomposed in four levels:
 **Story 5.3.1** — As a player, I can toggle Exhausted/Sleepless/Thirsty/Hungry on a single tap; I can add free-form critical injury entries.
 
 **Tasks:**
+
 - T-5.3.1.a Web sheet: render four `AppConditionPill`s in the left column. Tap toggles via `PATCH /characters/:id` with optimistic UI.
 - T-5.3.1.b Web sheet: critical injuries list with add/remove. Free-form text entries.
 - T-5.3.1.c Mobile: condition strip in the sticky header per `sheet-mobile.jsx`.
@@ -364,6 +386,7 @@ The work is decomposed in four levels:
 **Story 5.4.1** — As a player, I can add weapons / armor / gear / cybernetics / ship modules / "other" items to my character; type-specific fields render correctly per the discriminated union.
 
 **Tasks:**
+
 - T-5.4.1.a Web: Gear tab uses `AppTable` (over `UTable`) for the inventory list. "Add item" opens an `AppModal` with a type selector that swaps the form fields per type.
 - T-5.4.1.b Web: equipped-only quick view in the right column of `sheet-desktop.jsx`.
 - T-5.4.1.c Backend: `AddItemCommand`, `UpdateItemCommand`, `RemoveItemCommand`. Validate the discriminated union shape matches the declared `type`.
@@ -377,6 +400,7 @@ The work is decomposed in four levels:
 **Story 5.5.1** — As a player, every edit auto-saves with a visible single brass-dot pulse; the round-trip is ≤500ms p95.
 
 **Tasks:**
+
 - T-5.5.1.a Web: extract the debounced-save logic into a `useAutoSave(entity, patcher)` composable. Used by every editable surface.
 - T-5.5.1.b Save-state indicator: `AppSavePulse` micro-component (1-line story, dot pulse animation) inside the sheet header. Reduced-motion variant: brass dot fades in/out instead of pulsing.
 - T-5.5.1.c Mobile: equivalent BLoC + widget.
@@ -391,6 +415,7 @@ The work is decomposed in four levels:
 Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-icon.jsx` shows multi-step UI. Treat the canon as 8 steps with shared screens for fast steps; the JSX progression is canon for visual styling and exact step grouping.
 
 **Tasks:**
+
 - T-5.6.1.a Page route `/app/characters/new` becomes a multi-step flow. Step state persists to a draft record server-side so reload resumes mid-wizard.
 - T-5.6.1.b Spec: add `POST /api/v1/characters/draft` and `PATCH /api/v1/characters/draft/:id`, with a `Character` record having a `status: 'draft' | 'active'`. Or use existing characters with a draft flag — choose one and document the choice in an ADR.
 - T-5.6.1.c Implement each step using `AppCard`, `AppSegControl`, the icon-grid pattern from `wizard-icon.jsx`, and `AppProgress` for the bar in `--brand-brass`.
@@ -414,6 +439,7 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 **Story 6.1.1** — As a player, I can `POST /api/v1/characters/:id/share` and get back a `ShareLink` with a 24-char slug; the same character's existing links are listed via `GET /api/v1/characters/:id/shares`; I can revoke any link.
 
 **Tasks:**
+
 - T-6.1.1.a Spec: add `ShareLink` schema, the share creation/list/revoke paths, the public read paths (`GET /api/v1/public/character/:slug`, `GET /api/v1/public/ship/:slug`), and the OG image paths. Public paths have no auth requirement. Codegen.
 - T-6.1.1.b Backend: `SharingModule`. Slug generation uses `nanoid` length 24, alphabet excluding ambiguous chars. Lookup by unique slug. Revocation sets `revokedAt`; revoked links return 410 Gone.
 - T-6.1.1.c Backend: `lastViewedAt`/`viewCount` updated lazily on read (one update per view, can batch via background job to avoid hot-path writes).
@@ -427,10 +453,11 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 **Story 6.2.1** — As an anonymous viewer, opening a share URL shows me a parchment-chrome read-only sheet with the disclaimer banner.
 
 **Tasks:**
+
 - T-6.2.1.a Add page `apps/web/app/pages/shared/character/[slug].vue` — fetches the public payload, renders an `AppShareViewer` composition that wraps the same sheet primitives in light theme.
 - T-6.2.1.b Add page `apps/web/app/pages/shared/ship/[slug].vue` — same pattern.
 - T-6.2.1.c Set dynamic `<meta property="og:image">` client-side pointing to `/api/v1/public/og/character/:slug.png`, and `og:title` / `og:description` from the payload. Bots see the OG image regardless (PRD §5.4).
-- T-6.2.1.d No edit affordances rendered at all — not disabled, *absent*. Verify by snapshot test.
+- T-6.2.1.d No edit affordances rendered at all — not disabled, _absent_. Verify by snapshot test.
 - T-6.2.1.e Lighthouse on the share page: target ≥ 90 across all scores. Optimize fonts (subset), images, and JS bundle for this route.
 
 ---
@@ -440,6 +467,7 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 **Story 6.3.1** — As a sharer, when I paste my character link into Discord, the unfurl shows a 1200×630 brass-on-indigo card with the character's name and Icon glyph.
 
 **Tasks:**
+
 - T-6.3.1.a Pick the rendering tool: Satori + Resvg (Node) or Puppeteer headless Chrome. Recommend Satori for cold-start speed and predictable output.
 - T-6.3.1.b Implement `GET /api/v1/public/og/character/:slug.png` in the `SharingModule`. The renderer reads the character + Icon glyph and produces a PNG.
 - T-6.3.1.c Implement `GET /api/v1/public/og/ship/:slug.png`.
@@ -453,6 +481,7 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 **Story 6.4.1** — As a player using the Flutter app at the table, the entire sheet experience matches `sheet-mobile.jsx` — sticky header, condition strip, tab bar at the bottom, all stats reachable.
 
 **Tasks:**
+
 - T-6.4.1.a Audit every page in `apps/mobile/lib/features/characters/presentation/` against `sheet-mobile.jsx`. Fix gaps.
 - T-6.4.1.b Confirm the Cyrillic strings render in Forum/Inter/JetBrains Mono (font subsets loaded for `ru`).
 - T-6.4.1.c Test on a real mid-range Android (or emulator) — cold start ≤ 2.0s per PRD NFR §6.
@@ -464,6 +493,7 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 **Story 6.5.1** — As a screen-reader user, every interactive element on the sheet, dice roller, combat tracker (when shipped), and wizard is reachable, labeled, and announces state changes.
 
 **Tasks:**
+
 - T-6.5.1.a Run Storybook's `addon-a11y` for every `@app/ui` story. Fix every violation. Block merges on this from now on.
 - T-6.5.1.b Manual screen-reader pass with VoiceOver (macOS Safari) and NVDA (Windows Firefox) on: landing, sign-in, dashboard, character sheet, wizard, share viewer.
 - T-6.5.1.c Verify contrast: PRD requires 4.5:1. Run `axe-core` on the rendered pages. Fix any < 4.5:1.
@@ -485,6 +515,7 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 **Story 7.1.1** — As a player, I can open the dice roller from any auth screen, set a pool size, label the roll, see results with hits highlighted, and push if appropriate.
 
 **Tasks:**
+
 - T-7.1.1.a Spec: add `POST /characters/:id/rolls` (creates a Roll), `PATCH /rolls/:id/push` (triggers reroll of non-6s and DP increment). Add `Roll` schema. Codegen.
 - T-7.1.1.b Backend: `DiceModule` with `CreateRollCommand`, `PushRollCommand`. PushRollCommand uses `RulesEngine.canPush()`, performs the reroll, persists, and emits a `RollPushedEvent` with the `gameSessionId` (if any) so the realtime layer can rebroadcast.
 - T-7.1.1.c Web: `AppDiceRoller` is mounted as a floating panel anchored bottom-right (DESIGN §6.4 + `dice-roller.jsx`). Wired via a global Pinia store / `useDiceRoller()` composable.
@@ -498,6 +529,7 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 **Story 7.2.1** — As a GM, I can create a `GameSession`, add player characters and an optional ship, and archive it when the campaign ends.
 
 **Tasks:**
+
 - T-7.2.1.a Spec: add `GameSession` schema and CRUD paths (`GET/POST /api/v1/game-sessions`, `GET/PATCH /api/v1/game-sessions/:id`). Naming is **always** `GameSession` to avoid collision with Better Auth's `Session`. Codegen.
 - T-7.2.1.b Backend: `GameSessionsModule` with CRUD commands/queries. Owner-scoped.
 - T-7.2.1.c Web: `/app/game-sessions` list and `/app/game-sessions/:id` overview matching `gm-session.jsx`. Tab strip Overview / Encounters / Crew (encounters tab is empty for now — populated in Epic 9).
@@ -510,6 +542,7 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 **Story 7.3.1** — As a player, when I push a roll while linked to a `GameSession`, that session's DP increments by 1. As a GM, I can spend DP with a reason text logged to session history.
 
 **Tasks:**
+
 - T-7.3.1.a Spec: `POST /api/v1/game-sessions/:id/dp` body `{ delta: number, reason?: string }`. Codegen.
 - T-7.3.1.b Backend: `UpdateDpCommand` increments/decrements on `GameSession`, persists `DpEvent` row. Validates: only the GM (owner) may apply negative deltas; positive deltas come from the push pipeline.
 - T-7.3.1.c Wire `RollPushedEvent` → the events handler issues a `+1` `UpdateDpCommand` against the linked session.
@@ -522,6 +555,7 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 **Story 7.4.1** — As a player viewing a GM's session screen, I see the DP counter increment within 500ms of a push, with no polling.
 
 **Tasks:**
+
 - T-7.4.1.a Spec: edit `packages/specs/asyncapi/centrifugo.yaml`. Add channel `session.<gameSessionId>` with payloads `dp.changed`, `encounter.updated`, `combatant.updated`, `roll.pushed`. Run `pnpm spec:codegen` — channel constants land in `packages/api-client-ts/src/realtime/channels.ts` and the Dart equivalent.
 - T-7.4.1.b Backend: `RealtimeModule` exposing `POST /api/v1/realtime/token` returning a Centrifugo JWT scoped only to channels the user is authorized to subscribe to. ACL checks: GM owns session ⇒ session channel; user owns character ⇒ private character channel.
 - T-7.4.1.c Backend: every `DpEvent` insert publishes `dp.changed` to `session.<id>` with the latest counter value.
@@ -542,6 +576,7 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 ## Feature 8.1 — Ship CRUD
 
 **Tasks:**
+
 - T-8.1.a Spec: `Ship`, `ShipModule`, `ShipWeapon`, `ShipProblem` schemas; CRUD paths. Codegen.
 - T-8.1.b Backend: `ShipsModule` with CQRS analog of `CharactersModule`. Owner-scoped.
 - T-8.1.c Web: `/app/ships`, `/app/ships/:id`. Sheet matches `ship-sheet.jsx`.
@@ -550,6 +585,7 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 ## Feature 8.2 — Crew assignment
 
 **Tasks:**
+
 - T-8.2.a Spec: `POST /api/v1/ships/:id/crew`, `DELETE /api/v1/ships/:id/crew/:characterId`. The `CrewAssignment` includes a `role` enum: Captain, Pilot, Sensor Op, Gunner, Engineer, Service Crew. Codegen.
 - T-8.2.b Backend: `AssignCrewCommand`, `UnassignCrewCommand`. Validate that the assigned character belongs to the same user.
 - T-8.2.c Web: `AppCrewRow` populates the Crew tab on the ship sheet.
@@ -557,6 +593,7 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 ## Feature 8.3 — Ship sharing
 
 **Tasks:**
+
 - T-8.3.a Reuse `SharingModule` — add a `shipId` branch to share-link generation. (Spec already covered in §6.1.1.a.)
 - T-8.3.b `/shared/ship/:slug` page in web. OG image variant.
 
@@ -575,6 +612,7 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 **Story 9.1.1** — As a GM, I can build initiative for an encounter from the linked PCs and ad-hoc NPCs, advance turns, apply damage / heal / conditions to any combatant, and end the encounter.
 
 **Tasks:**
+
 - T-9.1.1.a Spec: `Encounter`, `Combatant` schemas; `POST /api/v1/game-sessions/:id/encounters`, `PATCH /api/v1/encounters/:id`. Codegen.
 - T-9.1.1.b Backend: `CombatModule`. Commands: `CreateEncounter`, `UpdateCombatant`, `AdvanceTurn`, `EndEncounter`. Each emits an event consumed by the realtime publisher.
 - T-9.1.1.c Web: `/app/game-sessions/:id/combat` matches `combat-tracker.jsx`. Header: session name, round counter, DP counter. Body: stack of `AppCombatRow` instances. Bottom toolbar: Next turn / End round / End encounter.
@@ -586,12 +624,14 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 **Story 9.2.1** — As a player at the table, I see one combatant card at a time on my phone, can swipe prev/next, and can press "push" to send +1 DP.
 
 **Tasks:**
+
 - T-9.2.1.a Mobile combat page: subscribes to the `session.<id>` channel, renders the active combatant card.
 - T-9.2.1.b Push button hits the dice roller flow with the active session linked.
 
 ## Feature 9.3 — NPC library
 
 **Tasks:**
+
 - T-9.3.a Spec: `Npc` schema, CRUD paths. Codegen.
 - T-9.3.b Backend: `NpcsModule`. Owner-scoped (GM-private).
 - T-9.3.c Web: `/app/npcs` page with `AppTable` of NPCs, tag filter, search. NPC editor uses a simplified subset of the character form.
@@ -600,6 +640,7 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 ## Feature 9.4 — Realtime combatant updates
 
 **Tasks:**
+
 - T-9.4.a Backend: every combatant write publishes `combatant.updated` to `session.<id>`.
 - T-9.4.b Web GM tracker: optimistic local edits, reconciled on echoed channel event.
 - T-9.4.c Web/mobile player views: subscribe and re-render on each event.
@@ -618,6 +659,7 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 ## Feature 10.1 — Offline (web)
 
 **Tasks:**
+
 - T-10.1.a Service worker via Workbox: cache `app shell` + last-loaded character payloads. Stale-while-revalidate for read paths.
 - T-10.1.b Edit queue: when offline, write through to IndexedDB; on reconnect, replay PATCHes against the API in order. Conflict policy: server wins, surface a toast on rejection.
 - T-10.1.c Visual indicator: `AppBanner` "Offline — edits will sync when you reconnect."
@@ -625,12 +667,14 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 ## Feature 10.2 — Offline (mobile)
 
 **Tasks:**
+
 - T-10.2.a SQLite via Drift (or `sqflite`): local cache of character/ship rows. Repository pattern bridges cache + remote.
 - T-10.2.b Edit queue identical contract to web.
 
 ## Feature 10.3 — JSON export
 
 **Tasks:**
+
 - T-10.3.a Spec: `GET /api/v1/me/export` returns an application/json bundle with all characters + ships + game sessions owned by the user. Codegen.
 - T-10.3.b Backend: `ExportMeQuery`. Stream the JSON for memory safety on large accounts.
 - T-10.3.c Web settings: "Export my data" downloads the file.
@@ -638,6 +682,7 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 ## Feature 10.4 — Performance tuning
 
 **Tasks:**
+
 - T-10.4.a Lighthouse pass on mobile-3G profile for: landing, dashboard, character sheet, share viewer, dice roller. Target TTI ≤ 2.5s. Fix images, font subsets, JS chunk sizes.
 - T-10.4.b Backend: hot-path query review (`GET /characters`, `GET /game-sessions/:id`). Add indexes per Prisma migration. Cache JWKS per the `CommonModule`. Confirm `express-openapi-validator` not regex-blowing-up on large payloads.
 - T-10.4.c Mobile cold-start profile via Flutter DevTools. Target ≤ 2.0s on a mid-range Android.
@@ -645,6 +690,7 @@ Note: PRD B lists 8 conceptual steps; DESIGN §7.3 says "Six steps". `wizard-ico
 ## Feature 10.5 — Beta release
 
 **Tasks:**
+
 - T-10.5.a CI release workflow: tag-on-merge to `main` produces a versioned API + web build. Mobile is a manual `flutter build` step in v1 (no store submission).
 - T-10.5.b Hosting: Vercel/Netlify for the SPA, Railway/Fly/VPS for API + Postgres + Redis + Centrifugo. Daily DB backups.
 - T-10.5.c Sentry projects (web, mobile, backend) live with `beforeSend` PII scrubbing per PRD NFR §6 privacy.

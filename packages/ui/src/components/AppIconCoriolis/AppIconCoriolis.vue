@@ -15,6 +15,11 @@
   type IconSize = 'sm' | 'md' | 'lg';
   type IconColor = 'brass' | 'mystic';
 
+  const props = withDefaults(defineProps<Props>(), {
+    size: 'md',
+    color: 'brass',
+  });
+
   /**
    * Inline SVG path data for each of the Nine Icons.
    * Each entry is the `<path>` / `<circle>` / `<line>` / `<rect>` content
@@ -113,13 +118,10 @@
     ariaLabel: string;
   }
 
-  const props = withDefaults(defineProps<Props>(), {
-    size: 'md',
-    color: 'brass',
-  });
-
   if (!VALID_NAMES.includes(props.name)) {
-    console.warn(`[AppIconCoriolis] Unknown icon name "${props.name}". Valid names: ${VALID_NAMES.join(', ')}.`);
+    console.warn(
+      `[AppIconCoriolis] Unknown icon name "${props.name}". Valid names: ${VALID_NAMES.join(', ')}.`,
+    );
   }
 
   const svgContent = computed(() => ICON_PATHS[props.name] ?? '');

@@ -82,8 +82,7 @@
     line-height: var(--type-body-md-line-height);
     color: var(--text-secondary);
     user-select: none;
-    transition:
-      color var(--motion-duration-fast) var(--motion-ease-standard);
+    transition: color var(--motion-duration-fast) var(--motion-ease-standard);
 
     // Underline pseudo-element — positioned at the very bottom of the button,
     // separated by a small gap. Rendered as ::after so no extra DOM node is

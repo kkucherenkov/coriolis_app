@@ -37,7 +37,13 @@ const meta: Meta<typeof AppSelect> = {
   render: (args) => ({
     components: { AppSelect },
     setup() {
-      return { args, options: [{ value: 'apple', label: 'Apple' }, { value: 'banana', label: 'Banana' }] };
+      return {
+        args,
+        options: [
+          { value: 'apple', label: 'Apple' },
+          { value: 'banana', label: 'Banana' },
+        ],
+      };
     },
     template: `
       <div style="width:280px;">

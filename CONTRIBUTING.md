@@ -1,7 +1,7 @@
 # Contributing
 
-The Coriolis Companion App is a fan-built tool for *Coriolis: The Third
-Horizon* (Free League Publishing). The product spec is in
+The Coriolis Companion App is a fan-built tool for _Coriolis: The Third
+Horizon_ (Free League Publishing). The product spec is in
 [`docs/PRD.md`](docs/PRD.md), the visual language in
 [`docs/DESIGN.md`](docs/DESIGN.md), and the phased delivery plan in
 [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md). The agent

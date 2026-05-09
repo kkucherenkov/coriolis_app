@@ -156,10 +156,7 @@
 <template>
   <section class="share-viewer">
     <!-- ── Parchment disclaimer banner ────────────────────────────────────────── -->
-    <AppBanner
-      tone="parchment"
-      class="share-viewer__banner"
-    >
+    <AppBanner tone="parchment" class="share-viewer__banner">
       <template #default>
         <span class="share-viewer__banner-text">
           {{ t('disclaimerReadOnly') }}
@@ -169,10 +166,7 @@
 
     <!-- ── Hero header ────────────────────────────────────────────────────────── -->
     <div class="share-viewer__hero">
-      <div
-        class="share-viewer__portrait"
-        aria-hidden="true"
-      >
+      <div class="share-viewer__portrait" aria-hidden="true">
         {{ initials(character.name) }}
       </div>
 
@@ -217,12 +211,7 @@
     </div>
 
     <!-- ── Encumbrance warning ──────────────────────────────────────────────── -->
-    <AppBanner
-      v-if="isEncumbered"
-      tone="danger"
-      class="share-viewer__enc-warning"
-      role="status"
-    >
+    <AppBanner v-if="isEncumbered" tone="danger" class="share-viewer__enc-warning" role="status">
       {{ t('encWarning') }}
     </AppBanner>
 
@@ -263,18 +252,12 @@
           </div>
 
           <!-- Critical injuries -->
-          <AppDivider
-            tone="brass-deep"
-            class="share-viewer__injuries-divider"
-          />
+          <AppDivider tone="brass-deep" class="share-viewer__injuries-divider" />
           <div class="share-viewer__injuries-header">
             <span class="share-viewer__injuries-title">{{ t('panelCriticalInjuries') }}</span>
           </div>
 
-          <ul
-            v-if="character.criticalInjuries.length > 0"
-            class="share-viewer__injuries-list"
-          >
+          <ul v-if="character.criticalInjuries.length > 0" class="share-viewer__injuries-list">
             <li
               v-for="injury in character.criticalInjuries"
               :key="injury.id"
@@ -283,10 +266,7 @@
               <span class="share-viewer__injury-name">{{ injury.name }}</span>
             </li>
           </ul>
-          <p
-            v-else
-            class="share-viewer__placeholder-text"
-          >
+          <p v-else class="share-viewer__placeholder-text">
             {{ t('noInjuries') }}
           </p>
         </AppCard>
@@ -410,28 +390,19 @@
             <span class="share-viewer__panel-title">{{ t('panelTalents') }}</span>
           </template>
 
-          <ul
-            v-if="character.talents.length > 0"
-            class="share-viewer__talents-list"
-          >
+          <ul v-if="character.talents.length > 0" class="share-viewer__talents-list">
             <li
               v-for="talent in character.talents"
               :key="talent.id"
               class="share-viewer__talent-row"
             >
               <span class="share-viewer__talent-name">{{ talent.name }}</span>
-              <span
-                v-if="talent.description"
-                class="share-viewer__talent-desc"
-              >{{
+              <span v-if="talent.description" class="share-viewer__talent-desc">{{
                 talent.description
               }}</span>
             </li>
           </ul>
-          <p
-            v-else
-            class="share-viewer__placeholder-text"
-          >
+          <p v-else class="share-viewer__placeholder-text">
             {{ t('noTalents') }}
           </p>
         </AppCard>
@@ -442,29 +413,20 @@
             <span class="share-viewer__panel-title">{{ t('panelInventory') }}</span>
           </template>
 
-          <div
-            v-if="character.inventory.length > 0"
-            class="share-viewer__inventory-list"
-          >
+          <div v-if="character.inventory.length > 0" class="share-viewer__inventory-list">
             <div
               v-for="item in character.inventory"
               :key="item.id"
               class="share-viewer__inventory-row"
             >
-              <AppBadge
-                :variant="itemTypeBadgeVariant(item.type)"
-                size="sm"
-              >
+              <AppBadge :variant="itemTypeBadgeVariant(item.type)" size="sm">
                 {{ itemTypeBadgeLabel(item.type) }}
               </AppBadge>
               <span class="share-viewer__inventory-name">{{ item.name }}</span>
               <span class="share-viewer__inventory-summary">{{ itemSummary(item) }}</span>
             </div>
           </div>
-          <p
-            v-else
-            class="share-viewer__placeholder-text"
-          >
+          <p v-else class="share-viewer__placeholder-text">
             {{ t('inventoryEmpty') }}
           </p>
         </AppCard>
@@ -475,11 +437,7 @@
     <footer class="share-viewer__footer">
       <p class="share-viewer__footer-credit">
         {{ t('footerCredit') }}
-        <a
-          href="/"
-          class="share-viewer__footer-link"
-          data-nav-link="true"
-        >Coriolis Companion</a>
+        <a href="/" class="share-viewer__footer-link" data-nav-link="true">Coriolis Companion</a>
       </p>
     </footer>
   </section>

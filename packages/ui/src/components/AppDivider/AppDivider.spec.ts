@@ -81,7 +81,9 @@ describe('AppDivider', () => {
 
   it('applies exactly one tone class', () => {
     const wrapper = mount(AppDivider, { props: { tone: 'brass' } });
-    const toneClasses = wrapper.classes().filter((c) => TONES.some((t) => c === `app-divider--${t}`));
+    const toneClasses = wrapper
+      .classes()
+      .filter((c) => TONES.some((t) => c === `app-divider--${t}`));
     expect(toneClasses).toHaveLength(1);
     expect(toneClasses[0]).toBe('app-divider--brass');
   });
@@ -95,7 +97,9 @@ describe('AppDivider', () => {
 
   it('applies exactly one weight class', () => {
     const wrapper = mount(AppDivider, { props: { weight: 'medium' } });
-    const weightClasses = wrapper.classes().filter((c) => WEIGHTS.some((w) => c === `app-divider--${w}`));
+    const weightClasses = wrapper
+      .classes()
+      .filter((c) => WEIGHTS.some((w) => c === `app-divider--${w}`));
     expect(weightClasses).toHaveLength(1);
     expect(weightClasses[0]).toBe('app-divider--medium');
   });
