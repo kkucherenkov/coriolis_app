@@ -3,18 +3,19 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:app_api_client/src/model/relationship.dart';
 import 'package:app_api_client/src/model/item.dart';
-import 'package:app_api_client/src/model/skills.dart';
-import 'package:app_api_client/src/model/attributes.dart';
-import 'package:app_api_client/src/model/condition_flags.dart';
-import 'package:built_collection/built_collection.dart';
-import 'package:app_api_client/src/model/character_encumbrance.dart';
+import 'package:app_api_client/src/model/upbringing.dart';
 import 'package:app_api_client/src/model/character_mp.dart';
 import 'package:app_api_client/src/model/talent.dart';
 import 'package:app_api_client/src/model/critical_injury.dart';
 import 'package:app_api_client/src/model/icon_id.dart';
 import 'package:app_api_client/src/model/character_hp.dart';
+import 'package:app_api_client/src/model/relationship.dart';
+import 'package:app_api_client/src/model/skills.dart';
+import 'package:app_api_client/src/model/attributes.dart';
+import 'package:app_api_client/src/model/condition_flags.dart';
+import 'package:built_collection/built_collection.dart';
+import 'package:app_api_client/src/model/character_encumbrance.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -28,6 +29,10 @@ part 'character.g.dart';
 /// * [name] - Character name (1–80 characters)
 /// * [concept] - Short concept phrase — the role the character plays at the table (1–120 chars when non-null)
 /// * [iconId] 
+/// * [upbringing] - Social stratum the character was raised in. Set at creation and **immutable** — drives the starting attribute / skill point budgets and the initial values of `reputation` and `startingWealth`. 
+/// * [origin] - Free-text narrative description of where the character is from (home station, planet, or region). Has no mechanical effect. 
+/// * [reputation] - Current social reputation. Initial value is derived from `upbringing` (plebeian=2, stationary=4, aristocrat=6) and may change during play. 
+/// * [startingWealth] - The number of birrs (currency) the character started with at creation. Derived from `upbringing` (plebeian=500, stationary=1000, aristocrat=5000). Immutable historical record. 
 /// * [attributes] 
 /// * [skills] 
 /// * [hp] 
@@ -64,6 +69,23 @@ abstract class Character implements Built<Character, CharacterBuilder> {
   @BuiltValueField(wireName: r'iconId')
   IconId? get iconId;
   // enum iconIdEnum {  lady-of-tears,  traveler,  messenger,  merchant,  dancer,  gambler,  judge,  faceless-one,  deckhand,  };
+
+  /// Social stratum the character was raised in. Set at creation and **immutable** — drives the starting attribute / skill point budgets and the initial values of `reputation` and `startingWealth`. 
+  @BuiltValueField(wireName: r'upbringing')
+  Upbringing get upbringing;
+  // enum upbringingEnum {  plebeian,  stationary,  aristocrat,  };
+
+  /// Free-text narrative description of where the character is from (home station, planet, or region). Has no mechanical effect. 
+  @BuiltValueField(wireName: r'origin')
+  String? get origin;
+
+  /// Current social reputation. Initial value is derived from `upbringing` (plebeian=2, stationary=4, aristocrat=6) and may change during play. 
+  @BuiltValueField(wireName: r'reputation')
+  int get reputation;
+
+  /// The number of birrs (currency) the character started with at creation. Derived from `upbringing` (plebeian=500, stationary=1000, aristocrat=5000). Immutable historical record. 
+  @BuiltValueField(wireName: r'startingWealth')
+  int get startingWealth;
 
   @BuiltValueField(wireName: r'attributes')
   Attributes get attributes;
@@ -161,6 +183,26 @@ class _$CharacterSerializer implements PrimitiveSerializer<Character> {
     yield object.iconId == null ? null : serializers.serialize(
       object.iconId,
       specifiedType: const FullType.nullable(IconId),
+    );
+    yield r'upbringing';
+    yield serializers.serialize(
+      object.upbringing,
+      specifiedType: const FullType(Upbringing),
+    );
+    yield r'origin';
+    yield object.origin == null ? null : serializers.serialize(
+      object.origin,
+      specifiedType: const FullType.nullable(String),
+    );
+    yield r'reputation';
+    yield serializers.serialize(
+      object.reputation,
+      specifiedType: const FullType(int),
+    );
+    yield r'startingWealth';
+    yield serializers.serialize(
+      object.startingWealth,
+      specifiedType: const FullType(int),
     );
     yield r'attributes';
     yield serializers.serialize(
@@ -296,6 +338,35 @@ class _$CharacterSerializer implements PrimitiveSerializer<Character> {
           ) as IconId?;
           if (valueDes == null) continue;
           result.iconId = valueDes;
+          break;
+        case r'upbringing':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(Upbringing),
+          ) as Upbringing;
+          result.upbringing = valueDes;
+          break;
+        case r'origin':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.origin = valueDes;
+          break;
+        case r'reputation':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.reputation = valueDes;
+          break;
+        case r'startingWealth':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.startingWealth = valueDes;
           break;
         case r'attributes':
           final valueDes = serializers.deserialize(

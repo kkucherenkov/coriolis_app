@@ -13,6 +13,10 @@ Name | Type | Description | Notes
 **name** | **String** | Character name (1–80 characters) | 
 **concept** | **String** | Short concept phrase — the role the character plays at the table (1–120 chars when non-null) | 
 **iconId** | [**IconId**](IconId.md) |  | 
+**upbringing** | [**Upbringing**](Upbringing.md) | Social stratum the character was raised in. Set at creation and **immutable** — drives the starting attribute / skill point budgets and the initial values of `reputation` and `startingWealth`.  | 
+**origin** | **String** | Free-text narrative description of where the character is from (home station, planet, or region). Has no mechanical effect.  | 
+**reputation** | **int** | Current social reputation. Initial value is derived from `upbringing` (plebeian=2, stationary=4, aristocrat=6) and may change during play.  | 
+**startingWealth** | **int** | The number of birrs (currency) the character started with at creation. Derived from `upbringing` (plebeian=500, stationary=1000, aristocrat=5000). Immutable historical record.  | 
 **attributes** | [**Attributes**](Attributes.md) |  | 
 **skills** | [**Skills**](Skills.md) |  | 
 **hp** | [**CharacterHp**](CharacterHp.md) |  | 

@@ -67,9 +67,8 @@ export default defineNuxtConfig({
         name: 'coriolis-fix-vite-json-sfc',
         configResolved(config) {
           const jsonPlugin = config.plugins.find(
-            (p): p is { name: string; transform: unknown } =>
-              !!p && (p as { name?: string }).name === 'vite:json',
-          );
+            (p) => !!p && (p as { name?: string }).name === 'vite:json',
+          ) as { transform: unknown } | undefined;
           if (!jsonPlugin) return;
           const t = jsonPlugin.transform as
             | ((code: string, id: string) => unknown)

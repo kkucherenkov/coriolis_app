@@ -3,17 +3,33 @@
   import { computed } from 'vue';
   import type { Attributes } from '@app/api-client-ts';
 
+  // ST3001 ch.2 table 2.2: attribute-point pool per upbringing.
+  // Per-attribute creation cap is 2..4 (key-attribute exception 5 lands in Block 2).
+  type Upbringing = 'plebeian' | 'stationary' | 'aristocrat';
+
   const props = defineProps<Props>();
+
   const emit = defineEmits<{
     'update:attributes': [value: Attributes];
   }>();
-  const TOTAL_POINTS = 13;
+
+  const ATTR_BUDGET: Record<Upbringing, number> = {
+    plebeian: 15,
+    stationary: 14,
+    aristocrat: 13,
+  };
+
   const MIN_VAL = 2;
-  const MAX_VAL = 5;
+  const MAX_VAL = 4;
 
   interface Props {
     attributes: Attributes;
+    upbringing: Upbringing | null;
   }
+
+  const totalPoints = computed<number>(() =>
+    props.upbringing ? ATTR_BUDGET[props.upbringing] : 13,
+  );
 
   const { t } = useI18n({ useScope: 'local' });
 
@@ -23,7 +39,7 @@
 
   const spent = computed<number>(() => ATTR_KEYS.reduce((sum, k) => sum + props.attributes[k], 0));
 
-  const remaining = computed<number>(() => TOTAL_POINTS - spent.value);
+  const remaining = computed<number>(() => totalPoints.value - spent.value);
 
   const isAllSpent = computed<boolean>(() => remaining.value === 0);
 
@@ -137,24 +153,17 @@
 
 <template>
   <div class="step-attrs">
-    <div
-      class="step-attrs__pool"
-      :class="{ 'step-attrs__pool--done': isAllSpent }"
-    >
+    <div class="step-attrs__pool" :class="{ 'step-attrs__pool--done': isAllSpent }">
       <span class="step-attrs__pool-label">{{ t('pointsRemaining') }}</span>
       <span class="step-attrs__pool-value">{{ remaining }}</span>
     </div>
 
     <p class="step-attrs__hint">
-      {{ t('hint', { total: TOTAL_POINTS, min: MIN_VAL, max: MAX_VAL }) }}
+      {{ t('hint', { total: totalPoints, min: MIN_VAL, max: MAX_VAL }) }}
     </p>
 
     <div class="step-attrs__list">
-      <div
-        v-for="key in ATTR_KEYS"
-        :key="key"
-        class="step-attrs__row"
-      >
+      <div v-for="key in ATTR_KEYS" :key="key" class="step-attrs__row">
         <div class="step-attrs__meta">
           <span class="step-attrs__name">{{ attrLabel(key) }}</span>
           <span class="step-attrs__badge">{{ attrBadge(key) }}</span>

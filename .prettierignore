@@ -6,6 +6,7 @@
 **/.turbo
 **/coverage
 **/storybook-static
+.claude/worktrees
 packages/api-client-ts/src/generated
 packages/api-client-dart/lib/generated
 packages/specs/dist

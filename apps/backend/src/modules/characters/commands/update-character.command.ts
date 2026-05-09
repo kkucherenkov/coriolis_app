@@ -19,6 +19,7 @@ import type {
   CriticalInjurySeverity,
   IconId,
   Skills,
+  Upbringing,
 } from '../domain/character.ports';
 import { AttributesDto, ConditionFlagsDto, SkillsDto } from './create-character.command';
 
@@ -40,6 +41,8 @@ const VALID_ICONS: IconId[] = [
   'faceless-one',
   'deckhand',
 ];
+
+const VALID_UPBRINGINGS: Upbringing[] = ['plebeian', 'stationary', 'aristocrat'];
 
 export class UpdateHpDto {
   @IsOptional() @IsInt() @Min(0) current?: number;
@@ -64,6 +67,20 @@ export class UpdateCharacterDto {
   @IsOptional()
   @IsIn(VALID_ICONS)
   iconId?: IconId | null;
+
+  @IsOptional()
+  @IsIn(VALID_UPBRINGINGS)
+  upbringing?: Upbringing;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  origin?: string | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  reputation?: number;
 
   @IsOptional()
   @IsObject()

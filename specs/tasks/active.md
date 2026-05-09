@@ -9,7 +9,7 @@
   caps, and talent model. User-reported gaps: skill points + attribute
   budget should depend on origin (really: **upbringing**); origin
   should drive a hint panel; talent catalog is incomplete; Icon gift
-  + Crew talent are missing entirely.
+  - Crew talent are missing entirely.
 - Acceptance:
   - **Upbringing field** (Plebeian/Stationary/Aristocrat) drives the
     attribute budget (15/14/13), skill budget (8/10/12), reputation
@@ -38,15 +38,24 @@
   - [x] Push task to active.md
   - [x] Read ST3001 ch.2 (upbringing 15/8 — 14/10 — 13/12) and ch.4
         (5 crew × 3 + 9 icons + ~30 personal talents)
-  - [ ] **Block 1 — Upbringing + budgets** (smallest valuable step)
-    - openapi: Upbringing enum, CharacterCreate.upbringing required,
-      Character.upbringing/reputation/startingWealth (already partial)
-    - codegen
-    - RulesEngine: UPBRINGING_BUDGETS table; CreateCharacterHandler
-      validation
-    - Step2Background: select + hint panel
-    - Step4/Step5: derive budget from upbringing
-    - i18n: en + ru, leave [uk-todo]/[el-todo] placeholders
+  - [x] **Block 1 — Upbringing + budgets** (committed 2026-05-09)
+    - [x] openapi 0.8.1 → 0.9.0: Upbringing enum,
+      CharacterCreate.upbringing required, Character.upbringing /
+      origin / reputation / startingWealth, CharacterUpdate.upbringing
+      (draft-only) + reputation/origin
+    - [x] codegen
+    - [x] Prisma migration `20260509000005_upbringing_fields`
+    - [x] RulesEngine: UPBRINGING_BUDGETS, sumAttributes, sumSkills
+    - [x] CreateCharacterHandler: 2..4 per-attr cap + sum ≤ budget +
+      derives reputation/startingWealth
+    - [x] UpdateCharacterHandler: upbringing mutable while draft, frozen
+      once active (UpbringingImmutableError)
+    - [x] Step2Background: 3-option SegControl + budget hint panel
+    - [x] Step4Attributes / Step5Skills: derive pool from upbringing prop
+    - [x] new.vue wizard parent wires upbringing through; default
+      'stationary' for fresh drafts
+    - [x] i18n: en + ru complete, [uk-todo]/[el-todo] placeholders
+    - [x] Tests: rules-engine (+5) and CreateCharacterHandler (+8)
   - [ ] **Block 2 — Concept (amplua) enum**
     - openapi: Concept enum (11 amplua), key attribute / key skills
       mapping (server-side, not in spec)
@@ -70,7 +79,7 @@
   - [ ] tests: backend rules-engine specs (≥15), web wizard specs
   - [ ] lint + typecheck + format
   - [ ] PR with all blocks (per user's "single big PR" preference)
-- Status: in-progress (block 1 next)
+- Status: in-progress (block 2 next — amplua enum + per-amplua caps)
 - Blockers: —
 - Estimate: 22–34 hours total. Will commit per block to keep diff
   reviewable; merge as one PR.

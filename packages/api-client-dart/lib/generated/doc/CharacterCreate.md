@@ -11,6 +11,8 @@ Name | Type | Description | Notes
 **name** | **String** |  | 
 **concept** | **String** |  | [optional] 
 **iconId** | [**IconId**](IconId.md) |  | [optional] 
+**upbringing** | [**Upbringing**](Upbringing.md) |  | 
+**origin** | **String** |  | [optional] 
 **attributes** | [**Attributes**](Attributes.md) |  | [optional] 
 **skills** | [**Skills**](Skills.md) |  | [optional] 
 **hp** | [**CharacterCreateHp**](CharacterCreateHp.md) |  | [optional] 

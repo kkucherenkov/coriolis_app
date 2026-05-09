@@ -29,7 +29,9 @@ function makeTalentRepo(): ITalentRepo {
   };
 }
 
-function makeTalent(overrides: Partial<TalentReadModel & { characterId: string }> = {}): TalentReadModel & { characterId: string } {
+function makeTalent(
+  overrides: Partial<TalentReadModel & { characterId: string }> = {},
+): TalentReadModel & { characterId: string } {
   return {
     id: 'talent-1',
     characterId: 'char-1',

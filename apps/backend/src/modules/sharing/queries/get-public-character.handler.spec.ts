@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import type { CharacterReadModel } from '../../characters/domain/character.ports';
-import { ShareLinkExpiredError, ShareLinkNotFoundError, ShareLinkRevokedError } from '../domain/share-link.errors';
+import {
+  ShareLinkExpiredError,
+  ShareLinkNotFoundError,
+  ShareLinkRevokedError,
+} from '../domain/share-link.errors';
 import { ViewTracker } from '../infra/view-tracker';
 
 import { GetPublicCharacterQuery } from './get-public-character.query';
@@ -17,11 +21,28 @@ const MOCK_CHARACTER: CharacterReadModel = {
   name: 'Tariq',
   concept: null,
   iconId: null,
+  upbringing: 'plebeian',
+  origin: null,
+  reputation: 2,
+  startingWealth: 500,
   attributes: { strength: 2, agility: 2, wits: 2, empathy: 2 },
   skills: {
-    dexterity: 0, force: 0, infiltration: 0, manipulation: 0, meleeCombat: 0,
-    observation: 0, rangedCombat: 0, survival: 0, command: 0, culture: 0,
-    dataDjinn: 0, medicurgy: 0, mysticPowers: 0, pilot: 0, science: 0, technology: 0,
+    dexterity: 0,
+    force: 0,
+    infiltration: 0,
+    manipulation: 0,
+    meleeCombat: 0,
+    observation: 0,
+    rangedCombat: 0,
+    survival: 0,
+    command: 0,
+    culture: 0,
+    dataDjinn: 0,
+    medicurgy: 0,
+    mysticPowers: 0,
+    pilot: 0,
+    science: 0,
+    technology: 0,
   },
   hp: { current: 14, max: 8 },
   mp: { current: 10, max: 7 },
@@ -113,9 +134,9 @@ describe('GetPublicCharacterHandler', () => {
   it('throws ShareLinkNotFoundError for unknown slug', async () => {
     vi.mocked(repo.findCharacterBySlug).mockResolvedValue(null);
 
-    await expect(handler.execute(new GetPublicCharacterQuery('unknownslug12345678901234'))).rejects.toBeInstanceOf(
-      ShareLinkNotFoundError,
-    );
+    await expect(
+      handler.execute(new GetPublicCharacterQuery('unknownslug12345678901234')),
+    ).rejects.toBeInstanceOf(ShareLinkNotFoundError);
   });
 
   it('throws ShareLinkRevokedError for revoked slug', async () => {
@@ -124,7 +145,9 @@ describe('GetPublicCharacterHandler', () => {
       character: MOCK_CHARACTER,
     });
 
-    await expect(handler.execute(new GetPublicCharacterQuery(SLUG))).rejects.toBeInstanceOf(ShareLinkRevokedError);
+    await expect(handler.execute(new GetPublicCharacterQuery(SLUG))).rejects.toBeInstanceOf(
+      ShareLinkRevokedError,
+    );
   });
 
   it('throws ShareLinkExpiredError for expired slug', async () => {
@@ -133,7 +156,9 @@ describe('GetPublicCharacterHandler', () => {
       character: MOCK_CHARACTER,
     });
 
-    await expect(handler.execute(new GetPublicCharacterQuery(SLUG))).rejects.toBeInstanceOf(ShareLinkExpiredError);
+    await expect(handler.execute(new GetPublicCharacterQuery(SLUG))).rejects.toBeInstanceOf(
+      ShareLinkExpiredError,
+    );
   });
 
   it('does not throw for a link that has not expired yet', async () => {

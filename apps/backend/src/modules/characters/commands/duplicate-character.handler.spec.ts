@@ -29,6 +29,10 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     name: 'Kalim al-Rashid',
     concept: 'Mercenary',
     iconId: 'traveler',
+    upbringing: 'stationary',
+    origin: 'Coriolis Station',
+    reputation: 4,
+    startingWealth: 1000,
     attributes: { strength: 4, agility: 3, wits: 2, empathy: 3 },
     skills: { ...DEFAULT_SKILLS, force: 3 },
     hp: { current: 12, max: 14 },
@@ -104,7 +108,9 @@ describe('DuplicateCharacterHandler', () => {
   });
 
   it('resets hp/mp to placeholder constants', async () => {
-    vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter({ hp: { current: 5, max: 14 } }));
+    vi.mocked(repo.findActiveById).mockResolvedValue(
+      makeCharacter({ hp: { current: 5, max: 14 } }),
+    );
     const copy = makeCharacter({ id: 'char-2', name: 'Kalim al-Rashid (copy)', experience: 0 });
     vi.mocked(repo.create).mockResolvedValue(copy);
 

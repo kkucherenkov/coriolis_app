@@ -96,9 +96,7 @@ describe('ListCharactersHandler', () => {
 
     await handler.execute(new ListCharactersQuery('specific-user', 5));
 
-    expect(repo.list).toHaveBeenCalledWith(
-      expect.objectContaining({ ownerId: 'specific-user' }),
-    );
+    expect(repo.list).toHaveBeenCalledWith(expect.objectContaining({ ownerId: 'specific-user' }));
   });
 
   // ── includeDrafts (ADR 0002, T-5.6.1.b) ────────────────────────────────────
@@ -108,9 +106,7 @@ describe('ListCharactersHandler', () => {
 
     await handler.execute(new ListCharactersQuery('user-1', 20));
 
-    expect(repo.list).toHaveBeenCalledWith(
-      expect.objectContaining({ includeDrafts: false }),
-    );
+    expect(repo.list).toHaveBeenCalledWith(expect.objectContaining({ includeDrafts: false }));
   });
 
   it('passes includeDrafts=true to repo when query sets it', async () => {
@@ -118,9 +114,7 @@ describe('ListCharactersHandler', () => {
 
     await handler.execute(new ListCharactersQuery('user-1', 20, undefined, true));
 
-    expect(repo.list).toHaveBeenCalledWith(
-      expect.objectContaining({ includeDrafts: true }),
-    );
+    expect(repo.list).toHaveBeenCalledWith(expect.objectContaining({ includeDrafts: true }));
   });
 
   it('returns draft items when includeDrafts=true and repo returns them', async () => {

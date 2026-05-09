@@ -9,9 +9,7 @@ import { GetCharacterQuery } from './get-character.query';
 import type { ICharacterRepo } from '../domain/character.ports';
 
 @QueryHandler(GetCharacterQuery)
-export class GetCharacterHandler
-  implements IQueryHandler<GetCharacterQuery, CharacterReadModel>
-{
+export class GetCharacterHandler implements IQueryHandler<GetCharacterQuery, CharacterReadModel> {
   constructor(@Inject(CHARACTER_REPO) private readonly repo: ICharacterRepo) {}
 
   async execute(query: GetCharacterQuery): Promise<CharacterReadModel> {

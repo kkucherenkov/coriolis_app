@@ -13,9 +13,10 @@ export interface CharacterListResult {
 }
 
 @QueryHandler(ListCharactersQuery)
-export class ListCharactersHandler
-  implements IQueryHandler<ListCharactersQuery, CharacterListResult>
-{
+export class ListCharactersHandler implements IQueryHandler<
+  ListCharactersQuery,
+  CharacterListResult
+> {
   constructor(@Inject(CHARACTER_REPO) private readonly repo: ICharacterRepo) {}
 
   async execute(query: ListCharactersQuery): Promise<CharacterListResult> {

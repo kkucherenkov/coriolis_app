@@ -114,6 +114,7 @@ import 'package:app_api_client/src/model/skills.dart';
 import 'package:app_api_client/src/model/talent.dart';
 import 'package:app_api_client/src/model/talent_create.dart';
 import 'package:app_api_client/src/model/talent_update.dart';
+import 'package:app_api_client/src/model/upbringing.dart';
 
 part 'serializers.g.dart';
 
@@ -218,6 +219,7 @@ part 'serializers.g.dart';
   Talent,
   TalentCreate,
   TalentUpdate,
+  Upbringing,
 ])
 Serializers serializers = (_$serializers.toBuilder()
       ..add(ItemBase.serializer)

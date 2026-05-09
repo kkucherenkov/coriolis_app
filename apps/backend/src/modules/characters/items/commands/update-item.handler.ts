@@ -11,17 +11,16 @@ import type { ICharacterRepo, ItemReadModel } from '../../domain/character.ports
 import type { IItemRepo } from '../domain/item.ports';
 
 @CommandHandler(UpdateItemCommand)
-export class UpdateItemHandler
-  implements ICommandHandler<UpdateItemCommand, ItemReadModel & { characterId: string }>
-{
+export class UpdateItemHandler implements ICommandHandler<
+  UpdateItemCommand,
+  ItemReadModel & { characterId: string }
+> {
   constructor(
     @Inject(ITEM_REPO) private readonly itemRepo: IItemRepo,
     @Inject(CHARACTER_REPO) private readonly characterRepo: ICharacterRepo,
   ) {}
 
-  async execute(
-    command: UpdateItemCommand,
-  ): Promise<ItemReadModel & { characterId: string }> {
+  async execute(command: UpdateItemCommand): Promise<ItemReadModel & { characterId: string }> {
     const { itemId, ownerId, dto } = command;
 
     const item = await this.itemRepo.findById(itemId);

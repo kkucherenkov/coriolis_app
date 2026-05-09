@@ -11,17 +11,16 @@ import type { ICharacterRepo, TalentReadModel } from '../../domain/character.por
 import type { ITalentRepo } from '../domain/talent.ports';
 
 @CommandHandler(AddTalentCommand)
-export class AddTalentHandler
-  implements ICommandHandler<AddTalentCommand, TalentReadModel & { characterId: string }>
-{
+export class AddTalentHandler implements ICommandHandler<
+  AddTalentCommand,
+  TalentReadModel & { characterId: string }
+> {
   constructor(
     @Inject(CHARACTER_REPO) private readonly characterRepo: ICharacterRepo,
     @Inject(TALENT_REPO) private readonly talentRepo: ITalentRepo,
   ) {}
 
-  async execute(
-    command: AddTalentCommand,
-  ): Promise<TalentReadModel & { characterId: string }> {
+  async execute(command: AddTalentCommand): Promise<TalentReadModel & { characterId: string }> {
     const { characterId, ownerId, dto } = command;
 
     const ownerRow = await this.characterRepo.findOwnerIdById(characterId);

@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:app_api_client/src/model/skills.dart';
+import 'package:app_api_client/src/model/upbringing.dart';
 import 'package:app_api_client/src/model/attributes.dart';
 import 'package:app_api_client/src/model/condition_flags.dart';
 import 'package:built_collection/built_collection.dart';
@@ -14,12 +15,14 @@ import 'package:built_value/serializer.dart';
 
 part 'character_create.g.dart';
 
-/// Payload for `POST /api/v1/characters`. Only `name` is required. Attribute values default to 2 if the `attributes` object is omitted or a key within it is missing. Skill values default to 0.  Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`, `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`) must not be included; they are rejected with 400.  Set `status: 'draft'` to create a wizard-in-progress character. Omitting `status` defaults to `'active'`. 
+/// Payload for `POST /api/v1/characters`. Only `name` and `upbringing` are required. Attribute values default to 2 if the `attributes` object is omitted or a key within it is missing. Skill values default to 0.  The server enforces the upbringing-based budgets at creation time: - sum(attributes) ≤ attribute budget for upbringing - each attribute is between 2 and 4 - sum(skills) ≤ skill budget for upbringing  `reputation` and `startingWealth` are **server-derived** from `upbringing` and must not be set by the client.  Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`, `encumbrance.max`, `encumbrance.current`, `startingWealth`, `createdAt`, `updatedAt`) must not be included; they are rejected with 400.  Set `status: 'draft'` to create a wizard-in-progress character. Omitting `status` defaults to `'active'`. 
 ///
 /// Properties:
 /// * [name] 
 /// * [concept] 
 /// * [iconId] 
+/// * [upbringing] 
+/// * [origin] 
 /// * [attributes] 
 /// * [skills] 
 /// * [hp] 
@@ -39,6 +42,13 @@ abstract class CharacterCreate implements Built<CharacterCreate, CharacterCreate
   @BuiltValueField(wireName: r'iconId')
   IconId? get iconId;
   // enum iconIdEnum {  lady-of-tears,  traveler,  messenger,  merchant,  dancer,  gambler,  judge,  faceless-one,  deckhand,  };
+
+  @BuiltValueField(wireName: r'upbringing')
+  Upbringing get upbringing;
+  // enum upbringingEnum {  plebeian,  stationary,  aristocrat,  };
+
+  @BuiltValueField(wireName: r'origin')
+  String? get origin;
 
   @BuiltValueField(wireName: r'attributes')
   Attributes? get attributes;
@@ -108,6 +118,18 @@ class _$CharacterCreateSerializer implements PrimitiveSerializer<CharacterCreate
       yield serializers.serialize(
         object.iconId,
         specifiedType: const FullType.nullable(IconId),
+      );
+    }
+    yield r'upbringing';
+    yield serializers.serialize(
+      object.upbringing,
+      specifiedType: const FullType(Upbringing),
+    );
+    if (object.origin != null) {
+      yield r'origin';
+      yield serializers.serialize(
+        object.origin,
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.attributes != null) {
@@ -211,6 +233,21 @@ class _$CharacterCreateSerializer implements PrimitiveSerializer<CharacterCreate
           ) as IconId?;
           if (valueDes == null) continue;
           result.iconId = valueDes;
+          break;
+        case r'upbringing':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(Upbringing),
+          ) as Upbringing;
+          result.upbringing = valueDes;
+          break;
+        case r'origin':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.origin = valueDes;
           break;
         case r'attributes':
           final valueDes = serializers.deserialize(

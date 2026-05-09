@@ -30,7 +30,9 @@ function makeItemRepo(): IItemRepo {
   };
 }
 
-function makeItem(overrides: Partial<ItemReadModel & { characterId: string }> = {}): ItemReadModel & { characterId: string } {
+function makeItem(
+  overrides: Partial<ItemReadModel & { characterId: string }> = {},
+): ItemReadModel & { characterId: string } {
   return {
     id: 'item-1',
     type: 'GEAR',
@@ -76,7 +78,11 @@ describe('AddItemHandler', () => {
   it('throws CharacterNotFoundError when character does not exist', async () => {
     vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue(null);
 
-    const dto = Object.assign(new AddItemDto(), { type: 'OTHER' as const, name: 'Thing', weight: 0 });
+    const dto = Object.assign(new AddItemDto(), {
+      type: 'OTHER' as const,
+      name: 'Thing',
+      weight: 0,
+    });
 
     await expect(
       handler.execute(new AddItemCommand('missing', 'user-1', dto)),
@@ -87,7 +93,11 @@ describe('AddItemHandler', () => {
   it('throws CharacterNotOwnedError when character belongs to another user', async () => {
     vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'other-user' });
 
-    const dto = Object.assign(new AddItemDto(), { type: 'OTHER' as const, name: 'Thing', weight: 0 });
+    const dto = Object.assign(new AddItemDto(), {
+      type: 'OTHER' as const,
+      name: 'Thing',
+      weight: 0,
+    });
 
     await expect(
       handler.execute(new AddItemCommand('char-1', 'user-1', dto)),

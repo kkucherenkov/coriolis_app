@@ -9,5 +9,8 @@ export {
   computeEncumbranceCurrent,
   canPush,
   applyConditions,
+  UPBRINGING_BUDGETS,
+  sumAttributes,
+  sumSkills,
 } from './rules-engine';
-export type { CanPushResult, ConditionFlags } from './rules-engine';
+export type { CanPushResult, ConditionFlags, Upbringing, UpbringingBudget } from './rules-engine';

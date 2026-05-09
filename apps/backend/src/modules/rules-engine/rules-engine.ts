@@ -24,6 +24,49 @@
 
 import type { ItemReadModel } from '../characters/domain/character.ports';
 
+// --------------- Character creation budgets ---------------
+
+/**
+ * Coriolis core book ch.2, tables 2.2 and 2.4. A character's upbringing
+ * (Воспитание) determines the number of attribute / skill points available
+ * at creation, the starting reputation, and the starting wealth in birrs.
+ */
+export type Upbringing = 'plebeian' | 'stationary' | 'aristocrat';
+
+export interface UpbringingBudget {
+  /** Pool of attribute points to distribute across STR/AGI/WIT/EMP. */
+  attributes: number;
+  /** Pool of skill points to distribute across the 16 skills. */
+  skills: number;
+  /** Starting reputation value (mutable during play). */
+  reputation: number;
+  /** Starting wealth in birrs (immutable historical record). */
+  startingWealth: number;
+}
+
+export const UPBRINGING_BUDGETS: Readonly<Record<Upbringing, UpbringingBudget>> = Object.freeze({
+  plebeian: { attributes: 15, skills: 8, reputation: 2, startingWealth: 500 },
+  stationary: { attributes: 14, skills: 10, reputation: 4, startingWealth: 1000 },
+  aristocrat: { attributes: 13, skills: 12, reputation: 6, startingWealth: 5000 },
+});
+
+/**
+ * Sum of attribute values, used for budget validation.
+ * Per ch.2 every attribute must be 2..4 (or 5 for the amplua's key attribute,
+ * enforced in Block 2). Sum must not exceed UPBRINGING_BUDGETS[u].attributes.
+ */
+export function sumAttributes(attrs: Record<string, number>): number {
+  return Object.values(attrs).reduce((s, v) => s + v, 0);
+}
+
+/**
+ * Sum of skill values, used for budget validation.
+ * Per ch.2 sum must not exceed UPBRINGING_BUDGETS[u].skills.
+ */
+export function sumSkills(skills: Record<string, number>): number {
+  return Object.values(skills).reduce((s, v) => s + v, 0);
+}
+
 // --------------- HP ---------------
 
 /**
@@ -97,10 +140,7 @@ export interface ConditionFlags {
   hungry: boolean;
 }
 
-export function applyConditions(
-  conditions: ConditionFlags,
-  basePool: number,
-): number {
+export function applyConditions(conditions: ConditionFlags, basePool: number): number {
   const active =
     (conditions.exhausted ? 1 : 0) +
     (conditions.sleepless ? 1 : 0) +
@@ -111,9 +151,7 @@ export function applyConditions(
 
 // --------------- Push eligibility ---------------
 
-export type CanPushResult =
-  | { ok: true }
-  | { ok: false; reason: 'ALREADY_PUSHED' | 'EXHAUSTED' };
+export type CanPushResult = { ok: true } | { ok: false; reason: 'ALREADY_PUSHED' | 'EXHAUSTED' };
 
 /**
  * PRD §10: A roll can be pushed if:

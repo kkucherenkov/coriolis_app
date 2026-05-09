@@ -20,6 +20,10 @@ const MOCK_CHARACTER: CharacterReadModel = {
   name: 'Tariq',
   concept: null,
   iconId: null,
+  upbringing: 'plebeian',
+  origin: null,
+  reputation: 2,
+  startingWealth: 500,
   attributes: { strength: 3, agility: 3, wits: 3, empathy: 3 },
   skills: {
     dexterity: 0,

@@ -5,10 +5,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  AttributeBudgetExceededError,
+  AttributeOutOfCreationRangeError,
   AttributeOutOfRangeError,
   CharacterNameEmptyError,
   CharacterNameTooLongError,
   IconUnknownError,
+  SkillBudgetExceededError,
   SkillOutOfRangeError,
 } from '../domain/character.errors';
 import { DEFAULT_ATTRIBUTES, DEFAULT_CONDITIONS, DEFAULT_SKILLS } from '../domain/character.ports';
@@ -39,6 +42,10 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     name: 'Kalim al-Rashid',
     concept: null,
     iconId: null,
+    upbringing: 'plebeian',
+    origin: null,
+    reputation: 2,
+    startingWealth: 500,
     attributes: { strength: 3, agility: 3, wits: 3, empathy: 3 },
     skills: { ...DEFAULT_SKILLS },
     hp: { current: 14, max: 14 },
@@ -59,7 +66,11 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
 }
 
 function makeDto(overrides: Partial<CreateCharacterDto> = {}): CreateCharacterDto {
-  return Object.assign(new CreateCharacterDto(), { name: 'Kalim al-Rashid', ...overrides });
+  return Object.assign(new CreateCharacterDto(), {
+    name: 'Kalim al-Rashid',
+    upbringing: 'plebeian' as const,
+    ...overrides,
+  });
 }
 
 describe('CreateCharacterHandler', () => {
@@ -127,9 +138,7 @@ describe('CreateCharacterHandler', () => {
 
   it('throws CharacterNameTooLongError when name exceeds 80 chars', async () => {
     await expect(
-      handler.execute(
-        new CreateCharacterCommand('user-1', makeDto({ name: 'a'.repeat(81) })),
-      ),
+      handler.execute(new CreateCharacterCommand('user-1', makeDto({ name: 'a'.repeat(81) }))),
     ).rejects.toBeInstanceOf(CharacterNameTooLongError);
   });
 
@@ -137,19 +146,14 @@ describe('CreateCharacterHandler', () => {
     vi.mocked(repo.create).mockResolvedValue(makeCharacter({ name: 'a'.repeat(80) }));
 
     await expect(
-      handler.execute(
-        new CreateCharacterCommand('user-1', makeDto({ name: 'a'.repeat(80) })),
-      ),
+      handler.execute(new CreateCharacterCommand('user-1', makeDto({ name: 'a'.repeat(80) }))),
     ).resolves.toBeDefined();
   });
 
   it('throws IconUnknownError for invalid icon', async () => {
     await expect(
       handler.execute(
-        new CreateCharacterCommand(
-          'user-1',
-          makeDto({ iconId: 'unknown-icon' as never }),
-        ),
+        new CreateCharacterCommand('user-1', makeDto({ iconId: 'unknown-icon' as never })),
       ),
     ).rejects.toBeInstanceOf(IconUnknownError);
   });
@@ -179,9 +183,7 @@ describe('CreateCharacterHandler', () => {
   it('throws SkillOutOfRangeError when skill > 5', async () => {
     const skills = { ...DEFAULT_SKILLS, dexterity: 6 };
     await expect(
-      handler.execute(
-        new CreateCharacterCommand('user-1', makeDto({ skills })),
-      ),
+      handler.execute(new CreateCharacterCommand('user-1', makeDto({ skills }))),
     ).rejects.toBeInstanceOf(SkillOutOfRangeError);
   });
 
@@ -213,33 +215,23 @@ describe('CreateCharacterHandler', () => {
 
     await handler.execute(new CreateCharacterCommand('user-1', makeDto()));
 
-    expect(repo.create).toHaveBeenCalledWith(
-      expect.objectContaining({ status: 'active' }),
-    );
+    expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ status: 'active' }));
   });
 
   it('passes status draft through to the repo when dto.status is draft', async () => {
     vi.mocked(repo.create).mockResolvedValue(makeCharacter({ status: 'draft' }));
 
-    await handler.execute(
-      new CreateCharacterCommand('user-1', makeDto({ status: 'draft' })),
-    );
+    await handler.execute(new CreateCharacterCommand('user-1', makeDto({ status: 'draft' })));
 
-    expect(repo.create).toHaveBeenCalledWith(
-      expect.objectContaining({ status: 'draft' }),
-    );
+    expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ status: 'draft' }));
   });
 
   it('passes status active through to the repo when dto.status is active', async () => {
     vi.mocked(repo.create).mockResolvedValue(makeCharacter({ status: 'active' }));
 
-    await handler.execute(
-      new CreateCharacterCommand('user-1', makeDto({ status: 'active' })),
-    );
+    await handler.execute(new CreateCharacterCommand('user-1', makeDto({ status: 'active' })));
 
-    expect(repo.create).toHaveBeenCalledWith(
-      expect.objectContaining({ status: 'active' }),
-    );
+    expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ status: 'active' }));
   });
 
   it('returns the status field from the repo result', async () => {
@@ -250,5 +242,146 @@ describe('CreateCharacterHandler', () => {
     );
 
     expect(result.status).toBe('draft');
+  });
+
+  // -------- Upbringing-derived budgets (Coriolis core book ch.2) --------
+
+  it('plebeian: derives reputation 2 and startingWealth 500', async () => {
+    vi.mocked(repo.create).mockResolvedValue(makeCharacter({ upbringing: 'plebeian' }));
+
+    await handler.execute(
+      new CreateCharacterCommand('user-1', makeDto({ upbringing: 'plebeian' })),
+    );
+
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ upbringing: 'plebeian', reputation: 2, startingWealth: 500 }),
+    );
+  });
+
+  it('stationary: derives reputation 4 and startingWealth 1000', async () => {
+    vi.mocked(repo.create).mockResolvedValue(
+      makeCharacter({ upbringing: 'stationary', reputation: 4, startingWealth: 1000 }),
+    );
+
+    await handler.execute(
+      new CreateCharacterCommand('user-1', makeDto({ upbringing: 'stationary' })),
+    );
+
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ upbringing: 'stationary', reputation: 4, startingWealth: 1000 }),
+    );
+  });
+
+  it('aristocrat: derives reputation 6 and startingWealth 5000', async () => {
+    vi.mocked(repo.create).mockResolvedValue(
+      makeCharacter({ upbringing: 'aristocrat', reputation: 6, startingWealth: 5000 }),
+    );
+
+    await handler.execute(
+      new CreateCharacterCommand('user-1', makeDto({ upbringing: 'aristocrat' })),
+    );
+
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ upbringing: 'aristocrat', reputation: 6, startingWealth: 5000 }),
+    );
+  });
+
+  it('throws AttributeBudgetExceededError when sum exceeds upbringing budget', async () => {
+    // aristocrat budget = 13; 4+4+3+3 = 14 → reject
+    await expect(
+      handler.execute(
+        new CreateCharacterCommand(
+          'user-1',
+          makeDto({
+            upbringing: 'aristocrat',
+            attributes: { strength: 4, agility: 4, wits: 3, empathy: 3 },
+          }),
+        ),
+      ),
+    ).rejects.toBeInstanceOf(AttributeBudgetExceededError);
+    expect(repo.create).not.toHaveBeenCalled();
+  });
+
+  it('throws AttributeOutOfCreationRangeError when an attribute is below the 2..4 cap', async () => {
+    await expect(
+      handler.execute(
+        new CreateCharacterCommand(
+          'user-1',
+          makeDto({
+            upbringing: 'plebeian',
+            attributes: { strength: 1, agility: 4, wits: 4, empathy: 4 },
+          }),
+        ),
+      ),
+    ).rejects.toBeInstanceOf(AttributeOutOfCreationRangeError);
+  });
+
+  it('throws AttributeOutOfCreationRangeError when an attribute exceeds 4 (key-attr exception is Block 2)', async () => {
+    await expect(
+      handler.execute(
+        new CreateCharacterCommand(
+          'user-1',
+          makeDto({
+            upbringing: 'plebeian',
+            attributes: { strength: 5, agility: 4, wits: 3, empathy: 3 },
+          }),
+        ),
+      ),
+    ).rejects.toBeInstanceOf(AttributeOutOfCreationRangeError);
+  });
+
+  it('accepts attributes that exactly match the upbringing budget', async () => {
+    vi.mocked(repo.create).mockResolvedValue(
+      makeCharacter({
+        upbringing: 'aristocrat',
+        reputation: 6,
+        startingWealth: 5000,
+        attributes: { strength: 4, agility: 3, wits: 3, empathy: 3 },
+      }),
+    );
+
+    await expect(
+      handler.execute(
+        new CreateCharacterCommand(
+          'user-1',
+          makeDto({
+            upbringing: 'aristocrat',
+            attributes: { strength: 4, agility: 3, wits: 3, empathy: 3 },
+          }),
+        ),
+      ),
+    ).resolves.toBeDefined();
+  });
+
+  it('throws SkillBudgetExceededError when sum of skills exceeds upbringing budget', async () => {
+    // plebeian skill budget = 8; total spent below = 9 → reject
+    await expect(
+      handler.execute(
+        new CreateCharacterCommand(
+          'user-1',
+          makeDto({
+            upbringing: 'plebeian',
+            skills: {
+              dexterity: 1,
+              force: 1,
+              infiltration: 1,
+              manipulation: 1,
+              meleeCombat: 1,
+              observation: 1,
+              rangedCombat: 1,
+              survival: 1,
+              command: 1,
+              culture: 0,
+              dataDjinn: 0,
+              medicurgy: 0,
+              mysticPowers: 0,
+              pilot: 0,
+              science: 0,
+              technology: 0,
+            },
+          }),
+        ),
+      ),
+    ).rejects.toBeInstanceOf(SkillBudgetExceededError);
   });
 });

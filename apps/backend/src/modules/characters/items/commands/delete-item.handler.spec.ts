@@ -30,8 +30,18 @@ function makeItemRepo(): IItemRepo {
   };
 }
 
-function makeItem(overrides: Partial<ItemReadModel & { characterId: string }> = {}): ItemReadModel & { characterId: string } {
-  return { id: 'item-1', type: 'GEAR', characterId: 'char-1', name: 'Toolkit', weight: 1, quantity: 1, ...overrides };
+function makeItem(
+  overrides: Partial<ItemReadModel & { characterId: string }> = {},
+): ItemReadModel & { characterId: string } {
+  return {
+    id: 'item-1',
+    type: 'GEAR',
+    characterId: 'char-1',
+    name: 'Toolkit',
+    weight: 1,
+    quantity: 1,
+    ...overrides,
+  };
 }
 
 describe('DeleteItemHandler', () => {
@@ -69,9 +79,9 @@ describe('DeleteItemHandler', () => {
     vi.mocked(itemRepo.findById).mockResolvedValue(makeItem());
     vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'other-user' });
 
-    await expect(
-      handler.execute(new DeleteItemCommand('item-1', 'user-1')),
-    ).rejects.toBeInstanceOf(ItemNotOwnedError);
+    await expect(handler.execute(new DeleteItemCommand('item-1', 'user-1'))).rejects.toBeInstanceOf(
+      ItemNotOwnedError,
+    );
     expect(itemRepo.delete).not.toHaveBeenCalled();
   });
 
@@ -79,8 +89,9 @@ describe('DeleteItemHandler', () => {
     vi.mocked(itemRepo.findById).mockResolvedValue(makeItem());
     vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'other' });
 
-    await expect(
-      handler.execute(new DeleteItemCommand('item-1', 'user-1')),
-    ).rejects.toMatchObject({ status: 403, code: 'ITEM_NOT_OWNED' });
+    await expect(handler.execute(new DeleteItemCommand('item-1', 'user-1'))).rejects.toMatchObject({
+      status: 403,
+      code: 'ITEM_NOT_OWNED',
+    });
   });
 });

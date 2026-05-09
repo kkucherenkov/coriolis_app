@@ -3,7 +3,7 @@
   import { useCharactersApi } from '~/composables/useCharactersApi';
   import { useAutoSave } from '~/composables/useAutoSave';
   import type { Character, CharacterUpdate } from '~/composables/useCharactersApi';
-  import type { Attributes, Skills, IconId } from '@app/api-client-ts';
+  import type { Attributes, Skills, IconId, Upbringing } from '@app/api-client-ts';
   import WizardShell from '~/components/wizard/WizardShell.vue';
   import Step1Concept from '~/components/wizard/Step1Concept.vue';
   import Step2Background from '~/components/wizard/Step2Background.vue';
@@ -57,12 +57,16 @@
   const forging = ref<boolean>(false);
   const errorMsg = ref<string>('');
 
-  // Draft character fields mirrored locally.
+  // Draft character fields mirrored locally. Upbringing defaults to
+  // 'stationary' (the balanced middle path per ST3001 ch.2 table 2.2 —
+  // 14 attribute pts, 10 skill pts, 4 reputation, 1000 birrs); the user
+  // can change it on Step 2 before forging.
+  const DEFAULT_UPBRINGING: Upbringing = 'stationary';
   const draftId = ref<string>('');
   const draftName = ref<string>('Untitled');
   const draftConcept = ref<string | null>(null);
   const draftOrigin = ref<string | null>(null);
-  const draftUpbringing = ref<string | null>(null);
+  const draftUpbringing = ref<Upbringing>(DEFAULT_UPBRINGING);
   const draftAge = ref<number | null>(null);
   const draftIconId = ref<IconId | null>(null);
   const draftAttributes = ref<Attributes>({ ...DEFAULT_ATTRS });
@@ -77,6 +81,8 @@
       name: draftName.value.trim() || 'Untitled',
       concept: draftConcept.value,
       iconId: draftIconId.value,
+      upbringing: draftUpbringing.value,
+      origin: draftOrigin.value,
       attributes: draftAttributes.value,
       skills: draftSkills.value,
     };
@@ -108,8 +114,13 @@
         }
         hydrateDraft(char);
       } else {
-        // Create a fresh draft
-        const char = await api.create({ name: 'Untitled', status: 'draft' });
+        // Create a fresh draft. Upbringing is required server-side; we seed
+        // with the wizard's DEFAULT_UPBRINGING and let the user pick on Step 2.
+        const char = await api.create({
+          name: 'Untitled',
+          upbringing: DEFAULT_UPBRINGING,
+          status: 'draft',
+        });
         hydrateDraft(char);
         // Replace URL so refresh resumes without re-creating
         await router.replace({ query: { id: char.id } });
@@ -130,6 +141,8 @@
     draftName.value = char.name;
     draftConcept.value = char.concept ?? null;
     draftIconId.value = char.iconId ?? null;
+    draftUpbringing.value = char.upbringing;
+    draftOrigin.value = char.origin ?? null;
     draftAttributes.value = { ...char.attributes };
     draftSkills.value = { ...char.skills };
   }
@@ -170,11 +183,13 @@
     errorMsg.value = '';
     try {
       cancelSave();
-      // Final data sync + status transition in one PATCH
+      // Final data sync + status transition in one PATCH. Upbringing is
+      // immutable, so we don't include it here; it was set at draft create.
       await api.update(draftId.value, {
         name: draftName.value.trim() || 'Untitled',
         concept: draftConcept.value,
         iconId: draftIconId.value,
+        origin: draftOrigin.value,
         attributes: draftAttributes.value,
         skills: draftSkills.value,
         status: 'active',
@@ -200,12 +215,12 @@
 
   function onOriginUpdate(val: string | null): void {
     draftOrigin.value = val;
-    // Origin is not in CharacterUpdate yet — stored locally only for v1.
+    scheduleSave();
   }
 
-  function onUpbringingUpdate(val: string | null): void {
+  function onUpbringingUpdate(val: Upbringing): void {
     draftUpbringing.value = val;
-    // Upbringing is not in CharacterUpdate yet — stored locally only for v1.
+    scheduleSave();
   }
 
   function onAgeUpdate(val: number | null): void {
@@ -265,7 +280,7 @@
       },
       "4": {
         "title": "Distribute your attributes",
-        "blurb": "13 points. Minimum 2, maximum 5 in each. These shape everything you do."
+        "blurb": "Spend the attribute points your upbringing grants. Each attribute is between 2 and 4."
       },
       "5": {
         "title": "Train your skills",
@@ -300,7 +315,7 @@
       },
       "4": {
         "title": "Распределите атрибуты",
-        "blurb": "13 очков. Минимум 2, максимум 5 на каждый атрибут. Они определяют всё, что вы делаете."
+        "blurb": "Потратьте очки атрибутов, которые даёт ваше воспитание. Значение каждого — от 2 до 4."
       },
       "5": {
         "title": "Развейте навыки",
@@ -351,18 +366,9 @@
 
 <template>
   <div class="page-wizard">
-    <div
-      v-if="loading"
-      class="page-wizard__loader"
-      role="status"
-      aria-live="polite"
-    />
+    <div v-if="loading" class="page-wizard__loader" role="status" aria-live="polite" />
 
-    <div
-      v-else-if="errorMsg"
-      class="page-wizard__error"
-      role="alert"
-    >
+    <div v-else-if="errorMsg" class="page-wizard__error" role="alert">
       {{ errorMsg }}
     </div>
 
@@ -404,21 +410,19 @@
         @update:age="onAgeUpdate"
       />
 
-      <Step3Icon
-        v-if="step === 3"
-        :icon-id="draftIconId"
-        @update:icon-id="onIconUpdate"
-      />
+      <Step3Icon v-if="step === 3" :icon-id="draftIconId" @update:icon-id="onIconUpdate" />
 
       <Step4Attributes
         v-if="step === 4"
         :attributes="draftAttributes"
+        :upbringing="draftUpbringing"
         @update:attributes="onAttributesUpdate"
       />
 
       <Step5Skills
         v-if="step === 5"
         :skills="draftSkills"
+        :upbringing="draftUpbringing"
         @update:skills="onSkillsUpdate"
       />
 

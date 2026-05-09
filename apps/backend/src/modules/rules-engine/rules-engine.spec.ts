@@ -11,12 +11,15 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  UPBRINGING_BUDGETS,
   applyConditions,
   canPush,
   computeEncumbranceCurrent,
   computeEncumbranceMax,
   computeHpMax,
   computeMpMax,
+  sumAttributes,
+  sumSkills,
 } from './rules-engine';
 import type { ConditionFlags } from './rules-engine';
 
@@ -125,7 +128,11 @@ describe('computeEncumbranceCurrent', () => {
   });
 
   it('sums weights for multiple items', () => {
-    const items = [makeItem({ weight: 1 }), makeItem({ id: 'item-2', weight: 2 }), makeItem({ id: 'item-3', weight: 3 })];
+    const items = [
+      makeItem({ weight: 1 }),
+      makeItem({ id: 'item-2', weight: 2 }),
+      makeItem({ id: 'item-3', weight: 3 }),
+    ];
     expect(computeEncumbranceCurrent(items)).toBe(6);
   });
 
@@ -172,7 +179,12 @@ describe('computeEncumbranceCurrent', () => {
 // --------------- applyConditions ---------------
 
 describe('applyConditions', () => {
-  const none: ConditionFlags = { exhausted: false, sleepless: false, thirsty: false, hungry: false };
+  const none: ConditionFlags = {
+    exhausted: false,
+    sleepless: false,
+    thirsty: false,
+    hungry: false,
+  };
   const all: ConditionFlags = { exhausted: true, sleepless: true, thirsty: true, hungry: true };
 
   it('no conditions active → pool unchanged', () => {
@@ -204,7 +216,9 @@ describe('applyConditions', () => {
   });
 
   it('pool of 2 with three conditions → 0 (clamped, not negative)', () => {
-    expect(applyConditions({ exhausted: true, sleepless: true, thirsty: true, hungry: false }, 2)).toBe(0);
+    expect(
+      applyConditions({ exhausted: true, sleepless: true, thirsty: true, hungry: false }, 2),
+    ).toBe(0);
   });
 
   it('pool of 1 with all four conditions → 0 (clamped)', () => {
@@ -216,7 +230,9 @@ describe('applyConditions', () => {
   });
 
   it('three conditions → pool − 3', () => {
-    expect(applyConditions({ exhausted: true, sleepless: true, thirsty: true, hungry: false }, 5)).toBe(2);
+    expect(
+      applyConditions({ exhausted: true, sleepless: true, thirsty: true, hungry: false }, 5),
+    ).toBe(2);
   });
 
   it('pool exactly equal to active conditions → result is 0', () => {
@@ -232,15 +248,24 @@ describe('canPush', () => {
   });
 
   it('returns ok=false, reason=EXHAUSTED when exhausted (PRD §10: Exhausted blocks push)', () => {
-    expect(canPush({ pushed: false }, { exhausted: true })).toEqual({ ok: false, reason: 'EXHAUSTED' });
+    expect(canPush({ pushed: false }, { exhausted: true })).toEqual({
+      ok: false,
+      reason: 'EXHAUSTED',
+    });
   });
 
   it('returns ok=false, reason=ALREADY_PUSHED when already pushed (PRD §10: one push per roll)', () => {
-    expect(canPush({ pushed: true }, { exhausted: false })).toEqual({ ok: false, reason: 'ALREADY_PUSHED' });
+    expect(canPush({ pushed: true }, { exhausted: false })).toEqual({
+      ok: false,
+      reason: 'ALREADY_PUSHED',
+    });
   });
 
   it('returns ok=false, reason=ALREADY_PUSHED when both exhausted and already pushed (pushed checked first)', () => {
-    expect(canPush({ pushed: true }, { exhausted: true })).toEqual({ ok: false, reason: 'ALREADY_PUSHED' });
+    expect(canPush({ pushed: true }, { exhausted: true })).toEqual({
+      ok: false,
+      reason: 'ALREADY_PUSHED',
+    });
   });
 
   it('is independent of other condition flags — only exhausted matters', () => {
@@ -250,11 +275,17 @@ describe('canPush', () => {
   });
 
   it('exhausted character with fresh roll → cannot push', () => {
-    expect(canPush({ pushed: false }, { exhausted: true })).toMatchObject({ ok: false, reason: 'EXHAUSTED' });
+    expect(canPush({ pushed: false }, { exhausted: true })).toMatchObject({
+      ok: false,
+      reason: 'EXHAUSTED',
+    });
   });
 
   it('non-exhausted character with pushed roll → cannot push', () => {
-    expect(canPush({ pushed: true }, { exhausted: false })).toMatchObject({ ok: false, reason: 'ALREADY_PUSHED' });
+    expect(canPush({ pushed: true }, { exhausted: false })).toMatchObject({
+      ok: false,
+      reason: 'ALREADY_PUSHED',
+    });
   });
 
   it('fresh roll (pushed=false) and not exhausted → ok=true', () => {
@@ -262,5 +293,56 @@ describe('canPush', () => {
     expect(result.ok).toBe(true);
     // Discriminated union: when ok=true the variant has no `reason` field.
     expect('reason' in result).toBe(false);
+  });
+});
+
+// --------------- UPBRINGING_BUDGETS ---------------
+
+describe('UPBRINGING_BUDGETS', () => {
+  it('plebeian: 15 attribute points, 8 skill points, 2 reputation, 500 birrs', () => {
+    expect(UPBRINGING_BUDGETS.plebeian).toEqual({
+      attributes: 15,
+      skills: 8,
+      reputation: 2,
+      startingWealth: 500,
+    });
+  });
+
+  it('stationary: 14 attribute points, 10 skill points, 4 reputation, 1000 birrs', () => {
+    expect(UPBRINGING_BUDGETS.stationary).toEqual({
+      attributes: 14,
+      skills: 10,
+      reputation: 4,
+      startingWealth: 1000,
+    });
+  });
+
+  it('aristocrat: 13 attribute points, 12 skill points, 6 reputation, 5000 birrs', () => {
+    expect(UPBRINGING_BUDGETS.aristocrat).toEqual({
+      attributes: 13,
+      skills: 12,
+      reputation: 6,
+      startingWealth: 5000,
+    });
+  });
+
+  it('is frozen — accidental mutation throws in strict mode', () => {
+    expect(Object.isFrozen(UPBRINGING_BUDGETS)).toBe(true);
+  });
+});
+
+describe('sumAttributes', () => {
+  it('sums the four attribute values', () => {
+    expect(sumAttributes({ strength: 4, agility: 3, wits: 4, empathy: 4 })).toBe(15);
+  });
+
+  it('returns 0 for an empty object (defensive)', () => {
+    expect(sumAttributes({})).toBe(0);
+  });
+});
+
+describe('sumSkills', () => {
+  it('sums all skill values', () => {
+    expect(sumSkills({ a: 1, b: 2, c: 3 })).toBe(6);
   });
 });

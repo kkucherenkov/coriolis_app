@@ -1,6 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 
+import { UPBRINGING_BUDGETS } from '../../rules-engine';
 import {
   AttributeOutOfRangeError,
   CharacterNameEmptyError,
@@ -11,6 +12,7 @@ import {
   InvalidStatusTransitionError,
   ReadOnlyFieldError,
   SkillOutOfRangeError,
+  UpbringingImmutableError,
 } from '../domain/character.errors';
 import {
   Attributes,
@@ -54,9 +56,10 @@ function validateSkills(skills: Skills): void {
 }
 
 @CommandHandler(UpdateCharacterCommand)
-export class UpdateCharacterHandler
-  implements ICommandHandler<UpdateCharacterCommand, CharacterReadModel>
-{
+export class UpdateCharacterHandler implements ICommandHandler<
+  UpdateCharacterCommand,
+  CharacterReadModel
+> {
   constructor(
     @Inject(CHARACTER_REPO) private readonly repo: ICharacterRepo,
     private readonly eventBus: EventBus,
@@ -78,6 +81,8 @@ export class UpdateCharacterHandler
     if (rawEncumbrance && 'max' in rawEncumbrance) throw new ReadOnlyFieldError('encumbrance.max');
     if (rawEncumbrance && 'current' in rawEncumbrance)
       throw new ReadOnlyFieldError('encumbrance.current');
+    // startingWealth is derived from upbringing and frozen at creation.
+    if ('startingWealth' in rawDto) throw new ReadOnlyFieldError('startingWealth');
 
     const existing = await this.repo.findActiveById(characterId);
     if (!existing) throw new CharacterNotFoundError(characterId);
@@ -85,10 +90,15 @@ export class UpdateCharacterHandler
 
     // Status-transition guard (ADR 0002): only draft → active is permitted.
     // active → draft is rejected; active → active and draft → draft are no-ops.
-    if (dto.status !== undefined && dto.status !== existing.status && existing.status === 'active' && dto.status === 'draft') {
-        throw new InvalidStatusTransitionError(existing.status, dto.status);
-      }
-      // draft → active: allowed — fall through to repo.update
+    if (
+      dto.status !== undefined &&
+      dto.status !== existing.status &&
+      existing.status === 'active' &&
+      dto.status === 'draft'
+    ) {
+      throw new InvalidStatusTransitionError(existing.status, dto.status);
+    }
+    // draft → active: allowed — fall through to repo.update
 
     // Defence-in-depth validation
     if (dto.name !== undefined) {
@@ -103,6 +113,22 @@ export class UpdateCharacterHandler
     if (dto.attributes) validateAttributes(dto.attributes);
     if (dto.skills) validateSkills(dto.skills);
 
+    // Upbringing is mutable while the character is a draft (the wizard) and
+    // immutable once forged. Changing it during the draft also resets the
+    // derived reputation baseline so the wizard reflects the new budget;
+    // startingWealth is left untouched once set.
+    let upbringingChange:
+      | { upbringing: typeof existing.upbringing; reputation: number }
+      | undefined;
+    if (dto.upbringing !== undefined && dto.upbringing !== existing.upbringing) {
+      if (existing.status !== 'draft') throw new UpbringingImmutableError();
+      const baseline = UPBRINGING_BUDGETS[dto.upbringing];
+      upbringingChange = {
+        upbringing: dto.upbringing,
+        reputation: dto.reputation ?? baseline.reputation,
+      };
+    }
+
     const criticalInjuries = dto.criticalInjuries?.map((inj) => ({
       name: inj.name,
       severity: inj.severity,
@@ -114,6 +140,9 @@ export class UpdateCharacterHandler
       ...(dto.name === undefined ? {} : { name: dto.name.trim() }),
       ...(dto.concept === undefined ? {} : { concept: dto.concept }),
       ...(dto.iconId === undefined ? {} : { iconId: dto.iconId }),
+      ...upbringingChange,
+      ...(dto.origin === undefined ? {} : { origin: dto.origin }),
+      ...(dto.reputation === undefined || upbringingChange ? {} : { reputation: dto.reputation }),
       ...(dto.attributes ? { attributes: dto.attributes } : {}),
       ...(dto.skills ? { skills: dto.skills } : {}),
       ...(dto.hp?.current === undefined ? {} : { hpCurrent: dto.hp.current }),

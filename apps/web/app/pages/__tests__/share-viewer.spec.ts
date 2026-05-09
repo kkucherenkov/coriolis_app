@@ -38,6 +38,10 @@ export function makeCharacterFixture(overrides: Partial<Character> = {}): Charac
     name: 'Tariq al-Asari',
     concept: 'Veteran fringe pilot',
     iconId: 'traveler',
+    upbringing: 'stationary',
+    origin: 'Coriolis Station',
+    reputation: 4,
+    startingWealth: 1000,
     attributes: {
       strength: 3,
       agility: 5,

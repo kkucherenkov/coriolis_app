@@ -39,7 +39,12 @@ import { ListCharactersQuery } from './queries/list-characters.query';
 import { AddTalentCommand, AddTalentDto } from './talents/commands/add-talent.command';
 
 import type { AuthenticatedRequest } from '../../common/auth/auth.guard';
-import type { CharacterListItem, CharacterReadModel, ItemReadModel, TalentReadModel } from './domain/character.ports';
+import type {
+  CharacterListItem,
+  CharacterReadModel,
+  ItemReadModel,
+  TalentReadModel,
+} from './domain/character.ports';
 
 interface CharacterListResponse {
   items: CharacterListItem[];
@@ -103,10 +108,7 @@ export class CharactersController {
   @Delete(':id')
   @UseGuards(CharacterOwnershipGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(
-    @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
-  ): Promise<void> {
+  async remove(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<void> {
     return this.commandBus.execute(new DeleteCharacterCommand(id, req.userId));
   }
 

@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:app_api_client/src/model/skills.dart';
+import 'package:app_api_client/src/model/upbringing.dart';
 import 'package:app_api_client/src/model/attributes.dart';
 import 'package:app_api_client/src/model/condition_flags.dart';
 import 'package:built_collection/built_collection.dart';
@@ -15,12 +16,15 @@ import 'package:built_value/serializer.dart';
 
 part 'character_update.g.dart';
 
-/// PATCH payload for `PATCH /api/v1/characters/{id}`. All fields are optional. Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`, `encumbrance.max`, `encumbrance.current`, `createdAt`, `updatedAt`) are rejected with 400 if present.  Derived stats (`hp.max`, `mp.max`, `encumbrance.max`) are recalculated automatically after each successful write.  **Status transitions:** - `draft → draft` — no-op; the wizard continues editing. - `draft → active` — forges the character (wizard complete).   Send `{ \"status\": \"active\" }` as a standalone PATCH or alongside   other field updates. - `active → draft` — **rejected** with 422 `INVALID_STATUS_TRANSITION`.   Active characters cannot be reverted to draft state. 
+/// PATCH payload for `PATCH /api/v1/characters/{id}`. All fields are optional. Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`, `encumbrance.max`, `encumbrance.current`, `startingWealth`, `createdAt`, `updatedAt`) are rejected with 400 if present.  `upbringing` may be changed **while the character's `status` is `draft`** (the wizard is still in progress). When it is, the server recomputes `reputation` and `startingWealth` from the new upbringing. Once the character has been forged (`status: active`), upbringing becomes immutable and any attempt to set it is rejected with `UPBRINGING_IMMUTABLE`.  Derived stats (`hp.max`, `mp.max`, `encumbrance.max`) are recalculated automatically after each successful write.  **Status transitions:** - `draft → draft` — no-op; the wizard continues editing. - `draft → active` — forges the character (wizard complete).   Send `{ \"status\": \"active\" }` as a standalone PATCH or alongside   other field updates. - `active → draft` — **rejected** with 422 `INVALID_STATUS_TRANSITION`.   Active characters cannot be reverted to draft state. 
 ///
 /// Properties:
 /// * [name] 
 /// * [concept] 
 /// * [iconId] 
+/// * [upbringing] - Allowed only while `status` is `draft` — used by the wizard to let players reconsider their pick before forging. Once the character is `active`, this field is immutable. 
+/// * [origin] 
+/// * [reputation] - Update the character's current reputation (e.g. after a roleplay event). Initial value is set from `upbringing` at creation time; while the character is a `draft`, changing `upbringing` resets `reputation` to the new upbringing's baseline. 
 /// * [attributes] 
 /// * [skills] 
 /// * [hp] 
@@ -41,6 +45,18 @@ abstract class CharacterUpdate implements Built<CharacterUpdate, CharacterUpdate
   @BuiltValueField(wireName: r'iconId')
   IconId? get iconId;
   // enum iconIdEnum {  lady-of-tears,  traveler,  messenger,  merchant,  dancer,  gambler,  judge,  faceless-one,  deckhand,  };
+
+  /// Allowed only while `status` is `draft` — used by the wizard to let players reconsider their pick before forging. Once the character is `active`, this field is immutable. 
+  @BuiltValueField(wireName: r'upbringing')
+  Upbringing? get upbringing;
+  // enum upbringingEnum {  plebeian,  stationary,  aristocrat,  };
+
+  @BuiltValueField(wireName: r'origin')
+  String? get origin;
+
+  /// Update the character's current reputation (e.g. after a roleplay event). Initial value is set from `upbringing` at creation time; while the character is a `draft`, changing `upbringing` resets `reputation` to the new upbringing's baseline. 
+  @BuiltValueField(wireName: r'reputation')
+  int? get reputation;
 
   @BuiltValueField(wireName: r'attributes')
   Attributes? get attributes;
@@ -114,6 +130,27 @@ class _$CharacterUpdateSerializer implements PrimitiveSerializer<CharacterUpdate
       yield serializers.serialize(
         object.iconId,
         specifiedType: const FullType.nullable(IconId),
+      );
+    }
+    if (object.upbringing != null) {
+      yield r'upbringing';
+      yield serializers.serialize(
+        object.upbringing,
+        specifiedType: const FullType(Upbringing),
+      );
+    }
+    if (object.origin != null) {
+      yield r'origin';
+      yield serializers.serialize(
+        object.origin,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.reputation != null) {
+      yield r'reputation';
+      yield serializers.serialize(
+        object.reputation,
+        specifiedType: const FullType(int),
       );
     }
     if (object.attributes != null) {
@@ -224,6 +261,28 @@ class _$CharacterUpdateSerializer implements PrimitiveSerializer<CharacterUpdate
           ) as IconId?;
           if (valueDes == null) continue;
           result.iconId = valueDes;
+          break;
+        case r'upbringing':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(Upbringing),
+          ) as Upbringing;
+          result.upbringing = valueDes;
+          break;
+        case r'origin':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.origin = valueDes;
+          break;
+        case r'reputation':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.reputation = valueDes;
           break;
         case r'attributes':
           final valueDes = serializers.deserialize(

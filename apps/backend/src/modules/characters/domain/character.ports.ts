@@ -88,6 +88,8 @@ export type IconId =
   | 'faceless-one'
   | 'deckhand';
 
+export type Upbringing = 'plebeian' | 'stationary' | 'aristocrat';
+
 /**
  * Lifecycle state of a character.
  * Matches the OpenAPI enum `draft | active` (lowercase wire) and maps
@@ -140,6 +142,10 @@ export interface CharacterReadModel {
   name: string;
   concept: string | null;
   iconId: IconId | null;
+  upbringing: Upbringing;
+  origin: string | null;
+  reputation: number;
+  startingWealth: number;
   attributes: Attributes;
   skills: Skills;
   hp: {
@@ -212,13 +218,19 @@ export interface ICharacterRepo {
    */
   findOwnerIdById(id: string): Promise<{ ownerId: string } | null>;
 
-  list(opts: ListCharactersOptions): Promise<{ items: CharacterListItem[]; nextCursor: string | null }>;
+  list(
+    opts: ListCharactersOptions,
+  ): Promise<{ items: CharacterListItem[]; nextCursor: string | null }>;
 
   create(data: {
     ownerId: string;
     name: string;
     concept?: string | null;
     iconId?: IconId | null;
+    upbringing: Upbringing;
+    origin?: string | null;
+    reputation: number;
+    startingWealth: number;
     attributes: Attributes;
     skills: Skills;
     hpCurrent: number;
@@ -236,6 +248,9 @@ export interface ICharacterRepo {
       name: string;
       concept: string | null;
       iconId: IconId | null;
+      upbringing: Upbringing;
+      origin: string | null;
+      reputation: number;
       attributes: Attributes;
       skills: Skills;
       hpCurrent: number;

@@ -84,6 +84,71 @@ export class IconUnknownError extends DomainError {
 }
 
 /**
+ * Thrown at character creation when a single attribute is outside the 2..4
+ * creation range from Coriolis core book ch.2 ("распределить ... 2..4 пунктов").
+ * Block 2 will introduce a per-amplua exception that lifts the cap to 5 for
+ * the key attribute.
+ */
+export class AttributeOutOfCreationRangeError extends DomainError {
+  constructor(attribute: string, value: number) {
+    super({
+      code: 'ATTRIBUTE_OUT_OF_CREATION_RANGE',
+      status: 400,
+      title: 'Validation Error',
+      detail: `Attribute '${attribute}' value ${String(value)} is outside the 2–4 creation range.`,
+    });
+  }
+}
+
+/**
+ * Thrown when sum(attributes) exceeds the budget allowed by the chosen
+ * upbringing (Coriolis core book ch.2, table 2.2: 15 / 14 / 13 for
+ * plebeian / stationary / aristocrat).
+ */
+export class AttributeBudgetExceededError extends DomainError {
+  constructor(spent: number, budget: number, upbringing: string) {
+    super({
+      code: 'ATTRIBUTE_BUDGET_EXCEEDED',
+      status: 400,
+      title: 'Validation Error',
+      detail: `Attribute total ${String(spent)} exceeds the budget of ${String(budget)} for ${upbringing} upbringing.`,
+    });
+  }
+}
+
+/**
+ * Thrown when sum(skills) exceeds the budget allowed by the chosen
+ * upbringing (Coriolis core book ch.2, table 2.4: 8 / 10 / 12 for
+ * plebeian / stationary / aristocrat).
+ */
+export class SkillBudgetExceededError extends DomainError {
+  constructor(spent: number, budget: number, upbringing: string) {
+    super({
+      code: 'SKILL_BUDGET_EXCEEDED',
+      status: 400,
+      title: 'Validation Error',
+      detail: `Skill total ${String(spent)} exceeds the budget of ${String(budget)} for ${upbringing} upbringing.`,
+    });
+  }
+}
+
+/**
+ * Thrown when an active character's upbringing is changed. Upbringing is
+ * malleable while the character is a draft (the wizard) but locks once
+ * forged.
+ */
+export class UpbringingImmutableError extends DomainError {
+  constructor() {
+    super({
+      code: 'UPBRINGING_IMMUTABLE',
+      status: 422,
+      title: 'Validation Error',
+      detail: 'Upbringing cannot be changed once the character has been forged.',
+    });
+  }
+}
+
+/**
  * Thrown when the client attempts to set a server-computed read-only field.
  * Belt-and-suspenders defence on top of the OpenAPI spec's readOnly markers.
  * PRD §5.2: hp.max, mp.max, encumbrance.max are derived — never user-writable.

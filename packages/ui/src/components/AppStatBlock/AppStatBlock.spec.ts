@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import AppStatBlock from './AppStatBlock.vue';
 
@@ -112,12 +112,10 @@ describe('AppStatBlock', () => {
   // ── select not emitted via click handler when disabled ────────────────────
 
   it('click handler guard prevents select emission when disabled prop is reactive', async () => {
-    const handler = vi.fn();
     const wrapper = mount(AppStatBlock, {
       props: { label: 'STR', value: 3, disabled: true },
     });
-    wrapper.vm.$on?.('select', handler);
     await wrapper.trigger('click');
-    expect(handler).not.toHaveBeenCalled();
+    expect(wrapper.emitted('select')).toBeUndefined();
   });
 });

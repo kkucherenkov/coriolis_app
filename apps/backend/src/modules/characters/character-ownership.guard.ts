@@ -24,7 +24,9 @@ export class CharacterOwnershipGuard implements CanActivate {
   constructor(private readonly prisma: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest<AuthenticatedRequest & { params: { id?: string } }>();
+    const req = context
+      .switchToHttp()
+      .getRequest<AuthenticatedRequest & { params: { id?: string } }>();
     const characterId = req.params.id;
 
     if (!characterId) return true; // no :id param — guard is a no-op

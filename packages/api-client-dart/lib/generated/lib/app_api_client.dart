@@ -120,4 +120,5 @@ export 'package:app_api_client/src/model/skills.dart';
 export 'package:app_api_client/src/model/talent.dart';
 export 'package:app_api_client/src/model/talent_create.dart';
 export 'package:app_api_client/src/model/talent_update.dart';
+export 'package:app_api_client/src/model/upbringing.dart';
 

@@ -23,7 +23,9 @@ export class UpdateItemDto {
   @IsOptional() @IsString() notes?: string | null;
   @IsOptional() @IsInt() @Min(0) bodyPoints?: number;
   @IsOptional() @IsString() effect?: string;
-  @IsOptional() @IsIn(['bridge', 'hull', 'hold', 'weapon', 'drive', 'sensor', 'comms']) slot?: string;
+  @IsOptional()
+  @IsIn(['bridge', 'hull', 'hold', 'weapon', 'drive', 'sensor', 'comms'])
+  slot?: string;
 }
 
 export class UpdateItemCommand {

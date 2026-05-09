@@ -5,7 +5,7 @@
 import 'package:app_api_client/api.dart';
 ```
 
-All URIs are relative to *http://localhost:3000*
+All URIs are relative to *http://localhost:3010*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -138,7 +138,7 @@ import 'package:app_api_client/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKeyPrefix = 'Bearer';
 
 final api = AppApiClient().getCharactersApi();
-final CharacterCreate characterCreate = {"name":"Rana Sadir"}; // CharacterCreate | 
+final CharacterCreate characterCreate = {"name":"Rana Sadir","upbringing":"plebeian"}; // CharacterCreate | 
 
 try {
     final response = api.createCharacter(characterCreate);

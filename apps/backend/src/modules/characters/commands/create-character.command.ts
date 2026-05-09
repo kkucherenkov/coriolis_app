@@ -13,7 +13,14 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import type { Attributes, CharacterStatus, ConditionFlags, IconId, Skills } from '../domain/character.ports';
+import type {
+  Attributes,
+  CharacterStatus,
+  ConditionFlags,
+  IconId,
+  Skills,
+  Upbringing,
+} from '../domain/character.ports';
 
 export class AttributesDto {
   @IsInt() @Min(1) @Max(5) strength!: number;
@@ -60,6 +67,8 @@ const VALID_ICONS: IconId[] = [
   'deckhand',
 ];
 
+const VALID_UPBRINGINGS: Upbringing[] = ['plebeian', 'stationary', 'aristocrat'];
+
 export class HpDto {
   @IsOptional() @IsInt() @Min(0) current?: number;
 }
@@ -82,6 +91,14 @@ export class CreateCharacterDto {
   @IsOptional()
   @IsIn(VALID_ICONS)
   iconId?: IconId | null;
+
+  @IsIn(VALID_UPBRINGINGS)
+  upbringing!: Upbringing;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  origin?: string | null;
 
   @IsOptional()
   @IsObject()

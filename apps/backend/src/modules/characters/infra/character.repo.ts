@@ -44,6 +44,7 @@ import type {
   RelationshipReadModel,
   Skills,
   TalentReadModel,
+  Upbringing,
 } from '../domain/character.ports';
 
 // --------------- Prisma row types (scoped selects) ---------------
@@ -54,6 +55,10 @@ const CHARACTER_FULL_SELECT = {
   name: true,
   concept: true,
   iconId: true,
+  upbringing: true,
+  origin: true,
+  reputation: true,
+  startingWealth: true,
   attributes: true,
   skills: true,
   hpCurrent: true,
@@ -105,6 +110,10 @@ interface PrismaCharacterFull {
   name: string;
   concept: string | null;
   iconId: string | null;
+  upbringing: string;
+  origin: string | null;
+  reputation: number;
+  startingWealth: number;
   attributes: unknown;
   skills: unknown;
   hpCurrent: number;
@@ -140,7 +149,13 @@ function mapTalent(t: {
   rank: number;
   acquiredAt: Date;
 }): TalentReadModel {
-  return { id: t.id, name: t.name, description: t.description, rank: t.rank, acquiredAt: t.acquiredAt.toISOString() };
+  return {
+    id: t.id,
+    name: t.name,
+    description: t.description,
+    rank: t.rank,
+    acquiredAt: t.acquiredAt.toISOString(),
+  };
 }
 
 function mapRelationship(r: {
@@ -182,6 +197,10 @@ function toReadModel(row: PrismaCharacterFull): CharacterReadModel {
     name: row.name,
     concept: row.concept,
     iconId: row.iconId as unknown as IconId | null,
+    upbringing: row.upbringing as Upbringing,
+    origin: row.origin,
+    reputation: row.reputation,
+    startingWealth: row.startingWealth,
     attributes: attrs,
     skills: row.skills as Skills,
     hp: {
@@ -231,7 +250,9 @@ export class CharacterRepo implements ICharacterRepo {
     return row ?? null;
   }
 
-  async list(opts: ListCharactersOptions): Promise<{ items: CharacterListItem[]; nextCursor: string | null }> {
+  async list(
+    opts: ListCharactersOptions,
+  ): Promise<{ items: CharacterListItem[]; nextCursor: string | null }> {
     const { ownerId, limit, cursor, includeDrafts } = opts;
     const take = limit + 1; // fetch one extra to detect next page
 
@@ -285,6 +306,10 @@ export class CharacterRepo implements ICharacterRepo {
     name: string;
     concept?: string | null;
     iconId?: IconId | null;
+    upbringing: Upbringing;
+    origin?: string | null;
+    reputation: number;
+    startingWealth: number;
     attributes: Attributes;
     skills: Skills;
     hpCurrent: number;
@@ -303,6 +328,10 @@ export class CharacterRepo implements ICharacterRepo {
         name: data.name,
         concept: data.concept ?? null,
         iconId: data.iconId ? this.toIconIdEnum(data.iconId) : null,
+        upbringing: data.upbringing,
+        origin: data.origin ?? null,
+        reputation: data.reputation,
+        startingWealth: data.startingWealth,
         attributes: data.attributes as unknown as import('@prisma/client').Prisma.InputJsonValue,
         skills: data.skills as unknown as import('@prisma/client').Prisma.InputJsonValue,
         hpCurrent: data.hpCurrent,
@@ -323,6 +352,9 @@ export class CharacterRepo implements ICharacterRepo {
       name: string;
       concept: string | null;
       iconId: IconId | null;
+      upbringing: Upbringing;
+      origin: string | null;
+      reputation: number;
       attributes: Attributes;
       skills: Skills;
       hpCurrent: number;

@@ -27,6 +27,10 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     name: 'Kalim',
     concept: null,
     iconId: null,
+    upbringing: 'plebeian',
+    origin: null,
+    reputation: 2,
+    startingWealth: 500,
     attributes: { strength: 3, agility: 3, wits: 3, empathy: 3 },
     skills: { ...DEFAULT_SKILLS },
     hp: { current: 14, max: 14 },
@@ -76,30 +80,39 @@ describe('GetCharacterHandler', () => {
   it('throws CharacterNotFoundError with 404 status', async () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(null);
 
-    await expect(
-      handler.execute(new GetCharacterQuery('missing', 'user-1')),
-    ).rejects.toMatchObject({ status: 404, code: 'CHARACTER_NOT_FOUND' });
+    await expect(handler.execute(new GetCharacterQuery('missing', 'user-1'))).rejects.toMatchObject(
+      { status: 404, code: 'CHARACTER_NOT_FOUND' },
+    );
   });
 
   it('throws CharacterNotOwnedError when character belongs to another user', async () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter({ ownerId: 'other-user' }));
 
-    await expect(
-      handler.execute(new GetCharacterQuery('char-1', 'user-1')),
-    ).rejects.toBeInstanceOf(CharacterNotOwnedError);
+    await expect(handler.execute(new GetCharacterQuery('char-1', 'user-1'))).rejects.toBeInstanceOf(
+      CharacterNotOwnedError,
+    );
   });
 
   it('throws CharacterNotOwnedError with 403 status', async () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter({ ownerId: 'other-user' }));
 
-    await expect(
-      handler.execute(new GetCharacterQuery('char-1', 'user-1')),
-    ).rejects.toMatchObject({ status: 403, code: 'CHARACTER_NOT_OWNED' });
+    await expect(handler.execute(new GetCharacterQuery('char-1', 'user-1'))).rejects.toMatchObject({
+      status: 403,
+      code: 'CHARACTER_NOT_OWNED',
+    });
   });
 
   it('returns character with all nested arrays', async () => {
     const char = makeCharacter({
-      talents: [{ id: 't-1', name: 'Wing-Mate', description: 'Desc', rank: 1, acquiredAt: '2026-01-15T00:00:00.000Z' }],
+      talents: [
+        {
+          id: 't-1',
+          name: 'Wing-Mate',
+          description: 'Desc',
+          rank: 1,
+          acquiredAt: '2026-01-15T00:00:00.000Z',
+        },
+      ],
       inventory: [{ id: 'i-1', type: 'GEAR', name: 'Toolkit', weight: 1, quantity: 1 }],
     });
     vi.mocked(repo.findActiveById).mockResolvedValue(char);

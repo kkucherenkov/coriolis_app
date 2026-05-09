@@ -2,17 +2,37 @@
   import { computed } from 'vue';
   import type { Skills } from '@app/api-client-ts';
 
+  // ST3001 ch.2 table 2.4 — skill-point pool per upbringing. The rulebook
+  // does not split the pool between general and advanced; that split here
+  // is a UI affordance pending the amplua picker (Block 2), which will
+  // introduce per-amplua key skills with a cap of 3.
+  type Upbringing = 'plebeian' | 'stationary' | 'aristocrat';
+
   const props = defineProps<Props>();
+
   const emit = defineEmits<{
     'update:skills': [value: Skills];
   }>();
-  const GENERAL_POOL = 8;
-  const ADVANCED_POOL = 2;
+
+  const SKILL_BUDGET: Record<Upbringing, { general: number; advanced: number }> = {
+    plebeian: { general: 6, advanced: 2 },
+    stationary: { general: 8, advanced: 2 },
+    aristocrat: { general: 9, advanced: 3 },
+  };
+
   const MAX_RANK = 3;
 
   interface Props {
     skills: Skills;
+    upbringing: Upbringing | null;
   }
+
+  const generalPool = computed<number>(() =>
+    props.upbringing ? SKILL_BUDGET[props.upbringing].general : 8,
+  );
+  const advancedPool = computed<number>(() =>
+    props.upbringing ? SKILL_BUDGET[props.upbringing].advanced : 2,
+  );
 
   const { t } = useI18n({ useScope: 'local' });
 
@@ -85,8 +105,8 @@
     ADVANCED_KEYS.reduce((s, k) => s + props.skills[k], 0),
   );
 
-  const generalRemaining = computed<number>(() => GENERAL_POOL - generalSpent.value);
-  const advancedRemaining = computed<number>(() => ADVANCED_POOL - advancedSpent.value);
+  const generalRemaining = computed<number>(() => generalPool.value - generalSpent.value);
+  const advancedRemaining = computed<number>(() => advancedPool.value - advancedSpent.value);
 
   function canIncrement(key: keyof Skills, pool: 'general' | 'advanced'): boolean {
     const rem = pool === 'general' ? generalRemaining.value : advancedRemaining.value;
@@ -227,7 +247,7 @@
 <template>
   <div class="step-skills">
     <p class="step-skills__hint">
-      {{ t('hint', { genPool: GENERAL_POOL, advPool: ADVANCED_POOL, max: MAX_RANK }) }}
+      {{ t('hint', { genPool: generalPool, advPool: advancedPool, max: MAX_RANK }) }}
     </p>
 
     <div class="step-skills__cols">
@@ -243,18 +263,10 @@
           </span>
         </div>
 
-        <div
-          v-for="key in GENERAL_KEYS"
-          :key="key"
-          class="step-skills__row"
-        >
+        <div v-for="key in GENERAL_KEYS" :key="key" class="step-skills__row">
           <span class="step-skills__name">{{ t(`skill.${key}`) }}</span>
           <span class="step-skills__attr">{{ SKILL_ATTR[key] }}</span>
-          <div
-            class="step-skills__dots"
-            role="group"
-            :aria-label="t(`skill.${key}`)"
-          >
+          <div class="step-skills__dots" role="group" :aria-label="t(`skill.${key}`)">
             <span
               v-for="i in MAX_RANK"
               :key="i"
@@ -303,18 +315,10 @@
           </span>
         </div>
 
-        <div
-          v-for="key in ADVANCED_KEYS"
-          :key="key"
-          class="step-skills__row"
-        >
+        <div v-for="key in ADVANCED_KEYS" :key="key" class="step-skills__row">
           <span class="step-skills__name">{{ t(`skill.${key}`) }}</span>
           <span class="step-skills__attr">{{ SKILL_ATTR[key] }}</span>
-          <div
-            class="step-skills__dots"
-            role="group"
-            :aria-label="t(`skill.${key}`)"
-          >
+          <div class="step-skills__dots" role="group" :aria-label="t(`skill.${key}`)">
             <span
               v-for="i in MAX_RANK"
               :key="i"

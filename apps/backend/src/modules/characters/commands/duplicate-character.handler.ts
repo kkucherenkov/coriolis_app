@@ -22,9 +22,10 @@ import { DuplicateCharacterCommand } from './duplicate-character.command';
 import type { ICharacterRepo } from '../domain/character.ports';
 
 @CommandHandler(DuplicateCharacterCommand)
-export class DuplicateCharacterHandler
-  implements ICommandHandler<DuplicateCharacterCommand, CharacterReadModel>
-{
+export class DuplicateCharacterHandler implements ICommandHandler<
+  DuplicateCharacterCommand,
+  CharacterReadModel
+> {
   constructor(
     @Inject(CHARACTER_REPO) private readonly repo: ICharacterRepo,
     private readonly eventBus: EventBus,
@@ -42,6 +43,10 @@ export class DuplicateCharacterHandler
       name: `${source.name} (copy)`,
       concept: source.concept,
       iconId: source.iconId,
+      upbringing: source.upbringing,
+      origin: source.origin,
+      reputation: source.reputation,
+      startingWealth: source.startingWealth,
       attributes: source.attributes,
       skills: source.skills,
       // TODO(rules-engine, T-3.2.2): replace constants with computeHpMax / computeMpMax

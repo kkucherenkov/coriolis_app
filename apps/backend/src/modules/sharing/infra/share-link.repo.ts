@@ -27,6 +27,7 @@ import type {
   RelationshipReadModel,
   Skills,
   TalentReadModel,
+  Upbringing,
 } from '../../characters/domain/character.ports';
 import type {
   CreateShareLinkData,
@@ -57,6 +58,10 @@ const CHARACTER_FULL_SELECT = {
   name: true,
   concept: true,
   iconId: true,
+  upbringing: true,
+  origin: true,
+  reputation: true,
+  startingWealth: true,
   attributes: true,
   skills: true,
   hpCurrent: true,
@@ -107,6 +112,10 @@ interface PrismaCharacterFull {
   name: string;
   concept: string | null;
   iconId: string | null;
+  upbringing: string;
+  origin: string | null;
+  reputation: number;
+  startingWealth: number;
   attributes: unknown;
   skills: unknown;
   hpCurrent: number;
@@ -120,7 +129,13 @@ interface PrismaCharacterFull {
   items: { id: string; type: string; data: unknown }[];
   talents: { id: string; name: string; description: string; rank: number; acquiredAt: Date }[];
   relationships: { id: string; targetName: string; kind: string; notes: string | null }[];
-  criticalInjuries: { id: string; name: string; severity: string; effect: string; acquiredAt: Date }[];
+  criticalInjuries: {
+    id: string;
+    name: string;
+    severity: string;
+    effect: string;
+    acquiredAt: Date;
+  }[];
 }
 
 // --------------- Mappers ---------------
@@ -145,24 +160,30 @@ function mapCharacter(row: PrismaCharacterFull): CharacterReadModel {
   const attributes = row.attributes as Attributes;
   const skills = row.skills as Skills;
   const conditions = row.conditions as ConditionFlags;
-  const items = row.items.map((item): ItemReadModel => ({
-    id: item.id,
-    type: item.type as ItemType,
-    ...(item.data as Record<string, unknown>),
-  }));
-  const talents = row.talents.map((t): TalentReadModel => ({
-    id: t.id,
-    name: t.name,
-    description: t.description,
-    rank: t.rank,
-    acquiredAt: t.acquiredAt.toISOString(),
-  }));
-  const relationships = row.relationships.map((r): RelationshipReadModel => ({
-    id: r.id,
-    targetName: r.targetName,
-    kind: r.kind as RelationshipKind,
-    notes: r.notes,
-  }));
+  const items = row.items.map(
+    (item): ItemReadModel => ({
+      id: item.id,
+      type: item.type as ItemType,
+      ...(item.data as Record<string, unknown>),
+    }),
+  );
+  const talents = row.talents.map(
+    (t): TalentReadModel => ({
+      id: t.id,
+      name: t.name,
+      description: t.description,
+      rank: t.rank,
+      acquiredAt: t.acquiredAt.toISOString(),
+    }),
+  );
+  const relationships = row.relationships.map(
+    (r): RelationshipReadModel => ({
+      id: r.id,
+      targetName: r.targetName,
+      kind: r.kind as RelationshipKind,
+      notes: r.notes,
+    }),
+  );
   const criticalInjuries = row.criticalInjuries.map((c) => ({
     id: c.id,
     name: c.name,
@@ -177,6 +198,10 @@ function mapCharacter(row: PrismaCharacterFull): CharacterReadModel {
     name: row.name,
     concept: row.concept,
     iconId: row.iconId as IconId | null,
+    upbringing: row.upbringing as Upbringing,
+    origin: row.origin,
+    reputation: row.reputation,
+    startingWealth: row.startingWealth,
     attributes,
     skills,
     hp: { current: row.hpCurrent, max: computeHpMax(attributes.strength, attributes.agility) },

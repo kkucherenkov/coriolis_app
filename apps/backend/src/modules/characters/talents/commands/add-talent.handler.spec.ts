@@ -29,7 +29,9 @@ function makeTalentRepo(): ITalentRepo {
   };
 }
 
-function makeTalent(overrides: Partial<TalentReadModel & { characterId: string }> = {}): TalentReadModel & { characterId: string } {
+function makeTalent(
+  overrides: Partial<TalentReadModel & { characterId: string }> = {},
+): TalentReadModel & { characterId: string } {
   return {
     id: 'talent-1',
     characterId: 'char-1',
@@ -63,9 +65,7 @@ describe('AddTalentHandler', () => {
 
     await handler.execute(new AddTalentCommand('char-1', 'user-1', dto));
 
-    expect(talentRepo.create).toHaveBeenCalledWith(
-      expect.objectContaining({ rank: 1 }),
-    );
+    expect(talentRepo.create).toHaveBeenCalledWith(expect.objectContaining({ rank: 1 }));
   });
 
   it('passes provided rank', async () => {
@@ -80,9 +80,7 @@ describe('AddTalentHandler', () => {
 
     await handler.execute(new AddTalentCommand('char-1', 'user-1', dto));
 
-    expect(talentRepo.create).toHaveBeenCalledWith(
-      expect.objectContaining({ rank: 2 }),
-    );
+    expect(talentRepo.create).toHaveBeenCalledWith(expect.objectContaining({ rank: 2 }));
   });
 
   it('throws CharacterNotFoundError when character does not exist', async () => {

@@ -89,6 +89,17 @@ enum CharacterStatus {
   @@map("character_status")
 }
 
+/// Social stratum a character was raised in. Set at creation, immutable.
+/// Drives starting attribute / skill point budgets, reputation, and wealth
+/// (Coriolis core book ch.2, table 2.2). Wire values are lowercase.
+enum Upbringing {
+  plebeian
+  stationary
+  aristocrat
+
+  @@map("upbringing")
+}
+
 /// One of the nine Coriolis Icons (enum mirrors the OpenAPI IconId type).
 enum IconId {
   lady_of_tears  @map("lady-of-tears")
@@ -127,6 +138,20 @@ model Character {
   name                String
   concept             String?
   iconId              IconId?
+  /// Social stratum at birth — drives the creation-time attribute / skill
+  /// budgets, starting reputation, and starting wealth (ch.2 table 2.2).
+  /// Defaults to plebeian for legacy rows that pre-date this column; the
+  /// CreateCharacterHandler always supplies an explicit value.
+  upbringing          Upbringing       @default(plebeian)
+  /// Free-text narrative description of where the character is from
+  /// (home station, planet, region). No mechanical effect.
+  origin              String?
+  /// Current reputation. Initial value derived from upbringing
+  /// (plebeian=2, stationary=4, aristocrat=6) and may change in play.
+  reputation          Int              @default(2)
+  /// Birrs the character started with. Derived from upbringing and frozen
+  /// at creation (plebeian=500, stationary=1000, aristocrat=5000).
+  startingWealth      Int              @default(500)
   /// JSON column: { strength, agility, wits, empathy } — each 1–5.
   attributes          Json
   /// JSON column: { dexterity, force, infiltration, manipulation, meleeCombat,
