@@ -10,10 +10,14 @@
  * The DP sub-context (Feature 7.3) lives under dp/ and is wired here.
  * RollPushedDpHandler subscribes to RollPushedEvent from the dice module.
  * Because NestJS CQRS EventBus is global-scoped, no cross-module import is needed.
+ *
+ * RealtimeModule is imported to make CENTRIFUGO_CLIENT available to
+ * UpdateDpHandler and RollPushedDpHandler (T-7.4.1.b/c).
  */
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
+import { RealtimeModule } from '../realtime/realtime.module';
 import { AssignCharacterHandler } from './commands/assign-character.handler';
 import { CreateGameSessionHandler } from './commands/create-game-session.handler';
 import { DeleteGameSessionHandler } from './commands/delete-game-session.handler';
@@ -31,7 +35,7 @@ import { GetGameSessionHandler } from './queries/get-game-session.handler';
 import { ListGameSessionsHandler } from './queries/list-game-sessions.handler';
 
 @Module({
-  imports: [CqrsModule],
+  imports: [CqrsModule, RealtimeModule],
   controllers: [GameSessionsController],
   providers: [
     // Commands
