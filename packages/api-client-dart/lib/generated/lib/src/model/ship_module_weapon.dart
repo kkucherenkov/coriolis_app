@@ -8,6 +8,7 @@ import 'package:app_api_client/src/model/ship_module_base.dart';
 import 'package:app_api_client/src/model/ship_weapon_range.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
+import 'package:app_api_client/src/model/ship_module_slot.dart';
 
 part 'ship_module_weapon.g.dart';
 
