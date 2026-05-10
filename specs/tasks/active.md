@@ -1024,7 +1024,44 @@
 
 ---
 
-## T-2026-05-10-014 — Ship deterministic stats from class (Block J split)
+## T-2026-05-10-014 — Ship deterministic stats from class (Block J split, scope narrowed)
+
+**Status: done — ready to archive.** Landed in 1fc660c (backend).
+Audit scope **narrowed** before implementation: the original prescription
+(drop freehand columns, refuse mutation, blanket readOnly) contradicts
+canon — ГЛАВА 7 explicitly allows yard modifiers (Хелеб +1
+maneuverability, Хальгрия −1 maneuverability) and upgrade modifiers
+(Прочный корпус +1 hull, Мощный реактор +1 energy) to *modify* the
+base class stats. Making them readOnly would break canonical ship-build
+flexibility.
+
+What landed instead:
+
+- `BASE_STATS_BY_TIER: Record<'I'|'II'|'III'|'IV'|'V', ShipBaseStats>`
+  with values verified against ТАБЛИЦА 7.5 verbatim (Class I: 3/2/+2/
+  −2/3/4/3 → Class V: 7/12/−2/+3/9/1/40). Replaced the prior
+  per-ship-type table (which carried a `TODO(ship-stats): verify`
+  comment because nobody had cross-checked). 20 ship-type slugs map
+  to tiers via `TIER_BY_SHIP_TYPE`; helpers `getTierForShipType` and
+  `getBaseStatsByShipType`. Backwards-compat alias
+  `BASE_STATS_BY_CLASS` preserved for existing call sites.
+- `cargoCapacity` removed from `ShipBaseStats` — it's a sum of
+  hold-module capacities (ТАБЛИЦА 7.6 § Грузовой отсек), not a class
+  stat. Default at create is 0; the spec's `Ship.cargoCapacity` stays
+  for now but its semantics shift toward "computed from modules"
+  (a future task can wire that derivation).
+- Spec untouched — `Ship.{hull.max, energy.max, armor, maneuverability,
+  signature, speed, moduleSlots}` remain editable per upgrade canon.
+- Tests: 43 new vitest cases — every BASE_STATS_BY_TIER row, every
+  ship-type → tier mapping, helper invariants, fixture refresh against
+  canon. Backend vitest 887 → 930 (+43).
+- Fixture updates in `create-ship.handler.spec.ts`: fighter `hullMax`
+  4 → 2 (canon Class I); cargoCapacity 50 → 0 (no longer a class stat).
+
+Original (pre-narrowing) audit text retained below for the archive
+record.
+
+
 
 - Created: 2026-05-10
 - Owner: claude
