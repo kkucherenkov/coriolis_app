@@ -71,9 +71,15 @@
         `fix(api-client-dart)` patched a latent
         `ShipModuleSlot` import bug in the openapi-generator output
         that build_runner exposed. 65/65 tests still pass.
-  - [ ] Block 4 — Centrifugo subscription via the `centrifuge_dart`
-        package. Token mint reuses the existing realtime endpoint;
-        on `dp.changed` patch the visible counter, on `roll.pushed`
-        push a SnackBar. Subscription closes on dispose.
-- Status: in-progress
+  - [x] Block 4 — `shared/realtime/SessionRealtime` wraps the
+        `centrifuge` (0.18.0) Dart package. Mints token via
+        `RealtimeApi.issueRealtimeToken`, opens
+        `session.{id}`, discriminates messages by structural shape
+        (`dpCount`/`rollId`). SessionDetailCubit takes the adapter
+        in its ctor, listens to dp.changed → applyDpChanged, and
+        forwards roll.pushed to a stream the page consumes for a
+        3-second SnackBar. close() tears down both streams + the
+        websocket. AppConfig grew `realtimeWsUrl` (defaults to
+        ws://localhost:8000; `--dart-define` override).
+- Status: done — ready to archive (move to `done.md` next session)
 - Blockers: —
