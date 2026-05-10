@@ -1,7 +1,7 @@
 asyncapi: 3.1.0
 info:
   title: App Realtime API
-  version: 0.9.0
+  version: 0.10.0
   description: |
     Real-time channels delivered via Centrifugo. Clients connect with a
     short-lived JWT issued by the backend (`POST /api/v1/realtime/token`)
@@ -234,11 +234,14 @@ components:
               initiative:
                 type: integer
                 minimum: 1
-                maximum: 6
+                maximum: 10
                 nullable: true
                 description: |
-                  d6 initiative result (1–6 per ST3001 ГЛАВА 5). Null until
-                  the encounter's initiative is rolled.
+                  Combat initiative value — d6 base roll (1..6) plus
+                  per-weapon modifiers (ГЛАВА 6 «Инициатива» column) and
+                  situational bonuses (ГЛАВА 5 §«Повышение инициативы»).
+                  Range 1..10 mirrors OpenAPI `Combatant.initiative`.
+                  Null until the encounter's initiative is rolled.
               turnOrder:
                 type: integer
                 minimum: 0
