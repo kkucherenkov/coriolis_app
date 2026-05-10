@@ -37,7 +37,7 @@ abstract class ItemWeaponCreate implements Built<ItemWeaponCreate, ItemWeaponCre
 
   @BuiltValueField(wireName: r'range')
   ItemRangeEnum get range;
-  // enum rangeEnum {  arm,  near,  short,  long,  distant,  };
+  // enum rangeEnum {  close,  medium,  long,  extreme,  };
 
   /// Bonus dice added to the attack pool
   @BuiltValueField(wireName: r'bonus')

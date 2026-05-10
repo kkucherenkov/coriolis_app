@@ -36,7 +36,7 @@ abstract class ItemWeaponUpdate implements Built<ItemWeaponUpdate, ItemWeaponUpd
 
   @BuiltValueField(wireName: r'range')
   ItemRangeEnum? get range;
-  // enum rangeEnum {  arm,  near,  short,  long,  distant,  };
+  // enum rangeEnum {  close,  medium,  long,  extreme,  };
 
   @BuiltValueField(wireName: r'bonus')
   int? get bonus;

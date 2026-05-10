@@ -11,21 +11,18 @@ part 'item_range_enum.g.dart';
 
 class ItemRangeEnum extends EnumClass {
 
-  /// Effective range band for a weapon. Matches the Coriolis core book range terminology: - `arm` — Engaged / hand-to-hand. - `near` — same room / close quarters. - `short` — corridor / street distance. - `long` — open ground / rooftop. - `distant` — sniper range. 
-  @BuiltValueEnumConst(wireName: r'arm')
-  static const ItemRangeEnum arm = _$arm;
-  /// Effective range band for a weapon. Matches the Coriolis core book range terminology: - `arm` — Engaged / hand-to-hand. - `near` — same room / close quarters. - `short` — corridor / street distance. - `long` — open ground / rooftop. - `distant` — sniper range. 
-  @BuiltValueEnumConst(wireName: r'near')
-  static const ItemRangeEnum near = _$near;
-  /// Effective range band for a weapon. Matches the Coriolis core book range terminology: - `arm` — Engaged / hand-to-hand. - `near` — same room / close quarters. - `short` — corridor / street distance. - `long` — open ground / rooftop. - `distant` — sniper range. 
-  @BuiltValueEnumConst(wireName: r'short')
-  static const ItemRangeEnum short = _$short;
-  /// Effective range band for a weapon. Matches the Coriolis core book range terminology: - `arm` — Engaged / hand-to-hand. - `near` — same room / close quarters. - `short` — corridor / street distance. - `long` — open ground / rooftop. - `distant` — sniper range. 
+  /// Personal-scale weapon range bands per ST3001 ГЛАВА 5 «Дистанция» (lines 73-78 of the Russian rulebook). Four bands by canon — each absorbs the previous (a target at `medium` is also at `close` for any rule that talks about \"within X\"). - `close` — Ближняя, up to 2 m (engaged / hand-to-hand /   same-room close quarters; absorbs the legacy `arm` and `near`   values). - `medium` — Средняя, up to 20 m (corridor / street; absorbs the   legacy `short`). - `long` — Дальняя, up to 100 m (open ground / rooftop; same   slug as the legacy value, semantics narrowed). - `extreme` — Предельная, up to 1000 m (sniper / max effective;   absorbs the legacy `distant`). Distinct from `ShipWeaponRange` (5-band ship-combat ladder from ГЛАВА 7 Table 7.9 — that enum keeps its `zero` band). 
+  @BuiltValueEnumConst(wireName: r'close')
+  static const ItemRangeEnum close = _$close;
+  /// Personal-scale weapon range bands per ST3001 ГЛАВА 5 «Дистанция» (lines 73-78 of the Russian rulebook). Four bands by canon — each absorbs the previous (a target at `medium` is also at `close` for any rule that talks about \"within X\"). - `close` — Ближняя, up to 2 m (engaged / hand-to-hand /   same-room close quarters; absorbs the legacy `arm` and `near`   values). - `medium` — Средняя, up to 20 m (corridor / street; absorbs the   legacy `short`). - `long` — Дальняя, up to 100 m (open ground / rooftop; same   slug as the legacy value, semantics narrowed). - `extreme` — Предельная, up to 1000 m (sniper / max effective;   absorbs the legacy `distant`). Distinct from `ShipWeaponRange` (5-band ship-combat ladder from ГЛАВА 7 Table 7.9 — that enum keeps its `zero` band). 
+  @BuiltValueEnumConst(wireName: r'medium')
+  static const ItemRangeEnum medium = _$medium;
+  /// Personal-scale weapon range bands per ST3001 ГЛАВА 5 «Дистанция» (lines 73-78 of the Russian rulebook). Four bands by canon — each absorbs the previous (a target at `medium` is also at `close` for any rule that talks about \"within X\"). - `close` — Ближняя, up to 2 m (engaged / hand-to-hand /   same-room close quarters; absorbs the legacy `arm` and `near`   values). - `medium` — Средняя, up to 20 m (corridor / street; absorbs the   legacy `short`). - `long` — Дальняя, up to 100 m (open ground / rooftop; same   slug as the legacy value, semantics narrowed). - `extreme` — Предельная, up to 1000 m (sniper / max effective;   absorbs the legacy `distant`). Distinct from `ShipWeaponRange` (5-band ship-combat ladder from ГЛАВА 7 Table 7.9 — that enum keeps its `zero` band). 
   @BuiltValueEnumConst(wireName: r'long')
   static const ItemRangeEnum long = _$long;
-  /// Effective range band for a weapon. Matches the Coriolis core book range terminology: - `arm` — Engaged / hand-to-hand. - `near` — same room / close quarters. - `short` — corridor / street distance. - `long` — open ground / rooftop. - `distant` — sniper range. 
-  @BuiltValueEnumConst(wireName: r'distant')
-  static const ItemRangeEnum distant = _$distant;
+  /// Personal-scale weapon range bands per ST3001 ГЛАВА 5 «Дистанция» (lines 73-78 of the Russian rulebook). Four bands by canon — each absorbs the previous (a target at `medium` is also at `close` for any rule that talks about \"within X\"). - `close` — Ближняя, up to 2 m (engaged / hand-to-hand /   same-room close quarters; absorbs the legacy `arm` and `near`   values). - `medium` — Средняя, up to 20 m (corridor / street; absorbs the   legacy `short`). - `long` — Дальняя, up to 100 m (open ground / rooftop; same   slug as the legacy value, semantics narrowed). - `extreme` — Предельная, up to 1000 m (sniper / max effective;   absorbs the legacy `distant`). Distinct from `ShipWeaponRange` (5-band ship-combat ladder from ГЛАВА 7 Table 7.9 — that enum keeps its `zero` band). 
+  @BuiltValueEnumConst(wireName: r'extreme')
+  static const ItemRangeEnum extreme = _$extreme;
 
   static Serializer<ItemRangeEnum> get serializer => _$itemRangeEnumSerializer;
 

@@ -1536,16 +1536,24 @@ export interface components {
      */
     TalentKind: 'personal' | 'crew' | 'iconGift' | 'stigma';
     /**
-     * @description Effective range band for a weapon. Matches the Coriolis core book
-     *     range terminology:
-     *     - `arm` — Engaged / hand-to-hand.
-     *     - `near` — same room / close quarters.
-     *     - `short` — corridor / street distance.
-     *     - `long` — open ground / rooftop.
-     *     - `distant` — sniper range.
+     * @description Personal-scale weapon range bands per ST3001 ГЛАВА 5 «Дистанция»
+     *     (lines 73-78 of the Russian rulebook). Four bands by canon —
+     *     each absorbs the previous (a target at `medium` is also at `close`
+     *     for any rule that talks about "within X").
+     *     - `close` — Ближняя, up to 2 m (engaged / hand-to-hand /
+     *       same-room close quarters; absorbs the legacy `arm` and `near`
+     *       values).
+     *     - `medium` — Средняя, up to 20 m (corridor / street; absorbs the
+     *       legacy `short`).
+     *     - `long` — Дальняя, up to 100 m (open ground / rooftop; same
+     *       slug as the legacy value, semantics narrowed).
+     *     - `extreme` — Предельная, up to 1000 m (sniper / max effective;
+     *       absorbs the legacy `distant`).
+     *     Distinct from `ShipWeaponRange` (5-band ship-combat ladder
+     *     from ГЛАВА 7 Table 7.9 — that enum keeps its `zero` band).
      * @enum {string}
      */
-    ItemRangeEnum: 'arm' | 'near' | 'short' | 'long' | 'distant';
+    ItemRangeEnum: 'close' | 'medium' | 'long' | 'extreme';
     /**
      * @description Ship module slot type. Used only for SHIP_MODULE items. Matches the
      *     slot categories from Coriolis core book ship construction rules.
@@ -1831,7 +1839,7 @@ export interface components {
      *       "type": "WEAPON",
      *       "name": "Vulcan Carbine",
      *       "damage": 2,
-     *       "range": "short",
+     *       "range": "medium",
      *       "bonus": 2,
      *       "crit": 2,
      *       "weight": 0.8,

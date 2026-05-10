@@ -241,16 +241,24 @@ export type MutantLineage = 'zirba' | 'shingura' | 'nerida';
 export type TalentKind = 'personal' | 'crew' | 'iconGift' | 'stigma';
 
 /**
- * Effective range band for a weapon. Matches the Coriolis core book
- * range terminology:
- * - `arm` — Engaged / hand-to-hand.
- * - `near` — same room / close quarters.
- * - `short` — corridor / street distance.
- * - `long` — open ground / rooftop.
- * - `distant` — sniper range.
+ * Personal-scale weapon range bands per ST3001 ГЛАВА 5 «Дистанция»
+ * (lines 73-78 of the Russian rulebook). Four bands by canon —
+ * each absorbs the previous (a target at `medium` is also at `close`
+ * for any rule that talks about "within X").
+ * - `close` — Ближняя, up to 2 m (engaged / hand-to-hand /
+ * same-room close quarters; absorbs the legacy `arm` and `near`
+ * values).
+ * - `medium` — Средняя, up to 20 m (corridor / street; absorbs the
+ * legacy `short`).
+ * - `long` — Дальняя, up to 100 m (open ground / rooftop; same
+ * slug as the legacy value, semantics narrowed).
+ * - `extreme` — Предельная, up to 1000 m (sniper / max effective;
+ * absorbs the legacy `distant`).
+ * Distinct from `ShipWeaponRange` (5-band ship-combat ladder
+ * from ГЛАВА 7 Table 7.9 — that enum keeps its `zero` band).
  *
  */
-export type ItemRangeEnum = 'arm' | 'near' | 'short' | 'long' | 'distant';
+export type ItemRangeEnum = 'close' | 'medium' | 'long' | 'extreme';
 
 /**
  * Ship module slot type. Used only for SHIP_MODULE items. Matches the

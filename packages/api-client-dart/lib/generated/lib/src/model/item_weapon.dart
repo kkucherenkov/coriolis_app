@@ -48,7 +48,7 @@ abstract class ItemWeapon implements ItemBase, Built<ItemWeapon, ItemWeaponBuild
 
   @BuiltValueField(wireName: r'range')
   ItemRangeEnum get range;
-  // enum rangeEnum {  arm,  near,  short,  long,  distant,  };
+  // enum rangeEnum {  close,  medium,  long,  extreme,  };
 
   /// Encumbrance weight in slots (0.5 increments)
   @BuiltValueField(wireName: r'weight')
