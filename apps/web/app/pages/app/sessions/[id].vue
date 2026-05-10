@@ -663,13 +663,13 @@
         </ul>
       </AppCard>
 
-      <!-- Encounters (Block 3) — GM only; players see the combat state
-           read-only in Block 4 / 5 once the tracker widget is wired. -->
+      <!-- Encounters (Block 3+4) — GM only; players see the combat state
+           read-only in Block 5 once the realtime tracker is wired. -->
       <EncounterPanel
         v-if="isGm"
         :session-id="sessionId"
+        :session-character-ids="session?.characterIds ?? []"
         data-testid="encounter-panel-section"
-        @open="(encId) => void navigateTo(`/app/encounters/${encId}`)"
       />
     </template>
   </section>

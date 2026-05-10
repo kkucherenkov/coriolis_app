@@ -491,8 +491,10 @@ describe('EncounterPanel.vue — structural wiring', () => {
     expect(src).toContain('"heading": "[el-todo] Encounters"');
   });
 
-  it('emits open event with encounterId', () => {
-    expect(src).toContain("emit('open', encounter.id)");
+  it('toggles open state inline rather than emitting (Block 4 inline expansion)', () => {
+    // Block 4 changed the Open button from emit('open') to toggleEncounter(id).
+    // The CombatTracker is now mounted inline inside EncounterPanel.
+    expect(src).toContain('toggleEncounter(encounter.id)');
   });
 
   it('defines showSetupHint returning true for setup+zero combatants', () => {

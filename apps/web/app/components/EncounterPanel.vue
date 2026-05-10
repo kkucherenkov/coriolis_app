@@ -19,14 +19,13 @@
   import { ref, computed, onMounted } from 'vue';
   import { AppCard, AppButton, AppInput, AppField, AppBanner, AppBadge } from '@app/ui';
   import { useEncountersApi } from '~/composables/useEncountersApi';
+  import CombatTracker from '~/components/CombatTracker.vue';
   import type { Encounter } from '~/composables/useEncountersApi';
 
   const props = defineProps<{
     sessionId: string;
-  }>();
-
-  const emit = defineEmits<{
-    open: [encounterId: string];
+    /** IDs of Characters assigned to this session — forwarded to CombatTracker for the PC picker. */
+    sessionCharacterIds?: string[];
   }>();
 
   const { t } = useI18n({ useScope: 'local' });
@@ -52,6 +51,18 @@
 
   // ── Delete state ───────────────────────────────────────────────────────────
   const deletingId = ref<string | null>(null);
+
+  // ── Open / expand state (master-detail inline expansion) ──────────────────
+  /**
+   * encounterId of the currently expanded CombatTracker, or null if none.
+   * Clicking "Open" on a card toggles its expansion; clicking on an already-
+   * expanded card collapses it.
+   */
+  const openEncounterId = ref<string | null>(null);
+
+  function toggleEncounter(id: string): void {
+    openEncounterId.value = openEncounterId.value === id ? null : id;
+  }
 
   // ── Derived ────────────────────────────────────────────────────────────────
   const encounterCount = computed(() => encounters.value.length);
@@ -181,6 +192,7 @@
     "combatantsCount": "{count} combatant | {count} combatants",
     "hintNoCombatants": "Add at least one combatant before rolling initiative.",
     "openButton": "Open",
+    "closeButton": "Close",
     "deleteButton": "Delete",
     "emptyHeading": "No encounters yet",
     "emptyBody": "Create the first encounter to start combat tracking.",
@@ -205,6 +217,7 @@
     "combatantsCount": "{count} участник | {count} участника | {count} участников",
     "hintNoCombatants": "Добавьте хотя бы одного участника перед броском инициативы.",
     "openButton": "Открыть",
+    "closeButton": "Закрыть",
     "deleteButton": "Удалить",
     "emptyHeading": "Схваток пока нет",
     "emptyBody": "Создайте первую схватку, чтобы начать отслеживать бой.",
@@ -229,6 +242,7 @@
     "combatantsCount": "[uk-todo] {count} combatant(s)",
     "hintNoCombatants": "[uk-todo] Add at least one combatant before rolling initiative.",
     "openButton": "[uk-todo] Open",
+    "closeButton": "[uk-todo] Close",
     "deleteButton": "[uk-todo] Delete",
     "emptyHeading": "[uk-todo] No encounters yet",
     "emptyBody": "[uk-todo] Create the first encounter.",
@@ -253,6 +267,7 @@
     "combatantsCount": "[el-todo] {count} combatant(s)",
     "hintNoCombatants": "[el-todo] Add at least one combatant before rolling initiative.",
     "openButton": "[el-todo] Open",
+    "closeButton": "[el-todo] Close",
     "deleteButton": "[el-todo] Delete",
     "emptyHeading": "[el-todo] No encounters yet",
     "emptyBody": "[el-todo] Create the first encounter.",
@@ -411,10 +426,11 @@
           <AppButton
             variant="ghost"
             size="sm"
+            :aria-expanded="openEncounterId === encounter.id"
             data-testid="btn-open-encounter"
-            @click="emit('open', encounter.id)"
+            @click="toggleEncounter(encounter.id)"
           >
-            {{ t('openButton') }}
+            {{ openEncounterId === encounter.id ? t('closeButton') : t('openButton') }}
           </AppButton>
           <AppButton
             variant="ghost"
@@ -427,6 +443,16 @@
             {{ t('deleteButton') }}
           </AppButton>
         </div>
+
+        <!-- Inline CombatTracker expansion (Block 4) -->
+        <CombatTracker
+          v-if="openEncounterId === encounter.id"
+          class="encounter-panel__tracker"
+          :encounter-id="encounter.id"
+          :session-character-ids="sessionCharacterIds ?? []"
+          :active-combatant-id="encounter.activeCombatantId"
+          data-testid="inline-combat-tracker"
+        />
       </li>
     </ul>
   </AppCard>
@@ -557,6 +583,12 @@
       display: flex;
       gap: var(--space-2);
       margin-top: var(--space-1);
+    }
+
+    &__tracker {
+      margin-top: var(--space-2);
+      padding-top: var(--space-2);
+      border-top: 1px solid var(--brand-brass-shadow);
     }
   }
 </style>

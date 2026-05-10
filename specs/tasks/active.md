@@ -64,7 +64,7 @@
         `EncounterPanel` on the session view. Inline create,
         list, open / delete. State-machine UI hints
         (e.g. "Add ≥1 combatant before rolling initiative").
-  - [ ] Block 4 — `useCombatantsApi` + `CombatTracker`
+  - [x] Block 4 — `useCombatantsApi` + `CombatTracker`
         widget. PC + NPC picker, status chips, drag reorder.
         No initiative actions yet — picker + list only.
   - [ ] Block 5 — Initiative ops + realtime wire-up.
