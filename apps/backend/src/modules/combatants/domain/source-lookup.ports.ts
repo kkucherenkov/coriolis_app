@@ -10,6 +10,13 @@
 
 export const SOURCE_LOOKUP = Symbol('SOURCE_LOOKUP');
 
+/** Minimal weapon shape returned by the source lookup (T-012 initiative modifier). */
+export interface SourceWeapon {
+  /** Initiative modifier from the weapon's data field (−5..+5). Absent on legacy data → 0. */
+  initiative?: number;
+  equipped?: boolean;
+}
+
 /** Minimal character shape needed for the PC snapshot. */
 export interface SourceCharacter {
   id: string;
@@ -29,6 +36,8 @@ export interface SourceCharacter {
     empathy: number;
   };
   skills: Record<string, number>;
+  /** Weapon items from character inventory (T-012: needed for initiative modifier). */
+  weapons: SourceWeapon[];
 }
 
 /** Minimal NPC shape needed for the NPC snapshot. */
@@ -48,6 +57,8 @@ export interface SourceNpc {
     empathy: number;
   };
   skills: Record<string, number>;
+  /** Weapon items from the NPC's weapons JSON column (T-012: needed for initiative modifier). */
+  weapons: SourceWeapon[];
 }
 
 export interface ISourceLookup {

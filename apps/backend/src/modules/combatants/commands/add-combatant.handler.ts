@@ -87,6 +87,7 @@ export class AddCombatantHandler implements ICommandHandler<
         attributes: character.attributes,
         skills: character.skills,
         hpMax: character.hpMax,
+        weapons: character.weapons,
       };
 
       created = await this.combatantRepo.create({
@@ -111,6 +112,7 @@ export class AddCombatantHandler implements ICommandHandler<
         skills: npc.skills,
         hpMax: npc.hpMax,
         signature: npc.signature,
+        weapons: npc.weapons,
       };
 
       created = await this.combatantRepo.create({

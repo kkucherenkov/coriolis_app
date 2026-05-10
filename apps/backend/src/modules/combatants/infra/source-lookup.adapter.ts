@@ -37,6 +37,7 @@ interface PrismaNpcSnap {
   attributes: unknown;
   skills: unknown;
   armor: unknown;
+  weapons: unknown;
 }
 
 @Injectable()
@@ -54,7 +55,7 @@ export class SourceLookupAdapter implements ISourceLookup {
         attributes: true,
         skills: true,
         items: {
-          where: { type: 'ARMOR' },
+          where: { type: { in: ['ARMOR', 'WEAPON'] } },
           select: { type: true, data: true },
         },
       },
@@ -71,12 +72,18 @@ export class SourceLookupAdapter implements ISourceLookup {
 
     const hpMax = computeHpMax(attrs.strength, attrs.agility);
 
-    // Sum armorRating of equipped armor items
+    // Sum armorRating of equipped armor items; collect weapon initiative mods
     let armor = 0;
+    const weapons: SourceCharacter['weapons'] = [];
     for (const item of row.items) {
-      const data = item.data as { armorRating?: number; equipped?: boolean };
-      if (data.equipped !== false && typeof data.armorRating === 'number') {
-        armor += data.armorRating;
+      if (item.type === 'ARMOR') {
+        const data = item.data as { armorRating?: number; equipped?: boolean };
+        if (data.equipped !== false && typeof data.armorRating === 'number') {
+          armor += data.armorRating;
+        }
+      } else if (item.type === 'WEAPON') {
+        const data = item.data as { initiative?: number; equipped?: boolean };
+        weapons.push({ initiative: data.initiative, equipped: data.equipped });
       }
     }
 
@@ -90,6 +97,7 @@ export class SourceLookupAdapter implements ISourceLookup {
       signature: 0,
       attributes: attrs,
       skills: row.skills as Record<string, number>,
+      weapons,
     };
   }
 
@@ -106,6 +114,7 @@ export class SourceLookupAdapter implements ISourceLookup {
         attributes: true,
         skills: true,
         armor: true,
+        weapons: true,
       },
     })) as PrismaNpcSnap | null;
 
@@ -119,6 +128,11 @@ export class SourceLookupAdapter implements ISourceLookup {
         armorRating += item.armorRating;
       }
     }
+
+    // NPC weapons is a JSON array of ItemWeapon objects (T-012: initiative modifier)
+    const weapons = ((row.weapons ?? []) as { initiative?: number; equipped?: boolean }[]).map(
+      (w) => ({ initiative: w.initiative, equipped: w.equipped }),
+    );
 
     return {
       id: row.id,
@@ -135,6 +149,7 @@ export class SourceLookupAdapter implements ISourceLookup {
         empathy: number;
       },
       skills: row.skills as Record<string, number>,
+      weapons,
     };
   }
 }

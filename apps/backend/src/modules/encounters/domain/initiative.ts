@@ -12,11 +12,50 @@
  * up to MAX_REROLL_PASSES passes. Any combatants still tied after that are
  * left in stable insertion order (createdAt asc) — the GM is expected to
  * use the reorder operation to set the final order.
+ *
+ * T-2026-05-10-012: sumWeaponInitiative + clampInitiative added.
+ *   Per ST3001 ГЛАВА 6, only equipped weapons contribute their initiative
+ *   bonus. The d6 base (1..6) plus weapon modifier is clamped to 1..10,
+ *   matching Combatant.initiative.maximum from the spec.
  */
 
 import type { CombatantWithSnapshot } from '../../combatants/domain/combatant.ports';
 
 export const MAX_REROLL_PASSES = 3;
+
+const MIN_INITIATIVE = 1;
+const MAX_INITIATIVE = 10;
+
+/** Minimal weapon shape required to compute the initiative modifier. */
+export interface WeaponInitiativeItem {
+  initiative?: number;
+  equipped?: boolean;
+}
+
+/**
+ * Sums the `initiative` modifiers from a combatant's equipped weapons.
+ * Per ST3001 ГЛАВА 6, only equipped weapons contribute their bonus —
+ * carrying a Посох (+2) in your pack while wielding a Меч (+0) gives
+ * +0, not +2. Returns 0 when the source has no equipped weapons or
+ * no weapon-typed items at all (PCs and NPCs alike).
+ */
+export function sumWeaponInitiative(weapons: readonly WeaponInitiativeItem[]): number {
+  return weapons
+    .filter((w) => w.equipped === true)
+    .reduce((sum, w) => sum + (w.initiative ?? 0), 0);
+}
+
+/**
+ * Clamps the d6+modifier sum into the spec's stored range. The d6
+ * base is 1..6; modifier sum is bounded by per-weapon −5..+5 (and a
+ * realistic stack tops out around +4 with multi-weapon ambush combos),
+ * so the 1..10 bound matches Combatant.initiative.maximum from the spec.
+ */
+export function clampInitiative(value: number): number {
+  if (value < MIN_INITIATIVE) return MIN_INITIATIVE;
+  if (value > MAX_INITIATIVE) return MAX_INITIATIVE;
+  return value;
+}
 
 function groupByInitiative(items: CombatantWithSnapshot[]): Map<number, CombatantWithSnapshot[]> {
   const groups = new Map<number, CombatantWithSnapshot[]>();

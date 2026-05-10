@@ -3,7 +3,13 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 
-import { MAX_REROLL_PASSES, rerollTies, sortInitiative } from './initiative';
+import {
+  MAX_REROLL_PASSES,
+  clampInitiative,
+  rerollTies,
+  sortInitiative,
+  sumWeaponInitiative,
+} from './initiative';
 
 import type {
   CombatantWithSnapshot,
@@ -46,6 +52,55 @@ function makeItem(
     npcSnapshot: null,
   };
 }
+
+describe('sumWeaponInitiative', () => {
+  it('returns 0 for an empty array', () => {
+    expect(sumWeaponInitiative([])).toBe(0);
+  });
+
+  it('returns the initiative of a single equipped weapon', () => {
+    expect(sumWeaponInitiative([{ initiative: 1, equipped: true }])).toBe(1);
+  });
+
+  it('ignores unequipped weapons', () => {
+    expect(sumWeaponInitiative([{ initiative: 1, equipped: false }])).toBe(0);
+  });
+
+  it('sums initiative for multiple equipped weapons', () => {
+    expect(
+      sumWeaponInitiative([
+        { initiative: 2, equipped: true },
+        { initiative: 1, equipped: true },
+      ]),
+    ).toBe(3);
+  });
+
+  it('defaults missing initiative to 0 for equipped weapon', () => {
+    expect(sumWeaponInitiative([{ equipped: true }])).toBe(0);
+  });
+
+  it('ignores weapons where equipped is undefined (not equipped)', () => {
+    expect(sumWeaponInitiative([{ initiative: 3 }])).toBe(0);
+  });
+});
+
+describe('clampInitiative', () => {
+  it('clamps values below 1 up to 1', () => {
+    expect(clampInitiative(0)).toBe(1);
+    expect(clampInitiative(-5)).toBe(1);
+  });
+
+  it('clamps values above 10 down to 10', () => {
+    expect(clampInitiative(11)).toBe(10);
+    expect(clampInitiative(20)).toBe(10);
+  });
+
+  it('passes through in-range values unchanged', () => {
+    expect(clampInitiative(1)).toBe(1);
+    expect(clampInitiative(7)).toBe(7);
+    expect(clampInitiative(10)).toBe(10);
+  });
+});
 
 describe('sortInitiative', () => {
   it('sorts by initiative descending', () => {

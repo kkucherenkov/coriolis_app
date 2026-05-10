@@ -27,6 +27,9 @@ export interface PcSnapshot {
   };
   skills: Record<string, number>;
   hpMax: number;
+  /** Equipped weapons captured at add-time for T-012 initiative modifier (optional;
+   *  absent on pre-T-012 snapshots — treated as empty array by initiative logic). */
+  weapons?: { initiative?: number; equipped?: boolean }[];
 }
 
 export interface NpcSnapshot {
@@ -39,6 +42,9 @@ export interface NpcSnapshot {
   skills: Record<string, number>;
   hpMax: number;
   signature: number;
+  /** Equipped weapons captured at add-time for T-012 initiative modifier (optional;
+   *  absent on pre-T-012 snapshots — treated as empty array by initiative logic). */
+  weapons?: { initiative?: number; equipped?: boolean }[];
 }
 
 export interface CombatantReadModel {

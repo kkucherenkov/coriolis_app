@@ -32,7 +32,7 @@ import {
 } from '../domain/encounter.errors';
 import { GAME_SESSION_ACCESS } from '../domain/game-session-access.ports';
 import { ENCOUNTER_REPO, INITIATIVE_REPO } from '../domain/encounter.ports';
-import { rerollTies, sortInitiative } from '../domain/initiative';
+import { clampInitiative, rerollTies, sortInitiative, sumWeaponInitiative } from '../domain/initiative';
 import { COMBAT_PUBLISHER } from '../infra/combat.publisher';
 
 import { RollInitiativeCommand } from './roll-initiative.command';
@@ -87,14 +87,22 @@ export class RollInitiativeHandler implements ICommandHandler<
       throw new EncounterNoCombatantsError();
     }
 
-    // 6. Roll a d6 for each combatant (ST3001 ГЛАВА 5)
-    const withRolls = combatantsWithSnapshots.map((item) => ({
-      ...item,
-      combatant: {
-        ...item.combatant,
-        initiative: randomInt(1, 7), // 1..6 inclusive
-      },
-    }));
+    // 6. Roll a d6 for each combatant, then apply weapon initiative modifier and clamp
+    //    (ST3001 ГЛАВА 5: бросьте по кубику; ГЛАВА 6: оружие даёт бонус к инициативе).
+    //    Only equipped weapons from the snapshot contribute. Pre-T-012 snapshots that
+    //    have no `weapons` field are treated as an empty array (modifier = 0).
+    const withRolls = combatantsWithSnapshots.map((item) => {
+      const base = randomInt(1, 7); // 1..6 inclusive
+      const snapshot = item.pcSnapshot ?? item.npcSnapshot;
+      const weaponMod = sumWeaponInitiative(snapshot?.weapons ?? []);
+      return {
+        ...item,
+        combatant: {
+          ...item.combatant,
+          initiative: clampInitiative(base + weaponMod),
+        },
+      };
+    });
 
     // 7. Reroll d6 for ties (bounded passes) and sort
     const broken = rerollTies(withRolls, () => randomInt(1, 7));
