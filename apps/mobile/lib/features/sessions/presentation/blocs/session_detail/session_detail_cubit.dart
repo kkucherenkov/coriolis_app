@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/session_detail/session_detail_state.dart';
+import 'package:coriolis_companion/shared/realtime/session_realtime.dart';
 
 /// Drives the session detail page (Phase 4 Block 3 mobile).
 ///
@@ -13,17 +16,34 @@ import 'package:coriolis_companion/features/sessions/presentation/blocs/session_
 /// Block 4 will replace that refresh with a Centrifugo subscription
 /// patching the counter live.
 class SessionDetailCubit extends Cubit<SessionDetailState> {
-  SessionDetailCubit({required SessionRepository repository})
-      : _repository = repository,
+  SessionDetailCubit({
+    required SessionRepository repository,
+    required SessionRealtime realtime,
+  })  : _repository = repository,
+        _realtime = realtime,
         super(const SessionDetailState());
 
   final SessionRepository _repository;
+  final SessionRealtime _realtime;
+
+  StreamSubscription<DpChangedPayload>? _dpSub;
+  StreamSubscription<RollPushedPayload>? _rollSub;
+  final _rollPushedController = StreamController<RollPushedPayload>.broadcast();
+
+  /// Stream of `roll.pushed` events the page subscribes to for the
+  /// SnackBar. Cubit forwards from the realtime adapter so the page
+  /// doesn't have to reach into infra.
+  Stream<RollPushedPayload> get rollPushed => _rollPushedController.stream;
 
   Future<void> load(String sessionId) async {
     emit(state.copyWith(status: SessionDetailStatus.loading, clearError: true));
     try {
       final session = await _repository.get(sessionId);
       emit(state.copyWith(status: SessionDetailStatus.loaded, session: session));
+      // Open the websocket only after the session resolved — pointing
+      // at a deleted/inaccessible session would have its subscribe
+      // rejected server-side.
+      await _startRealtime(sessionId);
     } on Object catch (e) {
       // The shared HTTP error type is just a `String` until the global
       // ApiProblemError refactor — best-effort detect 404 by message.
@@ -72,11 +92,42 @@ class SessionDetailCubit extends Cubit<SessionDetailState> {
     }
   }
 
-  /// Centrifugo subscription handler (wired in Block 4). Patches the
-  /// visible counter without going through the repository.
+  /// Centrifugo subscription handler. Patches the visible counter
+  /// directly — the audit list refetches on the next adjust to pick
+  /// up the canonical row (the websocket payload doesn't carry the
+  /// DpEvent id).
   void applyDpChanged({required int dpCount, required int delta, required String source}) {
     final session = state.session;
     if (session == null) return;
     emit(state.copyWith(session: session.copyWith(dpCount: dpCount)));
+  }
+
+  Future<void> _startRealtime(String sessionId) async {
+    try {
+      await _realtime.start(sessionId);
+      _dpSub = _realtime.dpChanged.listen((payload) {
+        applyDpChanged(
+          dpCount: payload.dpCount,
+          delta: payload.delta,
+          source: payload.source,
+        );
+      });
+      _rollSub = _realtime.rollPushed.listen(_rollPushedController.add);
+    } on Object catch (e) {
+      // A websocket failure shouldn't sink the rest of the page; keep
+      // the state in `loaded` and surface the error via dpError so the
+      // UI can render an inline note. The audit log fallback (refetch
+      // after every adjust) is still in place.
+      emit(state.copyWith(dpError: 'Live updates unavailable: $e'));
+    }
+  }
+
+  @override
+  Future<void> close() async {
+    await _dpSub?.cancel();
+    await _rollSub?.cancel();
+    await _realtime.dispose();
+    await _rollPushedController.close();
+    await super.close();
   }
 }

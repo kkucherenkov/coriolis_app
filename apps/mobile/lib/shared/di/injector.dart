@@ -1,5 +1,5 @@
 import 'package:app_api_client/app_api_client.dart'
-    show CharactersApi, DiceApi, GameSessionsApi, standardSerializers;
+    show CharactersApi, DiceApi, GameSessionsApi, RealtimeApi, standardSerializers;
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 
@@ -22,6 +22,7 @@ import 'package:coriolis_companion/features/sessions/presentation/blocs/sessions
 import 'package:coriolis_companion/shared/auth/token_storage.dart';
 import 'package:coriolis_companion/shared/config/app_config.dart';
 import 'package:coriolis_companion/shared/network/api_client.dart';
+import 'package:coriolis_companion/shared/realtime/session_realtime.dart';
 
 /// Global service locator. All runtime dependencies register here; widgets
 /// resolve blocs via `BlocProvider(create: (_) => getIt<FooBloc>())` and
@@ -67,6 +68,9 @@ void configureDependencies() {
     )
     ..registerLazySingleton<GameSessionsApi>(
       () => GameSessionsApi(getIt<Dio>(), standardSerializers),
+    )
+    ..registerLazySingleton<RealtimeApi>(
+      () => RealtimeApi(getIt<Dio>(), standardSerializers),
     );
 
   // ── Characters domain ────────────────────────────────────────────────────
@@ -112,7 +116,13 @@ void configureDependencies() {
       () => SessionsListCubit(repository: getIt<SessionRepository>()),
     )
     ..registerFactory<SessionDetailCubit>(
-      () => SessionDetailCubit(repository: getIt<SessionRepository>()),
+      () => SessionDetailCubit(
+        repository: getIt<SessionRepository>(),
+        realtime: SessionRealtime(
+          realtimeApi: getIt<RealtimeApi>(),
+          config: getIt<AppConfig>(),
+        ),
+      ),
     );
 }
 

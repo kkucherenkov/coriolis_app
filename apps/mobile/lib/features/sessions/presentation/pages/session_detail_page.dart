@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import 'dart:async';
+
 import 'package:coriolis_companion/features/auth/domain/auth_repository.dart';
 import 'package:coriolis_companion/features/sessions/domain/game_session.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/session_detail/session_detail_cubit.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/session_detail/session_detail_state.dart';
 import 'package:coriolis_companion/shared/di/injector.dart';
+import 'package:coriolis_companion/shared/realtime/session_realtime.dart';
 
 /// Session detail page (Phase 4 Block 3 mobile).
 ///
@@ -40,11 +43,40 @@ class _SessionDetailBody extends StatefulWidget {
 
 class _SessionDetailBodyState extends State<_SessionDetailBody> {
   String? _meId;
+  StreamSubscription<RollPushedPayload>? _rollPushedSub;
 
   @override
   void initState() {
     super.initState();
     _resolveMe();
+    // Subscribe to roll-pushed events from the cubit's realtime stream;
+    // surface as a transient SnackBar. The subscription is canceled
+    // on dispose so a navigated-away page doesn't keep posting toasts.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final cubit = context.read<SessionDetailCubit>();
+      _rollPushedSub = cubit.rollPushed.listen(_onRollPushed);
+    });
+  }
+
+  @override
+  void dispose() {
+    _rollPushedSub?.cancel();
+    super.dispose();
+  }
+
+  void _onRollPushed(RollPushedPayload payload) {
+    if (!mounted) return;
+    final hits = payload.hits;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Roll pushed: character ${payload.characterId.substring(0, 8)}… '
+          'got $hits hit${hits == 1 ? '' : 's'}.',
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   Future<void> _resolveMe() async {
