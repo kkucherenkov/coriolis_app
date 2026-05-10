@@ -4,9 +4,10 @@
  * bounded context that imports PrismaService. All SELECT shapes are scoped
  * to use-case needs per the architecture rules.
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { PrismaService } from '../../../common/prisma/prisma.service';
+import { toRollKind } from '../domain/roll.ports';
 
 import type { IRollRepo, RollReadModel } from '../domain/roll.ports';
 
@@ -21,6 +22,7 @@ const ROLL_SELECT = {
   dice: true,
   hits: true,
   pushed: true,
+  kind: true,
   createdAt: true,
 } as const;
 
@@ -35,12 +37,21 @@ interface PrismaRollRow {
   dice: number[];
   hits: number;
   pushed: boolean;
+  kind: string;
   createdAt: Date;
 }
 
 // --------------- Mapper ---------------
 
+const logger = new Logger('RollRepo');
+
 function mapRoll(row: PrismaRollRow): RollReadModel {
+  const kind = toRollKind(row.kind);
+  if (kind !== row.kind) {
+    logger.warn(
+      `Unexpected roll.kind value '${row.kind}' for roll ${row.id}; defaulting to 'skill'`,
+    );
+  }
   return {
     id: row.id,
     characterId: row.characterId,
@@ -50,6 +61,7 @@ function mapRoll(row: PrismaRollRow): RollReadModel {
     dice: row.dice,
     hits: row.hits,
     pushed: row.pushed,
+    kind,
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -67,6 +79,7 @@ export class RollRepo implements IRollRepo {
     pool: number;
     dice: number[];
     hits: number;
+    kind: import('../domain/roll.ports').RollKind;
   }): Promise<RollReadModel> {
     const row = await this.prisma.roll.create({
       data: {
@@ -76,6 +89,7 @@ export class RollRepo implements IRollRepo {
         pool: data.pool,
         dice: data.dice,
         hits: data.hits,
+        kind: data.kind,
       },
       select: ROLL_SELECT,
     });

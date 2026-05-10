@@ -503,9 +503,12 @@ export type CanPushResult = { ok: true } | { ok: false; reason: 'ALREADY_PUSHED'
  * The Exhausted-blocks-push rule is a greenfield UX gate added by the PRD
  * to give the player a tactile reason to manage rest at the table; it
  * stays here as the deliberate divergence. The «one push per check» rule
- * (rule 2 above) is canon-aligned. The «only on skill checks» half is
- * tracked separately as a Block-J spec follow-up (`RollKind` discriminator;
- * push then gates on `kind === 'skill'`).
+ * (rule 2 above) is canon-aligned.
+ *
+ * The «only on skill checks» half is enforced at the `PushRollHandler`
+ * boundary via `PushNotAllowedOnNonSkillRollError` (T-2026-05-10-015).
+ * `canPush` itself is kind-agnostic — callers are expected to gate on
+ * `roll.kind` before invoking it.
  *
  * Returns `{ ok: true }` when the push is allowed, or `{ ok: false, reason }`
  * with a machine-readable code when it is blocked.

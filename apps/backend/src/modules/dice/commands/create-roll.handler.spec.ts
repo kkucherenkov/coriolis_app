@@ -21,6 +21,7 @@ const MOCK_ROLL: RollReadModel = {
   dice: [1, 3, 6, 2],
   hits: 1,
   pushed: false,
+  kind: 'skill',
   createdAt: '2026-05-09T12:00:00Z',
 };
 
@@ -241,5 +242,37 @@ describe('CreateRollHandler', () => {
     await expect(
       handler.execute(new CreateRollCommand('user_01', 'char_01', dto)),
     ).rejects.toBeInstanceOf(RollPoolOutOfRangeError);
+  });
+
+  // -------------------------------------------------------------------------
+  // T-2026-05-10-015: RollKind — kind field on create
+  // -------------------------------------------------------------------------
+
+  it('defaults kind to skill when not provided (back-compat)', async () => {
+    vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user_01' });
+    vi.mocked(rollRepo.create).mockResolvedValue(MOCK_ROLL);
+
+    const dto = new CreateRollDto();
+    dto.label = 'skill-default';
+    dto.pool = 2;
+    // kind not set
+
+    await handler.execute(new CreateRollCommand('user_01', 'char_01', dto));
+
+    expect(rollRepo.create).toHaveBeenCalledWith(expect.objectContaining({ kind: 'skill' }));
+  });
+
+  it('persists explicit kind=save when provided', async () => {
+    vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user_01' });
+    vi.mocked(rollRepo.create).mockResolvedValue({ ...MOCK_ROLL, kind: 'save' });
+
+    const dto = new CreateRollDto();
+    dto.label = 'save roll';
+    dto.pool = 3;
+    dto.kind = 'save';
+
+    await handler.execute(new CreateRollCommand('user_01', 'char_01', dto));
+
+    expect(rollRepo.create).toHaveBeenCalledWith(expect.objectContaining({ kind: 'save' }));
   });
 });

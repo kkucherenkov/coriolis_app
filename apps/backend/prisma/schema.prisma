@@ -507,6 +507,13 @@ model Roll {
   dice          Int[]
   hits          Int
   pushed        Boolean   @default(false)
+  /// Roll discriminator per ST3001 ГЛАВА 3 §«Вознесение молитв» —
+  /// only `skill` rolls can be pushed. Stored as a string for
+  /// flexibility; the canonical 5-value enum (skill, save, trauma,
+  /// initiative, darkness) is enforced by the spec validator at the
+  /// HTTP boundary and a defence-in-depth `RollKind` type guard in
+  /// the handler.
+  kind          String    @default("skill")
   createdAt     DateTime  @default(now())
 
   @@index([characterId, createdAt])

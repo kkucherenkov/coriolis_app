@@ -21,6 +21,7 @@ function makeRoll(overrides: Partial<RollReadModel> = {}): RollReadModel {
     dice: [2, 4, 6],
     hits: 1,
     pushed: false,
+    kind: 'skill',
     createdAt: '2026-05-09T12:00:00Z',
     ...overrides,
   };
@@ -118,5 +119,25 @@ describe('ListRollsHandler', () => {
     await expect(
       handler.execute(new ListRollsQuery('user_01', 'char_01', 50)),
     ).rejects.toBeInstanceOf(CharacterNotOwnedError);
+  });
+
+  // -------------------------------------------------------------------------
+  // T-2026-05-10-015: read model surfaces kind on each roll
+  // -------------------------------------------------------------------------
+
+  it('surfaces kind on each roll in the read model', async () => {
+    const rolls = [
+      makeRoll({ id: 'roll_01', kind: 'skill' }),
+      makeRoll({ id: 'roll_02', kind: 'save' }),
+      makeRoll({ id: 'roll_03', kind: 'initiative' }),
+    ];
+    vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user_01' });
+    vi.mocked(rollRepo.listByCharacterId).mockResolvedValue(rolls);
+
+    const result = await handler.execute(new ListRollsQuery('user_01', 'char_01', 50));
+
+    expect(result.items[0]?.kind).toBe('skill');
+    expect(result.items[1]?.kind).toBe('save');
+    expect(result.items[2]?.kind).toBe('initiative');
   });
 });

@@ -51,6 +51,7 @@ export class CreateRollHandler implements ICommandHandler<CreateRollCommand, Rol
       pool: dto.pool,
       dice,
       hits,
+      kind: dto.kind ?? 'skill',
     });
   }
 }

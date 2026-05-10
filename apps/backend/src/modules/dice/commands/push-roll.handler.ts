@@ -9,7 +9,11 @@ import { CHARACTER_REPO } from '../../characters/domain/character.ports';
 import { canPush } from '../../rules-engine';
 import { RollPushedEvent } from '../events/roll-pushed.event';
 import { countHits, pushDice } from '../domain/roll-engine';
-import { RollNotFoundError, RollNotPushableError } from '../domain/roll.errors';
+import {
+  PushNotAllowedOnNonSkillRollError,
+  RollNotFoundError,
+  RollNotPushableError,
+} from '../domain/roll.errors';
 import { ROLL_REPO } from '../domain/roll.ports';
 
 import { PushRollCommand } from './push-roll.command';
@@ -43,6 +47,12 @@ export class PushRollHandler implements ICommandHandler<PushRollCommand, RollRea
     // Verify ownership
     if (character.ownerId !== callerId) {
       throw new CharacterNotOwnedError(roll.characterId);
+    }
+
+    // Gate: only skill rolls can be pushed (ST3001 ГЛАВА 3 §«Вознесение молитв»).
+    // This check fires before canPush so the error message is specific to the kind.
+    if (roll.kind !== 'skill') {
+      throw new PushNotAllowedOnNonSkillRollError(roll.kind);
     }
 
     // Apply push eligibility rules (PRD §10)

@@ -4,7 +4,11 @@ import {
   CharacterNotFoundError,
   CharacterNotOwnedError,
 } from '../../characters/domain/character.errors';
-import { RollNotFoundError, RollNotPushableError } from '../domain/roll.errors';
+import {
+  PushNotAllowedOnNonSkillRollError,
+  RollNotFoundError,
+  RollNotPushableError,
+} from '../domain/roll.errors';
 
 import { PushRollCommand } from './push-roll.command';
 import { PushRollHandler } from './push-roll.handler';
@@ -72,6 +76,7 @@ const MOCK_ROLL_FRESH: RollReadModel = {
   dice: [1, 3, 6, 2],
   hits: 1,
   pushed: false,
+  kind: 'skill',
   createdAt: '2026-05-09T12:00:00Z',
 };
 
@@ -244,6 +249,82 @@ describe('PushRollHandler', () => {
 
     await expect(handler.execute(new PushRollCommand('user_01', 'roll_01'))).rejects.toBeInstanceOf(
       RollNotPushableError,
+    );
+
+    expect(eventBus.publish).not.toHaveBeenCalled();
+  });
+
+  // -------------------------------------------------------------------------
+  // T-2026-05-10-015: kind-gate — only skill rolls can be pushed
+  // (ST3001 ГЛАВА 3 §«Вознесение молитв»)
+  // -------------------------------------------------------------------------
+
+  it('throws PushNotAllowedOnNonSkillRollError when pushing a save roll', async () => {
+    vi.mocked(rollRepo.findById).mockResolvedValue({ ...MOCK_ROLL_FRESH, kind: 'save' });
+    vi.mocked(characterRepo.findActiveById).mockResolvedValue(MOCK_CHARACTER);
+
+    const err = await handler
+      .execute(new PushRollCommand('user_01', 'roll_01'))
+      .catch((error: unknown) => error);
+
+    expect(err).toBeInstanceOf(PushNotAllowedOnNonSkillRollError);
+    expect((err as PushNotAllowedOnNonSkillRollError).code).toBe(
+      'PUSH_NOT_ALLOWED_ON_NON_SKILL_ROLL',
+    );
+  });
+
+  it('throws PushNotAllowedOnNonSkillRollError when pushing a trauma roll', async () => {
+    vi.mocked(rollRepo.findById).mockResolvedValue({ ...MOCK_ROLL_FRESH, kind: 'trauma' });
+    vi.mocked(characterRepo.findActiveById).mockResolvedValue(MOCK_CHARACTER);
+
+    await expect(handler.execute(new PushRollCommand('user_01', 'roll_01'))).rejects.toBeInstanceOf(
+      PushNotAllowedOnNonSkillRollError,
+    );
+  });
+
+  it('throws PushNotAllowedOnNonSkillRollError when pushing an initiative roll', async () => {
+    vi.mocked(rollRepo.findById).mockResolvedValue({ ...MOCK_ROLL_FRESH, kind: 'initiative' });
+    vi.mocked(characterRepo.findActiveById).mockResolvedValue(MOCK_CHARACTER);
+
+    await expect(handler.execute(new PushRollCommand('user_01', 'roll_01'))).rejects.toBeInstanceOf(
+      PushNotAllowedOnNonSkillRollError,
+    );
+  });
+
+  it('throws PushNotAllowedOnNonSkillRollError when pushing a darkness roll', async () => {
+    vi.mocked(rollRepo.findById).mockResolvedValue({ ...MOCK_ROLL_FRESH, kind: 'darkness' });
+    vi.mocked(characterRepo.findActiveById).mockResolvedValue(MOCK_CHARACTER);
+
+    await expect(handler.execute(new PushRollCommand('user_01', 'roll_01'))).rejects.toBeInstanceOf(
+      PushNotAllowedOnNonSkillRollError,
+    );
+  });
+
+  it('kind-gate fires before pushed/exhausted checks — non-skill already-pushed roll throws PUSH_NOT_ALLOWED_ON_NON_SKILL_ROLL', async () => {
+    // A non-skill roll that is also already pushed: the kind-gate must win.
+    vi.mocked(rollRepo.findById).mockResolvedValue({
+      ...MOCK_ROLL_FRESH,
+      kind: 'save',
+      pushed: true,
+    });
+    vi.mocked(characterRepo.findActiveById).mockResolvedValue(MOCK_CHARACTER);
+
+    const err = await handler
+      .execute(new PushRollCommand('user_01', 'roll_01'))
+      .catch((error: unknown) => error);
+
+    expect(err).toBeInstanceOf(PushNotAllowedOnNonSkillRollError);
+    expect((err as PushNotAllowedOnNonSkillRollError).code).toBe(
+      'PUSH_NOT_ALLOWED_ON_NON_SKILL_ROLL',
+    );
+  });
+
+  it('does not emit event when push is rejected by kind-gate', async () => {
+    vi.mocked(rollRepo.findById).mockResolvedValue({ ...MOCK_ROLL_FRESH, kind: 'initiative' });
+    vi.mocked(characterRepo.findActiveById).mockResolvedValue(MOCK_CHARACTER);
+
+    await expect(handler.execute(new PushRollCommand('user_01', 'roll_01'))).rejects.toBeInstanceOf(
+      PushNotAllowedOnNonSkillRollError,
     );
 
     expect(eventBus.publish).not.toHaveBeenCalled();

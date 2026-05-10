@@ -43,3 +43,14 @@ export class RollPoolOutOfRangeError extends DomainError {
     });
   }
 }
+
+export class PushNotAllowedOnNonSkillRollError extends DomainError {
+  constructor(kind: string) {
+    super({
+      code: 'PUSH_NOT_ALLOWED_ON_NON_SKILL_ROLL',
+      status: 400,
+      title: 'Validation Error',
+      detail: `Push is only allowed on skill rolls (ST3001 ГЛАВА 3 §«Вознесение молитв»). The roll kind is '${kind}'.`,
+    });
+  }
+}

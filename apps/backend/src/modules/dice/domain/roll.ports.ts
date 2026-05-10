@@ -5,6 +5,28 @@
  * the interface. This allows unit tests to swap in vi.fn() mocks without a DB.
  */
 
+/**
+ * Roll discriminator per ST3001 ГЛАВА 3 §«Вознесение молитв».
+ * Only `skill` rolls can be pushed. The five canonical values mirror
+ * the OpenAPI RollKind enum.
+ */
+export type RollKind = 'skill' | 'save' | 'trauma' | 'initiative' | 'darkness';
+
+export const ROLL_KINDS: readonly RollKind[] = [
+  'skill',
+  'save',
+  'trauma',
+  'initiative',
+  'darkness',
+] as const;
+
+/** Narrows an arbitrary string to RollKind; falls back to 'skill' on unknown values. */
+export function toRollKind(value: string): RollKind {
+  return (ROLL_KINDS as readonly string[]).includes(value)
+    ? (value as RollKind)
+    : 'skill';
+}
+
 export interface RollReadModel {
   id: string;
   characterId: string;
@@ -14,6 +36,7 @@ export interface RollReadModel {
   dice: number[];
   hits: number;
   pushed: boolean;
+  kind: RollKind;
   createdAt: string; // ISO-8601
 }
 
@@ -27,6 +50,7 @@ export interface IRollRepo {
     pool: number;
     dice: number[];
     hits: number;
+    kind: RollKind;
   }): Promise<RollReadModel>;
 
   findById(id: string): Promise<RollReadModel | null>;

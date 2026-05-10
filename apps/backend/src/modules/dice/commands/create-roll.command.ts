@@ -1,4 +1,6 @@
-import { IsInt, IsOptional, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
+
+import type { RollKind } from '../domain/roll.ports';
 
 export class CreateRollDto {
   @IsString()
@@ -14,6 +16,10 @@ export class CreateRollDto {
   @IsOptional()
   @IsString()
   gameSessionId?: string | null;
+
+  @IsOptional()
+  @IsIn(['skill', 'save', 'trauma', 'initiative', 'darkness'])
+  kind?: RollKind;
 }
 
 export class CreateRollCommand {
