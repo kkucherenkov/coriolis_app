@@ -2,6 +2,64 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-10-002 — Phase 4 web frontend: dice + sessions + DP + live updates
+
+- Completed: 2026-05-10
+- Owner: claude
+- Spec: PRD §11 Phase 4 (Dice & Sessions). Backend was already
+  shipped between `phase-3-complete` and `97c62ae` (Roll module,
+  GameSession CRUD, DP audit log, AsyncAPI session channels,
+  Centrifugo publishing). Web SPA had none of it before this task.
+- Goal: Wire the existing Phase-4 backend into the web SPA so a
+  player can roll dice (and push), browse roll history, and see
+  Darkness Points update live during a GM-run session.
+- Result: shipped on `main` across five feature commits + per-block
+  bookkeeping. Each block landed continuously per the updated
+  `feedback_block_workflow` rule.
+  - `4e18df2` `feat(web): T-2026-05-10-002 Block 1 — useRollsApi + dice roller widget`
+  - `ae27f42` `feat(web): T-2026-05-10-002 Block 2 — roll history list + detail modal`
+  - `9b78301` `feat(web): T-2026-05-10-002 Block 3 — sessions index + detail skeleton`
+  - `65dfafa` `feat(web): T-2026-05-10-002 Block 4 — DP controls + audit log + assignment`
+  - `1b9fb40` `feat(web): T-2026-05-10-002 Block 5 — Centrifugo live updates on session detail`
+- Spec diff: none. Codegen impact: none. Backend +1 dependency:
+  `centrifuge` JS client added to `apps/web` for the Block-5
+  websocket subscription.
+- Acceptance check (against the original list):
+  - ✅ From a character sheet, a player can pick a pool size, label
+    the roll, click "Roll", see the dice result, and push when
+    eligible. Push gating mirrors `RulesEngine.canPush`
+    (already-pushed + exhausted) so the disabled state surfaces
+    without a 422 round-trip.
+  - ✅ Recent Rolls panel shows last 50 in reverse chrono with
+    hits / pushed badge / relative time; row click opens an
+    `AppModal` with full dice + pool + absolute timestamp.
+  - ✅ `/app/sessions` lists owner's sessions with active /
+    archived tabs, inline create form (auto-redirects to detail),
+    and per-card archive / unarchive actions.
+  - ✅ `/app/sessions/[id]` branches GM vs player. GM gets DP +/-
+    + delta-with-reason form, audit log tail, character
+    `<select>` assign / unassign. Players see read-only DP +
+    assigned list.
+  - ✅ Detail page subscribes to `session.{id}` over Centrifugo;
+    `dp.changed` patches the visible counter and prepends a
+    synthetic audit row (de-duped against the GM's own adjust);
+    `roll.pushed` surfaces a 5-second toast above the DP card.
+    "Live" / "Reconnecting" badge tracks connection state. Token
+    rotation handled by Centrifuge's `getToken` callback.
+- Tests: 53/53 web (mounting deferred to Playwright e2e — same
+  pattern as the rest of the auth + sheet surface). 434/434
+  backend (unchanged from T-2026-05-10-001). typecheck clean. lint
+  zero errors at every block boundary.
+- Open follow-ups:
+  - Cursor-pagination UI on `/app/sessions` (currently capped at
+    first 20).
+  - Visibility-change reconnect on the realtime subscription (rely
+    on Centrifuge's auto-retry for now).
+  - Toast component in `@app/ui` to replace the inline
+    `AppBanner + Transition` pattern used for `roll.pushed`.
+  - uk/el strings on the new pages — same translator-pass
+    deferral as T-2026-05-10-001.
+
 ## T-2026-05-10-001 — T-005 + T-004 follow-ups before next epic
 
 - Completed: 2026-05-10

@@ -1,89 +1,68 @@
-## T-2026-05-10-002 — Phase 4 web frontend: dice roller + sessions + DP + live updates
+## T-2026-05-10-003 — Phase 4 mobile (Flutter): dice + sessions + DP live updates
 
 - Created: 2026-05-10
 - Owner: claude
-- Spec: PRD §11 Phase 4 (Dice & Sessions) — backend already shipped between
-  `phase-3-complete` and HEAD (Roll module, GameSession CRUD, DP audit log,
-  AsyncAPI session channels, Centrifugo publishing). The web frontend has
-  none of it: there is no dice roller UI, no roll history view, no GM
-  session view, and no DP counter. Players currently can roll dice via
-  curl but not from the sheet.
-- Goal: Wire the existing Phase-4 backend into the web SPA so a player can
-  roll dice (and push), browse roll history, and see Darkness Points
-  update live during a GM-run session.
+- Spec: PRD §11 Phase 4 (Dice & Sessions) — same backend that the
+  web Block-1..5 consumed (T-2026-05-10-002). Flutter app currently
+  has only auth / characters / settings features; no rolls,
+  sessions, or DP UI.
+- Goal: Bring the Coriolis dice loop to mobile so a player at the
+  table can roll + push from their character sheet, browse history,
+  and see Darkness Points tick live during a GM session. Mobile is
+  primarily a player surface — heavy GM ergonomics (full audit log,
+  delta-with-reason form) stay on web; mobile gets a minimal GM
+  control panel for quick `+1`/`-1` taps and assigned-character
+  view only.
 - Acceptance:
-  - From a character sheet, a player can pick a pool size, label the
-    roll, click "Roll", see the dice result, and (when eligible) push
-    the roll once to reroll non-sixes.
-  - The character sheet's existing "Recent Rolls" panel lists the last
-    50 rolls in reverse-chronological order with hits / pushed flag /
-    timestamp; a row click opens the dice detail.
-  - A new `/app/sessions` index lists the GM's game sessions; the
-    detail page shows assigned characters, the live DP counter, and an
-    audit log of recent DP events.
-  - The session detail page subscribes to `session:{id}` over
-    Centrifugo and applies `dp.changed` and `roll.pushed` events to
-    the visible state without a page reload.
-- Spec diff: none expected — the OpenAPI / AsyncAPI surface is already
-  v0.8.2 and stable. Any wire-shape gap surfaced during wiring gets a
-  spec-first fix in its own commit before any consumer change.
-- Codegen impact: none expected (clients are already regenerated).
-- Design impact: zero new components; reuse `AppButton`, `AppCard`,
-  `AppInput`, `AppBadge`, `AppDots`, `AppDivider`, `AppModal`,
-  `AppBanner`. A small page-scoped dice-icon SVG may live inside the
-  roller widget if no `@app/ui` equivalent exists — keep it scoped, do
-  not promote to `@app/ui` mid-block.
-- Tests: per-block — at minimum a vitest spec covering each new
-  composable (request-shape, error routing) and a structural test
-  asserting the dice roller widget renders a result for a stubbed API
-  response. Live-subscription smoke is a Playwright e2e — same pattern
-  as `share-viewer.spec.ts`.
-- Sub-blocks (one commit + push + new session per block, per
-  `feedback_block_workflow.md`):
-  - [x] Block 1 — `useRollsApi` composable + dice roller widget on
-        the character sheet (commit pending push at start of Block 2).
-        New `SheetDiceRoller` component reuses `@app/ui`'s
-        `AppDiePool`; replaces the comingSoon placeholder in the
-        Recent Rolls panel. Push gating mirrors `RulesEngine.canPush`
-        server-side (already-pushed + exhausted), with inline
-        "Exhausted — push not available" hint rather than a 422
-        round-trip. Drive-by: prettier swept the long-standing
-        vue/max-attributes-per-line warnings across the wizard, share
-        viewer, and auth pages — folded into the same commit.
-        Outstanding for next blocks: the widget keeps only the
-        last roll in local state; full reverse-chrono history is
-        Block 2's job.
-  - [x] Block 2 — Roll history (sibling `SheetRollHistory` component).
-        Fetches last 50 on mount, prepended via `defineExpose` from
-        the parent on each `rollCreated` (no refetch — would race
-        the INSERT). Detail modal shows full dice + pool + hits +
-        absolute timestamp; list rows show trimmed label + hits
-        badge + "Pushed" badge + relative time ("3m ago",
-        "yesterday", "May 09"). Locale-aware via `locale.value`.
-  - [x] Block 3 — `useGameSessionsApi` + `/app/sessions` index with
-        active / archived tabs, inline create form (auto-redirects to
-        detail), and per-card Archive / Unarchive toggles. Stub
-        `/app/sessions/[id]` page renders basic session stats so the
-        navigation and post-create redirect don't 404 — Block 4 fills
-        in DP controls, audit log, character-assignment UX.
-  - [x] Block 4 — Full session detail. GM gets DP +/- + free-form
-        delta-with-reason form, audit log tail (zebra rows, coloured
-        delta, localised source), and `<select>`-based character
-        assign / unassign. Players see read-only DP + assigned list.
-        Page resolves session + me + characters in parallel on mount.
-        Each adjust patches the session from the POST response and
-        refetches the audit list — Block 5 will replace the
-        post-adjust refetch with the Centrifugo `dp.changed` push.
-  - [x] Block 5 — Centrifugo subscription via new
-        `useSessionRealtime` composable wrapping the `centrifuge` JS
-        client. `dp.changed` patches `session.dpCount` and prepends a
-        synthetic audit row (de-duped against the GM's own adjust);
-        `roll.pushed` surfaces a 5-second toast above the DP card. A
-        "Live" / "Reconnecting" badge tracks connection state. Token
-        rotation handled by Centrifuge's `getToken` callback so an
-        in-flight connection survives the 5-min token TTL. Visibility-
-        change reconnect handling not added — Centrifuge already
-        retries automatically on transient drops, and the DP refetch
-        on next adjust covers any missed events.
-- Status: done — ready to archive (move to `done.md` next session)
+  - From the character sheet, a player can open a dice bottom sheet,
+    pick a pool size (1–10), label the roll, hit Roll, see the
+    server-rolled result, and Push once when eligible.
+  - The character sheet exposes the last 50 rolls (compact list)
+    with row tap → detail modal showing full dice strip, label,
+    pool, hits, and pushed flag.
+  - A new `Sessions` screen lists the player's sessions
+    (Centrifugo-friendly: anything they're a GM owner of OR a
+    character is assigned to). Detail page shows DP counter,
+    assigned characters, GM-only `+1`/`-1` controls when the user
+    is the owner.
+  - Session detail subscribes to `session.{id}` over Centrifugo
+    (Dart client); `dp.changed` patches the counter live,
+    `roll.pushed` surfaces a transient SnackBar.
+- Spec diff: none — backend surface is stable, Dart SDK was already
+  regenerated when each web block landed (`@app/api-client-dart`
+  ships DiceApi + GameSessionsApi + DarknessPointsApi).
+- Codegen impact: none.
+- Design impact: zero new `app_ui` widgets in Block 1; reuse
+  Material + the existing Coriolis primitives. A
+  `RollResultStrip` widget may live page-scoped in Block 1 if no
+  app_ui equivalent exists — keep it scoped, do NOT promote
+  mid-block.
+- Tests: per-block bloc/cubit specs covering happy path + error
+  routing (RFC 9457 → `errorMessage`). Widget tests deferred to
+  the existing `flutter_test` pattern used by `characters_list`.
+- Sub-blocks (one commit + push + active.md follow-up per block,
+  per `feedback_block_workflow.md`):
+  - [ ] Block 1 — `features/rolls/` skeleton + dice bottom sheet on
+        the character sheet. Domain `Roll` model + `RollRepository`
+        contract + Dio-backed impl wrapping `app_api_client`'s
+        `DiceApi`. `DiceRollerCubit` for Roll/Push state.
+        `DiceBottomSheet` widget mounted from the character sheet
+        Rolls section. Server holds the RNG; client just displays.
+  - [ ] Block 2 — Roll history. `RollHistoryCubit` fetches last 50
+        on mount; the DiceRoller emits via its repo and the cubit
+        is parent-shared so a fresh roll prepends without a refetch
+        race. Detail dialog shows full dice strip + push state.
+        Wired into a new "Rolls" tab on the character sheet.
+  - [ ] Block 3 — `features/sessions/` skeleton: list + detail.
+        `GameSession` domain model, repository wrapping
+        `app_api_client.GameSessionsApi`. List page shows active /
+        archived tabs (compact compared to web). Detail page
+        renders DP counter, assigned characters, and a GM-only
+        control row (`+1` / `-1` taps via DarknessPointsApi).
+        Player view hides the GM controls.
+  - [ ] Block 4 — Centrifugo subscription via the `centrifuge_dart`
+        package. Token mint reuses the existing realtime endpoint;
+        on `dp.changed` patch the visible counter, on `roll.pushed`
+        push a SnackBar. Subscription closes on dispose.
+- Status: in-progress
 - Blockers: —
