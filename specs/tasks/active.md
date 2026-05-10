@@ -53,11 +53,15 @@
         now has `Concept` as EnumClass; was String — bridged with
         `valueOf` / `.name`). Tests: 59/59 (+6 new in
         `dice_roller_cubit_test.dart`).
-  - [ ] Block 2 — Roll history. `RollHistoryCubit` fetches last 50
-        on mount; the DiceRoller emits via its repo and the cubit
-        is parent-shared so a fresh roll prepends without a refetch
-        race. Detail dialog shows full dice strip + push state.
-        Wired into a new "Rolls" tab on the character sheet.
+  - [x] Block 2 — Roll history is folded into the same dice bottom
+        sheet (one mental model on mobile, no separate "Rolls" tab).
+        `RollHistoryCubit` exposes `prependRoll` / `updateRoll` for
+        live state mutation; the BlocConsumer listener inside the
+        sheet forwards roller events into both. List rows are
+        ListTile-based with relative timestamps + chip badges; tap
+        opens an AlertDialog with the full dice strip. Drive-by:
+        `Roll` now extends Equatable so list-of-Roll state diffs
+        compare structurally. 65/65 mobile tests pass (+6 new).
   - [ ] Block 3 — `features/sessions/` skeleton: list + detail.
         `GameSession` domain model, repository wrapping
         `app_api_client.GameSessionsApi`. List page shows active /
