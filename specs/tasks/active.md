@@ -63,10 +63,13 @@
         in 4 ship-module modules) — flagged for a separate
         `chore(codegen)` task; NOT fixed in this block since
         the combat module doesn't depend on those models.
-  - [ ] Block 2 — `ActiveCombatCubit` (load by sessionId →
+  - [x] Block 2 — `ActiveCombatCubit` (load by sessionId →
         resolve active encounter → fetch combatants),
         states (loading / empty / ready / error), unit
-        tests.
+        tests. State union uses Dart 3 sealed/final
+        class idiom (matches sessions/characters cubits,
+        no freezed). 8 cubit tests added — total combat
+        scope 15/15 passing.
   - [ ] Block 3 — `ActiveCombatCard` widget integrated
         into the session detail screen. Empty / active /
         ended state goldens.
