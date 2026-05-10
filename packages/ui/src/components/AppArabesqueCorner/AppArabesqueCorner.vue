@@ -106,10 +106,7 @@
       class="app-arabesque-corner__svg"
     >
       <g :transform="groupTransform">
-        <path
-          :d="ARABESQUE_PATH"
-          class="app-arabesque-corner__path"
-        />
+        <path :d="ARABESQUE_PATH" class="app-arabesque-corner__path" />
       </g>
     </svg>
   </span>

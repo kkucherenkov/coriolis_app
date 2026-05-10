@@ -66,15 +66,8 @@
     :aria-disabled="disabled ? 'true' : undefined"
     @click="handleClick"
   >
-    <span
-      class="app-condition-pill__icon"
-      aria-hidden="true"
-    >
-      <AppIcon
-        :name="iconName"
-        :size="iconSize"
-        color="inherit"
-      />
+    <span class="app-condition-pill__icon" aria-hidden="true">
+      <AppIcon :name="iconName" :size="iconSize" color="inherit" />
     </span>
     <span class="app-condition-pill__label">
       <slot>{{ defaultLabel }}</slot>

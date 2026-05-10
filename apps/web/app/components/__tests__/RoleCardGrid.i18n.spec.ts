@@ -5,10 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { CONCEPT_ROLES } from '../../utils/roleCatalogue';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const gridSfc = readFileSync(
-  path.resolve(here, '..', 'RoleCardGrid.vue'),
-  'utf8',
-);
+const gridSfc = readFileSync(path.resolve(here, '..', 'RoleCardGrid.vue'), 'utf8');
 
 function extractI18nBlock(source: string, locale: string): Record<string, unknown> {
   const i18nMatch = source.match(/<i18n[^>]*>([\s\S]*?)<\/i18n>/);

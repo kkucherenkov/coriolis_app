@@ -318,7 +318,9 @@ describe('CreateRollHandler', () => {
     await handler.execute(new CreateRollCommand('user_01', 'char_01', dto));
 
     expect(rollRepo.create).toHaveBeenCalledWith(
-      expect.objectContaining({ breakdown: { attribute: 2, skill: 1, gear: 1, modifier: 0, helpers: 0 } }),
+      expect.objectContaining({
+        breakdown: { attribute: 2, skill: 1, gear: 1, modifier: 0, helpers: 0 },
+      }),
     );
   });
 
@@ -375,7 +377,9 @@ describe('CreateRollHandler', () => {
 
     expect(result.pool).toBe(0);
     expect(rollRepo.create).toHaveBeenCalledWith(
-      expect.objectContaining({ breakdown: { attribute: 0, skill: 0, gear: 0, modifier: 0, helpers: 0 } }),
+      expect.objectContaining({
+        breakdown: { attribute: 0, skill: 0, gear: 0, modifier: 0, helpers: 0 },
+      }),
     );
   });
 });

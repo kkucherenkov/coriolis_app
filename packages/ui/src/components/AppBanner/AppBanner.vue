@@ -45,37 +45,19 @@
 </script>
 
 <template>
-  <div
-    :class="classes"
-    :role="role"
-  >
-    <span
-      class="app-banner__icon"
-      aria-hidden="true"
-    >
-      <AppIcon
-        :name="resolvedIcon"
-        size="md"
-      />
+  <div :class="classes" :role="role">
+    <span class="app-banner__icon" aria-hidden="true">
+      <AppIcon :name="resolvedIcon" size="md" />
     </span>
 
     <div class="app-banner__body">
-      <strong
-        v-if="title"
-        class="app-banner__title"
-      >{{ title }}</strong>
-      <div
-        v-if="$slots['default']"
-        class="app-banner__content"
-      >
+      <strong v-if="title" class="app-banner__title">{{ title }}</strong>
+      <div v-if="$slots['default']" class="app-banner__content">
         <slot />
       </div>
     </div>
 
-    <div
-      v-if="$slots['actions']"
-      class="app-banner__actions"
-    >
+    <div v-if="$slots['actions']" class="app-banner__actions">
       <slot name="actions" />
     </div>
 
@@ -86,10 +68,7 @@
       :aria-label="'Dismiss'"
       @click="emit('dismiss')"
     >
-      <AppIcon
-        name="x"
-        size="sm"
-      />
+      <AppIcon name="x" size="sm" />
     </button>
   </div>
 </template>

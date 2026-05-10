@@ -221,7 +221,7 @@ package and a per-session `SessionRealtime` adapter.
   RPC" which would have pulled the publish path through the backend.
   (`6e1e1d5`.)
 - **Realtime publish is non-fatal, DB write is the source of truth.**
-  Both `dp.changed` and `roll.pushed` are published *after* the
+  Both `dp.changed` and `roll.pushed` are published _after_ the
   Prisma transaction commits; publish failure is caught and logged
   (`Logger.warn`), and the committed row is never rolled back.
   Clients will receive the next `dp.changed` on the following adjust
@@ -238,7 +238,7 @@ package and a per-session `SessionRealtime` adapter.
 - **AsyncAPI v0.8.2 extension via codegen rewrite.**
   `7e309a9` extends the channel definition to two payloads
   (`DpChanged` + `RollPushed`) and rewrites `codegen-asyncapi.ts` to
-  emit a *union* of message types per channel instead of the
+  emit a _union_ of message types per channel instead of the
   first-only behaviour the script had been carrying. Pre-empted the
   trap of drifting into a single-message-per-channel world.
 - **Spec versioning landmarks.** `v0.8.0` cut the new dice + session
@@ -326,15 +326,15 @@ per-feature task entries with judgement-call notes live in
 
 - `dbc22c9` — archive T-003; push T-004 (Phase 5 backend)
 - `379eadf` + `e8abc66` + `9e29931` + `59e1a42` + `013764d`
-  + `37c95b5` + `6190e02` + `51fae5b` + `22b0a79` + `fae41e0` —
-  T-003 mobile dice + history + sessions + live
+  - `37c95b5` + `6190e02` + `51fae5b` + `22b0a79` + `fae41e0` —
+    T-003 mobile dice + history + sessions + live
 - `09c345d` — archive T-002; push T-003
 - `3ebc6f5` + `1b9fb40` + `d12033e` + `65dfafa` + `b6b676f`
-  + `9b78301` + `2bf89ce` + `ae27f42` + `7e55f74` + `4e18df2` —
-  T-002 web dice + history + sessions + DP + live
+  - `9b78301` + `2bf89ce` + `ae27f42` + `7e55f74` + `4e18df2` —
+    T-002 web dice + history + sessions + DP + live
 - `97c62ae` — archive T-001; push T-002
 - `fbab15c` + `cdfca86` + `766e660` + `41f61c5` + `070a94a`
-  + `0dc1f87` + `6e58f40` — T-001 character follow-ups + auth pages
+  - `0dc1f87` + `6e58f40` — T-001 character follow-ups + auth pages
 - `fcfee69` + `b0ef2a3` + `6cac7a2` + `6e1e1d5` + `bde00d1` —
   Centrifugo realtime publish + ACL + e2e
 - `91169bb` + `c962b8f` + `193c8e6` + `7e4ea73` + `772509e` —
@@ -347,5 +347,5 @@ per-feature task entries with judgement-call notes live in
 - `048704a` + `0550b4e` + `2f00cef` + `4b84e8d` + `4d98fff` —
   Roll spec (v0.8.0) + codegen + canPush helper + Prisma migration + DiceModule
 - `e21dea5` + `614e31f` + `b8afde5` + `8cd30ac` + `db52555`
-  + `250e918` + `91dac1d` + `4c7a239` + `cf47ef1` + `c70754f` —
-  T-2026-05-09-005 character creation rules alignment (carried Phase-3 follow-up)
+  - `250e918` + `91dac1d` + `4c7a239` + `cf47ef1` + `c70754f` —
+    T-2026-05-09-005 character creation rules alignment (carried Phase-3 follow-up)

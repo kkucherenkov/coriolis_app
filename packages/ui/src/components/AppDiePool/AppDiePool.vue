@@ -67,32 +67,18 @@
 
 <template>
   <div :class="poolClasses">
-    <ul
-      role="list"
-      class="app-die-pool__list"
-    >
+    <ul role="list" class="app-die-pool__list">
       <li
         v-for="(value, index) in values"
         :key="index"
         :class="['app-die-pool__item', { 'app-die-pool__item--pushed': pushedSet.has(index) }]"
       >
-        <AppDie
-          :value="value"
-          :state="dieState(index, value)"
-          :size="size"
-        />
+        <AppDie :value="value" :state="dieState(index, value)" :size="size" />
       </li>
     </ul>
 
-    <div
-      v-if="showHitCount"
-      class="app-die-pool__count"
-      aria-live="polite"
-    >
-      <AppBadge
-        variant="success"
-        size="sm"
-      >
+    <div v-if="showHitCount" class="app-die-pool__count" aria-live="polite">
+      <AppBadge variant="success" size="sm">
         {{ hitCount }} {{ hitCount === 1 ? 'hit' : 'hits' }}
       </AppBadge>
     </div>

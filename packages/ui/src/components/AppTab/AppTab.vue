@@ -51,11 +51,7 @@
     :tabindex="active ? 0 : -1"
     @click="onClick"
   >
-    <span
-      v-if="$slots['icon-leading']"
-      class="app-tab__icon"
-      aria-hidden="true"
-    >
+    <span v-if="$slots['icon-leading']" class="app-tab__icon" aria-hidden="true">
       <slot name="icon-leading" />
     </span>
     <span class="app-tab__label">

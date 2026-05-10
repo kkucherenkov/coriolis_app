@@ -173,9 +173,7 @@ describe('app layout — displayName', () => {
   });
 
   it('falls back to name when displayName is absent', () => {
-    expect(deriveDisplayName({ displayName: null, name: 'zara', email: 'z@kua.com' })).toBe(
-      'zara',
-    );
+    expect(deriveDisplayName({ displayName: null, name: 'zara', email: 'z@kua.com' })).toBe('zara');
   });
 
   it('falls back to email when both displayName and name are absent', () => {

@@ -93,12 +93,7 @@
         default-slot vnodes at runtime).
     -->
     <slot :aria-describedby="panelId" />
-    <div
-      :id="panelId"
-      class="app-tooltip__panel"
-      role="tooltip"
-      :aria-hidden="!visible"
-    >
+    <div :id="panelId" class="app-tooltip__panel" role="tooltip" :aria-hidden="!visible">
       {{ content }}
     </div>
   </span>

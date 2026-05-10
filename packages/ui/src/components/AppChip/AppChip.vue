@@ -69,7 +69,8 @@
       @click.stop="handleRemove"
       @keydown.enter.prevent="handleRemove"
       @keydown.space.prevent="handleRemove"
-    >×</span>
+      >×</span
+    >
   </button>
 </template>
 

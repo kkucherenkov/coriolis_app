@@ -34,11 +34,66 @@ describe('BASE_STATS_BY_TIER', () => {
 
   // Table-driven: [tier, energyMax, hullMax, maneuverability, signature, armor, speed, moduleSlots]
   const TABLE_75: [ShipTier, ShipBaseStats][] = [
-    ['I',   { energyMax: 3,  hullMax: 2,  maneuverability:  2, signature: -2, armor: 3, speed: 4, moduleSlots:  3 }],
-    ['II',  { energyMax: 4,  hullMax: 4,  maneuverability:  1, signature: -1, armor: 4, speed: 4, moduleSlots:  6 }],
-    ['III', { energyMax: 5,  hullMax: 6,  maneuverability:  0, signature:  0, armor: 5, speed: 2, moduleSlots: 10 }],
-    ['IV',  { energyMax: 6,  hullMax: 9,  maneuverability: -1, signature:  2, armor: 7, speed: 1, moduleSlots: 20 }],
-    ['V',   { energyMax: 7,  hullMax: 12, maneuverability: -2, signature:  3, armor: 9, speed: 1, moduleSlots: 40 }],
+    [
+      'I',
+      {
+        energyMax: 3,
+        hullMax: 2,
+        maneuverability: 2,
+        signature: -2,
+        armor: 3,
+        speed: 4,
+        moduleSlots: 3,
+      },
+    ],
+    [
+      'II',
+      {
+        energyMax: 4,
+        hullMax: 4,
+        maneuverability: 1,
+        signature: -1,
+        armor: 4,
+        speed: 4,
+        moduleSlots: 6,
+      },
+    ],
+    [
+      'III',
+      {
+        energyMax: 5,
+        hullMax: 6,
+        maneuverability: 0,
+        signature: 0,
+        armor: 5,
+        speed: 2,
+        moduleSlots: 10,
+      },
+    ],
+    [
+      'IV',
+      {
+        energyMax: 6,
+        hullMax: 9,
+        maneuverability: -1,
+        signature: 2,
+        armor: 7,
+        speed: 1,
+        moduleSlots: 20,
+      },
+    ],
+    [
+      'V',
+      {
+        energyMax: 7,
+        hullMax: 12,
+        maneuverability: -2,
+        signature: 3,
+        armor: 9,
+        speed: 1,
+        moduleSlots: 40,
+      },
+    ],
   ];
 
   it.each(TABLE_75)('tier %s matches ТАБЛИЦА 7.5 verbatim', (tier, expected) => {
@@ -160,7 +215,10 @@ describe('getBaseStatsByShipType', () => {
 
 describe('getTierForShipType', () => {
   it('returns the correct tier for every ship type (table-driven loop)', () => {
-    for (const [shipType, expectedTier] of Object.entries(TIER_BY_SHIP_TYPE) as [ShipClass, ShipTier][]) {
+    for (const [shipType, expectedTier] of Object.entries(TIER_BY_SHIP_TYPE) as [
+      ShipClass,
+      ShipTier,
+    ][]) {
       expect(getTierForShipType(shipType)).toBe(expectedTier);
     }
   });
@@ -178,7 +236,10 @@ describe('BASE_STATS_BY_CLASS (backwards-compat)', () => {
   });
 
   it('every entry is the same reference as BASE_STATS_BY_TIER for its tier', () => {
-    for (const [shipType, stats] of Object.entries(BASE_STATS_BY_CLASS) as [ShipClass, ShipBaseStats][]) {
+    for (const [shipType, stats] of Object.entries(BASE_STATS_BY_CLASS) as [
+      ShipClass,
+      ShipBaseStats,
+    ][]) {
       const tier = TIER_BY_SHIP_TYPE[shipType];
       expect(stats).toEqual(BASE_STATS_BY_TIER[tier]);
     }

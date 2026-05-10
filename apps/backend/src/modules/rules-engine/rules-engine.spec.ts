@@ -156,21 +156,15 @@ describe('sumArmorExtraSlots', () => {
   });
 
   it('single equipped armor with extraSlotCount=1 → 1', () => {
-    expect(
-      sumArmorExtraSlots([{ type: 'ARMOR', extraSlotCount: 1, equipped: true }]),
-    ).toBe(1);
+    expect(sumArmorExtraSlots([{ type: 'ARMOR', extraSlotCount: 1, equipped: true }])).toBe(1);
   });
 
   it('single ARMOR item NOT equipped (equipped=false) → 0', () => {
-    expect(
-      sumArmorExtraSlots([{ type: 'ARMOR', extraSlotCount: 5, equipped: false }]),
-    ).toBe(0);
+    expect(sumArmorExtraSlots([{ type: 'ARMOR', extraSlotCount: 5, equipped: false }])).toBe(0);
   });
 
   it('WEAPON equipped → 0 (wrong type)', () => {
-    expect(
-      sumArmorExtraSlots([{ type: 'WEAPON', extraSlotCount: 3, equipped: true }]),
-    ).toBe(0);
+    expect(sumArmorExtraSlots([{ type: 'WEAPON', extraSlotCount: 3, equipped: true }])).toBe(0);
   });
 
   it('two equipped armors stack (1 + 1 → 2)', () => {
@@ -192,21 +186,15 @@ describe('sumArmorExtraSlots', () => {
   });
 
   it('ARMOR without extraSlotCount field counts as 0', () => {
-    expect(
-      sumArmorExtraSlots([{ type: 'ARMOR', equipped: true }]),
-    ).toBe(0);
+    expect(sumArmorExtraSlots([{ type: 'ARMOR', equipped: true }])).toBe(0);
   });
 
   it('ARMOR without equipped field (undefined) is treated as not equipped → 0', () => {
-    expect(
-      sumArmorExtraSlots([{ type: 'ARMOR', extraSlotCount: 2 }]),
-    ).toBe(0);
+    expect(sumArmorExtraSlots([{ type: 'ARMOR', extraSlotCount: 2 }])).toBe(0);
   });
 
   it('Тяжёлый экзодоспех equipped (extraSlotCount=5) → 5', () => {
-    expect(
-      sumArmorExtraSlots([{ type: 'ARMOR', extraSlotCount: 5, equipped: true }]),
-    ).toBe(5);
+    expect(sumArmorExtraSlots([{ type: 'ARMOR', extraSlotCount: 5, equipped: true }])).toBe(5);
   });
 });
 

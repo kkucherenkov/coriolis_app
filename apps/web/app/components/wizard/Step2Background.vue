@@ -266,10 +266,7 @@
 
 <template>
   <div class="step-background">
-    <AppField
-      :label="t('originLabel')"
-      :help-text="t('originHelp')"
-    >
+    <AppField :label="t('originLabel')" :help-text="t('originHelp')">
       <template #default="slotAttrs">
         <AppInput
           v-bind="slotAttrs"
@@ -282,10 +279,7 @@
       </template>
     </AppField>
 
-    <AppField
-      :label="t('upbringingLabel')"
-      :help-text="t('upbringingHelp')"
-    >
+    <AppField :label="t('upbringingLabel')" :help-text="t('upbringingHelp')">
       <AppSegControl
         :model-value="upbringing ?? null"
         :options="upbringingOptions"
@@ -294,18 +288,11 @@
       />
     </AppField>
 
-    <p
-      v-if="upbringing"
-      class="step-background__desc"
-    >
+    <p v-if="upbringing" class="step-background__desc">
       {{ t(`upbringingDesc.${upbringing}`) }}
     </p>
 
-    <div
-      v-if="selectedBudget"
-      class="step-background__budget"
-      :aria-label="t('budget.title')"
-    >
+    <div v-if="selectedBudget" class="step-background__budget" :aria-label="t('budget.title')">
       <span class="step-background__budget-title">{{ t('budget.title') }}</span>
       <dl class="step-background__budget-grid">
         <div class="step-background__budget-row">
@@ -326,17 +313,11 @@
         </div>
       </dl>
     </div>
-    <p
-      v-else
-      class="step-background__budget-prompt"
-    >
+    <p v-else class="step-background__budget-prompt">
       {{ t('budget.selectPrompt') }}
     </p>
 
-    <AppField
-      :label="t('crewLabel')"
-      :help-text="t('crewHelp')"
-    >
+    <AppField :label="t('crewLabel')" :help-text="t('crewHelp')">
       <div class="step-background__crew-grid">
         <button
           v-for="crew in CREW_CONCEPTS"
@@ -355,10 +336,7 @@
       </div>
     </AppField>
 
-    <AppField
-      :label="t('ageLabel')"
-      :help-text="t('ageHelp')"
-    >
+    <AppField :label="t('ageLabel')" :help-text="t('ageHelp')">
       <template #default="slotAttrs">
         <AppInput
           v-bind="slotAttrs"

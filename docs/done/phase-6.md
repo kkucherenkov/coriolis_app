@@ -35,17 +35,17 @@ What also rode in on this phase, beyond the GM-tools spec + backend:
 A GM can (server-side, via the typed clients):
 
 - Manage a session-scoped NPC library — `POST /api/v1/game-sessions/
-  {id}/npcs`, list / patch / delete with attribute floor, statusFlags,
+{id}/npcs`, list / patch / delete with attribute floor, statusFlags,
   weapons, armor, role, faction. Same shape as `Character` but without
   the player-facing wizard.
 - Open and close encounters — `POST /api/v1/game-sessions/{id}/
-  encounters` with `{ name, npcIds[], characterIds[] }`. Server seeds
+encounters` with `{ name, npcIds[], characterIds[] }`. Server seeds
   one `Combatant` row per source, status `ENCOUNTER_PREP` → `ACTIVE` →
   `RESOLVED` via state-machined transitions.
 - Roll / reroll initiative on the encounter — `POST /encounters/{id}/
-  initiative/roll` re-rolls 1d6 per combatant; ties resolve via reroll
+initiative/roll` re-rolls 1d6 per combatant; ties resolve via reroll
   loop (canon) rather than agility tiebreak. `POST /encounters/{id}/
-  turn/advance` walks `turnOrder` ascending with a wrap-around to start
+turn/advance` walks `turnOrder` ascending with a wrap-around to start
   a new round.
 - Mutate combatants individually — `PATCH /combatants/{id}` for
   `hpCurrent` / `statusFlags`, with the canon clamp at 0..20 dice on
@@ -128,7 +128,7 @@ T-010 blocks (in canonical order):
 - `457fe42` — Block C — dice pool 0..20 clamp + Ноль кубиков rule
 - `05b6a2c` — Block D — Attributes minimum 2 (active-PC invariant)
 - `80bf2d8` — Block E — Character.role + 33-value canonical Role enum
-  + role-scoped key skills (per-role 4 key skills surfaced)
+  - role-scoped key skills (per-role 4 key skills surfaced)
 - `6ddf8c3` — Block F — ItemRangeEnum 5-band → canonical 4-band
   (close, medium, long, extreme)
 - `49821a4` — Block G — ItemCybernetic.bodyPoints retired, replaced
@@ -267,7 +267,7 @@ layout (header + drawer + user menu), Playwright nav smoke.
   the librarian flagged is now either fixed or pushed out as a
   numbered T-task with citation. Subsequent T-012..T-016 land on
   top of 1.0.0 with minor bumps (the spec carries `Combatant.
-  initiative` bump and `RollCreate.breakdown` as additive minor
+initiative` bump and `RollCreate.breakdown` as additive minor
   changes; TypeScript / Dart codegen treated them as non-breaking).
 - **Web global navigation included in this doc.** T-018 is general
   web infra (header / drawer / language switcher / settings page)

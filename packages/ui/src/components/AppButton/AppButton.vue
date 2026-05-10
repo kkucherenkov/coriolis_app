@@ -51,11 +51,7 @@
     :aria-disabled="isDisabled || undefined"
     @click="onClick"
   >
-    <span
-      v-if="loading"
-      class="app-button__spinner"
-      aria-hidden="true"
-    />
+    <span v-if="loading" class="app-button__spinner" aria-hidden="true" />
     <span
       v-if="$slots['icon-leading'] && !loading"
       class="app-button__icon app-button__icon--leading"
@@ -63,10 +59,7 @@
     >
       <slot name="icon-leading" />
     </span>
-    <span
-      v-if="$slots['default']"
-      class="app-button__label"
-    >
+    <span v-if="$slots['default']" class="app-button__label">
       <slot />
     </span>
     <span

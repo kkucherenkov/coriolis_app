@@ -123,9 +123,7 @@ describe('AppHeader — active link', () => {
   it('only the active link gets aria-current="page"; others have none', () => {
     const w = mountHeader({ activeKey: 'ships' });
     const links = w.findAll('.app-header__nav-link');
-    const withAriaCurrent = links.filter(
-      (l) => l.attributes('aria-current') === 'page',
-    );
+    const withAriaCurrent = links.filter((l) => l.attributes('aria-current') === 'page');
     expect(withAriaCurrent).toHaveLength(1);
     expect(withAriaCurrent[0]?.text()).toContain('Ships');
     w.unmount();
@@ -134,9 +132,7 @@ describe('AppHeader — active link', () => {
   it('no nav link gets aria-current="page" when activeKey is undefined', () => {
     const w = mountHeader({ activeKey: undefined });
     const links = w.findAll('.app-header__nav-link');
-    const withAriaCurrent = links.filter(
-      (l) => l.attributes('aria-current') !== undefined,
-    );
+    const withAriaCurrent = links.filter((l) => l.attributes('aria-current') !== undefined);
     expect(withAriaCurrent).toHaveLength(0);
     w.unmount();
   });
@@ -158,10 +154,7 @@ describe('AppHeader — nav landmark', () => {
 
 describe('AppHeader — slots', () => {
   it('user-menu slot renders when filled', () => {
-    const w = mountHeader(
-      {},
-      { 'user-menu': '<div data-testid="user-menu-stub">UserMenu</div>' },
-    );
+    const w = mountHeader({}, { 'user-menu': '<div data-testid="user-menu-stub">UserMenu</div>' });
     expect(w.find('[data-testid="user-menu-stub"]').exists()).toBe(true);
     w.unmount();
   });

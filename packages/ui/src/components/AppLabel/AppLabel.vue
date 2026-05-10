@@ -38,24 +38,14 @@
 </script>
 
 <template>
-  <component
-    :is="tag"
-    :for="tag === 'label' ? $props.for : undefined"
-    :class="classes"
-  >
+  <component :is="tag" :for="tag === 'label' ? $props.for : undefined" :class="classes">
     <span class="app-label__text">
       <slot>{{ text }}</slot>
     </span>
-    <span
-      v-if="required"
-      class="app-label__required"
-      aria-label="required"
-      aria-hidden="false"
-    >*</span>
-    <span
-      v-if="helpText"
-      class="app-label__help"
-    >{{ helpText }}</span>
+    <span v-if="required" class="app-label__required" aria-label="required" aria-hidden="false"
+      >*</span
+    >
+    <span v-if="helpText" class="app-label__help">{{ helpText }}</span>
   </component>
 </template>
 

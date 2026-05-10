@@ -32,7 +32,12 @@ import {
 } from '../domain/encounter.errors';
 import { GAME_SESSION_ACCESS } from '../domain/game-session-access.ports';
 import { ENCOUNTER_REPO, INITIATIVE_REPO } from '../domain/encounter.ports';
-import { clampInitiative, rerollTies, sortInitiative, sumWeaponInitiative } from '../domain/initiative';
+import {
+  clampInitiative,
+  rerollTies,
+  sortInitiative,
+  sumWeaponInitiative,
+} from '../domain/initiative';
 import { COMBAT_PUBLISHER } from '../infra/combat.publisher';
 
 import { RollInitiativeCommand } from './roll-initiative.command';

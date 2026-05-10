@@ -377,7 +377,8 @@ describe('RollInitiativeHandler', () => {
 
     await handler.execute(new RollInitiativeCommand('enc-1', 'user-1'));
 
-    const callData = vi.mocked(initiativeRepo.rollInitiative).mock.calls[0]?.[0] as RollInitiativeData;
+    const callData = vi.mocked(initiativeRepo.rollInitiative).mock
+      .calls[0]?.[0] as RollInitiativeData;
     expect(callData.combatantPatches[0]?.initiative).toBe(5); // 3 + 2
   });
 
@@ -398,7 +399,8 @@ describe('RollInitiativeHandler', () => {
 
     await handler.execute(new RollInitiativeCommand('enc-1', 'user-1'));
 
-    const callData = vi.mocked(initiativeRepo.rollInitiative).mock.calls[0]?.[0] as RollInitiativeData;
+    const callData = vi.mocked(initiativeRepo.rollInitiative).mock
+      .calls[0]?.[0] as RollInitiativeData;
     expect(callData.combatantPatches[0]?.initiative).toBe(6); // 4 + 2
   });
 
@@ -419,7 +421,8 @@ describe('RollInitiativeHandler', () => {
 
     await handler.execute(new RollInitiativeCommand('enc-1', 'user-1'));
 
-    const callData = vi.mocked(initiativeRepo.rollInitiative).mock.calls[0]?.[0] as RollInitiativeData;
+    const callData = vi.mocked(initiativeRepo.rollInitiative).mock
+      .calls[0]?.[0] as RollInitiativeData;
     expect(callData.combatantPatches[0]?.initiative).toBe(3); // 3 + 0
   });
 
@@ -439,7 +442,8 @@ describe('RollInitiativeHandler', () => {
 
     await handler.execute(new RollInitiativeCommand('enc-1', 'user-1'));
 
-    const callData = vi.mocked(initiativeRepo.rollInitiative).mock.calls[0]?.[0] as RollInitiativeData;
+    const callData = vi.mocked(initiativeRepo.rollInitiative).mock
+      .calls[0]?.[0] as RollInitiativeData;
     expect(callData.combatantPatches[0]?.initiative).toBe(5); // 2 + 3
   });
 
@@ -459,7 +463,8 @@ describe('RollInitiativeHandler', () => {
 
     await handler.execute(new RollInitiativeCommand('enc-1', 'user-1'));
 
-    const callData = vi.mocked(initiativeRepo.rollInitiative).mock.calls[0]?.[0] as RollInitiativeData;
+    const callData = vi.mocked(initiativeRepo.rollInitiative).mock
+      .calls[0]?.[0] as RollInitiativeData;
     expect(callData.combatantPatches[0]?.initiative).toBe(10);
   });
 
@@ -479,7 +484,8 @@ describe('RollInitiativeHandler', () => {
 
     await handler.execute(new RollInitiativeCommand('enc-1', 'user-1'));
 
-    const callData = vi.mocked(initiativeRepo.rollInitiative).mock.calls[0]?.[0] as RollInitiativeData;
+    const callData = vi.mocked(initiativeRepo.rollInitiative).mock
+      .calls[0]?.[0] as RollInitiativeData;
     expect(callData.combatantPatches[0]?.initiative).toBe(1);
   });
 
@@ -506,7 +512,8 @@ describe('RollInitiativeHandler', () => {
 
     await handler.execute(new RollInitiativeCommand('enc-1', 'user-1'));
 
-    const callData = vi.mocked(initiativeRepo.rollInitiative).mock.calls[0]?.[0] as RollInitiativeData;
+    const callData = vi.mocked(initiativeRepo.rollInitiative).mock
+      .calls[0]?.[0] as RollInitiativeData;
     expect(callData.combatantPatches[0]?.initiative).toBe(4);
   });
 
@@ -530,7 +537,8 @@ describe('RollInitiativeHandler', () => {
 
     await handler.execute(new RollInitiativeCommand('enc-1', 'user-1'));
 
-    const callData = vi.mocked(initiativeRepo.rollInitiative).mock.calls[0]?.[0] as RollInitiativeData;
+    const callData = vi.mocked(initiativeRepo.rollInitiative).mock
+      .calls[0]?.[0] as RollInitiativeData;
     const cbAPatch = callData.combatantPatches.find((p) => p.id === 'cb-a');
     const cbBPatch = callData.combatantPatches.find((p) => p.id === 'cb-b');
     // After reroll (no weapons, pure d6): cb-a=6, cb-b=2 — resolved

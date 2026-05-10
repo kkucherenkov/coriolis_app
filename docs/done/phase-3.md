@@ -167,7 +167,7 @@ changes.
   history survives; revoked / expired slugs respond `410 Gone` so
   callers can distinguish "never existed" from "existed and was
   revoked". (3) View tracking is an in-memory `Map<slug,
-  pendingCount>` flushed by a `* * * * *` cron in a single batched
+pendingCount>` flushed by a `* * * * *` cron in a single batched
   Prisma transaction — the read path does not hit the DB. (4)
   Multi-link per character is allowed (each with its own
   `includeGmNotes` / `expiresAt` / `label`), so audience-specific
@@ -261,5 +261,5 @@ notes live in `specs/tasks/done.md`.
 - `f11cd55` + `f01c16a` + `fc5643d` + `59a0d92` — SharingModule + Prisma migration + codegen + spec
 - `cadfbbc` — ADR-0003 share-link design
 - `31a54d3` — Flutter 3.41 SDK compat (carried from Phase 2 tail)
-</content>
-</invoke>
+  </content>
+  </invoke>

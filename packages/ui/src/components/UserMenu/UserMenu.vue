@@ -111,9 +111,7 @@
   function getMenuItems(): HTMLElement[] {
     if (!menuRef.value) return [];
     return [
-      ...menuRef.value.querySelectorAll<HTMLElement>(
-        '[role="menuitem"], [role="menuitemradio"]',
-      ),
+      ...menuRef.value.querySelectorAll<HTMLElement>('[role="menuitem"], [role="menuitemradio"]'),
     ];
   }
 
@@ -168,11 +166,7 @@
 
 <template>
   <div class="user-menu">
-    <AppPopover
-      :open="open"
-      placement="bottom"
-      @update:open="emit('update:open', $event)"
-    >
+    <AppPopover :open="open" placement="bottom" @update:open="emit('update:open', $event)">
       <!-- Trigger: avatar + name button -->
       <template #trigger>
         <button
@@ -185,10 +179,7 @@
           @click="onTriggerClick"
         >
           <!-- Avatar or initials -->
-          <span
-            class="user-menu__avatar"
-            aria-hidden="true"
-          >
+          <span class="user-menu__avatar" aria-hidden="true">
             <img
               v-if="showImage"
               class="user-menu__avatar-img"
@@ -198,20 +189,14 @@
               decoding="async"
               @error="handleImageError"
             />
-            <span
-              v-else
-              class="user-menu__avatar-initials"
-            >{{ initials }}</span>
+            <span v-else class="user-menu__avatar-initials">{{ initials }}</span>
           </span>
 
           <!-- Display name -->
           <span class="user-menu__name">{{ displayName }}</span>
 
           <!-- Chevron indicator -->
-          <span
-            class="user-menu__chevron"
-            aria-hidden="true"
-          >&#8964;</span>
+          <span class="user-menu__chevron" aria-hidden="true">&#8964;</span>
         </button>
       </template>
 
@@ -225,15 +210,8 @@
         @keydown="onMenuKeydown"
       >
         <!-- Language section -->
-        <div
-          role="group"
-          :aria-label="labels.languageLabel"
-          class="user-menu__section"
-        >
-          <div
-            class="user-menu__section-label"
-            aria-hidden="true"
-          >
+        <div role="group" :aria-label="labels.languageLabel" class="user-menu__section">
+          <div class="user-menu__section-label" aria-hidden="true">
             {{ labels.languageLabel }}
           </div>
 
@@ -247,10 +225,7 @@
             :class="{ 'user-menu__item--checked': locale.code === currentLocale }"
             @click="onLocaleClick(locale.code)"
           >
-            <span
-              class="user-menu__radio-indicator"
-              aria-hidden="true"
-            >
+            <span class="user-menu__radio-indicator" aria-hidden="true">
               {{ locale.code === currentLocale ? '●' : '○' }}
             </span>
             {{ locale.name }}
@@ -258,18 +233,10 @@
         </div>
 
         <!-- Divider -->
-        <div
-          role="separator"
-          class="user-menu__divider"
-        />
+        <div role="separator" class="user-menu__divider" />
 
         <!-- Settings -->
-        <button
-          type="button"
-          role="menuitem"
-          class="user-menu__item"
-          @click="onSettingsClick"
-        >
+        <button type="button" role="menuitem" class="user-menu__item" @click="onSettingsClick">
           {{ labels.settingsLabel }}
         </button>
 

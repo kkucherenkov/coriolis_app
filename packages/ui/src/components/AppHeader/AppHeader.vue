@@ -89,41 +89,19 @@
         stroke-linejoin="round"
         aria-hidden="true"
       >
-        <line
-          x1="3"
-          y1="6"
-          x2="21"
-          y2="6"
-        />
-        <line
-          x1="3"
-          y1="12"
-          x2="21"
-          y2="12"
-        />
-        <line
-          x1="3"
-          y1="18"
-          x2="21"
-          y2="18"
-        />
+        <line x1="3" y1="6" x2="21" y2="6" />
+        <line x1="3" y1="12" x2="21" y2="12" />
+        <line x1="3" y1="18" x2="21" y2="18" />
       </svg>
     </button>
 
     <!-- Brand / logo -->
-    <a
-      class="app-header__brand"
-      :href="brandHref"
-      :aria-label="brand.brandHomeAriaLabel"
-    >
+    <a class="app-header__brand" :href="brandHref" :aria-label="brand.brandHomeAriaLabel">
       <span class="app-header__brand-name">{{ brand.brandName }}</span>
     </a>
 
     <!-- Centre navigation — desktop only (hidden on mobile via CSS) -->
-    <nav
-      class="app-header__nav"
-      :aria-label="brand.navAriaLabel"
-    >
+    <nav class="app-header__nav" :aria-label="brand.navAriaLabel">
       <a
         v-for="item in navItems"
         :key="item.key"
@@ -132,11 +110,9 @@
         :href="item.href"
         :aria-current="item.key === activeKey ? 'page' : undefined"
       >
-        <span
-          v-if="item.icon"
-          class="app-header__nav-icon"
-          aria-hidden="true"
-        >{{ item.icon }}</span>
+        <span v-if="item.icon" class="app-header__nav-icon" aria-hidden="true">{{
+          item.icon
+        }}</span>
         {{ item.label }}
       </a>
     </nav>

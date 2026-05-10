@@ -47,11 +47,51 @@ export interface ShipBaseStats {
  * `ship.ports.ts` for the editable-on-write read-model fields.
  */
 export const BASE_STATS_BY_TIER: Readonly<Record<ShipTier, ShipBaseStats>> = Object.freeze({
-  I:   { energyMax: 3,  hullMax: 2,  maneuverability:  2, signature: -2, armor: 3, speed: 4, moduleSlots:  3 },
-  II:  { energyMax: 4,  hullMax: 4,  maneuverability:  1, signature: -1, armor: 4, speed: 4, moduleSlots:  6 },
-  III: { energyMax: 5,  hullMax: 6,  maneuverability:  0, signature:  0, armor: 5, speed: 2, moduleSlots: 10 },
-  IV:  { energyMax: 6,  hullMax: 9,  maneuverability: -1, signature:  2, armor: 7, speed: 1, moduleSlots: 20 },
-  V:   { energyMax: 7,  hullMax: 12, maneuverability: -2, signature:  3, armor: 9, speed: 1, moduleSlots: 40 },
+  I: {
+    energyMax: 3,
+    hullMax: 2,
+    maneuverability: 2,
+    signature: -2,
+    armor: 3,
+    speed: 4,
+    moduleSlots: 3,
+  },
+  II: {
+    energyMax: 4,
+    hullMax: 4,
+    maneuverability: 1,
+    signature: -1,
+    armor: 4,
+    speed: 4,
+    moduleSlots: 6,
+  },
+  III: {
+    energyMax: 5,
+    hullMax: 6,
+    maneuverability: 0,
+    signature: 0,
+    armor: 5,
+    speed: 2,
+    moduleSlots: 10,
+  },
+  IV: {
+    energyMax: 6,
+    hullMax: 9,
+    maneuverability: -1,
+    signature: 2,
+    armor: 7,
+    speed: 1,
+    moduleSlots: 20,
+  },
+  V: {
+    energyMax: 7,
+    hullMax: 12,
+    maneuverability: -2,
+    signature: 3,
+    armor: 9,
+    speed: 1,
+    moduleSlots: 40,
+  },
 });
 
 /**

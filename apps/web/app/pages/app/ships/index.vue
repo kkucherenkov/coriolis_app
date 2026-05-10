@@ -361,47 +361,24 @@
 </i18n>
 
 <template>
-  <section
-    class="page-ships"
-    data-testid="page-ships"
-  >
+  <section class="page-ships" data-testid="page-ships">
     <header class="page-ships__header">
       <h1 class="page-ships__title">
         {{ t('pageTitle') }}
       </h1>
-      <AppButton
-        v-if="!formOpen"
-        variant="primary"
-        size="md"
-        @click="openForm"
-      >
+      <AppButton v-if="!formOpen" variant="primary" size="md" @click="openForm">
         + {{ t('newShip') }}
       </AppButton>
     </header>
 
     <!-- Create form card -->
-    <AppCard
-      v-if="formOpen"
-      class="page-ships__form-card"
-    >
-      <form
-        novalidate
-        class="page-ships__form"
-        @submit.prevent="onCreate"
-      >
-        <AppBanner
-          v-if="formError"
-          tone="danger"
-          role="alert"
-        >
+    <AppCard v-if="formOpen" class="page-ships__form-card">
+      <form novalidate class="page-ships__form" @submit.prevent="onCreate">
+        <AppBanner v-if="formError" tone="danger" role="alert">
           {{ formError }}
         </AppBanner>
 
-        <AppField
-          :label="t('formNameLabel')"
-          :help="t('formNameHint')"
-          required
-        >
+        <AppField :label="t('formNameLabel')" :help="t('formNameHint')" required>
           <template #default="slotAttrs">
             <AppInput
               v-bind="slotAttrs"
@@ -413,32 +390,17 @@
           </template>
         </AppField>
 
-        <AppField
-          :label="t('formClassLabel')"
-          :help="t('formClassHint')"
-          required
-        >
+        <AppField :label="t('formClassLabel')" :help="t('formClassHint')" required>
           <template #default="slotAttrs">
-            <select
-              v-bind="slotAttrs"
-              v-model="newClass"
-              class="page-ships__select"
-            >
-              <option
-                v-for="cls in ALL_SHIP_CLASSES"
-                :key="cls"
-                :value="cls"
-              >
+            <select v-bind="slotAttrs" v-model="newClass" class="page-ships__select">
+              <option v-for="cls in ALL_SHIP_CLASSES" :key="cls" :value="cls">
                 {{ humaniseClass(cls) }}
               </option>
             </select>
           </template>
         </AppField>
 
-        <AppField
-          :label="t('formModelLabel')"
-          :help="t('formModelHint')"
-        >
+        <AppField :label="t('formModelLabel')" :help="t('formModelHint')">
           <template #default="slotAttrs">
             <AppInput
               v-bind="slotAttrs"
@@ -450,10 +412,7 @@
           </template>
         </AppField>
 
-        <AppField
-          :label="t('formRegistryLabel')"
-          :help="t('formRegistryHint')"
-        >
+        <AppField :label="t('formRegistryLabel')" :help="t('formRegistryHint')">
           <template #default="slotAttrs">
             <AppInput
               v-bind="slotAttrs"
@@ -489,40 +448,20 @@
     </AppCard>
 
     <!-- Error banner -->
-    <AppBanner
-      v-if="errorMsg && state === 'error'"
-      tone="danger"
-      role="alert"
-    >
+    <AppBanner v-if="errorMsg && state === 'error'" tone="danger" role="alert">
       {{ errorMsg }}
-      <AppButton
-        variant="ghost"
-        size="sm"
-        @click="load"
-      >
+      <AppButton variant="ghost" size="sm" @click="load">
         {{ t('retry') }}
       </AppButton>
     </AppBanner>
 
     <!-- Loading skeleton -->
-    <div
-      v-else-if="state === 'loading'"
-      class="page-ships__grid"
-      aria-busy="true"
-    >
-      <div
-        v-for="n in 4"
-        :key="n"
-        class="page-ships__skeleton"
-        aria-hidden="true"
-      />
+    <div v-else-if="state === 'loading'" class="page-ships__grid" aria-busy="true">
+      <div v-for="n in 4" :key="n" class="page-ships__skeleton" aria-hidden="true" />
     </div>
 
     <!-- Empty state -->
-    <div
-      v-else-if="ships.length === 0"
-      class="page-ships__empty"
-    >
+    <div v-else-if="ships.length === 0" class="page-ships__empty">
       <h2 class="page-ships__empty-heading">
         {{ t('emptyHeading') }}
       </h2>
@@ -532,24 +471,14 @@
     </div>
 
     <!-- Ships grid -->
-    <ul
-      v-else
-      class="page-ships__grid"
-      role="list"
-    >
-      <li
-        v-for="ship in ships"
-        :key="ship.id"
-      >
+    <ul v-else class="page-ships__grid" role="list">
+      <li v-for="ship in ships" :key="ship.id">
         <AppCard class="page-ships__card">
           <div class="page-ships__card-head">
             <h3 class="page-ships__card-title">
               {{ ship.name }}
             </h3>
-            <AppBadge
-              variant="brass"
-              size="sm"
-            >
+            <AppBadge variant="brass" size="sm">
               {{ humaniseClass(ship.class) }}
             </AppBadge>
           </div>
@@ -557,50 +486,35 @@
           <div class="page-ships__card-stats">
             <span class="page-ships__stat">
               <span class="page-ships__stat-label">{{ t('hullLabel') }}</span>
-              <span class="page-ships__stat-value">{{ ship.hull.current }}/{{ ship.hull.max }}</span>
+              <span class="page-ships__stat-value"
+                >{{ ship.hull.current }}/{{ ship.hull.max }}</span
+              >
             </span>
             <span class="page-ships__stat">
               <span class="page-ships__stat-label">{{ t('energyLabel') }}</span>
-              <span class="page-ships__stat-value">{{ ship.energy.current }}/{{ ship.energy.max }}</span>
+              <span class="page-ships__stat-value"
+                >{{ ship.energy.current }}/{{ ship.energy.max }}</span
+              >
             </span>
           </div>
 
           <div class="page-ships__card-badges">
-            <AppBadge
-              variant="darkness"
-              size="sm"
-            >
+            <AppBadge variant="darkness" size="sm">
               {{ t('modulesCount', { n: moduleCount(ship) }) }}
             </AppBadge>
-            <AppBadge
-              v-if="crewCount(ship) > 0"
-              variant="brass"
-              size="sm"
-            >
+            <AppBadge v-if="crewCount(ship) > 0" variant="brass" size="sm">
               {{ t('crewCount', { n: crewCount(ship) }) }}
             </AppBadge>
           </div>
 
           <div class="page-ships__card-actions">
-            <AppButton
-              variant="primary"
-              size="sm"
-              @click="navigateTo(`/app/ships/${ship.id}`)"
-            >
+            <AppButton variant="primary" size="sm" @click="navigateTo(`/app/ships/${ship.id}`)">
               {{ t('open') }}
             </AppButton>
-            <AppButton
-              variant="ghost"
-              size="sm"
-              @click="onDuplicate(ship)"
-            >
+            <AppButton variant="ghost" size="sm" @click="onDuplicate(ship)">
               {{ t('duplicate') }}
             </AppButton>
-            <AppButton
-              variant="ghost"
-              size="sm"
-              @click="openDeleteConfirm(ship)"
-            >
+            <AppButton variant="ghost" size="sm" @click="openDeleteConfirm(ship)">
               {{ t('delete') }}
             </AppButton>
           </div>
@@ -640,20 +554,10 @@
           {{ t('deleteConfirmBody') }}
         </p>
         <div class="page-ships__delete-modal-actions">
-          <AppButton
-            variant="ghost"
-            size="md"
-            :disabled="deleting"
-            @click="closeDeleteConfirm"
-          >
+          <AppButton variant="ghost" size="md" :disabled="deleting" @click="closeDeleteConfirm">
             {{ t('deleteConfirmNo') }}
           </AppButton>
-          <AppButton
-            variant="danger"
-            size="md"
-            :loading="deleting"
-            @click="confirmDelete"
-          >
+          <AppButton variant="danger" size="md" :loading="deleting" @click="confirmDelete">
             {{ t('deleteConfirmYes') }}
           </AppButton>
         </div>

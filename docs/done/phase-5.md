@@ -29,15 +29,15 @@ A player can:
   DRIVE), and inserts six vacant `crew_slot` rows.
 - List their ships at `GET /api/v1/ships` (cursor pagination,
   default limit 20) and edit any owned ship via `PATCH
-  /api/v1/ships/{id}` — name, registry, model, the full stat
+/api/v1/ships/{id}` — name, registry, model, the full stat
   block, problems array, history, notes.
 - Add or remove modules via `POST /api/v1/ships/{id}/modules` /
   `PATCH /api/v1/ship-modules/{id}` / `DELETE /api/v1/ship-modules/
-  {id}` — with discriminator-aware validation per slot and a 422
+{id}` — with discriminator-aware validation per slot and a 422
   `SHIP_MODULE_MANDATORY` guard against deleting BRIDGE / REACTOR
   / DRIVE.
 - Assign a character to one of six positions via `POST /api/v1/
-  ships/{id}/crew` (captain, pilot, sensorOp, gunner, engineer,
+ships/{id}/crew` (captain, pilot, sensorOp, gunner, engineer,
   serviceCrew) and unassign via `DELETE …/crew/{characterId}`.
   Re-assigning a character already serving on the same ship moves
   them between positions; only `CREW_POSITION_TAKEN` (400) fires
@@ -131,14 +131,14 @@ lint clean at every block boundary.
   and the common fields (slot, name, energyUse) promoted to columns
   so list / filter queries don't have to crack JSON; `crew_slot`
   has a composite primary key on `(shipId, position)` with `ON
-  DELETE SET NULL` on the character FK, so a deleted PC vacates
+DELETE SET NULL` on the character FK, so a deleted PC vacates
   the position rather than dropping the slot row. Six rows per
   ship, the slot enum is the source of truth on which positions
   exist. (`f0b8a7f`.)
 - **Module sub-resource on its own controller, not nested.** The
   OpenAPI spec splits `addShipModule` (`POST /ships/{id}/modules`)
   from `updateShipModule` / `deleteShipModule` (`PATCH` / `DELETE
-  /ship-modules/{id}`). Block 3 followed that split — the create
+/ship-modules/{id}`). Block 3 followed that split — the create
   endpoint sits on `ShipsController`, the edit and delete endpoints
   on a second `ShipModulesController`. Same NestJS module, same
   CQRS handlers, two surfaces. Side effect: the read path doesn't
@@ -218,7 +218,7 @@ lint clean at every block boundary.
 - **Ship sharing — share-link surface.** PRD §11 Phase 5 reads
   "Ship sheets, crew assignment, ship **sharing**". The first
   two shipped; share-link parity with characters (the `share-
-  link-design` ADR) did not. The contract pieces exist generally
+link-design` ADR) did not. The contract pieces exist generally
   for `Character` but no `ship.share-link` route exists yet on
   spec, backend, or web. Carried into a follow-on task.
 - **`getShipExport` real implementation.** Currently 501.
@@ -283,10 +283,10 @@ the per-feature task entries with judgement-call notes live in
 
 - `39595f8` — archive T-005; push T-006 (Phase 6 spec)
 - `e616a05` + `c8f6d11` + `9adf1a8` + `e065118` + `22fb590`
-  + `3472047` + `471ea9a` + `dbf0351` + `3c484fa` + `40483a0` —
-  T-005 web ship list + sheet + module editor + crew + polish
+  - `3472047` + `471ea9a` + `dbf0351` + `3c484fa` + `40483a0` —
+    T-005 web ship list + sheet + module editor + crew + polish
 - `500830f` — archive T-004; push T-005 (Phase 5 web)
 - `159eb13` + `1ba07ee` + `0197d12` + `0e4a01c` + `1d06bcc`
-  + `2f2f7fb` + `400b186` + `9d71a3d` + `f0b8a7f` —
-  T-004 backend Prisma migration + ShipsModule CRUD + modules
-  sub-resource + crew assignment + duplicate + export stub
+  - `2f2f7fb` + `400b186` + `9d71a3d` + `f0b8a7f` —
+    T-004 backend Prisma migration + ShipsModule CRUD + modules
+    sub-resource + crew assignment + duplicate + export stub

@@ -15,7 +15,12 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service';
 import { computeHpMax } from '../../rules-engine';
 
-import type { ISourceLookup, SourceCharacter, SourceNpc, SourceWeapon } from '../domain/source-lookup.ports';
+import type {
+  ISourceLookup,
+  SourceCharacter,
+  SourceNpc,
+  SourceWeapon,
+} from '../domain/source-lookup.ports';
 
 interface PrismaCharacterSnap {
   id: string;

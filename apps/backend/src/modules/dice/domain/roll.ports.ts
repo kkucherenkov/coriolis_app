@@ -22,9 +22,7 @@ export const ROLL_KINDS: readonly RollKind[] = [
 
 /** Narrows an arbitrary string to RollKind; falls back to 'skill' on unknown values. */
 export function toRollKind(value: string): RollKind {
-  return (ROLL_KINDS as readonly string[]).includes(value)
-    ? (value as RollKind)
-    : 'skill';
+  return (ROLL_KINDS as readonly string[]).includes(value) ? (value as RollKind) : 'skill';
 }
 
 /**

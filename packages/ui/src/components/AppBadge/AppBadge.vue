@@ -22,15 +22,8 @@
 </script>
 
 <template>
-  <span
-    :class="classes"
-    tabindex="-1"
-  >
-    <span
-      v-if="$slots['icon']"
-      class="app-badge__icon"
-      aria-hidden="true"
-    >
+  <span :class="classes" tabindex="-1">
+    <span v-if="$slots['icon']" class="app-badge__icon" aria-hidden="true">
       <slot name="icon" />
     </span>
     <slot />

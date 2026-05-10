@@ -48,8 +48,8 @@
     { key: 'sessions', prefix: '/app/sessions' },
   ] as const;
 
-  const activeKey = computed<string | undefined>(() =>
-    NAV_SECTIONS.find((s) => route.path.startsWith(s.prefix))?.key,
+  const activeKey = computed<string | undefined>(
+    () => NAV_SECTIONS.find((s) => route.path.startsWith(s.prefix))?.key,
   );
 
   // ── Nav items ─────────────────────────────────────────────────────────────────
@@ -185,10 +185,7 @@
 <template>
   <div class="layout-app">
     <!-- Skip-link: visible only when focused. -->
-    <a
-      class="layout-app__skip-link"
-      href="#main-content"
-    >{{ t('skipToContent') }}</a>
+    <a class="layout-app__skip-link" href="#main-content">{{ t('skipToContent') }}</a>
 
     <AppHeader
       :brand="{
@@ -224,10 +221,7 @@
       </template>
 
       <template #mobile-drawer-content>
-        <nav
-          :aria-label="t('brand.navAriaLabel')"
-          class="layout-app__mobile-nav"
-        >
+        <nav :aria-label="t('brand.navAriaLabel')" class="layout-app__mobile-nav">
           <NuxtLink
             v-for="item in navItems"
             :key="item.key"
@@ -261,10 +255,7 @@
       </template>
     </AppHeader>
 
-    <main
-      id="main-content"
-      class="layout-app__main"
-    >
+    <main id="main-content" class="layout-app__main">
       <slot />
     </main>
   </div>

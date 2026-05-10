@@ -95,12 +95,7 @@
       @change="onChange"
     >
       <!-- Placeholder: disabled + hidden so it shows on trigger but is never re-selectable. -->
-      <option
-        v-if="placeholder !== undefined"
-        :value="PLACEHOLDER_VALUE"
-        disabled
-        hidden
-      >
+      <option v-if="placeholder !== undefined" :value="PLACEHOLDER_VALUE" disabled hidden>
         {{ placeholder }}
       </option>
       <option
@@ -113,16 +108,8 @@
       </option>
     </select>
     <!-- Decorative chevron. pointer-events:none so clicks fall through to the <select>. -->
-    <span
-      class="app-select__chevron"
-      aria-hidden="true"
-    >
-      <svg
-        viewBox="0 0 12 12"
-        width="12"
-        height="12"
-        fill="none"
-      >
+    <span class="app-select__chevron" aria-hidden="true">
+      <svg viewBox="0 0 12 12" width="12" height="12" fill="none">
         <path
           d="M3 4.5l3 3 3-3"
           stroke="currentColor"

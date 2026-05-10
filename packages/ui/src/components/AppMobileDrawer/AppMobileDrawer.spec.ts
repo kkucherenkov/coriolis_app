@@ -136,10 +136,7 @@ describe('AppMobileDrawer — focus management', () => {
   });
 
   it('Tab on the last focusable element wraps focus back to the close button (focus trap)', async () => {
-    const w = mountDrawer(
-      { open: true },
-      { default: '<button id="last-btn">Last</button>' },
-    );
+    const w = mountDrawer({ open: true }, { default: '<button id="last-btn">Last</button>' });
     await w.vm.$nextTick();
 
     const closeBtn = document.querySelector<HTMLElement>('.app-mobile-drawer__close');

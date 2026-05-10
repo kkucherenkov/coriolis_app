@@ -53,16 +53,9 @@
 <template>
   <div :class="rootClasses">
     <!-- Label rendered inline — no AppLabel dep so this branch ships independently -->
-    <label
-      :for="fieldId"
-      class="app-field__label"
-    >
+    <label :for="fieldId" class="app-field__label">
       <span class="app-field__label-text">{{ label }}</span>
-      <span
-        v-if="required"
-        class="app-field__required"
-        aria-hidden="true"
-      >*</span>
+      <span v-if="required" class="app-field__required" aria-hidden="true">*</span>
     </label>
 
     <div class="app-field__control">
@@ -70,19 +63,10 @@
     </div>
 
     <!-- error wins over helpText when both are set -->
-    <span
-      v-if="error"
-      :id="`${fieldId}-error`"
-      class="app-field__error"
-      role="alert"
-    >{{
+    <span v-if="error" :id="`${fieldId}-error`" class="app-field__error" role="alert">{{
       error
     }}</span>
-    <span
-      v-else-if="helpText"
-      :id="`${fieldId}-help`"
-      class="app-field__help"
-    >{{ helpText }}</span>
+    <span v-else-if="helpText" :id="`${fieldId}-help`" class="app-field__help">{{ helpText }}</span>
   </div>
 </template>
 

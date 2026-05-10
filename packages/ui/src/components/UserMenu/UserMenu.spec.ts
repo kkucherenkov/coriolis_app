@@ -20,9 +20,7 @@ const LABELS: MenuLabels = {
   signOutLabel: 'Sign out',
 };
 
-function mountMenu(
-  props: Partial<InstanceType<typeof UserMenu>['$props']> = {},
-) {
+function mountMenu(props: Partial<InstanceType<typeof UserMenu>['$props']> = {}) {
   return mount(UserMenu, {
     props: {
       displayName: 'Zara al-Khatib',
@@ -221,9 +219,7 @@ describe('UserMenu — locale items', () => {
 describe('UserMenu — Settings and Sign out', () => {
   it('clicking Settings emits settings-click AND update:open=false', async () => {
     const w = mountMenu({ open: true });
-    const settingsBtn = w.findAll('[role="menuitem"]').find((el) =>
-      el.text().includes('Settings'),
-    );
+    const settingsBtn = w.findAll('[role="menuitem"]').find((el) => el.text().includes('Settings'));
     expect(settingsBtn).toBeDefined();
     await settingsBtn!.trigger('click');
     expect(w.emitted('settings-click')).toBeDefined();
@@ -234,9 +230,7 @@ describe('UserMenu — Settings and Sign out', () => {
 
   it('clicking Sign out emits sign-out-click AND update:open=false', async () => {
     const w = mountMenu({ open: true });
-    const signOutBtn = w.findAll('[role="menuitem"]').find((el) =>
-      el.text().includes('Sign out'),
-    );
+    const signOutBtn = w.findAll('[role="menuitem"]').find((el) => el.text().includes('Sign out'));
     expect(signOutBtn).toBeDefined();
     await signOutBtn!.trigger('click');
     expect(w.emitted('sign-out-click')).toBeDefined();
@@ -270,11 +264,7 @@ describe('UserMenu — ESC key', () => {
  */
 function getMenuItemsFromPanel(w: ReturnType<typeof mountMenu>): HTMLElement[] {
   const panel = w.find('[role="menu"]').element;
-  return [
-    ...panel.querySelectorAll<HTMLElement>(
-      '[role="menuitem"], [role="menuitemradio"]',
-    ),
-  ];
+  return [...panel.querySelectorAll<HTMLElement>('[role="menuitem"], [role="menuitemradio"]')];
 }
 
 describe('UserMenu — keyboard navigation', () => {

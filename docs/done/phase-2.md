@@ -193,7 +193,7 @@ and a new `CharacterWizardCubit` state machine.
   with documented WHY; everything else is fixed at the story level.
 - **Derived stats pinned to the rules engine.** `applyConditions`
   joined the Phase 1 `computeHpMax / computeMpMax /
-  computeEncumbranceMax` family — pure functions, no DB read in the
+computeEncumbranceMax` family — pure functions, no DB read in the
   rules layer, exercised both in backend tests and in the read
   mapper.
 - **i18n strategy for the wizard.** en + ru fully translated; uk +

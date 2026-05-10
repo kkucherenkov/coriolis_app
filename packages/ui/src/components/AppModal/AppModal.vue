@@ -129,12 +129,7 @@
 
 <template>
   <!-- Optional trigger slot — wrapped so we can track the ref. -->
-  <div
-    v-if="$slots['trigger']"
-    ref="triggerRef"
-    class="app-modal__trigger"
-    @click="onTriggerClick"
-  >
+  <div v-if="$slots['trigger']" ref="triggerRef" class="app-modal__trigger" @click="onTriggerClick">
     <slot name="trigger" />
   </div>
 
@@ -150,18 +145,12 @@
         :aria-labelledby="ariaLabelledby || undefined"
         @click="onBackdropClick"
       >
-        <div
-          ref="panelRef"
-          :class="panelClasses"
-        >
+        <div ref="panelRef" :class="panelClasses">
           <div class="app-modal__body">
             <slot />
           </div>
 
-          <div
-            v-if="$slots['footer']"
-            class="app-modal__footer"
-          >
+          <div v-if="$slots['footer']" class="app-modal__footer">
             <slot name="footer" />
           </div>
         </div>
