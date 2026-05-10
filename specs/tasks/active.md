@@ -80,11 +80,25 @@
         `NpcCreate.attributes` and `NpcCreate.skills` fields
         reference the shared `Attributes` / `Skills` schemas with
         server-side defaults documented in the description.
-  - [ ] Block 2 — `Encounter` resource. Schemas + paths under a
-        new `encounters` tag. List nested under
-        `/api/v1/game-sessions/{sessionId}/encounters`; CRUD on
-        `/api/v1/encounters/{id}`. State machine documented in
-        the `EncounterStatus` description.
+  - [x] Block 2 — `Encounter` resource. Schemas (`Encounter`,
+        `EncounterCreate`, `EncounterUpdate`, `EncounterList`,
+        `EncounterStatus`, `EncounterId` parameter) + paths
+        (`GET/POST /api/v1/game-sessions/{sessionId}/encounters`,
+        `GET/PATCH/DELETE /api/v1/encounters/{id}`). Tag `encounters`
+        added. State machine fully documented in `EncounterStatus`
+        and `updateEncounter` descriptions: `setup → active` requires
+        ≥1 combatant (422 `ENCOUNTER_NO_COMBATANTS` if zero; forward-
+        compatible with Block 3 combatant surface); `active → ended`
+        resets `activeCombatantId` to null; all reverse and skip
+        transitions return 422 `ENCOUNTER_INVALID_TRANSITION`; rename
+        and notes editing are permitted at any status. Landed in
+        db0186c (spec v0.14.0) + a1e9658 (codegen). `pnpm spec:validate
+        && pnpm spec:bundle && pnpm spec:codegen` green. TS exports:
+        `Encounter`, `EncounterCreate`, `EncounterUpdate`,
+        `EncounterList`, `EncounterStatus`, `listEncounters`,
+        `createEncounter`, `getEncounter`, `updateEncounter`,
+        `deleteEncounter`. Dart: `encounters_api.dart` + model files
+        + `.g.dart` serializers via build_runner.
   - [ ] Block 3 — `Combatant` sub-resource. Schemas + paths.
         `combatantType` discriminator. Combatants store the
         snapshot of stats at the moment of add (not a live ref)
