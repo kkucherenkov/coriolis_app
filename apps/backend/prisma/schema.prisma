@@ -416,6 +416,7 @@ model GameSession {
   shipId      String?
   characters  CharacterGameSession[]
   dpEvents    DpEvent[]
+  encounters  Encounter[]
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @updatedAt
 
@@ -715,4 +716,41 @@ model Npc {
 
   @@index([ownerId])
   @@map("npc")
+}
+
+// ----- Encounters (Phase 6) -----
+
+/// Combat-encounter lifecycle state.
+/// Wire values are lowercase ('setup' | 'active' | 'ended').
+/// Stored as uppercase in Postgres; the infra mapper converts on read/write.
+enum EncounterStatus {
+  SETUP
+  ACTIVE
+  ENDED
+
+  @@map("encounter_status")
+}
+
+/// A combat encounter owned by a game session.
+///
+/// Design notes:
+/// - status transitions are enforced by the domain state machine, not by DB constraints.
+/// - activeCombatantId is a free String? in Block 2. Block 3 adds the Combatant table
+///   and will add a @relation with onDelete: SetNull.
+/// - Cascade delete: dropping the GameSession cascades to all its encounters.
+model Encounter {
+  id                String          @id @default(cuid())
+  gameSessionId     String
+  gameSession       GameSession     @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+  name              String
+  notes             String?
+  status            EncounterStatus @default(SETUP)
+  round             Int             @default(0)
+  /// FK enforced in Block 3 once the Combatant table lands.
+  activeCombatantId String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([gameSessionId])
+  @@map("encounter")
 }

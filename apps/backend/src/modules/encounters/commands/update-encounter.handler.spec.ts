@@ -1,0 +1,236 @@
+/**
+ * Unit tests for UpdateEncounterHandler.
+ */
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  EncounterAccessDeniedError,
+  EncounterInvalidTransitionError,
+  EncounterNoCombatantsError,
+  EncounterNotFoundError,
+} from '../domain/encounter.errors';
+
+import { UpdateEncounterCommand, UpdateEncounterDto } from './update-encounter.command';
+import { UpdateEncounterHandler } from './update-encounter.handler';
+
+import type { IGameSessionAccess } from '../domain/game-session-access.ports';
+import type { EncounterReadModel, IEncounterRepo } from '../domain/encounter.ports';
+
+function makeRepo(): IEncounterRepo {
+  return {
+    findById: vi.fn(),
+    list: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  };
+}
+
+function makeAccess(): IGameSessionAccess {
+  return {
+    isOwner: vi.fn(),
+    isMember: vi.fn(),
+    getOwnerId: vi.fn(),
+  };
+}
+
+function makeEncounter(overrides: Partial<EncounterReadModel> = {}): EncounterReadModel {
+  return {
+    id: 'enc-1',
+    gameSessionId: 'gs-1',
+    name: 'Ambush',
+    notes: null,
+    status: 'setup',
+    round: 0,
+    activeCombatantId: null,
+    createdAt: '2026-05-10T10:00:00.000Z',
+    updatedAt: '2026-05-10T10:00:00.000Z',
+    ...overrides,
+  };
+}
+
+function makeDto(overrides: Partial<UpdateEncounterDto> = {}): UpdateEncounterDto {
+  return Object.assign(new UpdateEncounterDto(), overrides);
+}
+
+describe('UpdateEncounterHandler', () => {
+  let repo: IEncounterRepo;
+  let access: IGameSessionAccess;
+  let handler: UpdateEncounterHandler;
+
+  beforeEach(() => {
+    repo = makeRepo();
+    access = makeAccess();
+    handler = new UpdateEncounterHandler(repo, access);
+    vi.mocked(access.getOwnerId).mockResolvedValue('user-1');
+  });
+
+  it('throws EncounterNotFoundError when encounter does not exist', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(null);
+
+    await expect(
+      handler.execute(new UpdateEncounterCommand('enc-missing', 'user-1', makeDto())),
+    ).rejects.toBeInstanceOf(EncounterNotFoundError);
+  });
+
+  it('throws EncounterAccessDeniedError when caller is not GM owner', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter());
+    vi.mocked(access.getOwnerId).mockResolvedValue('owner-1');
+
+    await expect(
+      handler.execute(new UpdateEncounterCommand('enc-1', 'other-user', makeDto())),
+    ).rejects.toBeInstanceOf(EncounterAccessDeniedError);
+  });
+
+  it('EncounterAccessDeniedError has status 403', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter());
+    vi.mocked(access.getOwnerId).mockResolvedValue('owner-1');
+
+    await expect(
+      handler.execute(new UpdateEncounterCommand('enc-1', 'other-user', makeDto())),
+    ).rejects.toMatchObject({ code: 'ENCOUNTER_ACCESS_DENIED', status: 403 });
+  });
+
+  it('renames encounter (name-only patch at setup status)', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter());
+    vi.mocked(repo.update).mockResolvedValue(makeEncounter({ name: 'Renamed' }));
+
+    await handler.execute(
+      new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ name: 'Renamed' })),
+    );
+
+    expect(repo.update).toHaveBeenCalledWith('enc-1', expect.objectContaining({ name: 'Renamed' }));
+  });
+
+  it('trims whitespace from name', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter());
+    vi.mocked(repo.update).mockResolvedValue(makeEncounter({ name: 'Renamed' }));
+
+    await handler.execute(
+      new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ name: '  Renamed  ' })),
+    );
+
+    expect(repo.update).toHaveBeenCalledWith('enc-1', expect.objectContaining({ name: 'Renamed' }));
+  });
+
+  it('updates notes at setup status', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter());
+    vi.mocked(repo.update).mockResolvedValue(makeEncounter({ notes: 'New notes' }));
+
+    await handler.execute(
+      new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ notes: 'New notes' })),
+    );
+
+    expect(repo.update).toHaveBeenCalledWith(
+      'enc-1',
+      expect.objectContaining({ notes: 'New notes' }),
+    );
+  });
+
+  it('updates notes at active status', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter({ status: 'active' }));
+    vi.mocked(repo.update).mockResolvedValue(
+      makeEncounter({ status: 'active', notes: 'Active notes' }),
+    );
+
+    await handler.execute(
+      new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ notes: 'Active notes' })),
+    );
+
+    expect(repo.update).toHaveBeenCalledWith(
+      'enc-1',
+      expect.objectContaining({ notes: 'Active notes' }),
+    );
+  });
+
+  it('updates notes at ended status', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter({ status: 'ended' }));
+    vi.mocked(repo.update).mockResolvedValue(
+      makeEncounter({ status: 'ended', notes: 'Post-mortem' }),
+    );
+
+    await handler.execute(
+      new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ notes: 'Post-mortem' })),
+    );
+
+    expect(repo.update).toHaveBeenCalledWith(
+      'enc-1',
+      expect.objectContaining({ notes: 'Post-mortem' }),
+    );
+  });
+
+  it('throws ENCOUNTER_NO_COMBATANTS for setup → active (Block 2 guard)', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter({ status: 'setup' }));
+
+    await expect(
+      handler.execute(new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ status: 'active' }))),
+    ).rejects.toBeInstanceOf(EncounterNoCombatantsError);
+    expect(repo.update).not.toHaveBeenCalled();
+  });
+
+  it('ENCOUNTER_NO_COMBATANTS has status 422', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter({ status: 'setup' }));
+
+    await expect(
+      handler.execute(new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ status: 'active' }))),
+    ).rejects.toMatchObject({ code: 'ENCOUNTER_NO_COMBATANTS', status: 422 });
+  });
+
+  it('allows active → ended and resets activeCombatantId', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(
+      makeEncounter({ status: 'active', activeCombatantId: 'cb-1' }),
+    );
+    vi.mocked(repo.update).mockResolvedValue(
+      makeEncounter({ status: 'ended', activeCombatantId: null }),
+    );
+
+    await handler.execute(
+      new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ status: 'ended' })),
+    );
+
+    expect(repo.update).toHaveBeenCalledWith(
+      'enc-1',
+      expect.objectContaining({ status: 'ended', activeCombatantId: null }),
+    );
+  });
+
+  it('throws ENCOUNTER_INVALID_TRANSITION for active → setup', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter({ status: 'active' }));
+
+    await expect(
+      handler.execute(new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ status: 'setup' }))),
+    ).rejects.toBeInstanceOf(EncounterInvalidTransitionError);
+    expect(repo.update).not.toHaveBeenCalled();
+  });
+
+  it('throws ENCOUNTER_INVALID_TRANSITION for ended → active', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter({ status: 'ended' }));
+
+    await expect(
+      handler.execute(new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ status: 'active' }))),
+    ).rejects.toBeInstanceOf(EncounterInvalidTransitionError);
+  });
+
+  it('throws ENCOUNTER_INVALID_TRANSITION for setup → ended (skip)', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter({ status: 'setup' }));
+
+    await expect(
+      handler.execute(new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ status: 'ended' }))),
+    ).rejects.toBeInstanceOf(EncounterInvalidTransitionError);
+  });
+
+  it('no-op when status is same as current (no repo call)', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter({ status: 'setup' }));
+    vi.mocked(repo.update).mockResolvedValue(makeEncounter());
+
+    await handler.execute(
+      new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ status: 'setup', name: 'Renamed' })),
+    );
+
+    // status unchanged — no status key in patch
+    expect(repo.update).toHaveBeenCalledWith(
+      'enc-1',
+      expect.not.objectContaining({ status: expect.anything() }),
+    );
+  });
+});
