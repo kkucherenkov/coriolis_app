@@ -18,6 +18,9 @@
   import type { SaveState } from '~/composables/useAutoSave';
   import ShipModuleEditor from '~/components/sheet/ShipModuleEditor.vue';
   import type { ShipModule } from '~/composables/useShipModulesApi';
+  import { useShipCrewApi } from '~/composables/useShipCrewApi';
+  import { useCharactersApi } from '~/composables/useCharactersApi';
+  import type { Character } from '~/composables/useCharactersApi';
 
   /**
    * Ship sheet — Block 2 of T-2026-05-10-005.
@@ -38,6 +41,8 @@
   const { t } = useI18n({ useScope: 'local' });
   const route = useRoute();
   const shipsApi = useShipsApi();
+  const crewApi = useShipCrewApi();
+  const charactersApi = useCharactersApi();
 
   const shipId = computed<string>(() => route.params.id as string);
 
@@ -251,6 +256,106 @@
     };
   }
 
+  // ── Crew state ────────────────────────────────────────────────────────────────
+
+  const allCharacters = ref<Character[]>([]);
+  const crewError = ref('');
+  // Per-position state for the inline pickers
+  const pickerOpen = ref<Partial<Record<CrewPosition, boolean>>>({});
+  const pickerSelected = ref<Partial<Record<CrewPosition, string>>>({});
+  const crewBusy = ref<Partial<Record<CrewPosition, boolean>>>({});
+
+  function togglePicker(pos: CrewPosition): void {
+    pickerOpen.value = { ...pickerOpen.value, [pos]: !pickerOpen.value[pos] };
+    pickerSelected.value = { ...pickerSelected.value, [pos]: '' };
+  }
+
+  function closePicker(pos: CrewPosition): void {
+    pickerOpen.value = { ...pickerOpen.value, [pos]: false };
+    pickerSelected.value = { ...pickerSelected.value, [pos]: '' };
+  }
+
+  /** Characters already serving on this ship (any position). */
+  const charactersOnShip = computed<Set<string>>(() => {
+    return new Set((ship.value?.crew ?? []).map((cs) => cs.assignedCharacterId).filter(Boolean) as string[]);
+  });
+
+  /**
+   * For a given vacant position, return the characters available to pick.
+   * Split into two groups: those NOT yet on the ship (primary), and those
+   * already serving at another position (they trigger move semantics).
+   */
+  function pickableFor(pos: CrewPosition): { free: Character[]; onShip: Character[] } {
+    const currentHolder = ship.value?.crew.find((cs) => cs.position === pos)?.assignedCharacterId;
+    const free: Character[] = [];
+    const onShip: Character[] = [];
+    for (const ch of allCharacters.value) {
+      if (ch.id === currentHolder) continue; // already in this slot
+      if (charactersOnShip.value.has(ch.id)) {
+        onShip.push(ch);
+      } else {
+        free.push(ch);
+      }
+    }
+    return { free, onShip };
+  }
+
+  async function refetchShip(): Promise<void> {
+    const refreshed = await shipsApi.get(shipId.value);
+    ship.value = refreshed;
+    syncLocals(refreshed);
+  }
+
+  async function onAssign(pos: CrewPosition): Promise<void> {
+    const characterId = pickerSelected.value[pos];
+    if (!characterId) return;
+    crewError.value = '';
+    crewBusy.value = { ...crewBusy.value, [pos]: true };
+    try {
+      await crewApi.assign(shipId.value, { position: pos, characterId });
+      await refetchShip();
+      closePicker(pos);
+    } catch (error) {
+      const problem = error as { status?: number; detail?: string };
+      crewError.value = problem.detail ?? t('crewErrorAssign');
+    } finally {
+      crewBusy.value = { ...crewBusy.value, [pos]: false };
+    }
+  }
+
+  async function onUnassign(pos: CrewPosition, characterId: string): Promise<void> {
+    crewError.value = '';
+    crewBusy.value = { ...crewBusy.value, [pos]: true };
+    try {
+      await crewApi.unassign(shipId.value, characterId);
+      await refetchShip();
+    } catch (error) {
+      const problem = error as { status?: number; detail?: string };
+      crewError.value = problem.detail ?? t('crewErrorUnassign');
+    } finally {
+      crewBusy.value = { ...crewBusy.value, [pos]: false };
+    }
+  }
+
+  function characterName(id: string): string {
+    const ch = allCharacters.value.find((c) => c.id === id);
+    return ch?.name ?? `#${id}`;
+  }
+
+  // Human-readable position label key map
+  const POSITION_KEY: Record<CrewPosition, string> = {
+    captain: 'crewCaptain',
+    pilot: 'crewPilot',
+    sensorOp: 'crewSensorOp',
+    gunner: 'crewGunner',
+    engineer: 'crewEngineer',
+    serviceCrew: 'crewServiceCrew',
+  };
+
+  function positionLabel(pos: CrewPosition): string {
+    return t(POSITION_KEY[pos]);
+  }
+
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
   function humaniseClass(cls: string): string {
@@ -295,6 +400,9 @@
 
   onMounted(() => {
     void load();
+    void charactersApi.list({ limit: 100 }).then((res) => {
+      allCharacters.value = res.items;
+    });
   });
 
   onBeforeUnmount(() => {
@@ -344,6 +452,16 @@
     "crewGunner": "Gunner",
     "crewEngineer": "Engineer",
     "crewServiceCrew": "Service Crew",
+    "crewAssign": "Assign…",
+    "crewRemove": "Remove",
+    "crewPickerCancel": "Cancel",
+    "crewPickerLabel": "Select character",
+    "crewPickerPlaceholder": "— pick a character —",
+    "crewPickerGroupFree": "Available",
+    "crewPickerGroupOnShip": "Already on this ship (will move)",
+    "crewPickerConfirm": "Assign",
+    "crewErrorAssign": "Couldn't assign crew member.",
+    "crewErrorUnassign": "Couldn't remove crew member.",
     "notesCardTitle": "Notes",
     "notesPlaceholder": "Operational notes…",
     "historyCardTitle": "History",
@@ -386,10 +504,20 @@
     "crewVacant": "Вакантно",
     "crewCaptain": "Капитан",
     "crewPilot": "Пилот",
-    "crewSensorOp": "Оператор сенсоров",
+    "crewSensorOp": "Штурман-оператор",
     "crewGunner": "Стрелок",
     "crewEngineer": "Инженер",
-    "crewServiceCrew": "Техническая команда",
+    "crewServiceCrew": "Команда",
+    "crewAssign": "Назначить…",
+    "crewRemove": "Убрать",
+    "crewPickerCancel": "Отмена",
+    "crewPickerLabel": "Выберите персонажа",
+    "crewPickerPlaceholder": "— выберите персонажа —",
+    "crewPickerGroupFree": "Доступны",
+    "crewPickerGroupOnShip": "Уже на борту (переведут позицию)",
+    "crewPickerConfirm": "Назначить",
+    "crewErrorAssign": "Не удалось назначить члена экипажа.",
+    "crewErrorUnassign": "Не удалось убрать члена экипажа.",
     "notesCardTitle": "Заметки",
     "notesPlaceholder": "Оперативные заметки…",
     "historyCardTitle": "История",
@@ -436,6 +564,16 @@
     "crewGunner": "[uk-todo] Gunner",
     "crewEngineer": "[uk-todo] Engineer",
     "crewServiceCrew": "[uk-todo] Service Crew",
+    "crewAssign": "[uk-todo] Assign…",
+    "crewRemove": "[uk-todo] Remove",
+    "crewPickerCancel": "[uk-todo] Cancel",
+    "crewPickerLabel": "[uk-todo] Select character",
+    "crewPickerPlaceholder": "[uk-todo] — pick a character —",
+    "crewPickerGroupFree": "[uk-todo] Available",
+    "crewPickerGroupOnShip": "[uk-todo] Already on this ship (will move)",
+    "crewPickerConfirm": "[uk-todo] Assign",
+    "crewErrorAssign": "[uk-todo] Couldn't assign crew member.",
+    "crewErrorUnassign": "[uk-todo] Couldn't remove crew member.",
     "notesCardTitle": "[uk-todo] Notes",
     "notesPlaceholder": "[uk-todo] Operational notes…",
     "historyCardTitle": "[uk-todo] History",
@@ -482,6 +620,16 @@
     "crewGunner": "[el-todo] Gunner",
     "crewEngineer": "[el-todo] Engineer",
     "crewServiceCrew": "[el-todo] Service Crew",
+    "crewAssign": "[el-todo] Assign…",
+    "crewRemove": "[el-todo] Remove",
+    "crewPickerCancel": "[el-todo] Cancel",
+    "crewPickerLabel": "[el-todo] Select character",
+    "crewPickerPlaceholder": "[el-todo] — pick a character —",
+    "crewPickerGroupFree": "[el-todo] Available",
+    "crewPickerGroupOnShip": "[el-todo] Already on this ship (will move)",
+    "crewPickerConfirm": "[el-todo] Assign",
+    "crewErrorAssign": "[el-todo] Couldn't assign crew member.",
+    "crewErrorUnassign": "[el-todo] Couldn't remove crew member.",
     "notesCardTitle": "[el-todo] Notes",
     "notesPlaceholder": "[el-todo] Operational notes…",
     "historyCardTitle": "[el-todo] History",
@@ -496,33 +644,67 @@
 </i18n>
 
 <template>
-  <section class="page-ship" data-testid="page-ship">
+  <section
+    class="page-ship"
+    data-testid="page-ship"
+  >
     <!-- ── Back nav ──────────────────────────────────────────────────────────── -->
-    <AppButton variant="ghost" size="sm" class="page-ship__back" @click="navigateTo('/app/ships')">
+    <AppButton
+      variant="ghost"
+      size="sm"
+      class="page-ship__back"
+      @click="navigateTo('/app/ships')"
+    >
       ← {{ t('backToList') }}
     </AppButton>
 
     <!-- ── Error banner ──────────────────────────────────────────────────────── -->
-    <AppBanner v-if="state === 'error'" tone="danger" role="alert" class="page-ship__banner">
+    <AppBanner
+      v-if="state === 'error'"
+      tone="danger"
+      role="alert"
+      class="page-ship__banner"
+    >
       {{ errorMsg }}
-      <AppButton variant="ghost" size="sm" @click="load">
+      <AppButton
+        variant="ghost"
+        size="sm"
+        @click="load"
+      >
         {{ t('retry') }}
       </AppButton>
     </AppBanner>
 
-    <AppBanner v-if="duplicateError" tone="danger" role="alert" class="page-ship__banner">
+    <AppBanner
+      v-if="duplicateError"
+      tone="danger"
+      role="alert"
+      class="page-ship__banner"
+    >
       {{ duplicateError }}
     </AppBanner>
 
-    <AppBanner v-if="deleteError" tone="danger" role="alert" class="page-ship__banner">
+    <AppBanner
+      v-if="deleteError"
+      tone="danger"
+      role="alert"
+      class="page-ship__banner"
+    >
       {{ deleteError }}
     </AppBanner>
 
     <!-- ── Loading skeleton ──────────────────────────────────────────────────── -->
-    <div v-if="state === 'loading'" class="page-ship__skeleton" aria-busy="true" />
+    <div
+      v-if="state === 'loading'"
+      class="page-ship__skeleton"
+      aria-busy="true"
+    />
 
     <!-- ── Not found ─────────────────────────────────────────────────────────── -->
-    <AppCard v-else-if="state === 'notfound'" class="page-ship__notfound">
+    <AppCard
+      v-else-if="state === 'notfound'"
+      class="page-ship__notfound"
+    >
       <h2 class="page-ship__notfound-title">
         {{ t('notfoundTitle') }}
       </h2>
@@ -539,16 +721,30 @@
           <h1 class="page-ship__name">
             {{ ship.name }}
           </h1>
-          <AppBadge variant="brass" size="md" class="page-ship__class-chip">
+          <AppBadge
+            variant="brass"
+            size="md"
+            class="page-ship__class-chip"
+          >
             {{ t('classLabel') }}: {{ humaniseClass(ship.class) }}
           </AppBadge>
         </div>
         <div class="page-ship__header-actions">
           <AppSavePulse :state="headerSaveState" />
-          <AppButton variant="ghost" size="sm" :disabled="duplicating" @click="onDuplicate">
+          <AppButton
+            variant="ghost"
+            size="sm"
+            :disabled="duplicating"
+            @click="onDuplicate"
+          >
             {{ t('duplicate') }}
           </AppButton>
-          <AppButton variant="ghost" size="sm" :disabled="deleting" @click="onDelete">
+          <AppButton
+            variant="ghost"
+            size="sm"
+            :disabled="deleting"
+            @click="onDelete"
+          >
             {{ t('delete') }}
           </AppButton>
         </div>
@@ -561,7 +757,10 @@
         </template>
 
         <div class="page-ship__identity-grid">
-          <AppField :label="t('fieldName')" required>
+          <AppField
+            :label="t('fieldName')"
+            required
+          >
             <template #default="attrs">
               <AppInput
                 v-bind="attrs"
@@ -790,13 +989,21 @@
         <template #header>
           <div class="page-ship__card-header-row">
             <span class="page-ship__card-title">{{ t('modulesCardTitle') }}</span>
-            <AppButton variant="ghost" size="sm" @click="openModuleCreate">
+            <AppButton
+              variant="ghost"
+              size="sm"
+              @click="openModuleCreate"
+            >
               {{ t('modulesAdd') }}
             </AppButton>
           </div>
         </template>
 
-        <ul v-if="modulesGrouped.length > 0" class="page-ship__modules-list" aria-label="Modules">
+        <ul
+          v-if="modulesGrouped.length > 0"
+          class="page-ship__modules-list"
+          aria-label="Modules"
+        >
           <li
             v-for="mod in modulesGrouped"
             :key="mod.id"
@@ -807,7 +1014,11 @@
             @keydown.enter.prevent="openModuleEdit(mod as ShipModule)"
             @keydown.space.prevent="openModuleEdit(mod as ShipModule)"
           >
-            <AppBadge variant="darkness" size="sm" class="page-ship__module-slot">
+            <AppBadge
+              variant="darkness"
+              size="sm"
+              class="page-ship__module-slot"
+            >
               {{ mod.slot }}
             </AppBadge>
             <span class="page-ship__module-name">{{ mod.name }}</span>
@@ -822,7 +1033,10 @@
           </li>
         </ul>
 
-        <p v-else class="page-ship__modules-empty">
+        <p
+          v-else
+          class="page-ship__modules-empty"
+        >
           {{ t('modulesEmptySlot') }}
         </p>
       </AppCard>
@@ -843,17 +1057,115 @@
           <span class="page-ship__card-title">{{ t('crewCardTitle') }}</span>
         </template>
 
-        <ul class="page-ship__crew-list" aria-label="Crew">
-          <li v-for="slot in crewRoster" :key="slot.position" class="page-ship__crew-row">
+        <AppBanner
+          v-if="crewError"
+          tone="danger"
+          role="alert"
+          class="page-ship__crew-error"
+        >
+          {{ crewError }}
+        </AppBanner>
+
+        <ul
+          class="page-ship__crew-list"
+          aria-label="Crew"
+        >
+          <li
+            v-for="slot in crewRoster"
+            :key="slot.position"
+            class="page-ship__crew-row"
+          >
+            <!-- Position label -->
             <span class="page-ship__crew-position">
-              {{ t(`crew${slot.position.charAt(0).toUpperCase()}${slot.position.slice(1)}`) }}
+              {{ positionLabel(slot.position) }}
             </span>
-            <span v-if="slot.assignedCharacterId" class="page-ship__crew-name">
-              {{ slot.assignedCharacterId }}
-            </span>
-            <em v-else class="page-ship__crew-vacant">
-              {{ t('crewVacant') }}
-            </em>
+
+            <!-- Assigned: show name + Remove button -->
+            <template v-if="slot.assignedCharacterId">
+              <span class="page-ship__crew-name">
+                {{ characterName(slot.assignedCharacterId) }}
+              </span>
+              <AppButton
+                variant="ghost"
+                size="sm"
+                class="page-ship__crew-remove"
+                :disabled="crewBusy[slot.position]"
+                @click="onUnassign(slot.position, slot.assignedCharacterId)"
+              >
+                {{ t('crewRemove') }}
+              </AppButton>
+            </template>
+
+            <!-- Vacant: show Assign button + inline picker -->
+            <template v-else>
+              <em class="page-ship__crew-vacant">{{ t('crewVacant') }}</em>
+              <AppButton
+                variant="ghost"
+                size="sm"
+                class="page-ship__crew-assign-btn"
+                :disabled="crewBusy[slot.position]"
+                @click="togglePicker(slot.position)"
+              >
+                {{ pickerOpen[slot.position] ? t('crewPickerCancel') : t('crewAssign') }}
+              </AppButton>
+
+              <!-- Inline picker -->
+              <div
+                v-if="pickerOpen[slot.position]"
+                class="page-ship__crew-picker"
+              >
+                <AppField :label="t('crewPickerLabel')">
+                  <template #default="attrs">
+                    <select
+                      v-bind="attrs"
+                      :value="pickerSelected[slot.position] ?? ''"
+                      class="page-ship__crew-select"
+                      @change="(e) => { pickerSelected[slot.position] = (e.target as HTMLSelectElement).value; }"
+                    >
+                      <option
+                        value=""
+                        disabled
+                      >
+                        {{ t('crewPickerPlaceholder') }}
+                      </option>
+                      <optgroup
+                        v-if="pickableFor(slot.position).free.length > 0"
+                        :label="t('crewPickerGroupFree')"
+                      >
+                        <option
+                          v-for="ch in pickableFor(slot.position).free"
+                          :key="ch.id"
+                          :value="ch.id"
+                        >
+                          {{ ch.name }}
+                        </option>
+                      </optgroup>
+                      <optgroup
+                        v-if="pickableFor(slot.position).onShip.length > 0"
+                        :label="t('crewPickerGroupOnShip')"
+                      >
+                        <option
+                          v-for="ch in pickableFor(slot.position).onShip"
+                          :key="ch.id"
+                          :value="ch.id"
+                        >
+                          {{ ch.name }}
+                        </option>
+                      </optgroup>
+                    </select>
+                  </template>
+                </AppField>
+                <AppButton
+                  variant="primary"
+                  size="sm"
+                  class="page-ship__crew-confirm"
+                  :disabled="!pickerSelected[slot.position] || crewBusy[slot.position]"
+                  @click="onAssign(slot.position)"
+                >
+                  {{ t('crewPickerConfirm') }}
+                </AppButton>
+              </div>
+            </template>
           </li>
         </ul>
       </AppCard>
@@ -863,7 +1175,11 @@
         <template #header>
           <div class="page-ship__card-header-row">
             <span class="page-ship__card-title">{{ t('notesCardTitle') }}</span>
-            <AppButton variant="ghost" size="sm" @click="notesOpen = !notesOpen">
+            <AppButton
+              variant="ghost"
+              size="sm"
+              @click="notesOpen = !notesOpen"
+            >
               {{ notesOpen ? t('collapseHide') : t('collapseShow') }}
             </AppButton>
           </div>
@@ -885,7 +1201,11 @@
         <template #header>
           <div class="page-ship__card-header-row">
             <span class="page-ship__card-title">{{ t('historyCardTitle') }}</span>
-            <AppButton variant="ghost" size="sm" @click="historyOpen = !historyOpen">
+            <AppButton
+              variant="ghost"
+              size="sm"
+              @click="historyOpen = !historyOpen"
+            >
               {{ historyOpen ? t('collapseHide') : t('collapseShow') }}
             </AppButton>
           </div>
@@ -908,7 +1228,10 @@
           <span class="page-ship__card-title">{{ t('problemsCardTitle') }}</span>
         </template>
 
-        <AppField :label="t('problemsLabel')" :help-text="t('problemsHelp')">
+        <AppField
+          :label="t('problemsLabel')"
+          :help-text="t('problemsHelp')"
+        >
           <template #default="attrs">
             <AppInput
               v-bind="attrs"
@@ -1154,6 +1477,7 @@
       display: flex;
       align-items: center;
       gap: var(--space-4);
+      flex-wrap: wrap;
     }
 
     &__crew-position {
@@ -1165,6 +1489,7 @@
     }
 
     &__crew-name {
+      flex: 1;
       font-family: var(--font-body);
       font-size: var(--type-body-md-font-size);
       color: var(--text-primary);
@@ -1175,6 +1500,50 @@
       font-size: var(--type-body-md-font-size);
       color: var(--text-secondary);
       font-style: italic;
+      flex: 1;
+    }
+
+    &__crew-remove {
+      flex-shrink: 0;
+    }
+
+    &__crew-assign-btn {
+      flex-shrink: 0;
+    }
+
+    &__crew-error {
+      margin-bottom: var(--space-3);
+    }
+
+    &__crew-picker {
+      display: flex;
+      align-items: flex-end;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      width: 100%;
+      padding: var(--space-3);
+      background-color: var(--surface-night);
+      border-radius: var(--radius-sm);
+    }
+
+    &__crew-select {
+      width: 100%;
+      padding: var(--space-2) var(--space-3);
+      background-color: var(--ui-bg);
+      border: 1px solid var(--ui-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: var(--type-body-md-font-size);
+
+      &:focus {
+        outline: 2px solid var(--brand-brass-light);
+        outline-offset: 2px;
+      }
+    }
+
+    &__crew-confirm {
+      flex-shrink: 0;
     }
   }
 </style>
