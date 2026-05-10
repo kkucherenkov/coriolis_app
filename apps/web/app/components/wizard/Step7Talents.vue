@@ -218,36 +218,39 @@
 </i18n>
 
 <template>
-  <div class="step-talents">
-    <p class="step-talents__intro">
+  <div class="step-7-talents">
+    <p class="step-7-talents__intro">
       {{ t('intro') }}
     </p>
 
-    <section class="step-talents__section">
-      <header class="step-talents__section-head">
-        <h3 class="step-talents__section-title">
+    <section class="step-7-talents__section">
+      <header class="step-7-talents__section-head">
+        <h3 class="step-7-talents__section-title">
           {{ t('personal.title') }}
         </h3>
-        <span class="step-talents__counter">
+        <span class="step-7-talents__counter">
           {{ t('personal.counter', { count: personalTalentId ? 1 : 0 }) }}
         </span>
       </header>
-      <p class="step-talents__section-help">
+      <p class="step-7-talents__section-help">
         {{ t('personal.help') }}
       </p>
 
-      <div v-if="concept" class="step-talents__filter">
-        <label class="step-talents__filter-toggle">
+      <div
+        v-if="concept"
+        class="step-7-talents__filter"
+      >
+        <label class="step-7-talents__filter-toggle">
           <input
             v-model="showOnlyRecommendedForConcept"
             type="checkbox"
-            class="step-talents__filter-checkbox"
+            class="step-7-talents__filter-checkbox"
           />
-          <span class="step-talents__filter-text">
+          <span class="step-7-talents__filter-text">
             {{ t('personal.filterRecommendedLabel') }}
           </span>
         </label>
-        <span class="step-talents__filter-meta">
+        <span class="step-7-talents__filter-meta">
           {{
             t('personal.filterPoolMeta', {
               shown: personalOptions.length,
@@ -256,17 +259,20 @@
           }}
         </span>
       </div>
-      <p v-else class="step-talents__section-help step-talents__section-help--hint">
+      <p
+        v-else
+        class="step-7-talents__section-help step-7-talents__section-help--hint"
+      >
         {{ t('personal.noConceptHint') }}
       </p>
 
-      <div class="step-talents__grid">
+      <div class="step-7-talents__grid">
         <div
           v-for="talent in personalOptions"
           :key="talent.id"
-          class="step-talents__card"
+          class="step-7-talents__card"
           :class="{
-            'step-talents__card--picked': isPersonalPicked(talent.id),
+            'step-7-talents__card--picked': isPersonalPicked(talent.id),
           }"
           role="checkbox"
           :aria-checked="isPersonalPicked(talent.id)"
@@ -274,36 +280,39 @@
           @click="togglePersonal(talent.id)"
           @keydown.enter.space.prevent="togglePersonal(talent.id)"
         >
-          <div class="step-talents__card-head">
-            <span class="step-talents__talent-name">{{ l10n(talent.name) }}</span>
-            <span v-if="isPersonalPicked(talent.id)" class="step-talents__badge">
+          <div class="step-7-talents__card-head">
+            <span class="step-7-talents__talent-name">{{ l10n(talent.name) }}</span>
+            <span
+              v-if="isPersonalPicked(talent.id)"
+              class="step-7-talents__badge"
+            >
               {{ t('pickedBadge') }}
             </span>
           </div>
-          <p class="step-talents__desc">
+          <p class="step-7-talents__desc">
             {{ l10n(talent.description) }}
           </p>
         </div>
       </div>
     </section>
 
-    <section class="step-talents__section">
-      <header class="step-talents__section-head">
-        <h3 class="step-talents__section-title">
+    <section class="step-7-talents__section">
+      <header class="step-7-talents__section-head">
+        <h3 class="step-7-talents__section-title">
           {{ t('crew.title') }}
         </h3>
       </header>
       <template v-if="crewConcept && crewOptions.length > 0">
-        <p class="step-talents__section-help">
+        <p class="step-7-talents__section-help">
           {{ t('crew.help', { label: crewConcept }) }}
         </p>
-        <div class="step-talents__grid">
+        <div class="step-7-talents__grid">
           <div
             v-for="talent in crewOptions"
             :key="talent.id"
-            class="step-talents__card"
+            class="step-7-talents__card"
             :class="{
-              'step-talents__card--picked': isCrewPicked(talent.id),
+              'step-7-talents__card--picked': isCrewPicked(talent.id),
             }"
             role="checkbox"
             :aria-checked="isCrewPicked(talent.id)"
@@ -311,58 +320,73 @@
             @click="toggleCrew(talent.id)"
             @keydown.enter.space.prevent="toggleCrew(talent.id)"
           >
-            <div class="step-talents__card-head">
-              <span class="step-talents__talent-name">{{ l10n(talent.name) }}</span>
-              <span v-if="isCrewPicked(talent.id)" class="step-talents__badge">
+            <div class="step-7-talents__card-head">
+              <span class="step-7-talents__talent-name">{{ l10n(talent.name) }}</span>
+              <span
+                v-if="isCrewPicked(talent.id)"
+                class="step-7-talents__badge"
+              >
                 {{ t('pickedBadge') }}
               </span>
             </div>
-            <p class="step-talents__desc">
+            <p class="step-7-talents__desc">
               {{ l10n(talent.description) }}
             </p>
           </div>
         </div>
       </template>
-      <div v-else class="step-talents__slot step-talents__slot--empty">
+      <div
+        v-else
+        class="step-7-talents__slot step-7-talents__slot--empty"
+      >
         {{ t('crew.noCrew') }}
       </div>
     </section>
 
-    <section class="step-talents__section">
-      <header class="step-talents__section-head">
-        <h3 class="step-talents__section-title">
+    <section class="step-7-talents__section">
+      <header class="step-7-talents__section-head">
+        <h3 class="step-7-talents__section-title">
           {{ t('iconGift.title') }}
         </h3>
       </header>
-      <div v-if="iconGift" class="step-talents__slot step-talents__slot--filled">
-        <span class="step-talents__slot-label">{{ l10n(iconGift.name) }}</span>
-        <span class="step-talents__slot-help">{{ l10n(iconGift.description) }}</span>
-        <span class="step-talents__slot-meta">{{ t('iconGift.help') }}</span>
+      <div
+        v-if="iconGift"
+        class="step-7-talents__slot step-7-talents__slot--filled"
+      >
+        <span class="step-7-talents__slot-label">{{ l10n(iconGift.name) }}</span>
+        <span class="step-7-talents__slot-help">{{ l10n(iconGift.description) }}</span>
+        <span class="step-7-talents__slot-meta">{{ t('iconGift.help') }}</span>
       </div>
-      <div v-else class="step-talents__slot step-talents__slot--empty">
+      <div
+        v-else
+        class="step-7-talents__slot step-7-talents__slot--empty"
+      >
         {{ t('iconGift.noIcon') }}
       </div>
     </section>
 
-    <section v-if="mutant" class="step-talents__section">
-      <header class="step-talents__section-head">
-        <h3 class="step-talents__section-title">
+    <section
+      v-if="mutant"
+      class="step-7-talents__section"
+    >
+      <header class="step-7-talents__section-head">
+        <h3 class="step-7-talents__section-title">
           {{ t('stigma.title') }}
         </h3>
-        <span class="step-talents__counter">
+        <span class="step-7-talents__counter">
           {{ t('stigma.counter', { count: stigmaTalentId ? 1 : 0 }) }}
         </span>
       </header>
-      <p class="step-talents__section-help">
+      <p class="step-7-talents__section-help">
         {{ t('stigma.help') }}
       </p>
-      <div class="step-talents__grid">
+      <div class="step-7-talents__grid">
         <div
           v-for="talent in STIGMA_TALENTS"
           :key="talent.id"
-          class="step-talents__card"
+          class="step-7-talents__card"
           :class="{
-            'step-talents__card--picked': isStigmaPicked(talent.id),
+            'step-7-talents__card--picked': isStigmaPicked(talent.id),
           }"
           role="checkbox"
           :aria-checked="isStigmaPicked(talent.id)"
@@ -370,13 +394,16 @@
           @click="toggleStigma(talent.id)"
           @keydown.enter.space.prevent="toggleStigma(talent.id)"
         >
-          <div class="step-talents__card-head">
-            <span class="step-talents__talent-name">{{ l10n(talent.name) }}</span>
-            <span v-if="isStigmaPicked(talent.id)" class="step-talents__badge">
+          <div class="step-7-talents__card-head">
+            <span class="step-7-talents__talent-name">{{ l10n(talent.name) }}</span>
+            <span
+              v-if="isStigmaPicked(talent.id)"
+              class="step-7-talents__badge"
+            >
               {{ t('pickedBadge') }}
             </span>
           </div>
-          <p class="step-talents__desc">
+          <p class="step-7-talents__desc">
             {{ l10n(talent.description) }}
           </p>
         </div>
@@ -388,7 +415,7 @@
 <style lang="scss" scoped>
   $talents-max-width: 1000px;
 
-  .step-talents {
+  .step-7-talents {
     max-width: $talents-max-width;
     margin: 0 auto;
     display: flex;
@@ -502,7 +529,7 @@
         background-color var(--motion-duration-fast) var(--motion-ease-standard);
       outline: none;
 
-      &:hover:not(.step-talents__card--picked) {
+      &:hover:not(.step-7-talents__card--picked) {
         border-color: var(--brand-brass-deep);
         background-color: var(--surface-dawn);
       }

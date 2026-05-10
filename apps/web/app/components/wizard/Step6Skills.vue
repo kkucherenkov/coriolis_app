@@ -261,8 +261,8 @@
 </i18n>
 
 <template>
-  <div class="step-skills">
-    <p class="step-skills__hint">
+  <div class="step-6-skills">
+    <p class="step-6-skills__hint">
       {{
         t('hint', {
           pool: pool,
@@ -272,25 +272,36 @@
       }}
     </p>
 
-    <div class="step-skills__cols">
+    <div class="step-6-skills__cols">
       <!-- General skills -->
-      <div class="step-skills__panel">
-        <div class="step-skills__panel-header">
-          <span class="step-skills__panel-title">{{ t('generalTitle') }}</span>
-          <span class="step-skills__pool" :class="{ 'step-skills__pool--done': remaining === 0 }">
+      <div class="step-6-skills__panel">
+        <div class="step-6-skills__panel-header">
+          <span class="step-6-skills__panel-title">{{ t('generalTitle') }}</span>
+          <span
+            class="step-6-skills__pool"
+            :class="{ 'step-6-skills__pool--done': remaining === 0 }"
+          >
             {{ t('pointsLeft') }}: {{ remaining }}
           </span>
         </div>
 
-        <div v-for="key in GENERAL_KEYS" :key="key" class="step-skills__row">
-          <span class="step-skills__name">{{ t(`skill.${key}`) }}</span>
-          <span class="step-skills__attr">{{ SKILL_ATTR[key] }}</span>
-          <div class="step-skills__dots" role="group" :aria-label="t(`skill.${key}`)">
+        <div
+          v-for="key in GENERAL_KEYS"
+          :key="key"
+          class="step-6-skills__row"
+        >
+          <span class="step-6-skills__name">{{ t(`skill.${key}`) }}</span>
+          <span class="step-6-skills__attr">{{ SKILL_ATTR[key] }}</span>
+          <div
+            class="step-6-skills__dots"
+            role="group"
+            :aria-label="t(`skill.${key}`)"
+          >
             <span
               v-for="i in DOT_COUNT"
               :key="i"
-              class="step-skills__dot"
-              :class="{ 'step-skills__dot--filled': i - 1 < skills[key] }"
+              class="step-6-skills__dot"
+              :class="{ 'step-6-skills__dot--filled': i - 1 < skills[key] }"
               role="button"
               tabindex="0"
               :aria-pressed="i - 1 < skills[key]"
@@ -298,10 +309,10 @@
               @keydown.enter.space.prevent="onDotClick(key, i - 1)"
             />
           </div>
-          <span class="step-skills__val">{{ skills[key] }}</span>
-          <div class="step-skills__btns">
+          <span class="step-6-skills__val">{{ skills[key] }}</span>
+          <div class="step-6-skills__btns">
             <button
-              class="step-skills__btn"
+              class="step-6-skills__btn"
               type="button"
               :disabled="!canDecrement(key)"
               :aria-label="t('decrementAria', { skill: t(`skill.${key}`) })"
@@ -310,7 +321,7 @@
               &minus;
             </button>
             <button
-              class="step-skills__btn"
+              class="step-6-skills__btn"
               type="button"
               :disabled="!canIncrement(key)"
               :aria-label="t('incrementAria', { skill: t(`skill.${key}`) })"
@@ -323,23 +334,34 @@
       </div>
 
       <!-- Advanced skills -->
-      <div class="step-skills__panel">
-        <div class="step-skills__panel-header">
-          <span class="step-skills__panel-title">{{ t('advancedTitle') }}</span>
-          <span class="step-skills__pool" :class="{ 'step-skills__pool--done': remaining === 0 }">
+      <div class="step-6-skills__panel">
+        <div class="step-6-skills__panel-header">
+          <span class="step-6-skills__panel-title">{{ t('advancedTitle') }}</span>
+          <span
+            class="step-6-skills__pool"
+            :class="{ 'step-6-skills__pool--done': remaining === 0 }"
+          >
             {{ t('pointsLeft') }}: {{ remaining }}
           </span>
         </div>
 
-        <div v-for="key in ADVANCED_KEYS" :key="key" class="step-skills__row">
-          <span class="step-skills__name">{{ t(`skill.${key}`) }}</span>
-          <span class="step-skills__attr">{{ SKILL_ATTR[key] }}</span>
-          <div class="step-skills__dots" role="group" :aria-label="t(`skill.${key}`)">
+        <div
+          v-for="key in ADVANCED_KEYS"
+          :key="key"
+          class="step-6-skills__row"
+        >
+          <span class="step-6-skills__name">{{ t(`skill.${key}`) }}</span>
+          <span class="step-6-skills__attr">{{ SKILL_ATTR[key] }}</span>
+          <div
+            class="step-6-skills__dots"
+            role="group"
+            :aria-label="t(`skill.${key}`)"
+          >
             <span
               v-for="i in DOT_COUNT"
               :key="i"
-              class="step-skills__dot"
-              :class="{ 'step-skills__dot--filled': i - 1 < skills[key] }"
+              class="step-6-skills__dot"
+              :class="{ 'step-6-skills__dot--filled': i - 1 < skills[key] }"
               role="button"
               tabindex="0"
               :aria-pressed="i - 1 < skills[key]"
@@ -347,10 +369,10 @@
               @keydown.enter.space.prevent="onDotClick(key, i - 1)"
             />
           </div>
-          <span class="step-skills__val">{{ skills[key] }}</span>
-          <div class="step-skills__btns">
+          <span class="step-6-skills__val">{{ skills[key] }}</span>
+          <div class="step-6-skills__btns">
             <button
-              class="step-skills__btn"
+              class="step-6-skills__btn"
               type="button"
               :disabled="!canDecrement(key)"
               :aria-label="t('decrementAria', { skill: t(`skill.${key}`) })"
@@ -359,7 +381,7 @@
               &minus;
             </button>
             <button
-              class="step-skills__btn"
+              class="step-6-skills__btn"
               type="button"
               :disabled="!canIncrement(key)"
               :aria-label="t('incrementAria', { skill: t(`skill.${key}`) })"
@@ -383,7 +405,7 @@
   $skill-col-ctrl: 72px;
   $btn-size: 28px;
 
-  .step-skills {
+  .step-6-skills {
     &__hint {
       margin: 0 0 var(--space-6);
       font-family: var(--font-body);

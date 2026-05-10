@@ -14,17 +14,20 @@
     Skills,
     IconId,
     Concept,
+    Role,
     CrewConcept,
     MutantLineage,
     Upbringing,
   } from '@app/api-client-ts';
+  import { rolesForConcept } from '~/utils/roleCatalogue';
   import WizardShell from '~/components/wizard/WizardShell.vue';
   import Step1Concept from '~/components/wizard/Step1Concept.vue';
   import Step2Background from '~/components/wizard/Step2Background.vue';
   import Step3Icon from '~/components/wizard/Step3Icon.vue';
   import Step4Attributes from '~/components/wizard/Step4Attributes.vue';
-  import Step5Skills from '~/components/wizard/Step5Skills.vue';
-  import Step6Talents from '~/components/wizard/Step6Talents.vue';
+  import Step5Role from '~/components/wizard/Step5Role.vue';
+  import Step6Skills from '~/components/wizard/Step6Skills.vue';
+  import Step7Talents from '~/components/wizard/Step7Talents.vue';
 
   // TODO(wizard-step-7-relationships): Relationships step deferred to v1.1+.
 
@@ -36,7 +39,7 @@
 
   // ── Constants ────────────────────────────────────────────────────────────────
 
-  const TOTAL_STEPS = 6;
+  const TOTAL_STEPS = 7;
 
   const DEFAULT_ATTRS: Attributes = {
     strength: 2,
@@ -79,6 +82,7 @@
   const draftId = ref<string>('');
   const draftName = ref<string>('Untitled');
   const draftConcept = ref<Concept | null>(null);
+  const draftRole = ref<Role | null>(null);
   const draftOrigin = ref<string | null>(null);
   const draftUpbringing = ref<Upbringing>(DEFAULT_UPBRINGING);
   const draftCrewConcept = ref<CrewConcept | null>(null);
@@ -99,6 +103,7 @@
     const body: CharacterUpdate = {
       name: draftName.value.trim() || 'Untitled',
       concept: draftConcept.value,
+      role: draftRole.value,
       iconId: draftIconId.value,
       upbringing: draftUpbringing.value,
       origin: draftOrigin.value,
@@ -162,6 +167,7 @@
     draftId.value = char.id;
     draftName.value = char.name;
     draftConcept.value = char.concept ?? null;
+    draftRole.value = char.role ?? null;
     draftIconId.value = char.iconId ?? null;
     draftUpbringing.value = char.upbringing;
     draftOrigin.value = char.origin ?? null;
@@ -213,6 +219,7 @@
       await api.update(draftId.value, {
         name: draftName.value.trim() || 'Untitled',
         concept: draftConcept.value,
+        role: draftRole.value,
         iconId: draftIconId.value,
         origin: draftOrigin.value,
         crewConcept: draftCrewConcept.value,
@@ -267,7 +274,16 @@
   }
 
   function onConceptUpdate(val: Concept | null): void {
+    if (val !== draftConcept.value && draftRole.value !== null) {
+      const allowed = rolesForConcept(val);
+      if (!allowed.includes(draftRole.value)) draftRole.value = null;
+    }
     draftConcept.value = val;
+    scheduleSave();
+  }
+
+  function onRoleUpdate(val: Role | null): void {
+    draftRole.value = val;
     scheduleSave();
   }
 
@@ -371,10 +387,14 @@
         "blurb": "Spend the attribute points your upbringing grants. Each attribute is between 2 and 4."
       },
       "5": {
+        "title": "Choose your role",
+        "blurb": "Your role shapes who you are within your concept. It sets four key skills that define your specialty."
+      },
+      "6": {
         "title": "Train your skills",
         "blurb": "General skills you may use untrained. Advanced skills require at least one rank to attempt."
       },
-      "6": {
+      "7": {
         "title": "Choose your talents",
         "blurb": "Talents are habits forged in the dark between worlds. Pick up to three starting talents."
       }
@@ -406,10 +426,14 @@
         "blurb": "Потратьте очки атрибутов, которые даёт ваше воспитание. Значение каждого — от 2 до 4."
       },
       "5": {
+        "title": "Выберите роль",
+        "blurb": "Роль определяет ваше место внутри амплуа и задаёт четыре ключевых навыка специализации."
+      },
+      "6": {
         "title": "Развейте навыки",
         "blurb": "Общие навыки можно использовать без тренировки. Для продвинутых нужен хотя бы один ранг."
       },
-      "6": {
+      "7": {
         "title": "Выберите таланты",
         "blurb": "Таланты — привычки, выкованные в тёмном пространстве между мирами. Возьмите до трёх начальных талантов."
       }
@@ -428,8 +452,12 @@
       "2": { "title": "[uk-todo] People & Background", "blurb": "[uk-todo] Where are you from?" },
       "3": { "title": "[uk-todo] Choose your Icon", "blurb": "[uk-todo] Pick an Icon." },
       "4": { "title": "[uk-todo] Distribute attributes", "blurb": "[uk-todo] 13 points." },
-      "5": { "title": "[uk-todo] Train your skills", "blurb": "[uk-todo] Spend skill points." },
-      "6": { "title": "[uk-todo] Choose talents", "blurb": "[uk-todo] Pick up to 3 talents." }
+      "5": {
+        "title": "[uk-todo] Choose your role",
+        "blurb": "[uk-todo] Pick a role for your concept."
+      },
+      "6": { "title": "[uk-todo] Train your skills", "blurb": "[uk-todo] Spend skill points." },
+      "7": { "title": "[uk-todo] Choose talents", "blurb": "[uk-todo] Pick up to 3 talents." }
     }
   },
   "el": {
@@ -445,8 +473,12 @@
       "2": { "title": "[el-todo] People & Background", "blurb": "[el-todo] Where are you from?" },
       "3": { "title": "[el-todo] Choose your Icon", "blurb": "[el-todo] Pick an Icon." },
       "4": { "title": "[el-todo] Distribute attributes", "blurb": "[el-todo] 13 points." },
-      "5": { "title": "[el-todo] Train your skills", "blurb": "[el-todo] Spend skill points." },
-      "6": { "title": "[el-todo] Choose talents", "blurb": "[el-todo] Pick up to 3 talents." }
+      "5": {
+        "title": "[el-todo] Choose your role",
+        "blurb": "[el-todo] Pick a role for your concept."
+      },
+      "6": { "title": "[el-todo] Train your skills", "blurb": "[el-todo] Spend skill points." },
+      "7": { "title": "[el-todo] Choose talents", "blurb": "[el-todo] Pick up to 3 talents." }
     }
   }
 }
@@ -514,16 +546,23 @@
         @update:attributes="onAttributesUpdate"
       />
 
-      <Step5Skills
+      <Step5Role
         v-if="step === 5"
+        :concept="draftConcept"
+        :role="draftRole"
+        @update:role="onRoleUpdate"
+      />
+
+      <Step6Skills
+        v-if="step === 6"
         :skills="draftSkills"
         :upbringing="draftUpbringing"
         :concept="draftConcept"
         @update:skills="onSkillsUpdate"
       />
 
-      <Step6Talents
-        v-if="step === 6"
+      <Step7Talents
+        v-if="step === 7"
         :personal-talent-id="draftPersonalTalentId"
         :crew-talent-id="draftCrewTalentId"
         :stigma-talent-id="draftStigmaTalentId"
