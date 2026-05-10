@@ -84,11 +84,23 @@
         `updateModule`, `deleteModule`. 490/490 tests pass (+27 new
         specs across 4 files); lint clean. Next: Block 4 — crew
         assignment.
-  - [ ] Block 4 — Crew assignment: `assignCrew` /
-        `unassignCrew` commands. Same-owner guard (ship and
-        character owned by caller). Position dedup — assigning the
-        same character to two positions on the same ship returns
-        422 `CREW_ALREADY_ASSIGNED`.
+  - [x] Block 4 — Crew assignment: `assignCrew` / `unassignCrew`
+        commands. Ship + character ownership guards. Move semantics:
+        if the character is already on the ship at a different
+        position the old slot is cleared before the new one is
+        filled (only if the target is vacant; otherwise
+        CREW_POSITION_TAKEN). Same-position re-assign is a no-op
+        returning the existing slot. DELETE is idempotent.
+        Three new domain errors (CrewPositionTakenError 400,
+        CharacterNotFoundError 400, CharacterNotOwnedError 403).
+        IShipRepo extended with four crew methods; ShipsModule
+        imports CharactersModule for CHARACTER_REPO.
+        Spec note: active.md mentioned CREW_ALREADY_ASSIGNED 422
+        for same-character-two-positions; the OpenAPI spec has no
+        such code. Resolved by move semantics — no 422 surface.
+        Commit `0e4a01c`. 490 → 503 tests (+13 specs, 2 files);
+        lint clean. Next: Block 5 — duplicateShip + getShipExport
+        stub.
   - [ ] Block 5 — `duplicateShip` command (deep copy with name
         suffix), stub `getShipExport` returning 501. Closes the
         Ship API surface so the Phase 5 frontend tasks can wire
