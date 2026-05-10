@@ -321,16 +321,57 @@
         inside the backend container (consistent with the
         Block E shadow-DB workaround); backend container
         restarted afterwards.
-  - [ ] Block G — **Cybernetic `bodyPoints` field.** Hard
-        violation H10.
-        Spec: drop the `bodyPoints: 0–6` field from
-        `ItemCybernetic`; replace with `xpCost: 1–3`
-        sourced from ГЛАВА 6 §КИБЕРНЕТИЧЕСКИЕ ИМПЛАНТАТЫ +
-        ТАБЛИЦА 6.15 (cybernetics are dual-priced
-        бирры + опыт; the XP cost equals the talent rank
-        the cybernetic doubles as).
-        Prisma migration: drop column; reseed values from
-        the canonical table.
+  - [x] Block G — **Cybernetic `bodyPoints` field.** Hard
+        violation H10. **Done in 4cca564 (spec) + 23c412d
+        (codegen) + 49821a4 (backend + migration).**
+        Spec: dropped the non-canonical `bodyPoints: 0–6`
+        field from `ItemCybernetic` /
+        `ItemCyberneticCreate` / `ItemCyberneticUpdate`
+        and replaced with `xpCost: 0–15`. ST3001 has no
+        "body points" / "system strain" stat — that was a
+        fabrication in the original spec. Cybernetics are
+        dual-priced (ГЛАВА 6 «КИБЕРНЕТИЧЕСКИЕ ИМПЛАНТАТЫ»
+        — «считается и снаряжением, и достоинством, так
+        что на его покупку тебе понадобятся не только
+        бирры, но и пункты опыта»); the canonical
+        acquisition cost is 5 XP per ГЛАВА 4 «Новые
+        достоинства». The 0..15 bound accepts GM
+        concessions (0 for in-game gifts) and high-rank
+        exotics (3 ranks × 5 XP).
+        **Audit override on H10:** the audit's
+        prescription was `xpCost: 1..3` mapping to a
+        "talent rank". The rulebook does not list
+        cybernetics as ranked; each is a single talent at
+        a single rank. The 1..3 cap would silently
+        amputate the GM-extension space, so the spec uses
+        0..15 instead — same canon source, broader
+        envelope.
+        Backend: command DTOs (`add-item.command.ts`,
+        `update-item.command.ts`) renamed
+        `bodyPoints` → `xpCost`; range tightened to
+        `@Min(0) @Max(15)` on both create and update
+        (update was previously `@Min(0)` only — block G
+        adds the cap to match the new spec).
+        `rules-engine.ts` top-level docstring purged of
+        the obsolete "systemStrain not weight"
+        parenthetical (no formula change — encumbrance
+        still sums `weight` across all items including
+        CYBERNETIC). Tests: 2 new CYBERNETIC boundary
+        cases (`xpCost: 5` happy-path, `xpCost: 16`
+        rejection); existing fixtures renamed. NPC module
+        verified to carry zero CYBERNETIC references —
+        no NPC migration needed.
+        Prisma migration `20260510000008_rename_cyberneti`
+        `c_bodyPoints_to_xpCost`: idempotent JSONB rename
+        on `item.data` for `type = 'CYBERNETIC'` rows
+        (`data - 'bodyPoints' || jsonb_build_object('xp`
+        `Cost', 5)`); defensive backfill for any
+        CYBERNETIC row missing both keys. Backfill value
+        of 5 mirrors ГЛАВА 4's canonical talent
+        acquisition cost (the rulebook never assigns
+        per-implant XP, so 5 is the most defensible
+        default).
+        Backend vitest count 851 → 853 (+2).
   - [ ] Block H — **`ItemSlotType` deprecation.** Soft
         mismatch (already self-documented in
         `openapi.yaml:7697-7699`).
