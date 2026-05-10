@@ -43,11 +43,11 @@ Concept _$valueOf(String name) {
     case 'soldier':
       return _$soldier;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
-final BuiltSet<Concept> _$values = new BuiltSet<Concept>(const <Concept>[
+final BuiltSet<Concept> _$values = BuiltSet<Concept>(const <Concept>[
   _$artist,
   _$networker,
   _$fugitive,
@@ -78,12 +78,12 @@ class _$ConceptMeta {
   BuiltSet<Concept> get values => _$values;
 }
 
-abstract class _$ConceptMixin {
+mixin _$ConceptMixin {
   // ignore: non_constant_identifier_names
   _$ConceptMeta get Concept => const _$ConceptMeta();
 }
 
-Serializer<Concept> _$conceptSerializer = new _$ConceptSerializer();
+Serializer<Concept> _$conceptSerializer = _$ConceptSerializer();
 
 class _$ConceptSerializer implements PrimitiveSerializer<Concept> {
   static const Map<String, Object> _toWire = const <String, Object>{
@@ -119,15 +119,20 @@ class _$ConceptSerializer implements PrimitiveSerializer<Concept> {
   final String wireName = 'Concept';
 
   @override
-  Object serialize(Serializers serializers, Concept object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    Concept object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  Concept deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      Concept.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  Concept deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => Concept.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

@@ -13,16 +13,15 @@ class _$NpcUpdateHp extends NpcUpdateHp {
   final int? max;
 
   factory _$NpcUpdateHp([void Function(NpcUpdateHpBuilder)? updates]) =>
-      (new NpcUpdateHpBuilder()..update(updates))._build();
+      (NpcUpdateHpBuilder()..update(updates))._build();
 
   _$NpcUpdateHp._({this.current, this.max}) : super._();
-
   @override
   NpcUpdateHp rebuild(void Function(NpcUpdateHpBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  NpcUpdateHpBuilder toBuilder() => new NpcUpdateHpBuilder()..replace(this);
+  NpcUpdateHpBuilder toBuilder() => NpcUpdateHpBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -75,7 +74,6 @@ class NpcUpdateHpBuilder implements Builder<NpcUpdateHp, NpcUpdateHpBuilder> {
 
   @override
   void replace(NpcUpdateHp other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$NpcUpdateHp;
   }
 
@@ -88,7 +86,7 @@ class NpcUpdateHpBuilder implements Builder<NpcUpdateHp, NpcUpdateHpBuilder> {
   NpcUpdateHp build() => _build();
 
   _$NpcUpdateHp _build() {
-    final _$result = _$v ?? new _$NpcUpdateHp._(current: current, max: max);
+    final _$result = _$v ?? _$NpcUpdateHp._(current: current, max: max);
     replace(_$result);
     return _$result;
   }

@@ -13,18 +13,15 @@ class _$DpAdjustment extends DpAdjustment {
   final String? reason;
 
   factory _$DpAdjustment([void Function(DpAdjustmentBuilder)? updates]) =>
-      (new DpAdjustmentBuilder()..update(updates))._build();
+      (DpAdjustmentBuilder()..update(updates))._build();
 
-  _$DpAdjustment._({required this.delta, this.reason}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(delta, r'DpAdjustment', 'delta');
-  }
-
+  _$DpAdjustment._({required this.delta, this.reason}) : super._();
   @override
   DpAdjustment rebuild(void Function(DpAdjustmentBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  DpAdjustmentBuilder toBuilder() => new DpAdjustmentBuilder()..replace(this);
+  DpAdjustmentBuilder toBuilder() => DpAdjustmentBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -80,7 +77,6 @@ class DpAdjustmentBuilder
 
   @override
   void replace(DpAdjustment other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$DpAdjustment;
   }
 
@@ -93,11 +89,16 @@ class DpAdjustmentBuilder
   DpAdjustment build() => _build();
 
   _$DpAdjustment _build() {
-    final _$result = _$v ??
-        new _$DpAdjustment._(
-            delta: BuiltValueNullFieldError.checkNotNull(
-                delta, r'DpAdjustment', 'delta'),
-            reason: reason);
+    final _$result =
+        _$v ??
+        _$DpAdjustment._(
+          delta: BuiltValueNullFieldError.checkNotNull(
+            delta,
+            r'DpAdjustment',
+            'delta',
+          ),
+          reason: reason,
+        );
     replace(_$result);
     return _$result;
   }

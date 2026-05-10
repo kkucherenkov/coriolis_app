@@ -7,28 +7,31 @@ part of 'ship_module_torpedo_create.dart';
 // **************************************************************************
 
 const ShipModuleTorpedoCreateSlotEnum
-    _$shipModuleTorpedoCreateSlotEnum_TORPEDO =
+_$shipModuleTorpedoCreateSlotEnum_TORPEDO =
     const ShipModuleTorpedoCreateSlotEnum._('TORPEDO');
 
 ShipModuleTorpedoCreateSlotEnum _$shipModuleTorpedoCreateSlotEnumValueOf(
-    String name) {
+  String name,
+) {
   switch (name) {
     case 'TORPEDO':
       return _$shipModuleTorpedoCreateSlotEnum_TORPEDO;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<ShipModuleTorpedoCreateSlotEnum>
-    _$shipModuleTorpedoCreateSlotEnumValues = new BuiltSet<
-        ShipModuleTorpedoCreateSlotEnum>(const <ShipModuleTorpedoCreateSlotEnum>[
-  _$shipModuleTorpedoCreateSlotEnum_TORPEDO,
-]);
+_$shipModuleTorpedoCreateSlotEnumValues =
+    BuiltSet<ShipModuleTorpedoCreateSlotEnum>(
+      const <ShipModuleTorpedoCreateSlotEnum>[
+        _$shipModuleTorpedoCreateSlotEnum_TORPEDO,
+      ],
+    );
 
 Serializer<ShipModuleTorpedoCreateSlotEnum>
-    _$shipModuleTorpedoCreateSlotEnumSerializer =
-    new _$ShipModuleTorpedoCreateSlotEnumSerializer();
+_$shipModuleTorpedoCreateSlotEnumSerializer =
+    _$ShipModuleTorpedoCreateSlotEnumSerializer();
 
 class _$ShipModuleTorpedoCreateSlotEnumSerializer
     implements PrimitiveSerializer<ShipModuleTorpedoCreateSlotEnum> {
@@ -46,16 +49,19 @@ class _$ShipModuleTorpedoCreateSlotEnumSerializer
 
   @override
   Object serialize(
-          Serializers serializers, ShipModuleTorpedoCreateSlotEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+    Serializers serializers,
+    ShipModuleTorpedoCreateSlotEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
   ShipModuleTorpedoCreateSlotEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      ShipModuleTorpedoCreateSlotEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => ShipModuleTorpedoCreateSlotEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$ShipModuleTorpedoCreate extends ShipModuleTorpedoCreate {
@@ -72,34 +78,26 @@ class _$ShipModuleTorpedoCreate extends ShipModuleTorpedoCreate {
   @override
   final String? notes;
 
-  factory _$ShipModuleTorpedoCreate(
-          [void Function(ShipModuleTorpedoCreateBuilder)? updates]) =>
-      (new ShipModuleTorpedoCreateBuilder()..update(updates))._build();
+  factory _$ShipModuleTorpedoCreate([
+    void Function(ShipModuleTorpedoCreateBuilder)? updates,
+  ]) => (ShipModuleTorpedoCreateBuilder()..update(updates))._build();
 
-  _$ShipModuleTorpedoCreate._(
-      {required this.slot,
-      required this.name,
-      required this.energyUse,
-      this.torpedoCount,
-      this.mineCount,
-      this.notes})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-        slot, r'ShipModuleTorpedoCreate', 'slot');
-    BuiltValueNullFieldError.checkNotNull(
-        name, r'ShipModuleTorpedoCreate', 'name');
-    BuiltValueNullFieldError.checkNotNull(
-        energyUse, r'ShipModuleTorpedoCreate', 'energyUse');
-  }
-
+  _$ShipModuleTorpedoCreate._({
+    required this.slot,
+    required this.name,
+    required this.energyUse,
+    this.torpedoCount,
+    this.mineCount,
+    this.notes,
+  }) : super._();
   @override
   ShipModuleTorpedoCreate rebuild(
-          void Function(ShipModuleTorpedoCreateBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(ShipModuleTorpedoCreateBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   ShipModuleTorpedoCreateBuilder toBuilder() =>
-      new ShipModuleTorpedoCreateBuilder()..replace(this);
+      ShipModuleTorpedoCreateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -188,7 +186,6 @@ class ShipModuleTorpedoCreateBuilder
 
   @override
   void replace(ShipModuleTorpedoCreate other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ShipModuleTorpedoCreate;
   }
 
@@ -201,17 +198,28 @@ class ShipModuleTorpedoCreateBuilder
   ShipModuleTorpedoCreate build() => _build();
 
   _$ShipModuleTorpedoCreate _build() {
-    final _$result = _$v ??
-        new _$ShipModuleTorpedoCreate._(
-            slot: BuiltValueNullFieldError.checkNotNull(
-                slot, r'ShipModuleTorpedoCreate', 'slot'),
-            name: BuiltValueNullFieldError.checkNotNull(
-                name, r'ShipModuleTorpedoCreate', 'name'),
-            energyUse: BuiltValueNullFieldError.checkNotNull(
-                energyUse, r'ShipModuleTorpedoCreate', 'energyUse'),
-            torpedoCount: torpedoCount,
-            mineCount: mineCount,
-            notes: notes);
+    final _$result =
+        _$v ??
+        _$ShipModuleTorpedoCreate._(
+          slot: BuiltValueNullFieldError.checkNotNull(
+            slot,
+            r'ShipModuleTorpedoCreate',
+            'slot',
+          ),
+          name: BuiltValueNullFieldError.checkNotNull(
+            name,
+            r'ShipModuleTorpedoCreate',
+            'name',
+          ),
+          energyUse: BuiltValueNullFieldError.checkNotNull(
+            energyUse,
+            r'ShipModuleTorpedoCreate',
+            'energyUse',
+          ),
+          torpedoCount: torpedoCount,
+          mineCount: mineCount,
+          notes: notes,
+        );
     replace(_$result);
     return _$result;
   }

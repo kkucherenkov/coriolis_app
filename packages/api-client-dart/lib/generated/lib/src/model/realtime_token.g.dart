@@ -13,16 +13,15 @@ class _$RealtimeToken extends RealtimeToken {
   final DateTime? expiresAt;
 
   factory _$RealtimeToken([void Function(RealtimeTokenBuilder)? updates]) =>
-      (new RealtimeTokenBuilder()..update(updates))._build();
+      (RealtimeTokenBuilder()..update(updates))._build();
 
   _$RealtimeToken._({this.token, this.expiresAt}) : super._();
-
   @override
   RealtimeToken rebuild(void Function(RealtimeTokenBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  RealtimeTokenBuilder toBuilder() => new RealtimeTokenBuilder()..replace(this);
+  RealtimeTokenBuilder toBuilder() => RealtimeTokenBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -78,7 +77,6 @@ class RealtimeTokenBuilder
 
   @override
   void replace(RealtimeToken other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$RealtimeToken;
   }
 
@@ -92,7 +90,7 @@ class RealtimeTokenBuilder
 
   _$RealtimeToken _build() {
     final _$result =
-        _$v ?? new _$RealtimeToken._(token: token, expiresAt: expiresAt);
+        _$v ?? _$RealtimeToken._(token: token, expiresAt: expiresAt);
     replace(_$result);
     return _$result;
   }

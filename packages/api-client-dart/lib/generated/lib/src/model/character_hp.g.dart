@@ -13,19 +13,15 @@ class _$CharacterHp extends CharacterHp {
   final int max;
 
   factory _$CharacterHp([void Function(CharacterHpBuilder)? updates]) =>
-      (new CharacterHpBuilder()..update(updates))._build();
+      (CharacterHpBuilder()..update(updates))._build();
 
-  _$CharacterHp._({required this.current, required this.max}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(current, r'CharacterHp', 'current');
-    BuiltValueNullFieldError.checkNotNull(max, r'CharacterHp', 'max');
-  }
-
+  _$CharacterHp._({required this.current, required this.max}) : super._();
   @override
   CharacterHp rebuild(void Function(CharacterHpBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  CharacterHpBuilder toBuilder() => new CharacterHpBuilder()..replace(this);
+  CharacterHpBuilder toBuilder() => CharacterHpBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -78,7 +74,6 @@ class CharacterHpBuilder implements Builder<CharacterHp, CharacterHpBuilder> {
 
   @override
   void replace(CharacterHp other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$CharacterHp;
   }
 
@@ -91,12 +86,20 @@ class CharacterHpBuilder implements Builder<CharacterHp, CharacterHpBuilder> {
   CharacterHp build() => _build();
 
   _$CharacterHp _build() {
-    final _$result = _$v ??
-        new _$CharacterHp._(
-            current: BuiltValueNullFieldError.checkNotNull(
-                current, r'CharacterHp', 'current'),
-            max: BuiltValueNullFieldError.checkNotNull(
-                max, r'CharacterHp', 'max'));
+    final _$result =
+        _$v ??
+        _$CharacterHp._(
+          current: BuiltValueNullFieldError.checkNotNull(
+            current,
+            r'CharacterHp',
+            'current',
+          ),
+          max: BuiltValueNullFieldError.checkNotNull(
+            max,
+            r'CharacterHp',
+            'max',
+          ),
+        );
     replace(_$result);
     return _$result;
   }

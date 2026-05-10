@@ -15,20 +15,16 @@ class _$RollCreate extends RollCreate {
   final String? gameSessionId;
 
   factory _$RollCreate([void Function(RollCreateBuilder)? updates]) =>
-      (new RollCreateBuilder()..update(updates))._build();
+      (RollCreateBuilder()..update(updates))._build();
 
   _$RollCreate._({required this.label, required this.pool, this.gameSessionId})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(label, r'RollCreate', 'label');
-    BuiltValueNullFieldError.checkNotNull(pool, r'RollCreate', 'pool');
-  }
-
+    : super._();
   @override
   RollCreate rebuild(void Function(RollCreateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  RollCreateBuilder toBuilder() => new RollCreateBuilder()..replace(this);
+  RollCreateBuilder toBuilder() => RollCreateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -92,7 +88,6 @@ class RollCreateBuilder implements Builder<RollCreate, RollCreateBuilder> {
 
   @override
   void replace(RollCreate other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$RollCreate;
   }
 
@@ -105,13 +100,21 @@ class RollCreateBuilder implements Builder<RollCreate, RollCreateBuilder> {
   RollCreate build() => _build();
 
   _$RollCreate _build() {
-    final _$result = _$v ??
-        new _$RollCreate._(
-            label: BuiltValueNullFieldError.checkNotNull(
-                label, r'RollCreate', 'label'),
-            pool: BuiltValueNullFieldError.checkNotNull(
-                pool, r'RollCreate', 'pool'),
-            gameSessionId: gameSessionId);
+    final _$result =
+        _$v ??
+        _$RollCreate._(
+          label: BuiltValueNullFieldError.checkNotNull(
+            label,
+            r'RollCreate',
+            'label',
+          ),
+          pool: BuiltValueNullFieldError.checkNotNull(
+            pool,
+            r'RollCreate',
+            'pool',
+          ),
+          gameSessionId: gameSessionId,
+        );
     replace(_$result);
     return _$result;
   }

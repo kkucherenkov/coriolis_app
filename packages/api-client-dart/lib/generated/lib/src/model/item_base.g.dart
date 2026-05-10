@@ -6,7 +6,7 @@ part of 'item_base.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-abstract class ItemBaseBuilder {
+abstract mixin class ItemBaseBuilder {
   void replace(ItemBase other);
   void update(void Function(ItemBaseBuilder) updates);
   String? get id;
@@ -28,21 +28,16 @@ class _$$ItemBase extends $ItemBase {
   final String name;
 
   factory _$$ItemBase([void Function($ItemBaseBuilder)? updates]) =>
-      (new $ItemBaseBuilder()..update(updates))._build();
+      ($ItemBaseBuilder()..update(updates))._build();
 
   _$$ItemBase._({required this.id, required this.type, required this.name})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(id, r'$ItemBase', 'id');
-    BuiltValueNullFieldError.checkNotNull(type, r'$ItemBase', 'type');
-    BuiltValueNullFieldError.checkNotNull(name, r'$ItemBase', 'name');
-  }
-
+    : super._();
   @override
   $ItemBase rebuild(void Function($ItemBaseBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  $ItemBaseBuilder toBuilder() => new $ItemBaseBuilder()..replace(this);
+  $ItemBaseBuilder toBuilder() => $ItemBaseBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -106,7 +101,6 @@ class $ItemBaseBuilder
 
   @override
   void replace(covariant $ItemBase other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$$ItemBase;
   }
 
@@ -119,13 +113,21 @@ class $ItemBaseBuilder
   $ItemBase build() => _build();
 
   _$$ItemBase _build() {
-    final _$result = _$v ??
-        new _$$ItemBase._(
-            id: BuiltValueNullFieldError.checkNotNull(id, r'$ItemBase', 'id'),
-            type: BuiltValueNullFieldError.checkNotNull(
-                type, r'$ItemBase', 'type'),
-            name: BuiltValueNullFieldError.checkNotNull(
-                name, r'$ItemBase', 'name'));
+    final _$result =
+        _$v ??
+        _$$ItemBase._(
+          id: BuiltValueNullFieldError.checkNotNull(id, r'$ItemBase', 'id'),
+          type: BuiltValueNullFieldError.checkNotNull(
+            type,
+            r'$ItemBase',
+            'type',
+          ),
+          name: BuiltValueNullFieldError.checkNotNull(
+            name,
+            r'$ItemBase',
+            'name',
+          ),
+        );
     replace(_$result);
     return _$result;
   }

@@ -17,30 +17,20 @@ class _$ConditionFlags extends ConditionFlags {
   final bool hungry;
 
   factory _$ConditionFlags([void Function(ConditionFlagsBuilder)? updates]) =>
-      (new ConditionFlagsBuilder()..update(updates))._build();
+      (ConditionFlagsBuilder()..update(updates))._build();
 
-  _$ConditionFlags._(
-      {required this.exhausted,
-      required this.sleepless,
-      required this.thirsty,
-      required this.hungry})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-        exhausted, r'ConditionFlags', 'exhausted');
-    BuiltValueNullFieldError.checkNotNull(
-        sleepless, r'ConditionFlags', 'sleepless');
-    BuiltValueNullFieldError.checkNotNull(
-        thirsty, r'ConditionFlags', 'thirsty');
-    BuiltValueNullFieldError.checkNotNull(hungry, r'ConditionFlags', 'hungry');
-  }
-
+  _$ConditionFlags._({
+    required this.exhausted,
+    required this.sleepless,
+    required this.thirsty,
+    required this.hungry,
+  }) : super._();
   @override
   ConditionFlags rebuild(void Function(ConditionFlagsBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  ConditionFlagsBuilder toBuilder() =>
-      new ConditionFlagsBuilder()..replace(this);
+  ConditionFlagsBuilder toBuilder() => ConditionFlagsBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -112,7 +102,6 @@ class ConditionFlagsBuilder
 
   @override
   void replace(ConditionFlags other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ConditionFlags;
   }
 
@@ -125,16 +114,30 @@ class ConditionFlagsBuilder
   ConditionFlags build() => _build();
 
   _$ConditionFlags _build() {
-    final _$result = _$v ??
-        new _$ConditionFlags._(
-            exhausted: BuiltValueNullFieldError.checkNotNull(
-                exhausted, r'ConditionFlags', 'exhausted'),
-            sleepless: BuiltValueNullFieldError.checkNotNull(
-                sleepless, r'ConditionFlags', 'sleepless'),
-            thirsty: BuiltValueNullFieldError.checkNotNull(
-                thirsty, r'ConditionFlags', 'thirsty'),
-            hungry: BuiltValueNullFieldError.checkNotNull(
-                hungry, r'ConditionFlags', 'hungry'));
+    final _$result =
+        _$v ??
+        _$ConditionFlags._(
+          exhausted: BuiltValueNullFieldError.checkNotNull(
+            exhausted,
+            r'ConditionFlags',
+            'exhausted',
+          ),
+          sleepless: BuiltValueNullFieldError.checkNotNull(
+            sleepless,
+            r'ConditionFlags',
+            'sleepless',
+          ),
+          thirsty: BuiltValueNullFieldError.checkNotNull(
+            thirsty,
+            r'ConditionFlags',
+            'thirsty',
+          ),
+          hungry: BuiltValueNullFieldError.checkNotNull(
+            hungry,
+            r'ConditionFlags',
+            'hungry',
+          ),
+        );
     replace(_$result);
     return _$result;
   }

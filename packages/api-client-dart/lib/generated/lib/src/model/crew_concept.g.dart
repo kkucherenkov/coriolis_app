@@ -25,18 +25,19 @@ CrewConcept _$valueOf(String name) {
     case 'pilgrim':
       return _$pilgrim;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
-final BuiltSet<CrewConcept> _$values =
-    new BuiltSet<CrewConcept>(const <CrewConcept>[
-  _$freeTrader,
-  _$mercenary,
-  _$explorer,
-  _$agents,
-  _$pilgrim,
-]);
+final BuiltSet<CrewConcept> _$values = BuiltSet<CrewConcept>(
+  const <CrewConcept>[
+    _$freeTrader,
+    _$mercenary,
+    _$explorer,
+    _$agents,
+    _$pilgrim,
+  ],
+);
 
 class _$CrewConceptMeta {
   const _$CrewConceptMeta();
@@ -49,12 +50,12 @@ class _$CrewConceptMeta {
   BuiltSet<CrewConcept> get values => _$values;
 }
 
-abstract class _$CrewConceptMixin {
+mixin _$CrewConceptMixin {
   // ignore: non_constant_identifier_names
   _$CrewConceptMeta get CrewConcept => const _$CrewConceptMeta();
 }
 
-Serializer<CrewConcept> _$crewConceptSerializer = new _$CrewConceptSerializer();
+Serializer<CrewConcept> _$crewConceptSerializer = _$CrewConceptSerializer();
 
 class _$CrewConceptSerializer implements PrimitiveSerializer<CrewConcept> {
   static const Map<String, Object> _toWire = const <String, Object>{
@@ -78,15 +79,20 @@ class _$CrewConceptSerializer implements PrimitiveSerializer<CrewConcept> {
   final String wireName = 'CrewConcept';
 
   @override
-  Object serialize(Serializers serializers, CrewConcept object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    CrewConcept object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  CrewConcept deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      CrewConcept.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  CrewConcept deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => CrewConcept.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

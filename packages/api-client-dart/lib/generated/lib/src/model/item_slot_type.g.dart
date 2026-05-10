@@ -31,20 +31,21 @@ ItemSlotType _$valueOf(String name) {
     case 'comms':
       return _$comms;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
-final BuiltSet<ItemSlotType> _$values =
-    new BuiltSet<ItemSlotType>(const <ItemSlotType>[
-  _$bridge,
-  _$hull,
-  _$hold,
-  _$weapon,
-  _$drive,
-  _$sensor,
-  _$comms,
-]);
+final BuiltSet<ItemSlotType> _$values = BuiltSet<ItemSlotType>(
+  const <ItemSlotType>[
+    _$bridge,
+    _$hull,
+    _$hold,
+    _$weapon,
+    _$drive,
+    _$sensor,
+    _$comms,
+  ],
+);
 
 class _$ItemSlotTypeMeta {
   const _$ItemSlotTypeMeta();
@@ -59,13 +60,12 @@ class _$ItemSlotTypeMeta {
   BuiltSet<ItemSlotType> get values => _$values;
 }
 
-abstract class _$ItemSlotTypeMixin {
+mixin _$ItemSlotTypeMixin {
   // ignore: non_constant_identifier_names
   _$ItemSlotTypeMeta get ItemSlotType => const _$ItemSlotTypeMeta();
 }
 
-Serializer<ItemSlotType> _$itemSlotTypeSerializer =
-    new _$ItemSlotTypeSerializer();
+Serializer<ItemSlotType> _$itemSlotTypeSerializer = _$ItemSlotTypeSerializer();
 
 class _$ItemSlotTypeSerializer implements PrimitiveSerializer<ItemSlotType> {
   static const Map<String, Object> _toWire = const <String, Object>{
@@ -93,15 +93,20 @@ class _$ItemSlotTypeSerializer implements PrimitiveSerializer<ItemSlotType> {
   final String wireName = 'ItemSlotType';
 
   @override
-  Object serialize(Serializers serializers, ItemSlotType object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    ItemSlotType object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  ItemSlotType deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      ItemSlotType.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  ItemSlotType deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => ItemSlotType.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

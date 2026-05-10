@@ -3,12 +3,14 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:app_api_client/src/model/item_slot_type.dart';
 import 'package:app_api_client/src/model/item_ship_module_create.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:app_api_client/src/model/item_gear_create.dart';
 import 'package:app_api_client/src/model/item_weapon_create.dart';
 import 'package:app_api_client/src/model/item_cybernetic_create.dart';
 import 'package:app_api_client/src/model/item_other_create.dart';
+import 'package:app_api_client/src/model/item_range_enum.dart';
 import 'package:app_api_client/src/model/item_armor_create.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';

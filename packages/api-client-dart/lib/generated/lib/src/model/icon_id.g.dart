@@ -37,11 +37,11 @@ IconId _$valueOf(String name) {
     case 'deckhand':
       return _$deckhand;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
-final BuiltSet<IconId> _$values = new BuiltSet<IconId>(const <IconId>[
+final BuiltSet<IconId> _$values = BuiltSet<IconId>(const <IconId>[
   _$ladyOfTears,
   _$traveler,
   _$messenger,
@@ -68,12 +68,12 @@ class _$IconIdMeta {
   BuiltSet<IconId> get values => _$values;
 }
 
-abstract class _$IconIdMixin {
+mixin _$IconIdMixin {
   // ignore: non_constant_identifier_names
   _$IconIdMeta get IconId => const _$IconIdMeta();
 }
 
-Serializer<IconId> _$iconIdSerializer = new _$IconIdSerializer();
+Serializer<IconId> _$iconIdSerializer = _$IconIdSerializer();
 
 class _$IconIdSerializer implements PrimitiveSerializer<IconId> {
   static const Map<String, Object> _toWire = const <String, Object>{
@@ -105,15 +105,20 @@ class _$IconIdSerializer implements PrimitiveSerializer<IconId> {
   final String wireName = 'IconId';
 
   @override
-  Object serialize(Serializers serializers, IconId object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    IconId object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  IconId deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      IconId.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  IconId deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => IconId.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

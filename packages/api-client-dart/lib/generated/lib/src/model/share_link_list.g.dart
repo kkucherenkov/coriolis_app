@@ -8,21 +8,18 @@ part of 'share_link_list.dart';
 
 class _$ShareLinkList extends ShareLinkList {
   @override
-  final BuiltList<ShareLink> items;
+  final BuiltList<dynamic> items;
 
   factory _$ShareLinkList([void Function(ShareLinkListBuilder)? updates]) =>
-      (new ShareLinkListBuilder()..update(updates))._build();
+      (ShareLinkListBuilder()..update(updates))._build();
 
-  _$ShareLinkList._({required this.items}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(items, r'ShareLinkList', 'items');
-  }
-
+  _$ShareLinkList._({required this.items}) : super._();
   @override
   ShareLinkList rebuild(void Function(ShareLinkListBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  ShareLinkListBuilder toBuilder() => new ShareLinkListBuilder()..replace(this);
+  ShareLinkListBuilder toBuilder() => ShareLinkListBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -40,8 +37,9 @@ class _$ShareLinkList extends ShareLinkList {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'ShareLinkList')..add('items', items))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'ShareLinkList',
+    )..add('items', items)).toString();
   }
 }
 
@@ -49,10 +47,9 @@ class ShareLinkListBuilder
     implements Builder<ShareLinkList, ShareLinkListBuilder> {
   _$ShareLinkList? _$v;
 
-  ListBuilder<ShareLink>? _items;
-  ListBuilder<ShareLink> get items =>
-      _$this._items ??= new ListBuilder<ShareLink>();
-  set items(ListBuilder<ShareLink>? items) => _$this._items = items;
+  ListBuilder<dynamic>? _items;
+  ListBuilder<dynamic> get items => _$this._items ??= ListBuilder<dynamic>();
+  set items(ListBuilder<dynamic>? items) => _$this._items = items;
 
   ShareLinkListBuilder() {
     ShareLinkList._defaults(this);
@@ -69,7 +66,6 @@ class ShareLinkListBuilder
 
   @override
   void replace(ShareLinkList other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ShareLinkList;
   }
 
@@ -84,15 +80,18 @@ class ShareLinkListBuilder
   _$ShareLinkList _build() {
     _$ShareLinkList _$result;
     try {
-      _$result = _$v ?? new _$ShareLinkList._(items: items.build());
+      _$result = _$v ?? _$ShareLinkList._(items: items.build());
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'items';
         items.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
-            r'ShareLinkList', _$failedField, e.toString());
+        throw BuiltValueNestedFieldError(
+          r'ShareLinkList',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

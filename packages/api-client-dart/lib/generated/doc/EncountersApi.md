@@ -10,12 +10,15 @@ All URIs are relative to *http://localhost:3010*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**addCombatant**](EncountersApi.md#addcombatant) | **POST** /api/v1/encounters/{id}/combatants | Add a combatant to an encounter
+[**advanceTurn**](EncountersApi.md#advanceturn) | **POST** /api/v1/encounters/{id}/turn/advance | Advance to the next combatant&#39;s turn
 [**createEncounter**](EncountersApi.md#createencounter) | **POST** /api/v1/game-sessions/{sessionId}/encounters | Create an encounter in a game session
 [**deleteCombatant**](EncountersApi.md#deletecombatant) | **DELETE** /api/v1/combatants/{id} | Remove a combatant from an encounter
 [**deleteEncounter**](EncountersApi.md#deleteencounter) | **DELETE** /api/v1/encounters/{id} | Delete an encounter
 [**getEncounter**](EncountersApi.md#getencounter) | **GET** /api/v1/encounters/{id} | Get an encounter by ID
 [**listCombatants**](EncountersApi.md#listcombatants) | **GET** /api/v1/encounters/{id}/combatants | List combatants for an encounter
 [**listEncounters**](EncountersApi.md#listencounters) | **GET** /api/v1/game-sessions/{sessionId}/encounters | List encounters for a game session
+[**reorderInitiative**](EncountersApi.md#reorderinitiative) | **PATCH** /api/v1/encounters/{id}/initiative | Manually reorder the turn order (GM only)
+[**rollInitiative**](EncountersApi.md#rollinitiative) | **POST** /api/v1/encounters/{id}/initiative/roll | Roll initiative for all combatants and start combat
 [**updateCombatant**](EncountersApi.md#updatecombatant) | **PATCH** /api/v1/combatants/{id} | Update a combatant
 [**updateEncounter**](EncountersApi.md#updateencounter) | **PATCH** /api/v1/encounters/{id} | Update an encounter
 
@@ -65,6 +68,53 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: application/json
+ - **Accept**: application/json, application/problem+json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **advanceTurn**
+> TurnAdvanceResult advanceTurn(id)
+
+Advance to the next combatant's turn
+
+Moves `encounter.activeCombatantId` forward by one position in the turn order: `(currentIndex + 1) % combatants.length`.  **Wrap behaviour:** when the advance moves past the last combatant (index `combatants.length - 1`), the turn wraps to index 0 and `encounter.round` is incremented by 1. `TurnAdvanceResult.isNewRound` is `true` in that case.  **Allowed only while `status` is `active`.** Returns 422 `ENCOUNTER_INVALID_STATUS` otherwise.  **Defensive guard:** returns 422 `ENCOUNTER_INITIATIVE_NOT_ROLLED` when `activeCombatantId` is null (i.e. initiative was never set, which should not be reachable via normal `rollInitiative` flow but is possible if a future code path bypasses that operation).  **Error codes (422):** - `ENCOUNTER_INVALID_STATUS` — encounter is not in `active` status. - `ENCOUNTER_INITIATIVE_NOT_ROLLED` — `activeCombatantId` is null;   initiative must be rolled before turns can be advanced. 
+
+### Example
+```dart
+import 'package:app_api_client/api.dart';
+// TODO Configure API key authorization: cookieAuth
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKeyPrefix = 'Bearer';
+
+final api = AppApiClient().getEncountersApi();
+final String id = id_example; // String | Encounter identifier (cuid2)
+
+try {
+    final response = api.advanceTurn(id);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling EncountersApi->advanceTurn: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **String**| Encounter identifier (cuid2) | 
+
+### Return type
+
+[**TurnAdvanceResult**](TurnAdvanceResult.md)
+
+### Authorization
+
+[cookieAuth](../README.md#cookieAuth), [bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json, application/problem+json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -345,6 +395,102 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**EncounterList**](EncounterList.md)
+
+### Authorization
+
+[cookieAuth](../README.md#cookieAuth), [bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json, application/problem+json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **reorderInitiative**
+> InitiativeRollResult reorderInitiative(id, initiativeReorderRequest)
+
+Manually reorder the turn order (GM only)
+
+Allows the GM to rearrange the turn order without re-rolling initiative dice. The request body must contain the full ordered list of every combatant id in the encounter exactly once. The server reassigns `turnOrder` indices (0-based) matching the array position.  **This operation does NOT:** - Re-roll initiative dice (`initiative` values remain unchanged). - Change `encounter.activeCombatantId` (the combatant whose turn is   currently active stays active; the reorder takes effect from the   next turn advance). - Change `encounter.round`.  **Allowed only while `status` is `active`.** Returns 422 `ENCOUNTER_INVALID_STATUS` if called from `setup` (use `rollInitiative` instead) or `ended`.  **Validation error codes (422):** - `ENCOUNTER_INVALID_STATUS` — encounter is not in `active` status. - `INITIATIVE_INCOMPLETE` — at least one combatant id from the   encounter is absent from `combatantIds`. - `INITIATIVE_DUPLICATE` — the same id appears two or more times   in `combatantIds`. - `INITIATIVE_UNKNOWN_COMBATANT` — an id in `combatantIds` does not   belong to this encounter. 
+
+### Example
+```dart
+import 'package:app_api_client/api.dart';
+// TODO Configure API key authorization: cookieAuth
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKeyPrefix = 'Bearer';
+
+final api = AppApiClient().getEncountersApi();
+final String id = id_example; // String | Encounter identifier (cuid2)
+final InitiativeReorderRequest initiativeReorderRequest = {"combatantIds":["cuid_comb03","cuid_comb02","cuid_comb01","cuid_comb04"]}; // InitiativeReorderRequest | 
+
+try {
+    final response = api.reorderInitiative(id, initiativeReorderRequest);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling EncountersApi->reorderInitiative: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **String**| Encounter identifier (cuid2) | 
+ **initiativeReorderRequest** | [**InitiativeReorderRequest**](InitiativeReorderRequest.md)|  | 
+
+### Return type
+
+[**InitiativeRollResult**](InitiativeRollResult.md)
+
+### Authorization
+
+[cookieAuth](../README.md#cookieAuth), [bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json, application/problem+json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **rollInitiative**
+> InitiativeRollResult rollInitiative(id)
+
+Roll initiative for all combatants and start combat
+
+Rolls a d10 (`crypto.randomInt(1, 11)`) for every combatant in the encounter, sorts them descending, assigns `turnOrder` indices (0-based), and transitions the encounter from `setup` to `active`.  **Side-effects (all atomic):** 1. Encounter `status` transitions `setup → active`. 2. `encounter.round` is set from 0 to 1. 3. `encounter.activeCombatantId` is set to the combatant with    `turnOrder: 0` (highest initiative result). 4. Every combatant row is updated with its `initiative` and `turnOrder`.  **Tie-breaking:** equal initiative rolls are broken by `agility` descending (`attributes.agility` for PC combatants; `npcSnapshot.agility` for NPC combatants snapshotted at add-time). Remaining ties (equal initiative **and** equal agility) are left in an arbitrary but stable order — the GM should use the `PATCH /api/v1/encounters/{id}/initiative` reorder operation to set a definitive order before the first turn.  **Error codes (422):** - `ENCOUNTER_INVALID_TRANSITION` — encounter is not in `setup` status.   Initiative roll is only valid from `setup`; if the encounter is   already `active` or `ended` this guard fires. - `ENCOUNTER_NO_COMBATANTS` — the encounter has no combatants. Add at   least one via `POST /api/v1/encounters/{id}/combatants` before   rolling initiative. 
+
+### Example
+```dart
+import 'package:app_api_client/api.dart';
+// TODO Configure API key authorization: cookieAuth
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKeyPrefix = 'Bearer';
+
+final api = AppApiClient().getEncountersApi();
+final String id = id_example; // String | Encounter identifier (cuid2)
+
+try {
+    final response = api.rollInitiative(id);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling EncountersApi->rollInitiative: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **String**| Encounter identifier (cuid2) | 
+
+### Return type
+
+[**InitiativeRollResult**](InitiativeRollResult.md)
 
 ### Authorization
 

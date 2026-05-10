@@ -8,23 +8,20 @@ part of 'dp_event_list.dart';
 
 class _$DpEventList extends DpEventList {
   @override
-  final BuiltList<DpEvent> items;
+  final BuiltList<dynamic> items;
   @override
   final String? nextCursor;
 
   factory _$DpEventList([void Function(DpEventListBuilder)? updates]) =>
-      (new DpEventListBuilder()..update(updates))._build();
+      (DpEventListBuilder()..update(updates))._build();
 
-  _$DpEventList._({required this.items, this.nextCursor}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(items, r'DpEventList', 'items');
-  }
-
+  _$DpEventList._({required this.items, this.nextCursor}) : super._();
   @override
   DpEventList rebuild(void Function(DpEventListBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  DpEventListBuilder toBuilder() => new DpEventListBuilder()..replace(this);
+  DpEventListBuilder toBuilder() => DpEventListBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -55,10 +52,9 @@ class _$DpEventList extends DpEventList {
 class DpEventListBuilder implements Builder<DpEventList, DpEventListBuilder> {
   _$DpEventList? _$v;
 
-  ListBuilder<DpEvent>? _items;
-  ListBuilder<DpEvent> get items =>
-      _$this._items ??= new ListBuilder<DpEvent>();
-  set items(ListBuilder<DpEvent>? items) => _$this._items = items;
+  ListBuilder<dynamic>? _items;
+  ListBuilder<dynamic> get items => _$this._items ??= ListBuilder<dynamic>();
+  set items(ListBuilder<dynamic>? items) => _$this._items = items;
 
   String? _nextCursor;
   String? get nextCursor => _$this._nextCursor;
@@ -80,7 +76,6 @@ class DpEventListBuilder implements Builder<DpEventList, DpEventListBuilder> {
 
   @override
   void replace(DpEventList other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$DpEventList;
   }
 
@@ -95,16 +90,19 @@ class DpEventListBuilder implements Builder<DpEventList, DpEventListBuilder> {
   _$DpEventList _build() {
     _$DpEventList _$result;
     try {
-      _$result = _$v ??
-          new _$DpEventList._(items: items.build(), nextCursor: nextCursor);
+      _$result =
+          _$v ?? _$DpEventList._(items: items.build(), nextCursor: nextCursor);
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'items';
         items.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
-            r'DpEventList', _$failedField, e.toString());
+        throw BuiltValueNestedFieldError(
+          r'DpEventList',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

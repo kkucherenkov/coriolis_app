@@ -8,23 +8,20 @@ part of 'character_list.dart';
 
 class _$CharacterList extends CharacterList {
   @override
-  final BuiltList<Character> items;
+  final BuiltList<dynamic> items;
   @override
   final String? nextCursor;
 
   factory _$CharacterList([void Function(CharacterListBuilder)? updates]) =>
-      (new CharacterListBuilder()..update(updates))._build();
+      (CharacterListBuilder()..update(updates))._build();
 
-  _$CharacterList._({required this.items, this.nextCursor}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(items, r'CharacterList', 'items');
-  }
-
+  _$CharacterList._({required this.items, this.nextCursor}) : super._();
   @override
   CharacterList rebuild(void Function(CharacterListBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  CharacterListBuilder toBuilder() => new CharacterListBuilder()..replace(this);
+  CharacterListBuilder toBuilder() => CharacterListBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -56,10 +53,9 @@ class CharacterListBuilder
     implements Builder<CharacterList, CharacterListBuilder> {
   _$CharacterList? _$v;
 
-  ListBuilder<Character>? _items;
-  ListBuilder<Character> get items =>
-      _$this._items ??= new ListBuilder<Character>();
-  set items(ListBuilder<Character>? items) => _$this._items = items;
+  ListBuilder<dynamic>? _items;
+  ListBuilder<dynamic> get items => _$this._items ??= ListBuilder<dynamic>();
+  set items(ListBuilder<dynamic>? items) => _$this._items = items;
 
   String? _nextCursor;
   String? get nextCursor => _$this._nextCursor;
@@ -81,7 +77,6 @@ class CharacterListBuilder
 
   @override
   void replace(CharacterList other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$CharacterList;
   }
 
@@ -96,16 +91,20 @@ class CharacterListBuilder
   _$CharacterList _build() {
     _$CharacterList _$result;
     try {
-      _$result = _$v ??
-          new _$CharacterList._(items: items.build(), nextCursor: nextCursor);
+      _$result =
+          _$v ??
+          _$CharacterList._(items: items.build(), nextCursor: nextCursor);
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'items';
         items.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
-            r'CharacterList', _$failedField, e.toString());
+        throw BuiltValueNestedFieldError(
+          r'CharacterList',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

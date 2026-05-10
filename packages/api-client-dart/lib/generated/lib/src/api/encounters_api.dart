@@ -17,6 +17,9 @@ import 'package:app_api_client/src/model/encounter_create.dart';
 import 'package:app_api_client/src/model/encounter_list.dart';
 import 'package:app_api_client/src/model/encounter_status.dart';
 import 'package:app_api_client/src/model/encounter_update.dart';
+import 'package:app_api_client/src/model/initiative_reorder_request.dart';
+import 'package:app_api_client/src/model/initiative_roll_result.dart';
+import 'package:app_api_client/src/model/turn_advance_result.dart';
 
 class EncountersApi {
 
@@ -123,6 +126,92 @@ class EncountersApi {
     }
 
     return Response<Combatant>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// Advance to the next combatant&#39;s turn
+  /// Moves &#x60;encounter.activeCombatantId&#x60; forward by one position in the turn order: &#x60;(currentIndex + 1) % combatants.length&#x60;.  **Wrap behaviour:** when the advance moves past the last combatant (index &#x60;combatants.length - 1&#x60;), the turn wraps to index 0 and &#x60;encounter.round&#x60; is incremented by 1. &#x60;TurnAdvanceResult.isNewRound&#x60; is &#x60;true&#x60; in that case.  **Allowed only while &#x60;status&#x60; is &#x60;active&#x60;.** Returns 422 &#x60;ENCOUNTER_INVALID_STATUS&#x60; otherwise.  **Defensive guard:** returns 422 &#x60;ENCOUNTER_INITIATIVE_NOT_ROLLED&#x60; when &#x60;activeCombatantId&#x60; is null (i.e. initiative was never set, which should not be reachable via normal &#x60;rollInitiative&#x60; flow but is possible if a future code path bypasses that operation).  **Error codes (422):** - &#x60;ENCOUNTER_INVALID_STATUS&#x60; — encounter is not in &#x60;active&#x60; status. - &#x60;ENCOUNTER_INITIATIVE_NOT_ROLLED&#x60; — &#x60;activeCombatantId&#x60; is null;   initiative must be rolled before turns can be advanced. 
+  ///
+  /// Parameters:
+  /// * [id] - Encounter identifier (cuid2)
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [TurnAdvanceResult] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<TurnAdvanceResult>> advanceTurn({ 
+    required String id,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/v1/encounters/{id}/turn/advance'.replaceAll('{' r'id' '}', encodeQueryParameter(_serializers, id, const FullType(String)).toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'apiKey',
+            'name': 'cookieAuth',
+            'keyName': 'better-auth.session_token',
+            'where': '',
+          },{
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    TurnAdvanceResult? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(TurnAdvanceResult),
+      ) as TurnAdvanceResult;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<TurnAdvanceResult>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -618,6 +707,200 @@ class EncountersApi {
     }
 
     return Response<EncounterList>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// Manually reorder the turn order (GM only)
+  /// Allows the GM to rearrange the turn order without re-rolling initiative dice. The request body must contain the full ordered list of every combatant id in the encounter exactly once. The server reassigns &#x60;turnOrder&#x60; indices (0-based) matching the array position.  **This operation does NOT:** - Re-roll initiative dice (&#x60;initiative&#x60; values remain unchanged). - Change &#x60;encounter.activeCombatantId&#x60; (the combatant whose turn is   currently active stays active; the reorder takes effect from the   next turn advance). - Change &#x60;encounter.round&#x60;.  **Allowed only while &#x60;status&#x60; is &#x60;active&#x60;.** Returns 422 &#x60;ENCOUNTER_INVALID_STATUS&#x60; if called from &#x60;setup&#x60; (use &#x60;rollInitiative&#x60; instead) or &#x60;ended&#x60;.  **Validation error codes (422):** - &#x60;ENCOUNTER_INVALID_STATUS&#x60; — encounter is not in &#x60;active&#x60; status. - &#x60;INITIATIVE_INCOMPLETE&#x60; — at least one combatant id from the   encounter is absent from &#x60;combatantIds&#x60;. - &#x60;INITIATIVE_DUPLICATE&#x60; — the same id appears two or more times   in &#x60;combatantIds&#x60;. - &#x60;INITIATIVE_UNKNOWN_COMBATANT&#x60; — an id in &#x60;combatantIds&#x60; does not   belong to this encounter. 
+  ///
+  /// Parameters:
+  /// * [id] - Encounter identifier (cuid2)
+  /// * [initiativeReorderRequest] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [InitiativeRollResult] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<InitiativeRollResult>> reorderInitiative({ 
+    required String id,
+    required InitiativeReorderRequest initiativeReorderRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/v1/encounters/{id}/initiative'.replaceAll('{' r'id' '}', encodeQueryParameter(_serializers, id, const FullType(String)).toString());
+    final _options = Options(
+      method: r'PATCH',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'apiKey',
+            'name': 'cookieAuth',
+            'keyName': 'better-auth.session_token',
+            'where': '',
+          },{
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(InitiativeReorderRequest);
+      _bodyData = _serializers.serialize(initiativeReorderRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    InitiativeRollResult? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(InitiativeRollResult),
+      ) as InitiativeRollResult;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<InitiativeRollResult>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// Roll initiative for all combatants and start combat
+  /// Rolls a d10 (&#x60;crypto.randomInt(1, 11)&#x60;) for every combatant in the encounter, sorts them descending, assigns &#x60;turnOrder&#x60; indices (0-based), and transitions the encounter from &#x60;setup&#x60; to &#x60;active&#x60;.  **Side-effects (all atomic):** 1. Encounter &#x60;status&#x60; transitions &#x60;setup → active&#x60;. 2. &#x60;encounter.round&#x60; is set from 0 to 1. 3. &#x60;encounter.activeCombatantId&#x60; is set to the combatant with    &#x60;turnOrder: 0&#x60; (highest initiative result). 4. Every combatant row is updated with its &#x60;initiative&#x60; and &#x60;turnOrder&#x60;.  **Tie-breaking:** equal initiative rolls are broken by &#x60;agility&#x60; descending (&#x60;attributes.agility&#x60; for PC combatants; &#x60;npcSnapshot.agility&#x60; for NPC combatants snapshotted at add-time). Remaining ties (equal initiative **and** equal agility) are left in an arbitrary but stable order — the GM should use the &#x60;PATCH /api/v1/encounters/{id}/initiative&#x60; reorder operation to set a definitive order before the first turn.  **Error codes (422):** - &#x60;ENCOUNTER_INVALID_TRANSITION&#x60; — encounter is not in &#x60;setup&#x60; status.   Initiative roll is only valid from &#x60;setup&#x60;; if the encounter is   already &#x60;active&#x60; or &#x60;ended&#x60; this guard fires. - &#x60;ENCOUNTER_NO_COMBATANTS&#x60; — the encounter has no combatants. Add at   least one via &#x60;POST /api/v1/encounters/{id}/combatants&#x60; before   rolling initiative. 
+  ///
+  /// Parameters:
+  /// * [id] - Encounter identifier (cuid2)
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [InitiativeRollResult] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<InitiativeRollResult>> rollInitiative({ 
+    required String id,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/v1/encounters/{id}/initiative/roll'.replaceAll('{' r'id' '}', encodeQueryParameter(_serializers, id, const FullType(String)).toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'apiKey',
+            'name': 'cookieAuth',
+            'keyName': 'better-auth.session_token',
+            'where': '',
+          },{
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    InitiativeRollResult? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(InitiativeRollResult),
+      ) as InitiativeRollResult;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<InitiativeRollResult>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

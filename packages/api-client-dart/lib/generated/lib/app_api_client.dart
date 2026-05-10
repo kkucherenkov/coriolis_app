@@ -63,6 +63,8 @@ export 'package:app_api_client/src/model/game_session_update.dart';
 export 'package:app_api_client/src/model/health_status.dart';
 export 'package:app_api_client/src/model/health_status_dependencies.dart';
 export 'package:app_api_client/src/model/icon_id.dart';
+export 'package:app_api_client/src/model/initiative_reorder_request.dart';
+export 'package:app_api_client/src/model/initiative_roll_result.dart';
 export 'package:app_api_client/src/model/item.dart';
 export 'package:app_api_client/src/model/item_armor.dart';
 export 'package:app_api_client/src/model/item_armor_create.dart';
@@ -145,5 +147,6 @@ export 'package:app_api_client/src/model/talent.dart';
 export 'package:app_api_client/src/model/talent_create.dart';
 export 'package:app_api_client/src/model/talent_kind.dart';
 export 'package:app_api_client/src/model/talent_update.dart';
+export 'package:app_api_client/src/model/turn_advance_result.dart';
 export 'package:app_api_client/src/model/upbringing.dart';
 

@@ -12,19 +12,18 @@ class _$ShipCreateEnergy extends ShipCreateEnergy {
   @override
   final int? max;
 
-  factory _$ShipCreateEnergy(
-          [void Function(ShipCreateEnergyBuilder)? updates]) =>
-      (new ShipCreateEnergyBuilder()..update(updates))._build();
+  factory _$ShipCreateEnergy([
+    void Function(ShipCreateEnergyBuilder)? updates,
+  ]) => (ShipCreateEnergyBuilder()..update(updates))._build();
 
   _$ShipCreateEnergy._({this.current, this.max}) : super._();
-
   @override
   ShipCreateEnergy rebuild(void Function(ShipCreateEnergyBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
   ShipCreateEnergyBuilder toBuilder() =>
-      new ShipCreateEnergyBuilder()..replace(this);
+      ShipCreateEnergyBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -80,7 +79,6 @@ class ShipCreateEnergyBuilder
 
   @override
   void replace(ShipCreateEnergy other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ShipCreateEnergy;
   }
 
@@ -93,8 +91,7 @@ class ShipCreateEnergyBuilder
   ShipCreateEnergy build() => _build();
 
   _$ShipCreateEnergy _build() {
-    final _$result =
-        _$v ?? new _$ShipCreateEnergy._(current: current, max: max);
+    final _$result = _$v ?? _$ShipCreateEnergy._(current: current, max: max);
     replace(_$result);
     return _$result;
   }

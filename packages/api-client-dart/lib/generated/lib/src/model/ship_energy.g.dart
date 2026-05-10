@@ -13,19 +13,15 @@ class _$ShipEnergy extends ShipEnergy {
   final int max;
 
   factory _$ShipEnergy([void Function(ShipEnergyBuilder)? updates]) =>
-      (new ShipEnergyBuilder()..update(updates))._build();
+      (ShipEnergyBuilder()..update(updates))._build();
 
-  _$ShipEnergy._({required this.current, required this.max}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(current, r'ShipEnergy', 'current');
-    BuiltValueNullFieldError.checkNotNull(max, r'ShipEnergy', 'max');
-  }
-
+  _$ShipEnergy._({required this.current, required this.max}) : super._();
   @override
   ShipEnergy rebuild(void Function(ShipEnergyBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  ShipEnergyBuilder toBuilder() => new ShipEnergyBuilder()..replace(this);
+  ShipEnergyBuilder toBuilder() => ShipEnergyBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -78,7 +74,6 @@ class ShipEnergyBuilder implements Builder<ShipEnergy, ShipEnergyBuilder> {
 
   @override
   void replace(ShipEnergy other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ShipEnergy;
   }
 
@@ -91,12 +86,16 @@ class ShipEnergyBuilder implements Builder<ShipEnergy, ShipEnergyBuilder> {
   ShipEnergy build() => _build();
 
   _$ShipEnergy _build() {
-    final _$result = _$v ??
-        new _$ShipEnergy._(
-            current: BuiltValueNullFieldError.checkNotNull(
-                current, r'ShipEnergy', 'current'),
-            max: BuiltValueNullFieldError.checkNotNull(
-                max, r'ShipEnergy', 'max'));
+    final _$result =
+        _$v ??
+        _$ShipEnergy._(
+          current: BuiltValueNullFieldError.checkNotNull(
+            current,
+            r'ShipEnergy',
+            'current',
+          ),
+          max: BuiltValueNullFieldError.checkNotNull(max, r'ShipEnergy', 'max'),
+        );
     replace(_$result);
     return _$result;
   }

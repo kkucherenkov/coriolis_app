@@ -22,12 +22,11 @@ TalentKind _$valueOf(String name) {
     case 'stigma':
       return _$stigma;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
-final BuiltSet<TalentKind> _$values =
-    new BuiltSet<TalentKind>(const <TalentKind>[
+final BuiltSet<TalentKind> _$values = BuiltSet<TalentKind>(const <TalentKind>[
   _$personal,
   _$crew,
   _$iconGift,
@@ -44,12 +43,12 @@ class _$TalentKindMeta {
   BuiltSet<TalentKind> get values => _$values;
 }
 
-abstract class _$TalentKindMixin {
+mixin _$TalentKindMixin {
   // ignore: non_constant_identifier_names
   _$TalentKindMeta get TalentKind => const _$TalentKindMeta();
 }
 
-Serializer<TalentKind> _$talentKindSerializer = new _$TalentKindSerializer();
+Serializer<TalentKind> _$talentKindSerializer = _$TalentKindSerializer();
 
 class _$TalentKindSerializer implements PrimitiveSerializer<TalentKind> {
   static const Map<String, Object> _toWire = const <String, Object>{
@@ -71,15 +70,20 @@ class _$TalentKindSerializer implements PrimitiveSerializer<TalentKind> {
   final String wireName = 'TalentKind';
 
   @override
-  Object serialize(Serializers serializers, TalentKind object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    TalentKind object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  TalentKind deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      TalentKind.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  TalentKind deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => TalentKind.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

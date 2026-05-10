@@ -8,23 +8,20 @@ part of 'npc_list.dart';
 
 class _$NpcList extends NpcList {
   @override
-  final BuiltList<Npc> items;
+  final BuiltList<dynamic> items;
   @override
   final String? nextCursor;
 
   factory _$NpcList([void Function(NpcListBuilder)? updates]) =>
-      (new NpcListBuilder()..update(updates))._build();
+      (NpcListBuilder()..update(updates))._build();
 
-  _$NpcList._({required this.items, this.nextCursor}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(items, r'NpcList', 'items');
-  }
-
+  _$NpcList._({required this.items, this.nextCursor}) : super._();
   @override
   NpcList rebuild(void Function(NpcListBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  NpcListBuilder toBuilder() => new NpcListBuilder()..replace(this);
+  NpcListBuilder toBuilder() => NpcListBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -55,9 +52,9 @@ class _$NpcList extends NpcList {
 class NpcListBuilder implements Builder<NpcList, NpcListBuilder> {
   _$NpcList? _$v;
 
-  ListBuilder<Npc>? _items;
-  ListBuilder<Npc> get items => _$this._items ??= new ListBuilder<Npc>();
-  set items(ListBuilder<Npc>? items) => _$this._items = items;
+  ListBuilder<dynamic>? _items;
+  ListBuilder<dynamic> get items => _$this._items ??= ListBuilder<dynamic>();
+  set items(ListBuilder<dynamic>? items) => _$this._items = items;
 
   String? _nextCursor;
   String? get nextCursor => _$this._nextCursor;
@@ -79,7 +76,6 @@ class NpcListBuilder implements Builder<NpcList, NpcListBuilder> {
 
   @override
   void replace(NpcList other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$NpcList;
   }
 
@@ -95,15 +91,18 @@ class NpcListBuilder implements Builder<NpcList, NpcListBuilder> {
     _$NpcList _$result;
     try {
       _$result =
-          _$v ?? new _$NpcList._(items: items.build(), nextCursor: nextCursor);
+          _$v ?? _$NpcList._(items: items.build(), nextCursor: nextCursor);
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'items';
         items.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
-            r'NpcList', _$failedField, e.toString());
+        throw BuiltValueNestedFieldError(
+          r'NpcList',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

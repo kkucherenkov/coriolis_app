@@ -13,19 +13,15 @@ class _$NpcMp extends NpcMp {
   final int max;
 
   factory _$NpcMp([void Function(NpcMpBuilder)? updates]) =>
-      (new NpcMpBuilder()..update(updates))._build();
+      (NpcMpBuilder()..update(updates))._build();
 
-  _$NpcMp._({required this.current, required this.max}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(current, r'NpcMp', 'current');
-    BuiltValueNullFieldError.checkNotNull(max, r'NpcMp', 'max');
-  }
-
+  _$NpcMp._({required this.current, required this.max}) : super._();
   @override
   NpcMp rebuild(void Function(NpcMpBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  NpcMpBuilder toBuilder() => new NpcMpBuilder()..replace(this);
+  NpcMpBuilder toBuilder() => NpcMpBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -78,7 +74,6 @@ class NpcMpBuilder implements Builder<NpcMp, NpcMpBuilder> {
 
   @override
   void replace(NpcMp other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$NpcMp;
   }
 
@@ -91,11 +86,16 @@ class NpcMpBuilder implements Builder<NpcMp, NpcMpBuilder> {
   NpcMp build() => _build();
 
   _$NpcMp _build() {
-    final _$result = _$v ??
-        new _$NpcMp._(
-            current: BuiltValueNullFieldError.checkNotNull(
-                current, r'NpcMp', 'current'),
-            max: BuiltValueNullFieldError.checkNotNull(max, r'NpcMp', 'max'));
+    final _$result =
+        _$v ??
+        _$NpcMp._(
+          current: BuiltValueNullFieldError.checkNotNull(
+            current,
+            r'NpcMp',
+            'current',
+          ),
+          max: BuiltValueNullFieldError.checkNotNull(max, r'NpcMp', 'max'),
+        );
     replace(_$result);
     return _$result;
   }

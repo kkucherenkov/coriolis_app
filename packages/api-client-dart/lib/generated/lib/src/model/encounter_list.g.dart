@@ -8,23 +8,20 @@ part of 'encounter_list.dart';
 
 class _$EncounterList extends EncounterList {
   @override
-  final BuiltList<Encounter> items;
+  final BuiltList<dynamic> items;
   @override
   final String? nextCursor;
 
   factory _$EncounterList([void Function(EncounterListBuilder)? updates]) =>
-      (new EncounterListBuilder()..update(updates))._build();
+      (EncounterListBuilder()..update(updates))._build();
 
-  _$EncounterList._({required this.items, this.nextCursor}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(items, r'EncounterList', 'items');
-  }
-
+  _$EncounterList._({required this.items, this.nextCursor}) : super._();
   @override
   EncounterList rebuild(void Function(EncounterListBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  EncounterListBuilder toBuilder() => new EncounterListBuilder()..replace(this);
+  EncounterListBuilder toBuilder() => EncounterListBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -56,10 +53,9 @@ class EncounterListBuilder
     implements Builder<EncounterList, EncounterListBuilder> {
   _$EncounterList? _$v;
 
-  ListBuilder<Encounter>? _items;
-  ListBuilder<Encounter> get items =>
-      _$this._items ??= new ListBuilder<Encounter>();
-  set items(ListBuilder<Encounter>? items) => _$this._items = items;
+  ListBuilder<dynamic>? _items;
+  ListBuilder<dynamic> get items => _$this._items ??= ListBuilder<dynamic>();
+  set items(ListBuilder<dynamic>? items) => _$this._items = items;
 
   String? _nextCursor;
   String? get nextCursor => _$this._nextCursor;
@@ -81,7 +77,6 @@ class EncounterListBuilder
 
   @override
   void replace(EncounterList other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$EncounterList;
   }
 
@@ -96,16 +91,20 @@ class EncounterListBuilder
   _$EncounterList _build() {
     _$EncounterList _$result;
     try {
-      _$result = _$v ??
-          new _$EncounterList._(items: items.build(), nextCursor: nextCursor);
+      _$result =
+          _$v ??
+          _$EncounterList._(items: items.build(), nextCursor: nextCursor);
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'items';
         items.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
-            r'EncounterList', _$failedField, e.toString());
+        throw BuiltValueNestedFieldError(
+          r'EncounterList',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

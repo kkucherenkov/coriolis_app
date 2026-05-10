@@ -10,19 +10,18 @@ class _$CharacterCreateHp extends CharacterCreateHp {
   @override
   final int? current;
 
-  factory _$CharacterCreateHp(
-          [void Function(CharacterCreateHpBuilder)? updates]) =>
-      (new CharacterCreateHpBuilder()..update(updates))._build();
+  factory _$CharacterCreateHp([
+    void Function(CharacterCreateHpBuilder)? updates,
+  ]) => (CharacterCreateHpBuilder()..update(updates))._build();
 
   _$CharacterCreateHp._({this.current}) : super._();
-
   @override
   CharacterCreateHp rebuild(void Function(CharacterCreateHpBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
   CharacterCreateHpBuilder toBuilder() =>
-      new CharacterCreateHpBuilder()..replace(this);
+      CharacterCreateHpBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -40,9 +39,9 @@ class _$CharacterCreateHp extends CharacterCreateHp {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'CharacterCreateHp')
-          ..add('current', current))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'CharacterCreateHp',
+    )..add('current', current)).toString();
   }
 }
 
@@ -69,7 +68,6 @@ class CharacterCreateHpBuilder
 
   @override
   void replace(CharacterCreateHp other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$CharacterCreateHp;
   }
 
@@ -82,7 +80,7 @@ class CharacterCreateHpBuilder
   CharacterCreateHp build() => _build();
 
   _$CharacterCreateHp _build() {
-    final _$result = _$v ?? new _$CharacterCreateHp._(current: current);
+    final _$result = _$v ?? _$CharacterCreateHp._(current: current);
     replace(_$result);
     return _$result;
   }

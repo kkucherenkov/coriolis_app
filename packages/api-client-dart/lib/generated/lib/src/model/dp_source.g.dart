@@ -19,11 +19,11 @@ DpSource _$valueOf(String name) {
     case 'system':
       return _$system;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
-final BuiltSet<DpSource> _$values = new BuiltSet<DpSource>(const <DpSource>[
+final BuiltSet<DpSource> _$values = BuiltSet<DpSource>(const <DpSource>[
   _$gmManual,
   _$rollPush,
   _$system,
@@ -38,12 +38,12 @@ class _$DpSourceMeta {
   BuiltSet<DpSource> get values => _$values;
 }
 
-abstract class _$DpSourceMixin {
+mixin _$DpSourceMixin {
   // ignore: non_constant_identifier_names
   _$DpSourceMeta get DpSource => const _$DpSourceMeta();
 }
 
-Serializer<DpSource> _$dpSourceSerializer = new _$DpSourceSerializer();
+Serializer<DpSource> _$dpSourceSerializer = _$DpSourceSerializer();
 
 class _$DpSourceSerializer implements PrimitiveSerializer<DpSource> {
   static const Map<String, Object> _toWire = const <String, Object>{
@@ -63,15 +63,20 @@ class _$DpSourceSerializer implements PrimitiveSerializer<DpSource> {
   final String wireName = 'DpSource';
 
   @override
-  Object serialize(Serializers serializers, DpSource object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    DpSource object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  DpSource deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      DpSource.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  DpSource deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => DpSource.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

@@ -55,6 +55,8 @@ import 'package:app_api_client/src/model/game_session_update.dart';
 import 'package:app_api_client/src/model/health_status.dart';
 import 'package:app_api_client/src/model/health_status_dependencies.dart';
 import 'package:app_api_client/src/model/icon_id.dart';
+import 'package:app_api_client/src/model/initiative_reorder_request.dart';
+import 'package:app_api_client/src/model/initiative_roll_result.dart';
 import 'package:app_api_client/src/model/item.dart';
 import 'package:app_api_client/src/model/item_armor.dart';
 import 'package:app_api_client/src/model/item_armor_create.dart';
@@ -137,6 +139,7 @@ import 'package:app_api_client/src/model/talent.dart';
 import 'package:app_api_client/src/model/talent_create.dart';
 import 'package:app_api_client/src/model/talent_kind.dart';
 import 'package:app_api_client/src/model/talent_update.dart';
+import 'package:app_api_client/src/model/turn_advance_result.dart';
 import 'package:app_api_client/src/model/upbringing.dart';
 
 part 'serializers.g.dart';
@@ -183,6 +186,8 @@ part 'serializers.g.dart';
   HealthStatus,
   HealthStatusDependencies,
   IconId,
+  InitiativeReorderRequest,
+  InitiativeRollResult,
   Item,
   ItemArmor,
   ItemArmorCreate,
@@ -265,6 +270,7 @@ part 'serializers.g.dart';
   TalentCreate,
   TalentKind,
   TalentUpdate,
+  TurnAdvanceResult,
   Upbringing,
 ])
 Serializers serializers = (_$serializers.toBuilder()

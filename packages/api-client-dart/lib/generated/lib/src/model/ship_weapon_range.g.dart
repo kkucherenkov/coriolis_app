@@ -25,18 +25,13 @@ ShipWeaponRange _$valueOf(String name) {
     case 'extreme':
       return _$extreme;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
-final BuiltSet<ShipWeaponRange> _$values =
-    new BuiltSet<ShipWeaponRange>(const <ShipWeaponRange>[
-  _$zero,
-  _$close,
-  _$medium,
-  _$long,
-  _$extreme,
-]);
+final BuiltSet<ShipWeaponRange> _$values = BuiltSet<ShipWeaponRange>(
+  const <ShipWeaponRange>[_$zero, _$close, _$medium, _$long, _$extreme],
+);
 
 class _$ShipWeaponRangeMeta {
   const _$ShipWeaponRangeMeta();
@@ -49,13 +44,13 @@ class _$ShipWeaponRangeMeta {
   BuiltSet<ShipWeaponRange> get values => _$values;
 }
 
-abstract class _$ShipWeaponRangeMixin {
+mixin _$ShipWeaponRangeMixin {
   // ignore: non_constant_identifier_names
   _$ShipWeaponRangeMeta get ShipWeaponRange => const _$ShipWeaponRangeMeta();
 }
 
 Serializer<ShipWeaponRange> _$shipWeaponRangeSerializer =
-    new _$ShipWeaponRangeSerializer();
+    _$ShipWeaponRangeSerializer();
 
 class _$ShipWeaponRangeSerializer
     implements PrimitiveSerializer<ShipWeaponRange> {
@@ -80,15 +75,20 @@ class _$ShipWeaponRangeSerializer
   final String wireName = 'ShipWeaponRange';
 
   @override
-  Object serialize(Serializers serializers, ShipWeaponRange object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    ShipWeaponRange object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  ShipWeaponRange deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      ShipWeaponRange.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  ShipWeaponRange deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => ShipWeaponRange.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

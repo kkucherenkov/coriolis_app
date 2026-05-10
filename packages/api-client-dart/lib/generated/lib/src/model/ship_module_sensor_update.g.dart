@@ -10,24 +10,27 @@ const ShipModuleSensorUpdateSlotEnum _$shipModuleSensorUpdateSlotEnum_SENSOR =
     const ShipModuleSensorUpdateSlotEnum._('SENSOR');
 
 ShipModuleSensorUpdateSlotEnum _$shipModuleSensorUpdateSlotEnumValueOf(
-    String name) {
+  String name,
+) {
   switch (name) {
     case 'SENSOR':
       return _$shipModuleSensorUpdateSlotEnum_SENSOR;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<ShipModuleSensorUpdateSlotEnum>
-    _$shipModuleSensorUpdateSlotEnumValues = new BuiltSet<
-        ShipModuleSensorUpdateSlotEnum>(const <ShipModuleSensorUpdateSlotEnum>[
-  _$shipModuleSensorUpdateSlotEnum_SENSOR,
-]);
+_$shipModuleSensorUpdateSlotEnumValues =
+    BuiltSet<ShipModuleSensorUpdateSlotEnum>(
+      const <ShipModuleSensorUpdateSlotEnum>[
+        _$shipModuleSensorUpdateSlotEnum_SENSOR,
+      ],
+    );
 
 Serializer<ShipModuleSensorUpdateSlotEnum>
-    _$shipModuleSensorUpdateSlotEnumSerializer =
-    new _$ShipModuleSensorUpdateSlotEnumSerializer();
+_$shipModuleSensorUpdateSlotEnumSerializer =
+    _$ShipModuleSensorUpdateSlotEnumSerializer();
 
 class _$ShipModuleSensorUpdateSlotEnumSerializer
     implements PrimitiveSerializer<ShipModuleSensorUpdateSlotEnum> {
@@ -45,16 +48,19 @@ class _$ShipModuleSensorUpdateSlotEnumSerializer
 
   @override
   Object serialize(
-          Serializers serializers, ShipModuleSensorUpdateSlotEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+    Serializers serializers,
+    ShipModuleSensorUpdateSlotEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
   ShipModuleSensorUpdateSlotEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      ShipModuleSensorUpdateSlotEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => ShipModuleSensorUpdateSlotEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$ShipModuleSensorUpdate extends ShipModuleSensorUpdate {
@@ -69,22 +75,25 @@ class _$ShipModuleSensorUpdate extends ShipModuleSensorUpdate {
   @override
   final String? notes;
 
-  factory _$ShipModuleSensorUpdate(
-          [void Function(ShipModuleSensorUpdateBuilder)? updates]) =>
-      (new ShipModuleSensorUpdateBuilder()..update(updates))._build();
+  factory _$ShipModuleSensorUpdate([
+    void Function(ShipModuleSensorUpdateBuilder)? updates,
+  ]) => (ShipModuleSensorUpdateBuilder()..update(updates))._build();
 
-  _$ShipModuleSensorUpdate._(
-      {this.slot, this.name, this.energyUse, this.detectionBonus, this.notes})
-      : super._();
-
+  _$ShipModuleSensorUpdate._({
+    this.slot,
+    this.name,
+    this.energyUse,
+    this.detectionBonus,
+    this.notes,
+  }) : super._();
   @override
   ShipModuleSensorUpdate rebuild(
-          void Function(ShipModuleSensorUpdateBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(ShipModuleSensorUpdateBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   ShipModuleSensorUpdateBuilder toBuilder() =>
-      new ShipModuleSensorUpdateBuilder()..replace(this);
+      ShipModuleSensorUpdateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -165,7 +174,6 @@ class ShipModuleSensorUpdateBuilder
 
   @override
   void replace(ShipModuleSensorUpdate other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ShipModuleSensorUpdate;
   }
 
@@ -178,13 +186,15 @@ class ShipModuleSensorUpdateBuilder
   ShipModuleSensorUpdate build() => _build();
 
   _$ShipModuleSensorUpdate _build() {
-    final _$result = _$v ??
-        new _$ShipModuleSensorUpdate._(
-            slot: slot,
-            name: name,
-            energyUse: energyUse,
-            detectionBonus: detectionBonus,
-            notes: notes);
+    final _$result =
+        _$v ??
+        _$ShipModuleSensorUpdate._(
+          slot: slot,
+          name: name,
+          energyUse: energyUse,
+          detectionBonus: detectionBonus,
+          notes: notes,
+        );
     replace(_$result);
     return _$result;
   }

@@ -7,8 +7,9 @@ part of 'me.dart';
 // **************************************************************************
 
 const MeThemeEnum _$meThemeEnum_dark = const MeThemeEnum._('dark');
-const MeThemeEnum _$meThemeEnum_highContrast =
-    const MeThemeEnum._('highContrast');
+const MeThemeEnum _$meThemeEnum_highContrast = const MeThemeEnum._(
+  'highContrast',
+);
 
 MeThemeEnum _$meThemeEnumValueOf(String name) {
   switch (name) {
@@ -17,17 +18,15 @@ MeThemeEnum _$meThemeEnumValueOf(String name) {
     case 'highContrast':
       return _$meThemeEnum_highContrast;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
-final BuiltSet<MeThemeEnum> _$meThemeEnumValues =
-    new BuiltSet<MeThemeEnum>(const <MeThemeEnum>[
-  _$meThemeEnum_dark,
-  _$meThemeEnum_highContrast,
-]);
+final BuiltSet<MeThemeEnum> _$meThemeEnumValues = BuiltSet<MeThemeEnum>(
+  const <MeThemeEnum>[_$meThemeEnum_dark, _$meThemeEnum_highContrast],
+);
 
-Serializer<MeThemeEnum> _$meThemeEnumSerializer = new _$MeThemeEnumSerializer();
+Serializer<MeThemeEnum> _$meThemeEnumSerializer = _$MeThemeEnumSerializer();
 
 class _$MeThemeEnumSerializer implements PrimitiveSerializer<MeThemeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
@@ -45,15 +44,20 @@ class _$MeThemeEnumSerializer implements PrimitiveSerializer<MeThemeEnum> {
   final String wireName = 'MeThemeEnum';
 
   @override
-  Object serialize(Serializers serializers, MeThemeEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    MeThemeEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  MeThemeEnum deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      MeThemeEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  MeThemeEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => MeThemeEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$Me extends Me {
@@ -69,25 +73,21 @@ class _$Me extends Me {
   final MeThemeEnum? theme;
 
   factory _$Me([void Function(MeBuilder)? updates]) =>
-      (new MeBuilder()..update(updates))._build();
+      (MeBuilder()..update(updates))._build();
 
-  _$Me._(
-      {required this.id,
-      required this.email,
-      this.displayName,
-      this.createdAt,
-      this.theme})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(id, r'Me', 'id');
-    BuiltValueNullFieldError.checkNotNull(email, r'Me', 'email');
-  }
-
+  _$Me._({
+    required this.id,
+    required this.email,
+    this.displayName,
+    this.createdAt,
+    this.theme,
+  }) : super._();
   @override
   Me rebuild(void Function(MeBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  MeBuilder toBuilder() => new MeBuilder()..replace(this);
+  MeBuilder toBuilder() => MeBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -166,7 +166,6 @@ class MeBuilder implements Builder<Me, MeBuilder> {
 
   @override
   void replace(Me other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$Me;
   }
 
@@ -179,13 +178,15 @@ class MeBuilder implements Builder<Me, MeBuilder> {
   Me build() => _build();
 
   _$Me _build() {
-    final _$result = _$v ??
-        new _$Me._(
-            id: BuiltValueNullFieldError.checkNotNull(id, r'Me', 'id'),
-            email: BuiltValueNullFieldError.checkNotNull(email, r'Me', 'email'),
-            displayName: displayName,
-            createdAt: createdAt,
-            theme: theme);
+    final _$result =
+        _$v ??
+        _$Me._(
+          id: BuiltValueNullFieldError.checkNotNull(id, r'Me', 'id'),
+          email: BuiltValueNullFieldError.checkNotNull(email, r'Me', 'email'),
+          displayName: displayName,
+          createdAt: createdAt,
+          theme: theme,
+        );
     replace(_$result);
     return _$result;
   }

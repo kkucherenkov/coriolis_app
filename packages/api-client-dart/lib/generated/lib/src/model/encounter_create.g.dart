@@ -13,19 +13,15 @@ class _$EncounterCreate extends EncounterCreate {
   final String? notes;
 
   factory _$EncounterCreate([void Function(EncounterCreateBuilder)? updates]) =>
-      (new EncounterCreateBuilder()..update(updates))._build();
+      (EncounterCreateBuilder()..update(updates))._build();
 
-  _$EncounterCreate._({required this.name, this.notes}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(name, r'EncounterCreate', 'name');
-  }
-
+  _$EncounterCreate._({required this.name, this.notes}) : super._();
   @override
   EncounterCreate rebuild(void Function(EncounterCreateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  EncounterCreateBuilder toBuilder() =>
-      new EncounterCreateBuilder()..replace(this);
+  EncounterCreateBuilder toBuilder() => EncounterCreateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -81,7 +77,6 @@ class EncounterCreateBuilder
 
   @override
   void replace(EncounterCreate other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$EncounterCreate;
   }
 
@@ -94,11 +89,16 @@ class EncounterCreateBuilder
   EncounterCreate build() => _build();
 
   _$EncounterCreate _build() {
-    final _$result = _$v ??
-        new _$EncounterCreate._(
-            name: BuiltValueNullFieldError.checkNotNull(
-                name, r'EncounterCreate', 'name'),
-            notes: notes);
+    final _$result =
+        _$v ??
+        _$EncounterCreate._(
+          name: BuiltValueNullFieldError.checkNotNull(
+            name,
+            r'EncounterCreate',
+            'name',
+          ),
+          notes: notes,
+        );
     replace(_$result);
     return _$result;
   }

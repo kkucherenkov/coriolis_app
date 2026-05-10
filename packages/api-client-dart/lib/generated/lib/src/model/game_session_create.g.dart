@@ -14,22 +14,19 @@ class _$GameSessionCreate extends GameSessionCreate {
   @override
   final String? shipId;
 
-  factory _$GameSessionCreate(
-          [void Function(GameSessionCreateBuilder)? updates]) =>
-      (new GameSessionCreateBuilder()..update(updates))._build();
+  factory _$GameSessionCreate([
+    void Function(GameSessionCreateBuilder)? updates,
+  ]) => (GameSessionCreateBuilder()..update(updates))._build();
 
   _$GameSessionCreate._({required this.name, this.description, this.shipId})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(name, r'GameSessionCreate', 'name');
-  }
-
+    : super._();
   @override
   GameSessionCreate rebuild(void Function(GameSessionCreateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
   GameSessionCreateBuilder toBuilder() =>
-      new GameSessionCreateBuilder()..replace(this);
+      GameSessionCreateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -93,7 +90,6 @@ class GameSessionCreateBuilder
 
   @override
   void replace(GameSessionCreate other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GameSessionCreate;
   }
 
@@ -106,12 +102,17 @@ class GameSessionCreateBuilder
   GameSessionCreate build() => _build();
 
   _$GameSessionCreate _build() {
-    final _$result = _$v ??
-        new _$GameSessionCreate._(
-            name: BuiltValueNullFieldError.checkNotNull(
-                name, r'GameSessionCreate', 'name'),
-            description: description,
-            shipId: shipId);
+    final _$result =
+        _$v ??
+        _$GameSessionCreate._(
+          name: BuiltValueNullFieldError.checkNotNull(
+            name,
+            r'GameSessionCreate',
+            'name',
+          ),
+          description: description,
+          shipId: shipId,
+        );
     replace(_$result);
     return _$result;
   }

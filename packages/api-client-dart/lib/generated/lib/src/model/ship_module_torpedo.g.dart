@@ -14,17 +14,17 @@ ShipModuleTorpedoSlotEnum _$shipModuleTorpedoSlotEnumValueOf(String name) {
     case 'TORPEDO':
       return _$shipModuleTorpedoSlotEnum_TORPEDO;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<ShipModuleTorpedoSlotEnum> _$shipModuleTorpedoSlotEnumValues =
-    new BuiltSet<ShipModuleTorpedoSlotEnum>(const <ShipModuleTorpedoSlotEnum>[
-  _$shipModuleTorpedoSlotEnum_TORPEDO,
-]);
+    BuiltSet<ShipModuleTorpedoSlotEnum>(const <ShipModuleTorpedoSlotEnum>[
+      _$shipModuleTorpedoSlotEnum_TORPEDO,
+    ]);
 
 Serializer<ShipModuleTorpedoSlotEnum> _$shipModuleTorpedoSlotEnumSerializer =
-    new _$ShipModuleTorpedoSlotEnumSerializer();
+    _$ShipModuleTorpedoSlotEnumSerializer();
 
 class _$ShipModuleTorpedoSlotEnumSerializer
     implements PrimitiveSerializer<ShipModuleTorpedoSlotEnum> {
@@ -41,16 +41,20 @@ class _$ShipModuleTorpedoSlotEnumSerializer
   final String wireName = 'ShipModuleTorpedoSlotEnum';
 
   @override
-  Object serialize(Serializers serializers, ShipModuleTorpedoSlotEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    ShipModuleTorpedoSlotEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
   ShipModuleTorpedoSlotEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      ShipModuleTorpedoSlotEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => ShipModuleTorpedoSlotEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$ShipModuleTorpedo extends ShipModuleTorpedo {
@@ -58,56 +62,26 @@ class _$ShipModuleTorpedo extends ShipModuleTorpedo {
   final int? mineCount;
   @override
   final int? torpedoCount;
-  @override
-  final String id;
-  @override
-  final ShipModuleSlot slot;
-  @override
-  final String name;
-  @override
-  final int energyUse;
-  @override
-  final String? notes;
 
-  factory _$ShipModuleTorpedo(
-          [void Function(ShipModuleTorpedoBuilder)? updates]) =>
-      (new ShipModuleTorpedoBuilder()..update(updates))._build();
+  factory _$ShipModuleTorpedo([
+    void Function(ShipModuleTorpedoBuilder)? updates,
+  ]) => (ShipModuleTorpedoBuilder()..update(updates))._build();
 
-  _$ShipModuleTorpedo._(
-      {this.mineCount,
-      this.torpedoCount,
-      required this.id,
-      required this.slot,
-      required this.name,
-      required this.energyUse,
-      this.notes})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(id, r'ShipModuleTorpedo', 'id');
-    BuiltValueNullFieldError.checkNotNull(slot, r'ShipModuleTorpedo', 'slot');
-    BuiltValueNullFieldError.checkNotNull(name, r'ShipModuleTorpedo', 'name');
-    BuiltValueNullFieldError.checkNotNull(
-        energyUse, r'ShipModuleTorpedo', 'energyUse');
-  }
-
+  _$ShipModuleTorpedo._({this.mineCount, this.torpedoCount}) : super._();
   @override
   ShipModuleTorpedo rebuild(void Function(ShipModuleTorpedoBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
   ShipModuleTorpedoBuilder toBuilder() =>
-      new ShipModuleTorpedoBuilder()..replace(this);
+      ShipModuleTorpedoBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is ShipModuleTorpedo &&
         mineCount == other.mineCount &&
-        torpedoCount == other.torpedoCount &&
-        id == other.id &&
-        slot == other.slot &&
-        name == other.name &&
-        energyUse == other.energyUse &&
-        notes == other.notes;
+        torpedoCount == other.torpedoCount;
   }
 
   @override
@@ -115,11 +89,6 @@ class _$ShipModuleTorpedo extends ShipModuleTorpedo {
     var _$hash = 0;
     _$hash = $jc(_$hash, mineCount.hashCode);
     _$hash = $jc(_$hash, torpedoCount.hashCode);
-    _$hash = $jc(_$hash, id.hashCode);
-    _$hash = $jc(_$hash, slot.hashCode);
-    _$hash = $jc(_$hash, name.hashCode);
-    _$hash = $jc(_$hash, energyUse.hashCode);
-    _$hash = $jc(_$hash, notes.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -128,50 +97,22 @@ class _$ShipModuleTorpedo extends ShipModuleTorpedo {
   String toString() {
     return (newBuiltValueToStringHelper(r'ShipModuleTorpedo')
           ..add('mineCount', mineCount)
-          ..add('torpedoCount', torpedoCount)
-          ..add('id', id)
-          ..add('slot', slot)
-          ..add('name', name)
-          ..add('energyUse', energyUse)
-          ..add('notes', notes))
+          ..add('torpedoCount', torpedoCount))
         .toString();
   }
 }
 
 class ShipModuleTorpedoBuilder
-    implements
-        Builder<ShipModuleTorpedo, ShipModuleTorpedoBuilder>,
-        ShipModuleBaseBuilder {
+    implements Builder<ShipModuleTorpedo, ShipModuleTorpedoBuilder> {
   _$ShipModuleTorpedo? _$v;
 
   int? _mineCount;
   int? get mineCount => _$this._mineCount;
-  set mineCount(covariant int? mineCount) => _$this._mineCount = mineCount;
+  set mineCount(int? mineCount) => _$this._mineCount = mineCount;
 
   int? _torpedoCount;
   int? get torpedoCount => _$this._torpedoCount;
-  set torpedoCount(covariant int? torpedoCount) =>
-      _$this._torpedoCount = torpedoCount;
-
-  String? _id;
-  String? get id => _$this._id;
-  set id(covariant String? id) => _$this._id = id;
-
-  ShipModuleSlot? _slot;
-  ShipModuleSlot? get slot => _$this._slot;
-  set slot(covariant ShipModuleSlot? slot) => _$this._slot = slot;
-
-  String? _name;
-  String? get name => _$this._name;
-  set name(covariant String? name) => _$this._name = name;
-
-  int? _energyUse;
-  int? get energyUse => _$this._energyUse;
-  set energyUse(covariant int? energyUse) => _$this._energyUse = energyUse;
-
-  String? _notes;
-  String? get notes => _$this._notes;
-  set notes(covariant String? notes) => _$this._notes = notes;
+  set torpedoCount(int? torpedoCount) => _$this._torpedoCount = torpedoCount;
 
   ShipModuleTorpedoBuilder() {
     ShipModuleTorpedo._defaults(this);
@@ -182,19 +123,13 @@ class ShipModuleTorpedoBuilder
     if ($v != null) {
       _mineCount = $v.mineCount;
       _torpedoCount = $v.torpedoCount;
-      _id = $v.id;
-      _slot = $v.slot;
-      _name = $v.name;
-      _energyUse = $v.energyUse;
-      _notes = $v.notes;
       _$v = null;
     }
     return this;
   }
 
   @override
-  void replace(covariant ShipModuleTorpedo other) {
-    ArgumentError.checkNotNull(other, 'other');
+  void replace(ShipModuleTorpedo other) {
     _$v = other as _$ShipModuleTorpedo;
   }
 
@@ -207,19 +142,9 @@ class ShipModuleTorpedoBuilder
   ShipModuleTorpedo build() => _build();
 
   _$ShipModuleTorpedo _build() {
-    final _$result = _$v ??
-        new _$ShipModuleTorpedo._(
-            mineCount: mineCount,
-            torpedoCount: torpedoCount,
-            id: BuiltValueNullFieldError.checkNotNull(
-                id, r'ShipModuleTorpedo', 'id'),
-            slot: BuiltValueNullFieldError.checkNotNull(
-                slot, r'ShipModuleTorpedo', 'slot'),
-            name: BuiltValueNullFieldError.checkNotNull(
-                name, r'ShipModuleTorpedo', 'name'),
-            energyUse: BuiltValueNullFieldError.checkNotNull(
-                energyUse, r'ShipModuleTorpedo', 'energyUse'),
-            notes: notes);
+    final _$result =
+        _$v ??
+        _$ShipModuleTorpedo._(mineCount: mineCount, torpedoCount: torpedoCount);
     replace(_$result);
     return _$result;
   }

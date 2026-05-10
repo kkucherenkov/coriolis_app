@@ -13,16 +13,15 @@ class _$NpcCreateMp extends NpcCreateMp {
   final int? max;
 
   factory _$NpcCreateMp([void Function(NpcCreateMpBuilder)? updates]) =>
-      (new NpcCreateMpBuilder()..update(updates))._build();
+      (NpcCreateMpBuilder()..update(updates))._build();
 
   _$NpcCreateMp._({this.current, this.max}) : super._();
-
   @override
   NpcCreateMp rebuild(void Function(NpcCreateMpBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  NpcCreateMpBuilder toBuilder() => new NpcCreateMpBuilder()..replace(this);
+  NpcCreateMpBuilder toBuilder() => NpcCreateMpBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -75,7 +74,6 @@ class NpcCreateMpBuilder implements Builder<NpcCreateMp, NpcCreateMpBuilder> {
 
   @override
   void replace(NpcCreateMp other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$NpcCreateMp;
   }
 
@@ -88,7 +86,7 @@ class NpcCreateMpBuilder implements Builder<NpcCreateMp, NpcCreateMpBuilder> {
   NpcCreateMp build() => _build();
 
   _$NpcCreateMp _build() {
-    final _$result = _$v ?? new _$NpcCreateMp._(current: current, max: max);
+    final _$result = _$v ?? _$NpcCreateMp._(current: current, max: max);
     replace(_$result);
     return _$result;
   }

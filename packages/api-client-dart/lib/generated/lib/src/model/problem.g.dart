@@ -21,25 +21,22 @@ class _$Problem extends Problem {
   final String? code;
 
   factory _$Problem([void Function(ProblemBuilder)? updates]) =>
-      (new ProblemBuilder()..update(updates))._build();
+      (ProblemBuilder()..update(updates))._build();
 
-  _$Problem._(
-      {this.type,
-      this.title,
-      required this.status,
-      this.detail,
-      this.instance,
-      this.code})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(status, r'Problem', 'status');
-  }
-
+  _$Problem._({
+    this.type,
+    this.title,
+    required this.status,
+    this.detail,
+    this.instance,
+    this.code,
+  }) : super._();
   @override
   Problem rebuild(void Function(ProblemBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  ProblemBuilder toBuilder() => new ProblemBuilder()..replace(this);
+  ProblemBuilder toBuilder() => ProblemBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -126,7 +123,6 @@ class ProblemBuilder implements Builder<Problem, ProblemBuilder> {
 
   @override
   void replace(Problem other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$Problem;
   }
 
@@ -139,15 +135,20 @@ class ProblemBuilder implements Builder<Problem, ProblemBuilder> {
   Problem build() => _build();
 
   _$Problem _build() {
-    final _$result = _$v ??
-        new _$Problem._(
-            type: type,
-            title: title,
-            status: BuiltValueNullFieldError.checkNotNull(
-                status, r'Problem', 'status'),
-            detail: detail,
-            instance: instance,
-            code: code);
+    final _$result =
+        _$v ??
+        _$Problem._(
+          type: type,
+          title: title,
+          status: BuiltValueNullFieldError.checkNotNull(
+            status,
+            r'Problem',
+            'status',
+          ),
+          detail: detail,
+          instance: instance,
+          code: code,
+        );
     replace(_$result);
     return _$result;
   }

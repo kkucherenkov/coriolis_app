@@ -12,25 +12,20 @@ class _$CharacterEncumbrance extends CharacterEncumbrance {
   @override
   final int max;
 
-  factory _$CharacterEncumbrance(
-          [void Function(CharacterEncumbranceBuilder)? updates]) =>
-      (new CharacterEncumbranceBuilder()..update(updates))._build();
+  factory _$CharacterEncumbrance([
+    void Function(CharacterEncumbranceBuilder)? updates,
+  ]) => (CharacterEncumbranceBuilder()..update(updates))._build();
 
   _$CharacterEncumbrance._({required this.current, required this.max})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-        current, r'CharacterEncumbrance', 'current');
-    BuiltValueNullFieldError.checkNotNull(max, r'CharacterEncumbrance', 'max');
-  }
-
+    : super._();
   @override
   CharacterEncumbrance rebuild(
-          void Function(CharacterEncumbranceBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(CharacterEncumbranceBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   CharacterEncumbranceBuilder toBuilder() =>
-      new CharacterEncumbranceBuilder()..replace(this);
+      CharacterEncumbranceBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -86,7 +81,6 @@ class CharacterEncumbranceBuilder
 
   @override
   void replace(CharacterEncumbrance other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$CharacterEncumbrance;
   }
 
@@ -99,12 +93,20 @@ class CharacterEncumbranceBuilder
   CharacterEncumbrance build() => _build();
 
   _$CharacterEncumbrance _build() {
-    final _$result = _$v ??
-        new _$CharacterEncumbrance._(
-            current: BuiltValueNullFieldError.checkNotNull(
-                current, r'CharacterEncumbrance', 'current'),
-            max: BuiltValueNullFieldError.checkNotNull(
-                max, r'CharacterEncumbrance', 'max'));
+    final _$result =
+        _$v ??
+        _$CharacterEncumbrance._(
+          current: BuiltValueNullFieldError.checkNotNull(
+            current,
+            r'CharacterEncumbrance',
+            'current',
+          ),
+          max: BuiltValueNullFieldError.checkNotNull(
+            max,
+            r'CharacterEncumbrance',
+            'max',
+          ),
+        );
     replace(_$result);
     return _$result;
   }

@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddCharacterItemData, AddCharacterItemErrors, AddCharacterItemResponses, AddCharacterTalentData, AddCharacterTalentErrors, AddCharacterTalentResponses, AddCombatantData, AddCombatantErrors, AddCombatantResponses, AddShipModuleData, AddShipModuleErrors, AddShipModuleResponses, AdjustDpData, AdjustDpErrors, AdjustDpResponses, AssignCharacterToSessionData, AssignCharacterToSessionErrors, AssignCharacterToSessionResponses, AssignCrewData, AssignCrewErrors, AssignCrewResponses, CreateCharacterData, CreateCharacterErrors, CreateCharacterResponses, CreateEncounterData, CreateEncounterErrors, CreateEncounterResponses, CreateGameSessionData, CreateGameSessionErrors, CreateGameSessionResponses, CreateNpcData, CreateNpcErrors, CreateNpcResponses, CreateRollData, CreateRollErrors, CreateRollResponses, CreateShareLinkData, CreateShareLinkErrors, CreateShareLinkResponses, CreateShipData, CreateShipErrors, CreateShipResponses, DeleteCharacterData, DeleteCharacterErrors, DeleteCharacterResponses, DeleteCombatantData, DeleteCombatantErrors, DeleteCombatantResponses, DeleteEncounterData, DeleteEncounterErrors, DeleteEncounterResponses, DeleteGameSessionData, DeleteGameSessionErrors, DeleteGameSessionResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteNpcData, DeleteNpcErrors, DeleteNpcResponses, DeleteShipData, DeleteShipErrors, DeleteShipModuleData, DeleteShipModuleErrors, DeleteShipModuleResponses, DeleteShipResponses, DeleteTalentData, DeleteTalentErrors, DeleteTalentResponses, DuplicateCharacterData, DuplicateCharacterErrors, DuplicateCharacterResponses, DuplicateNpcData, DuplicateNpcErrors, DuplicateNpcResponses, DuplicateShipData, DuplicateShipErrors, DuplicateShipResponses, ExportCharacterData, ExportCharacterErrors, ExportCharacterResponses, ExportShipData, ExportShipErrors, ExportShipResponses, GetCharacterData, GetCharacterErrors, GetCharacterOgImageData, GetCharacterOgImageErrors, GetCharacterOgImageResponses, GetCharacterResponses, GetEncounterData, GetEncounterErrors, GetEncounterResponses, GetGameSessionData, GetGameSessionErrors, GetGameSessionResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetMeData, GetMeErrors, GetMeResponses, GetNpcData, GetNpcErrors, GetNpcResponses, GetPublicCharacterData, GetPublicCharacterErrors, GetPublicCharacterResponses, GetShipData, GetShipErrors, GetShipResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, ListCharactersData, ListCharactersErrors, ListCharactersResponses, ListCombatantsData, ListCombatantsErrors, ListCombatantsResponses, ListDpEventsData, ListDpEventsErrors, ListDpEventsResponses, ListEncountersData, ListEncountersErrors, ListEncountersResponses, ListGameSessionsData, ListGameSessionsErrors, ListGameSessionsResponses, ListNpcsData, ListNpcsErrors, ListNpcsResponses, ListRollsData, ListRollsErrors, ListRollsResponses, ListShareLinksData, ListShareLinksErrors, ListShareLinksResponses, ListShipsData, ListShipsErrors, ListShipsResponses, PushRollData, PushRollErrors, PushRollResponses, RevokeShareLinkData, RevokeShareLinkErrors, RevokeShareLinkResponses, UnassignCharacterFromSessionData, UnassignCharacterFromSessionErrors, UnassignCharacterFromSessionResponses, UnassignCrewData, UnassignCrewErrors, UnassignCrewResponses, UpdateCharacterData, UpdateCharacterErrors, UpdateCharacterResponses, UpdateCombatantData, UpdateCombatantErrors, UpdateCombatantResponses, UpdateEncounterData, UpdateEncounterErrors, UpdateEncounterResponses, UpdateGameSessionData, UpdateGameSessionErrors, UpdateGameSessionResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses, UpdateNpcData, UpdateNpcErrors, UpdateNpcResponses, UpdateShipData, UpdateShipErrors, UpdateShipModuleData, UpdateShipModuleErrors, UpdateShipModuleResponses, UpdateShipResponses, UpdateTalentData, UpdateTalentErrors, UpdateTalentResponses } from './types.gen';
+import type { AddCharacterItemData, AddCharacterItemErrors, AddCharacterItemResponses, AddCharacterTalentData, AddCharacterTalentErrors, AddCharacterTalentResponses, AddCombatantData, AddCombatantErrors, AddCombatantResponses, AddShipModuleData, AddShipModuleErrors, AddShipModuleResponses, AdjustDpData, AdjustDpErrors, AdjustDpResponses, AdvanceTurnData, AdvanceTurnErrors, AdvanceTurnResponses, AssignCharacterToSessionData, AssignCharacterToSessionErrors, AssignCharacterToSessionResponses, AssignCrewData, AssignCrewErrors, AssignCrewResponses, CreateCharacterData, CreateCharacterErrors, CreateCharacterResponses, CreateEncounterData, CreateEncounterErrors, CreateEncounterResponses, CreateGameSessionData, CreateGameSessionErrors, CreateGameSessionResponses, CreateNpcData, CreateNpcErrors, CreateNpcResponses, CreateRollData, CreateRollErrors, CreateRollResponses, CreateShareLinkData, CreateShareLinkErrors, CreateShareLinkResponses, CreateShipData, CreateShipErrors, CreateShipResponses, DeleteCharacterData, DeleteCharacterErrors, DeleteCharacterResponses, DeleteCombatantData, DeleteCombatantErrors, DeleteCombatantResponses, DeleteEncounterData, DeleteEncounterErrors, DeleteEncounterResponses, DeleteGameSessionData, DeleteGameSessionErrors, DeleteGameSessionResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteNpcData, DeleteNpcErrors, DeleteNpcResponses, DeleteShipData, DeleteShipErrors, DeleteShipModuleData, DeleteShipModuleErrors, DeleteShipModuleResponses, DeleteShipResponses, DeleteTalentData, DeleteTalentErrors, DeleteTalentResponses, DuplicateCharacterData, DuplicateCharacterErrors, DuplicateCharacterResponses, DuplicateNpcData, DuplicateNpcErrors, DuplicateNpcResponses, DuplicateShipData, DuplicateShipErrors, DuplicateShipResponses, ExportCharacterData, ExportCharacterErrors, ExportCharacterResponses, ExportShipData, ExportShipErrors, ExportShipResponses, GetCharacterData, GetCharacterErrors, GetCharacterOgImageData, GetCharacterOgImageErrors, GetCharacterOgImageResponses, GetCharacterResponses, GetEncounterData, GetEncounterErrors, GetEncounterResponses, GetGameSessionData, GetGameSessionErrors, GetGameSessionResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetMeData, GetMeErrors, GetMeResponses, GetNpcData, GetNpcErrors, GetNpcResponses, GetPublicCharacterData, GetPublicCharacterErrors, GetPublicCharacterResponses, GetShipData, GetShipErrors, GetShipResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, ListCharactersData, ListCharactersErrors, ListCharactersResponses, ListCombatantsData, ListCombatantsErrors, ListCombatantsResponses, ListDpEventsData, ListDpEventsErrors, ListDpEventsResponses, ListEncountersData, ListEncountersErrors, ListEncountersResponses, ListGameSessionsData, ListGameSessionsErrors, ListGameSessionsResponses, ListNpcsData, ListNpcsErrors, ListNpcsResponses, ListRollsData, ListRollsErrors, ListRollsResponses, ListShareLinksData, ListShareLinksErrors, ListShareLinksResponses, ListShipsData, ListShipsErrors, ListShipsResponses, PushRollData, PushRollErrors, PushRollResponses, ReorderInitiativeData, ReorderInitiativeErrors, ReorderInitiativeResponses, RevokeShareLinkData, RevokeShareLinkErrors, RevokeShareLinkResponses, RollInitiativeData, RollInitiativeErrors, RollInitiativeResponses, UnassignCharacterFromSessionData, UnassignCharacterFromSessionErrors, UnassignCharacterFromSessionResponses, UnassignCrewData, UnassignCrewErrors, UnassignCrewResponses, UpdateCharacterData, UpdateCharacterErrors, UpdateCharacterResponses, UpdateCombatantData, UpdateCombatantErrors, UpdateCombatantResponses, UpdateEncounterData, UpdateEncounterErrors, UpdateEncounterResponses, UpdateGameSessionData, UpdateGameSessionErrors, UpdateGameSessionResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses, UpdateNpcData, UpdateNpcErrors, UpdateNpcResponses, UpdateShipData, UpdateShipErrors, UpdateShipModuleData, UpdateShipModuleErrors, UpdateShipModuleResponses, UpdateShipResponses, UpdateTalentData, UpdateTalentErrors, UpdateTalentResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -1182,6 +1182,125 @@ export const updateCombatant = <ThrowOnError extends boolean = false>(options: O
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Roll initiative for all combatants and start combat
+ *
+ * Rolls a d10 (`crypto.randomInt(1, 11)`) for every combatant in the
+ * encounter, sorts them descending, assigns `turnOrder` indices (0-based),
+ * and transitions the encounter from `setup` to `active`.
+ *
+ * **Side-effects (all atomic):**
+ * 1. Encounter `status` transitions `setup → active`.
+ * 2. `encounter.round` is set from 0 to 1.
+ * 3. `encounter.activeCombatantId` is set to the combatant with
+ * `turnOrder: 0` (highest initiative result).
+ * 4. Every combatant row is updated with its `initiative` and `turnOrder`.
+ *
+ * **Tie-breaking:** equal initiative rolls are broken by `agility`
+ * descending (`attributes.agility` for PC combatants;
+ * `npcSnapshot.agility` for NPC combatants snapshotted at add-time).
+ * Remaining ties (equal initiative **and** equal agility) are left in
+ * an arbitrary but stable order — the GM should use the
+ * `PATCH /api/v1/encounters/{id}/initiative` reorder operation to set
+ * a definitive order before the first turn.
+ *
+ * **Error codes (422):**
+ * - `ENCOUNTER_INVALID_TRANSITION` — encounter is not in `setup` status.
+ * Initiative roll is only valid from `setup`; if the encounter is
+ * already `active` or `ended` this guard fires.
+ * - `ENCOUNTER_NO_COMBATANTS` — the encounter has no combatants. Add at
+ * least one via `POST /api/v1/encounters/{id}/combatants` before
+ * rolling initiative.
+ *
+ */
+export const rollInitiative = <ThrowOnError extends boolean = false>(options: Options<RollInitiativeData, ThrowOnError>) => (options.client ?? client).post<RollInitiativeResponses, RollInitiativeErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/encounters/{id}/initiative/roll',
+    ...options
+});
+
+/**
+ * Manually reorder the turn order (GM only)
+ *
+ * Allows the GM to rearrange the turn order without re-rolling initiative
+ * dice. The request body must contain the full ordered list of every
+ * combatant id in the encounter exactly once. The server reassigns
+ * `turnOrder` indices (0-based) matching the array position.
+ *
+ * **This operation does NOT:**
+ * - Re-roll initiative dice (`initiative` values remain unchanged).
+ * - Change `encounter.activeCombatantId` (the combatant whose turn is
+ * currently active stays active; the reorder takes effect from the
+ * next turn advance).
+ * - Change `encounter.round`.
+ *
+ * **Allowed only while `status` is `active`.** Returns 422
+ * `ENCOUNTER_INVALID_STATUS` if called from `setup` (use
+ * `rollInitiative` instead) or `ended`.
+ *
+ * **Validation error codes (422):**
+ * - `ENCOUNTER_INVALID_STATUS` — encounter is not in `active` status.
+ * - `INITIATIVE_INCOMPLETE` — at least one combatant id from the
+ * encounter is absent from `combatantIds`.
+ * - `INITIATIVE_DUPLICATE` — the same id appears two or more times
+ * in `combatantIds`.
+ * - `INITIATIVE_UNKNOWN_COMBATANT` — an id in `combatantIds` does not
+ * belong to this encounter.
+ *
+ */
+export const reorderInitiative = <ThrowOnError extends boolean = false>(options: Options<ReorderInitiativeData, ThrowOnError>) => (options.client ?? client).patch<ReorderInitiativeResponses, ReorderInitiativeErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/encounters/{id}/initiative',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Advance to the next combatant's turn
+ *
+ * Moves `encounter.activeCombatantId` forward by one position in the
+ * turn order: `(currentIndex + 1) % combatants.length`.
+ *
+ * **Wrap behaviour:** when the advance moves past the last combatant
+ * (index `combatants.length - 1`), the turn wraps to index 0 and
+ * `encounter.round` is incremented by 1. `TurnAdvanceResult.isNewRound`
+ * is `true` in that case.
+ *
+ * **Allowed only while `status` is `active`.** Returns 422
+ * `ENCOUNTER_INVALID_STATUS` otherwise.
+ *
+ * **Defensive guard:** returns 422 `ENCOUNTER_INITIATIVE_NOT_ROLLED`
+ * when `activeCombatantId` is null (i.e. initiative was never set,
+ * which should not be reachable via normal `rollInitiative` flow but is
+ * possible if a future code path bypasses that operation).
+ *
+ * **Error codes (422):**
+ * - `ENCOUNTER_INVALID_STATUS` — encounter is not in `active` status.
+ * - `ENCOUNTER_INITIATIVE_NOT_ROLLED` — `activeCombatantId` is null;
+ * initiative must be rolled before turns can be advanced.
+ *
+ */
+export const advanceTurn = <ThrowOnError extends boolean = false>(options: Options<AdvanceTurnData, ThrowOnError>) => (options.client ?? client).post<AdvanceTurnResponses, AdvanceTurnErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/encounters/{id}/turn/advance',
+    ...options
 });
 
 /**

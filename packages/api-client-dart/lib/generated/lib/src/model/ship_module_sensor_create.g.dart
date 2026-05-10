@@ -10,24 +10,27 @@ const ShipModuleSensorCreateSlotEnum _$shipModuleSensorCreateSlotEnum_SENSOR =
     const ShipModuleSensorCreateSlotEnum._('SENSOR');
 
 ShipModuleSensorCreateSlotEnum _$shipModuleSensorCreateSlotEnumValueOf(
-    String name) {
+  String name,
+) {
   switch (name) {
     case 'SENSOR':
       return _$shipModuleSensorCreateSlotEnum_SENSOR;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<ShipModuleSensorCreateSlotEnum>
-    _$shipModuleSensorCreateSlotEnumValues = new BuiltSet<
-        ShipModuleSensorCreateSlotEnum>(const <ShipModuleSensorCreateSlotEnum>[
-  _$shipModuleSensorCreateSlotEnum_SENSOR,
-]);
+_$shipModuleSensorCreateSlotEnumValues =
+    BuiltSet<ShipModuleSensorCreateSlotEnum>(
+      const <ShipModuleSensorCreateSlotEnum>[
+        _$shipModuleSensorCreateSlotEnum_SENSOR,
+      ],
+    );
 
 Serializer<ShipModuleSensorCreateSlotEnum>
-    _$shipModuleSensorCreateSlotEnumSerializer =
-    new _$ShipModuleSensorCreateSlotEnumSerializer();
+_$shipModuleSensorCreateSlotEnumSerializer =
+    _$ShipModuleSensorCreateSlotEnumSerializer();
 
 class _$ShipModuleSensorCreateSlotEnumSerializer
     implements PrimitiveSerializer<ShipModuleSensorCreateSlotEnum> {
@@ -45,16 +48,19 @@ class _$ShipModuleSensorCreateSlotEnumSerializer
 
   @override
   Object serialize(
-          Serializers serializers, ShipModuleSensorCreateSlotEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+    Serializers serializers,
+    ShipModuleSensorCreateSlotEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
   ShipModuleSensorCreateSlotEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      ShipModuleSensorCreateSlotEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => ShipModuleSensorCreateSlotEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$ShipModuleSensorCreate extends ShipModuleSensorCreate {
@@ -69,33 +75,25 @@ class _$ShipModuleSensorCreate extends ShipModuleSensorCreate {
   @override
   final String? notes;
 
-  factory _$ShipModuleSensorCreate(
-          [void Function(ShipModuleSensorCreateBuilder)? updates]) =>
-      (new ShipModuleSensorCreateBuilder()..update(updates))._build();
+  factory _$ShipModuleSensorCreate([
+    void Function(ShipModuleSensorCreateBuilder)? updates,
+  ]) => (ShipModuleSensorCreateBuilder()..update(updates))._build();
 
-  _$ShipModuleSensorCreate._(
-      {required this.slot,
-      required this.name,
-      required this.energyUse,
-      this.detectionBonus,
-      this.notes})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-        slot, r'ShipModuleSensorCreate', 'slot');
-    BuiltValueNullFieldError.checkNotNull(
-        name, r'ShipModuleSensorCreate', 'name');
-    BuiltValueNullFieldError.checkNotNull(
-        energyUse, r'ShipModuleSensorCreate', 'energyUse');
-  }
-
+  _$ShipModuleSensorCreate._({
+    required this.slot,
+    required this.name,
+    required this.energyUse,
+    this.detectionBonus,
+    this.notes,
+  }) : super._();
   @override
   ShipModuleSensorCreate rebuild(
-          void Function(ShipModuleSensorCreateBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(ShipModuleSensorCreateBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   ShipModuleSensorCreateBuilder toBuilder() =>
-      new ShipModuleSensorCreateBuilder()..replace(this);
+      ShipModuleSensorCreateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -176,7 +174,6 @@ class ShipModuleSensorCreateBuilder
 
   @override
   void replace(ShipModuleSensorCreate other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ShipModuleSensorCreate;
   }
 
@@ -189,16 +186,27 @@ class ShipModuleSensorCreateBuilder
   ShipModuleSensorCreate build() => _build();
 
   _$ShipModuleSensorCreate _build() {
-    final _$result = _$v ??
-        new _$ShipModuleSensorCreate._(
-            slot: BuiltValueNullFieldError.checkNotNull(
-                slot, r'ShipModuleSensorCreate', 'slot'),
-            name: BuiltValueNullFieldError.checkNotNull(
-                name, r'ShipModuleSensorCreate', 'name'),
-            energyUse: BuiltValueNullFieldError.checkNotNull(
-                energyUse, r'ShipModuleSensorCreate', 'energyUse'),
-            detectionBonus: detectionBonus,
-            notes: notes);
+    final _$result =
+        _$v ??
+        _$ShipModuleSensorCreate._(
+          slot: BuiltValueNullFieldError.checkNotNull(
+            slot,
+            r'ShipModuleSensorCreate',
+            'slot',
+          ),
+          name: BuiltValueNullFieldError.checkNotNull(
+            name,
+            r'ShipModuleSensorCreate',
+            'name',
+          ),
+          energyUse: BuiltValueNullFieldError.checkNotNull(
+            energyUse,
+            r'ShipModuleSensorCreate',
+            'energyUse',
+          ),
+          detectionBonus: detectionBonus,
+          notes: notes,
+        );
     replace(_$result);
     return _$result;
   }

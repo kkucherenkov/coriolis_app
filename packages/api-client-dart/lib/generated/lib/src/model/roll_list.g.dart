@@ -8,21 +8,18 @@ part of 'roll_list.dart';
 
 class _$RollList extends RollList {
   @override
-  final BuiltList<Roll> items;
+  final BuiltList<dynamic> items;
 
   factory _$RollList([void Function(RollListBuilder)? updates]) =>
-      (new RollListBuilder()..update(updates))._build();
+      (RollListBuilder()..update(updates))._build();
 
-  _$RollList._({required this.items}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(items, r'RollList', 'items');
-  }
-
+  _$RollList._({required this.items}) : super._();
   @override
   RollList rebuild(void Function(RollListBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  RollListBuilder toBuilder() => new RollListBuilder()..replace(this);
+  RollListBuilder toBuilder() => RollListBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -40,17 +37,18 @@ class _$RollList extends RollList {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'RollList')..add('items', items))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'RollList',
+    )..add('items', items)).toString();
   }
 }
 
 class RollListBuilder implements Builder<RollList, RollListBuilder> {
   _$RollList? _$v;
 
-  ListBuilder<Roll>? _items;
-  ListBuilder<Roll> get items => _$this._items ??= new ListBuilder<Roll>();
-  set items(ListBuilder<Roll>? items) => _$this._items = items;
+  ListBuilder<dynamic>? _items;
+  ListBuilder<dynamic> get items => _$this._items ??= ListBuilder<dynamic>();
+  set items(ListBuilder<dynamic>? items) => _$this._items = items;
 
   RollListBuilder() {
     RollList._defaults(this);
@@ -67,7 +65,6 @@ class RollListBuilder implements Builder<RollList, RollListBuilder> {
 
   @override
   void replace(RollList other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$RollList;
   }
 
@@ -82,15 +79,18 @@ class RollListBuilder implements Builder<RollList, RollListBuilder> {
   _$RollList _build() {
     _$RollList _$result;
     try {
-      _$result = _$v ?? new _$RollList._(items: items.build());
+      _$result = _$v ?? _$RollList._(items: items.build());
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'items';
         items.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
-            r'RollList', _$failedField, e.toString());
+        throw BuiltValueNestedFieldError(
+          r'RollList',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

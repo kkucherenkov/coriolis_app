@@ -8,23 +8,20 @@ part of 'ship_list.dart';
 
 class _$ShipList extends ShipList {
   @override
-  final BuiltList<Ship> items;
+  final BuiltList<dynamic> items;
   @override
   final String? nextCursor;
 
   factory _$ShipList([void Function(ShipListBuilder)? updates]) =>
-      (new ShipListBuilder()..update(updates))._build();
+      (ShipListBuilder()..update(updates))._build();
 
-  _$ShipList._({required this.items, this.nextCursor}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(items, r'ShipList', 'items');
-  }
-
+  _$ShipList._({required this.items, this.nextCursor}) : super._();
   @override
   ShipList rebuild(void Function(ShipListBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  ShipListBuilder toBuilder() => new ShipListBuilder()..replace(this);
+  ShipListBuilder toBuilder() => ShipListBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -55,9 +52,9 @@ class _$ShipList extends ShipList {
 class ShipListBuilder implements Builder<ShipList, ShipListBuilder> {
   _$ShipList? _$v;
 
-  ListBuilder<Ship>? _items;
-  ListBuilder<Ship> get items => _$this._items ??= new ListBuilder<Ship>();
-  set items(ListBuilder<Ship>? items) => _$this._items = items;
+  ListBuilder<dynamic>? _items;
+  ListBuilder<dynamic> get items => _$this._items ??= ListBuilder<dynamic>();
+  set items(ListBuilder<dynamic>? items) => _$this._items = items;
 
   String? _nextCursor;
   String? get nextCursor => _$this._nextCursor;
@@ -79,7 +76,6 @@ class ShipListBuilder implements Builder<ShipList, ShipListBuilder> {
 
   @override
   void replace(ShipList other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ShipList;
   }
 
@@ -95,15 +91,18 @@ class ShipListBuilder implements Builder<ShipList, ShipListBuilder> {
     _$ShipList _$result;
     try {
       _$result =
-          _$v ?? new _$ShipList._(items: items.build(), nextCursor: nextCursor);
+          _$v ?? _$ShipList._(items: items.build(), nextCursor: nextCursor);
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'items';
         items.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
-            r'ShipList', _$failedField, e.toString());
+        throw BuiltValueNestedFieldError(
+          r'ShipList',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

@@ -6,8 +6,9 @@ part of 'me_update.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const MeUpdateThemeEnum _$meUpdateThemeEnum_dark =
-    const MeUpdateThemeEnum._('dark');
+const MeUpdateThemeEnum _$meUpdateThemeEnum_dark = const MeUpdateThemeEnum._(
+  'dark',
+);
 const MeUpdateThemeEnum _$meUpdateThemeEnum_highContrast =
     const MeUpdateThemeEnum._('highContrast');
 
@@ -18,18 +19,18 @@ MeUpdateThemeEnum _$meUpdateThemeEnumValueOf(String name) {
     case 'highContrast':
       return _$meUpdateThemeEnum_highContrast;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<MeUpdateThemeEnum> _$meUpdateThemeEnumValues =
-    new BuiltSet<MeUpdateThemeEnum>(const <MeUpdateThemeEnum>[
-  _$meUpdateThemeEnum_dark,
-  _$meUpdateThemeEnum_highContrast,
-]);
+    BuiltSet<MeUpdateThemeEnum>(const <MeUpdateThemeEnum>[
+      _$meUpdateThemeEnum_dark,
+      _$meUpdateThemeEnum_highContrast,
+    ]);
 
 Serializer<MeUpdateThemeEnum> _$meUpdateThemeEnumSerializer =
-    new _$MeUpdateThemeEnumSerializer();
+    _$MeUpdateThemeEnumSerializer();
 
 class _$MeUpdateThemeEnumSerializer
     implements PrimitiveSerializer<MeUpdateThemeEnum> {
@@ -48,15 +49,20 @@ class _$MeUpdateThemeEnumSerializer
   final String wireName = 'MeUpdateThemeEnum';
 
   @override
-  Object serialize(Serializers serializers, MeUpdateThemeEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    MeUpdateThemeEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  MeUpdateThemeEnum deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      MeUpdateThemeEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  MeUpdateThemeEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => MeUpdateThemeEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$MeUpdate extends MeUpdate {
@@ -66,16 +72,15 @@ class _$MeUpdate extends MeUpdate {
   final MeUpdateThemeEnum? theme;
 
   factory _$MeUpdate([void Function(MeUpdateBuilder)? updates]) =>
-      (new MeUpdateBuilder()..update(updates))._build();
+      (MeUpdateBuilder()..update(updates))._build();
 
   _$MeUpdate._({this.displayName, this.theme}) : super._();
-
   @override
   MeUpdate rebuild(void Function(MeUpdateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  MeUpdateBuilder toBuilder() => new MeUpdateBuilder()..replace(this);
+  MeUpdateBuilder toBuilder() => MeUpdateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -130,7 +135,6 @@ class MeUpdateBuilder implements Builder<MeUpdate, MeUpdateBuilder> {
 
   @override
   void replace(MeUpdate other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$MeUpdate;
   }
 
@@ -144,7 +148,7 @@ class MeUpdateBuilder implements Builder<MeUpdate, MeUpdateBuilder> {
 
   _$MeUpdate _build() {
     final _$result =
-        _$v ?? new _$MeUpdate._(displayName: displayName, theme: theme);
+        _$v ?? _$MeUpdate._(displayName: displayName, theme: theme);
     replace(_$result);
     return _$result;
   }

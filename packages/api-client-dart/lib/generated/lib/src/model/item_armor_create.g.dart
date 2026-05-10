@@ -14,17 +14,17 @@ ItemArmorCreateTypeEnum _$itemArmorCreateTypeEnumValueOf(String name) {
     case 'ARMOR':
       return _$itemArmorCreateTypeEnum_ARMOR;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<ItemArmorCreateTypeEnum> _$itemArmorCreateTypeEnumValues =
-    new BuiltSet<ItemArmorCreateTypeEnum>(const <ItemArmorCreateTypeEnum>[
-  _$itemArmorCreateTypeEnum_ARMOR,
-]);
+    BuiltSet<ItemArmorCreateTypeEnum>(const <ItemArmorCreateTypeEnum>[
+      _$itemArmorCreateTypeEnum_ARMOR,
+    ]);
 
 Serializer<ItemArmorCreateTypeEnum> _$itemArmorCreateTypeEnumSerializer =
-    new _$ItemArmorCreateTypeEnumSerializer();
+    _$ItemArmorCreateTypeEnumSerializer();
 
 class _$ItemArmorCreateTypeEnumSerializer
     implements PrimitiveSerializer<ItemArmorCreateTypeEnum> {
@@ -41,16 +41,20 @@ class _$ItemArmorCreateTypeEnumSerializer
   final String wireName = 'ItemArmorCreateTypeEnum';
 
   @override
-  Object serialize(Serializers serializers, ItemArmorCreateTypeEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    ItemArmorCreateTypeEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
   ItemArmorCreateTypeEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      ItemArmorCreateTypeEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => ItemArmorCreateTypeEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$ItemArmorCreate extends ItemArmorCreate {
@@ -68,34 +72,22 @@ class _$ItemArmorCreate extends ItemArmorCreate {
   final bool equipped;
 
   factory _$ItemArmorCreate([void Function(ItemArmorCreateBuilder)? updates]) =>
-      (new ItemArmorCreateBuilder()..update(updates))._build();
+      (ItemArmorCreateBuilder()..update(updates))._build();
 
-  _$ItemArmorCreate._(
-      {required this.type,
-      required this.name,
-      required this.armorRating,
-      required this.weight,
-      required this.features,
-      required this.equipped})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(type, r'ItemArmorCreate', 'type');
-    BuiltValueNullFieldError.checkNotNull(name, r'ItemArmorCreate', 'name');
-    BuiltValueNullFieldError.checkNotNull(
-        armorRating, r'ItemArmorCreate', 'armorRating');
-    BuiltValueNullFieldError.checkNotNull(weight, r'ItemArmorCreate', 'weight');
-    BuiltValueNullFieldError.checkNotNull(
-        features, r'ItemArmorCreate', 'features');
-    BuiltValueNullFieldError.checkNotNull(
-        equipped, r'ItemArmorCreate', 'equipped');
-  }
-
+  _$ItemArmorCreate._({
+    required this.type,
+    required this.name,
+    required this.armorRating,
+    required this.weight,
+    required this.features,
+    required this.equipped,
+  }) : super._();
   @override
   ItemArmorCreate rebuild(void Function(ItemArmorCreateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  ItemArmorCreateBuilder toBuilder() =>
-      new ItemArmorCreateBuilder()..replace(this);
+  ItemArmorCreateBuilder toBuilder() => ItemArmorCreateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -157,7 +149,7 @@ class ItemArmorCreateBuilder
 
   ListBuilder<String>? _features;
   ListBuilder<String> get features =>
-      _$this._features ??= new ListBuilder<String>();
+      _$this._features ??= ListBuilder<String>();
   set features(ListBuilder<String>? features) => _$this._features = features;
 
   bool? _equipped;
@@ -184,7 +176,6 @@ class ItemArmorCreateBuilder
 
   @override
   void replace(ItemArmorCreate other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ItemArmorCreate;
   }
 
@@ -199,27 +190,47 @@ class ItemArmorCreateBuilder
   _$ItemArmorCreate _build() {
     _$ItemArmorCreate _$result;
     try {
-      _$result = _$v ??
-          new _$ItemArmorCreate._(
-              type: BuiltValueNullFieldError.checkNotNull(
-                  type, r'ItemArmorCreate', 'type'),
-              name: BuiltValueNullFieldError.checkNotNull(
-                  name, r'ItemArmorCreate', 'name'),
-              armorRating: BuiltValueNullFieldError.checkNotNull(
-                  armorRating, r'ItemArmorCreate', 'armorRating'),
-              weight: BuiltValueNullFieldError.checkNotNull(
-                  weight, r'ItemArmorCreate', 'weight'),
-              features: features.build(),
-              equipped: BuiltValueNullFieldError.checkNotNull(
-                  equipped, r'ItemArmorCreate', 'equipped'));
+      _$result =
+          _$v ??
+          _$ItemArmorCreate._(
+            type: BuiltValueNullFieldError.checkNotNull(
+              type,
+              r'ItemArmorCreate',
+              'type',
+            ),
+            name: BuiltValueNullFieldError.checkNotNull(
+              name,
+              r'ItemArmorCreate',
+              'name',
+            ),
+            armorRating: BuiltValueNullFieldError.checkNotNull(
+              armorRating,
+              r'ItemArmorCreate',
+              'armorRating',
+            ),
+            weight: BuiltValueNullFieldError.checkNotNull(
+              weight,
+              r'ItemArmorCreate',
+              'weight',
+            ),
+            features: features.build(),
+            equipped: BuiltValueNullFieldError.checkNotNull(
+              equipped,
+              r'ItemArmorCreate',
+              'equipped',
+            ),
+          );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'features';
         features.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
-            r'ItemArmorCreate', _$failedField, e.toString());
+        throw BuiltValueNestedFieldError(
+          r'ItemArmorCreate',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

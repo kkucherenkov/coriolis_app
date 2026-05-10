@@ -17,26 +17,20 @@ class _$Attributes extends Attributes {
   final int empathy;
 
   factory _$Attributes([void Function(AttributesBuilder)? updates]) =>
-      (new AttributesBuilder()..update(updates))._build();
+      (AttributesBuilder()..update(updates))._build();
 
-  _$Attributes._(
-      {required this.strength,
-      required this.agility,
-      required this.wits,
-      required this.empathy})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(strength, r'Attributes', 'strength');
-    BuiltValueNullFieldError.checkNotNull(agility, r'Attributes', 'agility');
-    BuiltValueNullFieldError.checkNotNull(wits, r'Attributes', 'wits');
-    BuiltValueNullFieldError.checkNotNull(empathy, r'Attributes', 'empathy');
-  }
-
+  _$Attributes._({
+    required this.strength,
+    required this.agility,
+    required this.wits,
+    required this.empathy,
+  }) : super._();
   @override
   Attributes rebuild(void Function(AttributesBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  AttributesBuilder toBuilder() => new AttributesBuilder()..replace(this);
+  AttributesBuilder toBuilder() => AttributesBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -107,7 +101,6 @@ class AttributesBuilder implements Builder<Attributes, AttributesBuilder> {
 
   @override
   void replace(Attributes other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$Attributes;
   }
 
@@ -120,16 +113,30 @@ class AttributesBuilder implements Builder<Attributes, AttributesBuilder> {
   Attributes build() => _build();
 
   _$Attributes _build() {
-    final _$result = _$v ??
-        new _$Attributes._(
-            strength: BuiltValueNullFieldError.checkNotNull(
-                strength, r'Attributes', 'strength'),
-            agility: BuiltValueNullFieldError.checkNotNull(
-                agility, r'Attributes', 'agility'),
-            wits: BuiltValueNullFieldError.checkNotNull(
-                wits, r'Attributes', 'wits'),
-            empathy: BuiltValueNullFieldError.checkNotNull(
-                empathy, r'Attributes', 'empathy'));
+    final _$result =
+        _$v ??
+        _$Attributes._(
+          strength: BuiltValueNullFieldError.checkNotNull(
+            strength,
+            r'Attributes',
+            'strength',
+          ),
+          agility: BuiltValueNullFieldError.checkNotNull(
+            agility,
+            r'Attributes',
+            'agility',
+          ),
+          wits: BuiltValueNullFieldError.checkNotNull(
+            wits,
+            r'Attributes',
+            'wits',
+          ),
+          empathy: BuiltValueNullFieldError.checkNotNull(
+            empathy,
+            r'Attributes',
+            'empathy',
+          ),
+        );
     replace(_$result);
     return _$result;
   }

@@ -13,16 +13,15 @@ class _$NpcCreateHp extends NpcCreateHp {
   final int? max;
 
   factory _$NpcCreateHp([void Function(NpcCreateHpBuilder)? updates]) =>
-      (new NpcCreateHpBuilder()..update(updates))._build();
+      (NpcCreateHpBuilder()..update(updates))._build();
 
   _$NpcCreateHp._({this.current, this.max}) : super._();
-
   @override
   NpcCreateHp rebuild(void Function(NpcCreateHpBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  NpcCreateHpBuilder toBuilder() => new NpcCreateHpBuilder()..replace(this);
+  NpcCreateHpBuilder toBuilder() => NpcCreateHpBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -75,7 +74,6 @@ class NpcCreateHpBuilder implements Builder<NpcCreateHp, NpcCreateHpBuilder> {
 
   @override
   void replace(NpcCreateHp other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$NpcCreateHp;
   }
 
@@ -88,7 +86,7 @@ class NpcCreateHpBuilder implements Builder<NpcCreateHp, NpcCreateHpBuilder> {
   NpcCreateHp build() => _build();
 
   _$NpcCreateHp _build() {
-    final _$result = _$v ?? new _$NpcCreateHp._(current: current, max: max);
+    final _$result = _$v ?? _$NpcCreateHp._(current: current, max: max);
     replace(_$result);
     return _$result;
   }

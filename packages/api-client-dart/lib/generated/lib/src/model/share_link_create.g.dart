@@ -15,18 +15,16 @@ class _$ShareLinkCreate extends ShareLinkCreate {
   final String? label;
 
   factory _$ShareLinkCreate([void Function(ShareLinkCreateBuilder)? updates]) =>
-      (new ShareLinkCreateBuilder()..update(updates))._build();
+      (ShareLinkCreateBuilder()..update(updates))._build();
 
   _$ShareLinkCreate._({this.includeGmNotes, this.expiresAt, this.label})
-      : super._();
-
+    : super._();
   @override
   ShareLinkCreate rebuild(void Function(ShareLinkCreateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  ShareLinkCreateBuilder toBuilder() =>
-      new ShareLinkCreateBuilder()..replace(this);
+  ShareLinkCreateBuilder toBuilder() => ShareLinkCreateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -91,7 +89,6 @@ class ShareLinkCreateBuilder
 
   @override
   void replace(ShareLinkCreate other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ShareLinkCreate;
   }
 
@@ -104,9 +101,13 @@ class ShareLinkCreateBuilder
   ShareLinkCreate build() => _build();
 
   _$ShareLinkCreate _build() {
-    final _$result = _$v ??
-        new _$ShareLinkCreate._(
-            includeGmNotes: includeGmNotes, expiresAt: expiresAt, label: label);
+    final _$result =
+        _$v ??
+        _$ShareLinkCreate._(
+          includeGmNotes: includeGmNotes,
+          expiresAt: expiresAt,
+          label: label,
+        );
     replace(_$result);
     return _$result;
   }

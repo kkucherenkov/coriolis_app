@@ -19,16 +19,13 @@ MutantLineage _$valueOf(String name) {
     case 'nerida':
       return _$nerida;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
-final BuiltSet<MutantLineage> _$values =
-    new BuiltSet<MutantLineage>(const <MutantLineage>[
-  _$zirba,
-  _$shingura,
-  _$nerida,
-]);
+final BuiltSet<MutantLineage> _$values = BuiltSet<MutantLineage>(
+  const <MutantLineage>[_$zirba, _$shingura, _$nerida],
+);
 
 class _$MutantLineageMeta {
   const _$MutantLineageMeta();
@@ -39,13 +36,13 @@ class _$MutantLineageMeta {
   BuiltSet<MutantLineage> get values => _$values;
 }
 
-abstract class _$MutantLineageMixin {
+mixin _$MutantLineageMixin {
   // ignore: non_constant_identifier_names
   _$MutantLineageMeta get MutantLineage => const _$MutantLineageMeta();
 }
 
 Serializer<MutantLineage> _$mutantLineageSerializer =
-    new _$MutantLineageSerializer();
+    _$MutantLineageSerializer();
 
 class _$MutantLineageSerializer implements PrimitiveSerializer<MutantLineage> {
   static const Map<String, Object> _toWire = const <String, Object>{
@@ -65,15 +62,20 @@ class _$MutantLineageSerializer implements PrimitiveSerializer<MutantLineage> {
   final String wireName = 'MutantLineage';
 
   @override
-  Object serialize(Serializers serializers, MutantLineage object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    MutantLineage object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  MutantLineage deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      MutantLineage.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  MutantLineage deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => MutantLineage.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

@@ -10,24 +10,24 @@ const ShipModuleHoldUpdateSlotEnum _$shipModuleHoldUpdateSlotEnum_HOLD =
     const ShipModuleHoldUpdateSlotEnum._('HOLD');
 
 ShipModuleHoldUpdateSlotEnum _$shipModuleHoldUpdateSlotEnumValueOf(
-    String name) {
+  String name,
+) {
   switch (name) {
     case 'HOLD':
       return _$shipModuleHoldUpdateSlotEnum_HOLD;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<ShipModuleHoldUpdateSlotEnum>
-    _$shipModuleHoldUpdateSlotEnumValues = new BuiltSet<
-        ShipModuleHoldUpdateSlotEnum>(const <ShipModuleHoldUpdateSlotEnum>[
-  _$shipModuleHoldUpdateSlotEnum_HOLD,
-]);
+_$shipModuleHoldUpdateSlotEnumValues = BuiltSet<ShipModuleHoldUpdateSlotEnum>(
+  const <ShipModuleHoldUpdateSlotEnum>[_$shipModuleHoldUpdateSlotEnum_HOLD],
+);
 
 Serializer<ShipModuleHoldUpdateSlotEnum>
-    _$shipModuleHoldUpdateSlotEnumSerializer =
-    new _$ShipModuleHoldUpdateSlotEnumSerializer();
+_$shipModuleHoldUpdateSlotEnumSerializer =
+    _$ShipModuleHoldUpdateSlotEnumSerializer();
 
 class _$ShipModuleHoldUpdateSlotEnumSerializer
     implements PrimitiveSerializer<ShipModuleHoldUpdateSlotEnum> {
@@ -44,16 +44,20 @@ class _$ShipModuleHoldUpdateSlotEnumSerializer
   final String wireName = 'ShipModuleHoldUpdateSlotEnum';
 
   @override
-  Object serialize(Serializers serializers, ShipModuleHoldUpdateSlotEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    ShipModuleHoldUpdateSlotEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
   ShipModuleHoldUpdateSlotEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      ShipModuleHoldUpdateSlotEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => ShipModuleHoldUpdateSlotEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$ShipModuleHoldUpdate extends ShipModuleHoldUpdate {
@@ -70,27 +74,26 @@ class _$ShipModuleHoldUpdate extends ShipModuleHoldUpdate {
   @override
   final String? notes;
 
-  factory _$ShipModuleHoldUpdate(
-          [void Function(ShipModuleHoldUpdateBuilder)? updates]) =>
-      (new ShipModuleHoldUpdateBuilder()..update(updates))._build();
+  factory _$ShipModuleHoldUpdate([
+    void Function(ShipModuleHoldUpdateBuilder)? updates,
+  ]) => (ShipModuleHoldUpdateBuilder()..update(updates))._build();
 
-  _$ShipModuleHoldUpdate._(
-      {this.slot,
-      this.name,
-      this.energyUse,
-      this.cargoTons,
-      this.concealed,
-      this.notes})
-      : super._();
-
+  _$ShipModuleHoldUpdate._({
+    this.slot,
+    this.name,
+    this.energyUse,
+    this.cargoTons,
+    this.concealed,
+    this.notes,
+  }) : super._();
   @override
   ShipModuleHoldUpdate rebuild(
-          void Function(ShipModuleHoldUpdateBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(ShipModuleHoldUpdateBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   ShipModuleHoldUpdateBuilder toBuilder() =>
-      new ShipModuleHoldUpdateBuilder()..replace(this);
+      ShipModuleHoldUpdateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -178,7 +181,6 @@ class ShipModuleHoldUpdateBuilder
 
   @override
   void replace(ShipModuleHoldUpdate other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ShipModuleHoldUpdate;
   }
 
@@ -191,14 +193,16 @@ class ShipModuleHoldUpdateBuilder
   ShipModuleHoldUpdate build() => _build();
 
   _$ShipModuleHoldUpdate _build() {
-    final _$result = _$v ??
-        new _$ShipModuleHoldUpdate._(
-            slot: slot,
-            name: name,
-            energyUse: energyUse,
-            cargoTons: cargoTons,
-            concealed: concealed,
-            notes: notes);
+    final _$result =
+        _$v ??
+        _$ShipModuleHoldUpdate._(
+          slot: slot,
+          name: name,
+          energyUse: energyUse,
+          cargoTons: cargoTons,
+          concealed: concealed,
+          notes: notes,
+        );
     replace(_$result);
     return _$result;
   }

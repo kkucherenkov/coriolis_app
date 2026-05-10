@@ -15,16 +15,15 @@ class _$TalentUpdate extends TalentUpdate {
   final int? rank;
 
   factory _$TalentUpdate([void Function(TalentUpdateBuilder)? updates]) =>
-      (new TalentUpdateBuilder()..update(updates))._build();
+      (TalentUpdateBuilder()..update(updates))._build();
 
   _$TalentUpdate._({this.name, this.description, this.rank}) : super._();
-
   @override
   TalentUpdate rebuild(void Function(TalentUpdateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  TalentUpdateBuilder toBuilder() => new TalentUpdateBuilder()..replace(this);
+  TalentUpdateBuilder toBuilder() => TalentUpdateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -88,7 +87,6 @@ class TalentUpdateBuilder
 
   @override
   void replace(TalentUpdate other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$TalentUpdate;
   }
 
@@ -101,8 +99,9 @@ class TalentUpdateBuilder
   TalentUpdate build() => _build();
 
   _$TalentUpdate _build() {
-    final _$result = _$v ??
-        new _$TalentUpdate._(name: name, description: description, rank: rank);
+    final _$result =
+        _$v ??
+        _$TalentUpdate._(name: name, description: description, rank: rank);
     replace(_$result);
     return _$result;
   }

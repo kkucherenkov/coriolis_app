@@ -13,17 +13,15 @@ class _$ShipUpdateHull extends ShipUpdateHull {
   final int? max;
 
   factory _$ShipUpdateHull([void Function(ShipUpdateHullBuilder)? updates]) =>
-      (new ShipUpdateHullBuilder()..update(updates))._build();
+      (ShipUpdateHullBuilder()..update(updates))._build();
 
   _$ShipUpdateHull._({this.current, this.max}) : super._();
-
   @override
   ShipUpdateHull rebuild(void Function(ShipUpdateHullBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  ShipUpdateHullBuilder toBuilder() =>
-      new ShipUpdateHullBuilder()..replace(this);
+  ShipUpdateHullBuilder toBuilder() => ShipUpdateHullBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -79,7 +77,6 @@ class ShipUpdateHullBuilder
 
   @override
   void replace(ShipUpdateHull other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ShipUpdateHull;
   }
 
@@ -92,7 +89,7 @@ class ShipUpdateHullBuilder
   ShipUpdateHull build() => _build();
 
   _$ShipUpdateHull _build() {
-    final _$result = _$v ?? new _$ShipUpdateHull._(current: current, max: max);
+    final _$result = _$v ?? _$ShipUpdateHull._(current: current, max: max);
     replace(_$result);
     return _$result;
   }

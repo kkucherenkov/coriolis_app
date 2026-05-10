@@ -10,24 +10,26 @@ const ItemCyberneticUpdateTypeEnum _$itemCyberneticUpdateTypeEnum_CYBERNETIC =
     const ItemCyberneticUpdateTypeEnum._('CYBERNETIC');
 
 ItemCyberneticUpdateTypeEnum _$itemCyberneticUpdateTypeEnumValueOf(
-    String name) {
+  String name,
+) {
   switch (name) {
     case 'CYBERNETIC':
       return _$itemCyberneticUpdateTypeEnum_CYBERNETIC;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<ItemCyberneticUpdateTypeEnum>
-    _$itemCyberneticUpdateTypeEnumValues = new BuiltSet<
-        ItemCyberneticUpdateTypeEnum>(const <ItemCyberneticUpdateTypeEnum>[
-  _$itemCyberneticUpdateTypeEnum_CYBERNETIC,
-]);
+_$itemCyberneticUpdateTypeEnumValues = BuiltSet<ItemCyberneticUpdateTypeEnum>(
+  const <ItemCyberneticUpdateTypeEnum>[
+    _$itemCyberneticUpdateTypeEnum_CYBERNETIC,
+  ],
+);
 
 Serializer<ItemCyberneticUpdateTypeEnum>
-    _$itemCyberneticUpdateTypeEnumSerializer =
-    new _$ItemCyberneticUpdateTypeEnumSerializer();
+_$itemCyberneticUpdateTypeEnumSerializer =
+    _$ItemCyberneticUpdateTypeEnumSerializer();
 
 class _$ItemCyberneticUpdateTypeEnumSerializer
     implements PrimitiveSerializer<ItemCyberneticUpdateTypeEnum> {
@@ -44,16 +46,20 @@ class _$ItemCyberneticUpdateTypeEnumSerializer
   final String wireName = 'ItemCyberneticUpdateTypeEnum';
 
   @override
-  Object serialize(Serializers serializers, ItemCyberneticUpdateTypeEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    ItemCyberneticUpdateTypeEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
   ItemCyberneticUpdateTypeEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      ItemCyberneticUpdateTypeEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => ItemCyberneticUpdateTypeEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$ItemCyberneticUpdate extends ItemCyberneticUpdate {
@@ -66,21 +72,20 @@ class _$ItemCyberneticUpdate extends ItemCyberneticUpdate {
   @override
   final String? effect;
 
-  factory _$ItemCyberneticUpdate(
-          [void Function(ItemCyberneticUpdateBuilder)? updates]) =>
-      (new ItemCyberneticUpdateBuilder()..update(updates))._build();
+  factory _$ItemCyberneticUpdate([
+    void Function(ItemCyberneticUpdateBuilder)? updates,
+  ]) => (ItemCyberneticUpdateBuilder()..update(updates))._build();
 
   _$ItemCyberneticUpdate._({this.type, this.name, this.bodyPoints, this.effect})
-      : super._();
-
+    : super._();
   @override
   ItemCyberneticUpdate rebuild(
-          void Function(ItemCyberneticUpdateBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(ItemCyberneticUpdateBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   ItemCyberneticUpdateBuilder toBuilder() =>
-      new ItemCyberneticUpdateBuilder()..replace(this);
+      ItemCyberneticUpdateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -152,7 +157,6 @@ class ItemCyberneticUpdateBuilder
 
   @override
   void replace(ItemCyberneticUpdate other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ItemCyberneticUpdate;
   }
 
@@ -165,9 +169,14 @@ class ItemCyberneticUpdateBuilder
   ItemCyberneticUpdate build() => _build();
 
   _$ItemCyberneticUpdate _build() {
-    final _$result = _$v ??
-        new _$ItemCyberneticUpdate._(
-            type: type, name: name, bodyPoints: bodyPoints, effect: effect);
+    final _$result =
+        _$v ??
+        _$ItemCyberneticUpdate._(
+          type: type,
+          name: name,
+          bodyPoints: bodyPoints,
+          effect: effect,
+        );
     replace(_$result);
     return _$result;
   }

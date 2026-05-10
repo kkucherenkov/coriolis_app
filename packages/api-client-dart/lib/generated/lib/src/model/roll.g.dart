@@ -27,35 +27,25 @@ class _$Roll extends Roll {
   final DateTime createdAt;
 
   factory _$Roll([void Function(RollBuilder)? updates]) =>
-      (new RollBuilder()..update(updates))._build();
+      (RollBuilder()..update(updates))._build();
 
-  _$Roll._(
-      {required this.id,
-      required this.characterId,
-      this.gameSessionId,
-      required this.label,
-      required this.pool,
-      required this.dice,
-      required this.hits,
-      required this.pushed,
-      required this.createdAt})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(id, r'Roll', 'id');
-    BuiltValueNullFieldError.checkNotNull(characterId, r'Roll', 'characterId');
-    BuiltValueNullFieldError.checkNotNull(label, r'Roll', 'label');
-    BuiltValueNullFieldError.checkNotNull(pool, r'Roll', 'pool');
-    BuiltValueNullFieldError.checkNotNull(dice, r'Roll', 'dice');
-    BuiltValueNullFieldError.checkNotNull(hits, r'Roll', 'hits');
-    BuiltValueNullFieldError.checkNotNull(pushed, r'Roll', 'pushed');
-    BuiltValueNullFieldError.checkNotNull(createdAt, r'Roll', 'createdAt');
-  }
-
+  _$Roll._({
+    required this.id,
+    required this.characterId,
+    this.gameSessionId,
+    required this.label,
+    required this.pool,
+    required this.dice,
+    required this.hits,
+    required this.pushed,
+    required this.createdAt,
+  }) : super._();
   @override
   Roll rebuild(void Function(RollBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  RollBuilder toBuilder() => new RollBuilder()..replace(this);
+  RollBuilder toBuilder() => RollBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -129,7 +119,7 @@ class RollBuilder implements Builder<Roll, RollBuilder> {
   set pool(int? pool) => _$this._pool = pool;
 
   ListBuilder<int>? _dice;
-  ListBuilder<int> get dice => _$this._dice ??= new ListBuilder<int>();
+  ListBuilder<int> get dice => _$this._dice ??= ListBuilder<int>();
   set dice(ListBuilder<int>? dice) => _$this._dice = dice;
 
   int? _hits;
@@ -167,7 +157,6 @@ class RollBuilder implements Builder<Roll, RollBuilder> {
 
   @override
   void replace(Roll other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$Roll;
   }
 
@@ -182,31 +171,42 @@ class RollBuilder implements Builder<Roll, RollBuilder> {
   _$Roll _build() {
     _$Roll _$result;
     try {
-      _$result = _$v ??
-          new _$Roll._(
-              id: BuiltValueNullFieldError.checkNotNull(id, r'Roll', 'id'),
-              characterId: BuiltValueNullFieldError.checkNotNull(
-                  characterId, r'Roll', 'characterId'),
-              gameSessionId: gameSessionId,
-              label: BuiltValueNullFieldError.checkNotNull(
-                  label, r'Roll', 'label'),
-              pool:
-                  BuiltValueNullFieldError.checkNotNull(pool, r'Roll', 'pool'),
-              dice: dice.build(),
-              hits:
-                  BuiltValueNullFieldError.checkNotNull(hits, r'Roll', 'hits'),
-              pushed: BuiltValueNullFieldError.checkNotNull(
-                  pushed, r'Roll', 'pushed'),
-              createdAt: BuiltValueNullFieldError.checkNotNull(
-                  createdAt, r'Roll', 'createdAt'));
+      _$result =
+          _$v ??
+          _$Roll._(
+            id: BuiltValueNullFieldError.checkNotNull(id, r'Roll', 'id'),
+            characterId: BuiltValueNullFieldError.checkNotNull(
+              characterId,
+              r'Roll',
+              'characterId',
+            ),
+            gameSessionId: gameSessionId,
+            label: BuiltValueNullFieldError.checkNotNull(
+              label,
+              r'Roll',
+              'label',
+            ),
+            pool: BuiltValueNullFieldError.checkNotNull(pool, r'Roll', 'pool'),
+            dice: dice.build(),
+            hits: BuiltValueNullFieldError.checkNotNull(hits, r'Roll', 'hits'),
+            pushed: BuiltValueNullFieldError.checkNotNull(
+              pushed,
+              r'Roll',
+              'pushed',
+            ),
+            createdAt: BuiltValueNullFieldError.checkNotNull(
+              createdAt,
+              r'Roll',
+              'createdAt',
+            ),
+          );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'dice';
         dice.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
-            r'Roll', _$failedField, e.toString());
+        throw BuiltValueNestedFieldError(r'Roll', _$failedField, e.toString());
       }
       rethrow;
     }

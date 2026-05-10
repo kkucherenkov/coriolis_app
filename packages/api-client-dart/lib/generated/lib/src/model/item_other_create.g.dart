@@ -14,17 +14,17 @@ ItemOtherCreateTypeEnum _$itemOtherCreateTypeEnumValueOf(String name) {
     case 'OTHER':
       return _$itemOtherCreateTypeEnum_OTHER;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<ItemOtherCreateTypeEnum> _$itemOtherCreateTypeEnumValues =
-    new BuiltSet<ItemOtherCreateTypeEnum>(const <ItemOtherCreateTypeEnum>[
-  _$itemOtherCreateTypeEnum_OTHER,
-]);
+    BuiltSet<ItemOtherCreateTypeEnum>(const <ItemOtherCreateTypeEnum>[
+      _$itemOtherCreateTypeEnum_OTHER,
+    ]);
 
 Serializer<ItemOtherCreateTypeEnum> _$itemOtherCreateTypeEnumSerializer =
-    new _$ItemOtherCreateTypeEnumSerializer();
+    _$ItemOtherCreateTypeEnumSerializer();
 
 class _$ItemOtherCreateTypeEnumSerializer
     implements PrimitiveSerializer<ItemOtherCreateTypeEnum> {
@@ -41,16 +41,20 @@ class _$ItemOtherCreateTypeEnumSerializer
   final String wireName = 'ItemOtherCreateTypeEnum';
 
   @override
-  Object serialize(Serializers serializers, ItemOtherCreateTypeEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    ItemOtherCreateTypeEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
   ItemOtherCreateTypeEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      ItemOtherCreateTypeEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => ItemOtherCreateTypeEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$ItemOtherCreate extends ItemOtherCreate {
@@ -64,26 +68,20 @@ class _$ItemOtherCreate extends ItemOtherCreate {
   final String? notes;
 
   factory _$ItemOtherCreate([void Function(ItemOtherCreateBuilder)? updates]) =>
-      (new ItemOtherCreateBuilder()..update(updates))._build();
+      (ItemOtherCreateBuilder()..update(updates))._build();
 
-  _$ItemOtherCreate._(
-      {required this.type,
-      required this.name,
-      required this.weight,
-      this.notes})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(type, r'ItemOtherCreate', 'type');
-    BuiltValueNullFieldError.checkNotNull(name, r'ItemOtherCreate', 'name');
-    BuiltValueNullFieldError.checkNotNull(weight, r'ItemOtherCreate', 'weight');
-  }
-
+  _$ItemOtherCreate._({
+    required this.type,
+    required this.name,
+    required this.weight,
+    this.notes,
+  }) : super._();
   @override
   ItemOtherCreate rebuild(void Function(ItemOtherCreateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  ItemOtherCreateBuilder toBuilder() =>
-      new ItemOtherCreateBuilder()..replace(this);
+  ItemOtherCreateBuilder toBuilder() => ItemOtherCreateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -155,7 +153,6 @@ class ItemOtherCreateBuilder
 
   @override
   void replace(ItemOtherCreate other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ItemOtherCreate;
   }
 
@@ -168,15 +165,26 @@ class ItemOtherCreateBuilder
   ItemOtherCreate build() => _build();
 
   _$ItemOtherCreate _build() {
-    final _$result = _$v ??
-        new _$ItemOtherCreate._(
-            type: BuiltValueNullFieldError.checkNotNull(
-                type, r'ItemOtherCreate', 'type'),
-            name: BuiltValueNullFieldError.checkNotNull(
-                name, r'ItemOtherCreate', 'name'),
-            weight: BuiltValueNullFieldError.checkNotNull(
-                weight, r'ItemOtherCreate', 'weight'),
-            notes: notes);
+    final _$result =
+        _$v ??
+        _$ItemOtherCreate._(
+          type: BuiltValueNullFieldError.checkNotNull(
+            type,
+            r'ItemOtherCreate',
+            'type',
+          ),
+          name: BuiltValueNullFieldError.checkNotNull(
+            name,
+            r'ItemOtherCreate',
+            'name',
+          ),
+          weight: BuiltValueNullFieldError.checkNotNull(
+            weight,
+            r'ItemOtherCreate',
+            'weight',
+          ),
+          notes: notes,
+        );
     replace(_$result);
     return _$result;
   }

@@ -14,17 +14,17 @@ ItemGearUpdateTypeEnum _$itemGearUpdateTypeEnumValueOf(String name) {
     case 'GEAR':
       return _$itemGearUpdateTypeEnum_GEAR;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<ItemGearUpdateTypeEnum> _$itemGearUpdateTypeEnumValues =
-    new BuiltSet<ItemGearUpdateTypeEnum>(const <ItemGearUpdateTypeEnum>[
-  _$itemGearUpdateTypeEnum_GEAR,
-]);
+    BuiltSet<ItemGearUpdateTypeEnum>(const <ItemGearUpdateTypeEnum>[
+      _$itemGearUpdateTypeEnum_GEAR,
+    ]);
 
 Serializer<ItemGearUpdateTypeEnum> _$itemGearUpdateTypeEnumSerializer =
-    new _$ItemGearUpdateTypeEnumSerializer();
+    _$ItemGearUpdateTypeEnumSerializer();
 
 class _$ItemGearUpdateTypeEnumSerializer
     implements PrimitiveSerializer<ItemGearUpdateTypeEnum> {
@@ -41,15 +41,20 @@ class _$ItemGearUpdateTypeEnumSerializer
   final String wireName = 'ItemGearUpdateTypeEnum';
 
   @override
-  Object serialize(Serializers serializers, ItemGearUpdateTypeEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    ItemGearUpdateTypeEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  ItemGearUpdateTypeEnum deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      ItemGearUpdateTypeEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  ItemGearUpdateTypeEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => ItemGearUpdateTypeEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$ItemGearUpdate extends ItemGearUpdate {
@@ -65,19 +70,21 @@ class _$ItemGearUpdate extends ItemGearUpdate {
   final String? notes;
 
   factory _$ItemGearUpdate([void Function(ItemGearUpdateBuilder)? updates]) =>
-      (new ItemGearUpdateBuilder()..update(updates))._build();
+      (ItemGearUpdateBuilder()..update(updates))._build();
 
-  _$ItemGearUpdate._(
-      {this.type, this.name, this.weight, this.quantity, this.notes})
-      : super._();
-
+  _$ItemGearUpdate._({
+    this.type,
+    this.name,
+    this.weight,
+    this.quantity,
+    this.notes,
+  }) : super._();
   @override
   ItemGearUpdate rebuild(void Function(ItemGearUpdateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  ItemGearUpdateBuilder toBuilder() =>
-      new ItemGearUpdateBuilder()..replace(this);
+  ItemGearUpdateBuilder toBuilder() => ItemGearUpdateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -157,7 +164,6 @@ class ItemGearUpdateBuilder
 
   @override
   void replace(ItemGearUpdate other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ItemGearUpdate;
   }
 
@@ -170,13 +176,15 @@ class ItemGearUpdateBuilder
   ItemGearUpdate build() => _build();
 
   _$ItemGearUpdate _build() {
-    final _$result = _$v ??
-        new _$ItemGearUpdate._(
-            type: type,
-            name: name,
-            weight: weight,
-            quantity: quantity,
-            notes: notes);
+    final _$result =
+        _$v ??
+        _$ItemGearUpdate._(
+          type: type,
+          name: name,
+          weight: weight,
+          quantity: quantity,
+          notes: notes,
+        );
     replace(_$result);
     return _$result;
   }

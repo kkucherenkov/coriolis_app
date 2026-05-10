@@ -19,12 +19,11 @@ Upbringing _$valueOf(String name) {
     case 'aristocrat':
       return _$aristocrat;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
-final BuiltSet<Upbringing> _$values =
-    new BuiltSet<Upbringing>(const <Upbringing>[
+final BuiltSet<Upbringing> _$values = BuiltSet<Upbringing>(const <Upbringing>[
   _$plebeian,
   _$stationary,
   _$aristocrat,
@@ -39,12 +38,12 @@ class _$UpbringingMeta {
   BuiltSet<Upbringing> get values => _$values;
 }
 
-abstract class _$UpbringingMixin {
+mixin _$UpbringingMixin {
   // ignore: non_constant_identifier_names
   _$UpbringingMeta get Upbringing => const _$UpbringingMeta();
 }
 
-Serializer<Upbringing> _$upbringingSerializer = new _$UpbringingSerializer();
+Serializer<Upbringing> _$upbringingSerializer = _$UpbringingSerializer();
 
 class _$UpbringingSerializer implements PrimitiveSerializer<Upbringing> {
   static const Map<String, Object> _toWire = const <String, Object>{
@@ -64,15 +63,20 @@ class _$UpbringingSerializer implements PrimitiveSerializer<Upbringing> {
   final String wireName = 'Upbringing';
 
   @override
-  Object serialize(Serializers serializers, Upbringing object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    Upbringing object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  Upbringing deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      Upbringing.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  Upbringing deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => Upbringing.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

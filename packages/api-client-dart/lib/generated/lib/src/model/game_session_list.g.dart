@@ -8,24 +8,20 @@ part of 'game_session_list.dart';
 
 class _$GameSessionList extends GameSessionList {
   @override
-  final BuiltList<GameSession> items;
+  final BuiltList<dynamic> items;
   @override
   final String? nextCursor;
 
   factory _$GameSessionList([void Function(GameSessionListBuilder)? updates]) =>
-      (new GameSessionListBuilder()..update(updates))._build();
+      (GameSessionListBuilder()..update(updates))._build();
 
-  _$GameSessionList._({required this.items, this.nextCursor}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(items, r'GameSessionList', 'items');
-  }
-
+  _$GameSessionList._({required this.items, this.nextCursor}) : super._();
   @override
   GameSessionList rebuild(void Function(GameSessionListBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  GameSessionListBuilder toBuilder() =>
-      new GameSessionListBuilder()..replace(this);
+  GameSessionListBuilder toBuilder() => GameSessionListBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -57,10 +53,9 @@ class GameSessionListBuilder
     implements Builder<GameSessionList, GameSessionListBuilder> {
   _$GameSessionList? _$v;
 
-  ListBuilder<GameSession>? _items;
-  ListBuilder<GameSession> get items =>
-      _$this._items ??= new ListBuilder<GameSession>();
-  set items(ListBuilder<GameSession>? items) => _$this._items = items;
+  ListBuilder<dynamic>? _items;
+  ListBuilder<dynamic> get items => _$this._items ??= ListBuilder<dynamic>();
+  set items(ListBuilder<dynamic>? items) => _$this._items = items;
 
   String? _nextCursor;
   String? get nextCursor => _$this._nextCursor;
@@ -82,7 +77,6 @@ class GameSessionListBuilder
 
   @override
   void replace(GameSessionList other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GameSessionList;
   }
 
@@ -97,16 +91,20 @@ class GameSessionListBuilder
   _$GameSessionList _build() {
     _$GameSessionList _$result;
     try {
-      _$result = _$v ??
-          new _$GameSessionList._(items: items.build(), nextCursor: nextCursor);
+      _$result =
+          _$v ??
+          _$GameSessionList._(items: items.build(), nextCursor: nextCursor);
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'items';
         items.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
-            r'GameSessionList', _$failedField, e.toString());
+        throw BuiltValueNestedFieldError(
+          r'GameSessionList',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

@@ -14,17 +14,17 @@ ItemArmorUpdateTypeEnum _$itemArmorUpdateTypeEnumValueOf(String name) {
     case 'ARMOR':
       return _$itemArmorUpdateTypeEnum_ARMOR;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<ItemArmorUpdateTypeEnum> _$itemArmorUpdateTypeEnumValues =
-    new BuiltSet<ItemArmorUpdateTypeEnum>(const <ItemArmorUpdateTypeEnum>[
-  _$itemArmorUpdateTypeEnum_ARMOR,
-]);
+    BuiltSet<ItemArmorUpdateTypeEnum>(const <ItemArmorUpdateTypeEnum>[
+      _$itemArmorUpdateTypeEnum_ARMOR,
+    ]);
 
 Serializer<ItemArmorUpdateTypeEnum> _$itemArmorUpdateTypeEnumSerializer =
-    new _$ItemArmorUpdateTypeEnumSerializer();
+    _$ItemArmorUpdateTypeEnumSerializer();
 
 class _$ItemArmorUpdateTypeEnumSerializer
     implements PrimitiveSerializer<ItemArmorUpdateTypeEnum> {
@@ -41,16 +41,20 @@ class _$ItemArmorUpdateTypeEnumSerializer
   final String wireName = 'ItemArmorUpdateTypeEnum';
 
   @override
-  Object serialize(Serializers serializers, ItemArmorUpdateTypeEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    ItemArmorUpdateTypeEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
   ItemArmorUpdateTypeEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      ItemArmorUpdateTypeEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => ItemArmorUpdateTypeEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$ItemArmorUpdate extends ItemArmorUpdate {
@@ -68,24 +72,22 @@ class _$ItemArmorUpdate extends ItemArmorUpdate {
   final bool? equipped;
 
   factory _$ItemArmorUpdate([void Function(ItemArmorUpdateBuilder)? updates]) =>
-      (new ItemArmorUpdateBuilder()..update(updates))._build();
+      (ItemArmorUpdateBuilder()..update(updates))._build();
 
-  _$ItemArmorUpdate._(
-      {this.type,
-      this.name,
-      this.armorRating,
-      this.weight,
-      this.features,
-      this.equipped})
-      : super._();
-
+  _$ItemArmorUpdate._({
+    this.type,
+    this.name,
+    this.armorRating,
+    this.weight,
+    this.features,
+    this.equipped,
+  }) : super._();
   @override
   ItemArmorUpdate rebuild(void Function(ItemArmorUpdateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  ItemArmorUpdateBuilder toBuilder() =>
-      new ItemArmorUpdateBuilder()..replace(this);
+  ItemArmorUpdateBuilder toBuilder() => ItemArmorUpdateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -147,7 +149,7 @@ class ItemArmorUpdateBuilder
 
   ListBuilder<String>? _features;
   ListBuilder<String> get features =>
-      _$this._features ??= new ListBuilder<String>();
+      _$this._features ??= ListBuilder<String>();
   set features(ListBuilder<String>? features) => _$this._features = features;
 
   bool? _equipped;
@@ -174,7 +176,6 @@ class ItemArmorUpdateBuilder
 
   @override
   void replace(ItemArmorUpdate other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ItemArmorUpdate;
   }
 
@@ -189,22 +190,27 @@ class ItemArmorUpdateBuilder
   _$ItemArmorUpdate _build() {
     _$ItemArmorUpdate _$result;
     try {
-      _$result = _$v ??
-          new _$ItemArmorUpdate._(
-              type: type,
-              name: name,
-              armorRating: armorRating,
-              weight: weight,
-              features: _features?.build(),
-              equipped: equipped);
+      _$result =
+          _$v ??
+          _$ItemArmorUpdate._(
+            type: type,
+            name: name,
+            armorRating: armorRating,
+            weight: weight,
+            features: _features?.build(),
+            equipped: equipped,
+          );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'features';
         _features?.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
-            r'ItemArmorUpdate', _$failedField, e.toString());
+        throw BuiltValueNestedFieldError(
+          r'ItemArmorUpdate',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

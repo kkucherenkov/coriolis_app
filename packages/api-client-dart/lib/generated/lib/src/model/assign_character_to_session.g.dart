@@ -10,23 +10,19 @@ class _$AssignCharacterToSession extends AssignCharacterToSession {
   @override
   final String characterId;
 
-  factory _$AssignCharacterToSession(
-          [void Function(AssignCharacterToSessionBuilder)? updates]) =>
-      (new AssignCharacterToSessionBuilder()..update(updates))._build();
+  factory _$AssignCharacterToSession([
+    void Function(AssignCharacterToSessionBuilder)? updates,
+  ]) => (AssignCharacterToSessionBuilder()..update(updates))._build();
 
-  _$AssignCharacterToSession._({required this.characterId}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-        characterId, r'AssignCharacterToSession', 'characterId');
-  }
-
+  _$AssignCharacterToSession._({required this.characterId}) : super._();
   @override
   AssignCharacterToSession rebuild(
-          void Function(AssignCharacterToSessionBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(AssignCharacterToSessionBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   AssignCharacterToSessionBuilder toBuilder() =>
-      new AssignCharacterToSessionBuilder()..replace(this);
+      AssignCharacterToSessionBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -45,9 +41,9 @@ class _$AssignCharacterToSession extends AssignCharacterToSession {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'AssignCharacterToSession')
-          ..add('characterId', characterId))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'AssignCharacterToSession',
+    )..add('characterId', characterId)).toString();
   }
 }
 
@@ -75,7 +71,6 @@ class AssignCharacterToSessionBuilder
 
   @override
   void replace(AssignCharacterToSession other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$AssignCharacterToSession;
   }
 
@@ -88,10 +83,15 @@ class AssignCharacterToSessionBuilder
   AssignCharacterToSession build() => _build();
 
   _$AssignCharacterToSession _build() {
-    final _$result = _$v ??
-        new _$AssignCharacterToSession._(
-            characterId: BuiltValueNullFieldError.checkNotNull(
-                characterId, r'AssignCharacterToSession', 'characterId'));
+    final _$result =
+        _$v ??
+        _$AssignCharacterToSession._(
+          characterId: BuiltValueNullFieldError.checkNotNull(
+            characterId,
+            r'AssignCharacterToSession',
+            'characterId',
+          ),
+        );
     replace(_$result);
     return _$result;
   }

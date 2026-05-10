@@ -19,16 +19,13 @@ EncounterStatus _$valueOf(String name) {
     case 'ended':
       return _$ended;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
-final BuiltSet<EncounterStatus> _$values =
-    new BuiltSet<EncounterStatus>(const <EncounterStatus>[
-  _$setup,
-  _$active,
-  _$ended,
-]);
+final BuiltSet<EncounterStatus> _$values = BuiltSet<EncounterStatus>(
+  const <EncounterStatus>[_$setup, _$active, _$ended],
+);
 
 class _$EncounterStatusMeta {
   const _$EncounterStatusMeta();
@@ -39,13 +36,13 @@ class _$EncounterStatusMeta {
   BuiltSet<EncounterStatus> get values => _$values;
 }
 
-abstract class _$EncounterStatusMixin {
+mixin _$EncounterStatusMixin {
   // ignore: non_constant_identifier_names
   _$EncounterStatusMeta get EncounterStatus => const _$EncounterStatusMeta();
 }
 
 Serializer<EncounterStatus> _$encounterStatusSerializer =
-    new _$EncounterStatusSerializer();
+    _$EncounterStatusSerializer();
 
 class _$EncounterStatusSerializer
     implements PrimitiveSerializer<EncounterStatus> {
@@ -66,15 +63,20 @@ class _$EncounterStatusSerializer
   final String wireName = 'EncounterStatus';
 
   @override
-  Object serialize(Serializers serializers, EncounterStatus object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    EncounterStatus object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  EncounterStatus deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      EncounterStatus.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  EncounterStatus deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => EncounterStatus.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

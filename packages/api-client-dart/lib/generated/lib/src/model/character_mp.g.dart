@@ -13,19 +13,15 @@ class _$CharacterMp extends CharacterMp {
   final int max;
 
   factory _$CharacterMp([void Function(CharacterMpBuilder)? updates]) =>
-      (new CharacterMpBuilder()..update(updates))._build();
+      (CharacterMpBuilder()..update(updates))._build();
 
-  _$CharacterMp._({required this.current, required this.max}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(current, r'CharacterMp', 'current');
-    BuiltValueNullFieldError.checkNotNull(max, r'CharacterMp', 'max');
-  }
-
+  _$CharacterMp._({required this.current, required this.max}) : super._();
   @override
   CharacterMp rebuild(void Function(CharacterMpBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  CharacterMpBuilder toBuilder() => new CharacterMpBuilder()..replace(this);
+  CharacterMpBuilder toBuilder() => CharacterMpBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -78,7 +74,6 @@ class CharacterMpBuilder implements Builder<CharacterMp, CharacterMpBuilder> {
 
   @override
   void replace(CharacterMp other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$CharacterMp;
   }
 
@@ -91,12 +86,20 @@ class CharacterMpBuilder implements Builder<CharacterMp, CharacterMpBuilder> {
   CharacterMp build() => _build();
 
   _$CharacterMp _build() {
-    final _$result = _$v ??
-        new _$CharacterMp._(
-            current: BuiltValueNullFieldError.checkNotNull(
-                current, r'CharacterMp', 'current'),
-            max: BuiltValueNullFieldError.checkNotNull(
-                max, r'CharacterMp', 'max'));
+    final _$result =
+        _$v ??
+        _$CharacterMp._(
+          current: BuiltValueNullFieldError.checkNotNull(
+            current,
+            r'CharacterMp',
+            'current',
+          ),
+          max: BuiltValueNullFieldError.checkNotNull(
+            max,
+            r'CharacterMp',
+            'max',
+          ),
+        );
     replace(_$result);
     return _$result;
   }

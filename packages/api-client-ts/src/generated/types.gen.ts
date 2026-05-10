@@ -2521,6 +2521,109 @@ export type CombatantList = {
 };
 
 /**
+ * Returned by `POST /api/v1/encounters/{id}/initiative/roll` and
+ * `PATCH /api/v1/encounters/{id}/initiative`. Carries the full combatant
+ * list after initiative values and turn-order indices have been assigned,
+ * plus the current round counter.
+ *
+ * **Tie-breaking rule (ST3001):** when two combatants share the same d10
+ * initiative roll the server breaks the tie by `agility` descending — the
+ * source PC's `attributes.agility` for `pc` combatants, or
+ * `npcSnapshot.agility` for `npc` combatants. If `agility` is also equal
+ * the GM is expected to use the `PATCH /api/v1/encounters/{id}/initiative`
+ * reorder operation to set the final order manually.
+ *
+ * **Side-effects of `rollInitiative`:**
+ * 1. Encounter status transitions `setup → active`.
+ * 2. `encounter.round` is set from 0 to 1.
+ * 3. `encounter.activeCombatantId` is set to the combatant at `turnOrder: 0`.
+ * The `PATCH` (reorder) variant does NOT re-roll dice and does NOT alter
+ * `activeCombatantId` — the GM is adjusting who acts next round, not
+ * restarting combat.
+ *
+ */
+export type InitiativeRollResult = {
+    /**
+     * Full updated combatant list sorted by `turnOrder` ascending (0 = acts
+     * first). Every combatant carries a non-null `initiative` and `turnOrder`
+     * after this operation.
+     *
+     */
+    combatants: Array<Combatant>;
+    /**
+     * Current combat round after the operation. For `rollInitiative` this
+     * is always 1 (the `setup → active` transition sets `round` from 0 to 1).
+     * For `reorderInitiative` this reflects the encounter's current round
+     * (unchanged by a reorder).
+     *
+     */
+    round: number;
+};
+
+/**
+ * Request body for `PATCH /api/v1/encounters/{id}/initiative`. The GM
+ * supplies the full desired turn order as an ordered array of combatant
+ * ids. The server reassigns `turnOrder` indices (0-based) matching the
+ * array position.
+ *
+ * **Validation — the array must contain every combatant id from the
+ * encounter exactly once.** Any violation returns 422 with one of:
+ * - `INITIATIVE_INCOMPLETE` — at least one combatant id from the encounter
+ * is absent from the array.
+ * - `INITIATIVE_DUPLICATE` — the same id appears two or more times.
+ * - `INITIATIVE_UNKNOWN_COMBATANT` — an id in the array does not belong to
+ * this encounter.
+ *
+ * The `PATCH` does NOT re-roll initiative dice and does NOT change
+ * `activeCombatantId` — it only rearranges the turn-order index so the
+ * GM can correct ties or unexpected results without restarting combat.
+ *
+ */
+export type InitiativeReorderRequest = {
+    /**
+     * Ordered list of combatant ids. Position 0 acts first. Must include
+     * every combatant in the encounter exactly once.
+     *
+     */
+    combatantIds: Array<string>;
+};
+
+/**
+ * Returned by `POST /api/v1/encounters/{id}/turn/advance`. Identifies the
+ * combatant whose turn is now active after the advance, the current round
+ * counter, and whether advancing wrapped past the last combatant (which
+ * triggers a round increment).
+ *
+ * **Wrap behaviour:** the server advances
+ * `activeCombatantId` from the current `turnOrder` index to
+ * `(currentIndex + 1) % combatants.length`. When `currentIndex + 1`
+ * equals `combatants.length` the turn wraps to index 0 and `round` is
+ * incremented by 1; `isNewRound` is `true` in that case.
+ *
+ */
+export type TurnAdvanceResult = {
+    /**
+     * Id of the combatant whose turn is now active (the new
+     * `encounter.activeCombatantId` after the advance).
+     *
+     */
+    activeCombatantId: string;
+    /**
+     * Current combat round after the advance. Incremented by 1 when the
+     * turn wraps from the last combatant back to index 0.
+     *
+     */
+    round: number;
+    /**
+     * `true` when the advance wrapped past the last combatant and started
+     * a new round; `false` when the next combatant is within the same
+     * round.
+     *
+     */
+    isNewRound: boolean;
+};
+
+/**
  * A single Coriolis dice roll. Dice are rolled server-side using a
  * cryptographically secure RNG. Hits = count of 6s. A roll can be pushed
  * at most once (PRD §10). `gameSessionId` is null until Feature 7.2 lands.
@@ -3190,6 +3293,46 @@ export type CombatantUpdateWritable = {
  */
 export type CombatantListWritable = {
     items: Array<CombatantWritable>;
+};
+
+/**
+ * Returned by `POST /api/v1/encounters/{id}/initiative/roll` and
+ * `PATCH /api/v1/encounters/{id}/initiative`. Carries the full combatant
+ * list after initiative values and turn-order indices have been assigned,
+ * plus the current round counter.
+ *
+ * **Tie-breaking rule (ST3001):** when two combatants share the same d10
+ * initiative roll the server breaks the tie by `agility` descending — the
+ * source PC's `attributes.agility` for `pc` combatants, or
+ * `npcSnapshot.agility` for `npc` combatants. If `agility` is also equal
+ * the GM is expected to use the `PATCH /api/v1/encounters/{id}/initiative`
+ * reorder operation to set the final order manually.
+ *
+ * **Side-effects of `rollInitiative`:**
+ * 1. Encounter status transitions `setup → active`.
+ * 2. `encounter.round` is set from 0 to 1.
+ * 3. `encounter.activeCombatantId` is set to the combatant at `turnOrder: 0`.
+ * The `PATCH` (reorder) variant does NOT re-roll dice and does NOT alter
+ * `activeCombatantId` — the GM is adjusting who acts next round, not
+ * restarting combat.
+ *
+ */
+export type InitiativeRollResultWritable = {
+    /**
+     * Full updated combatant list sorted by `turnOrder` ascending (0 = acts
+     * first). Every combatant carries a non-null `initiative` and `turnOrder`
+     * after this operation.
+     *
+     */
+    combatants: Array<CombatantWritable>;
+    /**
+     * Current combat round after the operation. For `rollInitiative` this
+     * is always 1 (the `setup → active` transition sets `round` from 0 to 1).
+     * For `reorderInitiative` this reflects the encounter's current round
+     * (unchanged by a reorder).
+     *
+     */
+    round: number;
 };
 
 /**
@@ -5402,6 +5545,132 @@ export type UpdateCombatantResponses = {
 };
 
 export type UpdateCombatantResponse = UpdateCombatantResponses[keyof UpdateCombatantResponses];
+
+export type RollInitiativeData = {
+    body?: never;
+    path: {
+        /**
+         * Encounter identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/encounters/{id}/initiative/roll';
+};
+
+export type RollInitiativeErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the encounter
+     */
+    403: Problem;
+    /**
+     * Encounter not found
+     */
+    404: Problem;
+    /**
+     * Business rule violation. `code` identifies the specific error.
+     */
+    422: Problem;
+};
+
+export type RollInitiativeError = RollInitiativeErrors[keyof RollInitiativeErrors];
+
+export type RollInitiativeResponses = {
+    /**
+     * Initiative rolled; encounter is now active
+     */
+    200: InitiativeRollResult;
+};
+
+export type RollInitiativeResponse = RollInitiativeResponses[keyof RollInitiativeResponses];
+
+export type ReorderInitiativeData = {
+    body: InitiativeReorderRequest;
+    path: {
+        /**
+         * Encounter identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/encounters/{id}/initiative';
+};
+
+export type ReorderInitiativeErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the encounter
+     */
+    403: Problem;
+    /**
+     * Encounter not found
+     */
+    404: Problem;
+    /**
+     * Business rule violation. `code` identifies the specific error.
+     */
+    422: Problem;
+};
+
+export type ReorderInitiativeError = ReorderInitiativeErrors[keyof ReorderInitiativeErrors];
+
+export type ReorderInitiativeResponses = {
+    /**
+     * Turn order updated; returns the full combatant list in the new order
+     */
+    200: InitiativeRollResult;
+};
+
+export type ReorderInitiativeResponse = ReorderInitiativeResponses[keyof ReorderInitiativeResponses];
+
+export type AdvanceTurnData = {
+    body?: never;
+    path: {
+        /**
+         * Encounter identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/encounters/{id}/turn/advance';
+};
+
+export type AdvanceTurnErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the encounter
+     */
+    403: Problem;
+    /**
+     * Encounter not found
+     */
+    404: Problem;
+    /**
+     * Business rule violation. `code` identifies the specific error.
+     */
+    422: Problem;
+};
+
+export type AdvanceTurnError = AdvanceTurnErrors[keyof AdvanceTurnErrors];
+
+export type AdvanceTurnResponses = {
+    /**
+     * Turn advanced; returns the new active combatant and round info
+     */
+    200: TurnAdvanceResult;
+};
+
+export type AdvanceTurnResponse = AdvanceTurnResponses[keyof AdvanceTurnResponses];
 
 export type CreateShareLinkData = {
     body: ShareLinkCreate;

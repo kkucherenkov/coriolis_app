@@ -14,17 +14,17 @@ ItemGearCreateTypeEnum _$itemGearCreateTypeEnumValueOf(String name) {
     case 'GEAR':
       return _$itemGearCreateTypeEnum_GEAR;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<ItemGearCreateTypeEnum> _$itemGearCreateTypeEnumValues =
-    new BuiltSet<ItemGearCreateTypeEnum>(const <ItemGearCreateTypeEnum>[
-  _$itemGearCreateTypeEnum_GEAR,
-]);
+    BuiltSet<ItemGearCreateTypeEnum>(const <ItemGearCreateTypeEnum>[
+      _$itemGearCreateTypeEnum_GEAR,
+    ]);
 
 Serializer<ItemGearCreateTypeEnum> _$itemGearCreateTypeEnumSerializer =
-    new _$ItemGearCreateTypeEnumSerializer();
+    _$ItemGearCreateTypeEnumSerializer();
 
 class _$ItemGearCreateTypeEnumSerializer
     implements PrimitiveSerializer<ItemGearCreateTypeEnum> {
@@ -41,15 +41,20 @@ class _$ItemGearCreateTypeEnumSerializer
   final String wireName = 'ItemGearCreateTypeEnum';
 
   @override
-  Object serialize(Serializers serializers, ItemGearCreateTypeEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    ItemGearCreateTypeEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  ItemGearCreateTypeEnum deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      ItemGearCreateTypeEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  ItemGearCreateTypeEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => ItemGearCreateTypeEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$ItemGearCreate extends ItemGearCreate {
@@ -65,29 +70,21 @@ class _$ItemGearCreate extends ItemGearCreate {
   final String? notes;
 
   factory _$ItemGearCreate([void Function(ItemGearCreateBuilder)? updates]) =>
-      (new ItemGearCreateBuilder()..update(updates))._build();
+      (ItemGearCreateBuilder()..update(updates))._build();
 
-  _$ItemGearCreate._(
-      {required this.type,
-      required this.name,
-      required this.weight,
-      required this.quantity,
-      this.notes})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(type, r'ItemGearCreate', 'type');
-    BuiltValueNullFieldError.checkNotNull(name, r'ItemGearCreate', 'name');
-    BuiltValueNullFieldError.checkNotNull(weight, r'ItemGearCreate', 'weight');
-    BuiltValueNullFieldError.checkNotNull(
-        quantity, r'ItemGearCreate', 'quantity');
-  }
-
+  _$ItemGearCreate._({
+    required this.type,
+    required this.name,
+    required this.weight,
+    required this.quantity,
+    this.notes,
+  }) : super._();
   @override
   ItemGearCreate rebuild(void Function(ItemGearCreateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  ItemGearCreateBuilder toBuilder() =>
-      new ItemGearCreateBuilder()..replace(this);
+  ItemGearCreateBuilder toBuilder() => ItemGearCreateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -167,7 +164,6 @@ class ItemGearCreateBuilder
 
   @override
   void replace(ItemGearCreate other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ItemGearCreate;
   }
 
@@ -180,17 +176,31 @@ class ItemGearCreateBuilder
   ItemGearCreate build() => _build();
 
   _$ItemGearCreate _build() {
-    final _$result = _$v ??
-        new _$ItemGearCreate._(
-            type: BuiltValueNullFieldError.checkNotNull(
-                type, r'ItemGearCreate', 'type'),
-            name: BuiltValueNullFieldError.checkNotNull(
-                name, r'ItemGearCreate', 'name'),
-            weight: BuiltValueNullFieldError.checkNotNull(
-                weight, r'ItemGearCreate', 'weight'),
-            quantity: BuiltValueNullFieldError.checkNotNull(
-                quantity, r'ItemGearCreate', 'quantity'),
-            notes: notes);
+    final _$result =
+        _$v ??
+        _$ItemGearCreate._(
+          type: BuiltValueNullFieldError.checkNotNull(
+            type,
+            r'ItemGearCreate',
+            'type',
+          ),
+          name: BuiltValueNullFieldError.checkNotNull(
+            name,
+            r'ItemGearCreate',
+            'name',
+          ),
+          weight: BuiltValueNullFieldError.checkNotNull(
+            weight,
+            r'ItemGearCreate',
+            'weight',
+          ),
+          quantity: BuiltValueNullFieldError.checkNotNull(
+            quantity,
+            r'ItemGearCreate',
+            'quantity',
+          ),
+          notes: notes,
+        );
     replace(_$result);
     return _$result;
   }

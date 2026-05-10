@@ -10,24 +10,26 @@ const ItemCyberneticCreateTypeEnum _$itemCyberneticCreateTypeEnum_CYBERNETIC =
     const ItemCyberneticCreateTypeEnum._('CYBERNETIC');
 
 ItemCyberneticCreateTypeEnum _$itemCyberneticCreateTypeEnumValueOf(
-    String name) {
+  String name,
+) {
   switch (name) {
     case 'CYBERNETIC':
       return _$itemCyberneticCreateTypeEnum_CYBERNETIC;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<ItemCyberneticCreateTypeEnum>
-    _$itemCyberneticCreateTypeEnumValues = new BuiltSet<
-        ItemCyberneticCreateTypeEnum>(const <ItemCyberneticCreateTypeEnum>[
-  _$itemCyberneticCreateTypeEnum_CYBERNETIC,
-]);
+_$itemCyberneticCreateTypeEnumValues = BuiltSet<ItemCyberneticCreateTypeEnum>(
+  const <ItemCyberneticCreateTypeEnum>[
+    _$itemCyberneticCreateTypeEnum_CYBERNETIC,
+  ],
+);
 
 Serializer<ItemCyberneticCreateTypeEnum>
-    _$itemCyberneticCreateTypeEnumSerializer =
-    new _$ItemCyberneticCreateTypeEnumSerializer();
+_$itemCyberneticCreateTypeEnumSerializer =
+    _$ItemCyberneticCreateTypeEnumSerializer();
 
 class _$ItemCyberneticCreateTypeEnumSerializer
     implements PrimitiveSerializer<ItemCyberneticCreateTypeEnum> {
@@ -44,16 +46,20 @@ class _$ItemCyberneticCreateTypeEnumSerializer
   final String wireName = 'ItemCyberneticCreateTypeEnum';
 
   @override
-  Object serialize(Serializers serializers, ItemCyberneticCreateTypeEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    ItemCyberneticCreateTypeEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
   ItemCyberneticCreateTypeEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      ItemCyberneticCreateTypeEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => ItemCyberneticCreateTypeEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 class _$ItemCyberneticCreate extends ItemCyberneticCreate {
@@ -66,34 +72,24 @@ class _$ItemCyberneticCreate extends ItemCyberneticCreate {
   @override
   final String effect;
 
-  factory _$ItemCyberneticCreate(
-          [void Function(ItemCyberneticCreateBuilder)? updates]) =>
-      (new ItemCyberneticCreateBuilder()..update(updates))._build();
+  factory _$ItemCyberneticCreate([
+    void Function(ItemCyberneticCreateBuilder)? updates,
+  ]) => (ItemCyberneticCreateBuilder()..update(updates))._build();
 
-  _$ItemCyberneticCreate._(
-      {required this.type,
-      required this.name,
-      required this.bodyPoints,
-      required this.effect})
-      : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-        type, r'ItemCyberneticCreate', 'type');
-    BuiltValueNullFieldError.checkNotNull(
-        name, r'ItemCyberneticCreate', 'name');
-    BuiltValueNullFieldError.checkNotNull(
-        bodyPoints, r'ItemCyberneticCreate', 'bodyPoints');
-    BuiltValueNullFieldError.checkNotNull(
-        effect, r'ItemCyberneticCreate', 'effect');
-  }
-
+  _$ItemCyberneticCreate._({
+    required this.type,
+    required this.name,
+    required this.bodyPoints,
+    required this.effect,
+  }) : super._();
   @override
   ItemCyberneticCreate rebuild(
-          void Function(ItemCyberneticCreateBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(ItemCyberneticCreateBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   ItemCyberneticCreateBuilder toBuilder() =>
-      new ItemCyberneticCreateBuilder()..replace(this);
+      ItemCyberneticCreateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -165,7 +161,6 @@ class ItemCyberneticCreateBuilder
 
   @override
   void replace(ItemCyberneticCreate other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$ItemCyberneticCreate;
   }
 
@@ -178,16 +173,30 @@ class ItemCyberneticCreateBuilder
   ItemCyberneticCreate build() => _build();
 
   _$ItemCyberneticCreate _build() {
-    final _$result = _$v ??
-        new _$ItemCyberneticCreate._(
-            type: BuiltValueNullFieldError.checkNotNull(
-                type, r'ItemCyberneticCreate', 'type'),
-            name: BuiltValueNullFieldError.checkNotNull(
-                name, r'ItemCyberneticCreate', 'name'),
-            bodyPoints: BuiltValueNullFieldError.checkNotNull(
-                bodyPoints, r'ItemCyberneticCreate', 'bodyPoints'),
-            effect: BuiltValueNullFieldError.checkNotNull(
-                effect, r'ItemCyberneticCreate', 'effect'));
+    final _$result =
+        _$v ??
+        _$ItemCyberneticCreate._(
+          type: BuiltValueNullFieldError.checkNotNull(
+            type,
+            r'ItemCyberneticCreate',
+            'type',
+          ),
+          name: BuiltValueNullFieldError.checkNotNull(
+            name,
+            r'ItemCyberneticCreate',
+            'name',
+          ),
+          bodyPoints: BuiltValueNullFieldError.checkNotNull(
+            bodyPoints,
+            r'ItemCyberneticCreate',
+            'bodyPoints',
+          ),
+          effect: BuiltValueNullFieldError.checkNotNull(
+            effect,
+            r'ItemCyberneticCreate',
+            'effect',
+          ),
+        );
     replace(_$result);
     return _$result;
   }

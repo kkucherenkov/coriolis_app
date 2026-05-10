@@ -25,18 +25,13 @@ ItemRangeEnum _$valueOf(String name) {
     case 'distant':
       return _$distant;
     default:
-      throw new ArgumentError(name);
+      throw ArgumentError(name);
   }
 }
 
-final BuiltSet<ItemRangeEnum> _$values =
-    new BuiltSet<ItemRangeEnum>(const <ItemRangeEnum>[
-  _$arm,
-  _$near,
-  _$short,
-  _$long,
-  _$distant,
-]);
+final BuiltSet<ItemRangeEnum> _$values = BuiltSet<ItemRangeEnum>(
+  const <ItemRangeEnum>[_$arm, _$near, _$short, _$long, _$distant],
+);
 
 class _$ItemRangeEnumMeta {
   const _$ItemRangeEnumMeta();
@@ -49,13 +44,13 @@ class _$ItemRangeEnumMeta {
   BuiltSet<ItemRangeEnum> get values => _$values;
 }
 
-abstract class _$ItemRangeEnumMixin {
+mixin _$ItemRangeEnumMixin {
   // ignore: non_constant_identifier_names
   _$ItemRangeEnumMeta get ItemRangeEnum => const _$ItemRangeEnumMeta();
 }
 
 Serializer<ItemRangeEnum> _$itemRangeEnumSerializer =
-    new _$ItemRangeEnumSerializer();
+    _$ItemRangeEnumSerializer();
 
 class _$ItemRangeEnumSerializer implements PrimitiveSerializer<ItemRangeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
@@ -79,15 +74,20 @@ class _$ItemRangeEnumSerializer implements PrimitiveSerializer<ItemRangeEnum> {
   final String wireName = 'ItemRangeEnum';
 
   @override
-  Object serialize(Serializers serializers, ItemRangeEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    ItemRangeEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  ItemRangeEnum deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      ItemRangeEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  ItemRangeEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => ItemRangeEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
