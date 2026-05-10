@@ -16,6 +16,8 @@
   import type { Problem, ShipModuleSlot, CrewPosition } from '@app/api-client-ts';
   import { useAutoSave } from '~/composables/useAutoSave';
   import type { SaveState } from '~/composables/useAutoSave';
+  import ShipModuleEditor from '~/components/sheet/ShipModuleEditor.vue';
+  import type { ShipModule } from '~/composables/useShipModulesApi';
 
   /**
    * Ship sheet — Block 2 of T-2026-05-10-005.
@@ -212,6 +214,43 @@
     }
   }
 
+  // ── Module editor state ──────────────────────────────────────────────────────
+
+  const moduleEditorOpen = ref(false);
+  const editingModule = ref<ShipModule | null>(null);
+
+  function openModuleCreate(): void {
+    editingModule.value = null;
+    moduleEditorOpen.value = true;
+  }
+
+  function openModuleEdit(mod: ShipModule): void {
+    editingModule.value = mod;
+    moduleEditorOpen.value = true;
+  }
+
+  function onModuleUpdated(updated: ShipModule): void {
+    if (!ship.value) return;
+    const idx = ship.value.modules.findIndex((m) => m.id === updated.id);
+    if (idx !== -1) {
+      // Replace existing module in place
+      const mods = [...ship.value.modules];
+      mods[idx] = updated;
+      ship.value = { ...ship.value, modules: mods };
+    } else {
+      // New module added
+      ship.value = { ...ship.value, modules: [...ship.value.modules, updated] };
+    }
+  }
+
+  function onModuleDeleted(moduleId: string): void {
+    if (!ship.value) return;
+    ship.value = {
+      ...ship.value,
+      modules: ship.value.modules.filter((m) => m.id !== moduleId),
+    };
+  }
+
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
   function humaniseClass(cls: string): string {
@@ -295,7 +334,7 @@
     "statSpeed": "Speed",
     "statCargoCapacity": "Cargo (t)",
     "modulesCardTitle": "Modules",
-    "modulesAddDisabled": "Add module — Block 3",
+    "modulesAdd": "+ Add module",
     "modulesEmptySlot": "No modules installed",
     "crewCardTitle": "Crew",
     "crewVacant": "Vacant",
@@ -341,7 +380,7 @@
     "statSpeed": "Скорость",
     "statCargoCapacity": "Груз (т)",
     "modulesCardTitle": "Модули",
-    "modulesAddDisabled": "Добавить модуль — Блок 3",
+    "modulesAdd": "+ Добавить модуль",
     "modulesEmptySlot": "Модули не установлены",
     "crewCardTitle": "Экипаж",
     "crewVacant": "Вакантно",
@@ -387,7 +426,7 @@
     "statSpeed": "[uk-todo] Speed",
     "statCargoCapacity": "[uk-todo] Cargo (t)",
     "modulesCardTitle": "[uk-todo] Modules",
-    "modulesAddDisabled": "[uk-todo] Add module — Block 3",
+    "modulesAdd": "[uk-todo] + Add module",
     "modulesEmptySlot": "[uk-todo] No modules installed",
     "crewCardTitle": "[uk-todo] Crew",
     "crewVacant": "[uk-todo] Vacant",
@@ -433,7 +472,7 @@
     "statSpeed": "[el-todo] Speed",
     "statCargoCapacity": "[el-todo] Cargo (t)",
     "modulesCardTitle": "[el-todo] Modules",
-    "modulesAddDisabled": "[el-todo] Add module — Block 3",
+    "modulesAdd": "[el-todo] + Add module",
     "modulesEmptySlot": "[el-todo] No modules installed",
     "crewCardTitle": "[el-todo] Crew",
     "crewVacant": "[el-todo] Vacant",
@@ -457,67 +496,33 @@
 </i18n>
 
 <template>
-  <section
-    class="page-ship"
-    data-testid="page-ship"
-  >
+  <section class="page-ship" data-testid="page-ship">
     <!-- ── Back nav ──────────────────────────────────────────────────────────── -->
-    <AppButton
-      variant="ghost"
-      size="sm"
-      class="page-ship__back"
-      @click="navigateTo('/app/ships')"
-    >
+    <AppButton variant="ghost" size="sm" class="page-ship__back" @click="navigateTo('/app/ships')">
       ← {{ t('backToList') }}
     </AppButton>
 
     <!-- ── Error banner ──────────────────────────────────────────────────────── -->
-    <AppBanner
-      v-if="state === 'error'"
-      tone="danger"
-      role="alert"
-      class="page-ship__banner"
-    >
+    <AppBanner v-if="state === 'error'" tone="danger" role="alert" class="page-ship__banner">
       {{ errorMsg }}
-      <AppButton
-        variant="ghost"
-        size="sm"
-        @click="load"
-      >
+      <AppButton variant="ghost" size="sm" @click="load">
         {{ t('retry') }}
       </AppButton>
     </AppBanner>
 
-    <AppBanner
-      v-if="duplicateError"
-      tone="danger"
-      role="alert"
-      class="page-ship__banner"
-    >
+    <AppBanner v-if="duplicateError" tone="danger" role="alert" class="page-ship__banner">
       {{ duplicateError }}
     </AppBanner>
 
-    <AppBanner
-      v-if="deleteError"
-      tone="danger"
-      role="alert"
-      class="page-ship__banner"
-    >
+    <AppBanner v-if="deleteError" tone="danger" role="alert" class="page-ship__banner">
       {{ deleteError }}
     </AppBanner>
 
     <!-- ── Loading skeleton ──────────────────────────────────────────────────── -->
-    <div
-      v-if="state === 'loading'"
-      class="page-ship__skeleton"
-      aria-busy="true"
-    />
+    <div v-if="state === 'loading'" class="page-ship__skeleton" aria-busy="true" />
 
     <!-- ── Not found ─────────────────────────────────────────────────────────── -->
-    <AppCard
-      v-else-if="state === 'notfound'"
-      class="page-ship__notfound"
-    >
+    <AppCard v-else-if="state === 'notfound'" class="page-ship__notfound">
       <h2 class="page-ship__notfound-title">
         {{ t('notfoundTitle') }}
       </h2>
@@ -534,30 +539,16 @@
           <h1 class="page-ship__name">
             {{ ship.name }}
           </h1>
-          <AppBadge
-            variant="brass"
-            size="md"
-            class="page-ship__class-chip"
-          >
+          <AppBadge variant="brass" size="md" class="page-ship__class-chip">
             {{ t('classLabel') }}: {{ humaniseClass(ship.class) }}
           </AppBadge>
         </div>
         <div class="page-ship__header-actions">
           <AppSavePulse :state="headerSaveState" />
-          <AppButton
-            variant="ghost"
-            size="sm"
-            :disabled="duplicating"
-            @click="onDuplicate"
-          >
+          <AppButton variant="ghost" size="sm" :disabled="duplicating" @click="onDuplicate">
             {{ t('duplicate') }}
           </AppButton>
-          <AppButton
-            variant="ghost"
-            size="sm"
-            :disabled="deleting"
-            @click="onDelete"
-          >
+          <AppButton variant="ghost" size="sm" :disabled="deleting" @click="onDelete">
             {{ t('delete') }}
           </AppButton>
         </div>
@@ -570,10 +561,7 @@
         </template>
 
         <div class="page-ship__identity-grid">
-          <AppField
-            :label="t('fieldName')"
-            required
-          >
+          <AppField :label="t('fieldName')" required>
             <template #default="attrs">
               <AppInput
                 v-bind="attrs"
@@ -592,7 +580,11 @@
                 :model-value="localModel"
                 type="text"
                 :placeholder="t('fieldModel')"
-                @update:model-value="(v) => { localModel = typeof v === 'string' ? v : null; }"
+                @update:model-value="
+                  (v) => {
+                    localModel = typeof v === 'string' ? v : null;
+                  }
+                "
                 @blur="identitySave.schedule()"
               />
             </template>
@@ -605,7 +597,11 @@
                 :model-value="localRegistry"
                 type="text"
                 :placeholder="t('fieldRegistry')"
-                @update:model-value="(v) => { localRegistry = typeof v === 'string' ? v : null; }"
+                @update:model-value="
+                  (v) => {
+                    localRegistry = typeof v === 'string' ? v : null;
+                  }
+                "
                 @blur="identitySave.schedule()"
               />
             </template>
@@ -629,7 +625,10 @@
                 size="sm"
                 class="page-ship__stepper-btn"
                 :disabled="localHullCurrent <= 0"
-                @click="localHullCurrent = Math.max(0, localHullCurrent - 1); statsSave.schedule()"
+                @click="
+                  localHullCurrent = Math.max(0, localHullCurrent - 1);
+                  statsSave.schedule();
+                "
               >
                 −
               </AppButton>
@@ -645,7 +644,10 @@
                 variant="ghost"
                 size="sm"
                 class="page-ship__stepper-btn"
-                @click="localHullCurrent = localHullCurrent + 1; statsSave.schedule()"
+                @click="
+                  localHullCurrent = localHullCurrent + 1;
+                  statsSave.schedule();
+                "
               >
                 +
               </AppButton>
@@ -674,7 +676,10 @@
                 size="sm"
                 class="page-ship__stepper-btn"
                 :disabled="localEnergyCurrent <= 0"
-                @click="localEnergyCurrent = Math.max(0, localEnergyCurrent - 1); statsSave.schedule()"
+                @click="
+                  localEnergyCurrent = Math.max(0, localEnergyCurrent - 1);
+                  statsSave.schedule();
+                "
               >
                 −
               </AppButton>
@@ -690,7 +695,10 @@
                 variant="ghost"
                 size="sm"
                 class="page-ship__stepper-btn"
-                @click="localEnergyCurrent = localEnergyCurrent + 1; statsSave.schedule()"
+                @click="
+                  localEnergyCurrent = localEnergyCurrent + 1;
+                  statsSave.schedule();
+                "
               >
                 +
               </AppButton>
@@ -782,31 +790,24 @@
         <template #header>
           <div class="page-ship__card-header-row">
             <span class="page-ship__card-title">{{ t('modulesCardTitle') }}</span>
-            <AppButton
-              variant="ghost"
-              size="sm"
-              disabled
-            >
-              {{ t('modulesAddDisabled') }}
+            <AppButton variant="ghost" size="sm" @click="openModuleCreate">
+              {{ t('modulesAdd') }}
             </AppButton>
           </div>
         </template>
 
-        <ul
-          v-if="modulesGrouped.length > 0"
-          class="page-ship__modules-list"
-          aria-label="Modules"
-        >
+        <ul v-if="modulesGrouped.length > 0" class="page-ship__modules-list" aria-label="Modules">
           <li
             v-for="mod in modulesGrouped"
             :key="mod.id"
             class="page-ship__module-row"
+            tabindex="0"
+            role="button"
+            @click="openModuleEdit(mod as ShipModule)"
+            @keydown.enter.prevent="openModuleEdit(mod as ShipModule)"
+            @keydown.space.prevent="openModuleEdit(mod as ShipModule)"
           >
-            <AppBadge
-              variant="darkness"
-              size="sm"
-              class="page-ship__module-slot"
-            >
+            <AppBadge variant="darkness" size="sm" class="page-ship__module-slot">
               {{ mod.slot }}
             </AppBadge>
             <span class="page-ship__module-name">{{ mod.name }}</span>
@@ -821,13 +822,20 @@
           </li>
         </ul>
 
-        <p
-          v-else
-          class="page-ship__modules-empty"
-        >
+        <p v-else class="page-ship__modules-empty">
           {{ t('modulesEmptySlot') }}
         </p>
       </AppCard>
+
+      <!-- ── Module editor modal ───────────────────────────────────────────── -->
+      <ShipModuleEditor
+        :open="moduleEditorOpen"
+        :ship-id="shipId"
+        :module="editingModule"
+        @update:open="moduleEditorOpen = $event"
+        @update:module="onModuleUpdated"
+        @delete:module="onModuleDeleted"
+      />
 
       <!-- ── Crew card ──────────────────────────────────────────────────────── -->
       <AppCard class="page-ship__card">
@@ -835,28 +843,15 @@
           <span class="page-ship__card-title">{{ t('crewCardTitle') }}</span>
         </template>
 
-        <ul
-          class="page-ship__crew-list"
-          aria-label="Crew"
-        >
-          <li
-            v-for="slot in crewRoster"
-            :key="slot.position"
-            class="page-ship__crew-row"
-          >
+        <ul class="page-ship__crew-list" aria-label="Crew">
+          <li v-for="slot in crewRoster" :key="slot.position" class="page-ship__crew-row">
             <span class="page-ship__crew-position">
               {{ t(`crew${slot.position.charAt(0).toUpperCase()}${slot.position.slice(1)}`) }}
             </span>
-            <span
-              v-if="slot.assignedCharacterId"
-              class="page-ship__crew-name"
-            >
+            <span v-if="slot.assignedCharacterId" class="page-ship__crew-name">
               {{ slot.assignedCharacterId }}
             </span>
-            <em
-              v-else
-              class="page-ship__crew-vacant"
-            >
+            <em v-else class="page-ship__crew-vacant">
               {{ t('crewVacant') }}
             </em>
           </li>
@@ -868,11 +863,7 @@
         <template #header>
           <div class="page-ship__card-header-row">
             <span class="page-ship__card-title">{{ t('notesCardTitle') }}</span>
-            <AppButton
-              variant="ghost"
-              size="sm"
-              @click="notesOpen = !notesOpen"
-            >
+            <AppButton variant="ghost" size="sm" @click="notesOpen = !notesOpen">
               {{ notesOpen ? t('collapseHide') : t('collapseShow') }}
             </AppButton>
           </div>
@@ -894,11 +885,7 @@
         <template #header>
           <div class="page-ship__card-header-row">
             <span class="page-ship__card-title">{{ t('historyCardTitle') }}</span>
-            <AppButton
-              variant="ghost"
-              size="sm"
-              @click="historyOpen = !historyOpen"
-            >
+            <AppButton variant="ghost" size="sm" @click="historyOpen = !historyOpen">
               {{ historyOpen ? t('collapseHide') : t('collapseShow') }}
             </AppButton>
           </div>
@@ -921,10 +908,7 @@
           <span class="page-ship__card-title">{{ t('problemsCardTitle') }}</span>
         </template>
 
-        <AppField
-          :label="t('problemsLabel')"
-          :help-text="t('problemsHelp')"
-        >
+        <AppField :label="t('problemsLabel')" :help-text="t('problemsHelp')">
           <template #default="attrs">
             <AppInput
               v-bind="attrs"
@@ -1116,6 +1100,19 @@
       display: flex;
       align-items: center;
       gap: var(--space-3);
+      cursor: pointer;
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-sm);
+      transition: background-color var(--motion-duration-fast) var(--motion-ease-standard);
+
+      &:hover {
+        background-color: var(--surface-night);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--brand-brass-light);
+        outline-offset: 2px;
+      }
     }
 
     &__module-slot {
