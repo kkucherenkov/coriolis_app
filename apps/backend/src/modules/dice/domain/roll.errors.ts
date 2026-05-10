@@ -54,3 +54,14 @@ export class PushNotAllowedOnNonSkillRollError extends DomainError {
     });
   }
 }
+
+export class RollBreakdownMismatchError extends DomainError {
+  constructor(sum: number, pool: number) {
+    super({
+      code: 'ROLL_BREAKDOWN_MISMATCH',
+      status: 400,
+      title: 'Validation Error',
+      detail: `Roll breakdown sum ${String(sum)} does not equal the declared pool ${String(pool)}. Components must add up exactly when breakdown is supplied.`,
+    });
+  }
+}

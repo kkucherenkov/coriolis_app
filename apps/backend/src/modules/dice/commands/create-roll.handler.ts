@@ -7,7 +7,7 @@ import {
 } from '../../characters/domain/character.errors';
 import { CHARACTER_REPO } from '../../characters/domain/character.ports';
 import { countHits, rollPool } from '../domain/roll-engine';
-import { RollPoolOutOfRangeError } from '../domain/roll.errors';
+import { RollBreakdownMismatchError, RollPoolOutOfRangeError } from '../domain/roll.errors';
 import { ROLL_REPO } from '../domain/roll.ports';
 
 import { CreateRollCommand } from './create-roll.command';
@@ -39,6 +39,19 @@ export class CreateRollHandler implements ICommandHandler<CreateRollCommand, Rol
       throw new CharacterNotOwnedError(characterId);
     }
 
+    // Guard breakdown sum-equality when breakdown is supplied (T-016).
+    if (dto.breakdown !== undefined) {
+      const sum =
+        dto.breakdown.attribute +
+        dto.breakdown.skill +
+        dto.breakdown.gear +
+        dto.breakdown.modifier +
+        dto.breakdown.helpers;
+      if (sum !== dto.pool) {
+        throw new RollBreakdownMismatchError(sum, dto.pool);
+      }
+    }
+
     // Roll the dice server-side with crypto.randomInt.
     // pool === 0 triggers Ноль кубиков (ГЛАВА 3): 2 dice rolled, success only on double 6.
     const dice = rollPool(dto.pool);
@@ -52,6 +65,7 @@ export class CreateRollHandler implements ICommandHandler<CreateRollCommand, Rol
       dice,
       hits,
       kind: dto.kind ?? 'skill',
+      breakdown: dto.breakdown ?? null,
     });
   }
 }

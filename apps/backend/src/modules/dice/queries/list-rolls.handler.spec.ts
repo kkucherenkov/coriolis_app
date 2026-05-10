@@ -22,6 +22,7 @@ function makeRoll(overrides: Partial<RollReadModel> = {}): RollReadModel {
     hits: 1,
     pushed: false,
     kind: 'skill',
+    breakdown: null,
     createdAt: '2026-05-09T12:00:00Z',
     ...overrides,
   };
@@ -139,5 +140,30 @@ describe('ListRollsHandler', () => {
     expect(result.items[0]?.kind).toBe('skill');
     expect(result.items[1]?.kind).toBe('save');
     expect(result.items[2]?.kind).toBe('initiative');
+  });
+
+  // -------------------------------------------------------------------------
+  // T-2026-05-10-016: read model surfaces breakdown (null and non-null cases)
+  // -------------------------------------------------------------------------
+
+  it('surfaces breakdown=null when no breakdown was recorded', async () => {
+    const rolls = [makeRoll({ id: 'roll_01', breakdown: null })];
+    vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user_01' });
+    vi.mocked(rollRepo.listByCharacterId).mockResolvedValue(rolls);
+
+    const result = await handler.execute(new ListRollsQuery('user_01', 'char_01', 50));
+
+    expect(result.items[0]?.breakdown).toBeNull();
+  });
+
+  it('surfaces breakdown object when a breakdown was recorded', async () => {
+    const bd = { attribute: 2, skill: 1, gear: 1, modifier: 0, helpers: 0 };
+    const rolls = [makeRoll({ id: 'roll_01', pool: 4, breakdown: bd })];
+    vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user_01' });
+    vi.mocked(rollRepo.listByCharacterId).mockResolvedValue(rolls);
+
+    const result = await handler.execute(new ListRollsQuery('user_01', 'char_01', 50));
+
+    expect(result.items[0]?.breakdown).toEqual(bd);
   });
 });

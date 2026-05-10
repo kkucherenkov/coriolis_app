@@ -27,6 +27,19 @@ export function toRollKind(value: string): RollKind {
     : 'skill';
 }
 
+/**
+ * Structured breakdown of the dice pool components.
+ * All five fields are non-negative integers; their sum must equal `pool`
+ * when supplied (enforced by CreateRollHandler, T-016).
+ */
+export interface RollBreakdown {
+  attribute: number;
+  skill: number;
+  gear: number;
+  modifier: number;
+  helpers: number;
+}
+
 export interface RollReadModel {
   id: string;
   characterId: string;
@@ -37,6 +50,8 @@ export interface RollReadModel {
   hits: number;
   pushed: boolean;
   kind: RollKind;
+  /** null when the roll was created without a UI breakdown. */
+  breakdown: RollBreakdown | null;
   createdAt: string; // ISO-8601
 }
 
@@ -51,6 +66,7 @@ export interface IRollRepo {
     dice: number[];
     hits: number;
     kind: RollKind;
+    breakdown: RollBreakdown | null;
   }): Promise<RollReadModel>;
 
   findById(id: string): Promise<RollReadModel | null>;

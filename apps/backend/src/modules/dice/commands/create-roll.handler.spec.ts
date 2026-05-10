@@ -4,9 +4,9 @@ import {
   CharacterNotFoundError,
   CharacterNotOwnedError,
 } from '../../characters/domain/character.errors';
-import { RollPoolOutOfRangeError } from '../domain/roll.errors';
+import { RollBreakdownMismatchError, RollPoolOutOfRangeError } from '../domain/roll.errors';
 
-import { CreateRollCommand, CreateRollDto } from './create-roll.command';
+import { CreateRollCommand, CreateRollDto, RollBreakdownDto } from './create-roll.command';
 import { CreateRollHandler } from './create-roll.handler';
 
 import type { ICharacterRepo } from '../../characters/domain/character.ports';
@@ -22,6 +22,7 @@ const MOCK_ROLL: RollReadModel = {
   hits: 1,
   pushed: false,
   kind: 'skill',
+  breakdown: null,
   createdAt: '2026-05-09T12:00:00Z',
 };
 
@@ -274,5 +275,107 @@ describe('CreateRollHandler', () => {
     await handler.execute(new CreateRollCommand('user_01', 'char_01', dto));
 
     expect(rollRepo.create).toHaveBeenCalledWith(expect.objectContaining({ kind: 'save' }));
+  });
+
+  // -------------------------------------------------------------------------
+  // T-2026-05-10-016: RollBreakdown — persist breakdown + sum-equality guard
+  // -------------------------------------------------------------------------
+
+  it('stores breakdown=null when breakdown is not supplied', async () => {
+    vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user_01' });
+    vi.mocked(rollRepo.create).mockResolvedValue(MOCK_ROLL);
+
+    const dto = new CreateRollDto();
+    dto.label = 'no breakdown';
+    dto.pool = 3;
+    // breakdown intentionally not set
+
+    await handler.execute(new CreateRollCommand('user_01', 'char_01', dto));
+
+    expect(rollRepo.create).toHaveBeenCalledWith(expect.objectContaining({ breakdown: null }));
+  });
+
+  it('stores the breakdown object when breakdown matches pool', async () => {
+    const breakdown = new RollBreakdownDto();
+    breakdown.attribute = 2;
+    breakdown.skill = 1;
+    breakdown.gear = 1;
+    breakdown.modifier = 0;
+    breakdown.helpers = 0;
+
+    vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user_01' });
+    vi.mocked(rollRepo.create).mockResolvedValue({
+      ...MOCK_ROLL,
+      pool: 4,
+      breakdown: { attribute: 2, skill: 1, gear: 1, modifier: 0, helpers: 0 },
+    });
+
+    const dto = new CreateRollDto();
+    dto.label = 'with breakdown';
+    dto.pool = 4;
+    dto.breakdown = breakdown;
+
+    await handler.execute(new CreateRollCommand('user_01', 'char_01', dto));
+
+    expect(rollRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ breakdown: { attribute: 2, skill: 1, gear: 1, modifier: 0, helpers: 0 } }),
+    );
+  });
+
+  it('throws RollBreakdownMismatchError when breakdown sum ≠ pool', async () => {
+    vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user_01' });
+
+    const breakdown = new RollBreakdownDto();
+    breakdown.attribute = 2;
+    breakdown.skill = 2;
+    breakdown.gear = 0;
+    breakdown.modifier = 0;
+    breakdown.helpers = 0;
+    // sum = 4, pool = 5 → mismatch
+
+    const dto = new CreateRollDto();
+    dto.label = 'mismatch';
+    dto.pool = 5;
+    dto.breakdown = breakdown;
+
+    const err = await handler
+      .execute(new CreateRollCommand('user_01', 'char_01', dto))
+      .catch((error: unknown) => error);
+
+    expect(err).toBeInstanceOf(RollBreakdownMismatchError);
+    const domainErr = err as RollBreakdownMismatchError;
+    expect(domainErr.status).toBe(400);
+    expect(domainErr.code).toBe('ROLL_BREAKDOWN_MISMATCH');
+  });
+
+  it('accepts breakdown sum=0 with pool=0 (zero-dice boundary from T-010 Block C)', async () => {
+    const breakdown = new RollBreakdownDto();
+    breakdown.attribute = 0;
+    breakdown.skill = 0;
+    breakdown.gear = 0;
+    breakdown.modifier = 0;
+    breakdown.helpers = 0;
+
+    vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user_01' });
+    vi.mocked(rollRepo.create).mockResolvedValue({
+      ...MOCK_ROLL,
+      pool: 0,
+      dice: [3, 5],
+      hits: 0,
+      breakdown: { attribute: 0, skill: 0, gear: 0, modifier: 0, helpers: 0 },
+    });
+
+    const dto = new CreateRollDto();
+    dto.label = 'zero-dice with breakdown';
+    dto.pool = 0;
+    dto.breakdown = breakdown;
+
+    // Must not throw
+    const result = await handler.execute(new CreateRollCommand('user_01', 'char_01', dto));
+
+    expect(result.pool).toBe(0);
+    expect(rollRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ breakdown: { attribute: 0, skill: 0, gear: 0, modifier: 0, helpers: 0 } }),
+    );
   });
 });
