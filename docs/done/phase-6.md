@@ -1,9 +1,16 @@
-# Phase 6 — GM Tools (backend)
+# Phase 6 — GM Tools
 
-**Phase:** 6 (backend only)
-**Tag:** `phase-6-be-complete` (web + mobile deferred to `phase-6-complete`)
+**Phase:** 6
+**Tags:** `phase-6-be-complete` (backend boundary) + `phase-6-complete` (full phase, web + mobile)
 **PRD section:** §11 (roadmap)
 **Date:** 2026-05-11
+
+> The original draft of this doc covered only the backend boundary
+> (`phase-6-be-complete`). T-008 (web combat tracker) and
+> T-2026-05-11-002 (mobile read-along) both landed on 2026-05-11 in the
+> same session — the **"Web combat tracker"** and **"Mobile read-along
+> combat card"** sections at the bottom close the full
+> `phase-6-complete` envelope.
 
 ## What shipped
 
@@ -388,3 +395,143 @@ judgement-call notes live in `specs/tasks/done.md`.
   `55d792e` + `41fb3e5` + `a1e9658` + `db0186c` + `362724a` +
   `738e2bc` + `1dca68b` — T-006 Phase 6 spec (5 blocks +
   per-block codegen + tasks ticks)
+
+## Web combat tracker (T-2026-05-10-008)
+
+Landed 2026-05-11 in five blocks, each a single `feat(web)` commit.
+This closes the GM-side combat surface — the player surfaces live in
+the mobile read-along below.
+
+What the GM can do on web now:
+
+- Open `/app/npcs` to browse, create (inline), duplicate, and delete
+  NPCs; reach the page from a new "NPCs" link in the characters AppBar.
+- Open `/app/npcs/[id]` for the full NPC sheet — inline rename + auto-save
+  on blur via the shared `useAutoSave` (600 ms debounce) + AppSavePulse
+  pulse-dot, Duplicate / Delete (with confirmation), four independent
+  save groups (identity, description, stats, tags) each surfacing 422s
+  in a dedicated Problems card.
+- On `/app/sessions/[id]`, see a new `EncounterPanel` (GM-only) below
+  the DP + audit + assignment sections — create encounters inline,
+  list them with a `setup` / `active` / `ended` state pill, expand a
+  card to reveal the `CombatTracker` inline (no separate route).
+- Inside the tracker: PC and NPC picker with two tabs, status-flag chips
+  (canonical `incapacitated` / `prone` / `covered` themed with icons,
+  free-form tags as plain chips per T-010 Block B), HTML5 native drag
+  reorder, Roll Initiative and Advance Turn (GM-only, state-machine
+  guarded — disabled before Roll, disabled after Ended).
+- `session.{id}` realtime: the existing `useSessionRealtime` composable
+  branches on `payload.type` — `dp.changed` continues to feed the DP
+  cubit unchanged; `combat.updated` snapshots replace the tracker's
+  local state wholesale (no diff).
+
+Storybook was deferred: `CombatTracker` and `EncounterPanel` depend on
+app-specific composables (`useNpcsApi`, `useEncountersApi`,
+`useCombatantsApi`) and are not reusable primitives. The vitest specs
+cover all four encounter states (empty / setup / active / ended) plus
+the realtime reconciliation path.
+
+### Commits
+
+- `c4dc69b` — Block 1: `useNpcsApi` composable + `/app/npcs` index
+  (mirrors `useShipsApi`/`/app/ships`); nav link from the characters
+  AppBar. 33 composable tests.
+- `c07e294` — Block 2: `/app/npcs/[id]` sheet with auto-save on blur,
+  Problems card, four save groups. 25 specs.
+- `8f25a9f` — Block 3: `useEncountersApi` composable + `EncounterPanel`
+  on the session view. State-machine UI hint ("Add ≥1 combatant before
+  rolling initiative") when state === setup. 67 specs.
+- `189188d` — Block 4: `useCombatantsApi` + `CombatTracker` widget with
+  PC/NPC picker, status chips, HTML5 drag reorder. 78 specs (40
+  composable + 38 widget). `EncounterPanel` switched from `emit('open')`
+  to inline master-detail expansion.
+- `628031c` — Block 5: GM-only Roll Initiative + Advance Turn,
+  drag-end dispatches `reorder` to backend, `useSessionRealtime`
+  branches on `payload.type` for `combat.updated` snapshot
+  reconciliation. 34 new spec cases.
+
+Notable decision: AsyncAPI `CombatUpdated.combatants[].name` vs OpenAPI
+`Combatant.displayName` — the composable types use OpenAPI; the
+realtime snapshot is consumed under the OpenAPI shape contract.
+Backend confirmed to emit `displayName` on the published payload.
+
+Format-drift precursor: `c5cc8d8` is a `chore(format)` commit that
+landed before Block 2 — `pnpm format` reflowed 76 files following
+the Prettier-v3 drift pattern from `3aaddb8`. Same fix as last time:
+land the sweep on its own commit, then resume feature work.
+
+## Mobile read-along combat card (T-2026-05-11-002)
+
+Landed 2026-05-11 in five blocks, immediately after T-008. The mobile
+side is intentionally read-only: GM ops stay on web for v1; mobile
+just renders the live encounter snapshot that the GM is driving.
+
+What a player on mobile sees now:
+
+- On the session detail page, below the DP counter, an
+  `ActiveCombatCard` appears when the session has an `active`
+  encounter — empty / loading / error / ready states each have a
+  distinct rendering and a retry affordance on error.
+- Combatant rows ordered by `turnOrder` ascending, active row visually
+  highlighted with a leading marker and `Semantics(liveRegion: true)`
+  so screen readers announce turn rotations.
+- Status-flag chips render canonical tags (`incapacitated` / `prone` /
+  `covered`) with themed leading icons; free-form tags render as plain
+  pills per T-010 Block B. Every chip has `Semantics(label: "Status: X")`.
+- HP and MP (mapped from `Combatant.signature` — Mystic Darkness Points
+  — since the wire DTO has no MP field) have explicit Semantics labels
+  (`"Hit points: A of B"` / `"Mystic Darkness Points: N"`).
+- `session.{id}` realtime: the existing `SessionRealtime` adapter
+  (T-2026-05-10-003) was extended with a `combatUpdated` stream; the
+  session detail page subscribes and calls
+  `ActiveCombatCubit.replaceSnapshot(...)` on each emission. AsyncAPI
+  `combatants[].name` is mapped to the OpenAPI domain
+  `Combatant.displayName` at the parser boundary
+  (`combat_updated_payload.dart`), along with `status → state`,
+  `combatantType → source`, `referenceId → sourceId`.
+
+### Commits
+
+- Block 1 — combat feature skeleton (data / domain / presentation),
+  `CombatRepository` over the generated Dart client, `Placeholder()`
+  stub widget reserved for Block 3. 8 unit tests.
+- Block 2 — `ActiveCombatCubit` with the Dart 3 sealed/final-class
+  state idiom (matches sessions/characters cubits, no freezed
+  codegen). `load(sessionId)` and `replaceSnapshot(snapshot)` —
+  the latter is what Block 4 calls from the realtime branch. 8 cubit
+  tests.
+- Block 3 — `ActiveCombatCard` widget mounted below the DP counter
+  via `MultiBlocProvider`. Material `Card` shell, header with
+  encounter name + state pill, combatant rows. 4 new
+  `combat_*.i18n.json` namespaces (ru full, uk + el placeholders);
+  `strings_*.g.dart` regenerated via `dart run slang` (gitignored
+  output). 11 widget tests.
+- Block 4 — `combat_updated_payload.dart` isolates the wire→domain
+  boundary; `SessionRealtime._onPublication` branches on
+  `payload.type` ahead of structural fallback. Session detail page
+  subscribes to the new `combatUpdated` stream and feeds the cubit.
+  8 payload-parsing tests + 4 cubit-integration tests.
+- Block 5 — a11y pass: `Semantics(liveRegion: true)` on the active
+  combatant name, `Semantics(label: "Status: X")` on each chip,
+  explicit semantics labels on HP + MP, forward-safe
+  `EdgeInsetsDirectional` for the one asymmetric inset. 7 a11y widget
+  tests. Combat+realtime test scope 47/47 passing.
+
+### Codegen drift follow-up
+
+The Dart generated client has stale `.g.dart` files post-T-010 Block
+H (the `ShipModuleSlot` consolidation) — four ship-module modules
+import a type that's no longer in their dart file. The combat module
+does not depend on those models, so this block did not fix it. A
+separate `chore(codegen)` task should regenerate the Dart client.
+
+Notable decision: MP is mapped to `Combatant.signature` (Mystic
+Darkness Points — the closest analogue since the wire DTO has no
+`mpCurrent` / `mpMax`). If a future contract revision adds explicit
+MP fields, swap the mapping. Documented inline at the widget.
+
+RTL: the project's `AppLocaleUtils.supportedLocales` declares no RTL
+script (no `ar` / `he` / `fa`), so RTL routing via
+`Localizations.localeOf` is not yet a real concern — only the one
+asymmetric `EdgeInsetsDirectional` change was made as a forward-safe
+measure. Noted for follow-up when an RTL locale is added.
