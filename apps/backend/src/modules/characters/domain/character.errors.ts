@@ -56,7 +56,7 @@ export class AttributeOutOfRangeError extends DomainError {
       code: 'ATTRIBUTE_OUT_OF_RANGE',
       status: 422,
       title: 'Validation Error',
-      detail: `Attribute '${attribute}' value ${String(value)} falls outside the permitted range (1–5). Check the character rules.`,
+      detail: `Attribute '${attribute}' value ${String(value)} falls outside the permitted range (2–5). Check the character rules.`,
     });
   }
 }

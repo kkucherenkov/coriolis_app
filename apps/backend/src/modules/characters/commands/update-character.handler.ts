@@ -46,7 +46,7 @@ const VALID_ICONS = new Set<IconId>([
 
 function validateAttributes(attrs: Attributes): void {
   for (const [key, val] of Object.entries(attrs) as [string, number][]) {
-    if (val < 1 || val > 5) {
+    if (val < 2 || val > 5) {
       throw new AttributeOutOfRangeError(key, val);
     }
   }

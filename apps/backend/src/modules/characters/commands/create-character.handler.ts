@@ -73,7 +73,7 @@ const CREATION_SKILL_KEY_MAX = 3;
 function validateAttributesAtCreation(attrs: Attributes, concept: Concept | null): void {
   const keyAttribute = concept ? CONCEPT_KEYS[concept].keyAttribute : null;
   for (const [key, val] of Object.entries(attrs) as [AttributeKey, number][]) {
-    if (val < 1 || val > 5) {
+    if (val < 2 || val > 5) {
       throw new AttributeOutOfRangeError(key, val);
     }
     const max = key === keyAttribute ? CREATION_ATTR_KEY_MAX : CREATION_ATTR_NONKEY_MAX;

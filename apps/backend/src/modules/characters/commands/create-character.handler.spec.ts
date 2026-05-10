@@ -163,7 +163,7 @@ describe('CreateCharacterHandler', () => {
     ).rejects.toBeInstanceOf(IconUnknownError);
   });
 
-  it('throws AttributeOutOfRangeError when attribute < 1', async () => {
+  it('throws AttributeOutOfRangeError when attribute is 0 (below floor)', async () => {
     await expect(
       handler.execute(
         new CreateCharacterCommand(
@@ -172,6 +172,20 @@ describe('CreateCharacterHandler', () => {
         ),
       ),
     ).rejects.toBeInstanceOf(AttributeOutOfRangeError);
+  });
+
+  it('throws AttributeOutOfRangeError when attribute is 1 (below new floor of 2)', async () => {
+    // ГЛАВА 2 «ХАРАКТЕРИСТИКИ» / §РАЗВИТИЕ ПЕРСОНАЖА: active-PC invariant is 2..5.
+    // Block D of T-2026-05-10-010 lifts the absolute floor from 1 → 2.
+    await expect(
+      handler.execute(
+        new CreateCharacterCommand(
+          'user-1',
+          makeDto({ attributes: { strength: 1, agility: 2, wits: 2, empathy: 2 } }),
+        ),
+      ),
+    ).rejects.toBeInstanceOf(AttributeOutOfRangeError);
+    expect(repo.create).not.toHaveBeenCalled();
   });
 
   it('throws AttributeOutOfRangeError when attribute > 5', async () => {
@@ -307,7 +321,11 @@ describe('CreateCharacterHandler', () => {
     expect(repo.create).not.toHaveBeenCalled();
   });
 
-  it('throws AttributeOutOfCreationRangeError when an attribute is below the 2..4 cap', async () => {
+  it('throws AttributeOutOfRangeError (not creation-range) when attribute is below absolute floor (strength=1)', async () => {
+    // After Block D: absolute floor is 2. The guard `val < 2 → AttributeOutOfRangeError`
+    // fires before the creation-range check, so value=1 never reaches
+    // AttributeOutOfCreationRangeError. The creation-range check still covers
+    // the upper bound (value > CREATION_ATTR_NONKEY_MAX).
     await expect(
       handler.execute(
         new CreateCharacterCommand(
@@ -318,7 +336,7 @@ describe('CreateCharacterHandler', () => {
           }),
         ),
       ),
-    ).rejects.toBeInstanceOf(AttributeOutOfCreationRangeError);
+    ).rejects.toBeInstanceOf(AttributeOutOfRangeError);
   });
 
   it('throws AttributeOutOfCreationRangeError when an attribute exceeds 4 (key-attr exception is Block 2)', async () => {

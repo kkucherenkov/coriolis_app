@@ -136,7 +136,7 @@ describe('UpdateCharacterHandler', () => {
     expect(repo.update).not.toHaveBeenCalled();
   });
 
-  it('throws AttributeOutOfRangeError when attribute is out of bounds', async () => {
+  it('throws AttributeOutOfRangeError when attribute is out of bounds (strength=0)', async () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter());
 
     const dto = Object.assign(new UpdateCharacterDto(), {
@@ -145,6 +145,60 @@ describe('UpdateCharacterHandler', () => {
     await expect(
       handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
     ).rejects.toBeInstanceOf(AttributeOutOfRangeError);
+  });
+
+  it('throws AttributeOutOfRangeError when attribute is 1 (below new floor of 2)', async () => {
+    // ГЛАВА 2 «ХАРАКТЕРИСТИКИ»: no in-game mechanic lowers an attribute below 2.
+    // The floor was lifted from 1 → 2 in Block D of T-2026-05-10-010.
+    vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter());
+
+    const dto = Object.assign(new UpdateCharacterDto(), {
+      attributes: { strength: 1, agility: 2, wits: 2, empathy: 2 },
+    });
+    await expect(
+      handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+    ).rejects.toBeInstanceOf(AttributeOutOfRangeError);
+    expect(repo.update).not.toHaveBeenCalled();
+  });
+
+  it('throws AttributeOutOfRangeError when attribute exceeds 5', async () => {
+    vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter());
+
+    const dto = Object.assign(new UpdateCharacterDto(), {
+      attributes: { strength: 6, agility: 2, wits: 2, empathy: 2 },
+    });
+    await expect(
+      handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+    ).rejects.toBeInstanceOf(AttributeOutOfRangeError);
+    expect(repo.update).not.toHaveBeenCalled();
+  });
+
+  it('does not throw for attribute at floor (strength=2)', async () => {
+    vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter());
+    vi.mocked(repo.update).mockResolvedValue(
+      makeCharacter({ attributes: { strength: 2, agility: 2, wits: 2, empathy: 2 } }),
+    );
+
+    const dto = Object.assign(new UpdateCharacterDto(), {
+      attributes: { strength: 2, agility: 2, wits: 2, empathy: 2 },
+    });
+    await expect(
+      handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+    ).resolves.toBeDefined();
+  });
+
+  it('does not throw for attribute at ceiling (strength=5)', async () => {
+    vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter());
+    vi.mocked(repo.update).mockResolvedValue(
+      makeCharacter({ attributes: { strength: 5, agility: 2, wits: 2, empathy: 2 } }),
+    );
+
+    const dto = Object.assign(new UpdateCharacterDto(), {
+      attributes: { strength: 5, agility: 2, wits: 2, empathy: 2 },
+    });
+    await expect(
+      handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+    ).resolves.toBeDefined();
   });
 
   it('throws SkillOutOfRangeError when skill exceeds 5', async () => {
