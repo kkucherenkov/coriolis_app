@@ -13,6 +13,7 @@ import {
 import { UpdateEncounterCommand, UpdateEncounterDto } from './update-encounter.command';
 import { UpdateEncounterHandler } from './update-encounter.handler';
 
+import type { ICombatantCount } from '../../../modules/combatants/domain/combatant.ports';
 import type { IGameSessionAccess } from '../domain/game-session-access.ports';
 import type { EncounterReadModel, IEncounterRepo } from '../domain/encounter.ports';
 
@@ -31,6 +32,12 @@ function makeAccess(): IGameSessionAccess {
     isOwner: vi.fn(),
     isMember: vi.fn(),
     getOwnerId: vi.fn(),
+  };
+}
+
+function makeCombatantCount(count = 0): ICombatantCount {
+  return {
+    countByEncounter: vi.fn().mockResolvedValue(count),
   };
 }
 
@@ -56,12 +63,14 @@ function makeDto(overrides: Partial<UpdateEncounterDto> = {}): UpdateEncounterDt
 describe('UpdateEncounterHandler', () => {
   let repo: IEncounterRepo;
   let access: IGameSessionAccess;
+  let combatantCount: ICombatantCount;
   let handler: UpdateEncounterHandler;
 
   beforeEach(() => {
     repo = makeRepo();
     access = makeAccess();
-    handler = new UpdateEncounterHandler(repo, access);
+    combatantCount = makeCombatantCount(0);
+    handler = new UpdateEncounterHandler(repo, access, combatantCount);
     vi.mocked(access.getOwnerId).mockResolvedValue('user-1');
   });
 
@@ -159,8 +168,9 @@ describe('UpdateEncounterHandler', () => {
     );
   });
 
-  it('throws ENCOUNTER_NO_COMBATANTS for setup → active (Block 2 guard)', async () => {
+  it('throws ENCOUNTER_NO_COMBATANTS for setup → active when no combatants', async () => {
     vi.mocked(repo.findById).mockResolvedValue(makeEncounter({ status: 'setup' }));
+    vi.mocked(combatantCount.countByEncounter).mockResolvedValue(0);
 
     await expect(
       handler.execute(new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ status: 'active' }))),
@@ -170,10 +180,41 @@ describe('UpdateEncounterHandler', () => {
 
   it('ENCOUNTER_NO_COMBATANTS has status 422', async () => {
     vi.mocked(repo.findById).mockResolvedValue(makeEncounter({ status: 'setup' }));
+    vi.mocked(combatantCount.countByEncounter).mockResolvedValue(0);
 
     await expect(
       handler.execute(new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ status: 'active' }))),
     ).rejects.toMatchObject({ code: 'ENCOUNTER_NO_COMBATANTS', status: 422 });
+  });
+
+  it('allows setup → active when encounter has ≥1 combatant', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter({ status: 'setup' }));
+    vi.mocked(combatantCount.countByEncounter).mockResolvedValue(2);
+    vi.mocked(repo.update).mockResolvedValue(makeEncounter({ status: 'active' }));
+
+    await handler.execute(
+      new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ status: 'active' })),
+    );
+
+    expect(repo.update).toHaveBeenCalledWith(
+      'enc-1',
+      expect.objectContaining({ status: 'active' }),
+    );
+  });
+
+  it('does not query combatant count for active → ended', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(
+      makeEncounter({ status: 'active', activeCombatantId: 'cb-1' }),
+    );
+    vi.mocked(repo.update).mockResolvedValue(
+      makeEncounter({ status: 'ended', activeCombatantId: null }),
+    );
+
+    await handler.execute(
+      new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ status: 'ended' })),
+    );
+
+    expect(combatantCount.countByEncounter).not.toHaveBeenCalled();
   });
 
   it('allows active → ended and resets activeCombatantId', async () => {

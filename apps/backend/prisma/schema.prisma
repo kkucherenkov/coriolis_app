@@ -731,12 +731,21 @@ enum EncounterStatus {
   @@map("encounter_status")
 }
 
+/// Discriminator for Combatant.combatantType.
+/// Wire values are lowercase ('pc' | 'npc'); stored uppercase.
+enum CombatantType {
+  PC
+  NPC
+
+  @@map("combatant_type")
+}
+
 /// A combat encounter owned by a game session.
 ///
 /// Design notes:
 /// - status transitions are enforced by the domain state machine, not by DB constraints.
-/// - activeCombatantId is a free String? in Block 2. Block 3 adds the Combatant table
-///   and will add a @relation with onDelete: SetNull.
+/// - activeCombatantId references the Combatant table with onDelete: SetNull so that
+///   removing the active combatant falls back gracefully (activeCombatantId → null).
 /// - Cascade delete: dropping the GameSession cascades to all its encounters.
 model Encounter {
   id                String          @id @default(cuid())
@@ -746,11 +755,54 @@ model Encounter {
   notes             String?
   status            EncounterStatus @default(SETUP)
   round             Int             @default(0)
-  /// FK enforced in Block 3 once the Combatant table lands.
   activeCombatantId String?
+  activeCombatant   Combatant?      @relation("ActiveCombatant", fields: [activeCombatantId], references: [id], onDelete: SetNull)
+  combatants        Combatant[]     @relation("EncounterCombatants")
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
   @@index([gameSessionId])
   @@map("encounter")
+}
+
+/// A single participant (PC or NPC) in a combat encounter.
+///
+/// Design notes:
+/// - combatantType discriminates between PC and NPC participants.
+/// - characterId / npcId are nullable; exactly one is non-null depending on combatantType.
+/// - pcSnapshot / npcSnapshot store a JSON copy of the relevant stats at add-time.
+///   Reads never join the source Character/Npc rows — the snapshot is authoritative.
+/// - initiative and turnOrder are null until Block 4 rollInitiative runs.
+/// - @@unique constraints enforce COMBATANT_DUPLICATE at the DB level.
+/// - Cascade delete: removing the encounter removes all combatants.
+model Combatant {
+  id              String          @id @default(cuid())
+  encounterId     String
+  encounter       Encounter       @relation("EncounterCombatants", fields: [encounterId], references: [id], onDelete: Cascade)
+  combatantType   CombatantType
+  characterId     String?
+  npcId           String?
+  displayName     String
+  initiative      Int?
+  turnOrder       Int?
+  hpCurrent       Int
+  hpMax           Int
+  armor           Int             @default(0)
+  signature       Int             @default(0)
+  statusFlags     String[]        @default([])
+  notes           String?
+  /// JSON snapshot of source PC stats at add-time (attributes, skills, hpMax, etc.)
+  pcSnapshot      Json?
+  /// JSON snapshot of source NPC stats at add-time (attributes, skills, hpMax, etc.)
+  npcSnapshot     Json?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  /// Inverse relation for Encounter.activeCombatant
+  activeInEncounters Encounter[] @relation("ActiveCombatant")
+
+  @@unique([encounterId, characterId])
+  @@unique([encounterId, npcId])
+  @@index([encounterId])
+  @@map("combatant")
 }

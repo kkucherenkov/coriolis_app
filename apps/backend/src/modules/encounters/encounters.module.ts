@@ -8,9 +8,17 @@
  * GameSessionAccessService can inject PrismaService without importing
  * PrismaModule here.
  * AuthModule is @Global(), so SessionGuard is available without importing here.
+ *
+ * CombatantsModule is imported to make COMBATANT_COUNT available for
+ * UpdateEncounterHandler (setup → active state-machine guard). This is a
+ * one-way dependency: encounters → combatants. CombatantsModule does NOT
+ * import EncountersModule (it injects ENCOUNTER_REPO and GAME_SESSION_ACCESS
+ * tokens which are re-exported here). This pattern avoids a circular module dep.
  */
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
+
+import { CombatantsModule } from '../combatants/combatants.module';
 
 import { CreateEncounterHandler } from './commands/create-encounter.handler';
 import { UpdateEncounterHandler } from './commands/update-encounter.handler';
@@ -25,7 +33,7 @@ import { EncountersController } from './encounters.controller';
 import { NestedEncountersController } from './nested-encounters.controller';
 
 @Module({
-  imports: [CqrsModule],
+  imports: [CqrsModule, forwardRef(() => CombatantsModule)],
   controllers: [EncountersController, NestedEncountersController],
   providers: [
     // Commands
@@ -39,6 +47,6 @@ import { NestedEncountersController } from './nested-encounters.controller';
     { provide: ENCOUNTER_REPO, useClass: EncounterRepo },
     { provide: GAME_SESSION_ACCESS, useClass: GameSessionAccessService },
   ],
-  exports: [ENCOUNTER_REPO],
+  exports: [ENCOUNTER_REPO, GAME_SESSION_ACCESS],
 })
 export class EncountersModule {}
