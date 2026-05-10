@@ -200,4 +200,17 @@ export interface IShipRepo {
    * No-op if the character is not currently assigned.
    */
   unassignCrewSlot(shipId: string, characterId: string): Promise<void>;
+
+  /**
+   * Deep-copy a ship: new Ship row + new ShipModule rows (same slot/name/energyUse/data)
+   * + six fresh vacant CrewSlot rows. All in one transaction.
+   * The caller supplies the resolved new name (with "(copy)" suffix).
+   */
+  duplicate(sourceId: string, ownerId: string, newName: string): Promise<ShipReadModel>;
+
+  /**
+   * Return all names owned by ownerId that start with the given prefix, for
+   * suffix collision detection (used by duplicate to pick the right suffix).
+   */
+  listNamesByPrefix(ownerId: string, prefix: string): Promise<string[]>;
 }

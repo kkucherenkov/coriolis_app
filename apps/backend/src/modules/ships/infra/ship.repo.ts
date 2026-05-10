@@ -296,4 +296,81 @@ export class ShipRepo implements IShipRepo {
       data: { assignedCharacterId: null },
     });
   }
+
+  async duplicate(sourceId: string, ownerId: string, newName: string): Promise<ShipReadModel> {
+    const source = await this.prisma.ship.findFirst({
+      where: { id: sourceId },
+      select: {
+        class: true,
+        model: true,
+        registry: true,
+        hullCurrent: true,
+        hullMax: true,
+        energyCurrent: true,
+        energyMax: true,
+        armor: true,
+        maneuverability: true,
+        signature: true,
+        speed: true,
+        cargoCapacity: true,
+        problems: true,
+        history: true,
+        notes: true,
+        modules: { select: { slot: true, name: true, energyUse: true, data: true } },
+      },
+    });
+
+    if (!source) throw new Error('Ship not found in duplicate()');
+
+    const row = await this.prisma.ship.create({
+      data: {
+        ownerId,
+        name: newName,
+        class: source.class,
+        model: source.model,
+        registry: source.registry,
+        hullCurrent: source.hullCurrent,
+        hullMax: source.hullMax,
+        energyCurrent: source.energyCurrent,
+        energyMax: source.energyMax,
+        armor: source.armor,
+        maneuverability: source.maneuverability,
+        signature: source.signature,
+        speed: source.speed,
+        cargoCapacity: source.cargoCapacity,
+        problems: source.problems,
+        history: source.history,
+        notes: source.notes,
+        modules: {
+          create: source.modules.map((m) => ({
+            slot: m.slot,
+            name: m.name,
+            energyUse: m.energyUse,
+            data: m.data ?? {},
+          })),
+        },
+        crew: {
+          create: [
+            { position: 'captain', assignedCharacterId: null },
+            { position: 'pilot', assignedCharacterId: null },
+            { position: 'sensorOp', assignedCharacterId: null },
+            { position: 'gunner', assignedCharacterId: null },
+            { position: 'engineer', assignedCharacterId: null },
+            { position: 'serviceCrew', assignedCharacterId: null },
+          ],
+        },
+      },
+      select: SHIP_SELECT,
+    });
+
+    return toShipReadModel(row);
+  }
+
+  async listNamesByPrefix(ownerId: string, prefix: string): Promise<string[]> {
+    const rows = await this.prisma.ship.findMany({
+      where: { ownerId, name: { startsWith: prefix } },
+      select: { name: true },
+    });
+    return rows.map((r) => r.name);
+  }
 }
