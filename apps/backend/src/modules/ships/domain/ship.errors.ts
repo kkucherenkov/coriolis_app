@@ -60,3 +60,58 @@ export class ShipNotImplementedError extends DomainError {
     });
   }
 }
+
+export class ShipModuleNotFoundError extends DomainError {
+  constructor(id: string) {
+    super({
+      code: 'MODULE_NOT_FOUND',
+      status: 404,
+      title: 'Not Found',
+      detail: `Module ${id} does not exist.`,
+    });
+  }
+}
+
+export class ShipModuleMandatoryError extends DomainError {
+  constructor(slot: string) {
+    super({
+      code: 'SHIP_MODULE_MANDATORY',
+      status: 422,
+      title: 'Unprocessable Entity',
+      detail: `Module with slot ${slot} is mandatory and cannot be removed.`,
+    });
+  }
+}
+
+export class ShipModuleSlotInvalidError extends DomainError {
+  constructor(slot: string) {
+    super({
+      code: 'MODULE_SLOT_INVALID',
+      status: 400,
+      title: 'Validation Error',
+      detail: `slot value ${slot} is not a valid ShipModuleSlot`,
+    });
+  }
+}
+
+export class ShipModuleTypeMismatchError extends DomainError {
+  constructor(detail: string) {
+    super({
+      code: 'MODULE_TYPE_MISMATCH',
+      status: 400,
+      title: 'Validation Error',
+      detail,
+    });
+  }
+}
+
+export class ShipModuleNotOwnedError extends DomainError {
+  constructor(_id: string) {
+    super({
+      code: 'MODULE_NOT_OWNED',
+      status: 403,
+      title: 'Forbidden',
+      detail: 'You do not own this module.',
+    });
+  }
+}

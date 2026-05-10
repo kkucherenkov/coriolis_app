@@ -27,6 +27,7 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 
 import { SessionGuard } from '../../common/auth/auth.guard';
 
+import { AddShipModuleCommand, AddShipModuleDto } from './commands/add-ship-module.command';
 import { CreateShipCommand, CreateShipDto } from './commands/create-ship.command';
 import { DeleteShipCommand } from './commands/delete-ship.command';
 import { DuplicateShipCommand } from './commands/duplicate-ship.command';
@@ -36,7 +37,7 @@ import { GetShipQuery } from './queries/get-ship.query';
 import { ListShipsQuery } from './queries/list-ships.query';
 
 import type { AuthenticatedRequest } from '../../common/auth/auth.guard';
-import type { ShipReadModel } from './domain/ship.ports';
+import type { ShipModuleReadModel, ShipReadModel } from './domain/ship.ports';
 import type { ShipListResult } from './queries/list-ships.handler';
 
 @UseGuards(SessionGuard)
@@ -87,6 +88,17 @@ export class ShipsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<void> {
     return this.commandBus.execute(new DeleteShipCommand(id, req.userId));
+  }
+
+  /** POST /api/v1/ships/:id/modules */
+  @Post(':id/modules')
+  @HttpCode(HttpStatus.CREATED)
+  async addModule(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() body: AddShipModuleDto,
+  ): Promise<ShipModuleReadModel> {
+    return this.commandBus.execute(new AddShipModuleCommand(id, req.userId, body));
   }
 
   /** POST /api/v1/ships/:id/duplicate — STUB: Block 5 */

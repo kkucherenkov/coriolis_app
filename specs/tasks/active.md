@@ -68,11 +68,22 @@
         ship-class-table with all 20 classes. Ran `prisma generate`
         to pick up Block 1 schema. 463/463 tests pass (+29 new
         specs); lint clean. Next: Block 3 — module sub-resource.
-  - [ ] Block 3 — Module sub-resource: `addModule`, `updateModule`,
+  - [x] Block 3 — Module sub-resource: `addModule`, `updateModule`,
         `deleteModule` commands. Discriminator-aware request body
         validation (HOLD vs WEAPON vs TORPEDO vs SENSOR vs OTHER —
         the spec uses oneOf). Mandatory-module guard
         (`SHIP_MODULE_MANDATORY` 422).
+        Three new domain errors (`ShipModuleNotFoundError`,
+        `ShipModuleMandatoryError`, `ShipModuleSlotInvalidError`,
+        `ShipModuleTypeMismatchError`, `ShipModuleNotOwnedError`).
+        Pure validation helper `ship-module-validation.ts` with full
+        discriminator-aware logic; a second controller
+        `ShipModulesController` at `/api/v1/ship-modules/{id}` for
+        the PATCH+DELETE surface (matching the spec's separate path).
+        IShipRepo extended with `findModuleById`, `addModule`,
+        `updateModule`, `deleteModule`. 490/490 tests pass (+27 new
+        specs across 4 files); lint clean. Next: Block 4 — crew
+        assignment.
   - [ ] Block 4 — Crew assignment: `assignCrew` /
         `unassignCrew` commands. Same-owner guard (ship and
         character owned by caller). Position dedup — assigning the

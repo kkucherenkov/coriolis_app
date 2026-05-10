@@ -12,7 +12,15 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service';
 import { toShipReadModel } from './ship.mapper';
 
-import type { IShipRepo, ShipClass, ShipListOptions, ShipReadModel } from '../domain/ship.ports';
+import type {
+  IShipRepo,
+  ShipClass,
+  ShipListOptions,
+  ShipModuleCreateData,
+  ShipModuleReadModel,
+  ShipModuleUpdateData,
+  ShipReadModel,
+} from '../domain/ship.ports';
 
 const SHIP_INCLUDE = {
   modules: {
@@ -192,5 +200,66 @@ export class ShipRepo implements IShipRepo {
   async delete(id: string): Promise<void> {
     // Cascade deletes modules + crew slots
     await this.prisma.ship.delete({ where: { id } });
+  }
+
+  async findModuleById(moduleId: string): Promise<(ShipModuleReadModel & { shipId: string }) | null> {
+    const row = await this.prisma.shipModule.findFirst({
+      where: { id: moduleId },
+      select: { id: true, shipId: true, slot: true, name: true, energyUse: true, data: true },
+    });
+    if (!row) return null;
+    return {
+      id: row.id,
+      shipId: row.shipId,
+      slot: row.slot,
+      name: row.name,
+      energyUse: row.energyUse,
+      data: (row.data ?? {}) as Record<string, unknown>,
+    };
+  }
+
+  async addModule(shipId: string, data: ShipModuleCreateData): Promise<ShipModuleReadModel> {
+    const row = await this.prisma.shipModule.create({
+      data: {
+        shipId,
+        slot: data.slot,
+        name: data.name,
+        energyUse: data.energyUse,
+        data: data.data,
+      },
+      select: { id: true, slot: true, name: true, energyUse: true, data: true },
+    });
+    return {
+      id: row.id,
+      slot: row.slot,
+      name: row.name,
+      energyUse: row.energyUse,
+      data: (row.data ?? {}) as Record<string, unknown>,
+    };
+  }
+
+  async updateModule(moduleId: string, data: ShipModuleUpdateData): Promise<ShipModuleReadModel> {
+    const payload: Record<string, unknown> = {};
+    if (data.name !== undefined) payload['name'] = data.name;
+    if (data.energyUse !== undefined) payload['energyUse'] = data.energyUse;
+    if ('notes' in data) payload['notes'] = data.notes;
+    if (data.data !== undefined) payload['data'] = data.data;
+
+    const row = await this.prisma.shipModule.update({
+      where: { id: moduleId },
+      data: payload,
+      select: { id: true, slot: true, name: true, energyUse: true, data: true },
+    });
+    return {
+      id: row.id,
+      slot: row.slot,
+      name: row.name,
+      energyUse: row.energyUse,
+      data: (row.data ?? {}) as Record<string, unknown>,
+    };
+  }
+
+  async deleteModule(moduleId: string): Promise<void> {
+    await this.prisma.shipModule.delete({ where: { id: moduleId } });
   }
 }
