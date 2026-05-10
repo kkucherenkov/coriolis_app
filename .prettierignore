@@ -15,3 +15,5 @@ apps/mobile/build
 apps/mobile/ios
 apps/mobile/android
 pnpm-lock.yaml
+specs/tasks/active.md
+specs/tasks/done.md
