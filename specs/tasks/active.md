@@ -13,7 +13,7 @@
   repo, `commands` + `queries` handlers, controller(s),
   `module.ts`. Centrifugo `combat.updated` publish from the same
   unit that mutates encounter / combatant state — atomic with
-  the DB transaction (publish *after* commit, before HTTP 200,
+  the DB transaction (publish _after_ commit, before HTTP 200,
   see `dp.publisher.ts` precedent).
 - Acceptance:
   - All NPC paths green: list / create / get / patch / delete /
@@ -52,12 +52,17 @@
   centrifugo via the existing `@CombatPublisher` symbol.
 - Sub-blocks (one feat-backend commit per block + one
   active.md follow-up commit, per `feedback_block_workflow.md`):
-  - [ ] Block 1 — Prisma migration + NPC module. New tables
+  - [x] Block 1 — Prisma migration + NPC module. New tables
         `Npc` (owner-scoped), no foreign-key relationships
         beyond owner. CRUD + duplicate handlers + controller.
         Cursor pagination identical to ShipsRepo.list.
         Module wired into AppModule. Vitest specs for every
         handler.
+        Result: commit 34a1fca. Files:
+        `apps/backend/src/modules/npcs/` (domain, infra,
+        commands ×4, queries ×2, controller, module),
+        `apps/backend/prisma/migrations/20260510000003_npcs/`.
+        Test delta: +50 (511 → 561 total).
   - [ ] Block 2 — Encounter module. Tables `Encounter`
         (FK to `GameSession`), state-machine guards in
         domain layer (`encounter.state-machine.ts`),
@@ -89,12 +94,11 @@
         unreachable but documented in the spec).
   - [ ] Block 5 — Centrifugo `combat.updated` publisher.
         New `CombatPublisher` interface in
-        `apps/backend/src/modules/encounters/infra/combat.publisher.ts`
-        + `CentrifugoCombatPublisher` impl mirroring
+        `apps/backend/src/modules/encounters/infra/combat.publisher.ts` + `CentrifugoCombatPublisher` impl mirroring
         `dp.publisher.ts`. Hooked into every mutation
         handler (encounter create / patch / delete,
         combatant add / patch / delete, initiative
-        roll / reorder / advance) — published *after*
+        roll / reorder / advance) — published _after_
         commit, before HTTP 200, with the full
         Encounter snapshot. e2e test against the real
         docker centrifugo (skip if not running, log
