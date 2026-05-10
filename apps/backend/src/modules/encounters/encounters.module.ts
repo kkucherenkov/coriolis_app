@@ -8,8 +8,8 @@
  * GameSessionAccessService can inject PrismaService without importing
  * PrismaModule here.
  * AuthModule is @Global(), so SessionGuard is available without importing here.
- * RealtimeModule is @Global() (provides CENTRIFUGO_CLIENT), so
- * CentrifugoCombatPublisher can inject it without importing RealtimeModule here.
+ * RealtimeModule is imported to make CENTRIFUGO_CLIENT available to
+ * CentrifugoCombatPublisher (mirrors the wiring in GameSessionsModule).
  *
  * CombatantsModule is imported to make COMBATANT_COUNT and COMBATANT_REPO
  * available. This is a one-way dependency: encounters → combatants.
@@ -21,6 +21,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
 import { CombatantsModule } from '../combatants/combatants.module';
+import { RealtimeModule } from '../realtime/realtime.module';
 
 import { CreateEncounterHandler } from './commands/create-encounter.handler';
 import { UpdateEncounterHandler } from './commands/update-encounter.handler';
@@ -40,7 +41,7 @@ import { EncountersController } from './encounters.controller';
 import { NestedEncountersController } from './nested-encounters.controller';
 
 @Module({
-  imports: [CqrsModule, forwardRef(() => CombatantsModule)],
+  imports: [CqrsModule, RealtimeModule, forwardRef(() => CombatantsModule)],
   controllers: [EncountersController, NestedEncountersController],
   providers: [
     // Commands
