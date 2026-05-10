@@ -103,17 +103,30 @@ describe('useShipsApi.list', () => {
   });
 
   it('throws Problem on 401 — unauthenticated', async () => {
-    const problem: Problem = { type: null, status: 401, detail: 'Not authenticated', title: 'Unauthorized' };
+    const problem: Problem = {
+      type: null,
+      status: 401,
+      detail: 'Not authenticated',
+      title: 'Unauthorized',
+    };
     const mockList = vi.fn().mockResolvedValue({ data: undefined, error: problem });
 
     await expect(callList(mockList)).rejects.toMatchObject({ status: 401 });
   });
 
   it('throws Problem on 500 — server error', async () => {
-    const problem: Problem = { type: null, status: 500, detail: 'Internal error', title: 'Server Error' };
+    const problem: Problem = {
+      type: null,
+      status: 500,
+      detail: 'Internal error',
+      title: 'Server Error',
+    };
     const mockList = vi.fn().mockResolvedValue({ data: undefined, error: problem });
 
-    await expect(callList(mockList)).rejects.toMatchObject({ status: 500, detail: 'Internal error' });
+    await expect(callList(mockList)).rejects.toMatchObject({
+      status: 500,
+      detail: 'Internal error',
+    });
   });
 
   it('caller can route on problem.status', async () => {
@@ -153,7 +166,12 @@ describe('useShipsApi.create', () => {
   });
 
   it('throws Problem on 401 — unauthenticated', async () => {
-    const problem: Problem = { type: null, status: 401, detail: 'Not authenticated', title: 'Unauthorized' };
+    const problem: Problem = {
+      type: null,
+      status: 401,
+      detail: 'Not authenticated',
+      title: 'Unauthorized',
+    };
     const mockCreate = vi.fn().mockResolvedValue({ data: undefined, error: problem });
 
     await expect(
@@ -277,7 +295,9 @@ describe('useShipsApi.update', () => {
     const fixture = makeShipFixture({ notes: 'Updated notes' });
     const mockUpdate = vi.fn().mockResolvedValue({ data: fixture, error: undefined });
 
-    const result = await callUpdate(mockUpdate, 'ship-id-001', { notes: 'Updated notes' } as Partial<Ship>);
+    const result = await callUpdate(mockUpdate, 'ship-id-001', {
+      notes: 'Updated notes',
+    } as Partial<Ship>);
 
     expect(result.notes).toBe('Updated notes');
     // Only `notes` sent — not the full Ship shape
@@ -348,5 +368,151 @@ describe('[id].vue Block 2 — structural wiring', () => {
 
   it('wires modules grouped with mandatory slots first', () => {
     expect(src).toContain('MANDATORY_SLOTS');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Block 5 — structural assertions: confirm modals + duplicate toast + export
+// (T-2026-05-10-005 Block 5)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const INDEX_PATH = resolve(_dirname, '../../pages/app/ships/index.vue');
+
+describe('[id].vue Block 5 — delete confirm modal', () => {
+  let src: string;
+
+  beforeAll(() => {
+    src = readFileSync(PAGE_PATH, 'utf8');
+  });
+
+  it('uses AppModal for delete confirmation', () => {
+    expect(src).toContain('AppModal');
+  });
+
+  it('opens delete modal via openDeleteConfirm() instead of calling delete directly', () => {
+    // The Delete button must call openDeleteConfirm, not shipsApi.delete directly
+    expect(src).toContain('openDeleteConfirm');
+    expect(src).not.toContain('@click="onDelete"');
+  });
+
+  it('confirmDelete() calls shipsApi.delete', () => {
+    expect(src).toContain('async function confirmDelete');
+    expect(src).toContain('shipsApi.delete(shipId.value)');
+  });
+
+  it('has deleteConfirmOpen ref controlling modal open state', () => {
+    expect(src).toContain('deleteConfirmOpen');
+  });
+
+  it('passes closeOnBackdrop=false while deleting to prevent accidental dismiss', () => {
+    expect(src).toContain(':close-on-backdrop="!deleting"');
+  });
+});
+
+describe('[id].vue Block 5 — export affordance', () => {
+  let src: string;
+
+  beforeAll(() => {
+    src = readFileSync(PAGE_PATH, 'utf8');
+  });
+
+  it('renders an export link that opens in a new tab', () => {
+    expect(src).toContain('target="_blank"');
+    expect(src).toContain('exportUrl');
+  });
+
+  it('builds exportUrl from runtimeConfig.public.apiBaseUrl', () => {
+    expect(src).toContain('runtimeConfig.public.apiBaseUrl');
+    expect(src).toContain('/export');
+  });
+
+  it('shows an experimental chip next to the export label', () => {
+    expect(src).toContain('exportExperimental');
+    expect(src).toContain('page-ship__export-chip');
+  });
+});
+
+describe('[id].vue Block 5 — duplicate navigates with query param', () => {
+  let src: string;
+
+  beforeAll(() => {
+    src = readFileSync(PAGE_PATH, 'utf8');
+  });
+
+  it('passes duplicatedFrom query param when navigating to the new ship', () => {
+    expect(src).toContain('duplicatedFrom');
+    expect(src).toContain('encodeURIComponent');
+  });
+});
+
+describe('index.vue Block 5 — delete confirm modal', () => {
+  let src: string;
+
+  beforeAll(() => {
+    src = readFileSync(INDEX_PATH, 'utf8');
+  });
+
+  it('imports AppModal', () => {
+    expect(src).toContain('AppModal');
+  });
+
+  it('per-card Delete opens a confirm modal, not a direct delete', () => {
+    expect(src).toContain('openDeleteConfirm(ship)');
+    expect(src).not.toContain('@click="onDelete(ship)"');
+  });
+
+  it('confirmDelete() calls shipsApi.delete on the pending ship', () => {
+    expect(src).toContain('async function confirmDelete');
+    expect(src).toContain('shipsApi.delete(deletingShip.value.id)');
+  });
+});
+
+describe('index.vue Block 5 — duplicate toast', () => {
+  let src: string;
+
+  beforeAll(() => {
+    src = readFileSync(INDEX_PATH, 'utf8');
+  });
+
+  it('reads duplicatedFrom from route.query', () => {
+    // ESLint dot-notation: either bracket or dot form is acceptable
+    const hasBracket = src.includes("route.query['duplicatedFrom']");
+    const hasDot = src.includes('route.query.duplicatedFrom');
+    expect(hasBracket || hasDot).toBe(true);
+  });
+
+  it('clears the query param via router.replace after surfacing the toast', () => {
+    expect(src).toContain('router.replace');
+    expect(src).toContain('{ query: {} }');
+  });
+
+  it('shows the duplicated toast banner when showDuplicatedToast is true', () => {
+    expect(src).toContain('showDuplicatedToast');
+    expect(src).toContain('duplicatedToast');
+  });
+
+  it('auto-dismisses the toast after 4 seconds', () => {
+    expect(src).toContain('setTimeout');
+    expect(src).toContain('4000');
+  });
+});
+
+describe('index.vue Block 5 — empty state copy', () => {
+  let src: string;
+
+  beforeAll(() => {
+    src = readFileSync(INDEX_PATH, 'utf8');
+  });
+
+  it('uses the warmer "Build your fleet" empty heading', () => {
+    expect(src).toContain('Build your fleet');
+  });
+
+  it('mentions modules, crew, and combat stats in empty body copy', () => {
+    expect(src).toContain('modules, crew, and combat stats');
+  });
+
+  it('has Russian translations for the new empty state', () => {
+    expect(src).toContain('Соберите свой флот');
   });
 });

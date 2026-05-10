@@ -8,9 +8,11 @@
     AppInput,
     AppTextarea,
     AppSavePulse,
+    AppModal,
   } from '@app/ui';
   import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
   import { useRoute } from 'vue-router';
+  import { useRuntimeConfig } from '#imports';
   import { useShipsApi } from '~/composables/useShipsApi';
   import type { Ship, ShipUpdate } from '~/composables/useShipsApi';
   import type { Problem, ShipModuleSlot, CrewPosition } from '@app/api-client-ts';
@@ -40,6 +42,7 @@
 
   const { t } = useI18n({ useScope: 'local' });
   const route = useRoute();
+  const runtimeConfig = useRuntimeConfig();
   const shipsApi = useShipsApi();
   const crewApi = useShipCrewApi();
   const charactersApi = useCharactersApi();
@@ -193,7 +196,9 @@
     duplicateError.value = '';
     try {
       const copy = await shipsApi.duplicate(shipId.value);
-      await navigateTo(`/app/ships/${copy.id}`);
+      // Pass the source ship name so the index page can surface a "duplicated" toast.
+      const sourceName = ship.value?.name ?? '';
+      await navigateTo(`/app/ships/${copy.id}?duplicatedFrom=${encodeURIComponent(sourceName)}`);
     } catch (error) {
       const problem = error as Problem;
       duplicateError.value = problem.detail ?? t('errorDuplicate');
@@ -204,20 +209,36 @@
 
   const deleting = ref(false);
   const deleteError = ref('');
+  const deleteConfirmOpen = ref(false);
 
-  async function onDelete(): Promise<void> {
+  function openDeleteConfirm(): void {
+    deleteConfirmOpen.value = true;
+  }
+
+  function closeDeleteConfirm(): void {
+    deleteConfirmOpen.value = false;
+  }
+
+  async function confirmDelete(): Promise<void> {
     deleting.value = true;
     deleteError.value = '';
     try {
       await shipsApi.delete(shipId.value);
+      deleteConfirmOpen.value = false;
       await navigateTo('/app/ships');
     } catch (error) {
       const problem = error as Problem;
       deleteError.value = problem.detail ?? t('errorDelete');
+      deleteConfirmOpen.value = false;
     } finally {
       deleting.value = false;
     }
   }
+
+  /** URL for the export endpoint — opens in a new tab. Backend returns 501 until it ships. */
+  const exportUrl = computed<string>(
+    () => `${runtimeConfig.public.apiBaseUrl}/ships/${shipId.value}/export`,
+  );
 
   // ── Module editor state ──────────────────────────────────────────────────────
 
@@ -427,6 +448,12 @@
     "classLabel": "Class",
     "duplicate": "Duplicate",
     "delete": "Delete",
+    "export": "Export",
+    "exportExperimental": "experimental",
+    "deleteConfirmTitle": "Delete this ship?",
+    "deleteConfirmBody": "This will permanently delete the ship, its modules, and clear the crew roster. This cannot be undone.",
+    "deleteConfirmYes": "Delete",
+    "deleteConfirmNo": "Cancel",
     "identityCardTitle": "Identity",
     "fieldName": "Name",
     "fieldModel": "Model",
@@ -483,6 +510,12 @@
     "classLabel": "Класс",
     "duplicate": "Дублировать",
     "delete": "Удалить",
+    "export": "Экспорт",
+    "exportExperimental": "эксперим.",
+    "deleteConfirmTitle": "Удалить этот корабль?",
+    "deleteConfirmBody": "Это безвозвратно удалит корабль, его модули и очистит список экипажа. Действие необратимо.",
+    "deleteConfirmYes": "Удалить",
+    "deleteConfirmNo": "Отмена",
     "identityCardTitle": "Идентификация",
     "fieldName": "Название",
     "fieldModel": "Модель",
@@ -539,6 +572,12 @@
     "classLabel": "[uk-todo] Class",
     "duplicate": "[uk-todo] Duplicate",
     "delete": "[uk-todo] Delete",
+    "export": "[uk-todo] Export",
+    "exportExperimental": "[uk-todo] experimental",
+    "deleteConfirmTitle": "[uk-todo] Delete this ship?",
+    "deleteConfirmBody": "[uk-todo] This will permanently delete the ship, its modules, and clear the crew roster. This cannot be undone.",
+    "deleteConfirmYes": "[uk-todo] Delete",
+    "deleteConfirmNo": "[uk-todo] Cancel",
     "identityCardTitle": "[uk-todo] Identity",
     "fieldName": "[uk-todo] Name",
     "fieldModel": "[uk-todo] Model",
@@ -595,6 +634,12 @@
     "classLabel": "[el-todo] Class",
     "duplicate": "[el-todo] Duplicate",
     "delete": "[el-todo] Delete",
+    "export": "[el-todo] Export",
+    "exportExperimental": "[el-todo] experimental",
+    "deleteConfirmTitle": "[el-todo] Delete this ship?",
+    "deleteConfirmBody": "[el-todo] This will permanently delete the ship, its modules, and clear the crew roster. This cannot be undone.",
+    "deleteConfirmYes": "[el-todo] Delete",
+    "deleteConfirmNo": "[el-todo] Cancel",
     "identityCardTitle": "[el-todo] Identity",
     "fieldName": "[el-todo] Name",
     "fieldModel": "[el-todo] Model",
@@ -731,6 +776,16 @@
         </div>
         <div class="page-ship__header-actions">
           <AppSavePulse :state="headerSaveState" />
+          <a
+            :href="exportUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="page-ship__export-link"
+            data-testid="export-link"
+          >
+            {{ t('export') }}
+            <span class="page-ship__export-chip">{{ t('exportExperimental') }}</span>
+          </a>
           <AppButton
             variant="ghost"
             size="sm"
@@ -743,7 +798,7 @@
             variant="ghost"
             size="sm"
             :disabled="deleting"
-            @click="onDelete"
+            @click="openDeleteConfirm"
           >
             {{ t('delete') }}
           </AppButton>
@@ -1243,6 +1298,43 @@
         </AppField>
       </AppCard>
     </template>
+
+    <!-- ── Delete confirmation modal ─────────────────────────────────────────── -->
+    <AppModal
+      :open="deleteConfirmOpen"
+      :aria-label="t('deleteConfirmTitle')"
+      size="sm"
+      :close-on-backdrop="!deleting"
+      :close-on-esc="!deleting"
+      @update:open="(v) => { if (!v) closeDeleteConfirm(); }"
+    >
+      <div class="page-ship__delete-modal">
+        <p class="page-ship__delete-modal-heading">
+          {{ t('deleteConfirmTitle') }}
+        </p>
+        <p class="page-ship__delete-modal-body">
+          {{ t('deleteConfirmBody') }}
+        </p>
+        <div class="page-ship__delete-modal-actions">
+          <AppButton
+            variant="ghost"
+            size="md"
+            :disabled="deleting"
+            @click="closeDeleteConfirm"
+          >
+            {{ t('deleteConfirmNo') }}
+          </AppButton>
+          <AppButton
+            variant="danger"
+            size="md"
+            :loading="deleting"
+            @click="confirmDelete"
+          >
+            {{ t('deleteConfirmYes') }}
+          </AppButton>
+        </div>
+      </div>
+    </AppModal>
   </section>
 </template>
 
@@ -1368,11 +1460,22 @@
     }
 
     // ── Stats grid ─────────────────────────────────────────────────────────────
+    // Desktop:  3 columns × 3 rows (9 stats)
+    // Tablet:   2 columns × 5 rows (≤ 768 px)
+    // Mobile:   1 column   (≤ 480 px)
 
     &__stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: var(--space-4);
+
+      @media (max-width: 768px) {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      @media (max-width: 480px) {
+        grid-template-columns: 1fr;
+      }
     }
 
     &__stat {
@@ -1529,8 +1632,8 @@
     &__crew-select {
       width: 100%;
       padding: var(--space-2) var(--space-3);
-      background-color: var(--ui-bg);
-      border: 1px solid var(--ui-border);
+      background-color: var(--surface-night);
+      border: 1px solid var(--border-default);
       border-radius: var(--radius-sm);
       color: var(--text-primary);
       font-family: var(--font-body);
@@ -1544,6 +1647,75 @@
 
     &__crew-confirm {
       flex-shrink: 0;
+    }
+
+    // ── Export affordance ──────────────────────────────────────────────────────
+
+    &__export-link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--text-secondary);
+      text-decoration: none;
+      cursor: pointer;
+      transition: color var(--motion-duration-fast) var(--motion-ease-standard),
+        background-color var(--motion-duration-fast) var(--motion-ease-standard);
+
+      &:hover {
+        color: var(--text-primary);
+        background-color: var(--surface-night);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--brand-brass);
+        outline-offset: 2px;
+      }
+    }
+
+    &__export-chip {
+      display: inline-block;
+      margin-left: var(--space-1);
+      padding: 0 var(--space-1);
+      border-radius: var(--radius-xs, 2px);
+      background-color: color-mix(in srgb, var(--brand-brass-shadow) 30%, transparent);
+      font-family: var(--font-mono);
+      font-size: var(--type-body-xs-font-size);
+      color: var(--text-tertiary);
+      vertical-align: middle;
+    }
+
+    // ── Delete confirmation modal ──────────────────────────────────────────────
+
+    &__delete-modal {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      padding: var(--space-5);
+    }
+
+    &__delete-modal-heading {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--type-body-lg-font-size);
+      color: var(--brand-brass-light);
+    }
+
+    &__delete-modal-body {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: var(--type-body-md-font-size);
+      color: var(--text-secondary);
+    }
+
+    &__delete-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-3);
     }
   }
 </style>

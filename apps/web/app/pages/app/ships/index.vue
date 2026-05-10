@@ -1,6 +1,7 @@
 <script setup lang="ts">
-  import { AppCard, AppButton, AppInput, AppField, AppBadge, AppBanner } from '@app/ui';
-  import { ref, computed, onMounted } from 'vue';
+  import { AppCard, AppButton, AppInput, AppField, AppBadge, AppBanner, AppModal } from '@app/ui';
+  import { ref, computed, onMounted, onUnmounted } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
   import { useShipsApi } from '~/composables/useShipsApi';
   import type { Ship, ShipClass } from '~/composables/useShipsApi';
   import type { Problem } from '@app/api-client-ts';
@@ -16,6 +17,8 @@
    */
 
   const { t } = useI18n({ useScope: 'local' });
+  const route = useRoute();
+  const router = useRouter();
   const shipsApi = useShipsApi();
 
   type LoadState = 'loading' | 'loaded' | 'error';
@@ -84,10 +87,6 @@
     }
   }
 
-  onMounted(() => {
-    void load();
-  });
-
   function openForm(): void {
     formOpen.value = true;
     newName.value = '';
@@ -129,22 +128,71 @@
   async function onDuplicate(ship: Ship): Promise<void> {
     try {
       const copy = await shipsApi.duplicate(ship.id);
-      await navigateTo(`/app/ships/${copy.id}`);
+      await navigateTo(`/app/ships/${copy.id}?duplicatedFrom=${encodeURIComponent(ship.name)}`);
     } catch (error) {
       const problem = error as Problem;
       errorMsg.value = problem.detail ?? t('errorDuplicate');
     }
   }
 
-  async function onDelete(ship: Ship): Promise<void> {
+  // ── Delete confirm ─────────────────────────────────────────────────────────
+
+  const deleteConfirmOpen = ref(false);
+  const deletingShip = ref<Ship | null>(null);
+  const deleting = ref(false);
+
+  function openDeleteConfirm(ship: Ship): void {
+    deletingShip.value = ship;
+    deleteConfirmOpen.value = true;
+  }
+
+  function closeDeleteConfirm(): void {
+    deleteConfirmOpen.value = false;
+    deletingShip.value = null;
+  }
+
+  async function confirmDelete(): Promise<void> {
+    if (!deletingShip.value) return;
+    deleting.value = true;
     try {
-      await shipsApi.delete(ship.id);
+      await shipsApi.delete(deletingShip.value.id);
+      deleteConfirmOpen.value = false;
+      deletingShip.value = null;
       await load();
     } catch (error) {
       const problem = error as Problem;
       errorMsg.value = problem.detail ?? t('errorDelete');
+      deleteConfirmOpen.value = false;
+      deletingShip.value = null;
+    } finally {
+      deleting.value = false;
     }
   }
+
+  // ── Duplicate toast — "recently created" banner from redirect ─────────────
+
+  const duplicatedFromName = ref('');
+  const showDuplicatedToast = ref(false);
+  let toastTimer: ReturnType<typeof setTimeout> | null = null;
+
+  onMounted(() => {
+    void load();
+    const fromQuery = route.query.duplicatedFrom;
+    if (typeof fromQuery === 'string' && fromQuery.length > 0) {
+      duplicatedFromName.value = fromQuery;
+      showDuplicatedToast.value = true;
+      // Clear the query param so a refresh doesn't re-trigger.
+      void router.replace({ query: {} });
+      toastTimer = setTimeout(() => {
+        showDuplicatedToast.value = false;
+        duplicatedFromName.value = '';
+      }, 4000);
+    }
+  });
+
+  onUnmounted(() => {
+    if (toastTimer !== null) clearTimeout(toastTimer);
+  });
 
   function moduleCount(ship: Ship): number {
     // Subtract the three mandatory modules (BRIDGE, REACTOR, DRIVE) to show
@@ -162,12 +210,17 @@
   "en": {
     "pageTitle": "Ships",
     "newShip": "New ship",
-    "emptyHeading": "No ships yet — start by creating one",
-    "emptyBody": "Build your first ship to set sail across the Third Horizon.",
+    "emptyHeading": "Build your fleet",
+    "emptyBody": "Spin up your first ship to start tracking modules, crew, and combat stats. Pick a class from the form above to get going.",
     "errorLoad": "Couldn't load ships.",
     "errorCreate": "Couldn't create that ship.",
     "errorDelete": "Couldn't delete that ship.",
     "errorDuplicate": "Couldn't duplicate that ship.",
+    "deleteConfirmTitle": "Delete this ship?",
+    "deleteConfirmBody": "This will permanently delete the ship, its modules, and clear the crew roster. This cannot be undone.",
+    "deleteConfirmYes": "Delete",
+    "deleteConfirmNo": "Cancel",
+    "duplicatedToast": "Duplicated \"{name}\" to a new ship.",
     "errorNameRequired": "A ship name is required (1–80 characters).",
     "formNameLabel": "Ship name",
     "formNameHint": "Short label, 1–80 characters.",
@@ -194,12 +247,17 @@
   "ru": {
     "pageTitle": "Корабли",
     "newShip": "Новый корабль",
-    "emptyHeading": "Кораблей пока нет — создайте первый",
-    "emptyBody": "Постройте свой первый корабль и отправляйтесь в плавание по Третьему Горизонту.",
+    "emptyHeading": "Соберите свой флот",
+    "emptyBody": "Создайте первый корабль и начните отслеживать модули, экипаж и боевые характеристики. Выберите класс в форме выше, чтобы начать.",
     "errorLoad": "Не удалось загрузить корабли.",
     "errorCreate": "Не удалось создать корабль.",
     "errorDelete": "Не удалось удалить корабль.",
     "errorDuplicate": "Не удалось продублировать корабль.",
+    "deleteConfirmTitle": "Удалить этот корабль?",
+    "deleteConfirmBody": "Это безвозвратно удалит корабль, его модули и очистит список экипажа. Действие необратимо.",
+    "deleteConfirmYes": "Удалить",
+    "deleteConfirmNo": "Отмена",
+    "duplicatedToast": "«{name}» скопирован в новый корабль.",
     "errorNameRequired": "Название корабля обязательно (1–80 символов).",
     "formNameLabel": "Название",
     "formNameHint": "Короткое имя, 1–80 символов.",
@@ -226,12 +284,17 @@
   "uk": {
     "pageTitle": "[uk-todo] Ships",
     "newShip": "[uk-todo] New ship",
-    "emptyHeading": "[uk-todo] No ships yet",
-    "emptyBody": "[uk-todo] Build your first ship",
+    "emptyHeading": "[uk-todo] Build your fleet",
+    "emptyBody": "[uk-todo] Spin up your first ship to start tracking modules, crew, and combat stats.",
     "errorLoad": "[uk-todo] Couldn't load ships",
     "errorCreate": "[uk-todo] Couldn't create that ship",
     "errorDelete": "[uk-todo] Couldn't delete that ship",
     "errorDuplicate": "[uk-todo] Couldn't duplicate that ship",
+    "deleteConfirmTitle": "[uk-todo] Delete this ship?",
+    "deleteConfirmBody": "[uk-todo] This will permanently delete the ship, its modules, and clear the crew roster. This cannot be undone.",
+    "deleteConfirmYes": "[uk-todo] Delete",
+    "deleteConfirmNo": "[uk-todo] Cancel",
+    "duplicatedToast": "[uk-todo] Duplicated \"{name}\" to a new ship.",
     "errorNameRequired": "[uk-todo] Name required",
     "formNameLabel": "[uk-todo] Ship name",
     "formNameHint": "[uk-todo] 1-80 characters",
@@ -258,12 +321,17 @@
   "el": {
     "pageTitle": "[el-todo] Ships",
     "newShip": "[el-todo] New ship",
-    "emptyHeading": "[el-todo] No ships yet",
-    "emptyBody": "[el-todo] Build your first ship",
+    "emptyHeading": "[el-todo] Build your fleet",
+    "emptyBody": "[el-todo] Spin up your first ship to start tracking modules, crew, and combat stats.",
     "errorLoad": "[el-todo] Couldn't load ships",
     "errorCreate": "[el-todo] Couldn't create that ship",
     "errorDelete": "[el-todo] Couldn't delete that ship",
     "errorDuplicate": "[el-todo] Couldn't duplicate that ship",
+    "deleteConfirmTitle": "[el-todo] Delete this ship?",
+    "deleteConfirmBody": "[el-todo] This will permanently delete the ship, its modules, and clear the crew roster. This cannot be undone.",
+    "deleteConfirmYes": "[el-todo] Delete",
+    "deleteConfirmNo": "[el-todo] Cancel",
+    "duplicatedToast": "[el-todo] Duplicated \"{name}\" to a new ship.",
     "errorNameRequired": "[el-todo] Name required",
     "formNameLabel": "[el-todo] Ship name",
     "formNameHint": "[el-todo] 1-80 characters",
@@ -529,7 +597,7 @@
             <AppButton
               variant="ghost"
               size="sm"
-              @click="onDelete(ship)"
+              @click="openDeleteConfirm(ship)"
             >
               {{ t('delete') }}
             </AppButton>
@@ -537,6 +605,54 @@
         </AppCard>
       </li>
     </ul>
+
+    <!-- ── Duplicate toast ─────────────────────────────────────────────────── -->
+    <AppBanner
+      v-if="showDuplicatedToast"
+      tone="success"
+      role="status"
+      class="page-ships__toast"
+      data-testid="duplicate-toast"
+    >
+      {{ t('duplicatedToast', { name: duplicatedFromName }) }}
+    </AppBanner>
+
+    <!-- ── Delete confirmation modal ─────────────────────────────────────── -->
+    <AppModal
+      :open="deleteConfirmOpen"
+      :aria-label="t('deleteConfirmTitle')"
+      size="sm"
+      :close-on-backdrop="!deleting"
+      :close-on-esc="!deleting"
+      @update:open="(v) => { if (!v) closeDeleteConfirm(); }"
+    >
+      <div class="page-ships__delete-modal">
+        <p class="page-ships__delete-modal-heading">
+          {{ t('deleteConfirmTitle') }}
+        </p>
+        <p class="page-ships__delete-modal-body">
+          {{ t('deleteConfirmBody') }}
+        </p>
+        <div class="page-ships__delete-modal-actions">
+          <AppButton
+            variant="ghost"
+            size="md"
+            :disabled="deleting"
+            @click="closeDeleteConfirm"
+          >
+            {{ t('deleteConfirmNo') }}
+          </AppButton>
+          <AppButton
+            variant="danger"
+            size="md"
+            :loading="deleting"
+            @click="confirmDelete"
+          >
+            {{ t('deleteConfirmYes') }}
+          </AppButton>
+        </div>
+      </div>
+    </AppModal>
   </section>
 </template>
 
@@ -707,6 +823,50 @@
       margin-top: var(--space-1);
       display: flex;
       gap: var(--space-2);
+    }
+
+    // ── Duplicate toast ────────────────────────────────────────────────────────
+
+    $toast-min-width: 320px;
+    $toast-max-width: 560px;
+
+    &__toast {
+      position: fixed;
+      bottom: var(--space-6);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: var(--z-toast);
+      min-width: $toast-min-width;
+      max-width: $toast-max-width;
+    }
+
+    // ── Delete confirmation modal ──────────────────────────────────────────────
+
+    &__delete-modal {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      padding: var(--space-5);
+    }
+
+    &__delete-modal-heading {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--type-body-lg-font-size);
+      color: var(--brand-brass-light);
+    }
+
+    &__delete-modal-body {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: var(--type-body-md-font-size);
+      color: var(--text-secondary);
+    }
+
+    &__delete-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-3);
     }
   }
 
