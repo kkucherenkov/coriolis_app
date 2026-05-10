@@ -68,7 +68,7 @@
         `addShipModule` / `updateShipModule` / `deleteShipModule`).
         Hide the Delete button for BRIDGE / REACTOR / DRIVE (the
         server enforces 422 — surface as a non-issue in the UI).
-  - [ ] Block 4 — Crew assignment widget on the sheet. Row per
+  - [x] Block 4 — Crew assignment widget on the sheet. Row per
         position; assigned character renders by name, vacant slot
         renders an Assign action that opens a `<select>` of the
         owner's characters. Reuses `useCharactersApi.list`.
@@ -83,6 +83,29 @@
         the backend ships).
 - Status: in-progress
 - Blockers: —
+
+### Block 4 done — follow-up note (2026-05-10)
+
+Block 4 shipped: `useShipCrewApi.ts` composable (`assign` / `unassign`, RFC 9457
+error throw, re-exports `CrewSlot` / `CrewPosition` / `AssignCrewRequest` types),
+and the crew card on `apps/web/app/pages/app/ships/[id].vue` replaced from
+read-only to fully editable. Each of the six positions (captain / pilot /
+sensorOp / gunner / engineer / serviceCrew) renders the assigned character's name
+(looked up from the local `allCharacters` list resolved once on mount via
+`useCharactersApi.list({ limit: 100 })`), a Remove button, or a "Vacant" state
+with an inline Assign picker. The picker splits available characters into two
+`<optgroup>` sections — "Available" (not yet on this ship) and "Already on this
+ship (will move)" — so the GM understands move semantics visually before
+confirming. On Assign or Remove success the full ship is refetched via
+`shipsApi.get(shipId)` to keep both ends of a move in sync. Assign/unassign
+errors surface inline via the existing `AppBanner` pattern. i18n: full en + ru
+(Штурман-оператор / Команда per spec); uk and el placeholders. 18 new vitest
+cases (was 106, now 124): 4 assign happy/error cases + 2 unassign cases + 12
+structural assertions on `[id].vue` Block 4 wiring. typecheck and lint clean.
+
+Block 5 next: ship duplication wired from both list and sheet, delete
+confirmation modal, "Recently created" toast on the index page after a duplicate
+redirect, and the export affordance behind a feature flag.
 
 ### Block 3 done — follow-up note (2026-05-10)
 
