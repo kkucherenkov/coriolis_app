@@ -471,23 +471,29 @@
         the dart-dio cache (typically the next spec
         change) will catch up automatically.
         No vitest delta (description-only).
-  - [ ] Block J — **Spec-silence follow-ups split into
-        deferred tasks.** Each becomes its own active.md
-        push when needed:
-        - `T-2026-05-XX-XXX` — `ItemWeapon.initiative`
-          modifier column from ГЛАВА 6 weapon tables.
-        - `T-2026-05-XX-XXX` — `ItemArmor.extraSlotCount`
-          from ТАБЛИЦА 6.14.
-        - `T-2026-05-XX-XXX` — Ship deterministic stats
-          (Манёвренность / Заметность / Скорость / отсеки)
-          from class via ТАБЛИЦА 7.5.
-        - `T-2026-05-XX-XXX` — `RollKind` discriminator
-          (skill / save / trauma / initiative) so push is
-          gated on `kind === 'skill'`.
-        - `T-2026-05-XX-XXX` — `RollCreate.breakdown`
-          optional object {attribute, skill, gear,
-          modifier, helpers} for GM-tools audit trail.
-- Status: ready
+  - [x] Block J — **Spec-silence follow-ups split into
+        deferred tasks.** Five new T-tasks pushed to the
+        stack (entries below T-011, before T-008):
+        T-2026-05-10-012 (`ItemWeapon.initiative`),
+        T-2026-05-10-013 (`ItemArmor.extraSlotCount`),
+        T-2026-05-10-014 (ship deterministic stats from
+        class), T-2026-05-10-015 (`RollKind` discriminator
+        + push gate), T-2026-05-10-016
+        (`RollCreate.breakdown` audit trail). Each carries
+        its own canon citation, acceptance criteria,
+        spec-diff scope, and codegen impact so they can
+        be picked up independently.
+        Also bumped OpenAPI `info.version` 0.17.0 → 1.0.0
+        per spec-reviewer's earlier note: T-010 has
+        accumulated multiple breaking wire changes (Attr
+        floor 1→2, ItemRangeEnum 5→4, ItemSlotType
+        retired, ItemCybernetic.bodyPoints replaced by
+        xpCost, Character.role added with concept-mismatch
+        invariant) so a major bump is owed. The 1.0.0
+        marker also reflects the canon-alignment effort
+        finishing — clients shipping after this version
+        rely on canon-correct contracts as the baseline.
+- Status: done — ready to archive
 - Blockers: —
 
 ---
@@ -661,9 +667,171 @@
   - [ ] Block 5 — Playwright smoke (`wizard-role-picker.`
         `spec.ts`) + i18n-completeness lint rule. Wraps up
         the task with a green CI run.
-- Status: queued (no blockers, but lower priority than the
-  remaining T-010 blocks I and J — finish the canon-
-  remediation surface first, then ship the UI follow-up).
+- Status: queued (no blockers — T-010 fully landed; this is the
+  next task in the stack after T-011 if the user wants to
+  continue agent-mode work, but the user may also pick any of the
+  T-2026-05-10-012..016 follow-ups instead).
+- Blockers: —
+
+---
+
+## T-2026-05-10-012 — `ItemWeapon.initiative` modifier (Block J split)
+
+- Created: 2026-05-10
+- Owner: claude
+- Source: split from T-2026-05-10-010 Block J. ST3001 ГЛАВА 6
+  weapon tables list a per-weapon initiative modifier (the «модификатор
+  инициативы» column on Tables 6.5–6.10 — heavy weapons impose −1 or −2,
+  fast weapons grant +1 to +2). The current spec has no field for this,
+  so the GM can't carry the modifier into the initiative roll and the
+  rules-engine has no way to apply it.
+- Goal: add `ItemWeapon.initiative: integer` (signed, typically −2..+2)
+  to the spec; teach `roll-initiative.handler` to look up equipped
+  weapons and add the modifier to the d6 result before the tie-break
+  pass; surface the modifier on the combat-tracker UI.
+- Depends on: T-2026-05-10-010 Block A (initiative d6 + tie-break) — done.
+- Acceptance:
+  - Spec: `ItemWeapon.initiative` (and on Create / Update); range −5..+5
+    to be permissive (canon goes −2..+2 but house rules vary).
+  - Backend: `roll-initiative.handler` reads `equipped: true` weapons
+    from the source PC/NPC and sums the `initiative` modifiers; clamp
+    the d6 result to 1..6 after applying. Tie-break loop unchanged
+    (re-roll equal initiatives, ≤3 passes).
+  - NPC weapon JSON shape gains the field too (NpcItemWeapon).
+  - Migration: `Item.data.initiative` defaults to 0 for legacy weapons.
+  - Tests: ≥6 cases — modifier on creation / update / clamp / equipped
+    only / multiple weapons sum / tie-break interaction.
+- Spec diff: small. Major bump if landed alone; or fold into the next
+  combat-side block bump.
+- Codegen impact: TS + Dart regen.
+- Status: queued
+- Blockers: —
+
+---
+
+## T-2026-05-10-013 — `ItemArmor.extraSlotCount` (Block J split)
+
+- Created: 2026-05-10
+- Owner: claude
+- Source: split from T-2026-05-10-010 Block J. ST3001 ТАБЛИЦА 6.14
+  (special armor) lists an «extra slots» column — heavy armor can carry
+  pouches / mounts / pockets that grant additional encumbrance slots.
+  The current `ItemArmor` schema has no field for this and the
+  rules-engine `computeEncumbranceMax` does not factor it in.
+- Goal: add `ItemArmor.extraSlotCount: integer` (0..4 typical) to the
+  spec; teach the encumbrance calculator to add the worn-armor's value
+  to `STR × 2`.
+- Depends on: T-2026-05-10-010 done.
+- Acceptance:
+  - Spec: `ItemArmor.extraSlotCount` (0..6 cap); on Create / Update.
+  - Backend: `computeEncumbranceMax` signature changes to accept the
+    sum of equipped-armor extra slots; handler that derives the read
+    model passes the sum.
+  - Tests: ≥4 cases — base, +N from one armor, multiple armors, only
+    equipped armor counts.
+- Spec diff: small.
+- Codegen impact: TS + Dart regen.
+- Status: queued
+- Blockers: —
+
+---
+
+## T-2026-05-10-014 — Ship deterministic stats from class (Block J split)
+
+- Created: 2026-05-10
+- Owner: claude
+- Source: split from T-2026-05-10-010 Block J. ST3001 ГЛАВА 7
+  ТАБЛИЦА 7.5 lists deterministic stat blocks per ship class:
+  Манёвренность, Заметность, Скорость, отсеки (energy / hull /
+  module slots / armor / signature). Today the `Ship` schema lets
+  the GM set these freehand, which silently breaks canon: a `cruiser`
+  can ship with `signature: -10` if the GM forgets the table.
+- Goal: make `Ship.{maneuverability, signature, speed, energySlots,
+  hullPoints, moduleSlots, armor}` server-derived from `Ship.class`;
+  the spec marks them readOnly; the rules-engine carries the lookup
+  table from ГЛАВА 7 and the create / update handlers refuse mutation.
+- Depends on: T-2026-05-10-010 done.
+- Acceptance:
+  - Spec: all five fields move to readOnly. New `SHIP_CLASS_TABLE` in
+    `apps/backend/src/modules/rules-engine/ship-class-table.ts`
+    (already exists for partial stats — extend it).
+  - Backend: `ShipReadModel.{maneuverability, signature, speed,
+    energySlots, hullPoints, moduleSlots, armor}` are computed at
+    read time from `Ship.class`; `CreateShipHandler` and
+    `UpdateShipHandler` reject any incoming value for these fields
+    (`SHIP_STAT_NOT_EDITABLE` error).
+  - Migration: drop the freehand columns; values derive from class.
+  - Tests: ≥10 cases — every ship class returns the canonical stat
+    block; mutation attempts on each readonly field raise the new
+    error.
+- Spec diff: large (multiple readOnly transitions + new error).
+  Major bump.
+- Codegen impact: TS + Dart regen.
+- Status: queued
+- Blockers: —
+
+---
+
+## T-2026-05-10-015 — `RollKind` discriminator + push gate (Block J split)
+
+- Created: 2026-05-10
+- Owner: claude
+- Source: split from T-2026-05-10-010 Block J. ST3001 ГЛАВА 3
+  §«Вознесение молитв» («Молитву можно возносить только при проверках
+  навыков и только один раз за проверку») restricts push to skill
+  checks. Today `Roll` has no discriminator, so the rules-engine's
+  `canPush` allows pushing on save / trauma / initiative rolls,
+  silently violating canon.
+- Goal: add `Roll.kind: 'skill' | 'save' | 'trauma' | 'initiative' |
+  'darkness'` (the 5 canonical roll types); `canPush` gates on
+  `kind === 'skill'`; `PushRollHandler` rejects non-skill rolls with
+  a new `PUSH_NOT_ALLOWED_ON_NON_SKILL_ROLL` error.
+- Depends on: T-2026-05-10-010 (Block I docblock already flags this
+  follow-up).
+- Acceptance:
+  - Spec: `RollKind` enum + `Roll.kind` (required) + `RollCreate.kind`.
+  - Backend: `canPush(roll, conditions)` signature gains
+    `roll.kind`; new domain error; handler tests cover each kind's
+    push-allowed / push-blocked case.
+  - Migration: backfill existing rolls with `kind: 'skill'` as the
+    safe default (the rules-engine already treats them as skill).
+  - i18n: glossary entry for each kind label (ru + en).
+  - Tests: ≥8 cases — 5 kinds × push allowance + edge cases.
+- Spec diff: medium. Major bump.
+- Codegen impact: TS + Dart regen.
+- Status: queued
+- Blockers: —
+
+---
+
+## T-2026-05-10-016 — `RollCreate.breakdown` audit trail (Block J split)
+
+- Created: 2026-05-10
+- Owner: claude
+- Source: split from T-2026-05-10-010 Block J. The current `RollCreate`
+  payload only carries the final `pool: integer`, losing the
+  attribute / skill / gear / modifier / helpers breakdown that the GM
+  / rules-lawyer audience needs to verify the math. ST3001 doesn't
+  prescribe a wire format here — this is a tooling concern — but
+  serialising the breakdown lets a future GM-tools view replay every
+  roll's provenance.
+- Goal: add `RollCreate.breakdown: { attribute: integer, skill:
+  integer, gear: integer, modifier: integer, helpers: integer }`
+  (all required, all 0..10); the backend stores the breakdown
+  alongside the roll's `pool` and the `Roll` read model surfaces it.
+- Depends on: T-2026-05-10-010 done.
+- Acceptance:
+  - Spec: `RollBreakdown` schema + `RollCreate.breakdown` optional
+    (omitted on programmatic rolls; required-when-present from a
+    user-driven UI), `Roll.breakdown` readOnly.
+  - Backend: persist the breakdown; the create handler asserts
+    `attribute + skill + gear + modifier + helpers === pool` if
+    breakdown is supplied (server-side guard against UI bugs).
+  - Tests: ≥4 cases — supplied & matching, supplied & mismatched
+    (rejected), omitted, round-trips through GET.
+- Spec diff: small. Minor bump.
+- Codegen impact: TS + Dart regen.
+- Status: queued
 - Blockers: —
 
 ---
