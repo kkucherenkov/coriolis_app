@@ -1435,6 +1435,11 @@ export const listRolls = <ThrowOnError extends boolean = false>(options: Options
  * must be pre-applied by the caller before sending `pool`; the server does not
  * re-apply them from character state.
  *
+ * When an optional `breakdown` object is supplied alongside `pool`, the server
+ * validates that `attribute + skill + gear + modifier + helpers === pool`; a
+ * mismatch is rejected with HTTP 400 `ROLL_BREAKDOWN_MISMATCH`. Programmatic
+ * callers (internal command handlers, dice engine) can omit `breakdown` entirely.
+ *
  */
 export const createRoll = <ThrowOnError extends boolean = false>(options: Options<CreateRollData, ThrowOnError>) => (options.client ?? client).post<CreateRollResponses, CreateRollErrors, ThrowOnError>({
     security: [{

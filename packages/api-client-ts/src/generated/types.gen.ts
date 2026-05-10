@@ -66,6 +66,18 @@ export type Roll = {
      * Whether this roll has been pushed. Once true, further pushes are rejected.
      */
     pushed: boolean;
+    /**
+     * Optional structured breakdown of the dice pool — surfaces
+     * the math behind the `pool` total for the GM-tools audit
+     * view. Server-side, when both `breakdown` and `pool` are
+     * supplied on `RollCreate`, the handler asserts the sum
+     * equals the pool and rejects mismatched payloads with
+     * `ROLL_BREAKDOWN_MISMATCH` (HTTP 400). Null when the
+     * roll was created programmatically (e.g. by an internal
+     * handler) without a UI breakdown to record.
+     *
+     */
+    breakdown?: RollBreakdown | null;
     readonly createdAt: string;
 };
 
@@ -105,10 +117,64 @@ export type RollCreate = {
      *
      */
     gameSessionId?: string | null;
+    /**
+     * Optional structured breakdown of the dice pool — surfaces
+     * the math behind the `pool` total for the GM-tools audit
+     * view. Server-side, when both `breakdown` and `pool` are
+     * supplied on `RollCreate`, the handler asserts the sum
+     * equals the pool and rejects mismatched payloads with
+     * `ROLL_BREAKDOWN_MISMATCH` (HTTP 400). Null when the
+     * roll was created programmatically (e.g. by an internal
+     * handler) without a UI breakdown to record.
+     *
+     */
+    breakdown?: RollBreakdown | null;
 };
 
 export type RollList = {
     items: Array<Roll>;
+};
+
+/**
+ * Structured breakdown of a roll's dice pool — what each component
+ * contributed. The server enforces `attribute + skill + gear +
+ * modifier + helpers === pool` when both `breakdown` and `pool`
+ * are supplied on a `RollCreate` (catches UI math bugs). Each
+ * component is a non-negative integer 0..10; the sum bound is
+ * the same 0..20 envelope as `RollCreate.pool` (T-010 Block C).
+ *
+ * Components:
+ * - `attribute` — the base attribute the skill is governed by
+ * (1..5 typical, but stored as 0..10 to allow GM exotics).
+ * - `skill` — the skill rank.
+ * - `gear` — bonus dice from equipment / weapons.
+ * - `modifier` — situational ad-hoc modifier (positive only).
+ * - `helpers` — dice from cooperative helpers (ГЛАВА 3 §«Помощь»).
+ *
+ * All five components are required when `breakdown` is supplied.
+ *
+ */
+export type RollBreakdown = {
+    /**
+     * Attribute contribution (e.g. STR 4 → 4).
+     */
+    attribute: number;
+    /**
+     * Skill rank contribution (e.g. Force 2 → 2).
+     */
+    skill: number;
+    /**
+     * Bonus dice from equipment (weapon `bonus`, armor +1, gear-specific dice).
+     */
+    gear: number;
+    /**
+     * Situational positive modifier (cover, range, ambush, etc).
+     */
+    modifier: number;
+    /**
+     * Dice from cooperative helpers (ST3001 ГЛАВА 3 §«Помощь»).
+     */
+    helpers: number;
 };
 
 /**
@@ -2934,6 +3000,18 @@ export type RollWritable = {
      * Whether this roll has been pushed. Once true, further pushes are rejected.
      */
     pushed: boolean;
+    /**
+     * Optional structured breakdown of the dice pool — surfaces
+     * the math behind the `pool` total for the GM-tools audit
+     * view. Server-side, when both `breakdown` and `pool` are
+     * supplied on `RollCreate`, the handler asserts the sum
+     * equals the pool and rejects mismatched payloads with
+     * `ROLL_BREAKDOWN_MISMATCH` (HTTP 400). Null when the
+     * roll was created programmatically (e.g. by an internal
+     * handler) without a UI breakdown to record.
+     *
+     */
+    breakdown?: RollBreakdown | null;
 };
 
 export type RollListWritable = {
@@ -6227,7 +6305,7 @@ export type CreateRollData = {
 
 export type CreateRollErrors = {
     /**
-     * Validation error (pool out of range, label too long, etc.)
+     * Validation error (pool out of range, label too long, breakdown mismatch, etc.)
      */
     400: Problem;
     /**
