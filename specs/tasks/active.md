@@ -71,9 +71,15 @@
         web dice + sessions + DP + live, mobile parity,
         bearer-auth cutover, character-rules + locale-aware
         follow-ups).
-  - [ ] Block 4 — `phase-5.md` (ship sheets, modules,
-        crew, ship sharing). Cut `phase-5-complete` at the
-        commit closing crew assignment.
+  - [x] Block 4 — `phase-5.md` (ship sheets, modules,
+        crew). Tag `phase-5-complete` cut at `39595f8`
+        (boundary commit — archives T-005 web, pushes T-006
+        Phase 6 spec). 21 commits classified into 2 task
+        groups (T-004 backend ShipsModule + T-005 web ship
+        list + sheet + module editor + crew widget +
+        polish). Ship-share parity captured as a deferred
+        follow-up — Phase 5 PRD scope ("ship sharing") did
+        not ship.
   - [ ] Block 5 — `phase-6.md` (NPC + Encounter +
         Combatant + initiative + combat realtime backend,
         ST3001 canon remediation). Cut `phase-6-be-complete`
