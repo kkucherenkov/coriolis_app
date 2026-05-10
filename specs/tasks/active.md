@@ -42,12 +42,17 @@
   the existing `flutter_test` pattern used by `characters_list`.
 - Sub-blocks (one commit + push + active.md follow-up per block,
   per `feedback_block_workflow.md`):
-  - [ ] Block 1 — `features/rolls/` skeleton + dice bottom sheet on
-        the character sheet. Domain `Roll` model + `RollRepository`
-        contract + Dio-backed impl wrapping `app_api_client`'s
-        `DiceApi`. `DiceRollerCubit` for Roll/Push state.
-        `DiceBottomSheet` widget mounted from the character sheet
-        Rolls section. Server holds the RNG; client just displays.
+  - [x] Block 1 — `features/rolls/` skeleton + dice bottom sheet,
+        wired via FAB on the character sheet (mobile is
+        bottom-sheet-first; web's panel pattern doesn't translate).
+        DiceRollerCubit shaped same as the existing
+        CharactersListCubit. Drive-by: the regenerated dart SDK
+        had no built_value `.g.dart` files; ran build_runner and
+        committed as `chore(codegen)`. Also fixed `Concept` enum
+        bridge in `character_repository_impl.dart` (regenerated SDK
+        now has `Concept` as EnumClass; was String — bridged with
+        `valueOf` / `.name`). Tests: 59/59 (+6 new in
+        `dice_roller_cubit_test.dart`).
   - [ ] Block 2 — Roll history. `RollHistoryCubit` fetches last 50
         on mount; the DiceRoller emits via its repo and the cubit
         is parent-shared so a fresh roll prepends without a refetch
