@@ -2,6 +2,62 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-10-009 — Wizard step-5 skills: collapse fake "general/advanced" pool split
+
+- Completed: 2026-05-10
+- Owner: claude
+- Why: ST3001 ch.2 table 2.4 specifies a single pool of 8 / 10 / 12
+  skill points by upbringing (plebeian / stationary / aristocrat).
+  Per-skill caps at creation: 3 ranks for the concept's key skills,
+  1 rank for everything else. The split into "general 8 + advanced 2"
+  in the wizard mockup leaked into both clients as an artificial
+  pool partition with no rulebook basis. The backend
+  (`rules-engine.ts`, `create-character.handler.ts`) and the OpenAPI
+  spec were already correct — only the clients and the mockup were wrong.
+- Goal: wizard step 5 shows a single shared pool sized by upbringing,
+  enforces key/non-key per-skill caps from the concept, and matches
+  the validation the backend already performs. The visual two-column
+  General/Advanced grouping stays — that taxonomy is real (ch.3,
+  action economy: advanced skills require ≥1 rank to roll).
+- Result: shipped on `main` as `8d55fd7` `fix(wizard): single skill
+  pool sized by upbringing, key/non-key caps`.
+  - `apps/web/app/components/wizard/Step5Skills.vue` — one pool from
+    upbringing, one remaining counter; per-skill cap from
+    `CONCEPT_KEY_SKILLS[concept]`. Visual General / Advanced grouping
+    kept (ch.3 action economy, not budget).
+  - `apps/mobile/lib/features/characters/presentation/blocs/character_wizard/`
+    `character_wizard_cubit.dart` + `character_wizard_state.dart` +
+    `widgets/wizard/step_5_skills.dart` — same single-pool model
+    parameterized by upbringing; Plebeian can no longer over-spend.
+  - `specs/design/mockups/wizard-icon.jsx` — step-5 footer rewritten.
+  - Mobile i18n `wizardStep5Blurb` — en/ru updated, uk/el kept their
+    `[..-todo]` placeholders.
+- Acceptance check (against the original list):
+  - ✅ `Step5Skills.vue` single pool computed from `upbringing` (8/10/12),
+    one remaining counter, no per-section budgets.
+  - ✅ Mobile cubit + state + step widget mirror the same model.
+  - ✅ Per-skill caps: key skills (from `CONCEPT_KEY_SKILLS[concept]`)
+    cap at 3; everything else caps at 1. Same on web and mobile.
+  - ✅ Mockup step-5 footer rewritten.
+  - ✅ Mobile i18n `wizardStep5Blurb` updated for en + ru; uk/el keep
+    `[..-todo]` placeholders.
+  - ✅ `pnpm --filter @app/web typecheck && pnpm --filter @app/web lint`
+    exit 0. `flutter analyze` 60-issue baseline unchanged from clean
+    tree (errors live in `character_repository_impl.dart` and
+    `session_repository_impl.dart` from the post-codegen nullability
+    drift, not from this task).
+- Spec diff: none.
+- Codegen impact: none.
+- Design impact: mockup copy only — no token / layout changes.
+- Tests: existing backend specs already cover the rule; no new spec
+  added. Follow-up: a Vitest spec for `Step5Skills.vue` and a Bloc
+  test for the cubit's per-upbringing budget enforcement.
+- Follow-ups:
+  - Mobile analyzer baseline (60 errors in repo impls) is untouched
+    and pre-existing — separate task.
+
+---
+
 ## T-2026-05-10-006 — Phase 6 spec: Encounters + Combatants + NPCs + combat realtime
 
 - Completed: 2026-05-10
