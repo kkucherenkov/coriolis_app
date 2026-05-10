@@ -16,7 +16,7 @@
     ItemCreate,
     ItemUpdate,
     ItemRangeEnum,
-    ItemSlotType,
+    ShipModuleSlot,
   } from '~/composables/useItemsApi';
   import type { Problem } from '~/composables/useTalentsApi';
 
@@ -54,21 +54,28 @@
   );
 
   const RANGE_OPTIONS = computed<AppSelectOption[]>(() => [
-    { value: 'arm', label: t('rangeArm') },
-    { value: 'near', label: t('rangeNear') },
-    { value: 'short', label: t('rangeShort') },
+    { value: 'close', label: t('rangeClose') },
+    { value: 'medium', label: t('rangeMedium') },
     { value: 'long', label: t('rangeLong') },
-    { value: 'distant', label: t('rangeDistant') },
+    { value: 'extreme', label: t('rangeExtreme') },
   ]);
 
   const SLOT_OPTIONS = computed<AppSelectOption[]>(() => [
-    { value: 'bridge', label: t('slotBridge') },
-    { value: 'hull', label: t('slotHull') },
-    { value: 'hold', label: t('slotHold') },
-    { value: 'weapon', label: t('slotWeapon') },
-    { value: 'drive', label: t('slotDrive') },
-    { value: 'sensor', label: t('slotSensor') },
-    { value: 'electronic', label: t('slotElectronic') },
+    { value: 'BRIDGE', label: t('slotBridge') },
+    { value: 'REACTOR', label: t('slotReactor') },
+    { value: 'DRIVE', label: t('slotDrive') },
+    { value: 'HOLD', label: t('slotHold') },
+    { value: 'WEAPON', label: t('slotWeapon') },
+    { value: 'TORPEDO', label: t('slotTorpedo') },
+    { value: 'SENSOR', label: t('slotSensor') },
+    { value: 'COMMS', label: t('slotComms') },
+    { value: 'HANGAR', label: t('slotHangar') },
+    { value: 'QUARTERS', label: t('slotQuarters') },
+    { value: 'MEDICAL', label: t('slotMedical') },
+    { value: 'WORKSHOP', label: t('slotWorkshop') },
+    { value: 'CHAPEL', label: t('slotChapel') },
+    { value: 'ESCAPE-PODS', label: t('slotEscapePods') },
+    { value: 'OTHER', label: t('slotOther') },
   ]);
 
   // ── Local form state ──────────────────────────────────────────────────────
@@ -87,7 +94,7 @@
   const fieldBonus = ref(0);
   const fieldDamage = ref(1);
   const fieldCrit = ref(1);
-  const fieldRange = ref<ItemRangeEnum>('near');
+  const fieldRange = ref<ItemRangeEnum>('close');
   const fieldWeight = ref(1);
 
   // ARMOR-specific
@@ -99,11 +106,11 @@
   // (shares fieldWeight, fieldNotes)
 
   // CYBERNETIC-specific
-  const fieldBodyPoints = ref(0);
+  const fieldXpCost = ref(5);
   const fieldEffect = ref('');
 
   // SHIP_MODULE-specific
-  const fieldSlot = ref<ItemSlotType>('hull');
+  const fieldSlot = ref<ShipModuleSlot>('OTHER');
   // (shares fieldEffect)
 
   const isEditMode = computed(() => props.item !== null);
@@ -121,13 +128,13 @@
       fieldBonus.value = 0;
       fieldDamage.value = 1;
       fieldCrit.value = 1;
-      fieldRange.value = 'near';
+      fieldRange.value = 'close';
       fieldWeight.value = 1;
       fieldArmorRating.value = 0;
       fieldQuantity.value = 1;
-      fieldBodyPoints.value = 0;
+      fieldXpCost.value = 5;
       fieldEffect.value = '';
-      fieldSlot.value = 'hull';
+      fieldSlot.value = 'OTHER';
       return;
     }
 
@@ -162,7 +169,7 @@
         break;
       }
       case 'CYBERNETIC': {
-        fieldBodyPoints.value = item.bodyPoints;
+        fieldXpCost.value = item.xpCost;
         fieldEffect.value = item.effect;
         fieldNotes.value = '';
 
@@ -243,7 +250,7 @@
       return {
         type,
         name,
-        bodyPoints: fieldBodyPoints.value,
+        xpCost: fieldXpCost.value,
         effect: fieldEffect.value,
       };
     }
@@ -302,7 +309,7 @@
       return {
         type,
         name,
-        bodyPoints: fieldBodyPoints.value,
+        xpCost: fieldXpCost.value,
         effect: fieldEffect.value,
       };
     }
@@ -380,7 +387,7 @@
     "fieldWeight": "Weight (slots)",
     "fieldArmorRating": "Armor rating",
     "fieldQuantity": "Quantity",
-    "fieldBodyPoints": "Body points (strain)",
+    "fieldXpCost": "XP cost",
     "fieldEffect": "Effect / description",
     "fieldSlot": "Ship slot",
     "fieldEquipped": "Equipped",
@@ -390,18 +397,25 @@
     "typeCybernetic": "Cybernetic",
     "typeShipModule": "Ship module",
     "typeOther": "Other",
-    "rangeArm": "Arm",
-    "rangeNear": "Near",
-    "rangeShort": "Short",
+    "rangeClose": "Close",
+    "rangeMedium": "Medium",
     "rangeLong": "Long",
-    "rangeDistant": "Distant",
+    "rangeExtreme": "Extreme",
     "slotBridge": "Bridge",
-    "slotHull": "Hull",
+    "slotReactor": "Reactor",
+    "slotDrive": "Drive",
     "slotHold": "Hold",
     "slotWeapon": "Weapon",
-    "slotDrive": "Drive",
+    "slotTorpedo": "Torpedo",
     "slotSensor": "Sensor",
-    "slotElectronic": "Electronic",
+    "slotComms": "Comms",
+    "slotHangar": "Hangar",
+    "slotQuarters": "Quarters",
+    "slotMedical": "Medical",
+    "slotWorkshop": "Workshop",
+    "slotChapel": "Chapel",
+    "slotEscapePods": "Escape pods",
+    "slotOther": "Other",
     "save": "Save",
     "cancel": "Cancel",
     "deleteItem": "Remove item",
@@ -424,7 +438,7 @@
     "fieldWeight": "Вес (ячейки)",
     "fieldArmorRating": "Показатель брони",
     "fieldQuantity": "Количество",
-    "fieldBodyPoints": "Очки тела (нагрузка)",
+    "fieldXpCost": "Стоимость опыта",
     "fieldEffect": "Эффект / описание",
     "fieldSlot": "Слот корабля",
     "fieldEquipped": "Экипировано",
@@ -434,18 +448,25 @@
     "typeCybernetic": "Кибернетика",
     "typeShipModule": "Модуль корабля",
     "typeOther": "Прочее",
-    "rangeArm": "Ближний",
-    "rangeNear": "Короткий",
-    "rangeShort": "Средний",
-    "rangeLong": "Длинный",
-    "rangeDistant": "Дальний",
+    "rangeClose": "Ближняя",
+    "rangeMedium": "Средняя",
+    "rangeLong": "Дальняя",
+    "rangeExtreme": "Предельная",
     "slotBridge": "Мостик",
-    "slotHull": "Корпус",
+    "slotReactor": "Реактор",
+    "slotDrive": "Двигатель",
     "slotHold": "Трюм",
     "slotWeapon": "Оружейный",
-    "slotDrive": "Двигатель",
+    "slotTorpedo": "Торпедный",
     "slotSensor": "Сенсор",
-    "slotElectronic": "Электроника",
+    "slotComms": "Связь",
+    "slotHangar": "Ангар",
+    "slotQuarters": "Жилой",
+    "slotMedical": "Медотсек",
+    "slotWorkshop": "Мастерская",
+    "slotChapel": "Часовня",
+    "slotEscapePods": "Спасательные капсулы",
+    "slotOther": "Другое",
     "save": "Сохранить",
     "cancel": "Отмена",
     "deleteItem": "Удалить предмет",
@@ -468,7 +489,7 @@
     "fieldWeight": "[uk-todo] Weight (slots)",
     "fieldArmorRating": "[uk-todo] Armor rating",
     "fieldQuantity": "[uk-todo] Quantity",
-    "fieldBodyPoints": "[uk-todo] Body points",
+    "fieldXpCost": "[uk-todo] XP cost",
     "fieldEffect": "[uk-todo] Effect",
     "fieldSlot": "[uk-todo] Ship slot",
     "fieldEquipped": "[uk-todo] Equipped",
@@ -478,18 +499,25 @@
     "typeCybernetic": "[uk-todo] Cybernetic",
     "typeShipModule": "[uk-todo] Ship module",
     "typeOther": "[uk-todo] Other",
-    "rangeArm": "[uk-todo] Arm",
-    "rangeNear": "[uk-todo] Near",
-    "rangeShort": "[uk-todo] Short",
+    "rangeClose": "[uk-todo] Close",
+    "rangeMedium": "[uk-todo] Medium",
     "rangeLong": "[uk-todo] Long",
-    "rangeDistant": "[uk-todo] Distant",
+    "rangeExtreme": "[uk-todo] Extreme",
     "slotBridge": "[uk-todo] Bridge",
-    "slotHull": "[uk-todo] Hull",
+    "slotReactor": "[uk-todo] Reactor",
+    "slotDrive": "[uk-todo] Drive",
     "slotHold": "[uk-todo] Hold",
     "slotWeapon": "[uk-todo] Weapon",
-    "slotDrive": "[uk-todo] Drive",
+    "slotTorpedo": "[uk-todo] Torpedo",
     "slotSensor": "[uk-todo] Sensor",
-    "slotElectronic": "[uk-todo] Electronic",
+    "slotComms": "[uk-todo] Comms",
+    "slotHangar": "[uk-todo] Hangar",
+    "slotQuarters": "[uk-todo] Quarters",
+    "slotMedical": "[uk-todo] Medical",
+    "slotWorkshop": "[uk-todo] Workshop",
+    "slotChapel": "[uk-todo] Chapel",
+    "slotEscapePods": "[uk-todo] Escape pods",
+    "slotOther": "[uk-todo] Other",
     "save": "[uk-todo] Save",
     "cancel": "[uk-todo] Cancel",
     "deleteItem": "[uk-todo] Remove item",
@@ -512,7 +540,7 @@
     "fieldWeight": "[el-todo] Weight (slots)",
     "fieldArmorRating": "[el-todo] Armor rating",
     "fieldQuantity": "[el-todo] Quantity",
-    "fieldBodyPoints": "[el-todo] Body points",
+    "fieldXpCost": "[el-todo] XP cost",
     "fieldEffect": "[el-todo] Effect",
     "fieldSlot": "[el-todo] Ship slot",
     "fieldEquipped": "[el-todo] Equipped",
@@ -522,18 +550,25 @@
     "typeCybernetic": "[el-todo] Cybernetic",
     "typeShipModule": "[el-todo] Ship module",
     "typeOther": "[el-todo] Other",
-    "rangeArm": "[el-todo] Arm",
-    "rangeNear": "[el-todo] Near",
-    "rangeShort": "[el-todo] Short",
+    "rangeClose": "[el-todo] Close",
+    "rangeMedium": "[el-todo] Medium",
     "rangeLong": "[el-todo] Long",
-    "rangeDistant": "[el-todo] Distant",
+    "rangeExtreme": "[el-todo] Extreme",
     "slotBridge": "[el-todo] Bridge",
-    "slotHull": "[el-todo] Hull",
+    "slotReactor": "[el-todo] Reactor",
+    "slotDrive": "[el-todo] Drive",
     "slotHold": "[el-todo] Hold",
     "slotWeapon": "[el-todo] Weapon",
-    "slotDrive": "[el-todo] Drive",
+    "slotTorpedo": "[el-todo] Torpedo",
     "slotSensor": "[el-todo] Sensor",
-    "slotElectronic": "[el-todo] Electronic",
+    "slotComms": "[el-todo] Comms",
+    "slotHangar": "[el-todo] Hangar",
+    "slotQuarters": "[el-todo] Quarters",
+    "slotMedical": "[el-todo] Medical",
+    "slotWorkshop": "[el-todo] Workshop",
+    "slotChapel": "[el-todo] Chapel",
+    "slotEscapePods": "[el-todo] Escape pods",
+    "slotOther": "[el-todo] Other",
     "save": "[el-todo] Save",
     "cancel": "[el-todo] Cancel",
     "deleteItem": "[el-todo] Remove item",
@@ -558,7 +593,11 @@
       </h2>
 
       <!-- Error banner -->
-      <AppBanner v-if="errorMsg" tone="danger" class="item-editor__error">
+      <AppBanner
+        v-if="errorMsg"
+        tone="danger"
+        class="item-editor__error"
+      >
         {{ errorMsg }}
       </AppBanner>
 
@@ -570,14 +609,20 @@
           size="sm"
           :disabled="isEditMode"
         />
-        <p v-if="isEditMode" class="item-editor__type-hint">
+        <p
+          v-if="isEditMode"
+          class="item-editor__type-hint"
+        >
           {{ t('typeDisabledHint') }}
         </p>
       </div>
 
       <!-- Common: name -->
       <div class="item-editor__field">
-        <label class="item-editor__label" for="item-name">{{ t('fieldName') }}</label>
+        <label
+          class="item-editor__label"
+          for="item-name"
+        >{{ t('fieldName') }}</label>
         <AppInput
           id="item-name"
           v-model="fieldName"
@@ -591,7 +636,10 @@
       <template v-if="selectedType === 'WEAPON'">
         <div class="item-editor__row">
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-bonus">{{ t('fieldBonus') }}</label>
+            <label
+              class="item-editor__label"
+              for="item-bonus"
+            >{{ t('fieldBonus') }}</label>
             <AppInput
               id="item-bonus"
               v-model.number="fieldBonus"
@@ -602,7 +650,10 @@
             />
           </div>
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-damage">{{ t('fieldDamage') }}</label>
+            <label
+              class="item-editor__label"
+              for="item-damage"
+            >{{ t('fieldDamage') }}</label>
             <AppInput
               id="item-damage"
               v-model.number="fieldDamage"
@@ -613,7 +664,10 @@
             />
           </div>
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-crit">{{ t('fieldCrit') }}</label>
+            <label
+              class="item-editor__label"
+              for="item-crit"
+            >{{ t('fieldCrit') }}</label>
             <AppInput
               id="item-crit"
               v-model.number="fieldCrit"
@@ -626,11 +680,22 @@
         </div>
         <div class="item-editor__row">
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-range">{{ t('fieldRange') }}</label>
-            <AppSelect id="item-range" v-model="fieldRange" :options="RANGE_OPTIONS" size="md" />
+            <label
+              class="item-editor__label"
+              for="item-range"
+            >{{ t('fieldRange') }}</label>
+            <AppSelect
+              id="item-range"
+              v-model="fieldRange"
+              :options="RANGE_OPTIONS"
+              size="md"
+            />
           </div>
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-weight">{{ t('fieldWeight') }}</label>
+            <label
+              class="item-editor__label"
+              for="item-weight"
+            >{{ t('fieldWeight') }}</label>
             <AppInput
               id="item-weight"
               v-model.number="fieldWeight"
@@ -644,7 +709,11 @@
         </div>
         <div class="item-editor__field item-editor__field--check">
           <label class="item-editor__label item-editor__label--inline">
-            <input v-model="fieldEquipped" type="checkbox" class="item-editor__checkbox" />
+            <input
+              v-model="fieldEquipped"
+              type="checkbox"
+              class="item-editor__checkbox"
+            />
             {{ t('fieldEquipped') }}
           </label>
         </div>
@@ -654,7 +723,10 @@
       <template v-else-if="selectedType === 'ARMOR'">
         <div class="item-editor__row">
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-armor">{{ t('fieldArmorRating') }}</label>
+            <label
+              class="item-editor__label"
+              for="item-armor"
+            >{{ t('fieldArmorRating') }}</label>
             <AppInput
               id="item-armor"
               v-model.number="fieldArmorRating"
@@ -665,7 +737,10 @@
             />
           </div>
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-weight-armor">{{ t('fieldWeight') }}</label>
+            <label
+              class="item-editor__label"
+              for="item-weight-armor"
+            >{{ t('fieldWeight') }}</label>
             <AppInput
               id="item-weight-armor"
               v-model.number="fieldWeight"
@@ -679,7 +754,11 @@
         </div>
         <div class="item-editor__field item-editor__field--check">
           <label class="item-editor__label item-editor__label--inline">
-            <input v-model="fieldEquipped" type="checkbox" class="item-editor__checkbox" />
+            <input
+              v-model="fieldEquipped"
+              type="checkbox"
+              class="item-editor__checkbox"
+            />
             {{ t('fieldEquipped') }}
           </label>
         </div>
@@ -689,7 +768,10 @@
       <template v-else-if="selectedType === 'GEAR'">
         <div class="item-editor__row">
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-qty">{{ t('fieldQuantity') }}</label>
+            <label
+              class="item-editor__label"
+              for="item-qty"
+            >{{ t('fieldQuantity') }}</label>
             <AppInput
               id="item-qty"
               v-model.number="fieldQuantity"
@@ -699,7 +781,10 @@
             />
           </div>
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-weight-gear">{{ t('fieldWeight') }}</label>
+            <label
+              class="item-editor__label"
+              for="item-weight-gear"
+            >{{ t('fieldWeight') }}</label>
             <AppInput
               id="item-weight-gear"
               v-model.number="fieldWeight"
@@ -712,7 +797,10 @@
           </div>
         </div>
         <div class="item-editor__field">
-          <label class="item-editor__label" for="item-notes-gear">{{ t('fieldNotes') }}</label>
+          <label
+            class="item-editor__label"
+            for="item-notes-gear"
+          >{{ t('fieldNotes') }}</label>
           <AppTextarea
             id="item-notes-gear"
             v-model="fieldNotes"
@@ -725,18 +813,24 @@
       <!-- ── CYBERNETIC fields ─────────────────────────────────────────────── -->
       <template v-else-if="selectedType === 'CYBERNETIC'">
         <div class="item-editor__field">
-          <label class="item-editor__label" for="item-bodypts">{{ t('fieldBodyPoints') }}</label>
+          <label
+            class="item-editor__label"
+            for="item-xpcost"
+          >{{ t('fieldXpCost') }}</label>
           <AppInput
-            id="item-bodypts"
-            v-model.number="fieldBodyPoints"
+            id="item-xpcost"
+            v-model.number="fieldXpCost"
             type="number"
             size="md"
             :min="0"
-            :max="6"
+            :max="15"
           />
         </div>
         <div class="item-editor__field">
-          <label class="item-editor__label" for="item-effect-cyber">{{ t('fieldEffect') }}</label>
+          <label
+            class="item-editor__label"
+            for="item-effect-cyber"
+          >{{ t('fieldEffect') }}</label>
           <AppTextarea
             id="item-effect-cyber"
             v-model="fieldEffect"
@@ -749,11 +843,22 @@
       <!-- ── SHIP_MODULE fields ────────────────────────────────────────────── -->
       <template v-else-if="selectedType === 'SHIP_MODULE'">
         <div class="item-editor__field">
-          <label class="item-editor__label" for="item-slot">{{ t('fieldSlot') }}</label>
-          <AppSelect id="item-slot" v-model="fieldSlot" :options="SLOT_OPTIONS" size="md" />
+          <label
+            class="item-editor__label"
+            for="item-slot"
+          >{{ t('fieldSlot') }}</label>
+          <AppSelect
+            id="item-slot"
+            v-model="fieldSlot"
+            :options="SLOT_OPTIONS"
+            size="md"
+          />
         </div>
         <div class="item-editor__field">
-          <label class="item-editor__label" for="item-effect-ship">{{ t('fieldEffect') }}</label>
+          <label
+            class="item-editor__label"
+            for="item-effect-ship"
+          >{{ t('fieldEffect') }}</label>
           <AppTextarea
             id="item-effect-ship"
             v-model="fieldEffect"
@@ -766,7 +871,10 @@
       <!-- ── OTHER fields ──────────────────────────────────────────────────── -->
       <template v-else-if="selectedType === 'OTHER'">
         <div class="item-editor__field">
-          <label class="item-editor__label" for="item-weight-other">{{ t('fieldWeight') }}</label>
+          <label
+            class="item-editor__label"
+            for="item-weight-other"
+          >{{ t('fieldWeight') }}</label>
           <AppInput
             id="item-weight-other"
             v-model.number="fieldWeight"
@@ -778,7 +886,10 @@
           />
         </div>
         <div class="item-editor__field">
-          <label class="item-editor__label" for="item-notes-other">{{ t('fieldNotes') }}</label>
+          <label
+            class="item-editor__label"
+            for="item-notes-other"
+          >{{ t('fieldNotes') }}</label>
           <AppTextarea
             id="item-notes-other"
             v-model="fieldNotes"
@@ -801,10 +912,20 @@
         {{ t('deleteItem') }}
       </button>
       <div class="item-editor__footer-actions">
-        <AppButton variant="ghost" size="md" @click="cancel">
+        <AppButton
+          variant="ghost"
+          size="md"
+          @click="cancel"
+        >
           {{ t('cancel') }}
         </AppButton>
-        <AppButton variant="primary" size="md" :loading="saving" :disabled="!canSave" @click="save">
+        <AppButton
+          variant="primary"
+          size="md"
+          :loading="saving"
+          :disabled="!canSave"
+          @click="save"
+        >
           {{ t('save') }}
         </AppButton>
       </div>

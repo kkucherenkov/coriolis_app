@@ -105,7 +105,7 @@ export function makeCharacterFixture(overrides: Partial<Character> = {}): Charac
         id: 'item-001',
         name: 'Scimitar Pistol',
         damage: 2,
-        range: 'near',
+        range: 'close',
         bonus: 1,
         crit: 2,
         weight: 1,

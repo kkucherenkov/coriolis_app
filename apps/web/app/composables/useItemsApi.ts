@@ -71,5 +71,5 @@ export type {
   ItemShipModuleUpdate,
   ItemOtherUpdate,
   ItemRangeEnum,
-  ItemSlotType,
+  ShipModuleSlot,
 } from '@app/api-client-ts';
