@@ -114,16 +114,34 @@
         consumers compile clean. T-008 design follow-up
         (combat-tracker status chips redrawn against canonical
         tags) is already noted in that task's «Design impact».
-  - [ ] Block C — **Dice pool min/max.** Hard violations H4, H5.
-        Spec: drop `pool: maximum: 10` (or widen to 20 with
-        a PRD-rationale comment); change `pool: minimum: 1`
-        to `0`. Document the «Ноль кубиков» rule (2d6,
-        success only on double sixes) in the
-        `RollCreate` description.
-        Code: `roll-engine.ts` already handles arbitrary
-        pool size; add a branch for `pool === 0` →
-        `randomInt(1, 7)` twice and only count success if
-        both 6s. Tests for both edge cases.
+  - [x] Block C — **Dice pool min/max.** Hard violations
+        H4, H5. **Done in 8a27aef (spec) + 8d8c30a (codegen)
+        + 457fe42 (backend).**
+        Spec: `Roll.pool.minimum` and `RollCreate.pool.minimum`
+        lowered 1 → 0; `.maximum` widened 10 → 20 with a
+        PRD-override note explaining 20 is a payload cap (no
+        canonical upper bound exists in ST3001, realistic stacks
+        max out around 12–14). The «Ноль кубиков» rule
+        (ГЛАВА 3 line 161) is now documented on `RollCreate`
+        and `Roll.dice` flags that the array still has 2
+        elements when `pool === 0`.
+        Backend: `rollPool(0)` rolls 2d6; `countHits` gained a
+        `pool` parameter and only counts a success when every
+        die is a 6 in the zero-dice case (returns 0 or 1, never
+        the raw count). `CreateRollDto` now `@Min(0) @Max(20)`;
+        `RollPoolOutOfRangeError` detail updated to "0–20"; the
+        belt-and-suspenders check in `CreateRollHandler` mirrors
+        the DTO. `PushRollHandler` passes `roll.pool` so a
+        pushed zero-pool roll keeps the double-six rule.
+        Tests added: 10 new `roll-engine.spec.ts` cases (no
+        existing engine spec — file created), 5 new
+        `create-roll.handler.spec.ts` cases (pool=0 stores 2
+        dice, double-six invariant across 50 trials, pool=20
+        accepted, pool=21 + pool=-1 rejected), 1 new
+        `push-roll.handler.spec.ts` case (pushed zero-pool
+        preserves the leading 6 and reports hits=1 only when
+        the rerolled die also lands on 6). Backend vitest count
+        739 → 749 (+10).
   - [ ] Block D — **Attribute min + advanced skill cap.**
         Hard violations H6, H7.
         Spec: `Attributes.{strength|agility|wits|empathy}`
