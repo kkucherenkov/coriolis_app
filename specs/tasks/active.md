@@ -280,23 +280,47 @@
         wizard just needs a select between concept and
         skill distribution that POSTs `role` with the
         rest of the wizard payload.
-  - [ ] Block F — **Personal-scale weapon range bands.**
-        Hard violation H9.
-        Spec: replace `ItemRangeEnum =
-        [arm, near, short, long, distant]` with the
-        canonical 4-band ladder
-        `[bliznyaya, srednyaya, dalnyaya, predelnaya]`
-        (or English `[close, medium, long, extreme]`,
-        with the Russian as `description`).
-        Backend: `apps/backend/src/modules/characters/`
-        `items/commands/{add,update}-item.command.ts`
-        VALID_RANGES → 4-band; migration translates legacy
-        `arm → close`, `near → close`, `short → medium`,
-        `long → long`, `distant → extreme`.
-        ⚠️ Distinct from `ShipWeaponRange = [zero, close,`
-        `medium, long, extreme]` (5-band ship-combat ladder
-        from ГЛАВА 7 line 709) — keep that enum as-is, it's
-        canon.
+  - [x] Block F — **Personal-scale weapon range bands.**
+        Hard violation H9. **Done in 1219df4 (spec) +
+        39df704 (codegen) + 6ddf8c3 (backend + migration).**
+        Spec: `ItemRangeEnum` lifted from the legacy 5-band
+        `[arm, near, short, long, distant]` to the
+        canonical 4-band ladder `[close, medium, long,
+        extreme]` per ST3001 ГЛАВА 5 «Дистанция» (Ближняя
+        ≤2m / Средняя ≤20m / Дальняя ≤100m / Предельная
+        ≤1000m). The rulebook does not separate hand-to-
+        hand from close quarters in its range taxonomy
+        (those distinctions are handled by combat actions),
+        so the legacy `arm` and `near` collapse into the
+        canonical `close`; `short` becomes `medium`,
+        `distant` becomes `extreme`, `long` keeps the slug
+        with narrowed semantics. ShipWeaponRange (5-band
+        ladder from ГЛАВА 7) intentionally untouched —
+        the slug overlap is fine because it lives in a
+        different schema and ship combat genuinely needs
+        the `zero` (boarding) band.
+        Wire examples: 5 personal-scale weapon snippets
+        rewritten (`short → medium`); NPC and ship-weapon
+        examples unchanged.
+        Backend: `VALID_RANGES` in
+        `add-item.command.ts` and the matching `@IsIn`
+        decorator in `update-item.command.ts` tightened to
+        the 4-band list. Tests: legacy `'short'` fixtures
+        in `add-item.handler.spec.ts` switched to
+        `'medium'`; new negative test verifies the legacy
+        `'short'` value is now rejected. Backend vitest
+        count 850 → 851 (+1).
+        Prisma migration `20260510000007_canonicalise_item_`
+        `range`: idempotent JSONB rewrite of `item.data`
+        (where `type = 'WEAPON'` and `data.range` is one
+        of the legacy slugs) plus `npc.weapons` (jsonb
+        array; jsonb_array_elements + jsonb_agg pattern).
+        Mapping: `arm/near → close`, `short → medium`,
+        `long → long` (untouched), `distant → extreme`.
+        Migration applied with `prisma migrate deploy`
+        inside the backend container (consistent with the
+        Block E shadow-DB workaround); backend container
+        restarted afterwards.
   - [ ] Block G — **Cybernetic `bodyPoints` field.** Hard
         violation H10.
         Spec: drop the `bodyPoints: 0–6` field from
