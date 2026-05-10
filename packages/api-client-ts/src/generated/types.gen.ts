@@ -2501,7 +2501,18 @@ export type Combatant = {
      */
     readonly turnOrder: number | null;
     /**
-     * Current hit points. May go below 0 (CT3001 does not clamp).
+     * Current hit points. **PRD override** — ST3001 ГЛАВА 5 «Урон»
+     * («запас пунктов здоровья не может опуститься ниже нуля»)
+     * clamps HP at 0; the canonical mechanic is
+     * «Небоеспособность» the moment HP reaches 0. The greenfield
+     * product allows the field to go negative so the GM tracker
+     * can show damage overflow on a single attack (e.g. a 5-HP
+     * target taking 8 damage renders as `hpCurrent: -3` until
+     * the GM resets to 0 next round). UI clients SHOULD render
+     * negative values in red and surface a one-line note that
+     * the canon clamp applies for healing math (any heal first
+     * brings hpCurrent up to 0, then upward).
+     *
      */
     hpCurrent: number;
     /**
@@ -2513,8 +2524,18 @@ export type Combatant = {
      */
     armor: number;
     /**
-     * Mystic Darkness signature value. Defaults to 0 for PC combatants;
-     * copied from `Npc.signature` for NPC combatants at add-time.
+     * NPC sensor signature score, snapshotted from `Npc.signature`
+     * at add-time (defaults to 0 for PC combatants). **PRD
+     * override** — ST3001 has no per-combatant numeric
+     * `signature` stat; the canonical mechanic for being
+     * spotted / hidden is the `скрытность` skill (ГЛАВА 3
+     * «СКРЫТНОСТЬ») rolled at the moment of detection. The
+     * field is reserved for future GM tooling (sensor sweep,
+     * ambush detection, ship-combat sensor pings — ГЛАВА 7
+     * covers ship-scale sensor rules but assigns those values
+     * to the ship, not the crew). Today the field is mostly
+     * informational; clients SHOULD allow editing but MUST NOT
+     * silently use it to bypass a `скрытность` check.
      *
      */
     signature: number;
@@ -3360,7 +3381,18 @@ export type CombatantWritable = {
      */
     displayName: string;
     /**
-     * Current hit points. May go below 0 (CT3001 does not clamp).
+     * Current hit points. **PRD override** — ST3001 ГЛАВА 5 «Урон»
+     * («запас пунктов здоровья не может опуститься ниже нуля»)
+     * clamps HP at 0; the canonical mechanic is
+     * «Небоеспособность» the moment HP reaches 0. The greenfield
+     * product allows the field to go negative so the GM tracker
+     * can show damage overflow on a single attack (e.g. a 5-HP
+     * target taking 8 damage renders as `hpCurrent: -3` until
+     * the GM resets to 0 next round). UI clients SHOULD render
+     * negative values in red and surface a one-line note that
+     * the canon clamp applies for healing math (any heal first
+     * brings hpCurrent up to 0, then upward).
+     *
      */
     hpCurrent: number;
     /**
@@ -3372,8 +3404,18 @@ export type CombatantWritable = {
      */
     armor: number;
     /**
-     * Mystic Darkness signature value. Defaults to 0 for PC combatants;
-     * copied from `Npc.signature` for NPC combatants at add-time.
+     * NPC sensor signature score, snapshotted from `Npc.signature`
+     * at add-time (defaults to 0 for PC combatants). **PRD
+     * override** — ST3001 has no per-combatant numeric
+     * `signature` stat; the canonical mechanic for being
+     * spotted / hidden is the `скрытность` skill (ГЛАВА 3
+     * «СКРЫТНОСТЬ») rolled at the moment of detection. The
+     * field is reserved for future GM tooling (sensor sweep,
+     * ambush detection, ship-combat sensor pings — ГЛАВА 7
+     * covers ship-scale sensor rules but assigns those values
+     * to the ship, not the crew). Today the field is mostly
+     * informational; clients SHOULD allow editing but MUST NOT
+     * silently use it to bypass a `скрытность` check.
      *
      */
     signature: number;
