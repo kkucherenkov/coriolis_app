@@ -58,7 +58,7 @@
         index page (list, inline create, per-card actions,
         empty state, error retry). Nav link from characters
         AppBar.
-  - [ ] Block 2 — `/app/npcs/[id]` sheet with auto-save
+  - [x] Block 2 — `/app/npcs/[id]` sheet with auto-save
         on blur, header actions, problems card.
   - [ ] Block 3 — `useEncountersApi` composable +
         `EncounterPanel` on the session view. Inline create,
