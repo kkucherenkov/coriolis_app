@@ -297,10 +297,7 @@
         })
       }}
     </p>
-    <p
-      v-if="role"
-      class="step-6-skills__role-hint"
-    >
+    <p v-if="role" class="step-6-skills__role-hint">
       {{ t('keySkillsForRole', { skills: keySkillsLabel, max: KEY_SKILL_MAX }) }}
     </p>
 

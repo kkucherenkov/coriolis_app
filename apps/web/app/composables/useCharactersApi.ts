@@ -19,7 +19,7 @@ import {
   addCharacterTalent,
 } from '@app/api-client-ts';
 import type {
-  Character as GeneratedCharacter,
+  Character,
   CharacterCreate,
   CharacterList,
   CharacterUpdate,
@@ -27,22 +27,6 @@ import type {
   Talent,
   TalentCreate,
 } from '@app/api-client-ts';
-
-/**
- * Wire extension: the backend's `character.ports.ts` CharacterReadModel includes
- * `roleUnmigrated: boolean` (set by Block E backfill migration) but the field is
- * not yet in `packages/specs/openapi/openapi.yaml` — the spec omission was
- * inadvertent and will be fixed when T-2026-05-10-011 Block 5 closes.
- * Until then we augment the generated `Character` type here (the single
- * HTTP boundary) so pages can read the field safely without `any`.
- *
- * PRD override: the backend always sends the field in the JSON body (Prisma
- * select returns it); callers default to `false` when absent for defensive
- * compatibility with any cached responses from before the migration.
- */
-export type Character = GeneratedCharacter & {
-  roleUnmigrated?: boolean;
-};
 
 export interface CharactersApiClient {
   list(opts?: { limit?: number }): Promise<CharacterList>;
@@ -104,8 +88,8 @@ export function useCharactersApi(): CharactersApiClient {
   };
 }
 
-// Character is exported above as the augmented local type (includes roleUnmigrated).
 export {
+  type Character,
   type CharacterCreate,
   type CharacterList,
   type CharacterUpdate,
