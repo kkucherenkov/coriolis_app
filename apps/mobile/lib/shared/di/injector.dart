@@ -14,6 +14,7 @@ import 'package:coriolis_companion/features/characters/presentation/blocs/charac
 import 'package:coriolis_companion/features/rolls/data/roll_repository_impl.dart';
 import 'package:coriolis_companion/features/rolls/domain/roll_repository.dart';
 import 'package:coriolis_companion/features/rolls/presentation/blocs/dice_roller/dice_roller_cubit.dart';
+import 'package:coriolis_companion/features/rolls/presentation/blocs/roll_history/roll_history_cubit.dart';
 import 'package:coriolis_companion/shared/auth/token_storage.dart';
 import 'package:coriolis_companion/shared/config/app_config.dart';
 import 'package:coriolis_companion/shared/network/api_client.dart';
@@ -88,9 +89,13 @@ void configureDependencies() {
     () => CharacterWizardCubit(repository: getIt<CharacterRepository>()),
   );
 
-  getIt.registerFactory<DiceRollerCubit>(
-    () => DiceRollerCubit(repository: getIt<RollRepository>()),
-  );
+  getIt
+    ..registerFactory<DiceRollerCubit>(
+      () => DiceRollerCubit(repository: getIt<RollRepository>()),
+    )
+    ..registerFactory<RollHistoryCubit>(
+      () => RollHistoryCubit(repository: getIt<RollRepository>()),
+    );
 }
 
 /// Test-only reset hook. Call in `tearDown` to drop singletons between cases.

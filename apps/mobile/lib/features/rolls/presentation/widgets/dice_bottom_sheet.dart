@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:coriolis_companion/features/rolls/domain/roll.dart';
 import 'package:coriolis_companion/features/rolls/presentation/blocs/dice_roller/dice_roller_cubit.dart';
 import 'package:coriolis_companion/features/rolls/presentation/blocs/dice_roller/dice_roller_state.dart';
+import 'package:coriolis_companion/features/rolls/presentation/blocs/roll_history/roll_history_cubit.dart';
+import 'package:coriolis_companion/features/rolls/presentation/widgets/roll_history_list.dart';
 import 'package:coriolis_companion/features/rolls/presentation/widgets/roll_result_strip.dart';
 import 'package:coriolis_companion/shared/di/injector.dart';
 
@@ -29,8 +31,20 @@ class DiceBottomSheet {
       isScrollControlled: true,
       useSafeArea: true,
       builder: (sheetCtx) {
-        return BlocProvider<DiceRollerCubit>(
-          create: (_) => getIt<DiceRollerCubit>(),
+        // Two cubits live for the lifetime of the sheet: the roller is
+        // ephemeral (a fresh state each open) and the history is the
+        // canonical view of the last 50 rolls. Keeping both in one
+        // MultiBlocProvider lets the listener forward roller events
+        // directly into history without a parent owning the bridge.
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider<DiceRollerCubit>(
+              create: (_) => getIt<DiceRollerCubit>(),
+            ),
+            BlocProvider<RollHistoryCubit>(
+              create: (_) => getIt<RollHistoryCubit>(),
+            ),
+          ],
           child: _DiceBottomSheetContent(
             characterId: characterId,
             exhausted: exhausted,
@@ -84,14 +98,18 @@ class _DiceBottomSheetContentState extends State<_DiceBottomSheetContent> {
       listener: (ctx, state) {
         final roll = state.lastRoll;
         if (roll == null) return;
+        final history = ctx.read<RollHistoryCubit>();
         // Distinguish between a fresh roll (new id) and a push update
         // (same id, pushed flag flipped) so the parent's callbacks fire
-        // exactly once per server-side action.
+        // exactly once per server-side action — and so the history list
+        // gets the right method (prepend vs in-place update).
         if (_emittedRollId?.id != roll.id) {
           widget.onRoll?.call(roll);
+          history.prependRoll(roll);
           _emittedRollId = roll;
         } else if (roll.pushed && _emittedPushId?.id != roll.id) {
           widget.onPush?.call(roll);
+          history.updateRoll(roll);
           _emittedPushId = roll;
         }
       },
@@ -104,7 +122,7 @@ class _DiceBottomSheetContentState extends State<_DiceBottomSheetContent> {
             !widget.exhausted &&
             state.status != DiceRollerStatus.pushing;
 
-        return Padding(
+        return SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(
             16,
             12,
@@ -211,6 +229,17 @@ class _DiceBottomSheetContentState extends State<_DiceBottomSheetContent> {
                   onPush: cubit.push,
                 ),
               ],
+
+              const SizedBox(height: 16),
+              const Divider(),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Text(
+                  'History',
+                  style: Theme.of(ctx).textTheme.titleSmall,
+                ),
+              ),
+              RollHistoryList(characterId: widget.characterId),
             ],
           ),
         );

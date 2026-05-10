@@ -1,3 +1,5 @@
+import 'package:equatable/equatable.dart';
+
 /// A Coriolis dice roll as the mobile UI sees it.
 ///
 /// Domain model — the presentation layer never imports `app_api_client`'s
@@ -7,7 +9,11 @@
 /// `dice` always has length `pool`; on push the non-six values are replaced
 /// in-place server-side and the response carries the new array. `hits` is
 /// authoritative — count `dice` against 6 only as a sanity check.
-class Roll {
+///
+/// Extends `Equatable` so list-of-Roll state diffs (e.g. inside
+/// `RollHistoryState.rolls`) compare structurally — `bloc_test` uses
+/// equality and would otherwise compare by reference.
+class Roll extends Equatable {
   const Roll({
     required this.id,
     required this.characterId,
@@ -42,4 +48,17 @@ class Roll {
     }
     return out;
   }
+
+  @override
+  List<Object?> get props => [
+        id,
+        characterId,
+        gameSessionId,
+        label,
+        pool,
+        dice,
+        hits,
+        pushed,
+        createdAt,
+      ];
 }
