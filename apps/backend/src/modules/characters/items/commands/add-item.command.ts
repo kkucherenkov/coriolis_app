@@ -7,6 +7,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Max,
   Min,
   ValidateIf,
 } from 'class-validator';
@@ -83,7 +84,8 @@ export class AddItemDto {
   @ValidateIf((o: AddItemDto) => o.type === 'CYBERNETIC')
   @IsInt()
   @Min(0)
-  bodyPoints?: number;
+  @Max(15)
+  xpCost?: number;
 
   // CYBERNETIC / SHIP_MODULE
   @ValidateIf((o: AddItemDto) => ['CYBERNETIC', 'SHIP_MODULE'].includes(o.type))

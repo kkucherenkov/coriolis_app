@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Max,
   Min,
 } from 'class-validator';
 
@@ -21,7 +22,7 @@ export class UpdateItemDto {
   @IsOptional() @IsBoolean() equipped?: boolean;
   @IsOptional() @IsInt() @Min(1) quantity?: number;
   @IsOptional() @IsString() notes?: string | null;
-  @IsOptional() @IsInt() @Min(0) bodyPoints?: number;
+  @IsOptional() @IsInt() @Min(0) @Max(15) xpCost?: number;
   @IsOptional() @IsString() effect?: string;
   @IsOptional()
   @IsIn(['bridge', 'hull', 'hold', 'weapon', 'drive', 'sensor', 'comms'])

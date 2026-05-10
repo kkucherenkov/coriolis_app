@@ -9,16 +9,12 @@
  *   HP max    = STR + AGI          (PRD §5.2: "HP max = STR + AGI")
  *   MP max    = WIT + EMP          (PRD §5.2: "MP max = WIT + EMP")
  *   Enc max   = STR × 2            (PRD §5.2: "Encumbrance limit = STR × 2")
- *   Enc cur   = sum of item weights (PRD §5.3: weight in slots, CYBERNETIC uses
- *                                    systemStrain not weight — PRD does not
- *                                    explicitly state cybs are exempt, but the
- *                                    schema stores cyb-specific fields in `data`
- *                                    while `weight` remains on the common
- *                                    fields; we sum `weight` for all items
- *                                    including CYBERNETIC because the Item
- *                                    schema always carries `weight: number`.
- *                                    If a cybernetic has weight 0 it does not
- *                                    add encumbrance. Assumption documented.)
+ *   Enc cur   = sum of item weights (PRD §5.3: weight in slots; we sum `weight`
+ *                                    for all items including CYBERNETIC because
+ *                                    the Item schema always carries
+ *                                    `weight: number`. If a cybernetic has
+ *                                    weight 0 it does not add encumbrance.
+ *                                    Assumption documented.)
  *   Push      = not exhausted AND roll not already pushed (PRD §10)
  */
 

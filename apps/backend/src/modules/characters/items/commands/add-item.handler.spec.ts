@@ -137,6 +137,46 @@ describe('AddItemHandler', () => {
     expect(result.type).toBe('WEAPON');
   });
 
+  it('accepts CYBERNETIC item with xpCost: 5 (canonical talent acquisition cost per ГЛАВА 4)', async () => {
+    vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user-1' });
+    const cybItem = makeItem({
+      type: 'CYBERNETIC',
+      name: 'Neural Interface',
+      xpCost: 5,
+      effect: 'Data link to ship AI',
+    });
+    vi.mocked(itemRepo.create).mockResolvedValue(cybItem);
+
+    const dto = Object.assign(new AddItemDto(), {
+      type: 'CYBERNETIC' as const,
+      name: 'Neural Interface',
+      xpCost: 5,
+      effect: 'Data link to ship AI',
+    });
+
+    const { validate } = await import('class-validator');
+    const errors = await validate(dto);
+    expect(errors).toHaveLength(0);
+
+    const result = await handler.execute(new AddItemCommand('char-1', 'user-1', dto));
+    expect(result.type).toBe('CYBERNETIC');
+  });
+
+  it('rejects CYBERNETIC item with xpCost: 16 (above 0..15 cap)', async () => {
+    const dto = Object.assign(new AddItemDto(), {
+      type: 'CYBERNETIC' as const,
+      name: 'Overclocked Implant',
+      xpCost: 16,
+      effect: 'Speed boost',
+    });
+
+    const { validate } = await import('class-validator');
+    const errors = await validate(dto);
+    const xpCostError = errors.find((e) => e.property === 'xpCost');
+    expect(xpCostError).toBeDefined();
+    expect(itemRepo.create).not.toHaveBeenCalled();
+  });
+
   it('rejects legacy range value "short" (narrowed to 4-band canonical enum)', async () => {
     vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user-1' });
 
