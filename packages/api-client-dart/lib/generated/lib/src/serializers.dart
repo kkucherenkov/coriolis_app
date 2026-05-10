@@ -25,6 +25,11 @@ import 'package:app_api_client/src/model/character_hp.dart';
 import 'package:app_api_client/src/model/character_list.dart';
 import 'package:app_api_client/src/model/character_mp.dart';
 import 'package:app_api_client/src/model/character_update.dart';
+import 'package:app_api_client/src/model/combatant.dart';
+import 'package:app_api_client/src/model/combatant_create.dart';
+import 'package:app_api_client/src/model/combatant_list.dart';
+import 'package:app_api_client/src/model/combatant_type.dart';
+import 'package:app_api_client/src/model/combatant_update.dart';
 import 'package:app_api_client/src/model/concept.dart';
 import 'package:app_api_client/src/model/condition_flags.dart';
 import 'package:app_api_client/src/model/crew_concept.dart';
@@ -148,6 +153,11 @@ part 'serializers.g.dart';
   CharacterList,
   CharacterMp,
   CharacterUpdate,
+  Combatant,
+  CombatantCreate,
+  CombatantList,
+  CombatantType,
+  CombatantUpdate,
   Concept,
   ConditionFlags,
   CrewConcept,

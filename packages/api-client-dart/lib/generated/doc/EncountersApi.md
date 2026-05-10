@@ -9,12 +9,65 @@ All URIs are relative to *http://localhost:3010*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**addCombatant**](EncountersApi.md#addcombatant) | **POST** /api/v1/encounters/{id}/combatants | Add a combatant to an encounter
 [**createEncounter**](EncountersApi.md#createencounter) | **POST** /api/v1/game-sessions/{sessionId}/encounters | Create an encounter in a game session
+[**deleteCombatant**](EncountersApi.md#deletecombatant) | **DELETE** /api/v1/combatants/{id} | Remove a combatant from an encounter
 [**deleteEncounter**](EncountersApi.md#deleteencounter) | **DELETE** /api/v1/encounters/{id} | Delete an encounter
 [**getEncounter**](EncountersApi.md#getencounter) | **GET** /api/v1/encounters/{id} | Get an encounter by ID
+[**listCombatants**](EncountersApi.md#listcombatants) | **GET** /api/v1/encounters/{id}/combatants | List combatants for an encounter
 [**listEncounters**](EncountersApi.md#listencounters) | **GET** /api/v1/game-sessions/{sessionId}/encounters | List encounters for a game session
+[**updateCombatant**](EncountersApi.md#updatecombatant) | **PATCH** /api/v1/combatants/{id} | Update a combatant
 [**updateEncounter**](EncountersApi.md#updateencounter) | **PATCH** /api/v1/encounters/{id} | Update an encounter
 
+
+# **addCombatant**
+> Combatant addCombatant(id, combatantCreate)
+
+Add a combatant to an encounter
+
+Adds a PC or NPC as a combatant to the encounter. The server snapshots `hpCurrent`, `hpMax`, `armor`, and `signature` from the source entity at the moment of this call. Subsequent changes to the source's stats (e.g. the player saving their character sheet mid-combat) do NOT propagate to the combatant record — the GM mutates `hpCurrent` directly on the combatant via `PATCH /api/v1/combatants/{id}`.  Only allowed while the encounter is in `setup` status. `initiative` and `turnOrder` remain null until the initiative roll operation in Block 4.  Error codes: - `COMBATANT_SOURCE_NOT_FOUND` — the `sourceId` does not exist - `COMBATANT_SOURCE_NOT_OWNED` — the caller does not own the source Character or Npc - `COMBATANT_DUPLICATE` — the same `(combatantType, sourceId)` pair is already on the encounter - `ENCOUNTER_LOCKED_FOR_COMBAT` — the encounter is `active` or `ended`; combatants may only be added during `setup` 
+
+### Example
+```dart
+import 'package:app_api_client/api.dart';
+// TODO Configure API key authorization: cookieAuth
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKeyPrefix = 'Bearer';
+
+final api = AppApiClient().getEncountersApi();
+final String id = id_example; // String | Encounter identifier (cuid2)
+final CombatantCreate combatantCreate = {"combatantType":"pc","sourceId":"cuid_char01"}; // CombatantCreate | 
+
+try {
+    final response = api.addCombatant(id, combatantCreate);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling EncountersApi->addCombatant: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **String**| Encounter identifier (cuid2) | 
+ **combatantCreate** | [**CombatantCreate**](CombatantCreate.md)|  | 
+
+### Return type
+
+[**Combatant**](Combatant.md)
+
+### Authorization
+
+[cookieAuth](../README.md#cookieAuth), [bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json, application/problem+json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **createEncounter**
 > Encounter createEncounter(sessionId, encounterCreate)
@@ -62,6 +115,52 @@ Name | Type | Description  | Notes
 
  - **Content-Type**: application/json
  - **Accept**: application/json, application/problem+json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **deleteCombatant**
+> deleteCombatant(id)
+
+Remove a combatant from an encounter
+
+Permanently removes the combatant from the encounter. Only allowed while the encounter is in `setup` status. Returns 422 `ENCOUNTER_LOCKED_FOR_COMBAT` when the encounter is `active` or `ended`.  ACL is resolved through the encounter's parent game session owner. 
+
+### Example
+```dart
+import 'package:app_api_client/api.dart';
+// TODO Configure API key authorization: cookieAuth
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKeyPrefix = 'Bearer';
+
+final api = AppApiClient().getEncountersApi();
+final String id = id_example; // String | Combatant identifier (cuid2)
+
+try {
+    api.deleteCombatant(id);
+} on DioException catch (e) {
+    print('Exception when calling EncountersApi->deleteCombatant: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **String**| Combatant identifier (cuid2) | 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[cookieAuth](../README.md#cookieAuth), [bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/problem+json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -158,6 +257,53 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **listCombatants**
+> CombatantList listCombatants(id)
+
+List combatants for an encounter
+
+Returns all combatants belonging to the encounter identified by `id`. Results are unordered until initiative is rolled (Block 4); after rolling they are returned sorted by `turnOrder` ascending.  Owner-gated through the encounter's parent game session. 
+
+### Example
+```dart
+import 'package:app_api_client/api.dart';
+// TODO Configure API key authorization: cookieAuth
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKeyPrefix = 'Bearer';
+
+final api = AppApiClient().getEncountersApi();
+final String id = id_example; // String | Encounter identifier (cuid2)
+
+try {
+    final response = api.listCombatants(id);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling EncountersApi->listCombatants: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **String**| Encounter identifier (cuid2) | 
+
+### Return type
+
+[**CombatantList**](CombatantList.md)
+
+### Authorization
+
+[cookieAuth](../README.md#cookieAuth), [bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json, application/problem+json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **listEncounters**
 > EncounterList listEncounters(sessionId, cursor, limit, status)
 
@@ -207,6 +353,55 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json, application/problem+json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **updateCombatant**
+> Combatant updateCombatant(id, combatantUpdate)
+
+Update a combatant
+
+Applies PATCH semantics to a combatant. Only mutable fields are accepted: `hpCurrent`, `armor`, `signature`, `statusFlags`, `notes`, `displayName`. Immutable fields (`combatantType`, `sourceId`) are absent from the schema. `initiative` and `turnOrder` are read-only here and are only set via the initiative operations (Block 4).  Allowed during both `setup` and `active` encounters. Returns 422 `ENCOUNTER_ENDED` if the encounter status is `ended`.  ACL is resolved through the encounter's parent game session owner. 
+
+### Example
+```dart
+import 'package:app_api_client/api.dart';
+// TODO Configure API key authorization: cookieAuth
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKeyPrefix = 'Bearer';
+
+final api = AppApiClient().getEncountersApi();
+final String id = id_example; // String | Combatant identifier (cuid2)
+final CombatantUpdate combatantUpdate = {"hpCurrent":0,"statusFlags":["broken"]}; // CombatantUpdate | 
+
+try {
+    final response = api.updateCombatant(id, combatantUpdate);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling EncountersApi->updateCombatant: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **String**| Combatant identifier (cuid2) | 
+ **combatantUpdate** | [**CombatantUpdate**](CombatantUpdate.md)|  | 
+
+### Return type
+
+[**Combatant**](Combatant.md)
+
+### Authorization
+
+[cookieAuth](../README.md#cookieAuth), [bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json, application/problem+json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

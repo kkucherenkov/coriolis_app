@@ -2324,6 +2324,203 @@ export type EncounterList = {
 };
 
 /**
+ * Discriminator field that identifies the source entity type of a combatant.
+ *
+ * - `pc` — references an existing `Character` owned by the encounter's GM
+ * (or assigned to the parent `GameSession`).
+ * - `npc` — references an existing `Npc` owned by the GM.
+ *
+ */
+export type CombatantType = 'pc' | 'npc';
+
+/**
+ * A single participant in a combat encounter. Combatants store a snapshot
+ * of the source entity's stats (HP, armor, signature) at the moment of
+ * add. Mid-combat changes to the source PC's hp via the character sheet
+ * do NOT propagate to the combatant; the GM mutates `hpCurrent` directly
+ * on the combatant via `PATCH /api/v1/combatants/{id}`. This protects the
+ * tracker from accidental scrambling when a player auto-saves their sheet
+ * during combat.
+ *
+ * Well-known `statusFlags` values: `broken` (all attributes halved per
+ * ST3001 p.77), `exposed` (no armor dice), `covered` (+2 armor dice),
+ * `prone` (-2 to attack dice). Additional free-form tags are accepted for
+ * v1 custom conditions.
+ *
+ */
+export type Combatant = {
+    /**
+     * Opaque combatant identifier (cuid2)
+     */
+    readonly id: string;
+    /**
+     * Identifier of the parent encounter (cuid2)
+     */
+    readonly encounterId: string;
+    combatantType: CombatantType;
+    /**
+     * Identifier of the source entity. When `combatantType` is `pc` this
+     * is the `Character.id`; when `npc` it is the `Npc.id`.
+     *
+     */
+    readonly sourceId: string;
+    /**
+     * Denormalised name of the combatant, copied from the source entity's
+     * `name` at add-time. Can be overridden in `CombatantCreate.displayName`
+     * or updated via `PATCH`.
+     *
+     */
+    displayName: string;
+    /**
+     * d10 initiative result (1–10 per ST3001). Null until the encounter's
+     * initiative is rolled (Block 4 operation). Set server-side only.
+     *
+     */
+    readonly initiative: number | null;
+    /**
+     * 0-based index in the turn sequence after initiative is sorted.
+     * Null until initiative is rolled. Combatant at index 0 goes first.
+     * Set server-side only.
+     *
+     */
+    readonly turnOrder: number | null;
+    /**
+     * Current hit points. May go below 0 (CT3001 does not clamp).
+     */
+    hpCurrent: number;
+    /**
+     * Maximum hit points snapshotted from the source at add-time.
+     */
+    hpMax: number;
+    /**
+     * Armor rating (number of armor dice). Snapshotted from the source at add-time.
+     */
+    armor: number;
+    /**
+     * Mystic Darkness signature value. Defaults to 0 for PC combatants;
+     * copied from `Npc.signature` for NPC combatants at add-time.
+     *
+     */
+    signature: number;
+    /**
+     * Free-form short tags describing combat status conditions. Well-known
+     * values: `broken`, `exposed`, `covered`, `prone`. Clients should
+     * render known tags with icons; unknown tags are shown as plain text.
+     *
+     */
+    statusFlags: Array<string>;
+    /**
+     * Optional GM notes for this combatant in Markdown format (max 500 characters).
+     */
+    notes: string | null;
+    readonly createdAt: string;
+    readonly updatedAt: string;
+};
+
+/**
+ * POST payload for `POST /api/v1/encounters/{id}/combatants`.
+ *
+ * `combatantType` and `sourceId` are required. The server snapshots
+ * `hpCurrent`, `hpMax`, `armor`, and `signature` from the source entity
+ * on add; these fields are absent from the request payload and populated
+ * in the response. `initiative` and `turnOrder` are server-controlled and
+ * remain null until the Block 4 initiative-roll operation.
+ *
+ * `displayName` is optional — when omitted the server uses the source
+ * entity's `name` field.
+ *
+ * 422 error codes:
+ * - `COMBATANT_SOURCE_NOT_FOUND` — `sourceId` does not exist
+ * - `COMBATANT_SOURCE_NOT_OWNED` — caller does not own the source entity
+ * - `COMBATANT_DUPLICATE` — same `(combatantType, sourceId)` already present
+ * - `ENCOUNTER_LOCKED_FOR_COMBAT` — encounter is not in `setup` status
+ *
+ */
+export type CombatantCreate = {
+    combatantType: CombatantType;
+    /**
+     * Identifier of the source entity. Must be a `Character.id` when
+     * `combatantType` is `pc`, or an `Npc.id` when `combatantType` is `npc`.
+     *
+     */
+    sourceId: string;
+    /**
+     * Optional override for the combatant display name. When omitted the
+     * server copies the source entity's `name`.
+     *
+     */
+    displayName?: string;
+    /**
+     * Optional GM notes in Markdown (max 500 characters).
+     */
+    notes?: string | null;
+};
+
+/**
+ * PATCH payload for `PATCH /api/v1/combatants/{id}`. All fields are
+ * optional; omitted fields are left unchanged.
+ *
+ * `combatantType` and `sourceId` are immutable and absent from this
+ * schema. `initiative` and `turnOrder` are read-only and can only be
+ * set via the Block 4 initiative operations.
+ *
+ */
+export type CombatantUpdate = {
+    /**
+     * Update the combatant display name.
+     */
+    displayName?: string;
+    /**
+     * Update current hit points (may go negative).
+     */
+    hpCurrent?: number;
+    /**
+     * Update armor rating.
+     */
+    armor?: number;
+    /**
+     * Update the mystic signature value.
+     */
+    signature?: number;
+    /**
+     * Replace the full set of status flags. Well-known values:
+     * `broken`, `exposed`, `covered`, `prone`.
+     *
+     */
+    statusFlags?: Array<string>;
+    /**
+     * Update GM notes in Markdown (max 500 characters).
+     */
+    notes?: string | null;
+    /**
+     * Read-only. Initiative is set exclusively by the Block 4
+     * initiative-roll operation. This field is listed here for
+     * documentation purposes only; any value supplied in a PATCH
+     * request will be ignored.
+     *
+     */
+    readonly initiative?: number | null;
+    /**
+     * Read-only. Turn order index is set exclusively by the Block 4
+     * initiative operations. This field is listed here for
+     * documentation purposes only; any value supplied in a PATCH
+     * request will be ignored.
+     *
+     */
+    readonly turnOrder?: number | null;
+};
+
+/**
+ * Non-paginated list of combatants for an encounter. Typical encounters
+ * have fewer than 20 combatants; a pagination cursor would add unnecessary
+ * complexity for no practical benefit.
+ *
+ */
+export type CombatantList = {
+    items: Array<Combatant>;
+};
+
+/**
  * A single Coriolis dice roll. Dice are rolled server-side using a
  * cryptographically secure RNG. Hits = count of 6s. A roll can be pushed
  * at most once (PRD §10). `gameSessionId` is null until Feature 7.2 lands.
@@ -2893,6 +3090,109 @@ export type EncounterListWritable = {
 };
 
 /**
+ * A single participant in a combat encounter. Combatants store a snapshot
+ * of the source entity's stats (HP, armor, signature) at the moment of
+ * add. Mid-combat changes to the source PC's hp via the character sheet
+ * do NOT propagate to the combatant; the GM mutates `hpCurrent` directly
+ * on the combatant via `PATCH /api/v1/combatants/{id}`. This protects the
+ * tracker from accidental scrambling when a player auto-saves their sheet
+ * during combat.
+ *
+ * Well-known `statusFlags` values: `broken` (all attributes halved per
+ * ST3001 p.77), `exposed` (no armor dice), `covered` (+2 armor dice),
+ * `prone` (-2 to attack dice). Additional free-form tags are accepted for
+ * v1 custom conditions.
+ *
+ */
+export type CombatantWritable = {
+    combatantType: CombatantType;
+    /**
+     * Denormalised name of the combatant, copied from the source entity's
+     * `name` at add-time. Can be overridden in `CombatantCreate.displayName`
+     * or updated via `PATCH`.
+     *
+     */
+    displayName: string;
+    /**
+     * Current hit points. May go below 0 (CT3001 does not clamp).
+     */
+    hpCurrent: number;
+    /**
+     * Maximum hit points snapshotted from the source at add-time.
+     */
+    hpMax: number;
+    /**
+     * Armor rating (number of armor dice). Snapshotted from the source at add-time.
+     */
+    armor: number;
+    /**
+     * Mystic Darkness signature value. Defaults to 0 for PC combatants;
+     * copied from `Npc.signature` for NPC combatants at add-time.
+     *
+     */
+    signature: number;
+    /**
+     * Free-form short tags describing combat status conditions. Well-known
+     * values: `broken`, `exposed`, `covered`, `prone`. Clients should
+     * render known tags with icons; unknown tags are shown as plain text.
+     *
+     */
+    statusFlags: Array<string>;
+    /**
+     * Optional GM notes for this combatant in Markdown format (max 500 characters).
+     */
+    notes: string | null;
+};
+
+/**
+ * PATCH payload for `PATCH /api/v1/combatants/{id}`. All fields are
+ * optional; omitted fields are left unchanged.
+ *
+ * `combatantType` and `sourceId` are immutable and absent from this
+ * schema. `initiative` and `turnOrder` are read-only and can only be
+ * set via the Block 4 initiative operations.
+ *
+ */
+export type CombatantUpdateWritable = {
+    /**
+     * Update the combatant display name.
+     */
+    displayName?: string;
+    /**
+     * Update current hit points (may go negative).
+     */
+    hpCurrent?: number;
+    /**
+     * Update armor rating.
+     */
+    armor?: number;
+    /**
+     * Update the mystic signature value.
+     */
+    signature?: number;
+    /**
+     * Replace the full set of status flags. Well-known values:
+     * `broken`, `exposed`, `covered`, `prone`.
+     *
+     */
+    statusFlags?: Array<string>;
+    /**
+     * Update GM notes in Markdown (max 500 characters).
+     */
+    notes?: string | null;
+};
+
+/**
+ * Non-paginated list of combatants for an encounter. Typical encounters
+ * have fewer than 20 combatants; a pagination cursor would add unnecessary
+ * complexity for no practical benefit.
+ *
+ */
+export type CombatantListWritable = {
+    items: Array<CombatantWritable>;
+};
+
+/**
  * Character identifier (cuid2)
  */
 export type CharacterId = string;
@@ -2946,6 +3246,11 @@ export type NpcId = string;
  * Encounter identifier (cuid2)
  */
 export type EncounterId = string;
+
+/**
+ * Combatant identifier (cuid2)
+ */
+export type CombatantId = string;
 
 export type ListCharactersData = {
     body?: never;
@@ -4932,6 +5237,171 @@ export type UpdateEncounterResponses = {
 };
 
 export type UpdateEncounterResponse = UpdateEncounterResponses[keyof UpdateEncounterResponses];
+
+export type ListCombatantsData = {
+    body?: never;
+    path: {
+        /**
+         * Encounter identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/encounters/{id}/combatants';
+};
+
+export type ListCombatantsErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the encounter
+     */
+    403: Problem;
+    /**
+     * Encounter not found
+     */
+    404: Problem;
+};
+
+export type ListCombatantsError = ListCombatantsErrors[keyof ListCombatantsErrors];
+
+export type ListCombatantsResponses = {
+    /**
+     * List of combatants
+     */
+    200: CombatantList;
+};
+
+export type ListCombatantsResponse = ListCombatantsResponses[keyof ListCombatantsResponses];
+
+export type AddCombatantData = {
+    body: CombatantCreate;
+    path: {
+        /**
+         * Encounter identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/encounters/{id}/combatants';
+};
+
+export type AddCombatantErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the encounter
+     */
+    403: Problem;
+    /**
+     * Encounter not found
+     */
+    404: Problem;
+    /**
+     * Business rule violation. `code` identifies the specific error.
+     *
+     */
+    422: Problem;
+};
+
+export type AddCombatantError = AddCombatantErrors[keyof AddCombatantErrors];
+
+export type AddCombatantResponses = {
+    /**
+     * Combatant added
+     */
+    201: Combatant;
+};
+
+export type AddCombatantResponse = AddCombatantResponses[keyof AddCombatantResponses];
+
+export type DeleteCombatantData = {
+    body?: never;
+    path: {
+        /**
+         * Combatant identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/combatants/{id}';
+};
+
+export type DeleteCombatantErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the encounter
+     */
+    403: Problem;
+    /**
+     * Combatant not found
+     */
+    404: Problem;
+    /**
+     * Cannot remove a combatant once combat has started
+     */
+    422: Problem;
+};
+
+export type DeleteCombatantError = DeleteCombatantErrors[keyof DeleteCombatantErrors];
+
+export type DeleteCombatantResponses = {
+    /**
+     * Combatant removed
+     */
+    204: void;
+};
+
+export type DeleteCombatantResponse = DeleteCombatantResponses[keyof DeleteCombatantResponses];
+
+export type UpdateCombatantData = {
+    body: CombatantUpdateWritable;
+    path: {
+        /**
+         * Combatant identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/combatants/{id}';
+};
+
+export type UpdateCombatantErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the encounter
+     */
+    403: Problem;
+    /**
+     * Combatant not found
+     */
+    404: Problem;
+    /**
+     * Encounter is ended — combatant mutations are not allowed
+     */
+    422: Problem;
+};
+
+export type UpdateCombatantError = UpdateCombatantErrors[keyof UpdateCombatantErrors];
+
+export type UpdateCombatantResponses = {
+    /**
+     * Combatant updated
+     */
+    200: Combatant;
+};
+
+export type UpdateCombatantResponse = UpdateCombatantResponses[keyof UpdateCombatantResponses];
 
 export type CreateShareLinkData = {
     body: ShareLinkCreate;
