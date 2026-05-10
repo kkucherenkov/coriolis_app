@@ -1,0 +1,196 @@
+/**
+ * WHY this file exists:
+ * Infrastructure adapter — the Prisma-backed implementation of IShipRepo.
+ * This is the only file in the ships bounded context that imports PrismaService.
+ * Handlers inject IShipRepo by the SHIP_REPO token.
+ *
+ * Reads always include modules + crew in a single query (include: { modules: true, crew: true })
+ * to match the OpenAPI Ship shape. No post-hoc JS projection over full entities.
+ */
+import { Injectable } from '@nestjs/common';
+
+import { PrismaService } from '../../../common/prisma/prisma.service';
+import { toShipReadModel } from './ship.mapper';
+
+import type { IShipRepo, ShipClass, ShipListOptions, ShipReadModel } from '../domain/ship.ports';
+
+const SHIP_INCLUDE = {
+  modules: {
+    select: { id: true, slot: true, name: true, energyUse: true, data: true },
+    orderBy: { createdAt: 'asc' as const },
+  },
+  crew: {
+    select: { position: true, assignedCharacterId: true },
+    orderBy: { position: 'asc' as const },
+  },
+} as const;
+
+const SHIP_SELECT = {
+  id: true,
+  ownerId: true,
+  name: true,
+  class: true,
+  model: true,
+  registry: true,
+  hullCurrent: true,
+  hullMax: true,
+  energyCurrent: true,
+  energyMax: true,
+  armor: true,
+  maneuverability: true,
+  signature: true,
+  speed: true,
+  cargoCapacity: true,
+  problems: true,
+  history: true,
+  notes: true,
+  createdAt: true,
+  updatedAt: true,
+  modules: SHIP_INCLUDE.modules,
+  crew: SHIP_INCLUDE.crew,
+} as const;
+
+@Injectable()
+export class ShipRepo implements IShipRepo {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async findById(id: string): Promise<ShipReadModel | null> {
+    const row = await this.prisma.ship.findFirst({
+      where: { id },
+      select: SHIP_SELECT,
+    });
+    return row ? toShipReadModel(row) : null;
+  }
+
+  async list(
+    opts: ShipListOptions,
+  ): Promise<{ items: ShipReadModel[]; nextCursor: string | null }> {
+    const { ownerId, limit, cursor } = opts;
+    const take = limit + 1;
+
+    const rows = await this.prisma.ship.findMany({
+      where: { ownerId },
+      select: SHIP_SELECT,
+      orderBy: { createdAt: 'desc' },
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      take,
+    });
+
+    const hasNext = rows.length > limit;
+    const items = hasNext ? rows.slice(0, limit) : rows;
+
+    return {
+      items: items.map((r) => toShipReadModel(r)),
+      nextCursor: hasNext ? (items.at(-1)?.id ?? null) : null,
+    };
+  }
+
+  async create(data: {
+    ownerId: string;
+    name: string;
+    class: ShipClass;
+    model?: string | null;
+    registry?: string | null;
+    hullCurrent: number;
+    hullMax: number;
+    energyCurrent: number;
+    energyMax: number;
+    armor: number;
+    maneuverability: number;
+    signature: number;
+    speed: number;
+    cargoCapacity: number;
+    notes?: string | null;
+    history?: string | null;
+  }): Promise<ShipReadModel> {
+    const row = await this.prisma.ship.create({
+      data: {
+        ownerId: data.ownerId,
+        name: data.name,
+        class: data.class,
+        model: data.model ?? null,
+        registry: data.registry ?? null,
+        hullCurrent: data.hullCurrent,
+        hullMax: data.hullMax,
+        energyCurrent: data.energyCurrent,
+        energyMax: data.energyMax,
+        armor: data.armor,
+        maneuverability: data.maneuverability,
+        signature: data.signature,
+        speed: data.speed,
+        cargoCapacity: data.cargoCapacity,
+        notes: data.notes ?? null,
+        history: data.history ?? null,
+        // Auto-create mandatory modules
+        modules: {
+          create: [
+            { slot: 'BRIDGE', name: 'Bridge', energyUse: 1, data: {} },
+            { slot: 'REACTOR', name: 'Reactor', energyUse: 0, data: {} },
+            { slot: 'DRIVE', name: 'Drive', energyUse: 2, data: {} },
+          ],
+        },
+        // Auto-create six crew slots
+        crew: {
+          create: [
+            { position: 'captain', assignedCharacterId: null },
+            { position: 'pilot', assignedCharacterId: null },
+            { position: 'sensorOp', assignedCharacterId: null },
+            { position: 'gunner', assignedCharacterId: null },
+            { position: 'engineer', assignedCharacterId: null },
+            { position: 'serviceCrew', assignedCharacterId: null },
+          ],
+        },
+      },
+      select: SHIP_SELECT,
+    });
+    return toShipReadModel(row);
+  }
+
+  async update(
+    id: string,
+    data: Partial<{
+      name: string;
+      model: string | null;
+      registry: string | null;
+      hullCurrent: number;
+      hullMax: number;
+      energyCurrent: number;
+      energyMax: number;
+      armor: number;
+      maneuverability: number;
+      signature: number;
+      speed: number;
+      problems: string[];
+      history: string | null;
+      notes: string | null;
+    }>,
+  ): Promise<ShipReadModel> {
+    const payload: Record<string, unknown> = {};
+    if (data.name !== undefined) payload['name'] = data.name;
+    if ('model' in data) payload['model'] = data.model;
+    if ('registry' in data) payload['registry'] = data.registry;
+    if (data.hullCurrent !== undefined) payload['hullCurrent'] = data.hullCurrent;
+    if (data.hullMax !== undefined) payload['hullMax'] = data.hullMax;
+    if (data.energyCurrent !== undefined) payload['energyCurrent'] = data.energyCurrent;
+    if (data.energyMax !== undefined) payload['energyMax'] = data.energyMax;
+    if (data.armor !== undefined) payload['armor'] = data.armor;
+    if (data.maneuverability !== undefined) payload['maneuverability'] = data.maneuverability;
+    if (data.signature !== undefined) payload['signature'] = data.signature;
+    if (data.speed !== undefined) payload['speed'] = data.speed;
+    if ('problems' in data) payload['problems'] = data.problems;
+    if ('history' in data) payload['history'] = data.history;
+    if ('notes' in data) payload['notes'] = data.notes;
+
+    const row = await this.prisma.ship.update({
+      where: { id },
+      data: payload,
+      select: SHIP_SELECT,
+    });
+    return toShipReadModel(row);
+  }
+
+  async delete(id: string): Promise<void> {
+    // Cascade deletes modules + crew slots
+    await this.prisma.ship.delete({ where: { id } });
+  }
+}
