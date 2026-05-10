@@ -5,6 +5,7 @@
  * to use-case needs per the architecture rules.
  */
 import { Injectable, Logger } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 
 import { PrismaService } from '../../../common/prisma/prisma.service';
 import { toRollKind } from '../domain/roll.ports';
@@ -120,6 +121,11 @@ export class RollRepo implements IRollRepo {
     kind: import('../domain/roll.ports').RollKind;
     breakdown: import('../domain/roll.ports').RollBreakdown | null;
   }): Promise<RollReadModel> {
+    // exactOptionalPropertyTypes: don't pass `undefined` to an optional Prisma
+    // input — spread the breakdown only when it's a real object so the key is
+    // omitted entirely on null. (Passing `undefined` literal is a TS error;
+    // omitting the key Prisma reads as "leave the column at its DB default
+    // / NULL", which is exactly what we want for a roll without breakdown.)
     const row = await this.prisma.roll.create({
       data: {
         characterId: data.characterId,
@@ -129,7 +135,12 @@ export class RollRepo implements IRollRepo {
         dice: data.dice,
         hits: data.hits,
         kind: data.kind,
-        breakdown: data.breakdown ?? undefined,
+        // RollBreakdown is a fixed-shape interface; Prisma's InputJsonValue
+        // wants an index signature, so we cast through `unknown` to land in
+        // the InputJsonValue lattice without weakening the domain type.
+        ...(data.breakdown !== null
+          ? { breakdown: data.breakdown as unknown as Prisma.InputJsonValue }
+          : {}),
       },
       select: ROLL_SELECT,
     });

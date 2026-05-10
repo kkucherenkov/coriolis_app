@@ -77,6 +77,7 @@ const MOCK_ROLL_FRESH: RollReadModel = {
   hits: 1,
   pushed: false,
   kind: 'skill',
+  breakdown: null,
   createdAt: '2026-05-09T12:00:00Z',
 };
 

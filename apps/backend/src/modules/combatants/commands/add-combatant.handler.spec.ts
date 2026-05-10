@@ -93,6 +93,7 @@ function makeCharacter(overrides: Partial<SourceCharacter> = {}): SourceCharacte
     signature: 0,
     attributes: { strength: 2, agility: 2, wits: 2, empathy: 2 },
     skills: { dexterity: 1, force: 0, rangedCombat: 1 },
+    weapons: [],
     ...overrides,
   };
 }
@@ -108,6 +109,7 @@ function makeNpc(overrides: Partial<SourceNpc> = {}): SourceNpc {
     signature: 2,
     attributes: { strength: 3, agility: 2, wits: 2, empathy: 2 },
     skills: { rangedCombat: 2, meleeCombat: 1 },
+    weapons: [],
     ...overrides,
   };
 }

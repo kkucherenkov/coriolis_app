@@ -15,7 +15,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service';
 import { computeHpMax } from '../../rules-engine';
 
-import type { ISourceLookup, SourceCharacter, SourceNpc } from '../domain/source-lookup.ports';
+import type { ISourceLookup, SourceCharacter, SourceNpc, SourceWeapon } from '../domain/source-lookup.ports';
 
 interface PrismaCharacterSnap {
   id: string;
@@ -83,7 +83,13 @@ export class SourceLookupAdapter implements ISourceLookup {
         }
       } else if (item.type === 'WEAPON') {
         const data = item.data as { initiative?: number; equipped?: boolean };
-        weapons.push({ initiative: data.initiative, equipped: data.equipped });
+        // exactOptionalPropertyTypes: only set keys when the value is defined;
+        // an absent key reads back through SourceWeapon's optional shape correctly,
+        // whereas an explicit `undefined` is a type error under strict TS.
+        const weapon: SourceWeapon = {};
+        if (typeof data.initiative === 'number') weapon.initiative = data.initiative;
+        if (typeof data.equipped === 'boolean') weapon.equipped = data.equipped;
+        weapons.push(weapon);
       }
     }
 
@@ -129,10 +135,16 @@ export class SourceLookupAdapter implements ISourceLookup {
       }
     }
 
-    // NPC weapons is a JSON array of ItemWeapon objects (T-012: initiative modifier)
-    const weapons = ((row.weapons ?? []) as { initiative?: number; equipped?: boolean }[]).map(
-      (w) => ({ initiative: w.initiative, equipped: w.equipped }),
-    );
+    // NPC weapons is a JSON array of ItemWeapon objects (T-012: initiative modifier).
+    // exactOptionalPropertyTypes — only set keys whose values are defined.
+    const weapons: SourceWeapon[] = (
+      (row.weapons ?? []) as { initiative?: number; equipped?: boolean }[]
+    ).map((w) => {
+      const weapon: SourceWeapon = {};
+      if (typeof w.initiative === 'number') weapon.initiative = w.initiative;
+      if (typeof w.equipped === 'boolean') weapon.equipped = w.equipped;
+      return weapon;
+    });
 
     return {
       id: row.id,
