@@ -60,10 +60,17 @@
         groups (Flutter 3.41 compat, share-link backend +
         ADR-0003, public viewer + OG renderer, mobile pass,
         theme persist + a11y/reduced-motion sweep).
-  - [ ] Block 3 — `phase-4.md` (dice roller web + mobile,
+  - [x] Block 3 — `phase-4.md` (dice roller web + mobile,
         push mechanic, GameSession, Darkness Points,
-        Centrifugo channel for live DP). Cut
-        `phase-4-complete` at the commit closing the DP push.
+        Centrifugo channel for live DP). Tag
+        `phase-4-complete` cut at `dbc22c9` (boundary
+        commit — archives T-003 mobile, pushes T-004
+        Phase 5 backend). Doc classifies ~60 commits into
+        9 feature groups (dice spec, dice + push backend,
+        GameSessions, DP audit log, Centrifugo realtime,
+        web dice + sessions + DP + live, mobile parity,
+        bearer-auth cutover, character-rules + locale-aware
+        follow-ups).
   - [ ] Block 4 — `phase-5.md` (ship sheets, modules,
         crew, ship sharing). Cut `phase-5-complete` at the
         commit closing crew assignment.
