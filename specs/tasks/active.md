@@ -60,7 +60,7 @@
 - Sub-blocks (one feat-spec commit + one codegen commit + one
   active.md follow-up commit per block, per
   `feedback_block_workflow.md`):
-  - [ ] Block 1 — `Npc` resource. Schemas (`Npc`, `NpcCreate`,
+  - [x] Block 1 — `Npc` resource. Schemas (`Npc`, `NpcCreate`,
         `NpcUpdate`, `NpcList`, `NpcId` parameter) + paths
         (`/api/v1/npcs`, `/api/v1/npcs/{id}`,
         `/api/v1/npcs/{id}/duplicate`). Cursor-paginated list.
@@ -68,6 +68,18 @@
         attributes (str/agi/wits/emp), key skills, weapons
         (reuses `ItemWeapon` shape), armor, hp, mp, signature,
         plus a free-form `description` and `tags` (string array).
+        Landed in 1dca68b (spec) + 738e2bc (codegen). `pnpm
+        spec:validate && pnpm spec:bundle && pnpm spec:codegen`
+        green. TS exports: `Npc`, `NpcCreate`, `NpcUpdate`,
+        `NpcList`, `listNpcs`, `createNpc`, `getNpc`, `updateNpc`,
+        `deleteNpc`, `duplicateNpc`. Dart: `npcs_api.dart` +
+        model files. Design call: `keySkillModifier` and `hp`/`mp`
+        are plain integer / inline-object fields with no Character
+        precedent — appropriate since NPC hp/mp are fully
+        GM-editable (not server-derived formulas). The
+        `NpcCreate.attributes` and `NpcCreate.skills` fields
+        reference the shared `Attributes` / `Skills` schemas with
+        server-side defaults documented in the description.
   - [ ] Block 2 — `Encounter` resource. Schemas + paths under a
         new `encounters` tag. List nested under
         `/api/v1/game-sessions/{sessionId}/encounters`; CRUD on
