@@ -948,12 +948,33 @@
 - Spec diff: small. Major bump if landed alone; or fold into the next
   combat-side block bump.
 - Codegen impact: TS + Dart regen.
-- Status: queued
-- Blockers: —
-
----
-
-## T-2026-05-10-013 — `ItemArmor.extraSlotCount` (Block J split)
+- Status: **done — ready to archive.** **Landed in 9fcd89d (spec) +
+  e2ed42f (codegen) + 3b3f5f7 (backend).**
+  - Spec: `ItemWeapon.initiative: integer −5..+5, default 0` on
+    `ItemWeapon` / `ItemWeaponCreate` / `ItemWeaponUpdate`.
+    `Combatant.initiative.maximum` bumped 6 → 10 (a roll of 6 +
+    Посох +2 + ambush +2 = 10 is canon-legal). NPC weapons inherit
+    via the existing `$ref: ItemWeapon` indirection. AsyncAPI
+    centrifugo combatant snapshot bumped maximum 6 → 10 too;
+    AsyncAPI version 0.9.0 → 0.10.0; OpenAPI version 1.0.0 → 1.1.0.
+  - Backend: new pure helpers `sumWeaponInitiative` and
+    `clampInitiative` in `encounters/domain/initiative.ts`.
+    `roll-initiative.handler` reads the combatant's weapons from
+    the snapshot stored at add-time (architectural decision: keep
+    "snapshot is authoritative at add-time" consistent with hp /
+    armor / skills — no live PC/NPC re-lookup). The `add-combatant`
+    path now snapshots `weapons[]` alongside the existing stat
+    block; `SourceLookupAdapter` extended to fetch WEAPON items
+    on the PC path (one combined query with ARMOR; no extra
+    round-trip) and `weapons` from the Npc row. Tie-break loop
+    operates on post-modifier values (no signature change).
+  - Tests: ≥17 new vitest cases (helper invariants, equipped-only
+    semantics, missing-modifier defaults to 0, multi-weapon sum,
+    NPC parity, tie-break interaction). Backend vitest 855 → 872.
+  - Migration: none — `Item.data.initiative` defaults to 0 server-
+    side via the spec's `default: 0`; absence in the JSONB blob
+    reads as 0 by the handler's `?? 0` guard. Legacy weapons stay
+    valid without a backfill.
 
 - Created: 2026-05-10
 - Owner: claude
