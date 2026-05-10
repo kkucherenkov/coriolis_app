@@ -50,7 +50,7 @@
   Playwright e2e.
 - Sub-blocks (one commit + push + active.md follow-up per block,
   per `feedback_block_workflow.md`):
-  - [ ] Block 1 — `useShipsApi` composable + `/app/ships` index
+  - [x] Block 1 — `useShipsApi` composable + `/app/ships` index
         page (active list, inline create form, per-card Open /
         Delete / Duplicate). Add a nav link from the characters
         index AppBar so the page is reachable. Stub
@@ -85,3 +85,22 @@
         the backend ships).
 - Status: in-progress
 - Blockers: —
+
+### Block 1 done — follow-up note (2026-05-10)
+
+Block 1 shipped: `useShipsApi.ts` composable (list / get / create /
+update / delete / duplicate, RFC 9457 error throw), `/app/ships` index
+page with inline create form (all 20 ShipClass values, humaniseClass
+helper, hull/energy stats, module + crew badges, Open/Duplicate/Delete
+actions, empty state, loading skeleton, error banner + retry), stub
+`/app/ships/[id]` (resolves ship, renders name + class, "Coming in
+Block 2–4" panel), and a "Ships" ghost-button nav link on the characters
+index. Tests: 14 new vitest cases (was 53, now 67). typecheck and lint
+both clean.
+
+Block 2 next: replace the `[id].vue` stub with the real ship sheet —
+header with rename/duplicate/delete actions, full stat block (hull /
+energy / armor / maneuverability / signature / speed / cargoCapacity),
+modules list grouped by slot (read-only in Block 2), and all scalar
+PATCH edits (rename, hull current, energy current, notes). Load Ship
+once on mount; sub-resource mutations follow in Blocks 3 + 4.
