@@ -1,5 +1,5 @@
 import 'package:app_api_client/app_api_client.dart'
-    show CharactersApi, DiceApi, standardSerializers;
+    show CharactersApi, DiceApi, GameSessionsApi, standardSerializers;
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 
@@ -15,6 +15,10 @@ import 'package:coriolis_companion/features/rolls/data/roll_repository_impl.dart
 import 'package:coriolis_companion/features/rolls/domain/roll_repository.dart';
 import 'package:coriolis_companion/features/rolls/presentation/blocs/dice_roller/dice_roller_cubit.dart';
 import 'package:coriolis_companion/features/rolls/presentation/blocs/roll_history/roll_history_cubit.dart';
+import 'package:coriolis_companion/features/sessions/data/session_repository_impl.dart';
+import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
+import 'package:coriolis_companion/features/sessions/presentation/blocs/session_detail/session_detail_cubit.dart';
+import 'package:coriolis_companion/features/sessions/presentation/blocs/sessions_list/sessions_list_cubit.dart';
 import 'package:coriolis_companion/shared/auth/token_storage.dart';
 import 'package:coriolis_companion/shared/config/app_config.dart';
 import 'package:coriolis_companion/shared/network/api_client.dart';
@@ -60,6 +64,9 @@ void configureDependencies() {
     )
     ..registerLazySingleton<DiceApi>(
       () => DiceApi(getIt<Dio>(), standardSerializers),
+    )
+    ..registerLazySingleton<GameSessionsApi>(
+      () => GameSessionsApi(getIt<Dio>(), standardSerializers),
     );
 
   // ── Characters domain ────────────────────────────────────────────────────
@@ -70,6 +77,11 @@ void configureDependencies() {
   // ── Rolls domain (Phase 4 Feature 7.1) ───────────────────────────────────
   getIt.registerLazySingleton<RollRepository>(
     () => RollRepositoryImpl(api: getIt<DiceApi>()),
+  );
+
+  // ── Sessions domain (Phase 4 Features 7.2 + 7.3) ─────────────────────────
+  getIt.registerLazySingleton<SessionRepository>(
+    () => SessionRepositoryImpl(api: getIt<GameSessionsApi>()),
   );
 
   // ── Cubit factories ─────────────────────────────────────────────────────
@@ -95,6 +107,12 @@ void configureDependencies() {
     )
     ..registerFactory<RollHistoryCubit>(
       () => RollHistoryCubit(repository: getIt<RollRepository>()),
+    )
+    ..registerFactory<SessionsListCubit>(
+      () => SessionsListCubit(repository: getIt<SessionRepository>()),
+    )
+    ..registerFactory<SessionDetailCubit>(
+      () => SessionDetailCubit(repository: getIt<SessionRepository>()),
     );
 }
 

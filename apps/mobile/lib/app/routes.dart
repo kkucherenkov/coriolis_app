@@ -6,6 +6,8 @@ import 'package:coriolis_companion/features/auth/presentation/welcome_screen.dar
 import 'package:coriolis_companion/features/characters/presentation/pages/character_create_page.dart';
 import 'package:coriolis_companion/features/characters/presentation/pages/character_sheet_page.dart';
 import 'package:coriolis_companion/features/characters/presentation/pages/characters_list_page.dart';
+import 'package:coriolis_companion/features/sessions/presentation/pages/session_detail_page.dart';
+import 'package:coriolis_companion/features/sessions/presentation/pages/sessions_list_page.dart';
 import 'package:coriolis_companion/features/settings/presentation/settings_screen.dart';
 
 /// Named route constants.
@@ -21,6 +23,12 @@ abstract class AppRoutes {
 
   /// Detail route: pass the character id as a [RouteSettings.arguments] String.
   static const characterDetail = '/app/characters/detail';
+
+  // Sessions feature (Phase 4).
+  static const sessions = '/app/sessions';
+
+  /// Pass the session id as a [RouteSettings.arguments] String.
+  static const sessionDetail = '/app/sessions/detail';
 }
 
 /// Route factory — maps route names to screen widgets.
@@ -79,6 +87,23 @@ Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     final id = settings.arguments as String;
     return MaterialPageRoute<void>(
       builder: (_) => CharacterSheetPage(characterId: id),
+      settings: settings,
+    );
+  }
+
+  // ── Sessions feature ───────────────────────────────────────────────────
+
+  if (name == AppRoutes.sessions) {
+    return MaterialPageRoute<void>(
+      builder: (_) => const SessionsListPage(),
+      settings: settings,
+    );
+  }
+
+  if (name == AppRoutes.sessionDetail) {
+    final id = settings.arguments as String;
+    return MaterialPageRoute<void>(
+      builder: (_) => SessionDetailPage(sessionId: id),
       settings: settings,
     );
   }

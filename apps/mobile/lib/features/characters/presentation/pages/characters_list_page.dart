@@ -39,6 +39,15 @@ class _CharactersListView extends StatelessWidget {
           t.title,
           style: AppTypography.displaySm.copyWith(color: AppColors.brandBrass),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.casino_outlined,
+                color: AppColors.brandBrass),
+            tooltip: 'Game sessions',
+            onPressed: () =>
+                Navigator.of(context).pushNamed(AppRoutes.sessions),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.brandBrass,
