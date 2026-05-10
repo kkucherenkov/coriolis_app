@@ -1161,6 +1161,33 @@ What landed:
 
 ## T-2026-05-10-016 — `RollCreate.breakdown` audit trail (Block J split)
 
+**Status: done — ready to archive.** Landed in f77cdb2 (spec) +
+3cb7e85 (codegen) + ddf436d (backend + migration).
+
+What landed:
+
+- Spec: new `RollBreakdown` schema (5 components: attribute / skill /
+  gear / modifier / helpers, each 0..10). `Roll.breakdown` and
+  `RollCreate.breakdown` optional + nullable. New error
+  `ROLL_BREAKDOWN_MISMATCH` (HTTP 400) when breakdown sum ≠ pool.
+  AsyncAPI untouched (RollPushed is a minimal event envelope, no
+  breakdown to mirror). OpenAPI version 1.3.0 → 1.4.0.
+- Backend: Prisma migration `20260510000011_add_roll_breakdown`
+  adds `breakdown jsonb` (nullable, no backfill — existing rolls
+  read as null). `RollReadModel` gains `breakdown: RollBreakdown
+  | null`; defence-in-depth `toRollBreakdown()` narrowing on the
+  read path with warn-log on malformed JSONB. `CreateRollDto`
+  gains `RollBreakdownDto` with `@ValidateNested` + per-component
+  `@Min(0) @Max(10)`. Handler asserts `attribute + skill + gear +
+  modifier + helpers === pool` when breakdown is supplied; throws
+  `RollBreakdownMismatchError` otherwise. PushRollHandler
+  untouched (breakdown is read-only after create).
+- Tests: 6 new vitest cases (null breakdown, matching, mismatch,
+  zero-dice boundary, read-model surfacing on both null and
+  non-null). Backend vitest 939 → 945.
+
+
+
 - Created: 2026-05-10
 - Owner: claude
 - Source: split from T-2026-05-10-010 Block J. The current `RollCreate`
