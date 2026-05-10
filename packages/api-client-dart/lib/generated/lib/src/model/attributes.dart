@@ -8,7 +8,7 @@ import 'package:built_value/serializer.dart';
 
 part 'attributes.g.dart';
 
-/// The four primary attributes per Coriolis core rules (PRD §5.2). Each is a 1–5 integer. All keys are required — missing attributes would make derived-stat calculation impossible server-side. 
+/// The four primary attributes per Coriolis core rules (ГЛАВА 2 «ХАРАКТЕРИСТИКИ»). The rulebook states characteristics are scored 1–5, but at character creation the wizard distributes pools so each attribute lands in `2..4` (5 for the amplua's key attribute), and there is no in-game mechanic that lowers an attribute below 2 once a character has been created. Server-side bounds therefore reflect the **active-PC invariant** (2..5) rather than the abstract scale: a stored character with `strength: 1` would never be reachable through canonical play. The 5-cap stays as the lifetime maximum (ГЛАВА 2 §РАЗВИТИЕ ПЕРСОНАЖА — \"максимально возможное значение характеристики равно 5\"). All four keys are required — missing attributes would make derived-stat calculation impossible server-side. 
 ///
 /// Properties:
 /// * [strength] - STR — governs Force, Melee Combat skills and HP max

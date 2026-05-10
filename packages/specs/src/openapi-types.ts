@@ -1491,9 +1491,15 @@ export interface components {
      */
     RelationshipKind: 'ally' | 'rival' | 'family' | 'mentor' | 'debtor' | 'creditor';
     /**
-     * @description The four primary attributes per Coriolis core rules (PRD §5.2). Each
-     *     is a 1–5 integer. All keys are required — missing attributes would
-     *     make derived-stat calculation impossible server-side.
+     * @description The four primary attributes per Coriolis core rules (ГЛАВА 2 «ХАРАКТЕРИСТИКИ»). The rulebook
+     *     states characteristics are scored 1–5, but at character creation the wizard distributes pools
+     *     so each attribute lands in `2..4` (5 for the amplua's key attribute), and there is no in-game
+     *     mechanic that lowers an attribute below 2 once a character has been created. Server-side bounds
+     *     therefore reflect the **active-PC invariant** (2..5) rather than the abstract scale: a stored
+     *     character with `strength: 1` would never be reachable through canonical play. The 5-cap stays
+     *     as the lifetime maximum (ГЛАВА 2 §РАЗВИТИЕ ПЕРСОНАЖА — "максимально возможное значение
+     *     характеристики равно 5"). All four keys are required — missing attributes would make
+     *     derived-stat calculation impossible server-side.
      */
     Attributes: {
       /** @description STR — governs Force, Melee Combat skills and HP max */
@@ -1506,12 +1512,17 @@ export interface components {
       empathy: number;
     };
     /**
-     * @description The 16 skills per Coriolis core rules (PRD §5.2). General skills
-     *     range 0–5; advanced skills (command, culture, dataDjinn, medicurgy,
-     *     mysticPowers, pilot, science, technology) also range 0–5 in the
-     *     schema — the "0–3 typical" note in the PRD describes usual play,
-     *     not a hard cap, so the server accepts up to 5 for all skills.
-     *     All keys are required.
+     * @description The 16 canonical Coriolis skills (ГЛАВА 3 «Перечень навыков»), 8 general
+     *     (`dexterity, force, infiltration, manipulation, meleeCombat, observation, rangedCombat,
+     *     survival`) and 8 advanced/specialised (`command, culture, dataDjinn, medicurgy,
+     *     mysticPowers, pilot, science, technology`). All skills range 0..5 server-side; the
+     *     lifetime cap of 5 is canon (ГЛАВА 2 §РАЗВИТИЕ ПЕРСОНАЖА — «максимально возможное
+     *     значение навыка равно 5»). The general/advanced split affects rolling, not range: per
+     *     ГЛАВА 3 §«Специальные навыки», a general skill can be rolled at value 0 (attribute-only
+     *     check), while an advanced skill requires value ≥ 1 to roll at all — that gate lives in
+     *     the dice-engine, not in the schema. Creation-time caps (key skills up to 3, others up to
+     *     1, per ГЛАВА 2 «НАВЫКИ») are enforced by the backend `validateSkillsAtCreation` handler
+     *     against the chosen amplua, not by this schema. All keys are required.
      */
     Skills: {
       /** @description General skill (AGI) */

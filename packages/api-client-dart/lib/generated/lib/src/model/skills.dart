@@ -8,7 +8,7 @@ import 'package:built_value/serializer.dart';
 
 part 'skills.g.dart';
 
-/// The 16 skills per Coriolis core rules (PRD §5.2). General skills range 0–5; advanced skills (command, culture, dataDjinn, medicurgy, mysticPowers, pilot, science, technology) also range 0–5 in the schema — the \"0–3 typical\" note in the PRD describes usual play, not a hard cap, so the server accepts up to 5 for all skills. All keys are required. 
+/// The 16 canonical Coriolis skills (ГЛАВА 3 «Перечень навыков»), 8 general (`dexterity, force, infiltration, manipulation, meleeCombat, observation, rangedCombat, survival`) and 8 advanced/specialised (`command, culture, dataDjinn, medicurgy, mysticPowers, pilot, science, technology`). All skills range 0..5 server-side; the lifetime cap of 5 is canon (ГЛАВА 2 §РАЗВИТИЕ ПЕРСОНАЖА — «максимально возможное значение навыка равно 5»). The general/advanced split affects rolling, not range: per ГЛАВА 3 §«Специальные навыки», a general skill can be rolled at value 0 (attribute-only check), while an advanced skill requires value ≥ 1 to roll at all — that gate lives in the dice-engine, not in the schema. Creation-time caps (key skills up to 3, others up to 1, per ГЛАВА 2 «НАВЫКИ») are enforced by the backend `validateSkillsAtCreation` handler against the chosen amplua, not by this schema. All keys are required. 
 ///
 /// Properties:
 /// * [dexterity] - General skill (AGI)
