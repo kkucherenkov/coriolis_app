@@ -66,7 +66,8 @@
     "retry": "Try again",
     "iconLabel": "Icon",
     "skeletonAria": "Loading characters…",
-    "navShips": "Ships"
+    "navShips": "Ships",
+    "navNpcs": "NPCs"
   },
   "ru": {
     "pageTitle": "Персонажи",
@@ -77,7 +78,8 @@
     "retry": "Попробовать снова",
     "iconLabel": "Икона",
     "skeletonAria": "Загрузка персонажей…",
-    "navShips": "Корабли"
+    "navShips": "Корабли",
+    "navNpcs": "НПС"
   },
   "uk": {
     "pageTitle": "[uk-todo] Characters",
@@ -88,7 +90,8 @@
     "retry": "[uk-todo] Try again",
     "iconLabel": "[uk-todo] Icon",
     "skeletonAria": "[uk-todo] Loading characters",
-    "navShips": "[uk-todo] Ships"
+    "navShips": "[uk-todo] Ships",
+    "navNpcs": "[uk-todo] NPCs"
   },
   "el": {
     "pageTitle": "[el-todo] Characters",
@@ -99,7 +102,8 @@
     "retry": "[el-todo] Try again",
     "iconLabel": "[el-todo] Icon",
     "skeletonAria": "[el-todo] Loading characters",
-    "navShips": "[el-todo] Ships"
+    "navShips": "[el-todo] Ships",
+    "navNpcs": "[el-todo] NPCs"
   }
 }
 </i18n>
@@ -117,6 +121,13 @@
           @click="navigateTo('/app/ships')"
         >
           {{ t('navShips') }}
+        </AppButton>
+        <AppButton
+          variant="ghost"
+          size="md"
+          @click="navigateTo('/app/npcs')"
+        >
+          {{ t('navNpcs') }}
         </AppButton>
         <AppButton
           variant="primary"

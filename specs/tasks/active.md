@@ -54,7 +54,7 @@
   initiative → advance turn → realtime update arrives).
 - Sub-blocks (one feat-web commit per block + one
   active.md follow-up commit, per `feedback_block_workflow.md`):
-  - [ ] Block 1 — `useNpcsApi` composable + `/app/npcs`
+  - [x] Block 1 — `useNpcsApi` composable + `/app/npcs`
         index page (list, inline create, per-card actions,
         empty state, error retry). Nav link from characters
         AppBar.
