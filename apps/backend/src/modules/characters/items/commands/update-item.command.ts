@@ -12,7 +12,7 @@ import {
 export class UpdateItemDto {
   @IsOptional() @IsString() name?: string;
   @IsOptional() @IsInt() @Min(1) damage?: number;
-  @IsOptional() @IsIn(['arm', 'near', 'short', 'long', 'distant']) range?: string;
+  @IsOptional() @IsIn(['close', 'medium', 'long', 'extreme']) range?: string;
   @IsOptional() @IsInt() @Min(0) bonus?: number;
   @IsOptional() @IsInt() @Min(1) crit?: number;
   @IsOptional() @IsInt() @Min(0) armorRating?: number;

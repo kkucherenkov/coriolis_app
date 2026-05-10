@@ -13,7 +13,7 @@ import {
 
 import type { ItemType } from '../../domain/character.ports';
 
-const VALID_RANGES = ['arm', 'near', 'short', 'long', 'distant'];
+const VALID_RANGES = ['close', 'medium', 'long', 'extreme'];
 const VALID_SLOTS = ['bridge', 'hull', 'hold', 'weapon', 'drive', 'sensor', 'comms'];
 const VALID_TYPES: ItemType[] = ['WEAPON', 'ARMOR', 'GEAR', 'CYBERNETIC', 'SHIP_MODULE', 'OTHER'];
 

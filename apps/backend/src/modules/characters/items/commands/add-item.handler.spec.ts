@@ -111,7 +111,7 @@ describe('AddItemHandler', () => {
       type: 'WEAPON',
       name: 'Laser Pistol',
       damage: 2,
-      range: 'short',
+      range: 'medium',
       bonus: 0,
       crit: 2,
       weight: 1,
@@ -124,7 +124,7 @@ describe('AddItemHandler', () => {
       type: 'WEAPON' as const,
       name: 'Laser Pistol',
       damage: 2,
-      range: 'short',
+      range: 'medium',
       bonus: 0,
       crit: 2,
       weight: 1,
@@ -135,5 +135,28 @@ describe('AddItemHandler', () => {
     const result = await handler.execute(new AddItemCommand('char-1', 'user-1', dto));
 
     expect(result.type).toBe('WEAPON');
+  });
+
+  it('rejects legacy range value "short" (narrowed to 4-band canonical enum)', async () => {
+    vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user-1' });
+
+    const dto = Object.assign(new AddItemDto(), {
+      type: 'WEAPON' as const,
+      name: 'Old Pistol',
+      damage: 2,
+      range: 'short', // legacy 5-band value — must be rejected
+      bonus: 0,
+      crit: 2,
+      weight: 1,
+      features: [],
+      equipped: false,
+    });
+
+    // validate() from class-validator should reject the dto when range is a legacy slug
+    const { validate } = await import('class-validator');
+    const errors = await validate(dto);
+    const rangeError = errors.find((e) => e.property === 'range');
+    expect(rangeError).toBeDefined();
+    expect(itemRepo.create).not.toHaveBeenCalled();
   });
 });
