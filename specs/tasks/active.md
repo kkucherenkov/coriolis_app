@@ -76,13 +76,30 @@
         the local Ship after each assignment because the backend
         returns CrewSlot — easier than threading a partial-state
         update.
-  - [ ] Block 5 — Polish: ship duplication wired from both list + sheet, delete confirmation modal, "Recently created"
+  - [x] Block 5 — Polish: ship duplication wired from both list + sheet, delete confirmation modal, "Recently created"
         toast on the index page after a duplicate redirect, link
         to `/api/v1/ships/{id}/export` (501 stub — render the
         affordance behind a feature flag so it can light up when
         the backend ships).
-- Status: in-progress
+- Status: done — ready to archive
 - Blockers: —
+
+### Block 5 done — follow-up note (2026-05-10)
+
+Block 5 shipped: delete-confirmation `AppModal` on both `[id].vue` and `index.vue`
+(confirmed body copy: "This will permanently delete the ship, its modules, and clear
+the crew roster. This cannot be undone."); `closeOnBackdrop=false` while the delete
+is in-flight. Duplicate handler now passes `?duplicatedFrom=<name>` query param;
+index page reads it on mount, surfaces a 4-second `AppBanner tone="success"`, then
+clears it via `router.replace({ query: {} })`. Export affordance rendered as an `<a
+target="_blank">` link to `/api/v1/ships/{id}/export` with an `(experimental)` chip
+badge; URL built from `runtimeConfig.public.apiBaseUrl`. Stats grid tightened to 3
+cols desktop / 2 cols tablet (≤768 px) / 1 col mobile (≤480 px). Empty-state copy
+updated ("Build your fleet" / "Соберите свой флот"). 143 tests pass (was 124, +19
+structural assertions covering confirm-modal wiring, export affordance, duplicate
+query-param, toast read + clear + dismiss timing, and empty-state copy). typecheck
+and lint clean; the pre-existing `px`-dimension stylelint violations from Blocks 1–4
+are not increased. Task ready to archive.
 
 ### Block 4 done — follow-up note (2026-05-10)
 
