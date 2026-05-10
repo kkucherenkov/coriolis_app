@@ -193,20 +193,93 @@
         any reason, the next block must include a major bump
         (the floor tightening from 1 to 2 is a breaking change
         for any caller who was sending `1`).
-  - [ ] Block E — **`CONCEPT_KEY_SKILLS` per role, not
-        per amplua.** Hard violation H8.
-        Refactor `apps/backend/src/modules/rules-engine/`
-        `rules-engine.ts:112-168` into three dictionaries
-        per amplua, one per canonical role (е.g. ПИЛОТ:
-        Водитель / Ас / Дальнобойщик), each with exactly 4
-        key skills sourced verbatim from ГЛАВА 2. Web
-        wizard step 5 needs a role-picker between concept
-        and skill distribution.
-        Spec: add `Character.role: string` (or per-concept
-        enum); migration backfills existing characters with
-        a sane default (the first role in their concept's
-        list) and flags a `role_unmigrated: true` so the
-        wizard can re-prompt on next edit.
+  - [x] Block E — **`CONCEPT_KEY_SKILLS` per role, not
+        per amplua.** Hard violation H8. **Done in 059f661
+        (spec) + 1e6ca54 (codegen) + 80bf2d8 (backend
+        refactor + Prisma migration).** Web wizard reflow
+        deferred to **T-2026-05-10-011** (see below).
+        Spec: new `Role` enum with 33 canonical role slugs
+        (companion, musician, poet, analyst,
+        correspondent, network-djinn, criminal, mystic,
+        revolutionary, agitator, diplomat, dealer,
+        assassin, guard, spy, ace, driver, trucker,
+        colonist, prospector, scout, ascetic, missionary,
+        prophet, archaeologist, medicurg, technologist,
+        ship-engineer, labourer, loader, legionnaire,
+        mercenary, officer). Slugs are unique across
+        amplua so the enum is flat. Russian display names
+        carried inline so localised clients can render
+        labels without a rulebook round-trip. New
+        `Character.role: Role | null` (and on
+        CharacterCreate / CharacterUpdate). Nullable for
+        drafts and for legacy rows. Server enforces
+        `ROLE_CONCEPT_MISMATCH` (HTTP 400) when the role
+        is not in the chosen concept's three.
+        Backend rules-engine: refactored `CONCEPT_KEYS`
+        from a hand-curated 5-element union per amplua to
+        a derived value computed from a new
+        `CONCEPT_ROLES` dictionary that holds all 33
+        canonical role × 4 skill mappings (single source
+        of truth). New exports: `Role` (string union),
+        `RoleData`, `CONCEPT_ROLES`, `ROLE_BY_CONCEPT`,
+        `CONCEPT_BY_ROLE`, `getRoleKeySkills(role)`,
+        `defaultRoleForConcept(concept)`. Barrel
+        `rules-engine/index.ts` updated so handlers can
+        import them. Legacy callers reading
+        `CONCEPT_KEYS[c].keySkills` keep working — that
+        property is now derived as the union of the three
+        roles' skills (no API change for them).
+        Backend handlers: `CreateCharacterHandler` and
+        `UpdateCharacterHandler` validate `dto.role`
+        belongs to `dto.concept` (or the character's
+        existing concept, on update) via
+        `CONCEPT_BY_ROLE`; new
+        `RoleConceptMismatchError` (code
+        `ROLE_CONCEPT_MISMATCH`). When a role is
+        provided, the per-skill creation cap uses the
+        role's exact 4 key skills (not the union),
+        tightening the gate for non-key advanced skills
+        from "up to 1" against a 5-skill key set to "up
+        to 1" against the canonical 4-skill set.
+        Setting a role on update clears `roleUnmigrated`.
+        Prisma migration `20260510000006_add_character_`
+        `role`: adds `role text NULL` and
+        `roleUnmigrated bool NOT NULL DEFAULT false` to
+        the `character` table; idempotent backfill
+        (`UPDATE … WHERE concept IS NOT NULL AND role IS
+        NULL` with a `CASE WHEN concept = 'pilot' THEN
+        'ace' …` clause) sets `role` to the canonical
+        first role per amplua and `roleUnmigrated = true`
+        so the wizard re-prompts on next edit.
+        `defaultRoleForConcept` mirrors the same first-
+        role mapping for app-side use.
+        Tests: 33 cases verifying every role's 4 key
+        skills against the canonical table, 11 cases
+        verifying `CONCEPT_KEYS[c].keySkills` is the
+        deduplicated union of the three roles, 11 cases
+        for `defaultRoleForConcept`, 33 cases for the
+        `CONCEPT_BY_ROLE` reverse lookup, plus handler
+        cases for valid role+concept combos, mismatch
+        errors, null-role legacy path, and
+        `roleUnmigrated` flag clearing on update.
+        Backend vitest count 754 → 850 (+96).
+        Backend container restarted after `prisma
+        generate` so node_modules picks up the new
+        client.
+        OpenAPI `info.version` not bumped this block —
+        deferred to the closing block of T-010 per the
+        plan; the closing block must include a major bump
+        because Block D (1 → 2 attribute floor) and the
+        new required-when-active `ROLE_CONCEPT_MISMATCH`
+        invariant are both breaking changes for naive
+        callers.
+        **Follow-up: T-2026-05-10-011** (web wizard
+        step 5 role-picker, see below) — captures the UI
+        reflow that wires up the new role field on the
+        creation flow. Backend is fully ready for it; the
+        wizard just needs a select between concept and
+        skill distribution that POSTs `role` with the
+        rest of the wizard payload.
   - [ ] Block F — **Personal-scale weapon range bands.**
         Hard violation H9.
         Spec: replace `ItemRangeEnum =
@@ -275,6 +348,66 @@
           optional object {attribute, skill, gear,
           modifier, helpers} for GM-tools audit trail.
 - Status: ready
+- Blockers: —
+
+---
+
+## T-2026-05-10-011 — Web wizard: role picker (Block E follow-up)
+
+- Created: 2026-05-10
+- Owner: claude
+- Source: split out of T-2026-05-10-010 Block E so the canon-
+  remediation backend could land without slipping on UI work.
+  The backend half (spec, codegen, rules-engine refactor,
+  Prisma migration with backfill) shipped in 059f661 + 1e6ca54
+  + 80bf2d8.
+- Goal: add a role-picker to the web character-creation wizard
+  so the user explicitly chooses 1 of 3 canonical roles within
+  their amplua, and the chosen role drives the per-skill cap
+  on Step 5 (skill distribution).
+- Depends on: T-2026-05-10-010 Block E (already done — wire
+  contract + backend validation in place).
+- Acceptance:
+  - New `Step5Role.vue` between the existing concept step and
+    the skill-distribution step (renumbering all later steps),
+    wired into `WizardShell.vue` and the wizard store.
+  - The picker shows the 3 canonical roles for the chosen
+    `concept` with their Russian display names + a one-line
+    Russian flavour text from the rulebook (see
+    `Step1Concept.vue` for the existing concept-card pattern).
+  - The component reads `CONCEPT_ROLES` (or the regenerated
+    client equivalent — TS client exposes the full
+    `Role` enum and the consumer needs a tiny mapping table
+    `concept → role[]` since the OpenAPI enum is flat).
+  - Step 5 (skill distribution) uses the chosen role's 4 key
+    skills for its UI cap of 3 (currently 5 from the union);
+    add a hint "Key skills: X / Y / Z / W (max 3 each)".
+  - i18n keys for both ru and en exist for every label;
+    Russian display names from the canonical table live in
+    `apps/web/i18n/locales/ru.json` keyed under
+    `wizard.role.<slug>.label` (and similar for `description`).
+  - Wizard payload posted to `POST /api/v1/characters` includes
+    `role`. Backend already enforces `ROLE_CONCEPT_MISMATCH`
+    if the value is wrong.
+  - Existing characters whose `roleUnmigrated === true` (set
+    by the Block E migration backfill) trigger a banner on the
+    character sheet header inviting the user to confirm the
+    role; on confirmation the PATCH clears the flag (server-
+    side logic already lands in 80bf2d8).
+  - Storybook stories for `Step5Role.vue` (3 states: empty
+    concept, role list, selected role).
+  - Vitest count climbs by ≥10.
+- Spec diff: none — wire contract already lands in T-010
+  Block E (Character.role + Role enum).
+- Codegen impact: none.
+- Design impact: extend the existing concept-card pattern to
+  role cards (smaller, denser); reuse design tokens, no new
+  ones needed.
+- Tests: `Step5Role.spec.ts` (component test) + smoke flow
+  (concept → role → skills) + roleUnmigrated banner test.
+- Sub-blocks: single feat-web commit + active.md follow-up.
+- Status: queued (no blockers, but lower priority than the
+  remaining T-010 blocks F–J)
 - Blockers: —
 
 ---
