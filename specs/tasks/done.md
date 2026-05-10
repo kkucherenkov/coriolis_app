@@ -2,6 +2,68 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-10-006 — Phase 6 spec: Encounters + Combatants + NPCs + combat realtime
+
+- Completed: 2026-05-10
+- Owner: claude
+- Spec: PRD §11 Phase 6 (GM Tools). Phase 6 was greenfield —
+  neither openapi.yaml nor centrifugo.yaml carried any Phase 6
+  shape. The asyncapi already namespaced a `session.{id}` channel
+  but stubbed the encounter / combatant payloads.
+- Goal: Lock the Phase 6 wire contract so downstream backend +
+  web + mobile tasks can run in parallel without re-spec churn.
+- Result: shipped on `main` across five feat-spec commits + five
+  matching `chore(codegen)` commits + per-block bookkeeping.
+  OpenAPI bumped 0.12.0 → 0.16.0 (additive); AsyncAPI bumped
+  0.8.2 → 0.9.0.
+  - `1dca68b` `feat(specs): T-2026-05-10-006 Block 1 — Npc resource (v0.13.0)`
+  - `738e2bc` `chore(codegen): regenerate clients after Npc spec (v0.13.0)`
+  - `db0186c` `feat(specs): T-2026-05-10-006 Block 2 — Encounter resource (v0.14.0)`
+  - `a1e9658` `chore(codegen): regenerate clients after Encounter spec (v0.14.0)`
+  - `55d792e` `feat(specs): T-2026-05-10-006 Block 3 — Combatant sub-resource (v0.15.0)`
+  - `b6837a4` `chore(codegen): regenerate clients after Combatant spec (v0.15.0)`
+  - `14c4302` `feat(specs): T-2026-05-10-006 Block 4 — initiative + turn ops (v0.16.0)`
+  - `239275c` `chore(codegen): regenerate clients after initiative spec (v0.16.0)`
+  - `ee727a0` `feat(specs): T-2026-05-10-006 Block 5 — combat.updated AsyncAPI message`
+  - `deafe5d` `chore(codegen): regenerate clients after AsyncAPI extension`
+  - `0ea94b9` `chore(codegen): finalise Phase 6 openapi-types tail` (post-archive cleanup)
+- Spec diff: substantial-additive. New schemas: `Npc`, `NpcCreate`,
+  `NpcUpdate`, `NpcList`, `Encounter`, `EncounterCreate`,
+  `EncounterUpdate`, `EncounterList`, `EncounterStatus`,
+  `Combatant`, `CombatantCreate`, `CombatantUpdate`, `CombatantList`,
+  `CombatantType`, `InitiativeRollResult`, `InitiativeReorderRequest`,
+  `TurnAdvanceResult`, `CombatUpdated`. New paths: `/npcs[/{id}[/duplicate]]`,
+  `/game-sessions/{sessionId}/encounters`, `/encounters/{id}` with
+  initiative + turn ops, `/encounters/{id}/combatants`, `/combatants/{id}`.
+  AsyncAPI: `combat.updated` on the existing `session.{id}` channel.
+- Acceptance check (against the original list):
+  - ✅ `Npc` full CRUD + duplicate, cursor-paginated list. Stats
+    block sufficient for combat tracker (attributes, skills,
+    weapons, armor, hp/mp, signature, tags, description).
+  - ✅ `Encounter` CRUD with state machine fully documented:
+    `setup → active` requires ≥1 combatant (422 `ENCOUNTER_NO_COMBATANTS`);
+    `active → ended` resets `activeCombatantId`; reverse / skip
+    transitions return 422 `ENCOUNTER_INVALID_TRANSITION`.
+  - ✅ `Combatant` discriminated by `combatantType: 'pc' | 'npc'`.
+    Snapshot semantics documented (PC mid-fight edits do not
+    propagate). Four 422 codes including `COMBATANT_DUPLICATE`,
+    `ENCOUNTER_LOCKED_FOR_COMBAT`.
+  - ✅ Initiative: `rollInitiative` bundles atomic `setup → active`
+    with d10 + agility tie-break; `reorderInitiative` for GM
+    overrides without disturbing `activeCombatantId`;
+    `advanceTurn` rotates with `ENCOUNTER_INITIATIVE_NOT_ROLLED`
+    guard. Five new error codes.
+  - ✅ AsyncAPI `combat.updated` lazy-snapshot on `session.{id}` —
+    clients re-render from the snapshot rather than computing diffs.
+    TS exports `CombatUpdated`; Dart opaque on the wire.
+- Tests: spec-only. Each block ran `pnpm spec:validate &&
+  pnpm spec:bundle && pnpm spec:codegen` green. Codegen idempotent
+  after `0ea94b9`.
+- Design impact: none yet — UX work lands in T-008 (web) and T-009
+  (mobile).
+- Follow-ups: T-2026-05-10-007 (Phase 6 backend implementation),
+  T-2026-05-10-008 (Phase 6 web GM tools).
+
 ## T-2026-05-10-005 — Phase 5 web frontend: ship list + sheet + module editor + crew
 
 - Completed: 2026-05-10

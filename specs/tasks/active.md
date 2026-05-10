@@ -1,159 +1,180 @@
-## T-2026-05-10-006 — Phase 6 spec: Encounters + Combatants + NPCs + combat realtime
+## T-2026-05-10-007 — Phase 6 backend: NPC + Encounter + Combatant + initiative + combat realtime
 
 - Created: 2026-05-10
 - Owner: claude
-- Spec: PRD §11 Phase 6 (GM Tools). Phase 6 is greenfield — neither
-  `packages/specs/openapi/openapi.yaml` nor
-  `packages/specs/asyncapi/centrifugo.yaml` carries any Phase 6
-  shape today. The asyncapi already namespaces a `session.{id}`
-  channel and notes "Encounter and combatant payloads are stubbed —
-  they land in Epic 9" (`packages/specs/asyncapi/centrifugo.yaml:50`)
-  — this task delivers those.
-- Goal: Lock the Phase 6 wire contract so the downstream backend +
-  web + mobile tasks can run in parallel without re-spec churn. No
-  implementation in this task — spec edits + codegen + a green
-  `pnpm spec:validate && pnpm spec:bundle && pnpm spec:codegen` run
-  per block. Generated client diffs land in their own
-  `chore(codegen)` commits inside each block (`apps/api-client-ts`
-  + `apps/api-client-dart`).
+- Spec: T-2026-05-10-006 locked the wire contract
+  (`packages/specs/openapi/openapi.yaml` v0.16.0 +
+  `packages/specs/asyncapi/centrifugo.yaml` v0.9.0). This task
+  delivers the matching backend modules.
+- Goal: NestJS implementation behind every Phase 6 path so the
+  generated TS + Dart clients become live. Standard CQRS layout
+  per existing modules (`apps/backend/src/modules/ships`,
+  `.../game-sessions`): `domain` ports + errors, `infra` Prisma
+  repo, `commands` + `queries` handlers, controller(s),
+  `module.ts`. Centrifugo `combat.updated` publish from the same
+  unit that mutates encounter / combatant state — atomic with
+  the DB transaction (publish *after* commit, before HTTP 200,
+  see `dp.publisher.ts` precedent).
 - Acceptance:
-  - `Npc` resource: full CRUD at `/api/v1/npcs` and
-    `/api/v1/npcs/{id}` with create / list / get / patch / delete,
-    plus a `duplicate` action mirroring the Ships pattern.
-  - `Encounter` resource: `/api/v1/game-sessions/{sessionId}/encounters`
-    list + create; `/api/v1/encounters/{id}` get / patch (rename,
-    state transitions: `setup → active → ended`) / delete.
-  - `Combatant` sub-resource on Encounter: add (POST
-    `/api/v1/encounters/{id}/combatants`), patch (PATCH
-    `/api/v1/combatants/{id}`), delete. Combatants are either a
-    `pc` reference (existing Character id) or an `npc` reference
-    (NPC id) — discriminated by `combatantType: 'pc' | 'npc'`.
-    Each carries the rolled `initiative` (1..10 per ST3001), a
-    `hpCurrent` snapshot, and a turn-order index.
-  - Initiative: `POST /api/v1/encounters/{id}/initiative/roll`
-    rolls d10 per combatant and sorts them. `PATCH
-    /api/v1/encounters/{id}/initiative` lets the GM manually
-    re-order. `POST /api/v1/encounters/{id}/turn/advance` rotates
-    the active turn forward (wraps to next round).
-  - AsyncAPI extension: a `combat.updated` message on the existing
-    `session.{id}` channel carrying the full updated Encounter
-    snapshot (lazy approach — clients re-render from the snapshot
-    rather than computing diffs). Versioning: bump the AsyncAPI
-    info.version to a new minor.
-  - OpenAPI bumps to a new minor (`0.12.0 → 0.13.0` —
-    additive-only, no breaking changes).
-- Spec diff: substantial. New schemas: `Npc`, `NpcCreate`,
-  `NpcUpdate`, `NpcList`, `Encounter`, `EncounterCreate`,
-  `EncounterUpdate`, `EncounterList`, `EncounterStatus`
-  (`setup | active | ended`), `Combatant`, `CombatantCreate`,
-  `CombatantUpdate`, `CombatantList`, `CombatantType` (`pc | npc`),
-  `InitiativeRollResult`, `InitiativeReorderRequest`,
-  `TurnAdvanceResult`. Plus `combat.updated` on the AsyncAPI side.
-- Codegen impact: yes — every block ends with a regenerated
-  `packages/api-client-{ts,dart}` landing as its own
-  `chore(codegen)` commit.
-- Design impact: none yet — UX work lands in the downstream tasks.
-- Tests: spec-only. Each block runs `pnpm spec:validate &&
-  pnpm spec:bundle && pnpm spec:codegen` to keep the contract
-  green; each block also verifies the codegen diff is sensible
-  (no spurious noise in the generated clients).
-- Sub-blocks (one feat-spec commit + one codegen commit + one
-  active.md follow-up commit per block, per
-  `feedback_block_workflow.md`):
-  - [x] Block 1 — `Npc` resource. Schemas (`Npc`, `NpcCreate`,
-        `NpcUpdate`, `NpcList`, `NpcId` parameter) + paths
-        (`/api/v1/npcs`, `/api/v1/npcs/{id}`,
-        `/api/v1/npcs/{id}/duplicate`). Cursor-paginated list.
-        NPC carries enough stats to drive a combat tracker:
-        attributes (str/agi/wits/emp), key skills, weapons
-        (reuses `ItemWeapon` shape), armor, hp, mp, signature,
-        plus a free-form `description` and `tags` (string array).
-        Landed in 1dca68b (spec) + 738e2bc (codegen). `pnpm
-        spec:validate && pnpm spec:bundle && pnpm spec:codegen`
-        green. TS exports: `Npc`, `NpcCreate`, `NpcUpdate`,
-        `NpcList`, `listNpcs`, `createNpc`, `getNpc`, `updateNpc`,
-        `deleteNpc`, `duplicateNpc`. Dart: `npcs_api.dart` +
-        model files. Design call: `keySkillModifier` and `hp`/`mp`
-        are plain integer / inline-object fields with no Character
-        precedent — appropriate since NPC hp/mp are fully
-        GM-editable (not server-derived formulas). The
-        `NpcCreate.attributes` and `NpcCreate.skills` fields
-        reference the shared `Attributes` / `Skills` schemas with
-        server-side defaults documented in the description.
-  - [x] Block 2 — `Encounter` resource. Schemas (`Encounter`,
-        `EncounterCreate`, `EncounterUpdate`, `EncounterList`,
-        `EncounterStatus`, `EncounterId` parameter) + paths
-        (`GET/POST /api/v1/game-sessions/{sessionId}/encounters`,
-        `GET/PATCH/DELETE /api/v1/encounters/{id}`). Tag `encounters`
-        added. State machine fully documented in `EncounterStatus`
-        and `updateEncounter` descriptions: `setup → active` requires
-        ≥1 combatant (422 `ENCOUNTER_NO_COMBATANTS` if zero; forward-
-        compatible with Block 3 combatant surface); `active → ended`
-        resets `activeCombatantId` to null; all reverse and skip
-        transitions return 422 `ENCOUNTER_INVALID_TRANSITION`; rename
-        and notes editing are permitted at any status. Landed in
-        db0186c (spec v0.14.0) + a1e9658 (codegen). `pnpm spec:validate
-        && pnpm spec:bundle && pnpm spec:codegen` green. TS exports:
-        `Encounter`, `EncounterCreate`, `EncounterUpdate`,
-        `EncounterList`, `EncounterStatus`, `listEncounters`,
-        `createEncounter`, `getEncounter`, `updateEncounter`,
-        `deleteEncounter`. Dart: `encounters_api.dart` + model files
-        + `.g.dart` serializers via build_runner.
-  - [x] Block 3 — `Combatant` sub-resource. Schemas + paths.
-        `combatantType` discriminator. Combatants store the
-        snapshot of stats at the moment of add (not a live ref)
-        — protects against PC mid-fight edits scrambling the
-        tracker. Documented in the schema description.
-        Landed in 55d792e (spec v0.15.0) + codegen commit.
-        `pnpm spec:validate && pnpm spec:bundle && pnpm spec:codegen`
-        green. New schemas: `CombatantType`, `Combatant`,
-        `CombatantCreate`, `CombatantUpdate`, `CombatantList`,
-        `CombatantId` parameter. New operationIds:
-        `listCombatants`, `addCombatant`, `updateCombatant`,
-        `deleteCombatant`. Design call: `statusFlags` is a
-        free-form `string[]` with four well-known values documented
-        in the schema description (`broken`, `exposed`, `covered`,
-        `prone`) — no inline enum so GMs can add custom tags in v1
-        without a spec bump. `initiative` and `turnOrder` are
-        `readOnly: true` on `CombatantUpdate` so generators emit
-        them as read-only; Block 4 sets them via dedicated ops.
-        Dart `.g.dart` files generated for `combatant_list`,
-        `combatant_type`, `combatant_update`; `combatant.dart`
-        and `combatant_create.dart` did not get `.g.dart` files
-        (pre-existing build_runner limitation with complex types —
-        same pattern as Blocks 1+2).
-  - [x] Block 4 — Initiative + turn order ops. Three new path
-        actions on the encounter resource (roll, reorder,
-        advance). `InitiativeRollResult` returns the sorted
-        combatants array with `turnOrder` indices populated.
-        `TurnAdvanceResult` returns `{ activeCombatantId,
-        round, isNewRound }`. Landed in 14c4302 (spec v0.16.0)
-        + 239275c (codegen). `pnpm spec:validate && pnpm
-        spec:bundle && pnpm spec:codegen` green. New
-        operationIds: `rollInitiative`, `reorderInitiative`,
-        `advanceTurn`. Design calls: tie-breaking by `agility`
-        descending documented in `InitiativeRollResult`
-        description (ST3001 rule); remaining ties deferred to GM
-        via `reorderInitiative`. `rollInitiative` bundles the
-        `setup → active` transition atomically (round 0→1,
-        `activeCombatantId` set to `turnOrder:0`). `advanceTurn`
-        carries a defensive `ENCOUNTER_INITIATIVE_NOT_ROLLED`
-        guard for future code paths that bypass `rollInitiative`.
-        `reorderInitiative` does NOT alter `activeCombatantId`
-        (the currently-active combatant stays active; reorder
-        affects the next turn's sequence only). TS exports:
-        `InitiativeRollResult`, `InitiativeReorderRequest`,
-        `TurnAdvanceResult`, `rollInitiative`, `reorderInitiative`,
-        `advanceTurn`. Dart: new model files + test stubs.
-  - [x] Block 5 — AsyncAPI `combat.updated` message on the
-        existing `session.{id}` channel. Payload is the full
-        Encounter snapshot; clients re-render from the snapshot
-        (lazy approach). AsyncAPI info.version bumped 0.8.2 →
-        0.9.0. Stubbed note dropped; replaced with lazy-snapshot
-        rationale. CombatUpdated message + schema landed.
-        TS codegen: CombatUpdated interface exported, session
-        channel union in RealtimeChannelPayloadMap updated.
-        Dart codegen: no diff — AsyncAPI is opaque on the wire.
-        pnpm spec:validate green. Commits: feat spec + codegen.
-- Status: done — ready to archive
+  - All NPC paths green: list / create / get / patch / delete /
+    duplicate. Cursor pagination matches Ships module.
+  - All Encounter paths green with state-machine guards (422
+    `ENCOUNTER_INVALID_TRANSITION`, `ENCOUNTER_NO_COMBATANTS`).
+    GM-owner-only on writes, session members can read (mirror
+    GameSession membership rules).
+  - Combatant sub-resource: add / patch / delete / list with
+    snapshot semantics on PC adds (read Character once at
+    add-time, copy `attributes`, `skills`, `hpMax` into a
+    `pcSnapshot` JSON column; do NOT join Character rows at
+    read-time). NPC adds use NPC stats verbatim (also snapshot).
+  - Initiative ops: `rollInitiative` uses `crypto.randomInt(1,11)`
+    per combatant, sorts desc with `agility` tie-break, sets
+    `turnOrder` indices, atomically transitions `setup → active`.
+    `reorderInitiative` overwrites `turnOrder` without touching
+    `activeCombatantId`. `advanceTurn` rotates and increments
+    `round` on wrap. All three publish a `combat.updated` snapshot.
+  - Centrifugo: every successful encounter / combatant mutation
+    publishes a `combat.updated` envelope on the encounter's
+    parent `session.{id}` channel — payload is the full
+    Encounter snapshot exactly as `getEncounter` would return.
+  - `express-openapi-validator` rejects no Phase 6 path (zero
+    contract drift).
+  - Test count climbs by ≥80 (rough budget — Ships module added
+    ~80 spec cases; this is a similar surface).
+- Spec diff: none (spec already shipped in T-006).
+- Codegen impact: none.
+- Design impact: none.
+- Tests: vitest specs per command + query handler; controller
+  smoke tests via Supertest with a real Postgres test container
+  (mirrors Ships module pattern). Centrifugo publish covered by
+  a `MockCombatPublisher` injected via DI in unit tests; one
+  e2e test exercises the real publisher against the docker
+  centrifugo via the existing `@CombatPublisher` symbol.
+- Sub-blocks (one feat-backend commit per block + one
+  active.md follow-up commit, per `feedback_block_workflow.md`):
+  - [ ] Block 1 — Prisma migration + NPC module. New tables
+        `Npc` (owner-scoped), no foreign-key relationships
+        beyond owner. CRUD + duplicate handlers + controller.
+        Cursor pagination identical to ShipsRepo.list.
+        Module wired into AppModule. Vitest specs for every
+        handler.
+  - [ ] Block 2 — Encounter module. Tables `Encounter`
+        (FK to `GameSession`), state-machine guards in
+        domain layer (`encounter.state-machine.ts`),
+        repo + handlers + nested + flat controllers
+        (`/api/v1/game-sessions/{id}/encounters` + `/api/v1/encounters/{id}`).
+        Membership + ownership checks lifted from `game-sessions`
+        module. No combatants yet — `setup → active` blocked
+        with `ENCOUNTER_NO_COMBATANTS` until Block 3 lands.
+  - [ ] Block 3 — Combatant sub-resource. Table `Combatant`
+        with discriminator + snapshot JSON columns
+        (`pcSnapshot` / `npcSnapshot`). Read-once-at-add
+        copy semantics implemented in
+        `commands/add-combatant.handler.ts`. List / patch /
+        delete handlers. Encounter `setup → active` becomes
+        legal once ≥1 row.
+  - [ ] Block 4 — Initiative + turn ops. `rollInitiative`
+        as a single transactional handler (d10 per row,
+        agility tie-break, `turnOrder` index assignment,
+        encounter status transition, `round = 1`,
+        `activeCombatantId = turnOrder:0`).
+        `reorderInitiative` validates the request array
+        permutes the existing combatant set 1:1 (422
+        `ENCOUNTER_REORDER_MISMATCH` otherwise) then
+        rewrites `turnOrder`. `advanceTurn` rotates,
+        increments `round` on wrap, returns
+        `{ activeCombatantId, round, isNewRound }`.
+        Defensive 422 `ENCOUNTER_INITIATIVE_NOT_ROLLED`
+        if `advanceTurn` is called from `setup` (currently
+        unreachable but documented in the spec).
+  - [ ] Block 5 — Centrifugo `combat.updated` publisher.
+        New `CombatPublisher` interface in
+        `apps/backend/src/modules/encounters/infra/combat.publisher.ts`
+        + `CentrifugoCombatPublisher` impl mirroring
+        `dp.publisher.ts`. Hooked into every mutation
+        handler (encounter create / patch / delete,
+        combatant add / patch / delete, initiative
+        roll / reorder / advance) — published *after*
+        commit, before HTTP 200, with the full
+        Encounter snapshot. e2e test against the real
+        docker centrifugo (skip if not running, log
+        warn) verifies the channel + payload.
+- Status: ready
 - Blockers: —
+
+---
+
+## T-2026-05-10-008 — Phase 6 web: NPC library + GM combat tracker
+
+- Created: 2026-05-10
+- Owner: claude
+- Spec: T-006 locked the wire contract; T-007 lands the backend
+  implementation. This task wires the web SPA against both.
+- Goal: GM-facing combat tracker UX — NPC library page,
+  inline encounter creation on the session view, combatant
+  picker (PC + NPC), initiative roll/reorder/advance, live
+  combat re-render via the existing centrifuge subscription
+  on `session.{id}` (DP composable already subscribes; reuse
+  the channel, branch on payload type).
+- Depends on: T-2026-05-10-007 (Phase 6 backend).
+- Acceptance:
+  - `/app/npcs` index — list + filter + inline create form +
+    per-card Open / Duplicate / Delete + empty state, mirrors
+    `/app/ships` index pattern.
+  - `/app/npcs/[id]` sheet — full editable stat block with
+    `useAutoSave` debounce on blur, header with rename +
+    duplicate + delete + AppSavePulse.
+  - On the session view (`/app/sessions/[id]`): an
+    `EncounterPanel` that lists encounters for the session,
+    inline create (name + notes), per-card open which expands
+    a `CombatTracker` widget.
+  - `CombatTracker` widget — combatant list ordered by
+    `turnOrder`, active row highlighted, GM-only Roll
+    Initiative / Advance Turn / Reorder (drag-and-drop)
+    buttons. Add Combatant flyout with two tabs (PC picker
+    pulling characters from the session, NPC picker pulling
+    from `/api/v1/npcs`). Status flag chips
+    (`broken | exposed | covered | prone`) editable inline.
+  - Realtime: subscribe to `session.{id}` (already done for
+    DP) — branch on `payload.type` to update DP counter or
+    re-render the combat tracker from the lazy snapshot. No
+    diff computation in the client — replace local state
+    wholesale.
+  - i18n: every user-visible string keyed; ru + en strings
+    in the existing `apps/web/i18n/locales/{ru,en}.json`.
+  - Storybook: `CombatTracker` and `EncounterPanel` get
+    stories (states: empty / setup / active / ended).
+  - Vitest count climbs by ≥40.
+- Spec diff: none.
+- Codegen impact: none — generated TS client already exposes
+  the Phase 6 ops from T-006.
+- Design impact: combat tracker is a new pattern — capture
+  tokens / spacing in the Storybook stories, no new design
+  tokens needed (reuse existing role / size scales).
+- Tests: vitest @testing-library/vue specs per page +
+  composable; Storybook visual stories; one Playwright
+  smoke flow (create encounter → add 2 combatants → roll
+  initiative → advance turn → realtime update arrives).
+- Sub-blocks (one feat-web commit per block + one
+  active.md follow-up commit, per `feedback_block_workflow.md`):
+  - [ ] Block 1 — `useNpcsApi` composable + `/app/npcs`
+        index page (list, inline create, per-card actions,
+        empty state, error retry). Nav link from characters
+        AppBar.
+  - [ ] Block 2 — `/app/npcs/[id]` sheet with auto-save
+        on blur, header actions, problems card.
+  - [ ] Block 3 — `useEncountersApi` composable +
+        `EncounterPanel` on the session view. Inline create,
+        list, open / delete. State-machine UI hints
+        (e.g. "Add ≥1 combatant before rolling initiative").
+  - [ ] Block 4 — `useCombatantsApi` + `CombatTracker`
+        widget. PC + NPC picker, status chips, drag reorder.
+        No initiative actions yet — picker + list only.
+  - [ ] Block 5 — Initiative ops + realtime wire-up.
+        Roll / Advance Turn buttons, drag reorder dispatch
+        to backend, branch the existing `session.{id}`
+        subscription on payload type to update tracker
+        from `combat.updated` snapshots. Storybook
+        stories landed.
+- Status: queued (blocked on T-007 backend)
+- Blockers: T-2026-05-10-007
