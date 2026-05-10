@@ -98,8 +98,9 @@ class WizardDraft extends Equatable {
   int get attributePointsSpent =>
       (strength ?? 2) + (agility ?? 2) + (wits ?? 2) + (empathy ?? 2);
 
-  /// General skill points allocated (sum of 8 general skills).
-  int get generalSkillPointsSpent =>
+  /// Total skill points allocated across all 16 skills (single shared
+  /// pool sized by upbringing — ST3001 ch.2 table 2.4).
+  int get skillPointsSpent =>
       (dexterity ?? 0) +
       (force ?? 0) +
       (infiltration ?? 0) +
@@ -107,10 +108,7 @@ class WizardDraft extends Equatable {
       (meleeCombat ?? 0) +
       (observation ?? 0) +
       (rangedCombat ?? 0) +
-      (survival ?? 0);
-
-  /// Advanced skill points allocated (sum of 8 advanced skills).
-  int get advancedSkillPointsSpent =>
+      (survival ?? 0) +
       (command ?? 0) +
       (culture ?? 0) +
       (dataDjinn ?? 0) +

@@ -147,31 +147,57 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
 
   // ── Step 5 — Skills ───────────────────────────────────────────────────────
 
-  static const int _generalSkillTotal = 8;
-  static const int _advancedSkillTotal = 2;
+  /// ST3001 ch.2 table 2.4 — single skill-point pool sized by upbringing.
+  static const Map<String, int> _skillBudget = {
+    'plebeian': 8,
+    'stationary': 10,
+    'aristocrat': 12,
+  };
+
+  /// At creation, key skills (per concept) cap at 3, every other skill
+  /// caps at 1. ST3001 ch.2.
+  static const int _skillCreationKeyMax = 3;
+  static const int _skillCreationNonKeyMax = 1;
   static const int _skillMin = 0;
-  static const int _skillMax = 5;
-  static const int _advancedSkillMax = 3;
+
+  /// Concept → key skill keys. Mirrors `CONCEPT_KEYS` in the backend
+  /// `apps/backend/src/modules/rules-engine/rules-engine.ts`.
+  static const Map<String, Set<String>> _conceptKeySkills = {
+    'artist': {'manipulation', 'culture', 'dexterity', 'observation', 'infiltration'},
+    'networker': {'dataDjinn', 'culture', 'manipulation', 'observation', 'infiltration'},
+    'fugitive': {'meleeCombat', 'infiltration', 'culture', 'mysticPowers', 'manipulation'},
+    'negotiator': {'manipulation', 'culture', 'observation', 'command', 'infiltration'},
+    'operative': {'meleeCombat', 'rangedCombat', 'infiltration', 'observation', 'manipulation'},
+    'pilot': {'pilot', 'rangedCombat', 'technology', 'observation', 'dataDjinn'},
+    'pioneer': {'survival', 'observation', 'technology', 'infiltration', 'science'},
+    'preacher': {'culture', 'mysticPowers', 'manipulation', 'command', 'observation'},
+    'scientist': {'science', 'culture', 'technology', 'medicurgy', 'dataDjinn'},
+    'sailor': {'meleeCombat', 'force', 'technology', 'observation', 'pilot'},
+    'soldier': {'rangedCombat', 'meleeCombat', 'force', 'command', 'observation'},
+  };
+
+  /// Default budget when [WizardDraft.upbringing] is not yet set.
+  static const int _defaultSkillBudget = 10; // stationary
+
+  int _skillBudgetFor(String? upbringing) =>
+      _skillBudget[upbringing] ?? _defaultSkillBudget;
+
+  int _maxRankFor(String key, String? concept) {
+    final keys = _conceptKeySkills[concept] ?? const <String>{};
+    return keys.contains(key) ? _skillCreationKeyMax : _skillCreationNonKeyMax;
+  }
 
   void updateSkill(String key, int delta) {
     final d = state.draft;
-    final isAdvanced = _advancedSkillKeys.contains(key);
-    final maxVal = isAdvanced ? _advancedSkillMax : _skillMax;
+    final maxVal = _maxRankFor(key, d.concept);
     final current = _skillValue(d, key);
     final newValue = (current + delta).clamp(_skillMin, maxVal);
-    final budget = isAdvanced ? _advancedSkillTotal : _generalSkillTotal;
     final newDraft = _withSkill(d, key, newValue);
-    final spent = isAdvanced
-        ? newDraft.advancedSkillPointsSpent
-        : newDraft.generalSkillPointsSpent;
-    if (delta > 0 && spent > budget) return;
+    if (delta > 0 && newDraft.skillPointsSpent > _skillBudgetFor(d.upbringing)) {
+      return;
+    }
     emit(state.copyWith(draft: newDraft));
   }
-
-  static const Set<String> _advancedSkillKeys = {
-    'command', 'culture', 'dataDjinn', 'medicurgy',
-    'mysticPowers', 'pilot', 'science', 'technology',
-  };
 
   static int _skillValue(WizardDraft d, String key) => switch (key) {
         'dexterity' => d.dexterity ?? 0,

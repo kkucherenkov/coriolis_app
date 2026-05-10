@@ -769,7 +769,7 @@ const Wizard6Skills = () => {
   return (
     <WizardShell
       stepIdx={5}
-      footerCenter="8 points among general skills (max 3) · 2 points in your key skill (max 3)."
+      footerCenter="10 skill points (Stationary upbringing) · key skills cap at 3, others at 1."
       footerLeft={<button className="cor-btn cor-btn--ghost">← Back</button>}
       footerRight={<button className="cor-btn">Continue →</button>}
     >

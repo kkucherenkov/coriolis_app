@@ -162,7 +162,7 @@
   "wizardAttrPointsRemaining": "Points remaining",
 
   "wizardStep5Title": "Train your skills",
-  "wizardStep5Blurb": "8 points among general skills (max rank 5) · 2 points among advanced skills (max rank 3).",
+  "wizardStep5Blurb": "Skill points depend on upbringing — Plebeian 8, Stationary 10, Aristocrat 12. Key skills cap at 3, others at 1.",
   "wizardSkillPointsRemaining": "Points left",
 
   "wizardStep6Title": "Choose your talents",

@@ -162,7 +162,7 @@
   "wizardAttrPointsRemaining": "[el-todo] Points remaining",
 
   "wizardStep5Title": "[el-todo] Train your skills",
-  "wizardStep5Blurb": "[el-todo] 8 points among general skills · 2 points among advanced skills.",
+  "wizardStep5Blurb": "[el-todo] Skill points depend on upbringing — Plebeian 8, Stationary 10, Aristocrat 12. Key skills cap at 3, others at 1.",
   "wizardSkillPointsRemaining": "[el-todo] Points left",
 
   "wizardStep6Title": "[el-todo] Choose your talents",

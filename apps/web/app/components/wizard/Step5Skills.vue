@@ -2,10 +2,12 @@
   import { computed } from 'vue';
   import type { Concept, Skills } from '@app/api-client-ts';
 
-  // ST3001 ch.2 table 2.4 — skill-point pool per upbringing. The rulebook
-  // does not split the pool between general and advanced; that split here
-  // is a UI affordance. Per-skill caps depend on the chosen concept:
-  // key skills cap at 3, every other skill caps at 1 at creation.
+  // ST3001 ch.2 table 2.4 — single skill-point pool sized by upbringing.
+  // Per-skill caps at creation depend on the chosen concept: key skills
+  // cap at 3, every other skill caps at 1. The General / Advanced split
+  // in the layout below is purely visual — it groups skills by the ch.3
+  // action-economy rule (advanced skills require ≥1 rank to roll), not
+  // by an artificial pool partition.
   type Upbringing = 'plebeian' | 'stationary' | 'aristocrat';
 
   const props = defineProps<Props>();
@@ -14,10 +16,10 @@
     'update:skills': [value: Skills];
   }>();
 
-  const SKILL_BUDGET: Record<Upbringing, { general: number; advanced: number }> = {
-    plebeian: { general: 6, advanced: 2 },
-    stationary: { general: 8, advanced: 2 },
-    aristocrat: { general: 9, advanced: 3 },
+  const SKILL_BUDGET: Record<Upbringing, number> = {
+    plebeian: 8,
+    stationary: 10,
+    aristocrat: 12,
   };
 
   const CONCEPT_KEY_SKILLS: Record<Concept, readonly (keyof Skills)[]> = {
@@ -53,11 +55,8 @@
     return keySkillSet.value.has(key) ? KEY_SKILL_MAX : NONKEY_SKILL_MAX;
   }
 
-  const generalPool = computed<number>(() =>
-    props.upbringing ? SKILL_BUDGET[props.upbringing].general : 8,
-  );
-  const advancedPool = computed<number>(() =>
-    props.upbringing ? SKILL_BUDGET[props.upbringing].advanced : 2,
+  const pool = computed<number>(() =>
+    props.upbringing ? SKILL_BUDGET[props.upbringing] : SKILL_BUDGET.stationary,
   );
 
   const { t } = useI18n({ useScope: 'local' });
@@ -123,40 +122,31 @@
     mysticPowers: 'EMP',
   };
 
-  const generalSpent = computed<number>(() =>
-    GENERAL_KEYS.reduce((s, k) => s + props.skills[k], 0),
+  const spent = computed<number>(() =>
+    [...GENERAL_KEYS, ...ADVANCED_KEYS].reduce((s, k) => s + props.skills[k], 0),
   );
 
-  const advancedSpent = computed<number>(() =>
-    ADVANCED_KEYS.reduce((s, k) => s + props.skills[k], 0),
-  );
+  const remaining = computed<number>(() => pool.value - spent.value);
 
-  const generalRemaining = computed<number>(() => generalPool.value - generalSpent.value);
-  const advancedRemaining = computed<number>(() => advancedPool.value - advancedSpent.value);
-
-  function canIncrement(key: keyof Skills, pool: 'general' | 'advanced'): boolean {
-    const rem = pool === 'general' ? generalRemaining.value : advancedRemaining.value;
-    return props.skills[key] < maxRank(key) && rem > 0;
+  function canIncrement(key: keyof Skills): boolean {
+    return props.skills[key] < maxRank(key) && remaining.value > 0;
   }
 
   function canDecrement(key: keyof Skills): boolean {
     return props.skills[key] > 0;
   }
 
-  function setSkill(key: keyof Skills, delta: 1 | -1, pool: 'general' | 'advanced'): void {
-    if (delta === 1 && !canIncrement(key, pool)) return;
+  function setSkill(key: keyof Skills, delta: 1 | -1): void {
+    if (delta === 1 && !canIncrement(key)) return;
     if (delta === -1 && !canDecrement(key)) return;
     emit('update:skills', { ...props.skills, [key]: props.skills[key] + delta });
   }
 
-  function onDotClick(key: keyof Skills, dotIdx: number, pool: 'general' | 'advanced'): void {
+  function onDotClick(key: keyof Skills, dotIdx: number): void {
     // dotIdx is 0-based; clicking a filled dot clears to that level, clicking empty sets to dotIdx+1
     const newVal = dotIdx + 1 === props.skills[key] ? dotIdx : dotIdx + 1;
     const delta = newVal - props.skills[key];
-    if (delta > 0) {
-      const rem = pool === 'general' ? generalRemaining.value : advancedRemaining.value;
-      if (newVal > maxRank(key) || delta > rem) return;
-    }
+    if (delta > 0 && (newVal > maxRank(key) || delta > remaining.value)) return;
     emit('update:skills', { ...props.skills, [key]: newVal });
   }
 </script>
@@ -167,7 +157,7 @@
     "generalTitle": "General Skills",
     "advancedTitle": "Advanced Skills",
     "pointsLeft": "Points left",
-    "hint": "General: {genPool} pts · Advanced: {advPool} pts · Key skills up to {max}, others up to {nonKeyMax}.",
+    "hint": "{pool} skill points · Key skills up to {max}, others up to {nonKeyMax}.",
     "skill": {
       "force": "Force",
       "meleeCombat": "Melee Combat",
@@ -193,7 +183,7 @@
     "generalTitle": "Общие навыки",
     "advancedTitle": "Продвинутые навыки",
     "pointsLeft": "Осталось",
-    "hint": "Общие: {genPool} оч. · Продвинутые: {advPool} оч. · Ключевые до {max}, остальные до {nonKeyMax}.",
+    "hint": "Очков навыков: {pool} · Ключевые до {max}, остальные до {nonKeyMax}.",
     "skill": {
       "force": "Сила",
       "meleeCombat": "Рукопашный бой",
@@ -219,7 +209,7 @@
     "generalTitle": "[uk-todo] General Skills",
     "advancedTitle": "[uk-todo] Advanced Skills",
     "pointsLeft": "[uk-todo] Points left",
-    "hint": "[uk-todo] General: {genPool} pts · Advanced: {advPool} pts · Max {max}.",
+    "hint": "[uk-todo] {pool} skill points · Key skills up to {max}, others up to {nonKeyMax}.",
     "skill": {
       "force": "[uk-todo] Force",
       "meleeCombat": "[uk-todo] Melee Combat",
@@ -245,7 +235,7 @@
     "generalTitle": "[el-todo] General Skills",
     "advancedTitle": "[el-todo] Advanced Skills",
     "pointsLeft": "[el-todo] Points left",
-    "hint": "[el-todo] General: {genPool} pts · Advanced: {advPool} pts · Max {max}.",
+    "hint": "[el-todo] {pool} skill points · Key skills up to {max}, others up to {nonKeyMax}.",
     "skill": {
       "force": "[el-todo] Force",
       "meleeCombat": "[el-todo] Melee Combat",
@@ -275,8 +265,7 @@
     <p class="step-skills__hint">
       {{
         t('hint', {
-          genPool: generalPool,
-          advPool: advancedPool,
+          pool: pool,
           max: KEY_SKILL_MAX,
           nonKeyMax: NONKEY_SKILL_MAX,
         })
@@ -288,11 +277,8 @@
       <div class="step-skills__panel">
         <div class="step-skills__panel-header">
           <span class="step-skills__panel-title">{{ t('generalTitle') }}</span>
-          <span
-            class="step-skills__pool"
-            :class="{ 'step-skills__pool--done': generalRemaining === 0 }"
-          >
-            {{ t('pointsLeft') }}: {{ generalRemaining }}
+          <span class="step-skills__pool" :class="{ 'step-skills__pool--done': remaining === 0 }">
+            {{ t('pointsLeft') }}: {{ remaining }}
           </span>
         </div>
 
@@ -308,8 +294,8 @@
               role="button"
               tabindex="0"
               :aria-pressed="i - 1 < skills[key]"
-              @click="onDotClick(key, i - 1, 'general')"
-              @keydown.enter.space.prevent="onDotClick(key, i - 1, 'general')"
+              @click="onDotClick(key, i - 1)"
+              @keydown.enter.space.prevent="onDotClick(key, i - 1)"
             />
           </div>
           <span class="step-skills__val">{{ skills[key] }}</span>
@@ -319,16 +305,16 @@
               type="button"
               :disabled="!canDecrement(key)"
               :aria-label="t('decrementAria', { skill: t(`skill.${key}`) })"
-              @click="setSkill(key, -1, 'general')"
+              @click="setSkill(key, -1)"
             >
               &minus;
             </button>
             <button
               class="step-skills__btn"
               type="button"
-              :disabled="!canIncrement(key, 'general')"
+              :disabled="!canIncrement(key)"
               :aria-label="t('incrementAria', { skill: t(`skill.${key}`) })"
-              @click="setSkill(key, 1, 'general')"
+              @click="setSkill(key, 1)"
             >
               &plus;
             </button>
@@ -340,11 +326,8 @@
       <div class="step-skills__panel">
         <div class="step-skills__panel-header">
           <span class="step-skills__panel-title">{{ t('advancedTitle') }}</span>
-          <span
-            class="step-skills__pool"
-            :class="{ 'step-skills__pool--done': advancedRemaining === 0 }"
-          >
-            {{ t('pointsLeft') }}: {{ advancedRemaining }}
+          <span class="step-skills__pool" :class="{ 'step-skills__pool--done': remaining === 0 }">
+            {{ t('pointsLeft') }}: {{ remaining }}
           </span>
         </div>
 
@@ -360,8 +343,8 @@
               role="button"
               tabindex="0"
               :aria-pressed="i - 1 < skills[key]"
-              @click="onDotClick(key, i - 1, 'advanced')"
-              @keydown.enter.space.prevent="onDotClick(key, i - 1, 'advanced')"
+              @click="onDotClick(key, i - 1)"
+              @keydown.enter.space.prevent="onDotClick(key, i - 1)"
             />
           </div>
           <span class="step-skills__val">{{ skills[key] }}</span>
@@ -371,16 +354,16 @@
               type="button"
               :disabled="!canDecrement(key)"
               :aria-label="t('decrementAria', { skill: t(`skill.${key}`) })"
-              @click="setSkill(key, -1, 'advanced')"
+              @click="setSkill(key, -1)"
             >
               &minus;
             </button>
             <button
               class="step-skills__btn"
               type="button"
-              :disabled="!canIncrement(key, 'advanced')"
+              :disabled="!canIncrement(key)"
               :aria-label="t('incrementAria', { skill: t(`skill.${key}`) })"
-              @click="setSkill(key, 1, 'advanced')"
+              @click="setSkill(key, 1)"
             >
               &plus;
             </button>

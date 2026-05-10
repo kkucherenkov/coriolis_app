@@ -10,16 +10,40 @@ import 'package:coriolis_companion/features/characters/presentation/widgets/wiza
 
 /// Wizard step 5 — Skill distribution.
 ///
-/// Two sections:
-/// - General skills (8 skills, 8 points total, max rank 5).
-/// - Advanced skills (8 skills, 2 points total, max rank 3).
-///
-/// Each row uses the shared [WizardStepperButton] from wizard_shared.dart.
+/// One shared pool sized by upbringing (ST3001 ch.2 table 2.4):
+/// plebeian 8 / stationary 10 / aristocrat 12. Per-skill cap at
+/// creation: 3 ranks for the concept's key skills, 1 rank for
+/// every other skill. The visible General / Advanced split below
+/// is purely a layout grouping reflecting the ch.3 action-economy
+/// rule (advanced skills require ≥1 rank to roll), not a budget
+/// partition.
 class Step5Skills extends StatelessWidget {
   const Step5Skills({super.key});
 
-  static const int _generalTotal = 8;
-  static const int _advancedTotal = 2;
+  static const Map<String, int> _skillBudget = {
+    'plebeian': 8,
+    'stationary': 10,
+    'aristocrat': 12,
+  };
+
+  static const int _defaultBudget = 10; // stationary
+
+  static const int _keySkillMax = 3;
+  static const int _nonKeySkillMax = 1;
+
+  static const Map<String, Set<String>> _conceptKeySkills = {
+    'artist': {'manipulation', 'culture', 'dexterity', 'observation', 'infiltration'},
+    'networker': {'dataDjinn', 'culture', 'manipulation', 'observation', 'infiltration'},
+    'fugitive': {'meleeCombat', 'infiltration', 'culture', 'mysticPowers', 'manipulation'},
+    'negotiator': {'manipulation', 'culture', 'observation', 'command', 'infiltration'},
+    'operative': {'meleeCombat', 'rangedCombat', 'infiltration', 'observation', 'manipulation'},
+    'pilot': {'pilot', 'rangedCombat', 'technology', 'observation', 'dataDjinn'},
+    'pioneer': {'survival', 'observation', 'technology', 'infiltration', 'science'},
+    'preacher': {'culture', 'mysticPowers', 'manipulation', 'command', 'observation'},
+    'scientist': {'science', 'culture', 'technology', 'medicurgy', 'dataDjinn'},
+    'sailor': {'meleeCombat', 'force', 'technology', 'observation', 'pilot'},
+    'soldier': {'rangedCombat', 'meleeCombat', 'force', 'command', 'observation'},
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +52,11 @@ class Step5Skills extends StatelessWidget {
     return BlocBuilder<CharacterWizardCubit, CharacterWizardState>(
       builder: (context, state) {
         final d = state.draft;
-        final genRemaining = _generalTotal - d.generalSkillPointsSpent;
-        final advRemaining = _advancedTotal - d.advancedSkillPointsSpent;
+        final total = _skillBudget[d.upbringing] ?? _defaultBudget;
+        final remaining = total - d.skillPointsSpent;
+        final keySet = _conceptKeySkills[d.concept] ?? const <String>{};
+        int rankCapFor(String key) =>
+            keySet.contains(key) ? _keySkillMax : _nonKeySkillMax;
 
         final generalSkills = [
           (key: 'dexterity', label: t.skillDexterity, value: d.dexterity ?? 0),
@@ -63,28 +90,26 @@ class Step5Skills extends StatelessWidget {
                 blurb: t.wizardStep5Blurb,
               ),
               const SizedBox(height: AppSpacing.s4),
-              // General section
               _SkillSection(
                 title: t.sectionGeneral.toUpperCase(),
                 poolLabel: t.wizardSkillPointsRemaining,
-                remaining: genRemaining,
-                total: _generalTotal,
+                remaining: remaining,
+                total: total,
                 skills: generalSkills,
-                maxRank: 5,
-                canIncrementAny: genRemaining > 0,
+                rankCapFor: rankCapFor,
+                canIncrementAny: remaining > 0,
                 onChanged: (key, delta) =>
                     context.read<CharacterWizardCubit>().updateSkill(key, delta),
               ),
               const SizedBox(height: AppSpacing.s4),
-              // Advanced section
               _SkillSection(
                 title: t.sectionAdvanced.toUpperCase(),
                 poolLabel: t.wizardSkillPointsRemaining,
-                remaining: advRemaining,
-                total: _advancedTotal,
+                remaining: remaining,
+                total: total,
                 skills: advancedSkills,
-                maxRank: 3,
-                canIncrementAny: advRemaining > 0,
+                rankCapFor: rankCapFor,
+                canIncrementAny: remaining > 0,
                 onChanged: (key, delta) =>
                     context.read<CharacterWizardCubit>().updateSkill(key, delta),
               ),
@@ -103,7 +128,7 @@ class _SkillSection extends StatelessWidget {
     required this.remaining,
     required this.total,
     required this.skills,
-    required this.maxRank,
+    required this.rankCapFor,
     required this.canIncrementAny,
     required this.onChanged,
   });
@@ -113,7 +138,7 @@ class _SkillSection extends StatelessWidget {
   final int remaining;
   final int total;
   final List<({String key, String label, int value})> skills;
-  final int maxRank;
+  final int Function(String key) rankCapFor;
   final bool canIncrementAny;
   final void Function(String key, int delta) onChanged;
 
@@ -147,15 +172,18 @@ class _SkillSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.s3),
-          ...skills.map((s) => _SkillRow(
-                label: s.label,
-                value: s.value,
-                maxRank: maxRank,
-                canIncrement: canIncrementAny && s.value < maxRank,
-                canDecrement: s.value > 0,
-                onIncrement: () => onChanged(s.key, 1),
-                onDecrement: () => onChanged(s.key, -1),
-              )),
+          ...skills.map((s) {
+            final cap = rankCapFor(s.key);
+            return _SkillRow(
+              label: s.label,
+              value: s.value,
+              maxRank: cap,
+              canIncrement: canIncrementAny && s.value < cap,
+              canDecrement: s.value > 0,
+              onIncrement: () => onChanged(s.key, 1),
+              onDecrement: () => onChanged(s.key, -1),
+            );
+          }),
         ],
       ),
     );
