@@ -1693,6 +1693,20 @@ export interface components {
             features: string[];
             /** @description Whether the item is currently equipped */
             equipped: boolean;
+            /**
+             * @description Per-weapon initiative modifier added to the d6 initiative
+             *     roll when the wielder uses this weapon (ST3001 ГЛАВА 6 «Инициатива»
+             *     column on each weapon table; ГЛАВА 5 §«Раунды, ходы и инициатива»
+             *     — «Некоторые виды оружия могут временно повысить значение твоей
+             *     инициативы. Воспользовавшись этим преимуществом, ты обязан
+             *     атаковать оружием, которое его обеспечивает»). Canonical printed
+             *     values in ГЛАВА 6 are 0..+2; the broader −5..+5 envelope leaves
+             *     room for GM-defined exotics and house-rule penalties without
+             *     needing a spec bump. Defaults to 0 — most weapons don't carry
+             *     an initiative bonus.
+             * @default 0
+             */
+            initiative: number;
         } & {
             /**
              * @description discriminator enum property added by openapi-typescript
@@ -1823,6 +1837,13 @@ export interface components {
             features: string[];
             /** @default false */
             equipped: boolean;
+            /**
+             * @description Per-weapon initiative modifier (ST3001 ГЛАВА 6 «Инициатива» column).
+             *     Canonical printed values 0..+2; accepts −5..+5 for GM flex.
+             *     Defaults to 0 — most weapons don't carry an initiative bonus.
+             * @default 0
+             */
+            initiative: number;
         };
         /**
          * @description Create payload for an ARMOR item. No `id` — server-assigned.
@@ -1965,6 +1986,11 @@ export interface components {
             weight?: number;
             features?: string[];
             equipped?: boolean;
+            /**
+             * @description Per-weapon initiative modifier (ST3001 ГЛАВА 6 «Инициатива» column).
+             *     Accepts −5..+5. Omit to leave unchanged.
+             */
+            initiative?: number;
         };
         /**
          * @description PATCH payload for an ARMOR item. All fields optional.
@@ -3502,10 +3528,15 @@ export interface components {
              */
             displayName: string;
             /**
-             * @description d6 initiative result (1–6 per ST3001 ГЛАВА 5 «Раунды, ходы и
-             *     инициатива»: «Бросьте по кубику за всех участников сражения»).
-             *     Null until the encounter's initiative is rolled (Block 4
-             *     operation). Set server-side only.
+             * @description Combat initiative value — the d6 base roll (1..6 per
+             *     ST3001 ГЛАВА 5 «Раунды, ходы и инициатива» — «Бросьте по
+             *     кубику за всех участников сражения») plus per-weapon
+             *     initiative modifiers (ГЛАВА 6 «Инициатива» column on each
+             *     weapon table) and any ambush / situational +2 from
+             *     ГЛАВА 5 §«Повышение инициативы». The 1..10 range
+             *     accommodates a base roll of 6 plus stacked modifiers
+             *     (e.g. Посох +2 + ambush +2 = 10). Null until the
+             *     encounter's initiative is rolled. Set server-side only.
              */
             readonly initiative: number | null;
             /**
