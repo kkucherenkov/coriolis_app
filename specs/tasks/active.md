@@ -636,41 +636,129 @@
   `i18n-keys` lint rule already in `apps/web`).
 - Sub-blocks (one feat-web commit per block + one active.md
   follow-up commit, per `feedback_block_workflow.md`):
-  - [ ] Block 1 — `roleCatalogue.ts` + i18n strings. Add the
-        33-entry mapping module under `apps/web/app/utils/`,
-        wire its types into the wizard store, and seed all
-        66 ru/en i18n keys (33 labels + 33 flavours). No UI
-        yet — Storybook story for the catalogue's
-        smoke-render only. Drift test against the regenerated
-        `Role` enum from `@app/api-client-ts`.
-  - [ ] Block 2 — `Step5Role.vue` + WizardShell renumbering.
-        Build the new step component (radiogroup of 3 role
-        cards), insert it between Step4Attributes and the
-        existing Step5Skills, renumber Step5Skills →
-        Step6Skills and Step6Talents → Step7Talents in the
-        store + shell + progress bar. No skill-cap wiring
-        yet — Step6Skills still uses the union from
-        Step1Concept.
-  - [ ] Block 3 — Step6Skills role-scoped caps. Read the
-        chosen role from the store; cap the four role-keys
-        at 3 each, the other twelve at 1 each. Update the
-        "Key skills" hint at the top of the step. Add the
-        Storybook variant that previews a concept+role pair
-        (e.g. pilot + driver) so designers can verify the
-        chip rendering of the four role-keys.
-  - [ ] Block 4 — `RoleUnmigratedBanner.vue` on the
-        character sheet header. Add the
-        `useCharactersApi.update()` PATCH wiring; clear the
-        flag on success; surface the same role-card dialog
-        (factored out of Step5Role for reuse). Storybook
-        states + banner spec.
-  - [ ] Block 5 — Playwright smoke (`wizard-role-picker.`
-        `spec.ts`) + i18n-completeness lint rule. Wraps up
-        the task with a green CI run.
-- Status: queued (no blockers — T-010 fully landed; this is the
-  next task in the stack after T-011 if the user wants to
-  continue agent-mode work, but the user may also pick any of the
-  T-2026-05-10-012..016 follow-ups instead).
+  - [x] Block 1 — `roleCatalogue.ts` + drift tests. **Done in
+        a248e1e.** Pure data module under
+        `apps/web/app/utils/roleCatalogue.ts` mirrors the
+        backend `CONCEPT_ROLES` 1-for-1 (33 entries × 4
+        skills); `rolesForConcept`, `keySkillsForRole`,
+        `conceptForRole`, `CONCEPT_BY_ROLE` reverse map.
+        22 vitest cases including drift detection against
+        the regenerated `Role` enum.
+  - [x] Block 2 — `Step5Role.vue` + WizardShell renumber 6→7.
+        **Done in 29a20d0.** New `Step5Role.vue`
+        (radiogroup of 3 role cards, a11y compliant);
+        `Step5Skills.vue` → `Step6Skills.vue` (rename + BEM
+        class rename); `Step6Talents.vue` → `Step7Talents`
+        `.vue`; `new.vue` orchestrator: `TOTAL_STEPS` 6→7,
+        `draftRole` state, role cleared if concept change
+        orphans it, role included in `persistDraft` +
+        `forge` PATCH; i18n carries 33 role labels + 33
+        flavours in en + ru, `[uk-todo]` / `[el-todo]`
+        placeholders for the rest.
+  - [x] Block 3 — Step6Skills role-scoped caps. **Done
+        directly (Step6Skills.vue + new.vue edits +
+        Block 3 commit).** `Step6Skills` reads
+        `role: Role | null`; caps the four canonical key
+        skills at 3, every other at 1; falls back to the
+        concept-union when role is null (legacy drafts).
+        New role-scoped hint below the upbringing-pool
+        hint: "Key skills for your role: …". `new.vue`
+        passes `:role` into Step6Skills.
+  - [x] Block 4 — `RoleUnmigratedBanner` + `RoleCardGrid`.
+        **Done in bfa24ee.** Extracted the role-card grid
+        from `Step5Role.vue` into a reusable top-level
+        `RoleCardGrid.vue` (a11y + arrow-key nav
+        preserved). New `RoleUnmigratedBanner.vue` on the
+        character-sheet header surfaces when
+        `roleUnmigrated === true`, opens an `AppModal`
+        with the role-card grid, PATCHes the chosen role,
+        backend clears the flag. 32 new vitest cases
+        (15 RoleCardGrid + 17 RoleUnmigratedBanner).
+  - [x] Block 5 — spec gap closed + i18n-completeness
+        lint. **Done in (spec) + (codegen) + Block-5
+        web cleanup commit.** Closed a Block-E gap by
+        adding `Character.roleUnmigrated: boolean`
+        (readOnly, default false) to OpenAPI spec; TS
+        client regenerated. The web augmented type in
+        `useCharactersApi.ts` is gone — `Character` now
+        re-exports the regenerated type directly. New
+        `RoleCardGrid.i18n.spec.ts` (8 cases) locks down
+        the role catalogue's i18n contract: every
+        canonical role has en + ru `label` and
+        `flavour`, no orphan en keys, ru labels carry
+        Cyrillic, en labels do not, plus a spot-check
+        against ГЛАВА 2 canonical Russian display names.
+        Web vitest count 163 → 203 (+40 across Blocks
+        1, 4, 5).
+        **Playwright smoke deferred** to
+        T-2026-05-10-017 — `apps/web` has no Playwright
+        bootstrap yet; bringing it up is its own infra
+        task. The vitest + i18n-completeness coverage in
+        this task is enough to gate the role-picker
+        feature on its own.
+- Status: done — ready to archive (move T-011 to done.md
+  on the next session start). Playwright smoke continues
+  in T-2026-05-10-017.
+- Blockers: —
+
+---
+
+## T-2026-05-10-017 — `apps/web` Playwright bootstrap + role-picker smoke
+
+- Created: 2026-05-10
+- Owner: claude
+- Source: split out of T-2026-05-10-011 Block 5 because `apps/web`
+  has no Playwright runtime yet — bringing it up is an infra
+  bootstrap task in its own right (config, browser deps in CI,
+  fixtures for the dev container's seeded user, screenshot policy,
+  etc.) and shouldn't gate the role-picker feature.
+- Goal: stand up Playwright in `apps/web`, wire it into CI, and
+  land one end-to-end smoke that exercises the wizard's role
+  picker (concept → role → skills → forge) plus the
+  `RoleUnmigratedBanner` flow on a backfilled character.
+- Depends on: T-2026-05-10-011 done (UI is in place).
+- Acceptance:
+  - `apps/web` gains `@playwright/test` + a `playwright.config.ts`
+    pointing at `http://localhost:3001` (dev container) by default,
+    with overridable `BASE_URL` env for CI.
+  - `apps/web/tests/e2e/` directory established. One smoke spec:
+    `wizard-role-picker.e2e.ts`. Steps:
+    1. Sign in (use the existing dev seed user; document the
+       fixture pattern for future specs).
+    2. Navigate to `/app/characters/new`.
+    3. Type a name; pick concept `pilot`.
+    4. Click through to step 5; pick role `driver`.
+    5. Click through to step 6 (skills); assert the four role
+       keys (force, pilot, rangedCombat, survival) cap at 3 in
+       the UI; spend points up to budget.
+    6. Click forge; assert navigation to
+       `/app/characters/{id}` and that the GET response carries
+       `role: 'driver'` + `roleUnmigrated: false`.
+  - Second optional smoke: `role-unmigrated-banner.e2e.ts` —
+    seed a character via API call with
+    `roleUnmigrated: true` and `role: 'ace'` (first canonical
+    pilot role from the migration), navigate to its sheet, click
+    the banner CTA, pick `driver` in the dialog, confirm the
+    banner disappears and the GET shows `roleUnmigrated: false`.
+  - CI: a Playwright job is added to `.github/workflows/ci.yml`
+    (or wherever the project's CI lives) that builds `apps/web`,
+    starts the dev container stack, and runs both specs. Browser
+    deps (`pnpm exec playwright install chromium`) cached.
+  - The Playwright runner does NOT collide with vitest — its tests
+    live under `tests/e2e/` and are excluded from the vitest
+    `include` glob (already enforced by the existing config
+    pattern).
+  - Documentation: a `docs/testing.md` paragraph or a `tests/`
+    README explaining when to write vitest vs Playwright and how
+    to run each locally.
+- Spec diff: none.
+- Codegen impact: none.
+- Design impact: none — instrumentation only.
+- Tests: the two new e2e specs + the vitest coverage stays.
+- Sub-blocks: probably one `chore(web)` infra commit for the
+  Playwright bootstrap and one `test(web)` commit for each smoke,
+  followed by the active.md follow-up.
+- Status: queued
 - Blockers: —
 
 ---
