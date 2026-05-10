@@ -122,12 +122,29 @@
         and `combatant_create.dart` did not get `.g.dart` files
         (pre-existing build_runner limitation with complex types —
         same pattern as Blocks 1+2).
-  - [ ] Block 4 — Initiative + turn order ops. Three new path
+  - [x] Block 4 — Initiative + turn order ops. Three new path
         actions on the encounter resource (roll, reorder,
         advance). `InitiativeRollResult` returns the sorted
         combatants array with `turnOrder` indices populated.
         `TurnAdvanceResult` returns `{ activeCombatantId,
-        round, isNewRound }`.
+        round, isNewRound }`. Landed in 14c4302 (spec v0.16.0)
+        + 239275c (codegen). `pnpm spec:validate && pnpm
+        spec:bundle && pnpm spec:codegen` green. New
+        operationIds: `rollInitiative`, `reorderInitiative`,
+        `advanceTurn`. Design calls: tie-breaking by `agility`
+        descending documented in `InitiativeRollResult`
+        description (ST3001 rule); remaining ties deferred to GM
+        via `reorderInitiative`. `rollInitiative` bundles the
+        `setup → active` transition atomically (round 0→1,
+        `activeCombatantId` set to `turnOrder:0`). `advanceTurn`
+        carries a defensive `ENCOUNTER_INITIATIVE_NOT_ROLLED`
+        guard for future code paths that bypass `rollInitiative`.
+        `reorderInitiative` does NOT alter `activeCombatantId`
+        (the currently-active combatant stays active; reorder
+        affects the next turn's sequence only). TS exports:
+        `InitiativeRollResult`, `InitiativeReorderRequest`,
+        `TurnAdvanceResult`, `rollInitiative`, `reorderInitiative`,
+        `advanceTurn`. Dart: new model files + test stubs.
   - [ ] Block 5 — AsyncAPI `combat.updated` message on the
         existing `session.{id}` channel. Payload is the full
         Encounter snapshot; clients diff against the previous
