@@ -176,4 +176,28 @@ export interface IShipRepo {
   updateModule(moduleId: string, data: ShipModuleUpdateData): Promise<ShipModuleReadModel>;
 
   deleteModule(moduleId: string): Promise<void>;
+
+  /**
+   * Find a single crew slot by (shipId, position).
+   * Returns null if the slot does not exist.
+   */
+  findCrewSlot(shipId: string, position: CrewPosition): Promise<CrewSlotReadModel | null>;
+
+  /**
+   * Find the crew slot currently assigned to characterId on the given ship.
+   * Returns null if the character is not assigned.
+   */
+  findCrewSlotByCharacter(shipId: string, characterId: string): Promise<CrewSlotReadModel | null>;
+
+  /**
+   * Update a crew slot's assignedCharacterId.
+   * The slot row is guaranteed to exist (pre-seeded on ship creation).
+   */
+  assignCrewSlot(shipId: string, position: CrewPosition, characterId: string): Promise<CrewSlotReadModel>;
+
+  /**
+   * Clear assignedCharacterId for the given character on the given ship.
+   * No-op if the character is not currently assigned.
+   */
+  unassignCrewSlot(shipId: string, characterId: string): Promise<void>;
 }

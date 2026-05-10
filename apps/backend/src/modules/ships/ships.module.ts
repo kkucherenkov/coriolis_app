@@ -10,11 +10,15 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
+import { CharactersModule } from '../characters/characters.module';
+
 import { AddShipModuleHandler } from './commands/add-ship-module.handler';
+import { AssignCrewHandler } from './commands/assign-crew.handler';
 import { CreateShipHandler } from './commands/create-ship.handler';
 import { DeleteShipHandler } from './commands/delete-ship.handler';
 import { DeleteShipModuleHandler } from './commands/delete-ship-module.handler';
 import { DuplicateShipHandler } from './commands/duplicate-ship.handler';
+import { UnassignCrewHandler } from './commands/unassign-crew.handler';
 import { UpdateShipHandler } from './commands/update-ship.handler';
 import { UpdateShipModuleHandler } from './commands/update-ship-module.handler';
 import { SHIP_REPO } from './domain/ship.ports';
@@ -26,7 +30,7 @@ import { ShipModulesController } from './ship-modules.controller';
 import { ShipsController } from './ships.controller';
 
 @Module({
-  imports: [CqrsModule],
+  imports: [CqrsModule, CharactersModule],
   controllers: [ShipsController, ShipModulesController],
   providers: [
     // Commands
@@ -37,6 +41,8 @@ import { ShipsController } from './ships.controller';
     AddShipModuleHandler,
     UpdateShipModuleHandler,
     DeleteShipModuleHandler,
+    AssignCrewHandler,
+    UnassignCrewHandler,
     // Queries
     ListShipsHandler,
     GetShipHandler,

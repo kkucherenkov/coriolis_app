@@ -115,3 +115,36 @@ export class ShipModuleNotOwnedError extends DomainError {
     });
   }
 }
+
+export class CrewPositionTakenError extends DomainError {
+  constructor(position: string) {
+    super({
+      code: 'CREW_POSITION_TAKEN',
+      status: 400,
+      title: 'Validation Error',
+      detail: `Position ${position} is already assigned on this ship.`,
+    });
+  }
+}
+
+export class CharacterNotFoundError extends DomainError {
+  constructor(id: string) {
+    super({
+      code: 'CHARACTER_NOT_FOUND',
+      status: 400,
+      title: 'Validation Error',
+      detail: `Character ${id} does not exist.`,
+    });
+  }
+}
+
+export class CharacterNotOwnedError extends DomainError {
+  constructor(id: string) {
+    super({
+      code: 'CHARACTER_NOT_OWNED',
+      status: 403,
+      title: 'Forbidden',
+      detail: `You do not own character ${id}.`,
+    });
+  }
+}

@@ -28,16 +28,18 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { SessionGuard } from '../../common/auth/auth.guard';
 
 import { AddShipModuleCommand, AddShipModuleDto } from './commands/add-ship-module.command';
+import { AssignCrewCommand, AssignCrewDto } from './commands/assign-crew.command';
 import { CreateShipCommand, CreateShipDto } from './commands/create-ship.command';
 import { DeleteShipCommand } from './commands/delete-ship.command';
 import { DuplicateShipCommand } from './commands/duplicate-ship.command';
+import { UnassignCrewCommand } from './commands/unassign-crew.command';
 import { UpdateShipCommand, UpdateShipDto } from './commands/update-ship.command';
 import { GetShipExportQuery } from './queries/get-ship-export.query';
 import { GetShipQuery } from './queries/get-ship.query';
 import { ListShipsQuery } from './queries/list-ships.query';
 
 import type { AuthenticatedRequest } from '../../common/auth/auth.guard';
-import type { ShipModuleReadModel, ShipReadModel } from './domain/ship.ports';
+import type { CrewSlotReadModel, ShipModuleReadModel, ShipReadModel } from './domain/ship.ports';
 import type { ShipListResult } from './queries/list-ships.handler';
 
 @UseGuards(SessionGuard)
@@ -99,6 +101,28 @@ export class ShipsController {
     @Body() body: AddShipModuleDto,
   ): Promise<ShipModuleReadModel> {
     return this.commandBus.execute(new AddShipModuleCommand(id, req.userId, body));
+  }
+
+  /** POST /api/v1/ships/:id/crew */
+  @Post(':id/crew')
+  @HttpCode(HttpStatus.CREATED)
+  async assignCrew(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() body: AssignCrewDto,
+  ): Promise<CrewSlotReadModel> {
+    return this.commandBus.execute(new AssignCrewCommand(id, req.userId, body));
+  }
+
+  /** DELETE /api/v1/ships/:id/crew/:characterId */
+  @Delete(':id/crew/:characterId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async unassignCrew(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Param('characterId') characterId: string,
+  ): Promise<void> {
+    return this.commandBus.execute(new UnassignCrewCommand(id, req.userId, characterId));
   }
 
   /** POST /api/v1/ships/:id/duplicate — STUB: Block 5 */

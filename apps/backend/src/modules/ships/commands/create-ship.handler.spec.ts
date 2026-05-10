@@ -18,6 +18,14 @@ function makeRepo(): IShipRepo {
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    findModuleById: vi.fn(),
+    addModule: vi.fn(),
+    updateModule: vi.fn(),
+    deleteModule: vi.fn(),
+    findCrewSlot: vi.fn(),
+    findCrewSlotByCharacter: vi.fn(),
+    assignCrewSlot: vi.fn(),
+    unassignCrewSlot: vi.fn(),
   };
 }
 

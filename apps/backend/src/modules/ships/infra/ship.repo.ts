@@ -262,4 +262,38 @@ export class ShipRepo implements IShipRepo {
   async deleteModule(moduleId: string): Promise<void> {
     await this.prisma.shipModule.delete({ where: { id: moduleId } });
   }
+
+  async findCrewSlot(shipId: string, position: string): Promise<import('../domain/ship.ports').CrewSlotReadModel | null> {
+    const row = await this.prisma.crewSlot.findFirst({
+      where: { shipId, position },
+      select: { position: true, assignedCharacterId: true },
+    });
+    if (!row) return null;
+    return { position: row.position, assignedCharacterId: row.assignedCharacterId };
+  }
+
+  async findCrewSlotByCharacter(shipId: string, characterId: string): Promise<import('../domain/ship.ports').CrewSlotReadModel | null> {
+    const row = await this.prisma.crewSlot.findFirst({
+      where: { shipId, assignedCharacterId: characterId },
+      select: { position: true, assignedCharacterId: true },
+    });
+    if (!row) return null;
+    return { position: row.position, assignedCharacterId: row.assignedCharacterId };
+  }
+
+  async assignCrewSlot(shipId: string, position: string, characterId: string): Promise<import('../domain/ship.ports').CrewSlotReadModel> {
+    const row = await this.prisma.crewSlot.update({
+      where: { shipId_position: { shipId, position } },
+      data: { assignedCharacterId: characterId },
+      select: { position: true, assignedCharacterId: true },
+    });
+    return { position: row.position, assignedCharacterId: row.assignedCharacterId };
+  }
+
+  async unassignCrewSlot(shipId: string, characterId: string): Promise<void> {
+    await this.prisma.crewSlot.updateMany({
+      where: { shipId, assignedCharacterId: characterId },
+      data: { assignedCharacterId: null },
+    });
+  }
 }
