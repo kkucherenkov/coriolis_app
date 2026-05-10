@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 0.13.0
+  version: 0.14.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -47,6 +47,8 @@ tags:
     description: Dice rolls — create, push, and roll history
   - name: npcs
     description: GM-owned non-player characters — CRUD and duplicate action
+  - name: encounters
+    description: GM-owned encounter containers nested under a game session — state-machine combat lifecycle
 
 paths:
   /api/v1/characters:
@@ -4043,6 +4045,463 @@ paths:
                 $ref: "#/components/schemas/Problem"
 
   # ---------------------------------------------------------------------------
+  # Encounters (Phase 6)
+  # ---------------------------------------------------------------------------
+
+  /api/v1/game-sessions/{sessionId}/encounters:
+    get:
+      operationId: listEncounters
+      summary: List encounters for a game session
+      description: |
+        Returns a cursor-paginated list of encounters belonging to the game
+        session identified by `sessionId`. Optionally filter by `status`.
+        Only the GM who owns the session may call this endpoint. Results are
+        ordered newest-first by `createdAt`.
+      tags: [encounters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          description: Game session identifier (cuid2)
+          schema:
+            type: string
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque pagination cursor returned by the previous page
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          description: Number of encounters to return (1–100, default 20)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: status
+          in: query
+          required: false
+          description: Filter encounters by status
+          schema:
+            $ref: "#/components/schemas/EncounterStatus"
+      responses:
+        "200":
+          description: Paginated encounter list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EncounterList"
+              examples:
+                ok:
+                  value:
+                    items:
+                      - id: cuid_enc01
+                        gameSessionId: cuid_gs01
+                        name: Ambush in the Bazaar
+                        status: setup
+                        round: 0
+                        activeCombatantId: null
+                        notes: null
+                        createdAt: "2026-05-10T09:00:00Z"
+                        updatedAt: "2026-05-10T09:00:00Z"
+                    nextCursor: null
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the parent game session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this game session
+                    instance: /api/v1/game-sessions/cuid_gs01/encounters
+                    code: GAME_SESSION_NOT_OWNER
+        "404":
+          description: Game session not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Game session cuid_gs01 does not exist
+                    instance: /api/v1/game-sessions/cuid_gs01/encounters
+                    code: GAME_SESSION_NOT_FOUND
+
+    post:
+      operationId: createEncounter
+      summary: Create an encounter in a game session
+      description: |
+        Creates a new encounter owned by the game session. The encounter is
+        seeded with `status: setup`, `round: 0`, and
+        `activeCombatantId: null`. Combatants can be freely added or removed
+        while the encounter is in `setup` status (Block 3 surface).
+      tags: [encounters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          description: Game session identifier (cuid2)
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EncounterCreate"
+            examples:
+              minimal:
+                value:
+                  name: Ambush in the Bazaar
+              withNotes:
+                value:
+                  name: Ambush in the Bazaar
+                  notes: |
+                    The party is ambushed by Zenith mercenaries while bartering
+                    at the Icon Bazaar. Use the **Surprise** rule (ST3001 p.147).
+      responses:
+        "201":
+          description: Encounter created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Encounter"
+              examples:
+                created:
+                  value:
+                    id: cuid_enc01
+                    gameSessionId: cuid_gs01
+                    name: Ambush in the Bazaar
+                    status: setup
+                    round: 0
+                    activeCombatantId: null
+                    notes: null
+                    createdAt: "2026-05-10T09:00:00Z"
+                    updatedAt: "2026-05-10T09:00:00Z"
+        "400":
+          description: |
+            Validation error. Possible codes:
+            - `ENCOUNTER_NAME_EMPTY` — name is an empty string.
+            - `ENCOUNTER_NAME_TOO_LONG` — name exceeds 80 characters.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the parent game session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: Game session not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /api/v1/encounters/{id}:
+    get:
+      operationId: getEncounter
+      summary: Get an encounter by ID
+      description: |
+        Returns the full encounter DTO. The encounter's parent game session
+        must be owned by the authenticated user — the server checks
+        `encounter.gameSession.ownerId === caller.id`. Returns 404 if the
+        encounter does not exist or 403 if the caller does not own the
+        parent session.
+      tags: [encounters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EncounterId"
+      responses:
+        "200":
+          description: Encounter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Encounter"
+              examples:
+                setup:
+                  value:
+                    id: cuid_enc01
+                    gameSessionId: cuid_gs01
+                    name: Ambush in the Bazaar
+                    status: setup
+                    round: 0
+                    activeCombatantId: null
+                    notes: "Use the **Surprise** rule (ST3001 p.147)."
+                    createdAt: "2026-05-10T09:00:00Z"
+                    updatedAt: "2026-05-10T09:00:00Z"
+                active:
+                  value:
+                    id: cuid_enc01
+                    gameSessionId: cuid_gs01
+                    name: Ambush in the Bazaar
+                    status: active
+                    round: 1
+                    activeCombatantId: cuid_comb01
+                    notes: null
+                    createdAt: "2026-05-10T09:00:00Z"
+                    updatedAt: "2026-05-10T09:15:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the parent game session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own the game session for this encounter
+                    instance: /api/v1/encounters/cuid_enc01
+                    code: GAME_SESSION_NOT_OWNER
+        "404":
+          description: Encounter not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Encounter cuid_enc01 does not exist
+                    instance: /api/v1/encounters/cuid_enc01
+                    code: ENCOUNTER_NOT_FOUND
+
+    patch:
+      operationId: updateEncounter
+      summary: Update an encounter
+      description: |
+        Applies PATCH semantics to an encounter. All fields are optional.
+
+        **Allowed status transitions:**
+        - `setup → active` — starts combat. Bumps `round` to 1, sets
+          `activeCombatantId` to the first combatant in initiative order.
+          **Requires at least one combatant** on the encounter; if the
+          encounter has zero combatants the server returns 422
+          `ENCOUNTER_NO_COMBATANTS` (combatants are added via the Block 3
+          surface at `POST /api/v1/encounters/{id}/combatants`).
+        - `active → ended` — closes combat. The encounter becomes
+          read-only history; `activeCombatantId` is set to null.
+
+        **Forbidden transitions** (422 `ENCOUNTER_INVALID_TRANSITION`):
+        - Any transition back to `setup` from `active` or `ended`.
+        - `setup → ended` (must go through `active` first).
+        - Any transition out of `ended`.
+
+        Renaming and notes editing are permitted regardless of status.
+      tags: [encounters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EncounterId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EncounterUpdate"
+            examples:
+              rename:
+                value:
+                  name: Ambush in the Bazaar — Act II
+              startCombat:
+                value:
+                  status: active
+              addNotes:
+                value:
+                  notes: "Round 2: the lights go out."
+              endCombat:
+                value:
+                  status: ended
+      responses:
+        "200":
+          description: Updated encounter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Encounter"
+              examples:
+                startedCombat:
+                  value:
+                    id: cuid_enc01
+                    gameSessionId: cuid_gs01
+                    name: Ambush in the Bazaar
+                    status: active
+                    round: 1
+                    activeCombatantId: cuid_comb01
+                    notes: null
+                    createdAt: "2026-05-10T09:00:00Z"
+                    updatedAt: "2026-05-10T09:15:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the parent game session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own the game session for this encounter
+                    instance: /api/v1/encounters/cuid_enc01
+                    code: GAME_SESSION_NOT_OWNER
+        "404":
+          description: Encounter not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Encounter cuid_enc01 does not exist
+                    instance: /api/v1/encounters/cuid_enc01
+                    code: ENCOUNTER_NOT_FOUND
+        "422":
+          description: |
+            State-machine violation. Possible codes:
+            - `ENCOUNTER_INVALID_TRANSITION` — the requested `status` value
+              is not reachable from the current status. Illegal moves:
+              any → `setup`, `setup → ended`, any → `active` from `ended`,
+              any → `ended` from `ended`.
+            - `ENCOUNTER_NO_COMBATANTS` — attempted `setup → active`
+              transition but the encounter has zero combatants. Add at
+              least one combatant first (Block 3 surface).
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                invalidTransition:
+                  value:
+                    type: https://coriolis.example.com/problems/unprocessable-entity
+                    title: Invalid status transition
+                    status: 422
+                    detail: "Cannot transition encounter from 'active' to 'setup'. Allowed: active → ended."
+                    instance: /api/v1/encounters/cuid_enc01
+                    code: ENCOUNTER_INVALID_TRANSITION
+                noCombatants:
+                  value:
+                    type: https://coriolis.example.com/problems/unprocessable-entity
+                    title: No combatants
+                    status: 422
+                    detail: >-
+                      Cannot start combat with zero combatants. Add at least one
+                      combatant before transitioning to active.
+                    instance: /api/v1/encounters/cuid_enc01
+                    code: ENCOUNTER_NO_COMBATANTS
+
+    delete:
+      operationId: deleteEncounter
+      summary: Delete an encounter
+      description: |
+        Permanently deletes an encounter and cascades to all of its
+        combatants (Block 3 schema). The encounter's parent game session
+        must be owned by the authenticated user.
+      tags: [encounters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EncounterId"
+      responses:
+        "204":
+          description: Encounter deleted
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the parent game session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own the game session for this encounter
+                    instance: /api/v1/encounters/cuid_enc01
+                    code: GAME_SESSION_NOT_OWNER
+        "404":
+          description: Encounter not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Encounter cuid_enc01 does not exist
+                    instance: /api/v1/encounters/cuid_enc01
+                    code: ENCOUNTER_NOT_FOUND
+
+  # ---------------------------------------------------------------------------
   # Share links (Epic 6 Feature 6.1)
   # ---------------------------------------------------------------------------
 
@@ -4664,6 +5123,14 @@ components:
       in: path
       required: true
       description: NPC identifier (cuid2)
+      schema:
+        type: string
+
+    EncounterId:
+      name: id
+      in: path
+      required: true
+      description: Encounter identifier (cuid2)
       schema:
         type: string
 
@@ -7829,6 +8296,150 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Npc"
+        nextCursor:
+          type: ["string", "null"]
+          description: Cursor for the next page; null when there are no more results
+
+    # -------------------------------------------------------------------------
+    # Encounter schemas (Phase 6 Block 2)
+    # -------------------------------------------------------------------------
+
+    EncounterStatus:
+      type: string
+      enum: [setup, active, ended]
+      description: |
+        Lifecycle state of an encounter (combat tracker).
+
+        - `setup` — the GM is building the encounter. Combatants can be
+          added or removed freely. Initiative has not been rolled. `round`
+          is 0 and `activeCombatantId` is null.
+        - `active` — combat has started. Initiative is rolled, turn order
+          is locked. `round` is bumped to 1 on the `setup → active`
+          transition and advances with each full rotation. `activeCombatantId`
+          points to the combatant whose turn it is. Combatant mutations are
+          only possible through the GM-driven turn-advance and
+          initiative-reorder operations (Block 4).
+        - `ended` — combat is resolved. The encounter is read-only history.
+          `activeCombatantId` is reset to null.
+
+        **Allowed transitions:** `setup → active`, `active → ended`.
+        No reverse transitions and no skipping states are permitted.
+        Historical (`ended`) encounters are archived and immutable.
+
+    Encounter:
+      type: object
+      description: |
+        A single combat encounter owned by a game session. The Encounter
+        carries the combat metadata (status, round, active turn) but does
+        NOT embed the combatant list — combatants live on a separate
+        sub-resource added in Block 3.
+      required:
+        - id
+        - gameSessionId
+        - name
+        - status
+        - round
+        - activeCombatantId
+        - notes
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: Opaque encounter identifier (cuid2)
+        gameSessionId:
+          type: string
+          readOnly: true
+          description: Identifier of the parent game session (cuid2)
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Short descriptive name for the encounter (1–80 characters)
+        status:
+          $ref: "#/components/schemas/EncounterStatus"
+        round:
+          type: integer
+          minimum: 0
+          default: 0
+          description: |
+            Current combat round. Starts at 0 while in `setup`. Bumped to 1
+            when the encounter transitions to `active`. Increments by 1 each
+            time the turn order wraps back to the first combatant (Block 4
+            turn-advance operation).
+        activeCombatantId:
+          type: ["string", "null"]
+          description: |
+            Identifier of the combatant whose turn it currently is. Null
+            when `status` is `setup` (initiative not yet rolled) or `ended`
+            (combat closed). Set by the server on the `setup → active`
+            transition and updated by the turn-advance operation (Block 4).
+        notes:
+          type: ["string", "null"]
+          maxLength: 4096
+          description: |
+            Optional GM notes for the encounter in Markdown format
+            (max 4096 characters). May be edited at any status.
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    EncounterCreate:
+      type: object
+      description: |
+        Payload for `POST /api/v1/game-sessions/{sessionId}/encounters`.
+        Only `name` is required. The server seeds `status: setup`,
+        `round: 0`, and `activeCombatantId: null`.
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Short descriptive name for the encounter (1–80 characters)
+        notes:
+          type: ["string", "null"]
+          maxLength: 4096
+          description: Optional GM notes in Markdown (max 4096 characters)
+
+    EncounterUpdate:
+      type: object
+      description: |
+        PATCH payload for `PATCH /api/v1/encounters/{id}`. All fields are
+        optional; omitted fields are left unchanged.
+
+        Supplying `status` triggers a state-machine transition validated by
+        the server. See the endpoint description for the full transition
+        table and the 422 error codes.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Rename the encounter (allowed at any status)
+        status:
+          $ref: "#/components/schemas/EncounterStatus"
+        notes:
+          type: ["string", "null"]
+          maxLength: 4096
+          description: Update GM notes in Markdown (allowed at any status)
+
+    EncounterList:
+      type: object
+      description: Cursor-paginated list of encounters
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Encounter"
         nextCursor:
           type: ["string", "null"]
           description: Cursor for the next page; null when there are no more results
