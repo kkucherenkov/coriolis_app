@@ -79,19 +79,41 @@
         `specs/tasks/{active,done}.md` from prettier so
         the next `pnpm format` doesn't collapse the nested
         list outline.
-  - [ ] Block B — **Combatant statusFlags taxonomy.** Hard
-        violation H3.
-        Spec: drop the `[broken, exposed, covered, prone]`
-        wire example; either keep `statusFlags: string[]`
-        free-form (recommended for greenfield) or replace
-        with `[incapacitated, prone, covered]` and document
-        each citing ГЛАВА 5 lines 188-189.
-        Remove the misleading "broken halves attributes per
-        ST3001 p.77" descriptor — that rule does not exist.
-        Code: no migration if string[] stays; otherwise a
-        Prisma migration to renormalise legacy values.
-        Storybook stories for combat-tracker (T-008 design)
-        need to be redrawn before T-008 lands.
+  - [x] Block B — **Combatant statusFlags taxonomy.** Hard
+        violation H3. **Done in c0fcba9 (spec) +
+        9e3d0dd (backend fixtures).**
+        Decision: kept `statusFlags: string[]` free-form (no enum
+        lock) per the librarian audit's greenfield recommendation —
+        GMs need scene-specific tags and a hard schema would force
+        migrations every time a campaign needs a new condition.
+        Description rewritten on `Combatant`, `CombatantUpdate`,
+        and the AsyncAPI combatant snapshot to cite ГЛАВА 5
+        «Раунды, ходы и инициатива» and name the canonical tags
+        (`incapacitated`, `prone`, `covered`) without constraining
+        the field. Removed the fabricated «`broken` halves all
+        attributes per ST3001 p.77» one-liner — no such rule exists
+        in the rulebook.
+        Wire examples scrubbed of the dropped taxonomy:
+        `Combatant.statusFlags` example `[broken, exposed]` →
+        `[incapacitated]`; `CombatantUpdate` example `[broken]` →
+        `[incapacitated]`; the GET-encounter NPC combatant fixture
+        moved from `[exposed]` (also non-canonical) to `[covered]`;
+        the PATCH-combatant `applyDamage` example summary,
+        request, and response payload all switched to
+        `incapacitated`.
+        No Prisma migration: schema shape is unchanged
+        (`String[]` Postgres array, same as before). Backend code
+        is untouched — there was never an enum guard. Test
+        fixtures in
+        `combatants/commands/update-combatant.handler.spec.ts` and
+        `combatants/queries/list-combatants.handler.spec.ts`
+        rewritten to use `['incapacitated']` so they stop
+        perpetuating the dropped taxonomy. 172 combatants +
+        encounters specs pass inside the dev container.
+        TS + Dart codegen: doc-comment-only diff (no schema break);
+        consumers compile clean. T-008 design follow-up
+        (combat-tracker status chips redrawn against canonical
+        tags) is already noted in that task's «Design impact».
   - [ ] Block C — **Dice pool min/max.** Hard violations H4, H5.
         Spec: drop `pool: maximum: 10` (or widen to 20 with
         a PRD-rationale comment); change `pool: minimum: 1`
