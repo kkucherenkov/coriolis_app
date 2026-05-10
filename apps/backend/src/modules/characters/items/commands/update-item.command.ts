@@ -10,6 +10,8 @@ import {
   Min,
 } from 'class-validator';
 
+import { VALID_SHIP_MODULE_SLOTS } from '../../../ships/domain/ship-module-validation';
+
 export class UpdateItemDto {
   @IsOptional() @IsString() name?: string;
   @IsOptional() @IsInt() @Min(1) damage?: number;
@@ -25,7 +27,7 @@ export class UpdateItemDto {
   @IsOptional() @IsInt() @Min(0) @Max(15) xpCost?: number;
   @IsOptional() @IsString() effect?: string;
   @IsOptional()
-  @IsIn(['bridge', 'hull', 'hold', 'weapon', 'drive', 'sensor', 'comms'])
+  @IsIn(VALID_SHIP_MODULE_SLOTS)
   slot?: string;
 }
 

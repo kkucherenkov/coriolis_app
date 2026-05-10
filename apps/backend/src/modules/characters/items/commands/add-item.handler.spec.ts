@@ -199,4 +199,42 @@ describe('AddItemHandler', () => {
     expect(rangeError).toBeDefined();
     expect(itemRepo.create).not.toHaveBeenCalled();
   });
+
+  it('rejects SHIP_MODULE with legacy lowercase slot "sensor" (ItemSlotType retired)', async () => {
+    const dto = Object.assign(new AddItemDto(), {
+      type: 'SHIP_MODULE' as const,
+      name: 'Deep-Space Array',
+      slot: 'sensor', // legacy lowercase — must be rejected after spec upgrade
+      effect: 'Enhanced detection',
+    });
+
+    const { validate } = await import('class-validator');
+    const errors = await validate(dto);
+    const slotError = errors.find((e) => e.property === 'slot');
+    expect(slotError).toBeDefined();
+    expect(itemRepo.create).not.toHaveBeenCalled();
+  });
+
+  it('accepts SHIP_MODULE with canonical uppercase slot "SENSOR"', async () => {
+    vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user-1' });
+    const sensorModule = makeItem({
+      type: 'SHIP_MODULE',
+      name: 'Deep-Space Array',
+    });
+    vi.mocked(itemRepo.create).mockResolvedValue(sensorModule);
+
+    const dto = Object.assign(new AddItemDto(), {
+      type: 'SHIP_MODULE' as const,
+      name: 'Deep-Space Array',
+      slot: 'SENSOR', // canonical uppercase — must pass validation
+      effect: 'Enhanced detection',
+    });
+
+    const { validate } = await import('class-validator');
+    const errors = await validate(dto);
+    expect(errors.filter((e) => e.property === 'slot')).toHaveLength(0);
+
+    const result = await handler.execute(new AddItemCommand('char-1', 'user-1', dto));
+    expect(result.type).toBe('SHIP_MODULE');
+  });
 });

@@ -9,7 +9,8 @@
 import { ShipModuleSlotInvalidError, ShipModuleTypeMismatchError } from './ship.errors';
 import type { ShipModuleSlot, ShipWeaponRange } from './ship.ports';
 
-export const VALID_SLOTS = new Set<ShipModuleSlot>([
+/** Array form of the canonical slot list — used with class-validator @IsIn(). */
+export const VALID_SHIP_MODULE_SLOTS: ShipModuleSlot[] = [
   'BRIDGE',
   'REACTOR',
   'DRIVE',
@@ -31,7 +32,9 @@ export const VALID_SLOTS = new Set<ShipModuleSlot>([
   'CONCEALED-HOLD',
   'PROXY-DECK',
   'OTHER',
-]);
+];
+
+export const VALID_SLOTS = new Set<ShipModuleSlot>(VALID_SHIP_MODULE_SLOTS);
 
 const WEAPON_RANGES = new Set<ShipWeaponRange>(['zero', 'close', 'medium', 'long', 'extreme']);
 

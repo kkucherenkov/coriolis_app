@@ -12,10 +12,11 @@ import {
   ValidateIf,
 } from 'class-validator';
 
+import { VALID_SHIP_MODULE_SLOTS } from '../../../ships/domain/ship-module-validation';
+
 import type { ItemType } from '../../domain/character.ports';
 
 const VALID_RANGES = ['close', 'medium', 'long', 'extreme'];
-const VALID_SLOTS = ['bridge', 'hull', 'hold', 'weapon', 'drive', 'sensor', 'comms'];
 const VALID_TYPES: ItemType[] = ['WEAPON', 'ARMOR', 'GEAR', 'CYBERNETIC', 'SHIP_MODULE', 'OTHER'];
 
 export class AddItemDto {
@@ -95,7 +96,7 @@ export class AddItemDto {
 
   // SHIP_MODULE
   @ValidateIf((o: AddItemDto) => o.type === 'SHIP_MODULE')
-  @IsIn(VALID_SLOTS)
+  @IsIn(VALID_SHIP_MODULE_SLOTS)
   slot?: string;
 }
 
