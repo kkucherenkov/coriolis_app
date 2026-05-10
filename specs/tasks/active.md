@@ -861,6 +861,37 @@
 
 ## T-2026-05-10-017 — `apps/web` Playwright bootstrap + role-picker smoke
 
+**Status: done — ready to archive.** Landed in (commit hash on push).
+Scope narrowed: the Playwright bootstrap was already in place from
+an earlier task — `tests/e2e/playwright.config.ts`,
+`.github/workflows/e2e.yml`, `tests/e2e/smoke.spec.ts`, and
+`tests/e2e/a11y.spec.ts` were all there with the
+`CORIOLIS_E2E_SESSION_COOKIE` skip pattern. T-017's task was just
+to add the role-picker spec.
+
+What landed:
+
+- `tests/e2e/wizard-role-picker.spec.ts` — walks
+  `/app/characters/new` through concept → role → skills → forge,
+  asserts the forged character carries `role: 'driver'` and
+  `roleUnmigrated: false` via a backend GET. Auth-gated; skips
+  when `CORIOLIS_E2E_SESSION_COOKIE` is unset (default CI) but
+  still parses / lints / type-checks so structural drift surfaces
+  on every PR.
+- `pnpm exec playwright test --config=tests/e2e/playwright.config.ts --list`
+  shows 8 tests in 3 files (the new spec + the existing 2);
+  the wizard spec is correctly enumerated.
+
+The role-unmigrated banner spec proposed in T-017 acceptance is
+deferred — the banner already has 17 component-level vitest cases
+in `apps/web/app/components/__tests__/RoleUnmigratedBanner.spec.ts`
+which cover the click → dialog → PATCH → emit cycle; an e2e for
+that flow needs a seeded `roleUnmigrated: true` row that the
+existing dev seed doesn't provide. A future task (when the dev
+seed gets a "legacy character" fixture) can add the banner e2e.
+
+
+
 - Created: 2026-05-10
 - Owner: claude
 - Source: split out of T-2026-05-10-011 Block 5 because `apps/web`
