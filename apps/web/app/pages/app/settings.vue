@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  definePageMeta({ layout: 'app' });
+
   import {
     AppAvatar,
     AppButton,
@@ -411,13 +413,26 @@
       aria-busy="true"
       :aria-label="t('loading')"
     >
-      <div class="page-settings__skeleton" aria-hidden="true" />
-      <div class="page-settings__skeleton page-settings__skeleton--tall" aria-hidden="true" />
-      <div class="page-settings__skeleton" aria-hidden="true" />
+      <div
+        class="page-settings__skeleton"
+        aria-hidden="true"
+      />
+      <div
+        class="page-settings__skeleton page-settings__skeleton--tall"
+        aria-hidden="true"
+      />
+      <div
+        class="page-settings__skeleton"
+        aria-hidden="true"
+      />
     </div>
 
     <!-- Error state -->
-    <div v-else-if="loadState === 'error'" class="page-settings__error" role="alert">
+    <div
+      v-else-if="loadState === 'error'"
+      class="page-settings__error"
+      role="alert"
+    >
       <p class="page-settings__error-text">
         {{ loadError }}
       </p>
@@ -428,20 +443,30 @@
       <!-- Section: Profile -->
       <AppCard>
         <template #header>
-          <AppLabel tone="eyebrow" :text="t('sectionProfile')" />
+          <AppLabel
+            tone="eyebrow"
+            :text="t('sectionProfile')"
+          />
         </template>
 
         <div class="page-settings__profile">
           <!-- Avatar column -->
           <div class="page-settings__profile-avatar">
-            <AppAvatar :name="avatarName" size="lg" tone="brass" />
+            <AppAvatar
+              :name="avatarName"
+              size="lg"
+              tone="brass"
+            />
           </div>
 
           <!-- Fields column -->
           <div class="page-settings__profile-fields">
             <!-- Editable: displayName with auto-save indicator -->
             <div class="page-settings__display-name-row">
-              <AppField :label="t('displayNameLabel')" size="md">
+              <AppField
+                :label="t('displayNameLabel')"
+                size="md"
+              >
                 <template #default="slotAttrs">
                   <AppInput
                     v-bind="slotAttrs"
@@ -453,23 +478,24 @@
                 </template>
               </AppField>
 
-              <div class="page-settings__save-status" aria-live="polite" aria-atomic="true">
+              <div
+                class="page-settings__save-status"
+                aria-live="polite"
+                aria-atomic="true"
+              >
                 <span
                   v-if="saveState === 'saving'"
                   class="page-settings__save-label page-settings__save-label--saving"
-                  >{{ t('statusSaving') }}</span
-                >
+                >{{ t('statusSaving') }}</span>
                 <span
                   v-else-if="saveState === 'saved'"
                   class="page-settings__save-label page-settings__save-label--saved"
-                  >{{ t('statusSaved') }}</span
-                >
+                >{{ t('statusSaved') }}</span>
                 <span
                   v-else-if="saveState === 'error'"
                   class="page-settings__save-label page-settings__save-label--error"
                   role="alert"
-                  >{{ t('statusError') }}</span
-                >
+                >{{ t('statusError') }}</span>
               </div>
             </div>
 
@@ -484,13 +510,19 @@
 
             <!-- Read-only: email -->
             <div class="page-settings__read-row">
-              <AppLabel tone="default" :text="t('emailLabel')" />
+              <AppLabel
+                tone="default"
+                :text="t('emailLabel')"
+              />
               <span class="page-settings__read-value">{{ me.email }}</span>
             </div>
 
             <!-- Read-only: member since -->
             <div class="page-settings__read-row">
-              <AppLabel tone="default" :text="t('memberSinceLabel')" />
+              <AppLabel
+                tone="default"
+                :text="t('memberSinceLabel')"
+              />
               <span class="page-settings__read-value">{{ formattedCreatedAt }}</span>
             </div>
           </div>
@@ -500,11 +532,17 @@
       <!-- Section: Locale -->
       <AppCard>
         <template #header>
-          <AppLabel tone="eyebrow" :text="t('sectionLocale')" />
+          <AppLabel
+            tone="eyebrow"
+            :text="t('sectionLocale')"
+          />
         </template>
 
         <div class="page-settings__locale">
-          <AppField :label="t('localeLabel')" size="md">
+          <AppField
+            :label="t('localeLabel')"
+            size="md"
+          >
             <template #default="slotAttrs">
               <AppSelect
                 :select-id="slotAttrs.id"
@@ -521,7 +559,10 @@
       <!-- Section: Theme -->
       <AppCard>
         <template #header>
-          <AppLabel tone="eyebrow" :text="t('sectionTheme')" />
+          <AppLabel
+            tone="eyebrow"
+            :text="t('sectionTheme')"
+          />
         </template>
 
         <div class="page-settings__theme">
@@ -548,11 +589,18 @@
       <!-- Section: Account (danger zone) -->
       <AppCard class="page-settings__account-card">
         <template #header>
-          <AppLabel tone="eyebrow" :text="t('sectionAccount')" />
+          <AppLabel
+            tone="eyebrow"
+            :text="t('sectionAccount')"
+          />
         </template>
 
         <div class="page-settings__account">
-          <AppButton variant="danger" size="md" @click="openDeleteDialog">
+          <AppButton
+            variant="danger"
+            size="md"
+            @click="openDeleteDialog"
+          >
             {{ t('deleteAccountButton') }}
           </AppButton>
           <p class="page-settings__account-help">
@@ -570,7 +618,10 @@
       @close="closeDeleteDialog"
     >
       <div class="page-settings__dialog-inner">
-        <AppLabel tone="eyebrow" :text="t('deleteAccountTitle')" />
+        <AppLabel
+          tone="eyebrow"
+          :text="t('deleteAccountTitle')"
+        />
         <p class="page-settings__dialog-heading">
           {{ t('deleteAccountModalTitle') }}
         </p>
@@ -579,7 +630,10 @@
         </p>
 
         <div class="page-settings__dialog-confirm-field">
-          <label class="page-settings__dialog-confirm-label" for="delete-confirm-input">{{
+          <label
+            class="page-settings__dialog-confirm-label"
+            for="delete-confirm-input"
+          >{{
             t('deleteAccountConfirmPrompt')
           }}</label>
           <AppInput
@@ -596,7 +650,11 @@
           />
         </div>
 
-        <p v-if="deleteError" class="page-settings__dialog-error" role="alert">
+        <p
+          v-if="deleteError"
+          class="page-settings__dialog-error"
+          role="alert"
+        >
           {{ deleteError }}
         </p>
 

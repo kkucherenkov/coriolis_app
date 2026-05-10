@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  definePageMeta({ layout: 'app' });
+
   import {
     AppCard,
     AppBadge,
@@ -691,33 +693,67 @@
 </i18n>
 
 <template>
-  <section class="page-ship" data-testid="page-ship">
+  <section
+    class="page-ship"
+    data-testid="page-ship"
+  >
     <!-- ── Back nav ──────────────────────────────────────────────────────────── -->
-    <AppButton variant="ghost" size="sm" class="page-ship__back" @click="navigateTo('/app/ships')">
+    <AppButton
+      variant="ghost"
+      size="sm"
+      class="page-ship__back"
+      @click="navigateTo('/app/ships')"
+    >
       ← {{ t('backToList') }}
     </AppButton>
 
     <!-- ── Error banner ──────────────────────────────────────────────────────── -->
-    <AppBanner v-if="state === 'error'" tone="danger" role="alert" class="page-ship__banner">
+    <AppBanner
+      v-if="state === 'error'"
+      tone="danger"
+      role="alert"
+      class="page-ship__banner"
+    >
       {{ errorMsg }}
-      <AppButton variant="ghost" size="sm" @click="load">
+      <AppButton
+        variant="ghost"
+        size="sm"
+        @click="load"
+      >
         {{ t('retry') }}
       </AppButton>
     </AppBanner>
 
-    <AppBanner v-if="duplicateError" tone="danger" role="alert" class="page-ship__banner">
+    <AppBanner
+      v-if="duplicateError"
+      tone="danger"
+      role="alert"
+      class="page-ship__banner"
+    >
       {{ duplicateError }}
     </AppBanner>
 
-    <AppBanner v-if="deleteError" tone="danger" role="alert" class="page-ship__banner">
+    <AppBanner
+      v-if="deleteError"
+      tone="danger"
+      role="alert"
+      class="page-ship__banner"
+    >
       {{ deleteError }}
     </AppBanner>
 
     <!-- ── Loading skeleton ──────────────────────────────────────────────────── -->
-    <div v-if="state === 'loading'" class="page-ship__skeleton" aria-busy="true" />
+    <div
+      v-if="state === 'loading'"
+      class="page-ship__skeleton"
+      aria-busy="true"
+    />
 
     <!-- ── Not found ─────────────────────────────────────────────────────────── -->
-    <AppCard v-else-if="state === 'notfound'" class="page-ship__notfound">
+    <AppCard
+      v-else-if="state === 'notfound'"
+      class="page-ship__notfound"
+    >
       <h2 class="page-ship__notfound-title">
         {{ t('notfoundTitle') }}
       </h2>
@@ -734,7 +770,11 @@
           <h1 class="page-ship__name">
             {{ ship.name }}
           </h1>
-          <AppBadge variant="brass" size="md" class="page-ship__class-chip">
+          <AppBadge
+            variant="brass"
+            size="md"
+            class="page-ship__class-chip"
+          >
             {{ t('classLabel') }}: {{ humaniseClass(ship.class) }}
           </AppBadge>
         </div>
@@ -750,10 +790,20 @@
             {{ t('export') }}
             <span class="page-ship__export-chip">{{ t('exportExperimental') }}</span>
           </a>
-          <AppButton variant="ghost" size="sm" :disabled="duplicating" @click="onDuplicate">
+          <AppButton
+            variant="ghost"
+            size="sm"
+            :disabled="duplicating"
+            @click="onDuplicate"
+          >
             {{ t('duplicate') }}
           </AppButton>
-          <AppButton variant="ghost" size="sm" :disabled="deleting" @click="openDeleteConfirm">
+          <AppButton
+            variant="ghost"
+            size="sm"
+            :disabled="deleting"
+            @click="openDeleteConfirm"
+          >
             {{ t('delete') }}
           </AppButton>
         </div>
@@ -766,7 +816,10 @@
         </template>
 
         <div class="page-ship__identity-grid">
-          <AppField :label="t('fieldName')" required>
+          <AppField
+            :label="t('fieldName')"
+            required
+          >
             <template #default="attrs">
               <AppInput
                 v-bind="attrs"
@@ -995,13 +1048,21 @@
         <template #header>
           <div class="page-ship__card-header-row">
             <span class="page-ship__card-title">{{ t('modulesCardTitle') }}</span>
-            <AppButton variant="ghost" size="sm" @click="openModuleCreate">
+            <AppButton
+              variant="ghost"
+              size="sm"
+              @click="openModuleCreate"
+            >
               {{ t('modulesAdd') }}
             </AppButton>
           </div>
         </template>
 
-        <ul v-if="modulesGrouped.length > 0" class="page-ship__modules-list" aria-label="Modules">
+        <ul
+          v-if="modulesGrouped.length > 0"
+          class="page-ship__modules-list"
+          aria-label="Modules"
+        >
           <li
             v-for="mod in modulesGrouped"
             :key="mod.id"
@@ -1012,7 +1073,11 @@
             @keydown.enter.prevent="openModuleEdit(mod as ShipModule)"
             @keydown.space.prevent="openModuleEdit(mod as ShipModule)"
           >
-            <AppBadge variant="darkness" size="sm" class="page-ship__module-slot">
+            <AppBadge
+              variant="darkness"
+              size="sm"
+              class="page-ship__module-slot"
+            >
               {{ mod.slot }}
             </AppBadge>
             <span class="page-ship__module-name">{{ mod.name }}</span>
@@ -1027,7 +1092,10 @@
           </li>
         </ul>
 
-        <p v-else class="page-ship__modules-empty">
+        <p
+          v-else
+          class="page-ship__modules-empty"
+        >
           {{ t('modulesEmptySlot') }}
         </p>
       </AppCard>
@@ -1048,12 +1116,24 @@
           <span class="page-ship__card-title">{{ t('crewCardTitle') }}</span>
         </template>
 
-        <AppBanner v-if="crewError" tone="danger" role="alert" class="page-ship__crew-error">
+        <AppBanner
+          v-if="crewError"
+          tone="danger"
+          role="alert"
+          class="page-ship__crew-error"
+        >
           {{ crewError }}
         </AppBanner>
 
-        <ul class="page-ship__crew-list" aria-label="Crew">
-          <li v-for="slot in crewRoster" :key="slot.position" class="page-ship__crew-row">
+        <ul
+          class="page-ship__crew-list"
+          aria-label="Crew"
+        >
+          <li
+            v-for="slot in crewRoster"
+            :key="slot.position"
+            class="page-ship__crew-row"
+          >
             <!-- Position label -->
             <span class="page-ship__crew-position">
               {{ positionLabel(slot.position) }}
@@ -1089,7 +1169,10 @@
               </AppButton>
 
               <!-- Inline picker -->
-              <div v-if="pickerOpen[slot.position]" class="page-ship__crew-picker">
+              <div
+                v-if="pickerOpen[slot.position]"
+                class="page-ship__crew-picker"
+              >
                 <AppField :label="t('crewPickerLabel')">
                   <template #default="attrs">
                     <select
@@ -1102,7 +1185,10 @@
                         }
                       "
                     >
-                      <option value="" disabled>
+                      <option
+                        value=""
+                        disabled
+                      >
                         {{ t('crewPickerPlaceholder') }}
                       </option>
                       <optgroup
@@ -1152,7 +1238,11 @@
         <template #header>
           <div class="page-ship__card-header-row">
             <span class="page-ship__card-title">{{ t('notesCardTitle') }}</span>
-            <AppButton variant="ghost" size="sm" @click="notesOpen = !notesOpen">
+            <AppButton
+              variant="ghost"
+              size="sm"
+              @click="notesOpen = !notesOpen"
+            >
               {{ notesOpen ? t('collapseHide') : t('collapseShow') }}
             </AppButton>
           </div>
@@ -1174,7 +1264,11 @@
         <template #header>
           <div class="page-ship__card-header-row">
             <span class="page-ship__card-title">{{ t('historyCardTitle') }}</span>
-            <AppButton variant="ghost" size="sm" @click="historyOpen = !historyOpen">
+            <AppButton
+              variant="ghost"
+              size="sm"
+              @click="historyOpen = !historyOpen"
+            >
               {{ historyOpen ? t('collapseHide') : t('collapseShow') }}
             </AppButton>
           </div>
@@ -1197,7 +1291,10 @@
           <span class="page-ship__card-title">{{ t('problemsCardTitle') }}</span>
         </template>
 
-        <AppField :label="t('problemsLabel')" :help-text="t('problemsHelp')">
+        <AppField
+          :label="t('problemsLabel')"
+          :help-text="t('problemsHelp')"
+        >
           <template #default="attrs">
             <AppInput
               v-bind="attrs"
@@ -1231,10 +1328,20 @@
           {{ t('deleteConfirmBody') }}
         </p>
         <div class="page-ship__delete-modal-actions">
-          <AppButton variant="ghost" size="md" :disabled="deleting" @click="closeDeleteConfirm">
+          <AppButton
+            variant="ghost"
+            size="md"
+            :disabled="deleting"
+            @click="closeDeleteConfirm"
+          >
             {{ t('deleteConfirmNo') }}
           </AppButton>
-          <AppButton variant="danger" size="md" :loading="deleting" @click="confirmDelete">
+          <AppButton
+            variant="danger"
+            size="md"
+            :loading="deleting"
+            @click="confirmDelete"
+          >
             {{ t('deleteConfirmYes') }}
           </AppButton>
         </div>
