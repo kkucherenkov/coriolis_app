@@ -30,6 +30,7 @@ model User {
   characters          Character[]
   gameSessions        GameSession[]
   ships               Ship[]
+  npcs                Npc[]
 
   @@map("user")
 }
@@ -664,4 +665,54 @@ model CrewSlot {
   @@id([shipId, position])
   @@index([assignedCharacterId])
   @@map("crew_slot")
+}
+
+// ----- NPCs (Phase 6) -----
+
+/// A non-player character owned by a GM. NPCs are private GM resources —
+/// owner-scoped on all read and write paths. They carry no lifecycle state
+/// (unlike encounters) and can be added to any encounter at any time.
+///
+/// Design notes:
+/// - `attributes` and `skills` are stored as JSON columns matching the
+///   Character model — closed schema, always read/written as a unit.
+/// - `armor` and `weapons` are JSON arrays. Put-semantics on PATCH:
+///   the entire array is replaced when provided. This mirrors the
+///   Character item pattern but avoids a separate ItemArmor/ItemWeapon
+///   table since NPCs only carry a handful of items.
+/// - `hp` and `mp` current/max are flat columns — both are GM-editable
+///   for NPCs (unlike Characters where max is derived from attributes).
+/// - Cascade delete: dropping an NPC hard-deletes the row; any encounter
+///   combatant rows that snapshot this NPC retain their snapshot copy.
+model Npc {
+  id               String   @id @default(cuid())
+  ownerId          String
+  owner            User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name             String
+  description      String?
+  /// JSON: { strength, agility, wits, empathy } — each 1–5 (default 2)
+  attributes       Json
+  /// JSON: { dexterity, force, infiltration, manipulation, meleeCombat,
+  ///   observation, rangedCombat, survival, command, culture, dataDjinn,
+  ///   medicurgy, mysticPowers, pilot, science, technology } — each 0–5
+  skills           Json
+  hpCurrent        Int      @default(4)
+  hpMax            Int      @default(4)
+  mpCurrent        Int      @default(4)
+  mpMax            Int      @default(4)
+  /// Sensor signature score for ship-combat sensor checks (ST3001 ГЛАВА 14).
+  signature        Int      @default(0)
+  /// Signed integer bonus applied by the combat tracker to attack/defence rolls.
+  keySkillModifier Int      @default(0)
+  /// JSON array of ItemArmor objects (put-semantics on PATCH).
+  armor            Json     @default("[]")
+  /// JSON array of ItemWeapon objects (put-semantics on PATCH).
+  weapons          Json     @default("[]")
+  /// Free-form GM categorisation labels for filtering and encounter grouping.
+  tags             String[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([ownerId])
+  @@map("npc")
 }
