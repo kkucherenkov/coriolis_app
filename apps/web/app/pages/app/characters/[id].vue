@@ -21,13 +21,20 @@
   import { useTalentsApi } from '~/composables/useTalentsApi';
   import type { Talent } from '~/composables/useTalentsApi';
   import type { Item } from '~/composables/useItemsApi';
-  import type { Attributes, Skills, ConditionFlags, CriticalInjury } from '@app/api-client-ts';
+  import type {
+    Attributes,
+    Skills,
+    ConditionFlags,
+    CriticalInjury,
+    Role,
+  } from '@app/api-client-ts';
   import { useTalentLocalization } from '~/composables/useTalentLocalization';
   import { useAutoSave } from '~/composables/useAutoSave';
   import type { SaveState } from '~/composables/useAutoSave';
   import SheetDiceRoller from '~/components/sheet/SheetDiceRoller.vue';
   import SheetRollHistory from '~/components/sheet/SheetRollHistory.vue';
   import type { Roll } from '~/composables/useRollsApi';
+  import RoleUnmigratedBanner from '~/components/RoleUnmigratedBanner.vue';
 
   const { t } = useI18n({ useScope: 'local' });
   const { displayTalentName } = useTalentLocalization();
@@ -688,6 +695,13 @@
     return v.length === 0 || v.length <= 600;
   });
   const talentEditorCanSave = computed(() => talentNameValid.value && talentDescriptionValid.value);
+
+  // ── Role migration banner ──────────────────────────────────────────────────
+
+  function onRoleConfirmed(role: Role): void {
+    if (!character.value) return;
+    character.value = { ...character.value, role, roleUnmigrated: false };
+  }
 </script>
 
 <i18n lang="json">
@@ -1372,6 +1386,15 @@
           </div>
         </div>
       </div>
+
+      <!-- ── Role migration banner ──────────────────────────────────────────── -->
+      <RoleUnmigratedBanner
+        :character-id="characterId"
+        :concept="character.concept ?? null"
+        :role="character.role ?? null"
+        :role-unmigrated="character.roleUnmigrated ?? false"
+        @role-confirmed="onRoleConfirmed"
+      />
 
       <!-- ── Encumbrance warning banner ─────────────────────────────────────── -->
       <AppBanner v-if="isEncumbered" tone="danger" class="page-sheet__enc-warning" role="status">

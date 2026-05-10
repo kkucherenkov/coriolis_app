@@ -10,6 +10,7 @@ export default defineConfig({
       'tests/unit/**/*.spec.ts',
       'app/pages/__tests__/**/*.spec.ts',
       'app/utils/__tests__/**/*.spec.ts',
+      'app/components/__tests__/**/*.spec.ts',
     ],
   },
 });
