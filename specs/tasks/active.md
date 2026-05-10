@@ -1,85 +1,78 @@
-## T-2026-05-10-003 — Phase 4 mobile (Flutter): dice + sessions + DP live updates
+## T-2026-05-10-004 — Phase 5 backend: Ships module (CRUD + modules + crew)
 
 - Created: 2026-05-10
 - Owner: claude
-- Spec: PRD §11 Phase 4 (Dice & Sessions) — same backend that the
-  web Block-1..5 consumed (T-2026-05-10-002). Flutter app currently
-  has only auth / characters / settings features; no rolls,
-  sessions, or DP UI.
-- Goal: Bring the Coriolis dice loop to mobile so a player at the
-  table can roll + push from their character sheet, browse history,
-  and see Darkness Points tick live during a GM session. Mobile is
-  primarily a player surface — heavy GM ergonomics (full audit log,
-  delta-with-reason form) stay on web; mobile gets a minimal GM
-  control panel for quick `+1`/`-1` taps and assigned-character
-  view only.
+- Spec: PRD §11 Phase 5 + the OpenAPI 3.1 surface already shipped at
+  `packages/specs/openapi/openapi.yaml` (paths `/api/v1/ships*`,
+  schemas `Ship`, `ShipCreate`, `ShipUpdate`, `ShipModule`,
+  `ShipModuleCreate`, `ShipModuleUpdate`, `CrewSlot`,
+  `AssignCrewRequest`, etc). The HTTP surface exists and the dart +
+  ts clients are generated; there is **no** backend implementation
+  yet (`apps/backend/src/modules/ships` does not exist, no Prisma
+  Ship model, no migrations). `express-openapi-validator` rejects
+  any caller that hits these paths with a 404.
+- Goal: Stand up the backend Ships module so the web (Phase 5
+  frontend, separate task) and mobile clients can persist + edit
+  fleets. ST3001 ГЛАВА 7 base stats are populated from a class
+  table on create; mandatory modules (BRIDGE, REACTOR, DRIVE) are
+  auto-created. Owner ACL on every endpoint — no public read
+  surface, share-link parity comes later.
 - Acceptance:
-  - From the character sheet, a player can open a dice bottom sheet,
-    pick a pool size (1–10), label the roll, hit Roll, see the
-    server-rolled result, and Push once when eligible.
-  - The character sheet exposes the last 50 rolls (compact list)
-    with row tap → detail modal showing full dice strip, label,
-    pool, hits, and pushed flag.
-  - A new `Sessions` screen lists the player's sessions
-    (Centrifugo-friendly: anything they're a GM owner of OR a
-    character is assigned to). Detail page shows DP counter,
-    assigned characters, GM-only `+1`/`-1` controls when the user
-    is the owner.
-  - Session detail subscribes to `session.{id}` over Centrifugo
-    (Dart client); `dp.changed` patches the counter live,
-    `roll.pushed` surfaces a transient SnackBar.
-- Spec diff: none — backend surface is stable, Dart SDK was already
-  regenerated when each web block landed (`@app/api-client-dart`
-  ships DiceApi + GameSessionsApi + DarknessPointsApi).
-- Codegen impact: none.
-- Design impact: zero new `app_ui` widgets in Block 1; reuse
-  Material + the existing Coriolis primitives. A
-  `RollResultStrip` widget may live page-scoped in Block 1 if no
-  app_ui equivalent exists — keep it scoped, do NOT promote
-  mid-block.
-- Tests: per-block bloc/cubit specs covering happy path + error
-  routing (RFC 9457 → `errorMessage`). Widget tests deferred to
-  the existing `flutter_test` pattern used by `characters_list`.
-- Sub-blocks (one commit + push + active.md follow-up per block,
-  per `feedback_block_workflow.md`):
-  - [x] Block 1 — `features/rolls/` skeleton + dice bottom sheet,
-        wired via FAB on the character sheet (mobile is
-        bottom-sheet-first; web's panel pattern doesn't translate).
-        DiceRollerCubit shaped same as the existing
-        CharactersListCubit. Drive-by: the regenerated dart SDK
-        had no built_value `.g.dart` files; ran build_runner and
-        committed as `chore(codegen)`. Also fixed `Concept` enum
-        bridge in `character_repository_impl.dart` (regenerated SDK
-        now has `Concept` as EnumClass; was String — bridged with
-        `valueOf` / `.name`). Tests: 59/59 (+6 new in
-        `dice_roller_cubit_test.dart`).
-  - [x] Block 2 — Roll history is folded into the same dice bottom
-        sheet (one mental model on mobile, no separate "Rolls" tab).
-        `RollHistoryCubit` exposes `prependRoll` / `updateRoll` for
-        live state mutation; the BlocConsumer listener inside the
-        sheet forwards roller events into both. List rows are
-        ListTile-based with relative timestamps + chip badges; tap
-        opens an AlertDialog with the full dice strip. Drive-by:
-        `Roll` now extends Equatable so list-of-Roll state diffs
-        compare structurally. 65/65 mobile tests pass (+6 new).
-  - [x] Block 3 — `features/sessions/` end-to-end. List page (tabbed
-        active/archived, FAB → create sheet, popup-menu archive
-        toggle), detail page (GM/player branching via me.id vs
-        ownerId, +1/-1 taps + audit card for GM only, glance-only
-        for players). Drops web's free-form delta+reason form by
-        design — phone is glance-and-tweak. Drive-by:
-        `fix(api-client-dart)` patched a latent
-        `ShipModuleSlot` import bug in the openapi-generator output
-        that build_runner exposed. 65/65 tests still pass.
-  - [x] Block 4 — `shared/realtime/SessionRealtime` wraps the
-        `centrifuge` (0.18.0) Dart package. Mints token via
-        `RealtimeApi.issueRealtimeToken`, opens
-        `session.{id}`, discriminates messages by structural shape
-        (`dpCount`/`rollId`). SessionDetailCubit takes the adapter
-        in its ctor, listens to dp.changed → applyDpChanged, and
-        forwards roll.pushed to a stream the page consumes for a
-        3-second SnackBar. close() tears down both streams + the
-        websocket. AppConfig grew `realtimeWsUrl` (defaults to
-        ws://localhost:8000; `--dart-define` override).
-- Status: done — ready to archive (move to `done.md` next session)
+  - `POST /api/v1/ships` returns 201 with a freshly-minted Ship
+    carrying base stats from the class table and the three
+    mandatory modules, plus the empty crew roster (six positions).
+  - `GET /api/v1/ships` returns the authenticated user's ships
+    paginated (cursor + limit, default 20).
+  - `GET /api/v1/ships/{id}` / `PATCH /api/v1/ships/{id}` /
+    `DELETE /api/v1/ships/{id}` work; non-owner gets 403 / 404.
+  - Module sub-resource: `POST /modules`, `PATCH /modules/{id}`,
+    `DELETE /modules/{id}` work. Mandatory modules
+    (BRIDGE/REACTOR/DRIVE) cannot be deleted — server returns 422
+    `SHIP_MODULE_MANDATORY` per the spec.
+  - Crew assignment: `POST /crew` assigns a character to a
+    position; only the ship owner may assign and the character
+    must be owned by the same user. `DELETE /crew/{characterId}`
+    unassigns. Returns the updated Ship.
+  - `POST /api/v1/ships/{id}/duplicate` returns a fresh Ship with
+    "(copy)" appended to the name and identical modules + stats
+    (crew roster reset to empty).
+  - `GET /api/v1/ships/{id}/export` returns 501 stub (full export
+    is its own task — keeps the surface complete so frontends can
+    render the affordance behind a feature flag).
+- Spec diff: none expected — the OpenAPI surface is already at
+  v0.12.0 and stable. Any wire-shape gap surfaced during wiring
+  gets a spec-first fix in its own commit.
+- Codegen impact: none expected.
+- Design impact: none (backend only).
+- Tests: per-block unit specs covering each command/query handler
+  (RFC 9457 errors, ACL, mandatory-module guard). Each block adds
+  enough specs to keep the new module's coverage ≥ 80% (consistent
+  with the rest of the backend).
+- Sub-blocks (one commit + push + active.md follow-up per block):
+  - [ ] Block 1 — Prisma migration. New `Ship` model, `ShipModule`
+        table (one-to-many ship → modules), `CrewSlot` join table
+        (composite PK on `(shipId, position)`). `Ship.ownerId`
+        cascades from User. `Concept`-style enums for `ShipClass`,
+        `ShipModuleSlot`, `CrewPosition`. Single migration named
+        `ships`. No backend wiring this block — DB plumbing only.
+  - [ ] Block 2 — `ShipsModule` core CRUD: list / get / create /
+        update / delete commands and queries, controller mounting
+        `/api/v1/ships*`. Class-table seed for ST3001 base stats
+        (lives in `rules-engine` so the data is reusable from the
+        web class picker later). Cursor pagination on list.
+  - [ ] Block 3 — Module sub-resource: `addModule`, `updateModule`,
+        `deleteModule` commands. Discriminator-aware request body
+        validation (HOLD vs WEAPON vs TORPEDO vs SENSOR vs OTHER —
+        the spec uses oneOf). Mandatory-module guard
+        (`SHIP_MODULE_MANDATORY` 422).
+  - [ ] Block 4 — Crew assignment: `assignCrew` /
+        `unassignCrew` commands. Same-owner guard (ship and
+        character owned by caller). Position dedup — assigning the
+        same character to two positions on the same ship returns
+        422 `CREW_ALREADY_ASSIGNED`.
+  - [ ] Block 5 — `duplicateShip` command (deep copy with name
+        suffix), stub `getShipExport` returning 501. Closes the
+        Ship API surface so the Phase 5 frontend tasks can wire
+        against a complete contract.
+- Status: in-progress
 - Blockers: —

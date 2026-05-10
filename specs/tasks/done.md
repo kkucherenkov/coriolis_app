@@ -2,6 +2,76 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-10-003 — Phase 4 mobile (Flutter): dice + sessions + DP live updates
+
+- Completed: 2026-05-10
+- Owner: claude
+- Spec: PRD §11 Phase 4. Same backend that the web blocks
+  (T-2026-05-10-002) consumed. Mobile previously had only auth /
+  characters / settings features.
+- Goal: Bring the Coriolis dice loop to mobile so a player at the
+  table can roll + push from their character sheet, browse history,
+  and see Darkness Points tick live during a GM-run session.
+- Result: shipped on `main` across four feature commits + a codegen
+  prep commit + a band-aid fix for an upstream openapi-generator
+  bug. All blocks landed continuously per the updated workflow rule.
+  - `fae41e0` `chore(codegen): regenerate dart api-client built_value .g.dart files`
+  - `22b0a79` `feat(mobile): T-2026-05-10-003 Block 1 — rolls feature + dice bottom sheet`
+  - `6190e02` `feat(mobile): T-2026-05-10-003 Block 2 — roll history list inside dice sheet`
+  - `013764d` `fix(api-client-dart): add missing ShipModuleSlot import to ship_module_*`
+  - `59e1a42` `feat(mobile): T-2026-05-10-003 Block 3 — sessions list + detail with GM controls`
+  - `e8abc66` `feat(mobile): T-2026-05-10-003 Block 4 — Centrifugo live updates on session detail`
+- Spec diff: none. Codegen impact: only the dart `.g.dart` files
+  needed regeneration (build_runner). Two new flutter deps:
+  `centrifuge ^0.18.0` (dart Centrifugo client) and `intl` (used by
+  the relative-timestamp helper — already on the transitive graph).
+- Acceptance check (against the original list):
+  - ✅ Character sheet exposes a Roll FAB that opens a bottom-sheet
+    roller (pool stepper 1–10, label, Roll, Push). Push gating
+    mirrors `RulesEngine.canPush` (already-pushed + exhausted) so
+    the disabled state surfaces without a 422 round-trip.
+  - ✅ Same bottom sheet scrolls below the roller into a compact
+    history list with relative timestamps; tap opens a detail
+    dialog with the full dice strip + pool + hits + absolute
+    datetime. Mobile UX trade vs web: one screen, one mental
+    model — no separate "Rolls" tab on the sheet.
+  - ✅ A Game Sessions screen at `/app/sessions` (reachable via
+    casino-icon action on the characters list AppBar) lists
+    active / archived sessions with FAB → create + popup-menu
+    archive toggle. Detail page branches on `me.id ==
+    session.ownerId`.
+  - ✅ Detail page subscribes to `session.{id}` over Centrifugo
+    via `shared/realtime/SessionRealtime` (wraps `centrifuge`
+    0.18.0). `dp.changed` patches the visible counter via
+    `applyDpChanged`; `roll.pushed` surfaces a 3-second SnackBar.
+    Token rotation via `ClientConfig.getToken`. Subscription
+    closes on `Cubit.close()`.
+- Tests: 65/65 mobile (53 → 65, +12 new across DiceRoller and
+  RollHistory cubits). flutter analyze clean modulo the
+  pre-existing `built_collection` dev-dep warning + ui_flutter
+  `withOpacity` deprecation infos.
+- Drive-by drop-off:
+  - The regenerated dart SDK shipped `Concept` as an EnumClass; the
+    mobile `character_repository_impl` was bridged via
+    `Concept.valueOf(...)` / `.name`. Domain-level `concept` is
+    still wire-string — promoting it to a typed enum is a
+    follow-up.
+  - openapi-generator's output for the four oneOf'd ship-module
+    discriminator subclasses references `ShipModuleSlot` without
+    importing it. The .dart parents got the missing import; the
+    matching .g.dart files inherit via `part of`. Long-term fix is
+    to migrate to `@hey-api/openapi-ts`-style codegen (Phase-7
+    hardening item).
+- Open follow-ups:
+  - Cursor-pagination UI on `/app/sessions` (cap at 20).
+  - Character assignment UX on the mobile detail page —
+    deliberately deferred. The mobile detail is glance-only; heavy
+    "set up the session" workflow stays on web.
+  - Cross-route tap target for `/app/sessions` from a global nav
+    (e.g. bottom-nav rebuild) — currently only reachable via the
+    characters-list AppBar action.
+  - Translator pass for uk/el on the new mobile strings.
+
 ## T-2026-05-10-002 — Phase 4 web frontend: dice + sessions + DP + live updates
 
 - Completed: 2026-05-10
