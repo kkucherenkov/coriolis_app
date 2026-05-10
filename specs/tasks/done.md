@@ -2,6 +2,72 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-10-004 — Phase 5 backend: Ships module (CRUD + modules + crew)
+
+- Completed: 2026-05-10
+- Owner: claude
+- Spec: PRD §11 Phase 5. The OpenAPI surface for Ships had been
+  shipped since 75a6ee8 but `apps/backend/src/modules/ships` did
+  not exist — every ship-related path 404'd at the
+  `express-openapi-validator` layer.
+- Goal: Stand up the backend Ships module so the web (Phase 5
+  frontend, separate task) and mobile clients can persist + edit
+  fleets. ST3001 ГЛАВА 7 base stats are populated from a class
+  table on create; mandatory modules (BRIDGE, REACTOR, DRIVE) are
+  auto-created.
+- Result: shipped on `main` across five feature commits + per-block
+  bookkeeping. Test count climbed 434 → 511 (+77 new specs).
+  - `f0b8a7f` `feat(backend): T-2026-05-10-004 Block 1 — Prisma migration for Ships`
+  - `400b186` `feat(backend): T-2026-05-10-004 Block 2 — ShipsModule core CRUD`
+  - `1d06bcc` `feat(backend): T-2026-05-10-004 Block 3 — ship module sub-resource`
+  - `0e4a01c` `feat(backend): T-2026-05-10-004 Block 4 — crew assignment endpoints`
+  - `1ba07ee` `feat(backend): T-2026-05-10-004 Block 5 — duplicate ship + export stub`
+- Spec diff: none. Codegen impact: none. Schema applied via
+  `prisma db push` (project doesn't yet baseline
+  `_prisma_migrations`); migration SQL committed for future deploy
+  targets.
+- Acceptance check (against the original list):
+  - ✅ `POST /api/v1/ships` returns 201 with base stats from
+    `BASE_STATS_BY_CLASS` (in `rules-engine`), three mandatory
+    modules, and six vacant crew slots.
+  - ✅ `GET /api/v1/ships` returns the owner's ships paginated
+    (cursor + limit, default 20).
+  - ✅ Get / Patch / Delete owner-only with 403/404 routing.
+  - ✅ `addShipModule` / `updateShipModule` / `deleteShipModule`
+    with discriminator-aware validation (WEAPON / TORPEDO / HOLD /
+    SENSOR / OTHER). Mandatory-module delete returns 422
+    `SHIP_MODULE_MANDATORY`. Module endpoints live on a second
+    controller `ShipModulesController` at `/api/v1/ship-modules/
+    {id}` — that's how the spec splits the surface.
+  - ✅ `assignCrew` / `unassignCrew` use **move semantics** rather
+    than the undocumented 422 `CREW_ALREADY_ASSIGNED` from the
+    original task entry: re-assigning a character to a vacant
+    position moves them; the new `CREW_POSITION_TAKEN` 400 only
+    fires when the target slot is held by a **different**
+    character. Same-position re-assign is a no-op.
+  - ✅ `duplicateShip` deep-copies modules in one Prisma
+    transaction with `(copy)` / `(copy 2)` / `(copy 3)` name
+    escalation via `listNamesByPrefix`. Crew roster reset to
+    vacant. Source-not-owned returns 403.
+  - ✅ `getShipExport` continues to return 501 — full export is
+    its own task.
+- Tests: 511/511 backend (was 434/434, +77 across all five blocks).
+  flutter / web tests untouched. lint clean across all blocks.
+- Open follow-ups:
+  - `cargoCapacity` recalculation when HOLD modules are added /
+    removed (the OpenAPI says "Total cargo capacity in tonnes
+    across all hold modules" but Block 2 leaves it client-driven —
+    server stores the explicit value seeded from the class table).
+  - `getShipExport` real implementation (currently 501 stub —
+    matches the task spec but the spec section itself is sketchy).
+  - `_prisma_migrations` baselining so `migrate deploy` becomes
+    the canonical apply path. Currently the codebase uses `db
+    push` because `migrate dev` fails on the
+    `20260508000001_character_status` migration's shadow-DB step.
+    Tracked as a Phase-7 hardening item.
+  - Frontend wire-up — Phase 5 web (next task) and Phase 5 mobile
+    (later) both need to consume this surface.
+
 ## T-2026-05-10-003 — Phase 4 mobile (Flutter): dice + sessions + DP live updates
 
 - Completed: 2026-05-10

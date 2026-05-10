@@ -1,114 +1,87 @@
-## T-2026-05-10-004 — Phase 5 backend: Ships module (CRUD + modules + crew)
+## T-2026-05-10-005 — Phase 5 web frontend: ship list + sheet + module editor + crew
 
 - Created: 2026-05-10
 - Owner: claude
-- Spec: PRD §11 Phase 5 + the OpenAPI 3.1 surface already shipped at
-  `packages/specs/openapi/openapi.yaml` (paths `/api/v1/ships*`,
-  schemas `Ship`, `ShipCreate`, `ShipUpdate`, `ShipModule`,
-  `ShipModuleCreate`, `ShipModuleUpdate`, `CrewSlot`,
-  `AssignCrewRequest`, etc). The HTTP surface exists and the dart +
-  ts clients are generated; there is **no** backend implementation
-  yet (`apps/backend/src/modules/ships` does not exist, no Prisma
-  Ship model, no migrations). `express-openapi-validator` rejects
-  any caller that hits these paths with a 404.
-- Goal: Stand up the backend Ships module so the web (Phase 5
-  frontend, separate task) and mobile clients can persist + edit
-  fleets. ST3001 ГЛАВА 7 base stats are populated from a class
-  table on create; mandatory modules (BRIDGE, REACTOR, DRIVE) are
-  auto-created. Owner ACL on every endpoint — no public read
-  surface, share-link parity comes later.
+- Spec: PRD §11 Phase 5. Backend shipped in T-2026-05-10-004
+  (`/api/v1/ships*` and `/api/v1/ship-modules/{id}`); the typed TS
+  client is already generated. `apps/web` currently has nothing
+  Ship-related — no composable, no pages, no nav surface.
+- Goal: Wire the existing Phase-5 backend into the web SPA so a
+  player can build a ship, install / edit modules, assign their
+  characters as crew, and duplicate a ship into a copy. Mirrors the
+  Phase 4 web work in shape — composables → list page → detail page
+  → sub-resource editors.
 - Acceptance:
-  - `POST /api/v1/ships` returns 201 with a freshly-minted Ship
-    carrying base stats from the class table and the three
-    mandatory modules, plus the empty crew roster (six positions).
-  - `GET /api/v1/ships` returns the authenticated user's ships
-    paginated (cursor + limit, default 20).
-  - `GET /api/v1/ships/{id}` / `PATCH /api/v1/ships/{id}` /
-    `DELETE /api/v1/ships/{id}` work; non-owner gets 403 / 404.
-  - Module sub-resource: `POST /modules`, `PATCH /modules/{id}`,
-    `DELETE /modules/{id}` work. Mandatory modules
-    (BRIDGE/REACTOR/DRIVE) cannot be deleted — server returns 422
-    `SHIP_MODULE_MANDATORY` per the spec.
-  - Crew assignment: `POST /crew` assigns a character to a
-    position; only the ship owner may assign and the character
-    must be owned by the same user. `DELETE /crew/{characterId}`
-    unassigns. Returns the updated Ship.
-  - `POST /api/v1/ships/{id}/duplicate` returns a fresh Ship with
-    "(copy)" appended to the name and identical modules + stats
-    (crew roster reset to empty).
-  - `GET /api/v1/ships/{id}/export` returns 501 stub (full export
-    is its own task — keeps the surface complete so frontends can
-    render the affordance behind a feature flag).
-- Spec diff: none expected — the OpenAPI surface is already at
-  v0.12.0 and stable. Any wire-shape gap surfaced during wiring
-  gets a spec-first fix in its own commit.
-- Codegen impact: none expected.
-- Design impact: none (backend only).
-- Tests: per-block unit specs covering each command/query handler
-  (RFC 9457 errors, ACL, mandatory-module guard). Each block adds
-  enough specs to keep the new module's coverage ≥ 80% (consistent
-  with the rest of the backend).
-- Sub-blocks (one commit + push + active.md follow-up per block):
-  - [x] Block 1 — Prisma migration `20260510000002_ships`. Three
-        tables (ship / ship_module / crew_slot), three enums
-        (ship_class / ship_module_slot / crew_position).
-        ShipModule subtype payload lives in `data: Json` mirroring
-        the Item table. Schema applied via `db push` (the project
-        doesn't use `_prisma_migrations` yet); migration SQL
-        committed as the canonical artefact. 434/434 backend tests
-        pass.
-  - [x] Block 2 — `ShipsModule` core CRUD: list / get / create /
-        update / delete commands and queries, controller mounting
-        `/api/v1/ships*`. Class-table seed for ST3001 base stats
-        (lives in `rules-engine` so the data is reusable from the
-        web class picker later). Cursor pagination on list.
-        Commit `400b186`. All five CRUD commands + two 501 stubs
-        (duplicate, export), SessionGuard-protected controller,
-        ShipRepo using single `include: { modules, crew }` query,
-        ship-class-table with all 20 classes. Ran `prisma generate`
-        to pick up Block 1 schema. 463/463 tests pass (+29 new
-        specs); lint clean. Next: Block 3 — module sub-resource.
-  - [x] Block 3 — Module sub-resource: `addModule`, `updateModule`,
-        `deleteModule` commands. Discriminator-aware request body
-        validation (HOLD vs WEAPON vs TORPEDO vs SENSOR vs OTHER —
-        the spec uses oneOf). Mandatory-module guard
-        (`SHIP_MODULE_MANDATORY` 422).
-        Three new domain errors (`ShipModuleNotFoundError`,
-        `ShipModuleMandatoryError`, `ShipModuleSlotInvalidError`,
-        `ShipModuleTypeMismatchError`, `ShipModuleNotOwnedError`).
-        Pure validation helper `ship-module-validation.ts` with full
-        discriminator-aware logic; a second controller
-        `ShipModulesController` at `/api/v1/ship-modules/{id}` for
-        the PATCH+DELETE surface (matching the spec's separate path).
-        IShipRepo extended with `findModuleById`, `addModule`,
-        `updateModule`, `deleteModule`. 490/490 tests pass (+27 new
-        specs across 4 files); lint clean. Next: Block 4 — crew
-        assignment.
-  - [x] Block 4 — Crew assignment: `assignCrew` / `unassignCrew`
-        commands. Ship + character ownership guards. Move semantics:
-        if the character is already on the ship at a different
-        position the old slot is cleared before the new one is
-        filled (only if the target is vacant; otherwise
-        CREW_POSITION_TAKEN). Same-position re-assign is a no-op
-        returning the existing slot. DELETE is idempotent.
-        Three new domain errors (CrewPositionTakenError 400,
-        CharacterNotFoundError 400, CharacterNotOwnedError 403).
-        IShipRepo extended with four crew methods; ShipsModule
-        imports CharactersModule for CHARACTER_REPO.
-        Spec note: active.md mentioned CREW_ALREADY_ASSIGNED 422
-        for same-character-two-positions; the OpenAPI spec has no
-        such code. Resolved by move semantics — no 422 surface.
-        Commit `0e4a01c`. 490 → 503 tests (+13 specs, 2 files);
-        lint clean. Next: Block 5 — duplicateShip + getShipExport
-        stub.
-  - [x] Block 5 — `duplicateShip` command (deep copy with name
-        suffix), stub `getShipExport` returning 501. Closes the
-        Ship API surface so the Phase 5 frontend tasks can wire
-        against a complete contract.
-        `duplicate()` + `listNamesByPrefix()` added to IShipRepo +
-        ShipRepo. Handler resolves "(copy)" / "(copy 2)" / ...
-        suffix from owner's existing names. 7 new specs in
-        `duplicate-ship.handler.spec.ts`. 503 → 511 tests; lint
-        clean.
-- Status: done — ready to archive
+  - `/app/ships` lists the owner's ships with create-ship inline
+    form, per-card Open / Duplicate / Delete actions. Empty state
+    + retry on error.
+  - `/app/ships/[id]` renders the ship sheet: header (name +
+    class + duplicate / delete), top stat block (hull / energy /
+    armor / maneuverability / signature / speed / cargoCapacity),
+    modules list grouped by `slot`, crew roster (six positions).
+  - Module editor (modal) opens from "Add module" / row tap and
+    drives the discriminator-aware form: WEAPON shows
+    bonus/range/damage/crit; TORPEDO shows torpedo/mine counts;
+    HOLD shows tons + concealed; SENSOR shows detection bonus;
+    OTHER is base-only. Mandatory modules (BRIDGE/REACTOR/DRIVE)
+    cannot be deleted from the UI either — the Delete button is
+    hidden for them.
+  - Crew assignment uses a `<select>` of the owner's active
+    characters not already serving on this ship; per-row Remove
+    action; vacant slots stay visible. Move semantics from the
+    backend (Block 4) means picking a character already serving
+    elsewhere on the same ship just shifts them.
+  - Duplicate action on the list and the sheet creates a fresh
+    ship via `POST /ships/{id}/duplicate` and navigates to the
+    new sheet. Modules carry over; crew roster is empty on the
+    copy.
+- Spec diff: none — surface is stable from T-2026-05-10-004. Any
+  wire-shape gap surfaced during wiring gets a spec-first fix in
+  its own commit.
+- Codegen impact: none.
+- Design impact: zero new `@app/ui` components; reuse `AppCard`,
+  `AppButton`, `AppInput`, `AppField`, `AppBadge`, `AppBanner`,
+  `AppModal`, `AppSegControl`. A small page-scoped icon for
+  ship-class / slot may live inline if no `@app/ui` equivalent
+  exists.
+- Tests: per-block vitest specs covering each new composable
+  (request shape, error routing) and structural assertions on the
+  module editor's discriminator switch. Page mounting deferred to
+  Playwright e2e.
+- Sub-blocks (one commit + push + active.md follow-up per block,
+  per `feedback_block_workflow.md`):
+  - [ ] Block 1 — `useShipsApi` composable + `/app/ships` index
+        page (active list, inline create form, per-card Open /
+        Delete / Duplicate). Add a nav link from the characters
+        index AppBar so the page is reachable. Stub
+        `/app/ships/[id]` so the create-flow redirect doesn't
+        404 — Block 2 fills it in.
+  - [ ] Block 2 — `/app/ships/[id]` sheet: header (name + class
+        + actions), stat block, modules list grouped by slot
+        (read-only), crew roster (read-only). All scalar PATCH
+        edits live here (rename, hull current, energy current,
+        notes). Loads `Ship` once on mount; sub-resource mutations
+        in Blocks 3 + 4 patch the local state via the shared
+        cubit.
+  - [ ] Block 3 — Module editor modal: discriminator-aware form
+        switching on `slot`. Add / Edit / Delete via
+        `useShipModulesApi` (new sibling composable wrapping
+        `addShipModule` / `updateShipModule` / `deleteShipModule`).
+        Hide the Delete button for BRIDGE / REACTOR / DRIVE (the
+        server enforces 422 — surface as a non-issue in the UI).
+  - [ ] Block 4 — Crew assignment widget on the sheet. Row per
+        position; assigned character renders by name, vacant slot
+        renders an Assign action that opens a `<select>` of the
+        owner's characters. Reuses `useCharactersApi.list`.
+        Remove action drives `unassignCrew`. The sheet refreshes
+        the local Ship after each assignment because the backend
+        returns CrewSlot — easier than threading a partial-state
+        update.
+  - [ ] Block 5 — Polish: ship duplication wired from both list
+        + sheet, delete confirmation modal, "Recently created"
+        toast on the index page after a duplicate redirect, link
+        to `/api/v1/ships/{id}/export` (501 stub — render the
+        affordance behind a feature flag so it can light up when
+        the backend ships).
+- Status: in-progress
 - Blockers: —
