@@ -145,11 +145,15 @@
         `InitiativeRollResult`, `InitiativeReorderRequest`,
         `TurnAdvanceResult`, `rollInitiative`, `reorderInitiative`,
         `advanceTurn`. Dart: new model files + test stubs.
-  - [ ] Block 5 — AsyncAPI `combat.updated` message on the
+  - [x] Block 5 — AsyncAPI `combat.updated` message on the
         existing `session.{id}` channel. Payload is the full
-        Encounter snapshot; clients diff against the previous
-        render. Bump the asyncapi info.version. Drop the
-        "stubbed" note from the channel description. Confirm
-        the dart + ts clients pick up the new message type.
-- Status: in-progress
+        Encounter snapshot; clients re-render from the snapshot
+        (lazy approach). AsyncAPI info.version bumped 0.8.2 →
+        0.9.0. Stubbed note dropped; replaced with lazy-snapshot
+        rationale. CombatUpdated message + schema landed.
+        TS codegen: CombatUpdated interface exported, session
+        channel union in RealtimeChannelPayloadMap updated.
+        Dart codegen: no diff — AsyncAPI is opaque on the wire.
+        pnpm spec:validate green. Commits: feat spec + codegen.
+- Status: done — ready to archive
 - Blockers: —
