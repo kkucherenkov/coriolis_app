@@ -28,11 +28,77 @@ export interface RollPushed {
   at?: string;
 }
 
+/**
+ * Full Encounter snapshot pushed on every combat state change (combatant
+ * added/removed, initiative rolled, turn advanced, encounter status
+ * changed). Lazy-snapshot approach: clients re-render from this payload
+ * rather than computing diffs against prior state. Payload size is small
+ * in practice — a typical encounter has fewer than 20 combatants — so
+ * diffing complexity is not warranted.
+ *
+ */
+export interface CombatUpdated {
+  /**
+   * The session that owns this encounter.
+   */
+  gameSessionId: string;
+  /**
+   * Stable identifier for the encounter.
+   */
+  encounterId: string;
+  /**
+   * Encounter snapshot mirroring the OpenAPI `Encounter` schema.
+   *
+   */
+  encounter: {
+    id: string;
+    gameSessionId: string;
+    name: string;
+    /**
+     * setup | active | ended
+     */
+    status: string;
+    round: number;
+    activeCombatantId: string;
+    notes?: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  /**
+   * Full combatant list in current turn order (turnOrder ascending).
+   */
+  combatants: {
+    id: string;
+    encounterId: string;
+    /**
+     * pc | npc
+     */
+    combatantType: string;
+    /**
+     * Character or NPC id this combatant was created from.
+     */
+    referenceId?: string;
+    name: string;
+    initiative: number;
+    turnOrder: number;
+    hpCurrent: number;
+    hpMax: number;
+    /**
+     * Well-known values: broken, exposed, covered, prone.
+     */
+    statusFlags?: string[];
+  }[];
+  /**
+   * Server timestamp when this snapshot was emitted.
+   */
+  at: string;
+}
+
 export type RealtimeChannel = 'system:health' | 'session.{gameSessionId}';
 
 export interface RealtimeChannelPayloadMap {
   'system:health': HealthUpdate;
-  'session.{gameSessionId}': DpChanged | RollPushed;
+  'session.{gameSessionId}': DpChanged | RollPushed | CombatUpdated;
 }
 
 export type RealtimeChannelPayload<C extends RealtimeChannel> = RealtimeChannelPayloadMap[C];
