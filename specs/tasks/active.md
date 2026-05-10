@@ -142,15 +142,57 @@
         preserves the leading 6 and reports hits=1 only when
         the rerolled die also lands on 6). Backend vitest count
         739 → 749 (+10).
-  - [ ] Block D — **Attribute min + advanced skill cap.**
-        Hard violations H6, H7.
-        Spec: `Attributes.{strength|agility|wits|empathy}`
-        `minimum: 2`; split `Skill` into
-        `GeneralSkill (0–5)` and `AdvancedSkill (0–3)`,
-        or add a discriminator on the existing schema.
-        Backend rules-engine validation must enforce the
-        same caps server-side regardless of wizard-side
-        guards. Update wizard step 4 + step 5 specs.
+  - [x] Block D — **Attribute min + advanced skill cap.**
+        Hard violations H6, H7. **Done in 345e0e4 (spec) +
+        381ddef (codegen) + 05b6a2c (backend) + aac0dca
+        (NPC fixture cleanup).**
+        H6 applied: `Attributes.{strength,agility,wits,empathy}`
+        `minimum` lifted 1 → 2 in OpenAPI. Schema description
+        rewritten to cite ГЛАВА 2 «ХАРАКТЕРИСТИКИ» / §РАЗВИТИЕ
+        ПЕРСОНАЖА — the rulebook scale is 1..5 in the abstract,
+        but the active-PC invariant is 2..5 (creation distributes
+        2..4, key-attr exception lifts to 5; no in-game mechanic
+        lowers an attribute below 2). The 5-cap stays as the
+        canonical lifetime maximum.
+        H7 **rejected** as non-canonical. The audit asked for
+        `AdvancedSkill 0..3`, but ГЛАВА 3 «Перечень навыков»
+        («значения характеристик могут варьироваться от 1 до 5,
+        а навыков — от 0 до 5») and ГЛАВА 2 §РАЗВИТИЕ ПЕРСОНАЖА
+        («максимально возможное значение навыка равно 5»)
+        explicitly cap every skill at 5 with no general/advanced
+        distinction. The audit conflated the **creation-time**
+        cap (key skills up to 3, others up to 1, ГЛАВА 2
+        «НАВЫКИ») — already enforced by `validateSkillsAtCreation`
+        — with a lifetime cap. The `Skills` schema description
+        was rewritten to call this out and to document the actual
+        general/advanced distinction (the value-≥-1 gate to roll
+        an advanced skill, ГЛАВА 3 §«Специальные навыки», lives
+        in the dice engine, not the schema). No range change on
+        any skill.
+        Backend: `validateAttributes` (update path) and
+        `validateAttributesAtCreation` (create path) floors lifted
+        1 → 2; `AttributeOutOfRangeError.detail` now reads
+        "(2–5)". `validateSkills` untouched. NPC fixture
+        `add-combatant.handler.spec.ts:109` `empathy: 1 → 2`
+        (incidental fixture, not exercising the floor). Tests
+        added: 4 new boundary cases on update (1/2/5/6) + 1 new
+        boundary case on create + 1 reframed creation-range case
+        showing the absolute-floor guard wins precedence over the
+        creation-range guard. Backend vitest count 748 → 754
+        (+6).
+        Codegen: TS + Dart `Attributes` models pick up the new
+        floor in their generated docs; no breaking change to the
+        wire shape (the bound only tightens). The TS/Dart
+        generators don't carry numeric `minimum` constraints in
+        the type system — runtime enforcement remains the
+        express-openapi-validator; that is a known soft mismatch
+        documented in the schema description.
+        OpenAPI `info.version` not bumped this block — the
+        major bump is deferred to the closing block of T-010
+        per the plan; if Block D lands on `main` standalone for
+        any reason, the next block must include a major bump
+        (the floor tightening from 1 to 2 is a breaking change
+        for any caller who was sending `1`).
   - [ ] Block E — **`CONCEPT_KEY_SKILLS` per role, not
         per amplua.** Hard violation H8.
         Refactor `apps/backend/src/modules/rules-engine/`
