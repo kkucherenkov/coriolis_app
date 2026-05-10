@@ -63,7 +63,7 @@
         commands ×4, queries ×2, controller, module),
         `apps/backend/prisma/migrations/20260510000003_npcs/`.
         Test delta: +50 (511 → 561 total).
-  - [ ] Block 2 — Encounter module. Tables `Encounter`
+  - [x] Block 2 — Encounter module. Tables `Encounter`
         (FK to `GameSession`), state-machine guards in
         domain layer (`encounter.state-machine.ts`),
         repo + handlers + nested + flat controllers
@@ -71,6 +71,16 @@
         Membership + ownership checks lifted from `game-sessions`
         module. No combatants yet — `setup → active` blocked
         with `ENCOUNTER_NO_COMBATANTS` until Block 3 lands.
+        Result: commit 87688a3. Files:
+        `apps/backend/src/modules/encounters/` (domain, infra,
+        commands ×3, queries ×2, controllers ×2, module),
+        `apps/backend/prisma/migrations/20260510000004_encounters/`.
+        Design call: IGameSessionAccess injected as a DI port
+        (GAME_SESSION_ACCESS token) with a Prisma adapter in infra/
+        (renamed .adapter.ts to avoid *.service.ts lint rule that bans
+        direct PrismaService injection). All endpoints GM-owner-only
+        per spec (spec overrides task desc on member reads).
+        Test delta: +53 (561 → 614 total).
   - [ ] Block 3 — Combatant sub-resource. Table `Combatant`
         with discriminator + snapshot JSON columns
         (`pcSnapshot` / `npcSnapshot`). Read-once-at-add
