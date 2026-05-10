@@ -396,12 +396,43 @@ export function computeMpMax(wits: number, empathy: number): number {
 // --------------- Encumbrance ---------------
 
 /**
- * PRD §5.2: "Encumbrance limit = STR × 2"
+ * PRD §5.2: "Encumbrance limit = STR × 2 + sum(equipped armor extraSlotCount)"
  *
- * Attribute range is 1–5, so valid output range is 2–10.
+ * The base STR×2 cap (PRD §5.2 / ГЛАВА 5 — implicit) is extended by
+ * any armor's «Дополнительные свойства» column from ST3001 ТАБЛИЦА 6.14
+ * (T-2026-05-10-013). Only EQUIPPED armor counts; carrying a Тяжёлый
+ * экзодоспех (extraSlotCount: 5) in a pack does not grant the slots.
+ *
+ * Attribute range is 2..5 (post-T-010 Block D), so the base cap is 4..10;
+ * armor stacking adds 0..N on top (canonical heavy экзодоспех is 5).
+ *
+ * `armorExtraSlots` defaults to 0 for backward compatibility — callers that
+ * do not have item data (e.g. list projection) pass nothing and get the
+ * plain STR×2 formula.
  */
-export function computeEncumbranceMax(strength: number): number {
-  return strength * 2;
+export function computeEncumbranceMax(strength: number, armorExtraSlots = 0): number {
+  return strength * 2 + armorExtraSlots;
+}
+
+/**
+ * Sums extraSlotCount from equipped ARMOR items. Wired into
+ * computeEncumbranceMax via the read mapper. Per ST3001 ТАБЛИЦА 6.14,
+ * only equipped armor contributes; carrying a heavy exoskeleton in
+ * the pack grants no slots until the user equips it.
+ *
+ * The helper faithfully sums whatever is equipped — an "only one armor at
+ * a time" guard, if needed, is a GM/UX concern, not a rules-engine concern.
+ */
+export function sumArmorExtraSlots(
+  items: readonly { type: string; [key: string]: unknown }[],
+): number {
+  let total = 0;
+  for (const it of items) {
+    if (it.type !== 'ARMOR' || it['equipped'] !== true) continue;
+    const extra = it['extraSlotCount'];
+    total += typeof extra === 'number' ? extra : 0;
+  }
+  return total;
 }
 
 /**

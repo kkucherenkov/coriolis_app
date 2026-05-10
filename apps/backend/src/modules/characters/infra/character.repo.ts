@@ -25,6 +25,7 @@ import {
   computeEncumbranceMax,
   computeHpMax,
   computeMpMax,
+  sumArmorExtraSlots,
 } from '../../rules-engine';
 
 import type {
@@ -246,7 +247,7 @@ function toReadModel(row: PrismaCharacterFull): CharacterReadModel {
     },
     encumbrance: {
       current: computeEncumbranceCurrent(inventory),
-      max: computeEncumbranceMax(attrs.strength),
+      max: computeEncumbranceMax(attrs.strength, sumArmorExtraSlots(inventory)),
     },
     experience: row.experience,
     conditions: row.conditions as ConditionFlags,

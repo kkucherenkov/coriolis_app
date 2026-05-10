@@ -7,6 +7,7 @@ export {
   computeMpMax,
   computeEncumbranceMax,
   computeEncumbranceCurrent,
+  sumArmorExtraSlots,
   canPush,
   applyConditions,
   UPBRINGING_BUDGETS,

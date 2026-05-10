@@ -24,6 +24,7 @@ import {
   computeMpMax,
   defaultRoleForConcept,
   getRoleKeySkills,
+  sumArmorExtraSlots,
   sumAttributes,
   sumSkills,
 } from './rules-engine';
@@ -119,6 +120,93 @@ describe('computeEncumbranceMax', () => {
 
   it('returns STR × 2 for strength 4 (4×2=8)', () => {
     expect(computeEncumbranceMax(4)).toBe(8);
+  });
+
+  // T-2026-05-10-013: armorExtraSlots second argument
+  it('STR 2, no armor (armorExtraSlots=0) → 4', () => {
+    expect(computeEncumbranceMax(2, 0)).toBe(4);
+  });
+
+  it('STR 5, no armor (armorExtraSlots=0) → 10', () => {
+    expect(computeEncumbranceMax(5, 0)).toBe(10);
+  });
+
+  it('STR 5, Тяжёлый экзодоспех (armorExtraSlots=5) → 15', () => {
+    expect(computeEncumbranceMax(5, 5)).toBe(15);
+  });
+
+  it('STR 3, Лёгкая броня (armorExtraSlots=1) → 7', () => {
+    expect(computeEncumbranceMax(3, 1)).toBe(7);
+  });
+
+  it('STR 2, armorExtraSlots=5 → 9', () => {
+    expect(computeEncumbranceMax(2, 5)).toBe(9);
+  });
+
+  it('omitting armorExtraSlots defaults to 0 (backward compat)', () => {
+    expect(computeEncumbranceMax(3)).toBe(6);
+  });
+});
+
+// --------------- sumArmorExtraSlots ---------------
+
+describe('sumArmorExtraSlots', () => {
+  it('empty array → 0', () => {
+    expect(sumArmorExtraSlots([])).toBe(0);
+  });
+
+  it('single equipped armor with extraSlotCount=1 → 1', () => {
+    expect(
+      sumArmorExtraSlots([{ type: 'ARMOR', extraSlotCount: 1, equipped: true }]),
+    ).toBe(1);
+  });
+
+  it('single ARMOR item NOT equipped (equipped=false) → 0', () => {
+    expect(
+      sumArmorExtraSlots([{ type: 'ARMOR', extraSlotCount: 5, equipped: false }]),
+    ).toBe(0);
+  });
+
+  it('WEAPON equipped → 0 (wrong type)', () => {
+    expect(
+      sumArmorExtraSlots([{ type: 'WEAPON', extraSlotCount: 3, equipped: true }]),
+    ).toBe(0);
+  });
+
+  it('two equipped armors stack (1 + 1 → 2)', () => {
+    expect(
+      sumArmorExtraSlots([
+        { type: 'ARMOR', extraSlotCount: 1, equipped: true },
+        { type: 'ARMOR', extraSlotCount: 1, equipped: true },
+      ]),
+    ).toBe(2);
+  });
+
+  it('mixed equipped/unequipped — only equipped count', () => {
+    expect(
+      sumArmorExtraSlots([
+        { type: 'ARMOR', extraSlotCount: 3, equipped: true },
+        { type: 'ARMOR', extraSlotCount: 5, equipped: false },
+      ]),
+    ).toBe(3);
+  });
+
+  it('ARMOR without extraSlotCount field counts as 0', () => {
+    expect(
+      sumArmorExtraSlots([{ type: 'ARMOR', equipped: true }]),
+    ).toBe(0);
+  });
+
+  it('ARMOR without equipped field (undefined) is treated as not equipped → 0', () => {
+    expect(
+      sumArmorExtraSlots([{ type: 'ARMOR', extraSlotCount: 2 }]),
+    ).toBe(0);
+  });
+
+  it('Тяжёлый экзодоспех equipped (extraSlotCount=5) → 5', () => {
+    expect(
+      sumArmorExtraSlots([{ type: 'ARMOR', extraSlotCount: 5, equipped: true }]),
+    ).toBe(5);
   });
 });
 
