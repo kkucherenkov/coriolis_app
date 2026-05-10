@@ -1293,11 +1293,20 @@ export interface components {
       gameSessionId?: string | null;
       /** @description Human-readable roll label, e.g. "Pilot · Evade" */
       label: string;
-      /** @description Number of d6 rolled (after condition penalties applied by caller) */
+      /**
+       * @description Number of d6 rolled (after condition penalties applied by caller).
+       *     `0` triggers the «Ноль кубиков» rule (ГЛАВА 3 line 161): the engine
+       *     still rolls 2d6, but the proverka counts as a success only when
+       *     both dice come up 6.
+       *     PRD override — Coriolis ST3001 does not name a hard upper bound.
+       *     We cap at 20 to keep DB rows and wire payloads bounded; realistic
+       *     attribute + skill + gear + helpers stacks max out around 12–14.
+       */
       pool: number;
       /**
        * @description Current face values of all dice. After a push, rerolled non-6 values
-       *     are updated in place; the array always has `pool` elements.
+       *     are updated in place. Length normally equals `pool`; for the zero-
+       *     dice case (`pool === 0`) the array always has 2 elements regardless.
        */
       dice: number[];
       /** @description Number of 6s in the current dice array */
@@ -1312,9 +1321,17 @@ export interface components {
       /** @description Human-readable roll label, e.g. "Pilot · Evade" */
       label: string;
       /**
-       * @description Number of d6 to roll. Must be between 1 and 10 inclusive.
+       * @description Number of d6 to roll. Must be between 0 and 20 inclusive.
        *     Condition pool penalties must be pre-applied by the caller before
        *     submitting.
+       *
+       *     «Ноль кубиков» (ГЛАВА 3 line 161): if modifiers reduce the pool to
+       *     zero (or below), submit `pool: 0`. The engine then rolls 2d6 and
+       *     counts a success only when both dice are 6.
+       *
+       *     PRD override — ST3001 does not name a hard upper bound. We cap at
+       *     20 to keep wire payloads bounded; realistic attribute + skill + gear
+       *     + helpers stacks max out around 12–14.
        */
       pool: number;
       /**

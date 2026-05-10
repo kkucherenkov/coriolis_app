@@ -16,8 +16,8 @@ part 'roll.g.dart';
 /// * [characterId] - Identifier of the character who made the roll
 /// * [gameSessionId] - Game session this roll belongs to. Null until Feature 7.2 (GameSession resource) ships. Clients should tolerate null. 
 /// * [label] - Human-readable roll label, e.g. \"Pilot · Evade\"
-/// * [pool] - Number of d6 rolled (after condition penalties applied by caller)
-/// * [dice] - Current face values of all dice. After a push, rerolled non-6 values are updated in place; the array always has `pool` elements. 
+/// * [pool] - Number of d6 rolled (after condition penalties applied by caller). `0` triggers the «Ноль кубиков» rule (ГЛАВА 3 line 161): the engine still rolls 2d6, but the proverka counts as a success only when both dice come up 6. PRD override — Coriolis ST3001 does not name a hard upper bound. We cap at 20 to keep DB rows and wire payloads bounded; realistic attribute + skill + gear + helpers stacks max out around 12–14. 
+/// * [dice] - Current face values of all dice. After a push, rerolled non-6 values are updated in place. Length normally equals `pool`; for the zero- dice case (`pool === 0`) the array always has 2 elements regardless. 
 /// * [hits] - Number of 6s in the current dice array
 /// * [pushed] - Whether this roll has been pushed. Once true, further pushes are rejected.
 /// * [createdAt] 
@@ -39,11 +39,11 @@ abstract class Roll implements Built<Roll, RollBuilder> {
   @BuiltValueField(wireName: r'label')
   String get label;
 
-  /// Number of d6 rolled (after condition penalties applied by caller)
+  /// Number of d6 rolled (after condition penalties applied by caller). `0` triggers the «Ноль кубиков» rule (ГЛАВА 3 line 161): the engine still rolls 2d6, but the proverka counts as a success only when both dice come up 6. PRD override — Coriolis ST3001 does not name a hard upper bound. We cap at 20 to keep DB rows and wire payloads bounded; realistic attribute + skill + gear + helpers stacks max out around 12–14. 
   @BuiltValueField(wireName: r'pool')
   int get pool;
 
-  /// Current face values of all dice. After a push, rerolled non-6 values are updated in place; the array always has `pool` elements. 
+  /// Current face values of all dice. After a push, rerolled non-6 values are updated in place. Length normally equals `pool`; for the zero- dice case (`pool === 0`) the array always has 2 elements regardless. 
   @BuiltValueField(wireName: r'dice')
   BuiltList<int> get dice;
 
