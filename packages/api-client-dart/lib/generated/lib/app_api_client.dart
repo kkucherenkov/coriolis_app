@@ -84,7 +84,6 @@ export 'package:app_api_client/src/model/item_range_enum.dart';
 export 'package:app_api_client/src/model/item_ship_module.dart';
 export 'package:app_api_client/src/model/item_ship_module_create.dart';
 export 'package:app_api_client/src/model/item_ship_module_update.dart';
-export 'package:app_api_client/src/model/item_slot_type.dart';
 export 'package:app_api_client/src/model/item_update.dart';
 export 'package:app_api_client/src/model/item_weapon.dart';
 export 'package:app_api_client/src/model/item_weapon_create.dart';

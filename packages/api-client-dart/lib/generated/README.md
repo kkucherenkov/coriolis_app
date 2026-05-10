@@ -213,7 +213,6 @@ Class | Method | HTTP request | Description
  - [ItemShipModule](doc/ItemShipModule.md)
  - [ItemShipModuleCreate](doc/ItemShipModuleCreate.md)
  - [ItemShipModuleUpdate](doc/ItemShipModuleUpdate.md)
- - [ItemSlotType](doc/ItemSlotType.md)
  - [ItemUpdate](doc/ItemUpdate.md)
  - [ItemWeapon](doc/ItemWeapon.md)
  - [ItemWeaponCreate](doc/ItemWeaponCreate.md)

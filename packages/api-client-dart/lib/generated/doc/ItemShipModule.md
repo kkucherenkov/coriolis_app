@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 **id** | **String** | Opaque identifier (cuid2) | 
 **type** | **String** |  | 
 **name** | **String** | Item name | 
-**slot** | [**ItemSlotType**](ItemSlotType.md) |  | 
+**slot** | [**ShipModuleSlot**](ShipModuleSlot.md) |  | 
 **effect** | **String** | Description of the module's effect and energy use | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

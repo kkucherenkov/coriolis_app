@@ -3,9 +3,9 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:app_api_client/src/model/item_slot_type.dart';
 import 'package:app_api_client/src/model/item_base.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:app_api_client/src/model/ship_module_slot.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -26,8 +26,8 @@ abstract class ItemShipModule implements ItemBase, Built<ItemShipModule, ItemShi
   String get effect;
 
   @BuiltValueField(wireName: r'slot')
-  ItemSlotType get slot;
-  // enum slotEnum {  bridge,  hull,  hold,  weapon,  drive,  sensor,  comms,  };
+  ShipModuleSlot get slot;
+  // enum slotEnum {  BRIDGE,  REACTOR,  DRIVE,  HOLD,  WEAPON,  TORPEDO,  SENSOR,  COMMS,  HANGAR,  QUARTERS,  MEDICAL,  WORKSHOP,  CHAPEL,  ESCAPE-PODS,  CRYO,  DOCKING,  MINING,  REPAIR,  CONCEALED-HOLD,  PROXY-DECK,  OTHER,  };
 
   ItemShipModule._();
 
@@ -60,7 +60,7 @@ class _$ItemShipModuleSerializer implements PrimitiveSerializer<ItemShipModule> 
     yield r'slot';
     yield serializers.serialize(
       object.slot,
-      specifiedType: const FullType(ItemSlotType),
+      specifiedType: const FullType(ShipModuleSlot),
     );
     yield r'id';
     yield serializers.serialize(
@@ -110,8 +110,8 @@ class _$ItemShipModuleSerializer implements PrimitiveSerializer<ItemShipModule> 
         case r'slot':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(ItemSlotType),
-          ) as ItemSlotType;
+            specifiedType: const FullType(ShipModuleSlot),
+          ) as ShipModuleSlot;
           result.slot = valueDes;
           break;
         case r'id':

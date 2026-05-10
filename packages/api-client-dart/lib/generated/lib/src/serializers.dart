@@ -76,7 +76,6 @@ import 'package:app_api_client/src/model/item_range_enum.dart';
 import 'package:app_api_client/src/model/item_ship_module.dart';
 import 'package:app_api_client/src/model/item_ship_module_create.dart';
 import 'package:app_api_client/src/model/item_ship_module_update.dart';
-import 'package:app_api_client/src/model/item_slot_type.dart';
 import 'package:app_api_client/src/model/item_update.dart';
 import 'package:app_api_client/src/model/item_weapon.dart';
 import 'package:app_api_client/src/model/item_weapon_create.dart';
@@ -208,7 +207,6 @@ part 'serializers.g.dart';
   ItemShipModule,
   ItemShipModuleCreate,
   ItemShipModuleUpdate,
-  ItemSlotType,
   ItemUpdate,
   ItemWeapon,
   ItemWeaponCreate,

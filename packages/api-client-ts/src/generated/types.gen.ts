@@ -261,13 +261,6 @@ export type TalentKind = 'personal' | 'crew' | 'iconGift' | 'stigma';
 export type ItemRangeEnum = 'close' | 'medium' | 'long' | 'extreme';
 
 /**
- * Ship module slot type. Used only for SHIP_MODULE items. Matches the
- * slot categories from Coriolis core book ship construction rules.
- *
- */
-export type ItemSlotType = 'bridge' | 'hull' | 'hold' | 'weapon' | 'drive' | 'sensor' | 'comms';
-
-/**
  * The nature of the relationship between a character and an NPC or PC.
  *
  */
@@ -627,7 +620,7 @@ export type ItemCybernetic = ItemBase & {
 
 export type ItemShipModule = ItemBase & {
     type?: 'SHIP_MODULE';
-    slot: ItemSlotType;
+    slot: ShipModuleSlot;
     /**
      * Description of the module's effect and energy use
      */
@@ -742,7 +735,7 @@ export type ItemCyberneticCreate = {
 export type ItemShipModuleCreate = {
     type: 'SHIP_MODULE';
     name: string;
-    slot: ItemSlotType;
+    slot: ShipModuleSlot;
     /**
      * Description of the module's effect and energy use
      */
@@ -819,7 +812,7 @@ export type ItemCyberneticUpdate = {
 export type ItemShipModuleUpdate = {
     type?: 'SHIP_MODULE';
     name?: string;
-    slot?: ItemSlotType;
+    slot?: ShipModuleSlot;
     effect?: string;
 };
 
@@ -1279,12 +1272,18 @@ export type CharacterList = {
 export type ShipClass = 'fighter' | 'shuttle' | 'torpedo-boat' | 'light-freighter' | 'light-passenger' | 'courier-yacht' | 'clipper' | 'patrol-boat' | 'gunboat' | 'assault-ship' | 'blockade-runner' | 'pleasure-yacht' | 'flying-circus' | 'prospector' | 'rescue-ship' | 'passenger-liner' | 'heavy-freighter' | 'cruiser' | 'destroyer' | 'heavy-cruiser';
 
 /**
- * Ship module slot type per ST3001 ГЛАВА 7 mandatory and optional module
- * catalogue. `BRIDGE`, `REACTOR`, `DRIVE` are mandatory on every ship.
- * All others are optional and consume module slots. The existing
- * `ItemSlotType` enum covers character-inventory ship modules; this enum
- * covers actual installed ship modules and provides richer coverage of
- * the full ГЛАВА 7 catalogue.
+ * Ship module slot type per ST3001 ГЛАВА 7 mandatory and optional
+ * module catalogue. `BRIDGE`, `REACTOR`, `DRIVE` are mandatory on
+ * every ship; all others are optional and consume module slots.
+ * Used for both character-inventory SHIP_MODULE items (modules
+ * the character carries to install) and ship-side module slots
+ * (modules already installed). Block H of T-2026-05-10-010
+ * retired the lower-case 7-value `ItemSlotType` enum that used
+ * to scope inventory items separately — the two contexts now
+ * share this single canonical enum. Migration mapping for legacy
+ * item data: `bridge → BRIDGE`, `hull → OTHER` (no canonical
+ * hull slot), `hold → HOLD`, `weapon → WEAPON`, `drive → DRIVE`,
+ * `sensor → SENSOR`, `comms → COMMS`.
  *
  */
 export type ShipModuleSlot = 'BRIDGE' | 'REACTOR' | 'DRIVE' | 'HOLD' | 'WEAPON' | 'TORPEDO' | 'SENSOR' | 'COMMS' | 'HANGAR' | 'QUARTERS' | 'MEDICAL' | 'WORKSHOP' | 'CHAPEL' | 'ESCAPE-PODS' | 'CRYO' | 'DOCKING' | 'MINING' | 'REPAIR' | 'CONCEALED-HOLD' | 'PROXY-DECK' | 'OTHER';

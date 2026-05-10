@@ -22,7 +22,7 @@ Name | Type | Description | Notes
 **notes** | **String** |  | [optional] 
 **xpCost** | **int** |  | [optional] 
 **effect** | **String** |  | [optional] 
-**slot** | [**ItemSlotType**](ItemSlotType.md) |  | [optional] 
+**slot** | [**ShipModuleSlot**](ShipModuleSlot.md) |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 
