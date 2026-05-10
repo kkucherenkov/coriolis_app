@@ -4,7480 +4,7316 @@
  */
 
 export interface paths {
-  '/api/v1/characters': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/characters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the authenticated user's characters
+         * @description Returns a cursor-paginated list of characters owned by the
+         *     authenticated user. Pass `cursor` from a previous response's
+         *     `nextCursor` to retrieve the following page. Results are ordered
+         *     newest-first by `createdAt`.
+         */
+        get: operations["listCharacters"];
+        put?: never;
+        /**
+         * Create a new character
+         * @description Creates a character owned by the authenticated user. `name` is the
+         *     only required field; all other fields default to empty arrays, null,
+         *     or 0. Server-derived fields (`hp.max`, `mp.max`, `encumbrance.max`)
+         *     are populated from the provided attribute values or defaults.
+         *
+         *     Attribute defaults are 2 per attribute when not provided. Skills
+         *     default to 0.
+         */
+        post: operations["createCharacter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * List the authenticated user's characters
-     * @description Returns a cursor-paginated list of characters owned by the
-     *     authenticated user. Pass `cursor` from a previous response's
-     *     `nextCursor` to retrieve the following page. Results are ordered
-     *     newest-first by `createdAt`.
-     */
-    get: operations['listCharacters'];
-    put?: never;
-    /**
-     * Create a new character
-     * @description Creates a character owned by the authenticated user. `name` is the
-     *     only required field; all other fields default to empty arrays, null,
-     *     or 0. Server-derived fields (`hp.max`, `mp.max`, `encumbrance.max`)
-     *     are populated from the provided attribute values or defaults.
-     *
-     *     Attribute defaults are 2 per attribute when not provided. Skills
-     *     default to 0.
-     */
-    post: operations['createCharacter'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/characters/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/characters/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a character by ID
+         * @description Returns the full character DTO. Returns 404 if the character does not
+         *     exist or is not owned by the authenticated user. Owner-scoped: a
+         *     character owned by another user returns 403 (not 404) when the caller
+         *     is authenticated, to aid debugging while preserving access boundaries.
+         */
+        get: operations["getCharacter"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a character
+         * @description Permanently deletes a character and all its nested items, talents,
+         *     relationships, and share links. This action is irreversible.
+         */
+        delete: operations["deleteCharacter"];
+        options?: never;
+        head?: never;
+        /**
+         * Partially update a character
+         * @description Applies PATCH semantics — omitted fields are left unchanged. Read-only
+         *     fields (`id`, `ownerId`, `hp.max`, `mp.max`, `encumbrance.max`,
+         *     `createdAt`, `updatedAt`) are rejected with 400 if included.
+         *
+         *     Server-derived fields (`hp.max`, `mp.max`, `encumbrance.max`) are
+         *     recalculated after each write and reflected in the response.
+         */
+        patch: operations["updateCharacter"];
+        trace?: never;
     };
-    /**
-     * Get a character by ID
-     * @description Returns the full character DTO. Returns 404 if the character does not
-     *     exist or is not owned by the authenticated user. Owner-scoped: a
-     *     character owned by another user returns 403 (not 404) when the caller
-     *     is authenticated, to aid debugging while preserving access boundaries.
-     */
-    get: operations['getCharacter'];
-    put?: never;
-    post?: never;
-    /**
-     * Delete a character
-     * @description Permanently deletes a character and all its nested items, talents,
-     *     relationships, and share links. This action is irreversible.
-     */
-    delete: operations['deleteCharacter'];
-    options?: never;
-    head?: never;
-    /**
-     * Partially update a character
-     * @description Applies PATCH semantics — omitted fields are left unchanged. Read-only
-     *     fields (`id`, `ownerId`, `hp.max`, `mp.max`, `encumbrance.max`,
-     *     `createdAt`, `updatedAt`) are rejected with 400 if included.
-     *
-     *     Server-derived fields (`hp.max`, `mp.max`, `encumbrance.max`) are
-     *     recalculated after each write and reflected in the response.
-     */
-    patch: operations['updateCharacter'];
-    trace?: never;
-  };
-  '/api/v1/characters/{id}/duplicate': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/characters/{id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Duplicate a character
+         * @description Creates a deep copy of the character (including items, talents,
+         *     relationships, and conditions) and assigns it to the authenticated
+         *     user. The copy receives a new `id` and the name has " (copy)"
+         *     appended. Share links are not duplicated. The source character must
+         *     be owned by the caller.
+         */
+        post: operations["duplicateCharacter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Duplicate a character
-     * @description Creates a deep copy of the character (including items, talents,
-     *     relationships, and conditions) and assigns it to the authenticated
-     *     user. The copy receives a new `id` and the name has " (copy)"
-     *     appended. Share links are not duplicated. The source character must
-     *     be owned by the caller.
-     */
-    post: operations['duplicateCharacter'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/characters/{id}/export': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/characters/{id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export a character as JSON
+         * @description Returns the full canonical Character DTO as a downloadable JSON
+         *     payload. v1 ships JSON only; PDF and encounter-bundle exports are
+         *     post-v1. The response carries `Content-Disposition: attachment` so
+         *     browsers prompt a download.
+         */
+        get: operations["exportCharacter"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * Export a character as JSON
-     * @description Returns the full canonical Character DTO as a downloadable JSON
-     *     payload. v1 ships JSON only; PDF and encounter-bundle exports are
-     *     post-v1. The response carries `Content-Disposition: attachment` so
-     *     browsers prompt a download.
-     */
-    get: operations['exportCharacter'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/characters/{id}/items': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/characters/{id}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add an item to a character's inventory
+         * @description Creates an item of the specified `type` under the character. The
+         *     discriminator field `type` determines which additional fields are
+         *     accepted and required. `id` is assigned by the server.
+         */
+        post: operations["addCharacterItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Add an item to a character's inventory
-     * @description Creates an item of the specified `type` under the character. The
-     *     discriminator field `type` determines which additional fields are
-     *     accepted and required. `id` is assigned by the server.
-     */
-    post: operations['addCharacterItem'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/characters/{id}/talents': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/characters/{id}/talents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add a talent to a character
+         * @description Creates a talent record attached to the character. Talents are
+         *     free-form (name + description + rank); there is no server-side
+         *     talent library in v1.
+         *
+         *     `kind` defaults to `personal`. Each character can have at most
+         *     one talent of each non-`personal` kind (`crew`, `iconGift`,
+         *     `stigma`); a duplicate non-personal kind is rejected with 400
+         *     `TALENT_KIND_DUPLICATE`. A `kind: stigma` talent on a
+         *     non-mutant character is rejected with 400
+         *     `STIGMA_REQUIRES_MUTANT`.
+         */
+        post: operations["addCharacterTalent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Add a talent to a character
-     * @description Creates a talent record attached to the character. Talents are
-     *     free-form (name + description + rank); there is no server-side
-     *     talent library in v1.
-     *
-     *     `kind` defaults to `personal`. Each character can have at most
-     *     one talent of each non-`personal` kind (`crew`, `iconGift`,
-     *     `stigma`); a duplicate non-personal kind is rejected with 400
-     *     `TALENT_KIND_DUPLICATE`. A `kind: stigma` talent on a
-     *     non-mutant character is rejected with 400
-     *     `STIGMA_REQUIRES_MUTANT`.
-     */
-    post: operations['addCharacterTalent'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/ships': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/ships": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the authenticated user's ships
+         * @description Returns a cursor-paginated list of ships owned by the authenticated
+         *     user. Pass `cursor` from a previous response's `nextCursor` to retrieve
+         *     the following page. Results are ordered newest-first by `createdAt`.
+         */
+        get: operations["listShips"];
+        put?: never;
+        /**
+         * Create a new ship
+         * @description Creates a ship owned by the authenticated user. `name` and `class` are
+         *     required; all other fields default to class-appropriate values per
+         *     ST3001 ГЛАВА 7 Table 7.5. Server assigns `id`, `ownerId`, `createdAt`,
+         *     `updatedAt`.
+         */
+        post: operations["createShip"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * List the authenticated user's ships
-     * @description Returns a cursor-paginated list of ships owned by the authenticated
-     *     user. Pass `cursor` from a previous response's `nextCursor` to retrieve
-     *     the following page. Results are ordered newest-first by `createdAt`.
-     */
-    get: operations['listShips'];
-    put?: never;
-    /**
-     * Create a new ship
-     * @description Creates a ship owned by the authenticated user. `name` and `class` are
-     *     required; all other fields default to class-appropriate values per
-     *     ST3001 ГЛАВА 7 Table 7.5. Server assigns `id`, `ownerId`, `createdAt`,
-     *     `updatedAt`.
-     */
-    post: operations['createShip'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/ships/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/ships/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a ship by ID
+         * @description Returns the full Ship DTO. Returns 404 if the ship does not exist or
+         *     is not owned by the authenticated user. Owner-scoped: a ship owned by
+         *     another user returns 403.
+         */
+        get: operations["getShip"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a ship
+         * @description Permanently deletes a ship and all its modules, crew assignments, and
+         *     share links. This action is irreversible.
+         */
+        delete: operations["deleteShip"];
+        options?: never;
+        head?: never;
+        /**
+         * Partially update a ship
+         * @description Applies PATCH semantics — omitted fields are left unchanged. Read-only
+         *     fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are rejected with
+         *     400 if included.
+         */
+        patch: operations["updateShip"];
+        trace?: never;
     };
-    /**
-     * Get a ship by ID
-     * @description Returns the full Ship DTO. Returns 404 if the ship does not exist or
-     *     is not owned by the authenticated user. Owner-scoped: a ship owned by
-     *     another user returns 403.
-     */
-    get: operations['getShip'];
-    put?: never;
-    post?: never;
-    /**
-     * Delete a ship
-     * @description Permanently deletes a ship and all its modules, crew assignments, and
-     *     share links. This action is irreversible.
-     */
-    delete: operations['deleteShip'];
-    options?: never;
-    head?: never;
-    /**
-     * Partially update a ship
-     * @description Applies PATCH semantics — omitted fields are left unchanged. Read-only
-     *     fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are rejected with
-     *     400 if included.
-     */
-    patch: operations['updateShip'];
-    trace?: never;
-  };
-  '/api/v1/ships/{id}/duplicate': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/ships/{id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Duplicate a ship
+         * @description Creates a deep copy of the ship (including modules and problems) and
+         *     assigns it to the authenticated user. The copy receives a new `id` and
+         *     the name has " (copy)" appended. Crew assignments and share links are
+         *     not duplicated. The source ship must be owned by the caller.
+         */
+        post: operations["duplicateShip"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Duplicate a ship
-     * @description Creates a deep copy of the ship (including modules and problems) and
-     *     assigns it to the authenticated user. The copy receives a new `id` and
-     *     the name has " (copy)" appended. Crew assignments and share links are
-     *     not duplicated. The source ship must be owned by the caller.
-     */
-    post: operations['duplicateShip'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/ships/{id}/export': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/ships/{id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export a ship as JSON
+         * @description Returns the full canonical Ship DTO as a downloadable JSON payload.
+         *     The response carries `Content-Disposition: attachment` so browsers
+         *     prompt a download.
+         */
+        get: operations["exportShip"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * Export a ship as JSON
-     * @description Returns the full canonical Ship DTO as a downloadable JSON payload.
-     *     The response carries `Content-Disposition: attachment` so browsers
-     *     prompt a download.
-     */
-    get: operations['exportShip'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/ships/{id}/modules': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/ships/{id}/modules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add a module to a ship
+         * @description Installs a new module on the ship. The `slot` discriminator determines
+         *     which type-specific fields are accepted. Validates that the slot type
+         *     is appropriate for the requested module. The ship must be owned by the
+         *     caller.
+         */
+        post: operations["addShipModule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Add a module to a ship
-     * @description Installs a new module on the ship. The `slot` discriminator determines
-     *     which type-specific fields are accepted. Validates that the slot type
-     *     is appropriate for the requested module. The ship must be owned by the
-     *     caller.
-     */
-    post: operations['addShipModule'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/ships/{id}/crew': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/ships/{id}/crew": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assign a character to a crew position
+         * @description Assigns one of the caller's own characters to a crew position on the
+         *     ship. The ship must be owned by the caller. The character must also
+         *     be owned by the caller (returns `CHARACTER_NOT_OWNED` otherwise).
+         *     Returns `CREW_POSITION_TAKEN` if that position is already filled.
+         */
+        post: operations["assignCrew"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Assign a character to a crew position
-     * @description Assigns one of the caller's own characters to a crew position on the
-     *     ship. The ship must be owned by the caller. The character must also
-     *     be owned by the caller (returns `CHARACTER_NOT_OWNED` otherwise).
-     *     Returns `CREW_POSITION_TAKEN` if that position is already filled.
-     */
-    post: operations['assignCrew'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/ships/{id}/crew/{characterId}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/ships/{id}/crew/{characterId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove a character from the crew
+         * @description Removes the crew assignment for the given character ID on the ship.
+         *     Both the ship and the character must be owned by the caller.
+         */
+        delete: operations["unassignCrew"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * Remove a character from the crew
-     * @description Removes the crew assignment for the given character ID on the ship.
-     *     Both the ship and the character must be owned by the caller.
-     */
-    delete: operations['unassignCrew'];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/ship-modules/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/ship-modules/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove a module from a ship
+         * @description Permanently removes an installed module. Authorization: caller must
+         *     own the parent ship.
+         */
+        delete: operations["deleteShipModule"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a ship module
+         * @description Applies PATCH semantics to a ship module. The `slot` discriminator may
+         *     not be changed after installation — attempting to do so returns 400
+         *     with code `MODULE_TYPE_MISMATCH`. Authorization: caller must own the
+         *     parent ship.
+         */
+        patch: operations["updateShipModule"];
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * Remove a module from a ship
-     * @description Permanently removes an installed module. Authorization: caller must
-     *     own the parent ship.
-     */
-    delete: operations['deleteShipModule'];
-    options?: never;
-    head?: never;
-    /**
-     * Update a ship module
-     * @description Applies PATCH semantics to a ship module. The `slot` discriminator may
-     *     not be changed after installation — attempting to do so returns 400
-     *     with code `MODULE_TYPE_MISMATCH`. Authorization: caller must own the
-     *     parent ship.
-     */
-    patch: operations['updateShipModule'];
-    trace?: never;
-  };
-  '/api/v1/health': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Service health probe
+         * @description Reports combined health status of the service and its runtime
+         *     dependencies (database, cache, realtime bus).
+         */
+        get: operations["getHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * Service health probe
-     * @description Reports combined health status of the service and its runtime
-     *     dependencies (database, cache, realtime bus).
-     */
-    get: operations['getHealth'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/items/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/items/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete an item
+         * @description Permanently deletes an item from a character's inventory.
+         *     Authorization: caller must own the parent character.
+         */
+        delete: operations["deleteItem"];
+        options?: never;
+        head?: never;
+        /**
+         * Update an item
+         * @description Applies PATCH semantics to an item. The `type` discriminator may not
+         *     be changed after creation — attempting to do so returns 400 with code
+         *     `ITEM_TYPE_MISMATCH`. Authorization: caller must own the parent
+         *     character.
+         */
+        patch: operations["updateItem"];
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * Delete an item
-     * @description Permanently deletes an item from a character's inventory.
-     *     Authorization: caller must own the parent character.
-     */
-    delete: operations['deleteItem'];
-    options?: never;
-    head?: never;
-    /**
-     * Update an item
-     * @description Applies PATCH semantics to an item. The `type` discriminator may not
-     *     be changed after creation — attempting to do so returns 400 with code
-     *     `ITEM_TYPE_MISMATCH`. Authorization: caller must own the parent
-     *     character.
-     */
-    patch: operations['updateItem'];
-    trace?: never;
-  };
-  '/api/v1/me': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the authenticated user's profile.
+         * @description Returns the current user's profile fields sourced from the Better Auth
+         *     `user` table. `email` and `createdAt` are read-only in this DTO — they
+         *     are managed by Better Auth and cannot be changed via this endpoint.
+         *
+         *     See PRD §4.1 for full product context. Soft-deleted users receive a
+         *     `404` because their sessions are revoked on deletion; this endpoint
+         *     will therefore never return a user whose `deletedAt` is set (that
+         *     field is an internal flag and is not exposed in this DTO).
+         */
+        get: operations["getMe"];
+        put?: never;
+        post?: never;
+        /**
+         * Soft-delete the authenticated user's account.
+         * @description Initiates a soft-delete of the authenticated user's account per PRD §4.2.
+         *
+         *     **Semantics:**
+         *     - All active Better Auth sessions for this account are revoked
+         *       immediately — the current request is the last one they will authorise.
+         *     - The user record's `deletedAt` timestamp is set to the current UTC time.
+         *     - Characters, ships, and share links owned by the user remain readable
+         *       (via existing share slugs) until a daily cron job hard-deletes them
+         *       30 days after `deletedAt`.
+         *
+         *     **Idempotency:** calling DELETE on an account whose `deletedAt` is
+         *     already set (i.e. an already soft-deleted account) returns `204` without
+         *     error. This prevents clients from treating a retry as a failure.
+         *
+         *     **No 404:** because the caller must be authenticated to reach this
+         *     endpoint, and sessions are revoked on deletion, there is no scenario
+         *     where a live session is attached to a non-existent account. A 404 path
+         *     does not exist for this operation.
+         */
+        delete: operations["deleteMe"];
+        options?: never;
+        head?: never;
+        /**
+         * Update the authenticated user's mutable profile fields.
+         * @description Applies a partial update (PATCH semantics) to the authenticated user's
+         *     profile. `displayName` and `theme` are mutable via this endpoint.
+         *
+         *     `email` and `createdAt` are managed by Better Auth and are silently
+         *     ignored if included in the request body — attempting to send them
+         *     is treated as a `400` so the contract is unambiguous.
+         *
+         *     `displayName` constraints:
+         *     - Must be between 1 and 80 characters when non-null (80 matches the
+         *       character-name guidance in PRD §5.2).
+         *     - May be set to `null` to clear the field.
+         *     - An empty string (`""`) is rejected with `400`.
+         *
+         *     `theme` constraints:
+         *     - Must be one of `dark` or `high-contrast` when provided.
+         *     - Omitting the field preserves the current value.
+         */
+        patch: operations["updateMe"];
+        trace?: never;
     };
-    /**
-     * Get the authenticated user's profile.
-     * @description Returns the current user's profile fields sourced from the Better Auth
-     *     `user` table. `email` and `createdAt` are read-only in this DTO — they
-     *     are managed by Better Auth and cannot be changed via this endpoint.
-     *
-     *     See PRD §4.1 for full product context. Soft-deleted users receive a
-     *     `404` because their sessions are revoked on deletion; this endpoint
-     *     will therefore never return a user whose `deletedAt` is set (that
-     *     field is an internal flag and is not exposed in this DTO).
-     */
-    get: operations['getMe'];
-    put?: never;
-    post?: never;
-    /**
-     * Soft-delete the authenticated user's account.
-     * @description Initiates a soft-delete of the authenticated user's account per PRD §4.2.
-     *
-     *     **Semantics:**
-     *     - All active Better Auth sessions for this account are revoked
-     *       immediately — the current request is the last one they will authorise.
-     *     - The user record's `deletedAt` timestamp is set to the current UTC time.
-     *     - Characters, ships, and share links owned by the user remain readable
-     *       (via existing share slugs) until a daily cron job hard-deletes them
-     *       30 days after `deletedAt`.
-     *
-     *     **Idempotency:** calling DELETE on an account whose `deletedAt` is
-     *     already set (i.e. an already soft-deleted account) returns `204` without
-     *     error. This prevents clients from treating a retry as a failure.
-     *
-     *     **No 404:** because the caller must be authenticated to reach this
-     *     endpoint, and sessions are revoked on deletion, there is no scenario
-     *     where a live session is attached to a non-existent account. A 404 path
-     *     does not exist for this operation.
-     */
-    delete: operations['deleteMe'];
-    options?: never;
-    head?: never;
-    /**
-     * Update the authenticated user's mutable profile fields.
-     * @description Applies a partial update (PATCH semantics) to the authenticated user's
-     *     profile. `displayName` and `theme` are mutable via this endpoint.
-     *
-     *     `email` and `createdAt` are managed by Better Auth and are silently
-     *     ignored if included in the request body — attempting to send them
-     *     is treated as a `400` so the contract is unambiguous.
-     *
-     *     `displayName` constraints:
-     *     - Must be between 1 and 80 characters when non-null (80 matches the
-     *       character-name guidance in PRD §5.2).
-     *     - May be set to `null` to clear the field.
-     *     - An empty string (`""`) is rejected with `400`.
-     *
-     *     `theme` constraints:
-     *     - Must be one of `dark` or `high-contrast` when provided.
-     *     - Omitting the field preserves the current value.
-     */
-    patch: operations['updateMe'];
-    trace?: never;
-  };
-  '/api/v1/npcs': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/npcs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the authenticated user's NPCs
+         * @description Returns a cursor-paginated list of NPCs owned by the authenticated
+         *     user. Pass `cursor` from a previous response's `nextCursor` to
+         *     retrieve the following page. Results are ordered newest-first by
+         *     `createdAt`. Optionally filter by `tag` (exact match against any
+         *     element of the NPC's `tags` array).
+         */
+        get: operations["listNpcs"];
+        put?: never;
+        /**
+         * Create a new NPC
+         * @description Creates an NPC owned by the authenticated user. Only `name` is
+         *     required; all other fields default to playable stubs so a quick
+         *     encounter-filler can be created with a single call. Server assigns
+         *     `id`, `ownerId`, `createdAt`, `updatedAt`.
+         *
+         *     Default seeds applied by the server when fields are omitted:
+         *     - `attributes` — all four attributes set to 2
+         *     - `skills` — all 16 skills set to 0
+         *     - `hp` — `{ current: 4, max: 4 }`
+         *     - `mp` — `{ current: 4, max: 4 }`
+         *     - `armor` — empty array
+         *     - `weapons` — empty array
+         *     - `tags` — empty array
+         *     - `signature` — 0
+         *     - `keySkillModifier` — 0
+         */
+        post: operations["createNpc"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * List the authenticated user's NPCs
-     * @description Returns a cursor-paginated list of NPCs owned by the authenticated
-     *     user. Pass `cursor` from a previous response's `nextCursor` to
-     *     retrieve the following page. Results are ordered newest-first by
-     *     `createdAt`. Optionally filter by `tag` (exact match against any
-     *     element of the NPC's `tags` array).
-     */
-    get: operations['listNpcs'];
-    put?: never;
-    /**
-     * Create a new NPC
-     * @description Creates an NPC owned by the authenticated user. Only `name` is
-     *     required; all other fields default to playable stubs so a quick
-     *     encounter-filler can be created with a single call. Server assigns
-     *     `id`, `ownerId`, `createdAt`, `updatedAt`.
-     *
-     *     Default seeds applied by the server when fields are omitted:
-     *     - `attributes` — all four attributes set to 2
-     *     - `skills` — all 16 skills set to 0
-     *     - `hp` — `{ current: 4, max: 4 }`
-     *     - `mp` — `{ current: 4, max: 4 }`
-     *     - `armor` — empty array
-     *     - `weapons` — empty array
-     *     - `tags` — empty array
-     *     - `signature` — 0
-     *     - `keySkillModifier` — 0
-     */
-    post: operations['createNpc'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/npcs/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/npcs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get an NPC by ID
+         * @description Returns the full Npc DTO. Returns 404 if the NPC does not exist and
+         *     403 if it is owned by a different user.
+         */
+        get: operations["getNpc"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete an NPC
+         * @description Permanently deletes an NPC. This action is irreversible. NPCs
+         *     referenced by active encounters are rejected with 409
+         *     `NPC_IN_USE` — remove the combatant from the encounter first.
+         */
+        delete: operations["deleteNpc"];
+        options?: never;
+        head?: never;
+        /**
+         * Partially update an NPC
+         * @description Applies PATCH semantics — omitted fields are left unchanged.
+         *     Read-only fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are
+         *     rejected with 400 if included.
+         */
+        patch: operations["updateNpc"];
+        trace?: never;
     };
-    /**
-     * Get an NPC by ID
-     * @description Returns the full Npc DTO. Returns 404 if the NPC does not exist and
-     *     403 if it is owned by a different user.
-     */
-    get: operations['getNpc'];
-    put?: never;
-    post?: never;
-    /**
-     * Delete an NPC
-     * @description Permanently deletes an NPC. This action is irreversible. NPCs
-     *     referenced by active encounters are rejected with 409
-     *     `NPC_IN_USE` — remove the combatant from the encounter first.
-     */
-    delete: operations['deleteNpc'];
-    options?: never;
-    head?: never;
-    /**
-     * Partially update an NPC
-     * @description Applies PATCH semantics — omitted fields are left unchanged.
-     *     Read-only fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are
-     *     rejected with 400 if included.
-     */
-    patch: operations['updateNpc'];
-    trace?: never;
-  };
-  '/api/v1/npcs/{id}/duplicate': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/npcs/{id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Duplicate an NPC
+         * @description Creates a deep copy of the NPC (attributes, skills, hp, mp, armor,
+         *     weapons, tags) and assigns it to the authenticated user. The copy
+         *     receives a new `id` and a name suffix: "(copy)" for the first
+         *     duplicate, "(copy 2)" for the second, and so on. The source NPC
+         *     must be owned by the caller.
+         */
+        post: operations["duplicateNpc"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Duplicate an NPC
-     * @description Creates a deep copy of the NPC (attributes, skills, hp, mp, armor,
-     *     weapons, tags) and assigns it to the authenticated user. The copy
-     *     receives a new `id` and a name suffix: "(copy)" for the first
-     *     duplicate, "(copy 2)" for the second, and so on. The source NPC
-     *     must be owned by the caller.
-     */
-    post: operations['duplicateNpc'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/realtime/token': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/realtime/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Issue a short-lived Centrifugo connection token
+         * @description Mints a short-lived HMAC-signed JWT that the client can use to connect
+         *     to Centrifugo. Requires an active Better Auth session (cookie on web,
+         *     bearer token on mobile).
+         */
+        post: operations["issueRealtimeToken"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Issue a short-lived Centrifugo connection token
-     * @description Mints a short-lived HMAC-signed JWT that the client can use to connect
-     *     to Centrifugo. Requires an active Better Auth session (cookie on web,
-     *     bearer token on mobile).
-     */
-    post: operations['issueRealtimeToken'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/talents/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/talents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete a talent
+         * @description Permanently removes a talent from a character. Authorization: caller
+         *     must own the parent character.
+         */
+        delete: operations["deleteTalent"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a talent
+         * @description Applies PATCH semantics to a talent. Authorization: caller must own
+         *     the parent character.
+         */
+        patch: operations["updateTalent"];
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * Delete a talent
-     * @description Permanently removes a talent from a character. Authorization: caller
-     *     must own the parent character.
-     */
-    delete: operations['deleteTalent'];
-    options?: never;
-    head?: never;
-    /**
-     * Update a talent
-     * @description Applies PATCH semantics to a talent. Authorization: caller must own
-     *     the parent character.
-     */
-    patch: operations['updateTalent'];
-    trace?: never;
-  };
-  '/api/v1/game-sessions': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/game-sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the authenticated GM's game sessions
+         * @description Returns a cursor-paginated list of game sessions owned by the
+         *     authenticated user. Pass `cursor` from a previous response's
+         *     `nextCursor` to retrieve the following page. Results are ordered
+         *     newest-first by `createdAt`. Optionally filter by `status`.
+         */
+        get: operations["listGameSessions"];
+        put?: never;
+        /**
+         * Create a new game session
+         * @description Creates a game session owned by the authenticated user (the GM).
+         *     `name` is the only required field; all other fields are optional.
+         */
+        post: operations["createGameSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * List the authenticated GM's game sessions
-     * @description Returns a cursor-paginated list of game sessions owned by the
-     *     authenticated user. Pass `cursor` from a previous response's
-     *     `nextCursor` to retrieve the following page. Results are ordered
-     *     newest-first by `createdAt`. Optionally filter by `status`.
-     */
-    get: operations['listGameSessions'];
-    put?: never;
-    /**
-     * Create a new game session
-     * @description Creates a game session owned by the authenticated user (the GM).
-     *     `name` is the only required field; all other fields are optional.
-     */
-    post: operations['createGameSession'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/game-sessions/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/game-sessions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a game session by ID
+         * @description Returns the full game session DTO. Returns 404 if the session does not
+         *     exist or is not owned by the authenticated user.
+         */
+        get: operations["getGameSession"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a game session
+         * @description Permanently deletes a game session. Cascades to the character
+         *     assignment join table. The session must be owned by the caller.
+         */
+        delete: operations["deleteGameSession"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a game session
+         * @description Applies PATCH semantics to a game session. All fields are optional.
+         *     Status transitions: `active → archived` and `archived → active` are
+         *     both permitted.
+         */
+        patch: operations["updateGameSession"];
+        trace?: never;
     };
-    /**
-     * Get a game session by ID
-     * @description Returns the full game session DTO. Returns 404 if the session does not
-     *     exist or is not owned by the authenticated user.
-     */
-    get: operations['getGameSession'];
-    put?: never;
-    post?: never;
-    /**
-     * Delete a game session
-     * @description Permanently deletes a game session. Cascades to the character
-     *     assignment join table. The session must be owned by the caller.
-     */
-    delete: operations['deleteGameSession'];
-    options?: never;
-    head?: never;
-    /**
-     * Update a game session
-     * @description Applies PATCH semantics to a game session. All fields are optional.
-     *     Status transitions: `active → archived` and `archived → active` are
-     *     both permitted.
-     */
-    patch: operations['updateGameSession'];
-    trace?: never;
-  };
-  '/api/v1/game-sessions/{id}/characters': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/game-sessions/{id}/characters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assign a character to a game session
+         * @description Assigns one of the caller's own characters to the game session.
+         *     The character must be owned by the same user as the session (GM).
+         *     Assigning an already-assigned character is idempotent — returns the
+         *     current session state without creating a duplicate.
+         */
+        post: operations["assignCharacterToSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Assign a character to a game session
-     * @description Assigns one of the caller's own characters to the game session.
-     *     The character must be owned by the same user as the session (GM).
-     *     Assigning an already-assigned character is idempotent — returns the
-     *     current session state without creating a duplicate.
-     */
-    post: operations['assignCharacterToSession'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/game-sessions/{id}/characters/{characterId}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/game-sessions/{id}/characters/{characterId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove a character from a game session
+         * @description Removes the character from the session's character list.
+         *     The session must be owned by the caller. Silently succeeds if the
+         *     character was not assigned.
+         */
+        delete: operations["unassignCharacterFromSession"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * Remove a character from a game session
-     * @description Removes the character from the session's character list.
-     *     The session must be owned by the caller. Silently succeeds if the
-     *     character was not assigned.
-     */
-    delete: operations['unassignCharacterFromSession'];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/game-sessions/{id}/dp': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/game-sessions/{id}/dp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Adjust Darkness Points for a game session
+         * @description Atomically adjusts the Darkness Points counter for the session.
+         *
+         *     **ACL rules:**
+         *     - Negative `delta`: only the GM who owns the session may apply.
+         *     - Positive `delta`: the GM owner may apply; the system applies
+         *       automatically via the roll-push pipeline.
+         *
+         *     **Error codes:**
+         *     - `DP_INVALID_DELTA` (422) — `delta` is 0.
+         *     - `DP_BELOW_ZERO` (422) — applying `delta` would take `dpCount` below 0.
+         *     - `GAME_SESSION_NOT_OWNER` (403) — negative delta from non-owner.
+         */
+        post: operations["adjustDp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Adjust Darkness Points for a game session
-     * @description Atomically adjusts the Darkness Points counter for the session.
-     *
-     *     **ACL rules:**
-     *     - Negative `delta`: only the GM who owns the session may apply.
-     *     - Positive `delta`: the GM owner may apply; the system applies
-     *       automatically via the roll-push pipeline.
-     *
-     *     **Error codes:**
-     *     - `DP_INVALID_DELTA` (422) — `delta` is 0.
-     *     - `DP_BELOW_ZERO` (422) — applying `delta` would take `dpCount` below 0.
-     *     - `GAME_SESSION_NOT_OWNER` (403) — negative delta from non-owner.
-     */
-    post: operations['adjustDp'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/game-sessions/{id}/dp/events': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/game-sessions/{id}/dp/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Darkness Point audit events for a session
+         * @description Returns a cursor-paginated audit log of all DP adjustments made to
+         *     the session, ordered newest-first. Only accessible by the GM owner.
+         */
+        get: operations["listDpEvents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * List Darkness Point audit events for a session
-     * @description Returns a cursor-paginated audit log of all DP adjustments made to
-     *     the session, ordered newest-first. Only accessible by the GM owner.
-     */
-    get: operations['listDpEvents'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/game-sessions/{sessionId}/encounters': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/game-sessions/{sessionId}/encounters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List encounters for a game session
+         * @description Returns a cursor-paginated list of encounters belonging to the game
+         *     session identified by `sessionId`. Optionally filter by `status`.
+         *     Only the GM who owns the session may call this endpoint. Results are
+         *     ordered newest-first by `createdAt`.
+         */
+        get: operations["listEncounters"];
+        put?: never;
+        /**
+         * Create an encounter in a game session
+         * @description Creates a new encounter owned by the game session. The encounter is
+         *     seeded with `status: setup`, `round: 0`, and
+         *     `activeCombatantId: null`. Combatants can be freely added or removed
+         *     while the encounter is in `setup` status (Block 3 surface).
+         */
+        post: operations["createEncounter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * List encounters for a game session
-     * @description Returns a cursor-paginated list of encounters belonging to the game
-     *     session identified by `sessionId`. Optionally filter by `status`.
-     *     Only the GM who owns the session may call this endpoint. Results are
-     *     ordered newest-first by `createdAt`.
-     */
-    get: operations['listEncounters'];
-    put?: never;
-    /**
-     * Create an encounter in a game session
-     * @description Creates a new encounter owned by the game session. The encounter is
-     *     seeded with `status: setup`, `round: 0`, and
-     *     `activeCombatantId: null`. Combatants can be freely added or removed
-     *     while the encounter is in `setup` status (Block 3 surface).
-     */
-    post: operations['createEncounter'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/encounters/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/encounters/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get an encounter by ID
+         * @description Returns the full encounter DTO. The encounter's parent game session
+         *     must be owned by the authenticated user — the server checks
+         *     `encounter.gameSession.ownerId === caller.id`. Returns 404 if the
+         *     encounter does not exist or 403 if the caller does not own the
+         *     parent session.
+         */
+        get: operations["getEncounter"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete an encounter
+         * @description Permanently deletes an encounter and cascades to all of its
+         *     combatants (Block 3 schema). The encounter's parent game session
+         *     must be owned by the authenticated user.
+         */
+        delete: operations["deleteEncounter"];
+        options?: never;
+        head?: never;
+        /**
+         * Update an encounter
+         * @description Applies PATCH semantics to an encounter. All fields are optional.
+         *
+         *     **Allowed status transitions:**
+         *     - `setup → active` — starts combat. Bumps `round` to 1, sets
+         *       `activeCombatantId` to the first combatant in initiative order.
+         *       **Requires at least one combatant** on the encounter; if the
+         *       encounter has zero combatants the server returns 422
+         *       `ENCOUNTER_NO_COMBATANTS` (combatants are added via the Block 3
+         *       surface at `POST /api/v1/encounters/{id}/combatants`).
+         *     - `active → ended` — closes combat. The encounter becomes
+         *       read-only history; `activeCombatantId` is set to null.
+         *
+         *     **Forbidden transitions** (422 `ENCOUNTER_INVALID_TRANSITION`):
+         *     - Any transition back to `setup` from `active` or `ended`.
+         *     - `setup → ended` (must go through `active` first).
+         *     - Any transition out of `ended`.
+         *
+         *     Renaming and notes editing are permitted regardless of status.
+         */
+        patch: operations["updateEncounter"];
+        trace?: never;
     };
-    /**
-     * Get an encounter by ID
-     * @description Returns the full encounter DTO. The encounter's parent game session
-     *     must be owned by the authenticated user — the server checks
-     *     `encounter.gameSession.ownerId === caller.id`. Returns 404 if the
-     *     encounter does not exist or 403 if the caller does not own the
-     *     parent session.
-     */
-    get: operations['getEncounter'];
-    put?: never;
-    post?: never;
-    /**
-     * Delete an encounter
-     * @description Permanently deletes an encounter and cascades to all of its
-     *     combatants (Block 3 schema). The encounter's parent game session
-     *     must be owned by the authenticated user.
-     */
-    delete: operations['deleteEncounter'];
-    options?: never;
-    head?: never;
-    /**
-     * Update an encounter
-     * @description Applies PATCH semantics to an encounter. All fields are optional.
-     *
-     *     **Allowed status transitions:**
-     *     - `setup → active` — starts combat. Bumps `round` to 1, sets
-     *       `activeCombatantId` to the first combatant in initiative order.
-     *       **Requires at least one combatant** on the encounter; if the
-     *       encounter has zero combatants the server returns 422
-     *       `ENCOUNTER_NO_COMBATANTS` (combatants are added via the Block 3
-     *       surface at `POST /api/v1/encounters/{id}/combatants`).
-     *     - `active → ended` — closes combat. The encounter becomes
-     *       read-only history; `activeCombatantId` is set to null.
-     *
-     *     **Forbidden transitions** (422 `ENCOUNTER_INVALID_TRANSITION`):
-     *     - Any transition back to `setup` from `active` or `ended`.
-     *     - `setup → ended` (must go through `active` first).
-     *     - Any transition out of `ended`.
-     *
-     *     Renaming and notes editing are permitted regardless of status.
-     */
-    patch: operations['updateEncounter'];
-    trace?: never;
-  };
-  '/api/v1/encounters/{id}/combatants': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/encounters/{id}/combatants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List combatants for an encounter
+         * @description Returns all combatants belonging to the encounter identified by `id`.
+         *     Results are unordered until initiative is rolled (Block 4); after
+         *     rolling they are returned sorted by `turnOrder` ascending.
+         *
+         *     Owner-gated through the encounter's parent game session.
+         */
+        get: operations["listCombatants"];
+        put?: never;
+        /**
+         * Add a combatant to an encounter
+         * @description Adds a PC or NPC as a combatant to the encounter. The server snapshots
+         *     `hpCurrent`, `hpMax`, `armor`, and `signature` from the source entity
+         *     at the moment of this call. Subsequent changes to the source's stats
+         *     (e.g. the player saving their character sheet mid-combat) do NOT
+         *     propagate to the combatant record — the GM mutates `hpCurrent` directly
+         *     on the combatant via `PATCH /api/v1/combatants/{id}`.
+         *
+         *     Only allowed while the encounter is in `setup` status. `initiative` and
+         *     `turnOrder` remain null until the initiative roll operation in Block 4.
+         *
+         *     Error codes:
+         *     - `COMBATANT_SOURCE_NOT_FOUND` — the `sourceId` does not exist
+         *     - `COMBATANT_SOURCE_NOT_OWNED` — the caller does not own the source Character or Npc
+         *     - `COMBATANT_DUPLICATE` — the same `(combatantType, sourceId)` pair is already on the encounter
+         *     - `ENCOUNTER_LOCKED_FOR_COMBAT` — the encounter is `active` or `ended`; combatants may only be added during `setup`
+         */
+        post: operations["addCombatant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * List combatants for an encounter
-     * @description Returns all combatants belonging to the encounter identified by `id`.
-     *     Results are unordered until initiative is rolled (Block 4); after
-     *     rolling they are returned sorted by `turnOrder` ascending.
-     *
-     *     Owner-gated through the encounter's parent game session.
-     */
-    get: operations['listCombatants'];
-    put?: never;
-    /**
-     * Add a combatant to an encounter
-     * @description Adds a PC or NPC as a combatant to the encounter. The server snapshots
-     *     `hpCurrent`, `hpMax`, `armor`, and `signature` from the source entity
-     *     at the moment of this call. Subsequent changes to the source's stats
-     *     (e.g. the player saving their character sheet mid-combat) do NOT
-     *     propagate to the combatant record — the GM mutates `hpCurrent` directly
-     *     on the combatant via `PATCH /api/v1/combatants/{id}`.
-     *
-     *     Only allowed while the encounter is in `setup` status. `initiative` and
-     *     `turnOrder` remain null until the initiative roll operation in Block 4.
-     *
-     *     Error codes:
-     *     - `COMBATANT_SOURCE_NOT_FOUND` — the `sourceId` does not exist
-     *     - `COMBATANT_SOURCE_NOT_OWNED` — the caller does not own the source Character or Npc
-     *     - `COMBATANT_DUPLICATE` — the same `(combatantType, sourceId)` pair is already on the encounter
-     *     - `ENCOUNTER_LOCKED_FOR_COMBAT` — the encounter is `active` or `ended`; combatants may only be added during `setup`
-     */
-    post: operations['addCombatant'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/combatants/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/combatants/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove a combatant from an encounter
+         * @description Permanently removes the combatant from the encounter. Only allowed
+         *     while the encounter is in `setup` status. Returns 422
+         *     `ENCOUNTER_LOCKED_FOR_COMBAT` when the encounter is `active` or
+         *     `ended`.
+         *
+         *     ACL is resolved through the encounter's parent game session owner.
+         */
+        delete: operations["deleteCombatant"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a combatant
+         * @description Applies PATCH semantics to a combatant. Only mutable fields are
+         *     accepted: `hpCurrent`, `armor`, `signature`, `statusFlags`, `notes`,
+         *     `displayName`. Immutable fields (`combatantType`, `sourceId`) are
+         *     absent from the schema. `initiative` and `turnOrder` are read-only
+         *     here and are only set via the initiative operations (Block 4).
+         *
+         *     Allowed during both `setup` and `active` encounters. Returns 422
+         *     `ENCOUNTER_ENDED` if the encounter status is `ended`.
+         *
+         *     ACL is resolved through the encounter's parent game session owner.
+         */
+        patch: operations["updateCombatant"];
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * Remove a combatant from an encounter
-     * @description Permanently removes the combatant from the encounter. Only allowed
-     *     while the encounter is in `setup` status. Returns 422
-     *     `ENCOUNTER_LOCKED_FOR_COMBAT` when the encounter is `active` or
-     *     `ended`.
-     *
-     *     ACL is resolved through the encounter's parent game session owner.
-     */
-    delete: operations['deleteCombatant'];
-    options?: never;
-    head?: never;
-    /**
-     * Update a combatant
-     * @description Applies PATCH semantics to a combatant. Only mutable fields are
-     *     accepted: `hpCurrent`, `armor`, `signature`, `statusFlags`, `notes`,
-     *     `displayName`. Immutable fields (`combatantType`, `sourceId`) are
-     *     absent from the schema. `initiative` and `turnOrder` are read-only
-     *     here and are only set via the initiative operations (Block 4).
-     *
-     *     Allowed during both `setup` and `active` encounters. Returns 422
-     *     `ENCOUNTER_ENDED` if the encounter status is `ended`.
-     *
-     *     ACL is resolved through the encounter's parent game session owner.
-     */
-    patch: operations['updateCombatant'];
-    trace?: never;
-  };
-  '/api/v1/encounters/{id}/initiative/roll': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/encounters/{id}/initiative/roll": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Roll initiative for all combatants and start combat
+         * @description Rolls a d6 (`crypto.randomInt(1, 7)`) for every combatant in the
+         *     encounter, sorts them by initiative descending, assigns `turnOrder`
+         *     indices (0-based), and transitions the encounter from `setup` to
+         *     `active`. Per ST3001 ГЛАВА 5 «Раунды, ходы и инициатива»: «Бросьте
+         *     по кубику за всех участников сражения… Выпавший на кубике результат —
+         *     значение инициативы для этого персонажа».
+         *
+         *     **Side-effects (all atomic):**
+         *     1. Encounter `status` transitions `setup → active`.
+         *     2. `encounter.round` is set from 0 to 1.
+         *     3. `encounter.activeCombatantId` is set to the combatant with
+         *        `turnOrder: 0` (highest initiative result).
+         *     4. Every combatant row is updated with its `initiative` and `turnOrder`.
+         *
+         *     **Tie-breaking (ST3001 ГЛАВА 5):** equal initiative rolls are broken
+         *     by re-rolling a fresh d6 for the tied combatants — «В случае ничьей
+         *     определите очерёдность хода случайным образом (бросьте ещё по одному
+         *     кубику, только на этот раз безо всяких модификаторов — у кого больше,
+         *     тот и ходит раньше)». The server runs at most three reroll passes to
+         *     keep the operation bounded; any combatants still tied after that are
+         *     left in stable insertion order and the GM is expected to use the
+         *     `PATCH /api/v1/encounters/{id}/initiative` reorder operation to set
+         *     a definitive order before the first turn.
+         *
+         *     **Error codes (422):**
+         *     - `ENCOUNTER_INVALID_TRANSITION` — encounter is not in `setup` status.
+         *       Initiative roll is only valid from `setup`; if the encounter is
+         *       already `active` or `ended` this guard fires.
+         *     - `ENCOUNTER_NO_COMBATANTS` — the encounter has no combatants. Add at
+         *       least one via `POST /api/v1/encounters/{id}/combatants` before
+         *       rolling initiative.
+         */
+        post: operations["rollInitiative"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Roll initiative for all combatants and start combat
-     * @description Rolls a d6 (`crypto.randomInt(1, 7)`) for every combatant in the
-     *     encounter, sorts them by initiative descending, assigns `turnOrder`
-     *     indices (0-based), and transitions the encounter from `setup` to
-     *     `active`. Per ST3001 ГЛАВА 5 «Раунды, ходы и инициатива»: «Бросьте
-     *     по кубику за всех участников сражения… Выпавший на кубике результат —
-     *     значение инициативы для этого персонажа».
-     *
-     *     **Side-effects (all atomic):**
-     *     1. Encounter `status` transitions `setup → active`.
-     *     2. `encounter.round` is set from 0 to 1.
-     *     3. `encounter.activeCombatantId` is set to the combatant with
-     *        `turnOrder: 0` (highest initiative result).
-     *     4. Every combatant row is updated with its `initiative` and `turnOrder`.
-     *
-     *     **Tie-breaking (ST3001 ГЛАВА 5):** equal initiative rolls are broken
-     *     by re-rolling a fresh d6 for the tied combatants — «В случае ничьей
-     *     определите очерёдность хода случайным образом (бросьте ещё по одному
-     *     кубику, только на этот раз безо всяких модификаторов — у кого больше,
-     *     тот и ходит раньше)». The server runs at most three reroll passes to
-     *     keep the operation bounded; any combatants still tied after that are
-     *     left in stable insertion order and the GM is expected to use the
-     *     `PATCH /api/v1/encounters/{id}/initiative` reorder operation to set
-     *     a definitive order before the first turn.
-     *
-     *     **Error codes (422):**
-     *     - `ENCOUNTER_INVALID_TRANSITION` — encounter is not in `setup` status.
-     *       Initiative roll is only valid from `setup`; if the encounter is
-     *       already `active` or `ended` this guard fires.
-     *     - `ENCOUNTER_NO_COMBATANTS` — the encounter has no combatants. Add at
-     *       least one via `POST /api/v1/encounters/{id}/combatants` before
-     *       rolling initiative.
-     */
-    post: operations['rollInitiative'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/encounters/{id}/initiative': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/encounters/{id}/initiative": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Manually reorder the turn order (GM only)
+         * @description Allows the GM to rearrange the turn order without re-rolling initiative
+         *     dice. The request body must contain the full ordered list of every
+         *     combatant id in the encounter exactly once. The server reassigns
+         *     `turnOrder` indices (0-based) matching the array position.
+         *
+         *     **This operation does NOT:**
+         *     - Re-roll initiative dice (`initiative` values remain unchanged).
+         *     - Change `encounter.activeCombatantId` (the combatant whose turn is
+         *       currently active stays active; the reorder takes effect from the
+         *       next turn advance).
+         *     - Change `encounter.round`.
+         *
+         *     **Allowed only while `status` is `active`.** Returns 422
+         *     `ENCOUNTER_INVALID_STATUS` if called from `setup` (use
+         *     `rollInitiative` instead) or `ended`.
+         *
+         *     **Validation error codes (422):**
+         *     - `ENCOUNTER_INVALID_STATUS` — encounter is not in `active` status.
+         *     - `INITIATIVE_INCOMPLETE` — at least one combatant id from the
+         *       encounter is absent from `combatantIds`.
+         *     - `INITIATIVE_DUPLICATE` — the same id appears two or more times
+         *       in `combatantIds`.
+         *     - `INITIATIVE_UNKNOWN_COMBATANT` — an id in `combatantIds` does not
+         *       belong to this encounter.
+         */
+        patch: operations["reorderInitiative"];
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /**
-     * Manually reorder the turn order (GM only)
-     * @description Allows the GM to rearrange the turn order without re-rolling initiative
-     *     dice. The request body must contain the full ordered list of every
-     *     combatant id in the encounter exactly once. The server reassigns
-     *     `turnOrder` indices (0-based) matching the array position.
-     *
-     *     **This operation does NOT:**
-     *     - Re-roll initiative dice (`initiative` values remain unchanged).
-     *     - Change `encounter.activeCombatantId` (the combatant whose turn is
-     *       currently active stays active; the reorder takes effect from the
-     *       next turn advance).
-     *     - Change `encounter.round`.
-     *
-     *     **Allowed only while `status` is `active`.** Returns 422
-     *     `ENCOUNTER_INVALID_STATUS` if called from `setup` (use
-     *     `rollInitiative` instead) or `ended`.
-     *
-     *     **Validation error codes (422):**
-     *     - `ENCOUNTER_INVALID_STATUS` — encounter is not in `active` status.
-     *     - `INITIATIVE_INCOMPLETE` — at least one combatant id from the
-     *       encounter is absent from `combatantIds`.
-     *     - `INITIATIVE_DUPLICATE` — the same id appears two or more times
-     *       in `combatantIds`.
-     *     - `INITIATIVE_UNKNOWN_COMBATANT` — an id in `combatantIds` does not
-     *       belong to this encounter.
-     */
-    patch: operations['reorderInitiative'];
-    trace?: never;
-  };
-  '/api/v1/encounters/{id}/turn/advance': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/encounters/{id}/turn/advance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Advance to the next combatant's turn
+         * @description Moves `encounter.activeCombatantId` forward by one position in the
+         *     turn order: `(currentIndex + 1) % combatants.length`.
+         *
+         *     **Wrap behaviour:** when the advance moves past the last combatant
+         *     (index `combatants.length - 1`), the turn wraps to index 0 and
+         *     `encounter.round` is incremented by 1. `TurnAdvanceResult.isNewRound`
+         *     is `true` in that case.
+         *
+         *     **Allowed only while `status` is `active`.** Returns 422
+         *     `ENCOUNTER_INVALID_STATUS` otherwise.
+         *
+         *     **Defensive guard:** returns 422 `ENCOUNTER_INITIATIVE_NOT_ROLLED`
+         *     when `activeCombatantId` is null (i.e. initiative was never set,
+         *     which should not be reachable via normal `rollInitiative` flow but is
+         *     possible if a future code path bypasses that operation).
+         *
+         *     **Error codes (422):**
+         *     - `ENCOUNTER_INVALID_STATUS` — encounter is not in `active` status.
+         *     - `ENCOUNTER_INITIATIVE_NOT_ROLLED` — `activeCombatantId` is null;
+         *       initiative must be rolled before turns can be advanced.
+         */
+        post: operations["advanceTurn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Advance to the next combatant's turn
-     * @description Moves `encounter.activeCombatantId` forward by one position in the
-     *     turn order: `(currentIndex + 1) % combatants.length`.
-     *
-     *     **Wrap behaviour:** when the advance moves past the last combatant
-     *     (index `combatants.length - 1`), the turn wraps to index 0 and
-     *     `encounter.round` is incremented by 1. `TurnAdvanceResult.isNewRound`
-     *     is `true` in that case.
-     *
-     *     **Allowed only while `status` is `active`.** Returns 422
-     *     `ENCOUNTER_INVALID_STATUS` otherwise.
-     *
-     *     **Defensive guard:** returns 422 `ENCOUNTER_INITIATIVE_NOT_ROLLED`
-     *     when `activeCombatantId` is null (i.e. initiative was never set,
-     *     which should not be reachable via normal `rollInitiative` flow but is
-     *     possible if a future code path bypasses that operation).
-     *
-     *     **Error codes (422):**
-     *     - `ENCOUNTER_INVALID_STATUS` — encounter is not in `active` status.
-     *     - `ENCOUNTER_INITIATIVE_NOT_ROLLED` — `activeCombatantId` is null;
-     *       initiative must be rolled before turns can be advanced.
-     */
-    post: operations['advanceTurn'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/characters/{id}/share': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/characters/{id}/share": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create a share link for a character
+         * @description Creates a new share link for the authenticated user's character. The
+         *     link is identified by a 24-character unguessable slug. Multiple links
+         *     per character are allowed — useful for different audiences or different
+         *     `includeGmNotes` settings.
+         *
+         *     The optional `label` (1–80 characters) helps the owner distinguish links.
+         *     The optional `expiresAt` is an ISO-8601 instant; omit (or set to null)
+         *     for a permanent link. The optional `includeGmNotes` flag (default false)
+         *     controls whether the top-level `notes` field is included in the public
+         *     character read.
+         */
+        post: operations["createShareLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Create a share link for a character
-     * @description Creates a new share link for the authenticated user's character. The
-     *     link is identified by a 24-character unguessable slug. Multiple links
-     *     per character are allowed — useful for different audiences or different
-     *     `includeGmNotes` settings.
-     *
-     *     The optional `label` (1–80 characters) helps the owner distinguish links.
-     *     The optional `expiresAt` is an ISO-8601 instant; omit (or set to null)
-     *     for a permanent link. The optional `includeGmNotes` flag (default false)
-     *     controls whether the top-level `notes` field is included in the public
-     *     character read.
-     */
-    post: operations['createShareLink'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/characters/{id}/shares': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/characters/{id}/shares": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List share links for a character
+         * @description Returns all non-revoked share links for the authenticated user's
+         *     character, ordered newest-first. Revoked links are excluded by default.
+         *     A `?includeRevoked` query parameter may be added in a future version.
+         */
+        get: operations["listShareLinks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * List share links for a character
-     * @description Returns all non-revoked share links for the authenticated user's
-     *     character, ordered newest-first. Revoked links are excluded by default.
-     *     A `?includeRevoked` query parameter may be added in a future version.
-     */
-    get: operations['listShareLinks'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/share-links/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/share-links/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Revoke a share link
+         * @description Soft-revokes a share link by setting its `revokedAt` timestamp. After
+         *     revocation, `GET /api/v1/public/character/{slug}` returns 410 Gone.
+         *     The link row is not deleted — historical view counts are preserved.
+         *     The caller must own the character the link belongs to.
+         */
+        delete: operations["revokeShareLink"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * Revoke a share link
-     * @description Soft-revokes a share link by setting its `revokedAt` timestamp. After
-     *     revocation, `GET /api/v1/public/character/{slug}` returns 410 Gone.
-     *     The link row is not deleted — historical view counts are preserved.
-     *     The caller must own the character the link belongs to.
-     */
-    delete: operations['revokeShareLink'];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/public/character/{slug}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/public/character/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a publicly-shared character by slug
+         * @description Returns the character associated with the given share-link slug.
+         *     No authentication is required.
+         *
+         *     The `notes` field (top-level GM notes) is included only when the share
+         *     link was created with `includeGmNotes: true`. If the link does not
+         *     include GM notes, `notes` is always returned as `null` regardless of
+         *     whether the character actually has notes.
+         *
+         *     Error semantics:
+         *     - `404` — slug does not exist or was never created.
+         *     - `410` — slug existed but has been revoked or has expired.
+         */
+        get: operations["getPublicCharacter"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * Get a publicly-shared character by slug
-     * @description Returns the character associated with the given share-link slug.
-     *     No authentication is required.
-     *
-     *     The `notes` field (top-level GM notes) is included only when the share
-     *     link was created with `includeGmNotes: true`. If the link does not
-     *     include GM notes, `notes` is always returned as `null` regardless of
-     *     whether the character actually has notes.
-     *
-     *     Error semantics:
-     *     - `404` — slug does not exist or was never created.
-     *     - `410` — slug existed but has been revoked or has expired.
-     */
-    get: operations['getPublicCharacter'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/public/og/character/{slug}.png': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/public/og/character/{slug}.png": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * OG image for a shared character (Feature 6.3 — not yet implemented)
+         * @description Returns a PNG Open Graph image for the shared character. Intended for
+         *     social-media preview unfurling.
+         *
+         *     **This endpoint is not yet implemented.** It will always return 501
+         *     until Feature 6.3 lands the server-side renderer. Consumers should plan
+         *     for the following cache headers on the eventual 200 response:
+         *     `Cache-Control: public, max-age=3600, stale-while-revalidate=86400`.
+         */
+        get: operations["getCharacterOgImage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * OG image for a shared character (Feature 6.3 — not yet implemented)
-     * @description Returns a PNG Open Graph image for the shared character. Intended for
-     *     social-media preview unfurling.
-     *
-     *     **This endpoint is not yet implemented.** It will always return 501
-     *     until Feature 6.3 lands the server-side renderer. Consumers should plan
-     *     for the following cache headers on the eventual 200 response:
-     *     `Cache-Control: public, max-age=3600, stale-while-revalidate=86400`.
-     */
-    get: operations['getCharacterOgImage'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/characters/{id}/rolls': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/characters/{id}/rolls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List roll history for a character
+         * @description Returns the most recent rolls for the character, ordered newest-first.
+         *     Default limit is 50; maximum is 100.
+         */
+        get: operations["listRolls"];
+        put?: never;
+        /**
+         * Roll dice for a character
+         * @description Rolls `pool` d6 server-side using a cryptographically secure RNG.
+         *     Hits are counted as the number of 6s. The caller provides a human-readable
+         *     `label` (e.g. "Pilot · Evade") and an optional `gameSessionId` (reserved for
+         *     Feature 7.2 — pass null until GameSession lands).
+         *
+         *     Pool is clamped by the server from the submitted value. Condition penalties
+         *     must be pre-applied by the caller before sending `pool`; the server does not
+         *     re-apply them from character state.
+         */
+        post: operations["createRoll"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * List roll history for a character
-     * @description Returns the most recent rolls for the character, ordered newest-first.
-     *     Default limit is 50; maximum is 100.
-     */
-    get: operations['listRolls'];
-    put?: never;
-    /**
-     * Roll dice for a character
-     * @description Rolls `pool` d6 server-side using a cryptographically secure RNG.
-     *     Hits are counted as the number of 6s. The caller provides a human-readable
-     *     `label` (e.g. "Pilot · Evade") and an optional `gameSessionId` (reserved for
-     *     Feature 7.2 — pass null until GameSession lands).
-     *
-     *     Pool is clamped by the server from the submitted value. Condition penalties
-     *     must be pre-applied by the caller before sending `pool`; the server does not
-     *     re-apply them from character state.
-     */
-    post: operations['createRoll'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/rolls/{id}/push': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/rolls/{id}/push": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Push (reroll) a roll
+         * @description Rerolls all non-6 dice exactly once. After a push the roll cannot be
+         *     pushed again (`pushed` becomes `true`). Returns 422 with code
+         *     `ROLL_NOT_PUSHABLE` if:
+         *     - The roll has already been pushed.
+         *     - The owning character has the Exhausted condition (PRD §10).
+         */
+        patch: operations["pushRoll"];
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /**
-     * Push (reroll) a roll
-     * @description Rerolls all non-6 dice exactly once. After a push the roll cannot be
-     *     pushed again (`pushed` becomes `true`). Returns 422 with code
-     *     `ROLL_NOT_PUSHABLE` if:
-     *     - The roll has already been pushed.
-     *     - The owning character has the Exhausted condition (PRD §10).
-     */
-    patch: operations['pushRoll'];
-    trace?: never;
-  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    /**
-     * @description A single Coriolis dice roll. Dice are rolled server-side using a
-     *     cryptographically secure RNG. Hits = count of 6s. A roll can be pushed
-     *     at most once (PRD §10). `gameSessionId` is null until Feature 7.2 lands.
-     */
-    Roll: {
-      /** @description Opaque roll identifier (cuid2) */
-      readonly id: string;
-      /** @description Identifier of the character who made the roll */
-      readonly characterId: string;
-      /**
-       * @description Game session this roll belongs to. Null until Feature 7.2
-       *     (GameSession resource) ships. Clients should tolerate null.
-       */
-      gameSessionId?: string | null;
-      /** @description Human-readable roll label, e.g. "Pilot · Evade" */
-      label: string;
-      /**
-       * @description Number of d6 rolled (after condition penalties applied by caller).
-       *     `0` triggers the «Ноль кубиков» rule (ГЛАВА 3 line 161): the engine
-       *     still rolls 2d6, but the proverka counts as a success only when
-       *     both dice come up 6.
-       *     PRD override — Coriolis ST3001 does not name a hard upper bound.
-       *     We cap at 20 to keep DB rows and wire payloads bounded; realistic
-       *     attribute + skill + gear + helpers stacks max out around 12–14.
-       */
-      pool: number;
-      /**
-       * @description Current face values of all dice. After a push, rerolled non-6 values
-       *     are updated in place. Length normally equals `pool`; for the zero-
-       *     dice case (`pool === 0`) the array always has 2 elements regardless.
-       */
-      dice: number[];
-      /** @description Number of 6s in the current dice array */
-      readonly hits: number;
-      /** @description Whether this roll has been pushed. Once true, further pushes are rejected. */
-      pushed: boolean;
-      /** Format: date-time */
-      readonly createdAt: string;
-    };
-    /** @description Payload for POST /api/v1/characters/{id}/rolls */
-    RollCreate: {
-      /** @description Human-readable roll label, e.g. "Pilot · Evade" */
-      label: string;
-      /**
-       * @description Number of d6 to roll. Must be between 0 and 20 inclusive.
-       *     Condition pool penalties must be pre-applied by the caller before
-       *     submitting.
-       *
-       *     «Ноль кубиков» (ГЛАВА 3 line 161): if modifiers reduce the pool to
-       *     zero (or below), submit `pool: 0`. The engine then rolls 2d6 and
-       *     counts a success only when both dice are 6.
-       *
-       *     PRD override — ST3001 does not name a hard upper bound. We cap at
-       *     20 to keep wire payloads bounded; realistic attribute + skill + gear
-       *     + helpers stacks max out around 12–14.
-       */
-      pool: number;
-      /**
-       * @description Optional game session identifier. Reserved for Feature 7.2.
-       *     Pass null or omit until GameSession lands.
-       */
-      gameSessionId?: string | null;
-    };
-    RollList: {
-      items: components['schemas']['Roll'][];
-    };
-    /**
-     * @description Severity tier of a critical injury per Coriolis core rules.
-     *     - `light` — minor wound, no long-term mechanical effect.
-     *     - `severe` — significant injury; may impose ongoing penalties.
-     *     - `critical` — life-threatening; requires urgent medicurgy.
-     * @enum {string}
-     */
-    CriticalInjurySeverity: 'light' | 'severe' | 'critical';
-    /** @enum {string|null} */
-    DependencyStatus: 'ok' | 'degraded' | 'down' | null;
-    /**
-     * @description One of the Nine Icons of the Third Horizon. Kebab-case names match
-     *     the asset filenames in `packages/ui/src/assets/icons/`.
-     * @enum {string}
-     */
-    IconId:
-      | 'lady-of-tears'
-      | 'traveler'
-      | 'messenger'
-      | 'merchant'
-      | 'dancer'
-      | 'gambler'
-      | 'judge'
-      | 'faceless-one'
-      | 'deckhand';
-    /**
-     * @description The 11 character archetypes (амплуа) from Coriolis ST3001 ch.2.
-     *     Each concept has a key attribute (capped at 5 instead of 4 at
-     *     creation) and a set of key skills (capped at 3 instead of 1 at
-     *     creation), and applies a reputation modifier to the upbringing
-     *     baseline. Mappings live server-side in the RulesEngine
-     *     (`CONCEPT_KEYS`).
-     *
-     *     | Concept     | Key attribute | Reputation modifier |
-     *     | ----------- | ------------- | ------------------- |
-     *     | artist      | empathy       | +1                  |
-     *     | networker   | wits          |  0                  |
-     *     | fugitive    | empathy       | −2                  |
-     *     | negotiator  | empathy       | +1                  |
-     *     | operative   | agility       |  0                  |
-     *     | pilot       | agility       |  0                  |
-     *     | pioneer     | wits          |  0                  |
-     *     | preacher    | empathy       | +1                  |
-     *     | scientist   | wits          | +1                  |
-     *     | sailor      | strength      | −1                  |
-     *     | soldier     | agility       | −1                  |
-     * @enum {string}
-     */
-    Concept:
-      | 'artist'
-      | 'networker'
-      | 'fugitive'
-      | 'negotiator'
-      | 'operative'
-      | 'pilot'
-      | 'pioneer'
-      | 'preacher'
-      | 'scientist'
-      | 'sailor'
-      | 'soldier';
-    /**
-     * @description Coriolis canonical role (роль) within an amplua (ГЛАВА 2
-     *     «АМПЛУА И РОЛИ»). The 11 amplua each have exactly three roles;
-     *     a character picks one role at creation. The role narrows the
-     *     amplua's union of key skills to exactly four of them — those
-     *     four are the character's own key skills.
-     *
-     *     Skill caps at creation time (per ST3001 ch.2):
-     *     - Key skill (role's four): up to 3 points
-     *     - Non-key skill: up to 1 point
-     *
-     *     Role + concept together drive the creation-time validation;
-     *     the server enforces `ROLE_CONCEPT_MISMATCH` when the chosen
-     *     role does not belong to the chosen concept.
-     *
-     *     Role names are unique across all amplua, so this enum is flat.
-     *
-     *     Russian display names:
-     *     companion=Компаньон, musician=Музыкант, poet=Поэт,
-     *     analyst=Аналитик, correspondent=Корреспондент,
-     *     network-djinn=Сетевой джинн, criminal=Преступник,
-     *     mystic=Мистик, revolutionary=Революционер,
-     *     agitator=Агитатор, diplomat=Дипломат, dealer=Делец,
-     *     assassin=Ассасин, guard=Стражник, spy=Шпион,
-     *     ace=Ас, driver=Водитель, trucker=Дальнобойщик,
-     *     colonist=Колонист, prospector=Старатель, scout=Скаут,
-     *     ascetic=Аскет, missionary=Миссионер, prophet=Пророк,
-     *     archaeologist=Археолог, medicurg=Медикург,
-     *     technologist=Технологик, ship-engineer=Бортинженер,
-     *     labourer=Разнорабочий, loader=Грузчик,
-     *     legionnaire=Легионер, mercenary=Наёмник, officer=Офицер.
-     * @enum {string}
-     */
-    Role:
-      | 'companion'
-      | 'musician'
-      | 'poet'
-      | 'analyst'
-      | 'correspondent'
-      | 'network-djinn'
-      | 'criminal'
-      | 'mystic'
-      | 'revolutionary'
-      | 'agitator'
-      | 'diplomat'
-      | 'dealer'
-      | 'assassin'
-      | 'guard'
-      | 'spy'
-      | 'ace'
-      | 'driver'
-      | 'trucker'
-      | 'colonist'
-      | 'prospector'
-      | 'scout'
-      | 'ascetic'
-      | 'missionary'
-      | 'prophet'
-      | 'archaeologist'
-      | 'medicurg'
-      | 'technologist'
-      | 'ship-engineer'
-      | 'labourer'
-      | 'loader'
-      | 'legionnaire'
-      | 'mercenary'
-      | 'officer';
-    /**
-     * @description Social stratum a character was raised in (Coriolis core book ch.2,
-     *     table 2.2 — "Воспитание"). Upbringing is set once at character
-     *     creation and is **immutable**; it determines the starting
-     *     attribute / skill point budgets, the starting reputation, and the
-     *     starting wealth (in birrs) the character is created with.
-     *
-     *     | Upbringing  | Attribute pts | Skill pts | Reputation | Wealth (birrs) |
-     *     | ----------- | ------------- | --------- | ---------- | -------------- |
-     *     | plebeian    | 15            | 8         | 2          |   500          |
-     *     | stationary  | 14            | 10        | 4          |  1000          |
-     *     | aristocrat  | 13            | 12        | 6          |  5000          |
-     * @enum {string}
-     */
-    Upbringing: 'plebeian' | 'stationary' | 'aristocrat';
-    /**
-     * @description Crew archetype (амплуа команды) per Coriolis ST3001 ch.2
-     *     §АМПЛУА КОМАНДЫ. Five canonical crews — `free-trader`
-     *     (Вольные торговцы), `mercenary` (Наёмники), `explorer`
-     *     (Исследователи), `agents` (Агенты), `pilgrim` (Пилигримы).
-     *
-     *     The crew concept is shared by all heroes in a campaign and
-     *     determines the pool of three crew talents the team picks from
-     *     at creation (one of which becomes each hero's starting "crew"
-     *     kind talent — see `TalentKind`). Crew concept is mutable while
-     *     the character is `draft` and immutable once `active`.
-     * @enum {string}
-     */
-    CrewConcept: 'free-trader' | 'mercenary' | 'explorer' | 'agents' | 'pilgrim';
-    /**
-     * @description Mutant lineage (родословная пасынков) per Coriolis ST3001 ch.4
-     *     §Стигмы пасынков. Three canonical lineages —
-     *     `zirba` (Зирба), `shingura` (Шингура), `nerida` (Нерида) —
-     *     each backed by a stigma talent in the catalog
-     *     (`stigma-zirba`, `stigma-shingura`, `stigma-nerida`).
-     *
-     *     Set together with `Character.mutant=true` at creation; both
-     *     fields are mutable while `status: draft` and immutable once the
-     *     character is `active`. A non-mutant character must not carry a
-     *     `stigma` talent — `AddTalent` rejects this combination with
-     *     `STIGMA_REQUIRES_MUTANT`.
-     * @enum {string}
-     */
-    MutantLineage: 'zirba' | 'shingura' | 'nerida';
-    /**
-     * @description Discriminator for `Talent.kind` per Coriolis ST3001 ch.2 (3
-     *     starting talents: one personal from amplua, one crew from
-     *     crew-amplua, one icon gift from chosen icon) and ch.4
-     *     (mutants additionally pick one `stigma`).
-     *
-     *     Each character has at most one talent of each `personal`,
-     *     `crew`, `iconGift`, `stigma` at character creation; further
-     *     talents acquired during play are always `personal`.
-     *
-     *     - `personal`  — picked from the amplua's personal talent list
-     *     - `crew`      — picked from the team's crew amplua list
-     *     - `iconGift`  — auto-derived from the character's `iconId`
-     *     - `stigma`    — only for mutants (`Character.mutant=true`);
-     *                     picked from the catalog's three lineage
-     *                     stigmas — see `MutantLineage`. Adding a
-     *                     `stigma` talent to a non-mutant character is
-     *                     rejected with `STIGMA_REQUIRES_MUTANT`.
-     * @enum {string}
-     */
-    TalentKind: 'personal' | 'crew' | 'iconGift' | 'stigma';
-    /**
-     * @description Personal-scale weapon range bands per ST3001 ГЛАВА 5 «Дистанция»
-     *     (lines 73-78 of the Russian rulebook). Four bands by canon —
-     *     each absorbs the previous (a target at `medium` is also at `close`
-     *     for any rule that talks about "within X").
-     *     - `close` — Ближняя, up to 2 m (engaged / hand-to-hand /
-     *       same-room close quarters; absorbs the legacy `arm` and `near`
-     *       values).
-     *     - `medium` — Средняя, up to 20 m (corridor / street; absorbs the
-     *       legacy `short`).
-     *     - `long` — Дальняя, up to 100 m (open ground / rooftop; same
-     *       slug as the legacy value, semantics narrowed).
-     *     - `extreme` — Предельная, up to 1000 m (sniper / max effective;
-     *       absorbs the legacy `distant`).
-     *     Distinct from `ShipWeaponRange` (5-band ship-combat ladder
-     *     from ГЛАВА 7 Table 7.9 — that enum keeps its `zero` band).
-     * @enum {string}
-     */
-    ItemRangeEnum: 'close' | 'medium' | 'long' | 'extreme';
-    /**
-     * @description The nature of the relationship between a character and an NPC or PC.
-     * @enum {string}
-     */
-    RelationshipKind: 'ally' | 'rival' | 'family' | 'mentor' | 'debtor' | 'creditor';
-    /**
-     * @description The four primary attributes per Coriolis core rules (ГЛАВА 2 «ХАРАКТЕРИСТИКИ»). The rulebook
-     *     states characteristics are scored 1–5, but at character creation the wizard distributes pools
-     *     so each attribute lands in `2..4` (5 for the amplua's key attribute), and there is no in-game
-     *     mechanic that lowers an attribute below 2 once a character has been created. Server-side bounds
-     *     therefore reflect the **active-PC invariant** (2..5) rather than the abstract scale: a stored
-     *     character with `strength: 1` would never be reachable through canonical play. The 5-cap stays
-     *     as the lifetime maximum (ГЛАВА 2 §РАЗВИТИЕ ПЕРСОНАЖА — "максимально возможное значение
-     *     характеристики равно 5"). All four keys are required — missing attributes would make
-     *     derived-stat calculation impossible server-side.
-     */
-    Attributes: {
-      /** @description STR — governs Force, Melee Combat skills and HP max */
-      strength: number;
-      /** @description AGI — governs Dexterity, Infiltration, Ranged Combat, Pilot; contributes to HP max */
-      agility: number;
-      /** @description WIT — governs Observation, Survival, Technology, Data Djinn, Science, Medicurgy; contributes to MP max */
-      wits: number;
-      /** @description EMP — governs Manipulation, Command, Culture, Mystic Powers; contributes to MP max */
-      empathy: number;
-    };
-    /**
-     * @description The 16 canonical Coriolis skills (ГЛАВА 3 «Перечень навыков»), 8 general
-     *     (`dexterity, force, infiltration, manipulation, meleeCombat, observation, rangedCombat,
-     *     survival`) and 8 advanced/specialised (`command, culture, dataDjinn, medicurgy,
-     *     mysticPowers, pilot, science, technology`). All skills range 0..5 server-side; the
-     *     lifetime cap of 5 is canon (ГЛАВА 2 §РАЗВИТИЕ ПЕРСОНАЖА — «максимально возможное
-     *     значение навыка равно 5»). The general/advanced split affects rolling, not range: per
-     *     ГЛАВА 3 §«Специальные навыки», a general skill can be rolled at value 0 (attribute-only
-     *     check), while an advanced skill requires value ≥ 1 to roll at all — that gate lives in
-     *     the dice-engine, not in the schema. Creation-time caps (key skills up to 3, others up to
-     *     1, per ГЛАВА 2 «НАВЫКИ») are enforced by the backend `validateSkillsAtCreation` handler
-     *     against the chosen amplua, not by this schema. All keys are required.
-     */
-    Skills: {
-      /** @description General skill (AGI) */
-      dexterity: number;
-      /** @description General skill (STR) */
-      force: number;
-      /** @description General skill (AGI) */
-      infiltration: number;
-      /** @description General skill (EMP) */
-      manipulation: number;
-      /** @description General skill (STR) */
-      meleeCombat: number;
-      /** @description General skill (WIT) */
-      observation: number;
-      /** @description General skill (AGI) */
-      rangedCombat: number;
-      /** @description General skill (WIT) */
-      survival: number;
-      /** @description Advanced skill (EMP) */
-      command: number;
-      /** @description Advanced skill (EMP) */
-      culture: number;
-      /** @description Advanced skill (WIT) */
-      dataDjinn: number;
-      /** @description Advanced skill (WIT) */
-      medicurgy: number;
-      /** @description Advanced skill (EMP) */
-      mysticPowers: number;
-      /** @description Advanced skill (AGI) */
-      pilot: number;
-      /** @description Advanced skill (WIT) */
-      science: number;
-      /** @description Advanced skill (WIT) */
-      technology: number;
-    };
-    /**
-     * @description Boolean flags for the four standard Coriolis conditions (PRD §5.2).
-     *     Each active condition imposes a −1 die penalty on all rolls (capped
-     *     at the character's pool size). Applied by the RulesEngine.
-     */
-    ConditionFlags: {
-      /** @description Exhausted condition — also blocks pushing rolls */
-      exhausted: boolean;
-      sleepless: boolean;
-      thirsty: boolean;
-      hungry: boolean;
-    };
-    /** @description A critical injury entry on a character's sheet */
-    CriticalInjury: {
-      /** @description Opaque identifier (cuid2) */
-      id: string;
-      /** @description Short name of the injury (e.g. "Broken arm") */
-      name: string;
-      severity: components['schemas']['CriticalInjurySeverity'];
-      /** @description Free-text description of the mechanical or narrative effect */
-      effect: string;
-      /**
-       * Format: date-time
-       * @description ISO-8601 instant when the injury was recorded
-       */
-      acquiredAt: string;
-    };
-    /** @description A talent owned by a character */
-    Talent: {
-      /** @description Opaque identifier (cuid2) */
-      id: string;
-      /**
-       * @description Discriminator describing where this talent came from
-       *     (personal amplua, crew amplua, icon gift, or mutant stigma).
-       *     Set on creation and immutable thereafter.
-       */
-      kind: components['schemas']['TalentKind'];
-      /** @description Talent name (e.g. "Wing-Mate", "Stunt Pilot") */
-      name: string;
-      /** @description Rules text or flavour description of the talent */
-      description: string;
-      /** @description Talent rank (1 = basic, 2 = journeyman, 3 = master) */
-      rank: number;
-      /**
-       * Format: date-time
-       * @description ISO-8601 instant when the talent was recorded on the sheet
-       */
-      acquiredAt: string;
-    };
-    /**
-     * @description Payload for creating a new talent. `kind` defaults to `personal`
-     *     when omitted (the most common case for talents acquired during
-     *     play). At character creation, the wizard picks one talent of
-     *     each kind (`personal`, `crew`, `iconGift`); the server rejects a
-     *     second talent of the same non-`personal` kind with
-     *     `TALENT_KIND_DUPLICATE`.
-     */
-    TalentCreate: {
-      /**
-       * @description Defaults to `personal`. Pass `crew` / `iconGift` / `stigma`
-       *     to record a starting-talent slot of that kind (only one of
-       *     each non-`personal` kind is allowed per character).
-       */
-      kind?: components['schemas']['TalentKind'];
-      /** @description Talent name */
-      name: string;
-      /** @description Rules text or flavour description */
-      description: string;
-      /**
-       * @description Talent rank (defaults to 1 when not provided)
-       * @default 1
-       */
-      rank: number;
-    };
-    /**
-     * @description PATCH payload for updating a talent — all fields optional.
-     *     `kind` is immutable and cannot be changed after a talent has
-     *     been recorded.
-     */
-    TalentUpdate: {
-      name?: string;
-      description?: string;
-      rank?: number;
-    };
-    /** @description A relationship between a character and another person (NPC or PC) */
-    Relationship: {
-      /** @description Opaque identifier (cuid2) */
-      id: string;
-      /** @description Name of the NPC or PC (free text) */
-      targetName: string;
-      kind: components['schemas']['RelationshipKind'];
-      /** @description Optional notes about the relationship */
-      notes?: string | null;
-    };
-    /** @description Fields common to every item type */
-    ItemBase: {
-      /** @description Opaque identifier (cuid2) */
-      id: string;
-      /** @description Discriminator — determines which type-specific fields are present */
-      type: string;
-      /** @description Item name */
-      name: string;
-    };
-    ItemWeapon: components['schemas']['ItemBase'] & {
-      /** @enum {string} */
-      type?: 'WEAPON';
-      /** @description Base damage dice */
-      damage: number;
-      range: components['schemas']['ItemRangeEnum'];
-      /** @description Bonus dice added to the attack pool */
-      bonus: number;
-      /** @description Critical threshold (roll this many successes to crit) */
-      crit: number;
-      /** @description Encumbrance weight in slots (0.5 increments) */
-      weight: number;
-      /** @description Feature tags (e.g. "Burst", "Explosive") */
-      features: string[];
-      /** @description Whether the item is currently equipped */
-      equipped: boolean;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'WEAPON';
-    };
-    ItemArmor: components['schemas']['ItemBase'] & {
-      /** @enum {string} */
-      type?: 'ARMOR';
-      /** @description Armor rating — reduces incoming damage */
-      armorRating: number;
-      /** @description Encumbrance weight in slots */
-      weight: number;
-      /** @description Feature tags (e.g. "Vacuum Sealed", "Exo-Skeleton") */
-      features: string[];
-      equipped: boolean;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'ARMOR';
-    };
-    ItemGear: components['schemas']['ItemBase'] & {
-      /** @enum {string} */
-      type?: 'GEAR';
-      /** @description Encumbrance weight in slots */
-      weight: number;
-      /** @description Number of units */
-      quantity: number;
-      /** @description Optional free-text notes */
-      notes?: string | null;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'GEAR';
-    };
-    ItemCybernetic: components['schemas']['ItemBase'] & {
-      /** @enum {string} */
-      type?: 'CYBERNETIC';
-      /**
-       * @description XP spent to acquire this cybernetic implant. Cybernetics
-       *     count as both equipment and talents (ST3001 ГЛАВА 6
-       *     «КИБЕРНЕТИЧЕСКИЕ ИМПЛАНТАТЫ»: «считается и снаряжением,
-       *     и достоинством, так что на его покупку тебе понадобятся
-       *     не только бирры, но и пункты опыта»). The canonical
-       *     acquisition cost is 5 XP per ГЛАВА 4 «Новые достоинства»
-       *     («Накопив 5 пунктов опыта, персонаж получает возможность
-       *     обменять их на любое новое достоинство»); the field
-       *     accepts 0..15 to allow GM concessions (0 for in-game
-       *     gifts) and high-rank exotics (up to 3 ranks × 5 XP).
-       *     The implant's birr price lives in the regular `cost`
-       *     (or wherever ItemBase carries item value) — XP is
-       *     tracked separately because it draws from the
-       *     character's XP pool, not their wallet.
-       */
-      xpCost: number;
-      /** @description Description of the cybernetic's effect */
-      effect: string;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'CYBERNETIC';
-    };
-    ItemShipModule: components['schemas']['ItemBase'] & {
-      /** @enum {string} */
-      type?: 'SHIP_MODULE';
-      slot: components['schemas']['ShipModuleSlot'];
-      /** @description Description of the module's effect and energy use */
-      effect: string;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'SHIP_MODULE';
-    };
-    ItemOther: components['schemas']['ItemBase'] & {
-      /** @enum {string} */
-      type?: 'OTHER';
-      /** @description Encumbrance weight in slots */
-      weight: number;
-      /** @description Optional free-text notes */
-      notes?: string | null;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'OTHER';
-    };
-    /**
-     * @description Create payload for a WEAPON item. No `id` — server-assigned.
-     * @example {
-     *       "type": "WEAPON",
-     *       "name": "Vulcan Carbine",
-     *       "damage": 2,
-     *       "range": "medium",
-     *       "bonus": 2,
-     *       "crit": 2,
-     *       "weight": 0.8,
-     *       "features": [],
-     *       "equipped": false
-     *     }
-     */
-    ItemWeaponCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'WEAPON';
-      name: string;
-      /** @description Base damage dice */
-      damage: number;
-      range: components['schemas']['ItemRangeEnum'];
-      /** @description Bonus dice added to the attack pool */
-      bonus: number;
-      /** @description Critical threshold */
-      crit: number;
-      /** @description Encumbrance weight in slots (0.5 increments) */
-      weight: number;
-      /** @description Feature tags (e.g. "Burst", "Explosive") */
-      features: string[];
-      /** @default false */
-      equipped: boolean;
-    };
-    /**
-     * @description Create payload for an ARMOR item. No `id` — server-assigned.
-     * @example {
-     *       "type": "ARMOR",
-     *       "name": "Coriolis Guard Suit",
-     *       "armorRating": 3,
-     *       "weight": 1,
-     *       "features": [
-     *         "Vacuum Sealed"
-     *       ],
-     *       "equipped": false
-     *     }
-     */
-    ItemArmorCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'ARMOR';
-      name: string;
-      /** @description Armor rating — reduces incoming damage */
-      armorRating: number;
-      /** @description Encumbrance weight in slots */
-      weight: number;
-      /** @description Feature tags (e.g. "Vacuum Sealed", "Exo-Skeleton") */
-      features: string[];
-      /** @default false */
-      equipped: boolean;
-    };
-    /**
-     * @description Create payload for a GEAR item. No `id` — server-assigned.
-     * @example {
-     *       "type": "GEAR",
-     *       "name": "Medkit",
-     *       "weight": 0.5,
-     *       "quantity": 1,
-     *       "notes": "Standard field medkit"
-     *     }
-     */
-    ItemGearCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'GEAR';
-      name: string;
-      /** @description Encumbrance weight in slots */
-      weight: number;
-      /** @description Number of units */
-      quantity: number;
-      /** @description Optional free-text notes */
-      notes?: string | null;
-    };
-    /**
-     * @description Create payload for a CYBERNETIC item. No `id` — server-assigned.
-     * @example {
-     *       "type": "CYBERNETIC",
-     *       "name": "Neural Interface",
-     *       "xpCost": 5,
-     *       "effect": "Grants +1 die to Data Djinn checks"
-     *     }
-     */
-    ItemCyberneticCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'CYBERNETIC';
-      name: string;
-      /**
-       * @description XP spent to acquire this implant (canonical cost 5 XP per
-       *     ГЛАВА 4; accepts 0..15 for GM concessions and high-rank
-       *     exotics). Birr price is carried in the item's `cost` field.
-       */
-      xpCost: number;
-      /** @description Description of the cybernetic's effect */
-      effect: string;
-    };
-    /**
-     * @description Create payload for a SHIP_MODULE item. No `id` — server-assigned.
-     * @example {
-     *       "type": "SHIP_MODULE",
-     *       "name": "Sensor Upgrade Mk I",
-     *       "slot": "SENSOR",
-     *       "effect": "+1 die to sensor checks"
-     *     }
-     */
-    ItemShipModuleCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'SHIP_MODULE';
-      name: string;
-      slot: components['schemas']['ShipModuleSlot'];
-      /** @description Description of the module's effect and energy use */
-      effect: string;
-    };
-    /**
-     * @description Create payload for an OTHER item. No `id` — server-assigned.
-     * @example {
-     *       "type": "OTHER",
-     *       "name": "Coriolis Prayer Rug",
-     *       "weight": 0.5,
-     *       "notes": null
-     *     }
-     */
-    ItemOtherCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'OTHER';
-      name: string;
-      /** @description Encumbrance weight in slots */
-      weight: number;
-      /** @description Optional free-text notes */
-      notes?: string | null;
-    };
-    /**
-     * @description PATCH payload for a WEAPON item. All fields optional.
-     * @example {
-     *       "type": "WEAPON",
-     *       "damage": 3,
-     *       "equipped": true
-     *     }
-     */
-    ItemWeaponUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'WEAPON';
-      name?: string;
-      damage?: number;
-      range?: components['schemas']['ItemRangeEnum'];
-      bonus?: number;
-      crit?: number;
-      weight?: number;
-      features?: string[];
-      equipped?: boolean;
-    };
-    /**
-     * @description PATCH payload for an ARMOR item. All fields optional.
-     * @example {
-     *       "type": "ARMOR",
-     *       "armorRating": 4,
-     *       "equipped": true
-     *     }
-     */
-    ItemArmorUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'ARMOR';
-      name?: string;
-      armorRating?: number;
-      weight?: number;
-      features?: string[];
-      equipped?: boolean;
-    };
-    /**
-     * @description PATCH payload for a GEAR item. All fields optional.
-     * @example {
-     *       "type": "GEAR",
-     *       "quantity": 3
-     *     }
-     */
-    ItemGearUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'GEAR';
-      name?: string;
-      weight?: number;
-      quantity?: number;
-      notes?: string | null;
-    };
-    /**
-     * @description PATCH payload for a CYBERNETIC item. All fields optional.
-     * @example {
-     *       "type": "CYBERNETIC",
-     *       "effect": "Grants +2 dice to Data Djinn checks"
-     *     }
-     */
-    ItemCyberneticUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'CYBERNETIC';
-      name?: string;
-      xpCost?: number;
-      effect?: string;
-    };
-    /**
-     * @description PATCH payload for a SHIP_MODULE item. All fields optional.
-     * @example {
-     *       "type": "SHIP_MODULE",
-     *       "effect": "+2 dice to sensor checks"
-     *     }
-     */
-    ItemShipModuleUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'SHIP_MODULE';
-      name?: string;
-      slot?: components['schemas']['ShipModuleSlot'];
-      effect?: string;
-    };
-    /**
-     * @description PATCH payload for an OTHER item. All fields optional.
-     * @example {
-     *       "type": "OTHER",
-     *       "notes": "Blessed by the Lady of Tears"
-     *     }
-     */
-    ItemOtherUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      type: 'OTHER';
-      name?: string;
-      weight?: number;
-      notes?: string | null;
-    };
-    /**
-     * @description A discriminated union of all item types. The `type` field determines
-     *     which variant applies. Generated clients produce a correctly-typed
-     *     sum type from this schema.
-     */
-    Item:
-      | components['schemas']['ItemWeapon']
-      | components['schemas']['ItemArmor']
-      | components['schemas']['ItemGear']
-      | components['schemas']['ItemCybernetic']
-      | components['schemas']['ItemShipModule']
-      | components['schemas']['ItemOther'];
-    /**
-     * @description Payload for creating a new item. Same discriminated union as `Item`
-     *     but without `id` (server-assigned). The `type` discriminator must
-     *     be present.
-     */
-    ItemCreate:
-      | components['schemas']['ItemWeaponCreate']
-      | components['schemas']['ItemArmorCreate']
-      | components['schemas']['ItemGearCreate']
-      | components['schemas']['ItemCyberneticCreate']
-      | components['schemas']['ItemShipModuleCreate']
-      | components['schemas']['ItemOtherCreate'];
-    /**
-     * @description PATCH payload for updating an item. The `type` discriminator must
-     *     match the existing item type — changing it returns 400
-     *     `ITEM_TYPE_MISMATCH`. All fields are optional.
-     */
-    ItemUpdate:
-      | components['schemas']['ItemWeaponUpdate']
-      | components['schemas']['ItemArmorUpdate']
-      | components['schemas']['ItemGearUpdate']
-      | components['schemas']['ItemCyberneticUpdate']
-      | components['schemas']['ItemShipModuleUpdate']
-      | components['schemas']['ItemOtherUpdate'];
-    /**
-     * @description Full character DTO as returned by the v1 API. Server-derived fields
-     *     (`hp.max`, `mp.max`, `encumbrance.max`) are computed by the
-     *     RulesEngine on every write and are marked `readOnly`.
-     *
-     *     Formulas (PRD §5.2, §10):
-     *     - HP max = STR + AGI
-     *     - MP max = WIT + EMP
-     *     - Encumbrance max = STR × 2
-     */
-    Character: {
-      /** @description Opaque character identifier (cuid2) */
-      readonly id: string;
-      /** @description Identifier of the owning user (cuid2) */
-      readonly ownerId: string;
-      /** @description Character name (1–80 characters) */
-      name: string;
-      /**
-       * @description One of the 11 character archetypes (амплуа). May be `null`
-       *     during the creation wizard before the user has chosen an
-       *     archetype; required for an `active` character. Determines the
-       *     key attribute / key skills caps applied at creation and the
-       *     reputation modifier applied on top of `upbringing`.
-       */
-      concept: components['schemas']['Concept'] | null;
-      /**
-       * @description The character's chosen role (роль) within their amplua. Nullable
-       *     for drafts and for legacy characters created before role-tracking
-       *     landed; the wizard prompts for a role on the next edit when
-       *     `role` is null but `concept` is set ("unmigrated"). Once the
-       *     character is `active`, the server enforces that the role belongs
-       *     to the chosen `concept` — `ROLE_CONCEPT_MISMATCH` is returned
-       *     otherwise.
-       */
-      role?: components['schemas']['Role'] | null;
-      /** @description One of the Nine Icons, or null if not chosen yet */
-      iconId: components['schemas']['IconId'] | null;
-      /**
-       * @description Social stratum the character was raised in. Set at creation and
-       *     **immutable** — drives the starting attribute / skill point
-       *     budgets and the initial values of `reputation` and
-       *     `startingWealth`.
-       */
-      upbringing: components['schemas']['Upbringing'];
-      /**
-       * @description Free-text narrative description of where the character is from
-       *     (home station, planet, or region). Has no mechanical effect.
-       */
-      origin: string | null;
-      /**
-       * @description Current social reputation. Initial value is derived from
-       *     `upbringing` (plebeian=2, stationary=4, aristocrat=6) and may
-       *     change during play.
-       */
-      reputation: number;
-      /**
-       * @description The number of birrs (currency) the character started with at
-       *     creation. Derived from `upbringing` (plebeian=500,
-       *     stationary=1000, aristocrat=5000). Immutable historical record.
-       */
-      readonly startingWealth: number;
-      /**
-       * @description The crew (амплуа команды) this character belongs to.
-       *     Mutable while `status: draft` (the wizard is still in
-       *     progress); immutable once the character is `active`.
-       */
-      crewConcept: components['schemas']['CrewConcept'] | null;
-      /**
-       * @description Whether this character is a mutant (пасынок) per Coriolis
-       *     ST3001 ch.4 §Стигмы пасынков. Mutants additionally pick one
-       *     starting talent of `kind: stigma` from the catalog (any of
-       *     the three stigmas) through the regular `addTalent`
-       *     endpoint. Mutable while `status: draft` and immutable once
-       *     `active` — `MUTANT_IMMUTABLE`. When `true`, `mutantLineage`
-       *     must be set; when `false`, `mutantLineage` must be `null`.
-       * @default false
-       */
-      mutant: boolean;
-      /**
-       * @description Mutant lineage. `null` for non-mutants; one of `zirba`,
-       *     `shingura`, `nerida` when `mutant=true`. Mutable while
-       *     `status: draft` and immutable once `active`.
-       */
-      mutantLineage: components['schemas']['MutantLineage'] | null;
-      attributes: components['schemas']['Attributes'];
-      skills: components['schemas']['Skills'];
-      hp: {
-        current: number;
-        /** @description Derived from STR + AGI; set by the server */
-        readonly max: number;
-      };
-      mp: {
-        current: number;
-        /** @description Derived from WIT + EMP; set by the server */
-        readonly max: number;
-      };
-      encumbrance: {
-        /** @description Sum of non-stowed item weights; set by the server */
-        readonly current: number;
-        /** @description Derived from STR × 2; set by the server */
-        readonly max: number;
-      };
-      /** @description Total XP earned */
-      experience: number;
-      conditions: components['schemas']['ConditionFlags'];
-      criticalInjuries: components['schemas']['CriticalInjury'][];
-      talents: components['schemas']['Talent'][];
-      relationships: components['schemas']['Relationship'][];
-      inventory: components['schemas']['Item'][];
-      /** @description Free-form notes (Markdown; soft cap 4096 characters) */
-      notes: string | null;
-      /**
-       * @description Lifecycle state of the character.
-       *
-       *     - `draft` — character is a work-in-progress created by the wizard.
-       *       Draft characters are excluded from the default character list
-       *       (`GET /api/v1/characters`) unless `?includeDrafts=true` is passed.
-       *     - `active` — character is complete and visible on the dashboard.
-       *
-       *     Transitioning from `draft` to `active` (forging) is done by sending
-       *     `PATCH /api/v1/characters/{id}` with `{ "status": "active" }`.
-       *     The reverse transition (`active → draft`) is rejected with 422
-       *     `INVALID_STATUS_TRANSITION`.
-       * @enum {string}
-       */
-      status: 'draft' | 'active';
-      /** Format: date-time */
-      readonly createdAt: string;
-      /** Format: date-time */
-      readonly updatedAt: string;
-    };
-    /**
-     * @description Payload for `POST /api/v1/characters`. Only `name` and `upbringing`
-     *     are required. Attribute values default to 2 if the `attributes`
-     *     object is omitted or a key within it is missing. Skill values
-     *     default to 0.
-     *
-     *     The server enforces the upbringing-based budgets at creation time:
-     *     - sum(attributes) ≤ attribute budget for upbringing
-     *     - each attribute is between 2 and 4
-     *     - sum(skills) ≤ skill budget for upbringing
-     *
-     *     `reputation` and `startingWealth` are **server-derived** from
-     *     `upbringing` and must not be set by the client.
-     *
-     *     Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
-     *     `encumbrance.max`, `encumbrance.current`, `startingWealth`,
-     *     `createdAt`, `updatedAt`) must not be included; they are
-     *     rejected with 400.
-     *
-     *     Set `status: 'draft'` to create a wizard-in-progress character.
-     *     Omitting `status` defaults to `'active'`.
-     */
-    CharacterCreate: {
-      name: string;
-      concept?: components['schemas']['Concept'] | null;
-      /**
-       * @description Optional role within the chosen amplua. Step 5 of the creation
-       *     wizard (skill distribution) is now preceded by a role pick within
-       *     the chosen amplua. Must belong to `concept` when both are set;
-       *     validated server-side with `ROLE_CONCEPT_MISMATCH`.
-       */
-      role?: components['schemas']['Role'] | null;
-      iconId?: components['schemas']['IconId'] | null;
-      upbringing: components['schemas']['Upbringing'];
-      origin?: string | null;
-      /**
-       * @description Optional crew concept the character belongs to. May be set
-       *     in the wizard before forging or updated later while the
-       *     character is `draft`.
-       */
-      crewConcept?: components['schemas']['CrewConcept'] | null;
-      /**
-       * @description Whether the character is a mutant (пасынок). When `true`,
-       *     `mutantLineage` must be supplied; the player then picks one
-       *     stigma talent from the catalog through the regular
-       *     `addTalent` endpoint (kind `stigma`). When `false`
-       *     (default), `mutantLineage` must be `null` or omitted and
-       *     stigma talents are rejected with `STIGMA_REQUIRES_MUTANT`.
-       * @default false
-       */
-      mutant: boolean;
-      /**
-       * @description Mutant lineage (only valid when `mutant=true`). One of
-       *     `zirba`, `shingura`, `nerida`. `MUTANT_LINEAGE_REQUIRED` is
-       *     returned if `mutant=true` and lineage is missing;
-       *     `MUTANT_LINEAGE_FORBIDDEN` is returned if `mutant=false`
-       *     and a lineage is supplied.
-       */
-      mutantLineage?: components['schemas']['MutantLineage'] | null;
-      attributes?: components['schemas']['Attributes'];
-      skills?: components['schemas']['Skills'];
-      hp?: {
-        current?: number;
-      };
-      mp?: {
-        current?: number;
-      };
-      /** @default 0 */
-      experience: number;
-      conditions?: components['schemas']['ConditionFlags'];
-      notes?: string | null;
-      /**
-       * @description Initial lifecycle state. Omit (or set `active`) for normal creation.
-       *     Set to `draft` when starting the character-creation wizard.
-       * @default active
-       * @enum {string}
-       */
-      status: 'draft' | 'active';
-    };
-    /**
-     * @description PATCH payload for `PATCH /api/v1/characters/{id}`. All fields are
-     *     optional. Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
-     *     `encumbrance.max`, `encumbrance.current`, `startingWealth`,
-     *     `createdAt`, `updatedAt`) are rejected with 400 if present.
-     *
-     *     `upbringing` may be changed **while the character's `status` is
-     *     `draft`** (the wizard is still in progress). When it is, the
-     *     server recomputes `reputation` and `startingWealth` from the new
-     *     upbringing. Once the character has been forged (`status: active`),
-     *     upbringing becomes immutable and any attempt to set it is
-     *     rejected with `UPBRINGING_IMMUTABLE`.
-     *
-     *     Derived stats (`hp.max`, `mp.max`, `encumbrance.max`) are
-     *     recalculated automatically after each successful write.
-     *
-     *     **Status transitions:**
-     *     - `draft → draft` — no-op; the wizard continues editing.
-     *     - `draft → active` — forges the character (wizard complete).
-     *       Send `{ "status": "active" }` as a standalone PATCH or alongside
-     *       other field updates.
-     *     - `active → draft` — **rejected** with 422 `INVALID_STATUS_TRANSITION`.
-     *       Active characters cannot be reverted to draft state.
-     */
-    CharacterUpdate: {
-      name?: string;
-      /**
-       * @description Switching the concept while `status` is `draft` recomputes
-       *     the per-attribute / per-skill caps for validation and
-       *     adjusts the reputation by the new concept's modifier
-       *     (relative to upbringing's baseline). Once active, concept
-       *     becomes immutable.
-       */
-      concept?: components['schemas']['Concept'] | null;
-      /**
-       * @description The character's role within their amplua. Allowed while
-       *     `status` is `draft`; once `active`, the server enforces that
-       *     the role matches the chosen concept — `ROLE_CONCEPT_MISMATCH`.
-       *     Changing the concept while drafting should clear or re-validate
-       *     the role. Step 5 of the creation wizard (skill distribution) is
-       *     now preceded by a role pick within the chosen amplua.
-       */
-      role?: components['schemas']['Role'] | null;
-      iconId?: components['schemas']['IconId'] | null;
-      /**
-       * @description Allowed only while `status` is `draft` — used by the wizard
-       *     to let players reconsider their pick before forging. Once
-       *     the character is `active`, this field is immutable.
-       */
-      upbringing?: components['schemas']['Upbringing'];
-      origin?: string | null;
-      /**
-       * @description Allowed only while `status` is `draft` — used by the wizard
-       *     to let players pick their team's crew concept before
-       *     forging. Once the character is `active`, this field is
-       *     immutable and any attempt to change it is rejected with
-       *     `CREW_CONCEPT_IMMUTABLE`.
-       */
-      crewConcept?: components['schemas']['CrewConcept'] | null;
-      /**
-       * @description Allowed only while `status` is `draft`. Toggling on/off
-       *     while drafting also clears any incompatible stigma talents
-       *     picked previously. Once the character is `active`, this
-       *     field is immutable and any attempt to change it is rejected
-       *     with `MUTANT_IMMUTABLE`.
-       */
-      mutant?: boolean;
-      /**
-       * @description Allowed only while `status` is `draft`. Must be `null` when
-       *     `mutant=false` and one of `zirba|shingura|nerida` when
-       *     `mutant=true`. Frozen alongside `mutant` once the character
-       *     is `active`.
-       */
-      mutantLineage?: components['schemas']['MutantLineage'] | null;
-      /**
-       * @description Update the character's current reputation (e.g. after a
-       *     roleplay event). Initial value is set from `upbringing` at
-       *     creation time; while the character is a `draft`, changing
-       *     `upbringing` resets `reputation` to the new upbringing's
-       *     baseline.
-       */
-      reputation?: number;
-      attributes?: components['schemas']['Attributes'];
-      skills?: components['schemas']['Skills'];
-      hp?: {
-        current?: number;
-      };
-      mp?: {
-        current?: number;
-      };
-      experience?: number;
-      conditions?: components['schemas']['ConditionFlags'];
-      /**
-       * @description Replaces the entire critical injuries list when provided.
-       *     Use the dedicated nested-item pattern (POST/PATCH/DELETE on
-       *     individual injuries) once that surface is added in a later epic.
-       */
-      criticalInjuries?: components['schemas']['CriticalInjury'][];
-      notes?: string | null;
-      /**
-       * @description Lifecycle state transition. Only `draft → active` (forge) is
-       *     permitted. Attempting `active → draft` returns 422
-       *     `INVALID_STATUS_TRANSITION`.
-       * @enum {string}
-       */
-      status?: 'draft' | 'active';
-    };
-    /** @description Cursor-paginated list of characters */
-    CharacterList: {
-      items: components['schemas']['Character'][];
-      /** @description Opaque cursor for the next page; null when this is the last page */
-      nextCursor: string | null;
-    };
-    /**
-     * @description Ship hull class per ST3001 ГЛАВА 7 Table 7.4 (типы кораблей). The
-     *     class determines the base stat block (energy, hull, maneuverability,
-     *     signature, armor, speed, module slots) from Table 7.5. Kebab-case
-     *     values map to the Russian originals in the rulebook.
-     *
-     *     Class I examples: fighter, shuttle.
-     *     Class II examples: torpedo-boat.
-     *     Class III examples: light-freighter, light-passenger, courier-yacht,
-     *       clipper, patrol-boat, gunboat, assault-ship, blockade-runner, pleasure-yacht.
-     *     Class IV examples: flying-circus, prospector, rescue-ship, passenger-liner.
-     *     Class V examples: heavy-cruiser, passenger-liner (large).
-     * @enum {string}
-     */
-    ShipClass:
-      | 'fighter'
-      | 'shuttle'
-      | 'torpedo-boat'
-      | 'light-freighter'
-      | 'light-passenger'
-      | 'courier-yacht'
-      | 'clipper'
-      | 'patrol-boat'
-      | 'gunboat'
-      | 'assault-ship'
-      | 'blockade-runner'
-      | 'pleasure-yacht'
-      | 'flying-circus'
-      | 'prospector'
-      | 'rescue-ship'
-      | 'passenger-liner'
-      | 'heavy-freighter'
-      | 'cruiser'
-      | 'destroyer'
-      | 'heavy-cruiser';
-    /**
-     * @description Ship module slot type per ST3001 ГЛАВА 7 mandatory and optional
-     *     module catalogue. `BRIDGE`, `REACTOR`, `DRIVE` are mandatory on
-     *     every ship; all others are optional and consume module slots.
-     *     Used for both character-inventory SHIP_MODULE items (modules
-     *     the character carries to install) and ship-side module slots
-     *     (modules already installed). Block H of T-2026-05-10-010
-     *     retired the lower-case 7-value `ItemSlotType` enum that used
-     *     to scope inventory items separately — the two contexts now
-     *     share this single canonical enum. Migration mapping for legacy
-     *     item data: `bridge → BRIDGE`, `hull → OTHER` (no canonical
-     *     hull slot), `hold → HOLD`, `weapon → WEAPON`, `drive → DRIVE`,
-     *     `sensor → SENSOR`, `comms → COMMS`.
-     * @enum {string}
-     */
-    ShipModuleSlot:
-      | 'BRIDGE'
-      | 'REACTOR'
-      | 'DRIVE'
-      | 'HOLD'
-      | 'WEAPON'
-      | 'TORPEDO'
-      | 'SENSOR'
-      | 'COMMS'
-      | 'HANGAR'
-      | 'QUARTERS'
-      | 'MEDICAL'
-      | 'WORKSHOP'
-      | 'CHAPEL'
-      | 'ESCAPE-PODS'
-      | 'CRYO'
-      | 'DOCKING'
-      | 'MINING'
-      | 'REPAIR'
-      | 'CONCEALED-HOLD'
-      | 'PROXY-DECK'
-      | 'OTHER';
-    /**
-     * @description Ship-combat range bands per ST3001 ГЛАВА 7 Table 7.9. Distinct from
-     *     the personal-scale `ItemRangeEnum`.
-     *     - `zero` — point-blank / boarding range.
-     *     - `close` — within a few hundred metres.
-     *     - `medium` — standard engagement distance.
-     *     - `long` — extended engagement.
-     *     - `extreme` — maximum sensor range.
-     * @enum {string}
-     */
-    ShipWeaponRange: 'zero' | 'close' | 'medium' | 'long' | 'extreme';
-    /**
-     * @description Crew positions per ST3001 ГЛАВА 7 (crew roles). `sensorOp` is the
-     *     штурман-оператор (navigator/sensor operator) in the rulebook, also
-     *     responsible for combat-meme and info-impulse attacks. All positions
-     *     except `captain` may be filled by automation (усовершенствование
-     *     «Автоматика»).
-     * @enum {string}
-     */
-    CrewPosition: 'captain' | 'pilot' | 'sensorOp' | 'gunner' | 'engineer' | 'serviceCrew';
-    /**
-     * @description A crew position on a ship. Positions without an assigned character are
-     *     vacant (open berth). Multiple characters may not share one position.
-     */
-    CrewSlot: {
-      position: components['schemas']['CrewPosition'];
-      /**
-       * @description ID of the assigned Character. Null when the berth is vacant.
-       *     The character must be owned by the same user as the ship.
-       */
-      assignedCharacterId?: string | null;
-    };
-    /** @description Fields common to every ship module variant */
-    ShipModuleBase: {
-      /** @description Opaque module identifier (cuid2) */
-      readonly id: string;
-      slot: components['schemas']['ShipModuleSlot'];
-      /** @description Module name (e.g. "Graviton Projector", "Smuggler hold") */
-      name: string;
-      /** @description Energy points consumed by this module when active */
-      energyUse: number;
-      /** @description Free-text notes; used for damage state, special conditions, etc. */
-      notes?: string | null;
-    };
-    ShipModuleWeapon: components['schemas']['ShipModuleBase'] & {
-      /** @enum {string} */
-      slot?: 'WEAPON';
-      /** @description Modifier dice added to the attack pool (Мод. column in Table 7.9) */
-      weaponBonus: number;
-      weaponRange: components['schemas']['ShipWeaponRange'];
-      /** @description Structural damage dealt on a hit */
-      weaponDamage: number;
-      /** @description Number of successes required to trigger a critical effect */
-      weaponCritThreshold: number;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'WEAPON';
-    };
-    ShipModuleTorpedo: components['schemas']['ShipModuleBase'] & {
-      /** @enum {string} */
-      slot?: 'TORPEDO';
-      /** @description Number of torpedoes currently loaded */
-      torpedoCount?: number;
-      /** @description Number of mines currently loaded */
-      mineCount?: number;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'TORPEDO';
-    };
-    ShipModuleHold: components['schemas']['ShipModuleBase'] & {
-      /** @enum {string} */
-      slot?: 'HOLD';
-      /** @description Cargo capacity in tonnes (class-dependent per Table 7.6) */
-      cargoTons?: number;
-      /**
-       * @description True for a потайной грузовой отсек (concealed hold)
-       * @default false
-       */
-      concealed: boolean;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'HOLD';
-    };
-    ShipModuleSensor: components['schemas']['ShipModuleBase'] & {
-      /** @enum {string} */
-      slot?: 'SENSOR';
-      /**
-       * @description Modifier added to sensor / dataDjinn checks
-       * @default 1
-       */
-      detectionBonus: number;
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'SENSOR';
-    };
-    ShipModuleOther: components['schemas']['ShipModuleBase'] & {
-      slot?: components['schemas']['ShipModuleSlot'];
-    } & {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot:
-        | 'BRIDGE'
-        | 'REACTOR'
-        | 'DRIVE'
-        | 'COMMS'
-        | 'HANGAR'
-        | 'QUARTERS'
-        | 'MEDICAL'
-        | 'WORKSHOP'
-        | 'CHAPEL'
-        | 'ESCAPE-PODS'
-        | 'CRYO'
-        | 'DOCKING'
-        | 'MINING'
-        | 'REPAIR'
-        | 'CONCEALED-HOLD'
-        | 'PROXY-DECK'
-        | 'OTHER';
-    };
-    /**
-     * @description Create payload for a WEAPON ship module. No `id` — server-assigned.
-     * @example {
-     *       "slot": "WEAPON",
-     *       "name": "Graviton Projector",
-     *       "energyUse": 2,
-     *       "weaponBonus": 1,
-     *       "weaponRange": "medium",
-     *       "weaponDamage": 3,
-     *       "weaponCritThreshold": 3,
-     *       "notes": null
-     *     }
-     */
-    ShipModuleWeaponCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'WEAPON';
-      name: string;
-      energyUse: number;
-      /** @description Modifier dice added to the attack pool */
-      weaponBonus: number;
-      weaponRange: components['schemas']['ShipWeaponRange'];
-      /** @description Structural damage dealt on a hit */
-      weaponDamage: number;
-      /** @description Number of successes required to trigger a critical effect */
-      weaponCritThreshold: number;
-      notes?: string | null;
-    };
-    /**
-     * @description Create payload for a TORPEDO ship module. No `id` — server-assigned.
-     * @example {
-     *       "slot": "TORPEDO",
-     *       "name": "Torpedo Bay Alpha",
-     *       "energyUse": 1,
-     *       "torpedoCount": 4,
-     *       "mineCount": 0,
-     *       "notes": null
-     *     }
-     */
-    ShipModuleTorpedoCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'TORPEDO';
-      name: string;
-      energyUse: number;
-      /**
-       * @description Number of torpedoes currently loaded
-       * @default 0
-       */
-      torpedoCount: number;
-      /**
-       * @description Number of mines currently loaded
-       * @default 0
-       */
-      mineCount: number;
-      notes?: string | null;
-    };
-    /**
-     * @description Create payload for a HOLD ship module. No `id` — server-assigned.
-     * @example {
-     *       "slot": "HOLD",
-     *       "name": "Main Cargo Hold",
-     *       "energyUse": 0,
-     *       "cargoTons": 50,
-     *       "concealed": false,
-     *       "notes": null
-     *     }
-     */
-    ShipModuleHoldCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'HOLD';
-      name: string;
-      energyUse: number;
-      /**
-       * @description Cargo capacity in tonnes
-       * @default 0
-       */
-      cargoTons: number;
-      /**
-       * @description True for a concealed hold
-       * @default false
-       */
-      concealed: boolean;
-      notes?: string | null;
-    };
-    /**
-     * @description Create payload for a SENSOR ship module. No `id` — server-assigned.
-     * @example {
-     *       "slot": "SENSOR",
-     *       "name": "Long-Range Sensor Tower",
-     *       "energyUse": 1,
-     *       "detectionBonus": 1,
-     *       "notes": null
-     *     }
-     */
-    ShipModuleSensorCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'SENSOR';
-      name: string;
-      energyUse: number;
-      /**
-       * @description Modifier added to sensor / dataDjinn checks
-       * @default 1
-       */
-      detectionBonus: number;
-      notes?: string | null;
-    };
-    /**
-     * @description Create payload for any other ship module slot type (BRIDGE, REACTOR,
-     *     DRIVE, COMMS, HANGAR, QUARTERS, MEDICAL, WORKSHOP, CHAPEL, ESCAPE-PODS,
-     *     CRYO, DOCKING, MINING, REPAIR, CONCEALED-HOLD, PROXY-DECK, OTHER).
-     *     No `id` — server-assigned.
-     * @example {
-     *       "slot": "COMMS",
-     *       "name": "Long-Range Comms Array",
-     *       "energyUse": 1,
-     *       "notes": null
-     *     }
-     */
-    ShipModuleOtherCreate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot:
-        | 'BRIDGE'
-        | 'REACTOR'
-        | 'DRIVE'
-        | 'COMMS'
-        | 'HANGAR'
-        | 'QUARTERS'
-        | 'MEDICAL'
-        | 'WORKSHOP'
-        | 'CHAPEL'
-        | 'ESCAPE-PODS'
-        | 'CRYO'
-        | 'DOCKING'
-        | 'MINING'
-        | 'REPAIR'
-        | 'CONCEALED-HOLD'
-        | 'PROXY-DECK'
-        | 'OTHER';
-      name: string;
-      energyUse: number;
-      notes?: string | null;
-    };
-    /**
-     * @description PATCH payload for a WEAPON ship module. All fields optional.
-     * @example {
-     *       "slot": "WEAPON",
-     *       "weaponDamage": 4
-     *     }
-     */
-    ShipModuleWeaponUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'WEAPON';
-      name?: string;
-      energyUse?: number;
-      weaponBonus?: number;
-      weaponRange?: components['schemas']['ShipWeaponRange'];
-      weaponDamage?: number;
-      weaponCritThreshold?: number;
-      notes?: string | null;
-    };
-    /**
-     * @description PATCH payload for a TORPEDO ship module. All fields optional.
-     * @example {
-     *       "slot": "TORPEDO",
-     *       "torpedoCount": 2
-     *     }
-     */
-    ShipModuleTorpedoUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'TORPEDO';
-      name?: string;
-      energyUse?: number;
-      torpedoCount?: number;
-      mineCount?: number;
-      notes?: string | null;
-    };
-    /**
-     * @description PATCH payload for a HOLD ship module. All fields optional.
-     * @example {
-     *       "slot": "HOLD",
-     *       "cargoTons": 60
-     *     }
-     */
-    ShipModuleHoldUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'HOLD';
-      name?: string;
-      energyUse?: number;
-      cargoTons?: number;
-      concealed?: boolean;
-      notes?: string | null;
-    };
-    /**
-     * @description PATCH payload for a SENSOR ship module. All fields optional.
-     * @example {
-     *       "slot": "SENSOR",
-     *       "detectionBonus": 2
-     *     }
-     */
-    ShipModuleSensorUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot: 'SENSOR';
-      name?: string;
-      energyUse?: number;
-      detectionBonus?: number;
-      notes?: string | null;
-    };
-    /**
-     * @description PATCH payload for any other ship module slot type. All fields optional.
-     *     The `slot` discriminator may not be changed after installation.
-     * @example {
-     *       "slot": "COMMS",
-     *       "notes": "Upgraded to Mk II antenna"
-     *     }
-     */
-    ShipModuleOtherUpdate: {
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      slot:
-        | 'BRIDGE'
-        | 'REACTOR'
-        | 'DRIVE'
-        | 'COMMS'
-        | 'HANGAR'
-        | 'QUARTERS'
-        | 'MEDICAL'
-        | 'WORKSHOP'
-        | 'CHAPEL'
-        | 'ESCAPE-PODS'
-        | 'CRYO'
-        | 'DOCKING'
-        | 'MINING'
-        | 'REPAIR'
-        | 'CONCEALED-HOLD'
-        | 'PROXY-DECK'
-        | 'OTHER';
-      name?: string;
-      energyUse?: number;
-      notes?: string | null;
-    };
-    /**
-     * @description A discriminated union of all ship module variants. The `slot` field
-     *     determines which variant applies. Generated clients produce a
-     *     correctly-typed sum type from this schema.
-     *
-     *     Mandatory modules (BRIDGE, REACTOR, DRIVE) are always present on a
-     *     ship and are not individually manageable via the module CRUD endpoints.
-     *     They appear in the `modules` array for completeness and energy tracking.
-     */
-    ShipModule:
-      | components['schemas']['ShipModuleWeapon']
-      | components['schemas']['ShipModuleTorpedo']
-      | components['schemas']['ShipModuleHold']
-      | components['schemas']['ShipModuleSensor']
-      | components['schemas']['ShipModuleOther'];
-    /**
-     * @description Payload for `POST /api/v1/ships/{id}/modules`. Same discriminated
-     *     union as `ShipModule` but without `id` (server-assigned). The `slot`
-     *     discriminator must be present.
-     *
-     *     Note: BRIDGE, REACTOR, and DRIVE modules are created automatically
-     *     with the ship and cannot be added via this endpoint.
-     */
-    ShipModuleCreate:
-      | components['schemas']['ShipModuleWeaponCreate']
-      | components['schemas']['ShipModuleTorpedoCreate']
-      | components['schemas']['ShipModuleHoldCreate']
-      | components['schemas']['ShipModuleSensorCreate']
-      | components['schemas']['ShipModuleOtherCreate'];
-    /**
-     * @description PATCH payload for `PATCH /api/v1/ship-modules/{id}`. The `slot`
-     *     discriminator must match the installed module's slot — changing it
-     *     returns 400 `SHIP_MODULE_SLOT_MISMATCH`. All fields optional.
-     */
-    ShipModuleUpdate:
-      | components['schemas']['ShipModuleWeaponUpdate']
-      | components['schemas']['ShipModuleTorpedoUpdate']
-      | components['schemas']['ShipModuleHoldUpdate']
-      | components['schemas']['ShipModuleSensorUpdate']
-      | components['schemas']['ShipModuleOtherUpdate'];
-    /**
-     * @description Full Ship DTO as returned by the v1 API. Ship stats correspond to
-     *     ST3001 ГЛАВА 7 Table 7.5 base stats, modified by the installed
-     *     modules and upgrades.
-     *
-     *     `hull.max` and `energy.max` are tracked as explicit editable values
-     *     (not derived) because they can be altered by upgrades (Прочный корпус
-     *     +1 hull, Мощный реактор +1 energy). `maneuverability` and `signature`
-     *     are signed integers (negative values are valid per the class table).
-     */
-    Ship: {
-      /** @description Opaque ship identifier (cuid2) */
-      readonly id: string;
-      /** @description Identifier of the owning user (cuid2) */
-      readonly ownerId: string;
-      /** @description Ship name (1–80 characters) */
-      name: string;
-      class: components['schemas']['ShipClass'];
-      /** @description Model / shipyard name (e.g. "Helebian Class III freighter") */
-      model: string | null;
-      /** @description Registry number / transponder code (e.g. "KUA-7741-M") */
-      registry: string | null;
-      /** @description Structural integrity (Прочность in ST3001 ГЛАВА 7) */
-      hull: {
-        /** @description Current hull points */
-        current: number;
-        /** @description Maximum hull points (base per class + Прочный корпус upgrades) */
-        max: number;
-      };
-      /** @description Reactor energy (Энергия in ST3001 ГЛАВА 7) */
-      energy: {
-        /** @description Energy points currently available for allocation */
-        current: number;
-        /** @description Maximum energy points (base per class + Мощный реактор upgrades) */
-        max: number;
-      };
-      /** @description Armor rating — number of dice rolled for the armor check (Броня) */
-      armor: number;
-      /**
-       * @description Maneuverability modifier (Манёвренность). Signed integer — negative
-       *     for large classes (Class IV is −1, Class V is −2). Affects pilot
-       *     skill checks in ship combat per ST3001 ГЛАВА 7.
-       */
-      maneuverability: number;
-      /**
-       * @description Signature modifier (Заметность). Signed integer. Negative values
-       *     mean the ship is harder to detect; positive values mean it is more
-       *     visible. Applied to opponent sensor checks per ГЛАВА 7.
-       */
-      signature: number;
-      /** @description Speed in astronomical units per day (Скорость per ГЛАВА 7 Table 7.5) */
-      speed: number;
-      /**
-       * @description Total cargo capacity in tonnes across all hold modules
-       *     (Вместимость per ГЛАВА 7 Table 7.6: Class III = 50 tonnes).
-       */
-      cargoCapacity: number;
-      /**
-       * @description Installed modules including the three mandatory ones (BRIDGE,
-       *     REACTOR, DRIVE). Optional modules consume the class module-slot
-       *     budget.
-       */
-      modules: components['schemas']['ShipModule'][];
-      /** @description Crew assignment roster */
-      crew: components['schemas']['CrewSlot'][];
-      /**
-       * @description List of active ship problems (free-text entries, e.g. damage
-       *     effects or wear-and-tear notes per ГЛАВА 7 wear table).
-       */
-      problems: string[];
-      /** @description Free-form ship history / background text (Markdown) */
-      history: string | null;
-      /** @description GM / player operational notes (Markdown) */
-      notes: string | null;
-      /** Format: date-time */
-      readonly createdAt: string;
-      /** Format: date-time */
-      readonly updatedAt: string;
-    };
-    /**
-     * @description Payload for `POST /api/v1/ships`. `name` and `class` are required.
-     *     Server populates base stats from the class table (ST3001 ГЛАВА 7
-     *     Table 7.5) when not explicitly provided. The three mandatory modules
-     *     (BRIDGE, REACTOR, DRIVE) are created automatically.
-     */
-    ShipCreate: {
-      name: string;
-      class: components['schemas']['ShipClass'];
-      model?: string | null;
-      registry?: string | null;
-      /** @description Override base hull stats from class table */
-      hull?: {
-        current?: number;
-        max?: number;
-      };
-      /** @description Override base energy from class table */
-      energy?: {
-        current?: number;
-        max?: number;
-      };
-      armor?: number;
-      maneuverability?: number;
-      signature?: number;
-      speed?: number;
-      notes?: string | null;
-      history?: string | null;
-    };
-    /**
-     * @description PATCH payload for `PATCH /api/v1/ships/{id}`. All fields optional.
-     *     Read-only fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are
-     *     rejected with 400 if present.
-     */
-    ShipUpdate: {
-      name?: string;
-      model?: string | null;
-      registry?: string | null;
-      hull?: {
-        current?: number;
-        max?: number;
-      };
-      energy?: {
-        current?: number;
-        max?: number;
-      };
-      armor?: number;
-      maneuverability?: number;
-      signature?: number;
-      speed?: number;
-      /** @description Replaces the entire problems list when provided */
-      problems?: string[];
-      history?: string | null;
-      notes?: string | null;
-    };
-    /** @description Cursor-paginated list of ships */
-    ShipList: {
-      items: components['schemas']['Ship'][];
-      /** @description Opaque cursor for the next page; null when this is the last page */
-      nextCursor: string | null;
-    };
-    HealthStatus: {
-      status: components['schemas']['DependencyStatus'];
-      /** @description Semantic version of the running backend build */
-      version: string | null;
-      /** @description Seconds since the backend process started */
-      uptimeSeconds: number;
-      dependencies: {
-        db: components['schemas']['DependencyStatus'];
-        redis: components['schemas']['DependencyStatus'];
-        centrifugo: components['schemas']['DependencyStatus'];
-      };
-    };
-    /**
-     * @description Request body for creating a share link. All fields are optional; an
-     *     empty object `{}` creates a permanent link without GM notes.
-     */
-    ShareLinkCreate: {
-      /**
-       * @description When true, the public character endpoint returns the top-level
-       *     `notes` field. When false (default), `notes` is always null in the
-       *     public response regardless of the character's actual notes value.
-       * @default false
-       */
-      includeGmNotes: boolean;
-      /**
-       * Format: date-time
-       * @description ISO-8601 instant after which the link stops resolving. Omit or
-       *     set to null for a permanent link.
-       */
-      expiresAt?: string | null;
-      /**
-       * @description Optional human-readable label to distinguish this link from others
-       *     in the owner's list (e.g. "GM copy", "public preview").
-       */
-      label?: string | null;
-    };
-    /**
-     * @description A share link grants anonymous read-only access to a character via the
-     *     `/api/v1/public/character/{slug}` endpoint.
-     */
-    ShareLink: {
-      /** @description Opaque share-link identifier (cuid2). Used for revocation. */
-      id: string;
-      /**
-       * @description 24-character URL-safe slug. Use in the public URL:
-       *     `/api/v1/public/character/{slug}`.
-       */
-      slug: string;
-      /** @description ID of the character this link exposes. */
-      characterId: string;
-      /**
-       * @description Whether the `notes` field is included in the public character
-       *     response. Always false if not set at creation time.
-       */
-      includeGmNotes: boolean;
-      /** @description Owner-assigned label for this link. */
-      label?: string | null;
-      /**
-       * Format: date-time
-       * @description Expiry instant. Null for permanent links.
-       */
-      expiresAt: string | null;
-      /**
-       * Format: date-time
-       * @description Revocation instant. Null if active. When set, the public endpoint
-       *     returns 410 Gone.
-       */
-      revokedAt: string | null;
-      /**
-       * Format: date-time
-       * @description ISO-8601 instant of the last recorded public view. Updated
-       *     asynchronously (up to 60 seconds lag) via the view-tracker flush job.
-       *     Null until the first view is flushed.
-       */
-      lastViewedAt: string | null;
-      /**
-       * @description Cumulative count of public views. Updated asynchronously; may lag
-       *     by up to 60 seconds.
-       */
-      viewCount: number;
-      /** Format: date-time */
-      createdAt: string;
-      /** Format: date-time */
-      updatedAt: string;
-    };
-    ShareLinkList: {
-      items: components['schemas']['ShareLink'][];
-    };
-    /** @description RFC 9457 problem details */
-    Problem: {
-      /**
-       * Format: uri
-       * @default about:blank
-       */
-      type: string | null;
-      title: string | null;
-      /** Format: int32 */
-      status: number;
-      detail?: string | null;
-      instance?: string | null;
-      code?: string | null;
-    };
-    /**
-     * @description The authenticated user's profile as exposed by the v1 API. Fields
-     *     sourced from the Better Auth `user` table. `deletedAt` is an internal
-     *     soft-delete flag and is never surfaced here — deleted users receive a
-     *     404 because their sessions are revoked at deletion time.
-     */
-    Me: {
-      /** @description Opaque user identifier issued by Better Auth (cuid2) */
-      id: string;
-      /**
-       * Format: email
-       * @description Primary email address. Read-only via this API.
-       */
-      email: string;
-      /**
-       * @description User-chosen display name shown in share-link banners and the avatar
-       *     menu. Null when the user has not set one yet.
-       */
-      displayName: string | null;
-      /**
-       * Format: date-time
-       * @description ISO-8601 instant when the account was created. Read-only via this API.
-       */
-      createdAt: string | null;
-      /**
-       * @description UI theme preference. Synced across web + mobile so a player who
-       *     toggles high-contrast on one device sees it everywhere.
-       *     `dark` is the default; `high-contrast` increases colour contrast
-       *     for users who need improved readability.
-       * @default dark
-       * @enum {string}
-       */
-      theme: 'dark' | 'high-contrast';
-    };
-    /**
-     * @description Partial update payload for PATCH /api/v1/me. `displayName` and `theme`
-     *     are mutable. Omitting a property leaves the corresponding field unchanged.
-     *     Setting `displayName` to null clears the field.
-     */
-    MeUpdate: {
-      /**
-       * @description User-chosen display name. Must be 1–80 characters when non-null.
-       *     Set to null to clear the field.
-       */
-      displayName?: string | null;
-      /**
-       * @description UI theme preference. Must be one of `dark` or `high-contrast`.
-       *     Omitting the field preserves the current value.
-       * @enum {string}
-       */
-      theme?: 'dark' | 'high-contrast';
-    };
-    /**
-     * @description Lifecycle state of a game session.
-     *     - `active` — session is in progress or available.
-     *     - `archived` — session is closed; hidden from the default list.
-     *     Both directions of the transition are permitted.
-     * @enum {string}
-     */
-    GameSessionStatus: 'active' | 'archived';
-    /** @description A campaign session container owned by a GM. */
-    GameSession: {
-      /** @description Opaque session identifier (cuid2) */
-      readonly id: string;
-      /** @description User identifier of the GM who owns this session */
-      readonly ownerId: string;
-      /** @description Short name for the session */
-      name: string;
-      /** @description Optional longer description */
-      description?: string | null;
-      status: components['schemas']['GameSessionStatus'];
-      /** @description Darkness Points counter; mutated by Feature 7.3 */
-      readonly dpCount: number;
-      /**
-       * @description Character ids assigned to this session. Manage via the join
-       *     endpoint (POST / DELETE on /game-sessions/{id}/characters).
-       */
-      readonly characterIds: string[];
-      /** @description Optional ship linked to the session (Epic 8) */
-      shipId?: string | null;
-      /** Format: date-time */
-      readonly createdAt: string;
-      /** Format: date-time */
-      readonly updatedAt: string;
-    };
-    /** @description Payload for creating a new game session */
-    GameSessionCreate: {
-      name: string;
-      description?: string | null;
-      shipId?: string | null;
-    };
-    /** @description PATCH payload for a game session — all fields optional */
-    GameSessionUpdate: {
-      name?: string;
-      description?: string | null;
-      status?: components['schemas']['GameSessionStatus'];
-      shipId?: string | null;
-    };
-    GameSessionList: {
-      items: components['schemas']['GameSession'][];
-      /** @description Cursor for the next page; null when there are no more results */
-      nextCursor: string | null;
-    };
-    AssignCharacterToSession: {
-      /** @description Identifier of the character to assign */
-      characterId: string;
-    };
-    /** @description Payload for adjusting Darkness Points on a game session */
-    DpAdjustment: {
-      /**
-       * @description Positive to add DP, negative to remove DP. Must be non-zero.
-       *     A negative delta is only accepted from the GM owner of the session.
-       */
-      delta: number;
-      /** @description Optional human-readable reason for the adjustment */
-      reason?: string;
-    };
-    /**
-     * @description Source that originated the DP adjustment.
-     *     - `gm-manual` — GM applied the delta via the HTTP endpoint.
-     *     - `roll-push` — Automatic +1 from a player pushing a roll.
-     *     - `system` — Applied by internal automation.
-     * @enum {string}
-     */
-    DpSource: 'gm-manual' | 'roll-push' | 'system';
-    /** @description A single Darkness Points audit event */
-    DpEvent: {
-      /** @description Opaque event identifier (cuid2) */
-      readonly id: string;
-      /** @description Session the event belongs to */
-      readonly gameSessionId: string;
-      /** @description How many DP were added (positive) or removed (negative) */
-      delta: number;
-      /** @description Optional human-readable reason */
-      reason?: string | null;
-      source: components['schemas']['DpSource'];
-      /** @description Roll identifier when source is roll-push */
-      rollId?: string | null;
-      /** Format: date-time */
-      readonly createdAt: string;
-    };
-    DpEventList: {
-      items: components['schemas']['DpEvent'][];
-      /** @description Cursor for the next page; null when there are no more results */
-      nextCursor: string | null;
-    };
-    RealtimeToken: {
-      /** @description Short-lived HMAC-signed JWT for Centrifugo */
-      token: string | null;
-      /**
-       * Format: date-time
-       * @description ISO-8601 instant when the token expires
-       */
-      expiresAt: string | null;
-    };
-    /**
-     * @description Full NPC DTO as returned by the v1 API. NPCs are GM-owned entities
-     *     designed to populate encounters in the combat tracker (ST3001
-     *     ГЛАВА 14). They share the same attribute and skill vocabulary as
-     *     player characters but carry no lifecycle state — any NPC can be
-     *     added to any encounter at any time.
-     *
-     *     `signature` is the NPC's sensor signature score for ship-combat
-     *     checks (signed integer; 0 is the baseline; negative values make the
-     *     NPC harder to detect). `keySkillModifier` is a signed integer bonus
-     *     that the combat tracker adds to the NPC's signature-derived attack
-     *     or defence pool when computing opposed rolls (ST3001 ГЛАВА 14
-     *     "Key Skill Modifier"). Both default to 0.
-     */
-    Npc: {
-      /** @description Opaque NPC identifier (cuid2) */
-      readonly id: string;
-      /** @description Identifier of the owning user (cuid2) */
-      readonly ownerId: string;
-      /** @description NPC name (1–120 characters) */
-      name: string;
-      /** @description Free-form GM notes or narrative description (Markdown, max 2000 chars) */
-      description?: string | null;
-      attributes: components['schemas']['Attributes'];
-      skills: components['schemas']['Skills'];
-      /** @description Hit points — both current and max are GM-editable for NPCs */
-      hp: {
-        /** @description Current hit points */
-        current: number;
-        /** @description Maximum hit points */
-        max: number;
-      };
-      /** @description Mind points — both current and max are GM-editable for NPCs */
-      mp: {
-        /** @description Current mind points */
-        current: number;
-        /** @description Maximum mind points */
-        max: number;
-      };
-      /**
-       * @description NPC sensor signature for ship-combat sensor checks (ST3001
-       *     ГЛАВА 14). Signed integer; 0 is baseline; negative makes the
-       *     NPC harder to detect; positive makes them easier.
-       * @default 0
-       */
-      signature: number;
-      /**
-       * @description Signed integer bonus applied by the combat tracker to the NPC's
-       *     attack or defence roll pool when resolving opposed key-skill
-       *     checks (ST3001 ГЛАВА 14). Positive values give the NPC an
-       *     advantage; negative values impose a penalty.
-       * @default 0
-       */
-      keySkillModifier: number;
-      /** @description Armor items carried by the NPC */
-      armor: components['schemas']['ItemArmor'][];
-      /** @description Weapons carried by the NPC */
-      weapons: components['schemas']['ItemWeapon'][];
-      /**
-       * @description Free-form GM-side categorisation labels (e.g. "Pirate",
-       *     "Cyborg", "Boss"). Used for filtering in the NPC list and for
-       *     encounter-table grouping. Each tag is a 1–40 character string.
-       */
-      tags: string[];
-      /** Format: date-time */
-      readonly createdAt: string;
-      /** Format: date-time */
-      readonly updatedAt: string;
-    };
-    /**
-     * @description Payload for `POST /api/v1/npcs`. Only `name` is required; all
-     *     other fields are optional. The server seeds sensible defaults for
-     *     any omitted field so that a stub NPC can be created with a single
-     *     field.
-     */
-    NpcCreate: {
-      /** @description NPC name (1–120 characters) */
-      name: string;
-      /** @description Free-form description (Markdown, max 2000 chars) */
-      description?: string | null;
-      /** @description Attribute block; missing keys default to 2 */
-      attributes?: components['schemas']['Attributes'];
-      /** @description Skill block; missing keys default to 0 */
-      skills?: components['schemas']['Skills'];
-      /** @description Hit points; defaults to {current: 4, max: 4} when omitted */
-      hp?: {
-        current?: number;
-        max?: number;
-      };
-      /** @description Mind points; defaults to {current: 4, max: 4} when omitted */
-      mp?: {
-        current?: number;
-        max?: number;
-      };
-      /**
-       * @description Sensor signature score; defaults to 0
-       * @default 0
-       */
-      signature: number;
-      /**
-       * @description Key skill modifier for combat tracker; defaults to 0
-       * @default 0
-       */
-      keySkillModifier: number;
-      /** @description Armor items; defaults to empty array */
-      armor?: components['schemas']['ItemArmor'][];
-      /** @description Weapons; defaults to empty array */
-      weapons?: components['schemas']['ItemWeapon'][];
-      /** @description Categorisation tags; defaults to empty array */
-      tags?: string[];
-    };
-    /**
-     * @description Payload for `PATCH /api/v1/npcs/{id}`. All fields are optional;
-     *     omitted fields are left unchanged. Supplying `weapons` or `armor`
-     *     replaces the entire array (put-semantics for nested collections).
-     */
-    NpcUpdate: {
-      name?: string;
-      description?: string | null;
-      attributes?: components['schemas']['Attributes'];
-      skills?: components['schemas']['Skills'];
-      hp?: {
-        current?: number;
-        max?: number;
-      };
-      mp?: {
-        current?: number;
-        max?: number;
-      };
-      signature?: number;
-      keySkillModifier?: number;
-      armor?: components['schemas']['ItemArmor'][];
-      weapons?: components['schemas']['ItemWeapon'][];
-      tags?: string[];
-    };
-    /** @description Cursor-paginated list of NPCs */
-    NpcList: {
-      items: components['schemas']['Npc'][];
-      /** @description Cursor for the next page; null when there are no more results */
-      nextCursor: string | null;
-    };
-    /**
-     * @description Lifecycle state of an encounter (combat tracker).
-     *
-     *     - `setup` — the GM is building the encounter. Combatants can be
-     *       added or removed freely. Initiative has not been rolled. `round`
-     *       is 0 and `activeCombatantId` is null.
-     *     - `active` — combat has started. Initiative is rolled, turn order
-     *       is locked. `round` is bumped to 1 on the `setup → active`
-     *       transition and advances with each full rotation. `activeCombatantId`
-     *       points to the combatant whose turn it is. Combatant mutations are
-     *       only possible through the GM-driven turn-advance and
-     *       initiative-reorder operations (Block 4).
-     *     - `ended` — combat is resolved. The encounter is read-only history.
-     *       `activeCombatantId` is reset to null.
-     *
-     *     **Allowed transitions:** `setup → active`, `active → ended`.
-     *     No reverse transitions and no skipping states are permitted.
-     *     Historical (`ended`) encounters are archived and immutable.
-     * @enum {string}
-     */
-    EncounterStatus: 'setup' | 'active' | 'ended';
-    /**
-     * @description A single combat encounter owned by a game session. The Encounter
-     *     carries the combat metadata (status, round, active turn) but does
-     *     NOT embed the combatant list — combatants live on a separate
-     *     sub-resource added in Block 3.
-     */
-    Encounter: {
-      /** @description Opaque encounter identifier (cuid2) */
-      readonly id: string;
-      /** @description Identifier of the parent game session (cuid2) */
-      readonly gameSessionId: string;
-      /** @description Short descriptive name for the encounter (1–80 characters) */
-      name: string;
-      status: components['schemas']['EncounterStatus'];
-      /**
-       * @description Current combat round. Starts at 0 while in `setup`. Bumped to 1
-       *     when the encounter transitions to `active`. Increments by 1 each
-       *     time the turn order wraps back to the first combatant (Block 4
-       *     turn-advance operation).
-       * @default 0
-       */
-      round: number;
-      /**
-       * @description Identifier of the combatant whose turn it currently is. Null
-       *     when `status` is `setup` (initiative not yet rolled) or `ended`
-       *     (combat closed). Set by the server on the `setup → active`
-       *     transition and updated by the turn-advance operation (Block 4).
-       */
-      activeCombatantId: string | null;
-      /**
-       * @description Optional GM notes for the encounter in Markdown format
-       *     (max 4096 characters). May be edited at any status.
-       */
-      notes: string | null;
-      /** Format: date-time */
-      readonly createdAt: string;
-      /** Format: date-time */
-      readonly updatedAt: string;
-    };
-    /**
-     * @description Payload for `POST /api/v1/game-sessions/{sessionId}/encounters`.
-     *     Only `name` is required. The server seeds `status: setup`,
-     *     `round: 0`, and `activeCombatantId: null`.
-     */
-    EncounterCreate: {
-      /** @description Short descriptive name for the encounter (1–80 characters) */
-      name: string;
-      /** @description Optional GM notes in Markdown (max 4096 characters) */
-      notes?: string | null;
-    };
-    /**
-     * @description PATCH payload for `PATCH /api/v1/encounters/{id}`. All fields are
-     *     optional; omitted fields are left unchanged.
-     *
-     *     Supplying `status` triggers a state-machine transition validated by
-     *     the server. See the endpoint description for the full transition
-     *     table and the 422 error codes.
-     */
-    EncounterUpdate: {
-      /** @description Rename the encounter (allowed at any status) */
-      name?: string;
-      status?: components['schemas']['EncounterStatus'];
-      /** @description Update GM notes in Markdown (allowed at any status) */
-      notes?: string | null;
-    };
-    /** @description Cursor-paginated list of encounters */
-    EncounterList: {
-      items: components['schemas']['Encounter'][];
-      /** @description Cursor for the next page; null when there are no more results */
-      nextCursor: string | null;
-    };
-    /**
-     * @description Discriminator field that identifies the source entity type of a combatant.
-     *
-     *     - `pc` — references an existing `Character` owned by the encounter's GM
-     *       (or assigned to the parent `GameSession`).
-     *     - `npc` — references an existing `Npc` owned by the GM.
-     * @enum {string}
-     */
-    CombatantType: 'pc' | 'npc';
-    /**
-     * @description A single participant in a combat encounter. Combatants store a snapshot
-     *     of the source entity's stats (HP, armor, signature) at the moment of
-     *     add. Mid-combat changes to the source PC's hp via the character sheet
-     *     do NOT propagate to the combatant; the GM mutates `hpCurrent` directly
-     *     on the combatant via `PATCH /api/v1/combatants/{id}`. This protects the
-     *     tracker from accidental scrambling when a player auto-saves their sheet
-     *     during combat.
-     *
-     *     `statusFlags` is intentionally a free-form `string[]` — see the field
-     *     description for the canonical values listed in ST3001 ГЛАВА 5 «Раунды,
-     *     ходы и инициатива» and the rationale for not enum-locking it.
-     * @example {
-     *       "id": "cuid_comb01",
-     *       "encounterId": "cuid_enc01",
-     *       "combatantType": "pc",
-     *       "sourceId": "cuid_char01",
-     *       "displayName": "Zara al-Khatib",
-     *       "initiative": null,
-     *       "turnOrder": null,
-     *       "hpCurrent": 4,
-     *       "hpMax": 4,
-     *       "armor": 2,
-     *       "signature": 0,
-     *       "statusFlags": [],
-     *       "notes": null,
-     *       "createdAt": "2026-05-10T09:00:00Z",
-     *       "updatedAt": "2026-05-10T09:00:00Z"
-     *     }
-     */
-    Combatant: {
-      /** @description Opaque combatant identifier (cuid2) */
-      readonly id: string;
-      /** @description Identifier of the parent encounter (cuid2) */
-      readonly encounterId: string;
-      combatantType: components['schemas']['CombatantType'];
-      /**
-       * @description Identifier of the source entity. When `combatantType` is `pc` this
-       *     is the `Character.id`; when `npc` it is the `Npc.id`.
-       */
-      readonly sourceId: string;
-      /**
-       * @description Denormalised name of the combatant, copied from the source entity's
-       *     `name` at add-time. Can be overridden in `CombatantCreate.displayName`
-       *     or updated via `PATCH`.
-       */
-      displayName: string;
-      /**
-       * @description d6 initiative result (1–6 per ST3001 ГЛАВА 5 «Раунды, ходы и
-       *     инициатива»: «Бросьте по кубику за всех участников сражения»).
-       *     Null until the encounter's initiative is rolled (Block 4
-       *     operation). Set server-side only.
-       */
-      readonly initiative: number | null;
-      /**
-       * @description 0-based index in the turn sequence after initiative is sorted.
-       *     Null until initiative is rolled. Combatant at index 0 goes first.
-       *     Set server-side only.
-       */
-      readonly turnOrder: number | null;
-      /**
-       * @description Current hit points. **PRD override** — ST3001 ГЛАВА 5 «Урон»
-       *     («запас пунктов здоровья не может опуститься ниже нуля»)
-       *     clamps HP at 0; the canonical mechanic is
-       *     «Небоеспособность» the moment HP reaches 0. The greenfield
-       *     product allows the field to go negative so the GM tracker
-       *     can show damage overflow on a single attack (e.g. a 5-HP
-       *     target taking 8 damage renders as `hpCurrent: -3` until
-       *     the GM resets to 0 next round). UI clients SHOULD render
-       *     negative values in red and surface a one-line note that
-       *     the canon clamp applies for healing math (any heal first
-       *     brings hpCurrent up to 0, then upward).
-       */
-      hpCurrent: number;
-      /** @description Maximum hit points snapshotted from the source at add-time. */
-      hpMax: number;
-      /** @description Armor rating (number of armor dice). Snapshotted from the source at add-time. */
-      armor: number;
-      /**
-       * @description NPC sensor signature score, snapshotted from `Npc.signature`
-       *     at add-time (defaults to 0 for PC combatants). **PRD
-       *     override** — ST3001 has no per-combatant numeric
-       *     `signature` stat; the canonical mechanic for being
-       *     spotted / hidden is the `скрытность` skill (ГЛАВА 3
-       *     «СКРЫТНОСТЬ») rolled at the moment of detection. The
-       *     field is reserved for future GM tooling (sensor sweep,
-       *     ambush detection, ship-combat sensor pings — ГЛАВА 7
-       *     covers ship-scale sensor rules but assigns those values
-       *     to the ship, not the crew). Today the field is mostly
-       *     informational; clients SHOULD allow editing but MUST NOT
-       *     silently use it to bypass a `скрытность` check.
-       */
-      signature: number;
-      /**
-       * @description Free-form short tags describing combat status conditions. The
-       *     canonical taxonomy in ST3001 ГЛАВА 5 «Раунды, ходы и инициатива»
-       *     covers `incapacitated` (HP at 0 — cannot act), `prone` (knocked
-       *     down) and `covered` (behind cover for armor purposes). The field
-       *     is intentionally not enum-locked: GMs are expected to invent
-       *     scene-specific tags (e.g. `bleeding`, `restrained`, `zero-g`),
-       *     and a hard schema would force migrations every time a campaign
-       *     needs a new condition. Clients SHOULD render the canonical tags
-       *     with icons; unknown tags MUST be shown as plain text and
-       *     preserved on PATCH round-trips.
-       * @example [
-       *       "incapacitated"
-       *     ]
-       */
-      statusFlags: string[];
-      /** @description Optional GM notes for this combatant in Markdown format (max 500 characters). */
-      notes: string | null;
-      /** Format: date-time */
-      readonly createdAt: string;
-      /** Format: date-time */
-      readonly updatedAt: string;
-    };
-    /**
-     * @description POST payload for `POST /api/v1/encounters/{id}/combatants`.
-     *
-     *     `combatantType` and `sourceId` are required. The server snapshots
-     *     `hpCurrent`, `hpMax`, `armor`, and `signature` from the source entity
-     *     on add; these fields are absent from the request payload and populated
-     *     in the response. `initiative` and `turnOrder` are server-controlled and
-     *     remain null until the Block 4 initiative-roll operation.
-     *
-     *     `displayName` is optional — when omitted the server uses the source
-     *     entity's `name` field.
-     *
-     *     422 error codes:
-     *     - `COMBATANT_SOURCE_NOT_FOUND` — `sourceId` does not exist
-     *     - `COMBATANT_SOURCE_NOT_OWNED` — caller does not own the source entity
-     *     - `COMBATANT_DUPLICATE` — same `(combatantType, sourceId)` already present
-     *     - `ENCOUNTER_LOCKED_FOR_COMBAT` — encounter is not in `setup` status
-     * @example {
-     *       "combatantType": "npc",
-     *       "sourceId": "cuid_npc01",
-     *       "displayName": "Khorredian Elite Guard"
-     *     }
-     */
-    CombatantCreate: {
-      combatantType: components['schemas']['CombatantType'];
-      /**
-       * @description Identifier of the source entity. Must be a `Character.id` when
-       *     `combatantType` is `pc`, or an `Npc.id` when `combatantType` is `npc`.
-       */
-      sourceId: string;
-      /**
-       * @description Optional override for the combatant display name. When omitted the
-       *     server copies the source entity's `name`.
-       */
-      displayName?: string;
-      /** @description Optional GM notes in Markdown (max 500 characters). */
-      notes?: string | null;
-    };
-    /**
-     * @description PATCH payload for `PATCH /api/v1/combatants/{id}`. All fields are
-     *     optional; omitted fields are left unchanged.
-     *
-     *     `combatantType` and `sourceId` are immutable and absent from this
-     *     schema. `initiative` and `turnOrder` are read-only and can only be
-     *     set via the Block 4 initiative operations.
-     * @example {
-     *       "hpCurrent": 0,
-     *       "statusFlags": [
-     *         "incapacitated"
-     *       ]
-     *     }
-     */
-    CombatantUpdate: {
-      /** @description Update the combatant display name. */
-      displayName?: string;
-      /** @description Update current hit points (may go negative). */
-      hpCurrent?: number;
-      /** @description Update armor rating. */
-      armor?: number;
-      /** @description Update the mystic signature value. */
-      signature?: number;
-      /**
-       * @description Replace the full set of status flags. Free-form `string[]` per the
-       *     `Combatant.statusFlags` description; canonical tags from ST3001
-       *     ГЛАВА 5 are `incapacitated`, `prone`, `covered` (custom tags are
-       *     allowed and round-tripped untouched).
-       */
-      statusFlags?: string[];
-      /** @description Update GM notes in Markdown (max 500 characters). */
-      notes?: string | null;
-      /**
-       * @description Read-only. Initiative is set exclusively by the Block 4
-       *     initiative-roll operation (d6 per ST3001 ГЛАВА 5). This field is
-       *     listed here for documentation purposes only; any value supplied in
-       *     a PATCH request will be ignored.
-       */
-      readonly initiative?: number | null;
-      /**
-       * @description Read-only. Turn order index is set exclusively by the Block 4
-       *     initiative operations. This field is listed here for
-       *     documentation purposes only; any value supplied in a PATCH
-       *     request will be ignored.
-       */
-      readonly turnOrder?: number | null;
-    };
-    /**
-     * @description Non-paginated list of combatants for an encounter. Typical encounters
-     *     have fewer than 20 combatants; a pagination cursor would add unnecessary
-     *     complexity for no practical benefit.
-     */
-    CombatantList: {
-      items: components['schemas']['Combatant'][];
-    };
-    /**
-     * @description Returned by `POST /api/v1/encounters/{id}/initiative/roll` and
-     *     `PATCH /api/v1/encounters/{id}/initiative`. Carries the full combatant
-     *     list after initiative values and turn-order indices have been assigned,
-     *     plus the current round counter.
-     *
-     *     **Tie-breaking rule (ST3001):** when two combatants share the same d10
-     *     initiative roll the server breaks the tie by `agility` descending — the
-     *     source PC's `attributes.agility` for `pc` combatants, or
-     *     `npcSnapshot.agility` for `npc` combatants. If `agility` is also equal
-     *     the GM is expected to use the `PATCH /api/v1/encounters/{id}/initiative`
-     *     reorder operation to set the final order manually.
-     *
-     *     **Side-effects of `rollInitiative`:**
-     *     1. Encounter status transitions `setup → active`.
-     *     2. `encounter.round` is set from 0 to 1.
-     *     3. `encounter.activeCombatantId` is set to the combatant at `turnOrder: 0`.
-     *     The `PATCH` (reorder) variant does NOT re-roll dice and does NOT alter
-     *     `activeCombatantId` — the GM is adjusting who acts next round, not
-     *     restarting combat.
-     * @example {
-     *       "round": 1,
-     *       "combatants": [
-     *         {
-     *           "id": "cuid_comb03",
-     *           "encounterId": "cuid_enc01",
-     *           "combatantType": "npc",
-     *           "sourceId": "cuid_npc01",
-     *           "displayName": "Khorredian Elite Guard",
-     *           "initiative": 6,
-     *           "turnOrder": 0,
-     *           "hpCurrent": 6,
-     *           "hpMax": 6,
-     *           "armor": 3,
-     *           "signature": 1,
-     *           "statusFlags": [],
-     *           "notes": null,
-     *           "createdAt": "2026-05-10T09:00:00Z",
-     *           "updatedAt": "2026-05-10T10:00:00Z"
-     *         },
-     *         {
-     *           "id": "cuid_comb01",
-     *           "encounterId": "cuid_enc01",
-     *           "combatantType": "pc",
-     *           "sourceId": "cuid_char01",
-     *           "displayName": "Zara al-Khatib",
-     *           "initiative": 5,
-     *           "turnOrder": 1,
-     *           "hpCurrent": 4,
-     *           "hpMax": 4,
-     *           "armor": 2,
-     *           "signature": 0,
-     *           "statusFlags": [],
-     *           "notes": null,
-     *           "createdAt": "2026-05-10T09:00:00Z",
-     *           "updatedAt": "2026-05-10T10:00:00Z"
-     *         },
-     *         {
-     *           "id": "cuid_comb02",
-     *           "encounterId": "cuid_enc01",
-     *           "combatantType": "pc",
-     *           "sourceId": "cuid_char02",
-     *           "displayName": "Tariq al-Asari",
-     *           "initiative": 4,
-     *           "turnOrder": 2,
-     *           "hpCurrent": 5,
-     *           "hpMax": 5,
-     *           "armor": 1,
-     *           "signature": 0,
-     *           "statusFlags": [],
-     *           "notes": null,
-     *           "createdAt": "2026-05-10T09:00:00Z",
-     *           "updatedAt": "2026-05-10T10:00:00Z"
-     *         },
-     *         {
-     *           "id": "cuid_comb04",
-     *           "encounterId": "cuid_enc01",
-     *           "combatantType": "npc",
-     *           "sourceId": "cuid_npc02",
-     *           "displayName": "Khorredian Guard Captain",
-     *           "initiative": 2,
-     *           "turnOrder": 3,
-     *           "hpCurrent": 8,
-     *           "hpMax": 8,
-     *           "armor": 4,
-     *           "signature": 2,
-     *           "statusFlags": [],
-     *           "notes": "Has the bridge key.",
-     *           "createdAt": "2026-05-10T09:00:00Z",
-     *           "updatedAt": "2026-05-10T10:00:00Z"
-     *         }
-     *       ]
-     *     }
-     */
-    InitiativeRollResult: {
-      /**
-       * @description Full updated combatant list sorted by `turnOrder` ascending (0 = acts
-       *     first). Every combatant carries a non-null `initiative` and `turnOrder`
-       *     after this operation.
-       */
-      combatants: components['schemas']['Combatant'][];
-      /**
-       * @description Current combat round after the operation. For `rollInitiative` this
-       *     is always 1 (the `setup → active` transition sets `round` from 0 to 1).
-       *     For `reorderInitiative` this reflects the encounter's current round
-       *     (unchanged by a reorder).
-       */
-      round: number;
-    };
-    /**
-     * @description Request body for `PATCH /api/v1/encounters/{id}/initiative`. The GM
-     *     supplies the full desired turn order as an ordered array of combatant
-     *     ids. The server reassigns `turnOrder` indices (0-based) matching the
-     *     array position.
-     *
-     *     **Validation — the array must contain every combatant id from the
-     *     encounter exactly once.** Any violation returns 422 with one of:
-     *     - `INITIATIVE_INCOMPLETE` — at least one combatant id from the encounter
-     *       is absent from the array.
-     *     - `INITIATIVE_DUPLICATE` — the same id appears two or more times.
-     *     - `INITIATIVE_UNKNOWN_COMBATANT` — an id in the array does not belong to
-     *       this encounter.
-     *
-     *     The `PATCH` does NOT re-roll initiative dice and does NOT change
-     *     `activeCombatantId` — it only rearranges the turn-order index so the
-     *     GM can correct ties or unexpected results without restarting combat.
-     * @example {
-     *       "combatantIds": [
-     *         "cuid_comb03",
-     *         "cuid_comb02",
-     *         "cuid_comb01",
-     *         "cuid_comb04"
-     *       ]
-     *     }
-     */
-    InitiativeReorderRequest: {
-      /**
-       * @description Ordered list of combatant ids. Position 0 acts first. Must include
-       *     every combatant in the encounter exactly once.
-       */
-      combatantIds: string[];
-    };
-    /**
-     * @description Returned by `POST /api/v1/encounters/{id}/turn/advance`. Identifies the
-     *     combatant whose turn is now active after the advance, the current round
-     *     counter, and whether advancing wrapped past the last combatant (which
-     *     triggers a round increment).
-     *
-     *     **Wrap behaviour:** the server advances
-     *     `activeCombatantId` from the current `turnOrder` index to
-     *     `(currentIndex + 1) % combatants.length`. When `currentIndex + 1`
-     *     equals `combatants.length` the turn wraps to index 0 and `round` is
-     *     incremented by 1; `isNewRound` is `true` in that case.
-     * @example {
-     *       "activeCombatantId": "cuid_comb01",
-     *       "round": 1,
-     *       "isNewRound": false
-     *     }
-     */
-    TurnAdvanceResult: {
-      /**
-       * @description Id of the combatant whose turn is now active (the new
-       *     `encounter.activeCombatantId` after the advance).
-       */
-      activeCombatantId: string;
-      /**
-       * @description Current combat round after the advance. Incremented by 1 when the
-       *     turn wraps from the last combatant back to index 0.
-       */
-      round: number;
-      /**
-       * @description `true` when the advance wrapped past the last combatant and started
-       *     a new round; `false` when the next combatant is within the same
-       *     round.
-       */
-      isNewRound: boolean;
-    };
-  };
-  responses: never;
-  parameters: {
-    /** @description Character identifier (cuid2) */
-    CharacterId: string;
-    /** @description Item identifier (cuid2) */
-    ItemId: string;
-    /** @description Talent identifier (cuid2) */
-    TalentId: string;
-    /** @description Ship identifier (cuid2) */
-    ShipId: string;
-    /** @description Ship module identifier (cuid2) */
-    ShipModuleId: string;
-    /** @description Share link identifier (cuid2) */
-    ShareLinkId: string;
-    /** @description 24-character unambiguous nanoid slug identifying a share link */
-    ShareSlug: string;
-    /** @description Roll identifier (cuid2) */
-    RollId: string;
-    /** @description Game session identifier (cuid2) */
-    GameSessionId: string;
-    /** @description NPC identifier (cuid2) */
-    NpcId: string;
-    /** @description Encounter identifier (cuid2) */
-    EncounterId: string;
-    /** @description Combatant identifier (cuid2) */
-    CombatantId: string;
-  };
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    schemas: {
+        /**
+         * @description A single Coriolis dice roll. Dice are rolled server-side using a
+         *     cryptographically secure RNG. Hits = count of 6s. A roll can be pushed
+         *     at most once (PRD §10). `gameSessionId` is null until Feature 7.2 lands.
+         */
+        Roll: {
+            /** @description Opaque roll identifier (cuid2) */
+            readonly id: string;
+            /** @description Identifier of the character who made the roll */
+            readonly characterId: string;
+            /**
+             * @description Game session this roll belongs to. Null until Feature 7.2
+             *     (GameSession resource) ships. Clients should tolerate null.
+             */
+            gameSessionId?: string | null;
+            /** @description Human-readable roll label, e.g. "Pilot · Evade" */
+            label: string;
+            /**
+             * @description Number of d6 rolled (after condition penalties applied by caller).
+             *     `0` triggers the «Ноль кубиков» rule (ГЛАВА 3 line 161): the engine
+             *     still rolls 2d6, but the proverka counts as a success only when
+             *     both dice come up 6.
+             *     PRD override — Coriolis ST3001 does not name a hard upper bound.
+             *     We cap at 20 to keep DB rows and wire payloads bounded; realistic
+             *     attribute + skill + gear + helpers stacks max out around 12–14.
+             */
+            pool: number;
+            /**
+             * @description Current face values of all dice. After a push, rerolled non-6 values
+             *     are updated in place. Length normally equals `pool`; for the zero-
+             *     dice case (`pool === 0`) the array always has 2 elements regardless.
+             */
+            dice: number[];
+            /** @description Number of 6s in the current dice array */
+            readonly hits: number;
+            /** @description Whether this roll has been pushed. Once true, further pushes are rejected. */
+            pushed: boolean;
+            /** Format: date-time */
+            readonly createdAt: string;
+        };
+        /** @description Payload for POST /api/v1/characters/{id}/rolls */
+        RollCreate: {
+            /** @description Human-readable roll label, e.g. "Pilot · Evade" */
+            label: string;
+            /**
+             * @description Number of d6 to roll. Must be between 0 and 20 inclusive.
+             *     Condition pool penalties must be pre-applied by the caller before
+             *     submitting.
+             *
+             *     «Ноль кубиков» (ГЛАВА 3 line 161): if modifiers reduce the pool to
+             *     zero (or below), submit `pool: 0`. The engine then rolls 2d6 and
+             *     counts a success only when both dice are 6.
+             *
+             *     PRD override — ST3001 does not name a hard upper bound. We cap at
+             *     20 to keep wire payloads bounded; realistic attribute + skill + gear
+             *     + helpers stacks max out around 12–14.
+             */
+            pool: number;
+            /**
+             * @description Optional game session identifier. Reserved for Feature 7.2.
+             *     Pass null or omit until GameSession lands.
+             */
+            gameSessionId?: string | null;
+        };
+        RollList: {
+            items: components["schemas"]["Roll"][];
+        };
+        /**
+         * @description Severity tier of a critical injury per Coriolis core rules.
+         *     - `light` — minor wound, no long-term mechanical effect.
+         *     - `severe` — significant injury; may impose ongoing penalties.
+         *     - `critical` — life-threatening; requires urgent medicurgy.
+         * @enum {string}
+         */
+        CriticalInjurySeverity: "light" | "severe" | "critical";
+        /** @enum {string|null} */
+        DependencyStatus: "ok" | "degraded" | "down" | null;
+        /**
+         * @description One of the Nine Icons of the Third Horizon. Kebab-case names match
+         *     the asset filenames in `packages/ui/src/assets/icons/`.
+         * @enum {string}
+         */
+        IconId: "lady-of-tears" | "traveler" | "messenger" | "merchant" | "dancer" | "gambler" | "judge" | "faceless-one" | "deckhand";
+        /**
+         * @description The 11 character archetypes (амплуа) from Coriolis ST3001 ch.2.
+         *     Each concept has a key attribute (capped at 5 instead of 4 at
+         *     creation) and a set of key skills (capped at 3 instead of 1 at
+         *     creation), and applies a reputation modifier to the upbringing
+         *     baseline. Mappings live server-side in the RulesEngine
+         *     (`CONCEPT_KEYS`).
+         *
+         *     | Concept     | Key attribute | Reputation modifier |
+         *     | ----------- | ------------- | ------------------- |
+         *     | artist      | empathy       | +1                  |
+         *     | networker   | wits          |  0                  |
+         *     | fugitive    | empathy       | −2                  |
+         *     | negotiator  | empathy       | +1                  |
+         *     | operative   | agility       |  0                  |
+         *     | pilot       | agility       |  0                  |
+         *     | pioneer     | wits          |  0                  |
+         *     | preacher    | empathy       | +1                  |
+         *     | scientist   | wits          | +1                  |
+         *     | sailor      | strength      | −1                  |
+         *     | soldier     | agility       | −1                  |
+         * @enum {string}
+         */
+        Concept: "artist" | "networker" | "fugitive" | "negotiator" | "operative" | "pilot" | "pioneer" | "preacher" | "scientist" | "sailor" | "soldier";
+        /**
+         * @description Coriolis canonical role (роль) within an amplua (ГЛАВА 2
+         *     «АМПЛУА И РОЛИ»). The 11 amplua each have exactly three roles;
+         *     a character picks one role at creation. The role narrows the
+         *     amplua's union of key skills to exactly four of them — those
+         *     four are the character's own key skills.
+         *
+         *     Skill caps at creation time (per ST3001 ch.2):
+         *     - Key skill (role's four): up to 3 points
+         *     - Non-key skill: up to 1 point
+         *
+         *     Role + concept together drive the creation-time validation;
+         *     the server enforces `ROLE_CONCEPT_MISMATCH` when the chosen
+         *     role does not belong to the chosen concept.
+         *
+         *     Role names are unique across all amplua, so this enum is flat.
+         *
+         *     Russian display names:
+         *     companion=Компаньон, musician=Музыкант, poet=Поэт,
+         *     analyst=Аналитик, correspondent=Корреспондент,
+         *     network-djinn=Сетевой джинн, criminal=Преступник,
+         *     mystic=Мистик, revolutionary=Революционер,
+         *     agitator=Агитатор, diplomat=Дипломат, dealer=Делец,
+         *     assassin=Ассасин, guard=Стражник, spy=Шпион,
+         *     ace=Ас, driver=Водитель, trucker=Дальнобойщик,
+         *     colonist=Колонист, prospector=Старатель, scout=Скаут,
+         *     ascetic=Аскет, missionary=Миссионер, prophet=Пророк,
+         *     archaeologist=Археолог, medicurg=Медикург,
+         *     technologist=Технологик, ship-engineer=Бортинженер,
+         *     labourer=Разнорабочий, loader=Грузчик,
+         *     legionnaire=Легионер, mercenary=Наёмник, officer=Офицер.
+         * @enum {string}
+         */
+        Role: "companion" | "musician" | "poet" | "analyst" | "correspondent" | "network-djinn" | "criminal" | "mystic" | "revolutionary" | "agitator" | "diplomat" | "dealer" | "assassin" | "guard" | "spy" | "ace" | "driver" | "trucker" | "colonist" | "prospector" | "scout" | "ascetic" | "missionary" | "prophet" | "archaeologist" | "medicurg" | "technologist" | "ship-engineer" | "labourer" | "loader" | "legionnaire" | "mercenary" | "officer";
+        /**
+         * @description Social stratum a character was raised in (Coriolis core book ch.2,
+         *     table 2.2 — "Воспитание"). Upbringing is set once at character
+         *     creation and is **immutable**; it determines the starting
+         *     attribute / skill point budgets, the starting reputation, and the
+         *     starting wealth (in birrs) the character is created with.
+         *
+         *     | Upbringing  | Attribute pts | Skill pts | Reputation | Wealth (birrs) |
+         *     | ----------- | ------------- | --------- | ---------- | -------------- |
+         *     | plebeian    | 15            | 8         | 2          |   500          |
+         *     | stationary  | 14            | 10        | 4          |  1000          |
+         *     | aristocrat  | 13            | 12        | 6          |  5000          |
+         * @enum {string}
+         */
+        Upbringing: "plebeian" | "stationary" | "aristocrat";
+        /**
+         * @description Crew archetype (амплуа команды) per Coriolis ST3001 ch.2
+         *     §АМПЛУА КОМАНДЫ. Five canonical crews — `free-trader`
+         *     (Вольные торговцы), `mercenary` (Наёмники), `explorer`
+         *     (Исследователи), `agents` (Агенты), `pilgrim` (Пилигримы).
+         *
+         *     The crew concept is shared by all heroes in a campaign and
+         *     determines the pool of three crew talents the team picks from
+         *     at creation (one of which becomes each hero's starting "crew"
+         *     kind talent — see `TalentKind`). Crew concept is mutable while
+         *     the character is `draft` and immutable once `active`.
+         * @enum {string}
+         */
+        CrewConcept: "free-trader" | "mercenary" | "explorer" | "agents" | "pilgrim";
+        /**
+         * @description Mutant lineage (родословная пасынков) per Coriolis ST3001 ch.4
+         *     §Стигмы пасынков. Three canonical lineages —
+         *     `zirba` (Зирба), `shingura` (Шингура), `nerida` (Нерида) —
+         *     each backed by a stigma talent in the catalog
+         *     (`stigma-zirba`, `stigma-shingura`, `stigma-nerida`).
+         *
+         *     Set together with `Character.mutant=true` at creation; both
+         *     fields are mutable while `status: draft` and immutable once the
+         *     character is `active`. A non-mutant character must not carry a
+         *     `stigma` talent — `AddTalent` rejects this combination with
+         *     `STIGMA_REQUIRES_MUTANT`.
+         * @enum {string}
+         */
+        MutantLineage: "zirba" | "shingura" | "nerida";
+        /**
+         * @description Discriminator for `Talent.kind` per Coriolis ST3001 ch.2 (3
+         *     starting talents: one personal from amplua, one crew from
+         *     crew-amplua, one icon gift from chosen icon) and ch.4
+         *     (mutants additionally pick one `stigma`).
+         *
+         *     Each character has at most one talent of each `personal`,
+         *     `crew`, `iconGift`, `stigma` at character creation; further
+         *     talents acquired during play are always `personal`.
+         *
+         *     - `personal`  — picked from the amplua's personal talent list
+         *     - `crew`      — picked from the team's crew amplua list
+         *     - `iconGift`  — auto-derived from the character's `iconId`
+         *     - `stigma`    — only for mutants (`Character.mutant=true`);
+         *                     picked from the catalog's three lineage
+         *                     stigmas — see `MutantLineage`. Adding a
+         *                     `stigma` talent to a non-mutant character is
+         *                     rejected with `STIGMA_REQUIRES_MUTANT`.
+         * @enum {string}
+         */
+        TalentKind: "personal" | "crew" | "iconGift" | "stigma";
+        /**
+         * @description Personal-scale weapon range bands per ST3001 ГЛАВА 5 «Дистанция»
+         *     (lines 73-78 of the Russian rulebook). Four bands by canon —
+         *     each absorbs the previous (a target at `medium` is also at `close`
+         *     for any rule that talks about "within X").
+         *     - `close` — Ближняя, up to 2 m (engaged / hand-to-hand /
+         *       same-room close quarters; absorbs the legacy `arm` and `near`
+         *       values).
+         *     - `medium` — Средняя, up to 20 m (corridor / street; absorbs the
+         *       legacy `short`).
+         *     - `long` — Дальняя, up to 100 m (open ground / rooftop; same
+         *       slug as the legacy value, semantics narrowed).
+         *     - `extreme` — Предельная, up to 1000 m (sniper / max effective;
+         *       absorbs the legacy `distant`).
+         *     Distinct from `ShipWeaponRange` (5-band ship-combat ladder
+         *     from ГЛАВА 7 Table 7.9 — that enum keeps its `zero` band).
+         * @enum {string}
+         */
+        ItemRangeEnum: "close" | "medium" | "long" | "extreme";
+        /**
+         * @description The nature of the relationship between a character and an NPC or PC.
+         * @enum {string}
+         */
+        RelationshipKind: "ally" | "rival" | "family" | "mentor" | "debtor" | "creditor";
+        /**
+         * @description The four primary attributes per Coriolis core rules (ГЛАВА 2 «ХАРАКТЕРИСТИКИ»). The rulebook
+         *     states characteristics are scored 1–5, but at character creation the wizard distributes pools
+         *     so each attribute lands in `2..4` (5 for the amplua's key attribute), and there is no in-game
+         *     mechanic that lowers an attribute below 2 once a character has been created. Server-side bounds
+         *     therefore reflect the **active-PC invariant** (2..5) rather than the abstract scale: a stored
+         *     character with `strength: 1` would never be reachable through canonical play. The 5-cap stays
+         *     as the lifetime maximum (ГЛАВА 2 §РАЗВИТИЕ ПЕРСОНАЖА — "максимально возможное значение
+         *     характеристики равно 5"). All four keys are required — missing attributes would make
+         *     derived-stat calculation impossible server-side.
+         */
+        Attributes: {
+            /** @description STR — governs Force, Melee Combat skills and HP max */
+            strength: number;
+            /** @description AGI — governs Dexterity, Infiltration, Ranged Combat, Pilot; contributes to HP max */
+            agility: number;
+            /** @description WIT — governs Observation, Survival, Technology, Data Djinn, Science, Medicurgy; contributes to MP max */
+            wits: number;
+            /** @description EMP — governs Manipulation, Command, Culture, Mystic Powers; contributes to MP max */
+            empathy: number;
+        };
+        /**
+         * @description The 16 canonical Coriolis skills (ГЛАВА 3 «Перечень навыков»), 8 general
+         *     (`dexterity, force, infiltration, manipulation, meleeCombat, observation, rangedCombat,
+         *     survival`) and 8 advanced/specialised (`command, culture, dataDjinn, medicurgy,
+         *     mysticPowers, pilot, science, technology`). All skills range 0..5 server-side; the
+         *     lifetime cap of 5 is canon (ГЛАВА 2 §РАЗВИТИЕ ПЕРСОНАЖА — «максимально возможное
+         *     значение навыка равно 5»). The general/advanced split affects rolling, not range: per
+         *     ГЛАВА 3 §«Специальные навыки», a general skill can be rolled at value 0 (attribute-only
+         *     check), while an advanced skill requires value ≥ 1 to roll at all — that gate lives in
+         *     the dice-engine, not in the schema. Creation-time caps (key skills up to 3, others up to
+         *     1, per ГЛАВА 2 «НАВЫКИ») are enforced by the backend `validateSkillsAtCreation` handler
+         *     against the chosen amplua, not by this schema. All keys are required.
+         */
+        Skills: {
+            /** @description General skill (AGI) */
+            dexterity: number;
+            /** @description General skill (STR) */
+            force: number;
+            /** @description General skill (AGI) */
+            infiltration: number;
+            /** @description General skill (EMP) */
+            manipulation: number;
+            /** @description General skill (STR) */
+            meleeCombat: number;
+            /** @description General skill (WIT) */
+            observation: number;
+            /** @description General skill (AGI) */
+            rangedCombat: number;
+            /** @description General skill (WIT) */
+            survival: number;
+            /** @description Advanced skill (EMP) */
+            command: number;
+            /** @description Advanced skill (EMP) */
+            culture: number;
+            /** @description Advanced skill (WIT) */
+            dataDjinn: number;
+            /** @description Advanced skill (WIT) */
+            medicurgy: number;
+            /** @description Advanced skill (EMP) */
+            mysticPowers: number;
+            /** @description Advanced skill (AGI) */
+            pilot: number;
+            /** @description Advanced skill (WIT) */
+            science: number;
+            /** @description Advanced skill (WIT) */
+            technology: number;
+        };
+        /**
+         * @description Boolean flags for the four standard Coriolis conditions (PRD §5.2).
+         *     Each active condition imposes a −1 die penalty on all rolls (capped
+         *     at the character's pool size). Applied by the RulesEngine.
+         */
+        ConditionFlags: {
+            /** @description Exhausted condition — also blocks pushing rolls */
+            exhausted: boolean;
+            sleepless: boolean;
+            thirsty: boolean;
+            hungry: boolean;
+        };
+        /** @description A critical injury entry on a character's sheet */
+        CriticalInjury: {
+            /** @description Opaque identifier (cuid2) */
+            id: string;
+            /** @description Short name of the injury (e.g. "Broken arm") */
+            name: string;
+            severity: components["schemas"]["CriticalInjurySeverity"];
+            /** @description Free-text description of the mechanical or narrative effect */
+            effect: string;
+            /**
+             * Format: date-time
+             * @description ISO-8601 instant when the injury was recorded
+             */
+            acquiredAt: string;
+        };
+        /** @description A talent owned by a character */
+        Talent: {
+            /** @description Opaque identifier (cuid2) */
+            id: string;
+            /**
+             * @description Discriminator describing where this talent came from
+             *     (personal amplua, crew amplua, icon gift, or mutant stigma).
+             *     Set on creation and immutable thereafter.
+             */
+            kind: components["schemas"]["TalentKind"];
+            /** @description Talent name (e.g. "Wing-Mate", "Stunt Pilot") */
+            name: string;
+            /** @description Rules text or flavour description of the talent */
+            description: string;
+            /** @description Talent rank (1 = basic, 2 = journeyman, 3 = master) */
+            rank: number;
+            /**
+             * Format: date-time
+             * @description ISO-8601 instant when the talent was recorded on the sheet
+             */
+            acquiredAt: string;
+        };
+        /**
+         * @description Payload for creating a new talent. `kind` defaults to `personal`
+         *     when omitted (the most common case for talents acquired during
+         *     play). At character creation, the wizard picks one talent of
+         *     each kind (`personal`, `crew`, `iconGift`); the server rejects a
+         *     second talent of the same non-`personal` kind with
+         *     `TALENT_KIND_DUPLICATE`.
+         */
+        TalentCreate: {
+            /**
+             * @description Defaults to `personal`. Pass `crew` / `iconGift` / `stigma`
+             *     to record a starting-talent slot of that kind (only one of
+             *     each non-`personal` kind is allowed per character).
+             */
+            kind?: components["schemas"]["TalentKind"];
+            /** @description Talent name */
+            name: string;
+            /** @description Rules text or flavour description */
+            description: string;
+            /**
+             * @description Talent rank (defaults to 1 when not provided)
+             * @default 1
+             */
+            rank: number;
+        };
+        /**
+         * @description PATCH payload for updating a talent — all fields optional.
+         *     `kind` is immutable and cannot be changed after a talent has
+         *     been recorded.
+         */
+        TalentUpdate: {
+            name?: string;
+            description?: string;
+            rank?: number;
+        };
+        /** @description A relationship between a character and another person (NPC or PC) */
+        Relationship: {
+            /** @description Opaque identifier (cuid2) */
+            id: string;
+            /** @description Name of the NPC or PC (free text) */
+            targetName: string;
+            kind: components["schemas"]["RelationshipKind"];
+            /** @description Optional notes about the relationship */
+            notes?: string | null;
+        };
+        /** @description Fields common to every item type */
+        ItemBase: {
+            /** @description Opaque identifier (cuid2) */
+            id: string;
+            /** @description Discriminator — determines which type-specific fields are present */
+            type: string;
+            /** @description Item name */
+            name: string;
+        };
+        ItemWeapon: components["schemas"]["ItemBase"] & {
+            /** @enum {string} */
+            type?: "WEAPON";
+            /** @description Base damage dice */
+            damage: number;
+            range: components["schemas"]["ItemRangeEnum"];
+            /** @description Bonus dice added to the attack pool */
+            bonus: number;
+            /** @description Critical threshold (roll this many successes to crit) */
+            crit: number;
+            /** @description Encumbrance weight in slots (0.5 increments) */
+            weight: number;
+            /** @description Feature tags (e.g. "Burst", "Explosive") */
+            features: string[];
+            /** @description Whether the item is currently equipped */
+            equipped: boolean;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "WEAPON";
+        };
+        ItemArmor: components["schemas"]["ItemBase"] & {
+            /** @enum {string} */
+            type?: "ARMOR";
+            /** @description Armor rating — reduces incoming damage */
+            armorRating: number;
+            /** @description Encumbrance weight in slots */
+            weight: number;
+            /** @description Feature tags (e.g. "Vacuum Sealed", "Exo-Skeleton") */
+            features: string[];
+            equipped: boolean;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "ARMOR";
+        };
+        ItemGear: components["schemas"]["ItemBase"] & {
+            /** @enum {string} */
+            type?: "GEAR";
+            /** @description Encumbrance weight in slots */
+            weight: number;
+            /** @description Number of units */
+            quantity: number;
+            /** @description Optional free-text notes */
+            notes?: string | null;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "GEAR";
+        };
+        ItemCybernetic: components["schemas"]["ItemBase"] & {
+            /** @enum {string} */
+            type?: "CYBERNETIC";
+            /**
+             * @description XP spent to acquire this cybernetic implant. Cybernetics
+             *     count as both equipment and talents (ST3001 ГЛАВА 6
+             *     «КИБЕРНЕТИЧЕСКИЕ ИМПЛАНТАТЫ»: «считается и снаряжением,
+             *     и достоинством, так что на его покупку тебе понадобятся
+             *     не только бирры, но и пункты опыта»). The canonical
+             *     acquisition cost is 5 XP per ГЛАВА 4 «Новые достоинства»
+             *     («Накопив 5 пунктов опыта, персонаж получает возможность
+             *     обменять их на любое новое достоинство»); the field
+             *     accepts 0..15 to allow GM concessions (0 for in-game
+             *     gifts) and high-rank exotics (up to 3 ranks × 5 XP).
+             *     The implant's birr price lives in the regular `cost`
+             *     (or wherever ItemBase carries item value) — XP is
+             *     tracked separately because it draws from the
+             *     character's XP pool, not their wallet.
+             */
+            xpCost: number;
+            /** @description Description of the cybernetic's effect */
+            effect: string;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "CYBERNETIC";
+        };
+        ItemShipModule: components["schemas"]["ItemBase"] & {
+            /** @enum {string} */
+            type?: "SHIP_MODULE";
+            slot: components["schemas"]["ShipModuleSlot"];
+            /** @description Description of the module's effect and energy use */
+            effect: string;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "SHIP_MODULE";
+        };
+        ItemOther: components["schemas"]["ItemBase"] & {
+            /** @enum {string} */
+            type?: "OTHER";
+            /** @description Encumbrance weight in slots */
+            weight: number;
+            /** @description Optional free-text notes */
+            notes?: string | null;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "OTHER";
+        };
+        /**
+         * @description Create payload for a WEAPON item. No `id` — server-assigned.
+         * @example {
+         *       "type": "WEAPON",
+         *       "name": "Vulcan Carbine",
+         *       "damage": 2,
+         *       "range": "medium",
+         *       "bonus": 2,
+         *       "crit": 2,
+         *       "weight": 0.8,
+         *       "features": [],
+         *       "equipped": false
+         *     }
+         */
+        ItemWeaponCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "WEAPON";
+            name: string;
+            /** @description Base damage dice */
+            damage: number;
+            range: components["schemas"]["ItemRangeEnum"];
+            /** @description Bonus dice added to the attack pool */
+            bonus: number;
+            /** @description Critical threshold */
+            crit: number;
+            /** @description Encumbrance weight in slots (0.5 increments) */
+            weight: number;
+            /** @description Feature tags (e.g. "Burst", "Explosive") */
+            features: string[];
+            /** @default false */
+            equipped: boolean;
+        };
+        /**
+         * @description Create payload for an ARMOR item. No `id` — server-assigned.
+         * @example {
+         *       "type": "ARMOR",
+         *       "name": "Coriolis Guard Suit",
+         *       "armorRating": 3,
+         *       "weight": 1,
+         *       "features": [
+         *         "Vacuum Sealed"
+         *       ],
+         *       "equipped": false
+         *     }
+         */
+        ItemArmorCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "ARMOR";
+            name: string;
+            /** @description Armor rating — reduces incoming damage */
+            armorRating: number;
+            /** @description Encumbrance weight in slots */
+            weight: number;
+            /** @description Feature tags (e.g. "Vacuum Sealed", "Exo-Skeleton") */
+            features: string[];
+            /** @default false */
+            equipped: boolean;
+        };
+        /**
+         * @description Create payload for a GEAR item. No `id` — server-assigned.
+         * @example {
+         *       "type": "GEAR",
+         *       "name": "Medkit",
+         *       "weight": 0.5,
+         *       "quantity": 1,
+         *       "notes": "Standard field medkit"
+         *     }
+         */
+        ItemGearCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "GEAR";
+            name: string;
+            /** @description Encumbrance weight in slots */
+            weight: number;
+            /** @description Number of units */
+            quantity: number;
+            /** @description Optional free-text notes */
+            notes?: string | null;
+        };
+        /**
+         * @description Create payload for a CYBERNETIC item. No `id` — server-assigned.
+         * @example {
+         *       "type": "CYBERNETIC",
+         *       "name": "Neural Interface",
+         *       "xpCost": 5,
+         *       "effect": "Grants +1 die to Data Djinn checks"
+         *     }
+         */
+        ItemCyberneticCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "CYBERNETIC";
+            name: string;
+            /**
+             * @description XP spent to acquire this implant (canonical cost 5 XP per
+             *     ГЛАВА 4; accepts 0..15 for GM concessions and high-rank
+             *     exotics). Birr price is carried in the item's `cost` field.
+             */
+            xpCost: number;
+            /** @description Description of the cybernetic's effect */
+            effect: string;
+        };
+        /**
+         * @description Create payload for a SHIP_MODULE item. No `id` — server-assigned.
+         * @example {
+         *       "type": "SHIP_MODULE",
+         *       "name": "Sensor Upgrade Mk I",
+         *       "slot": "SENSOR",
+         *       "effect": "+1 die to sensor checks"
+         *     }
+         */
+        ItemShipModuleCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "SHIP_MODULE";
+            name: string;
+            slot: components["schemas"]["ShipModuleSlot"];
+            /** @description Description of the module's effect and energy use */
+            effect: string;
+        };
+        /**
+         * @description Create payload for an OTHER item. No `id` — server-assigned.
+         * @example {
+         *       "type": "OTHER",
+         *       "name": "Coriolis Prayer Rug",
+         *       "weight": 0.5,
+         *       "notes": null
+         *     }
+         */
+        ItemOtherCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "OTHER";
+            name: string;
+            /** @description Encumbrance weight in slots */
+            weight: number;
+            /** @description Optional free-text notes */
+            notes?: string | null;
+        };
+        /**
+         * @description PATCH payload for a WEAPON item. All fields optional.
+         * @example {
+         *       "type": "WEAPON",
+         *       "damage": 3,
+         *       "equipped": true
+         *     }
+         */
+        ItemWeaponUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "WEAPON";
+            name?: string;
+            damage?: number;
+            range?: components["schemas"]["ItemRangeEnum"];
+            bonus?: number;
+            crit?: number;
+            weight?: number;
+            features?: string[];
+            equipped?: boolean;
+        };
+        /**
+         * @description PATCH payload for an ARMOR item. All fields optional.
+         * @example {
+         *       "type": "ARMOR",
+         *       "armorRating": 4,
+         *       "equipped": true
+         *     }
+         */
+        ItemArmorUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "ARMOR";
+            name?: string;
+            armorRating?: number;
+            weight?: number;
+            features?: string[];
+            equipped?: boolean;
+        };
+        /**
+         * @description PATCH payload for a GEAR item. All fields optional.
+         * @example {
+         *       "type": "GEAR",
+         *       "quantity": 3
+         *     }
+         */
+        ItemGearUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "GEAR";
+            name?: string;
+            weight?: number;
+            quantity?: number;
+            notes?: string | null;
+        };
+        /**
+         * @description PATCH payload for a CYBERNETIC item. All fields optional.
+         * @example {
+         *       "type": "CYBERNETIC",
+         *       "effect": "Grants +2 dice to Data Djinn checks"
+         *     }
+         */
+        ItemCyberneticUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "CYBERNETIC";
+            name?: string;
+            xpCost?: number;
+            effect?: string;
+        };
+        /**
+         * @description PATCH payload for a SHIP_MODULE item. All fields optional.
+         * @example {
+         *       "type": "SHIP_MODULE",
+         *       "effect": "+2 dice to sensor checks"
+         *     }
+         */
+        ItemShipModuleUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "SHIP_MODULE";
+            name?: string;
+            slot?: components["schemas"]["ShipModuleSlot"];
+            effect?: string;
+        };
+        /**
+         * @description PATCH payload for an OTHER item. All fields optional.
+         * @example {
+         *       "type": "OTHER",
+         *       "notes": "Blessed by the Lady of Tears"
+         *     }
+         */
+        ItemOtherUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "OTHER";
+            name?: string;
+            weight?: number;
+            notes?: string | null;
+        };
+        /**
+         * @description A discriminated union of all item types. The `type` field determines
+         *     which variant applies. Generated clients produce a correctly-typed
+         *     sum type from this schema.
+         */
+        Item: components["schemas"]["ItemWeapon"] | components["schemas"]["ItemArmor"] | components["schemas"]["ItemGear"] | components["schemas"]["ItemCybernetic"] | components["schemas"]["ItemShipModule"] | components["schemas"]["ItemOther"];
+        /**
+         * @description Payload for creating a new item. Same discriminated union as `Item`
+         *     but without `id` (server-assigned). The `type` discriminator must
+         *     be present.
+         */
+        ItemCreate: components["schemas"]["ItemWeaponCreate"] | components["schemas"]["ItemArmorCreate"] | components["schemas"]["ItemGearCreate"] | components["schemas"]["ItemCyberneticCreate"] | components["schemas"]["ItemShipModuleCreate"] | components["schemas"]["ItemOtherCreate"];
+        /**
+         * @description PATCH payload for updating an item. The `type` discriminator must
+         *     match the existing item type — changing it returns 400
+         *     `ITEM_TYPE_MISMATCH`. All fields are optional.
+         */
+        ItemUpdate: components["schemas"]["ItemWeaponUpdate"] | components["schemas"]["ItemArmorUpdate"] | components["schemas"]["ItemGearUpdate"] | components["schemas"]["ItemCyberneticUpdate"] | components["schemas"]["ItemShipModuleUpdate"] | components["schemas"]["ItemOtherUpdate"];
+        /**
+         * @description Full character DTO as returned by the v1 API. Server-derived fields
+         *     (`hp.max`, `mp.max`, `encumbrance.max`) are computed by the
+         *     RulesEngine on every write and are marked `readOnly`.
+         *
+         *     Formulas (PRD §5.2, §10):
+         *     - HP max = STR + AGI
+         *     - MP max = WIT + EMP
+         *     - Encumbrance max = STR × 2
+         */
+        Character: {
+            /** @description Opaque character identifier (cuid2) */
+            readonly id: string;
+            /** @description Identifier of the owning user (cuid2) */
+            readonly ownerId: string;
+            /** @description Character name (1–80 characters) */
+            name: string;
+            /**
+             * @description One of the 11 character archetypes (амплуа). May be `null`
+             *     during the creation wizard before the user has chosen an
+             *     archetype; required for an `active` character. Determines the
+             *     key attribute / key skills caps applied at creation and the
+             *     reputation modifier applied on top of `upbringing`.
+             */
+            concept: components["schemas"]["Concept"] | null;
+            /**
+             * @description The character's chosen role (роль) within their amplua. Nullable
+             *     for drafts and for legacy characters created before role-tracking
+             *     landed; the wizard prompts for a role on the next edit when
+             *     `role` is null but `concept` is set ("unmigrated"). Once the
+             *     character is `active`, the server enforces that the role belongs
+             *     to the chosen `concept` — `ROLE_CONCEPT_MISMATCH` is returned
+             *     otherwise.
+             */
+            role?: components["schemas"]["Role"] | null;
+            /**
+             * @description Server-side flag, true on rows backfilled by the canon-alignment
+             *     migration that introduced `Character.role` (T-2026-05-10-010
+             *     Block E). The migration assigned each existing character the
+             *     first canonical role of their amplua and set this flag so the
+             *     web sheet can prompt the user to confirm or pick a different
+             *     one. Cleared automatically by the server the first time the
+             *     user PATCHes `role` to a non-null value (the explicit
+             *     confirmation path). Always false on characters created after
+             *     the migration ran. Read-only — clients do not set this; the
+             *     server owns the lifecycle.
+             * @default false
+             */
+            readonly roleUnmigrated: boolean;
+            /** @description One of the Nine Icons, or null if not chosen yet */
+            iconId: components["schemas"]["IconId"] | null;
+            /**
+             * @description Social stratum the character was raised in. Set at creation and
+             *     **immutable** — drives the starting attribute / skill point
+             *     budgets and the initial values of `reputation` and
+             *     `startingWealth`.
+             */
+            upbringing: components["schemas"]["Upbringing"];
+            /**
+             * @description Free-text narrative description of where the character is from
+             *     (home station, planet, or region). Has no mechanical effect.
+             */
+            origin: string | null;
+            /**
+             * @description Current social reputation. Initial value is derived from
+             *     `upbringing` (plebeian=2, stationary=4, aristocrat=6) and may
+             *     change during play.
+             */
+            reputation: number;
+            /**
+             * @description The number of birrs (currency) the character started with at
+             *     creation. Derived from `upbringing` (plebeian=500,
+             *     stationary=1000, aristocrat=5000). Immutable historical record.
+             */
+            readonly startingWealth: number;
+            /**
+             * @description The crew (амплуа команды) this character belongs to.
+             *     Mutable while `status: draft` (the wizard is still in
+             *     progress); immutable once the character is `active`.
+             */
+            crewConcept: components["schemas"]["CrewConcept"] | null;
+            /**
+             * @description Whether this character is a mutant (пасынок) per Coriolis
+             *     ST3001 ch.4 §Стигмы пасынков. Mutants additionally pick one
+             *     starting talent of `kind: stigma` from the catalog (any of
+             *     the three stigmas) through the regular `addTalent`
+             *     endpoint. Mutable while `status: draft` and immutable once
+             *     `active` — `MUTANT_IMMUTABLE`. When `true`, `mutantLineage`
+             *     must be set; when `false`, `mutantLineage` must be `null`.
+             * @default false
+             */
+            mutant: boolean;
+            /**
+             * @description Mutant lineage. `null` for non-mutants; one of `zirba`,
+             *     `shingura`, `nerida` when `mutant=true`. Mutable while
+             *     `status: draft` and immutable once `active`.
+             */
+            mutantLineage: components["schemas"]["MutantLineage"] | null;
+            attributes: components["schemas"]["Attributes"];
+            skills: components["schemas"]["Skills"];
+            hp: {
+                current: number;
+                /** @description Derived from STR + AGI; set by the server */
+                readonly max: number;
+            };
+            mp: {
+                current: number;
+                /** @description Derived from WIT + EMP; set by the server */
+                readonly max: number;
+            };
+            encumbrance: {
+                /** @description Sum of non-stowed item weights; set by the server */
+                readonly current: number;
+                /** @description Derived from STR × 2; set by the server */
+                readonly max: number;
+            };
+            /** @description Total XP earned */
+            experience: number;
+            conditions: components["schemas"]["ConditionFlags"];
+            criticalInjuries: components["schemas"]["CriticalInjury"][];
+            talents: components["schemas"]["Talent"][];
+            relationships: components["schemas"]["Relationship"][];
+            inventory: components["schemas"]["Item"][];
+            /** @description Free-form notes (Markdown; soft cap 4096 characters) */
+            notes: string | null;
+            /**
+             * @description Lifecycle state of the character.
+             *
+             *     - `draft` — character is a work-in-progress created by the wizard.
+             *       Draft characters are excluded from the default character list
+             *       (`GET /api/v1/characters`) unless `?includeDrafts=true` is passed.
+             *     - `active` — character is complete and visible on the dashboard.
+             *
+             *     Transitioning from `draft` to `active` (forging) is done by sending
+             *     `PATCH /api/v1/characters/{id}` with `{ "status": "active" }`.
+             *     The reverse transition (`active → draft`) is rejected with 422
+             *     `INVALID_STATUS_TRANSITION`.
+             * @enum {string}
+             */
+            status: "draft" | "active";
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        /**
+         * @description Payload for `POST /api/v1/characters`. Only `name` and `upbringing`
+         *     are required. Attribute values default to 2 if the `attributes`
+         *     object is omitted or a key within it is missing. Skill values
+         *     default to 0.
+         *
+         *     The server enforces the upbringing-based budgets at creation time:
+         *     - sum(attributes) ≤ attribute budget for upbringing
+         *     - each attribute is between 2 and 4
+         *     - sum(skills) ≤ skill budget for upbringing
+         *
+         *     `reputation` and `startingWealth` are **server-derived** from
+         *     `upbringing` and must not be set by the client.
+         *
+         *     Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
+         *     `encumbrance.max`, `encumbrance.current`, `startingWealth`,
+         *     `createdAt`, `updatedAt`) must not be included; they are
+         *     rejected with 400.
+         *
+         *     Set `status: 'draft'` to create a wizard-in-progress character.
+         *     Omitting `status` defaults to `'active'`.
+         */
+        CharacterCreate: {
+            name: string;
+            concept?: components["schemas"]["Concept"] | null;
+            /**
+             * @description Optional role within the chosen amplua. Step 5 of the creation
+             *     wizard (skill distribution) is now preceded by a role pick within
+             *     the chosen amplua. Must belong to `concept` when both are set;
+             *     validated server-side with `ROLE_CONCEPT_MISMATCH`.
+             */
+            role?: components["schemas"]["Role"] | null;
+            iconId?: components["schemas"]["IconId"] | null;
+            upbringing: components["schemas"]["Upbringing"];
+            origin?: string | null;
+            /**
+             * @description Optional crew concept the character belongs to. May be set
+             *     in the wizard before forging or updated later while the
+             *     character is `draft`.
+             */
+            crewConcept?: components["schemas"]["CrewConcept"] | null;
+            /**
+             * @description Whether the character is a mutant (пасынок). When `true`,
+             *     `mutantLineage` must be supplied; the player then picks one
+             *     stigma talent from the catalog through the regular
+             *     `addTalent` endpoint (kind `stigma`). When `false`
+             *     (default), `mutantLineage` must be `null` or omitted and
+             *     stigma talents are rejected with `STIGMA_REQUIRES_MUTANT`.
+             * @default false
+             */
+            mutant: boolean;
+            /**
+             * @description Mutant lineage (only valid when `mutant=true`). One of
+             *     `zirba`, `shingura`, `nerida`. `MUTANT_LINEAGE_REQUIRED` is
+             *     returned if `mutant=true` and lineage is missing;
+             *     `MUTANT_LINEAGE_FORBIDDEN` is returned if `mutant=false`
+             *     and a lineage is supplied.
+             */
+            mutantLineage?: components["schemas"]["MutantLineage"] | null;
+            attributes?: components["schemas"]["Attributes"];
+            skills?: components["schemas"]["Skills"];
+            hp?: {
+                current?: number;
+            };
+            mp?: {
+                current?: number;
+            };
+            /** @default 0 */
+            experience: number;
+            conditions?: components["schemas"]["ConditionFlags"];
+            notes?: string | null;
+            /**
+             * @description Initial lifecycle state. Omit (or set `active`) for normal creation.
+             *     Set to `draft` when starting the character-creation wizard.
+             * @default active
+             * @enum {string}
+             */
+            status: "draft" | "active";
+        };
+        /**
+         * @description PATCH payload for `PATCH /api/v1/characters/{id}`. All fields are
+         *     optional. Read-only fields (`id`, `ownerId`, `hp.max`, `mp.max`,
+         *     `encumbrance.max`, `encumbrance.current`, `startingWealth`,
+         *     `createdAt`, `updatedAt`) are rejected with 400 if present.
+         *
+         *     `upbringing` may be changed **while the character's `status` is
+         *     `draft`** (the wizard is still in progress). When it is, the
+         *     server recomputes `reputation` and `startingWealth` from the new
+         *     upbringing. Once the character has been forged (`status: active`),
+         *     upbringing becomes immutable and any attempt to set it is
+         *     rejected with `UPBRINGING_IMMUTABLE`.
+         *
+         *     Derived stats (`hp.max`, `mp.max`, `encumbrance.max`) are
+         *     recalculated automatically after each successful write.
+         *
+         *     **Status transitions:**
+         *     - `draft → draft` — no-op; the wizard continues editing.
+         *     - `draft → active` — forges the character (wizard complete).
+         *       Send `{ "status": "active" }` as a standalone PATCH or alongside
+         *       other field updates.
+         *     - `active → draft` — **rejected** with 422 `INVALID_STATUS_TRANSITION`.
+         *       Active characters cannot be reverted to draft state.
+         */
+        CharacterUpdate: {
+            name?: string;
+            /**
+             * @description Switching the concept while `status` is `draft` recomputes
+             *     the per-attribute / per-skill caps for validation and
+             *     adjusts the reputation by the new concept's modifier
+             *     (relative to upbringing's baseline). Once active, concept
+             *     becomes immutable.
+             */
+            concept?: components["schemas"]["Concept"] | null;
+            /**
+             * @description The character's role within their amplua. Allowed while
+             *     `status` is `draft`; once `active`, the server enforces that
+             *     the role matches the chosen concept — `ROLE_CONCEPT_MISMATCH`.
+             *     Changing the concept while drafting should clear or re-validate
+             *     the role. Step 5 of the creation wizard (skill distribution) is
+             *     now preceded by a role pick within the chosen amplua.
+             */
+            role?: components["schemas"]["Role"] | null;
+            iconId?: components["schemas"]["IconId"] | null;
+            /**
+             * @description Allowed only while `status` is `draft` — used by the wizard
+             *     to let players reconsider their pick before forging. Once
+             *     the character is `active`, this field is immutable.
+             */
+            upbringing?: components["schemas"]["Upbringing"];
+            origin?: string | null;
+            /**
+             * @description Allowed only while `status` is `draft` — used by the wizard
+             *     to let players pick their team's crew concept before
+             *     forging. Once the character is `active`, this field is
+             *     immutable and any attempt to change it is rejected with
+             *     `CREW_CONCEPT_IMMUTABLE`.
+             */
+            crewConcept?: components["schemas"]["CrewConcept"] | null;
+            /**
+             * @description Allowed only while `status` is `draft`. Toggling on/off
+             *     while drafting also clears any incompatible stigma talents
+             *     picked previously. Once the character is `active`, this
+             *     field is immutable and any attempt to change it is rejected
+             *     with `MUTANT_IMMUTABLE`.
+             */
+            mutant?: boolean;
+            /**
+             * @description Allowed only while `status` is `draft`. Must be `null` when
+             *     `mutant=false` and one of `zirba|shingura|nerida` when
+             *     `mutant=true`. Frozen alongside `mutant` once the character
+             *     is `active`.
+             */
+            mutantLineage?: components["schemas"]["MutantLineage"] | null;
+            /**
+             * @description Update the character's current reputation (e.g. after a
+             *     roleplay event). Initial value is set from `upbringing` at
+             *     creation time; while the character is a `draft`, changing
+             *     `upbringing` resets `reputation` to the new upbringing's
+             *     baseline.
+             */
+            reputation?: number;
+            attributes?: components["schemas"]["Attributes"];
+            skills?: components["schemas"]["Skills"];
+            hp?: {
+                current?: number;
+            };
+            mp?: {
+                current?: number;
+            };
+            experience?: number;
+            conditions?: components["schemas"]["ConditionFlags"];
+            /**
+             * @description Replaces the entire critical injuries list when provided.
+             *     Use the dedicated nested-item pattern (POST/PATCH/DELETE on
+             *     individual injuries) once that surface is added in a later epic.
+             */
+            criticalInjuries?: components["schemas"]["CriticalInjury"][];
+            notes?: string | null;
+            /**
+             * @description Lifecycle state transition. Only `draft → active` (forge) is
+             *     permitted. Attempting `active → draft` returns 422
+             *     `INVALID_STATUS_TRANSITION`.
+             * @enum {string}
+             */
+            status?: "draft" | "active";
+        };
+        /** @description Cursor-paginated list of characters */
+        CharacterList: {
+            items: components["schemas"]["Character"][];
+            /** @description Opaque cursor for the next page; null when this is the last page */
+            nextCursor: string | null;
+        };
+        /**
+         * @description Ship hull class per ST3001 ГЛАВА 7 Table 7.4 (типы кораблей). The
+         *     class determines the base stat block (energy, hull, maneuverability,
+         *     signature, armor, speed, module slots) from Table 7.5. Kebab-case
+         *     values map to the Russian originals in the rulebook.
+         *
+         *     Class I examples: fighter, shuttle.
+         *     Class II examples: torpedo-boat.
+         *     Class III examples: light-freighter, light-passenger, courier-yacht,
+         *       clipper, patrol-boat, gunboat, assault-ship, blockade-runner, pleasure-yacht.
+         *     Class IV examples: flying-circus, prospector, rescue-ship, passenger-liner.
+         *     Class V examples: heavy-cruiser, passenger-liner (large).
+         * @enum {string}
+         */
+        ShipClass: "fighter" | "shuttle" | "torpedo-boat" | "light-freighter" | "light-passenger" | "courier-yacht" | "clipper" | "patrol-boat" | "gunboat" | "assault-ship" | "blockade-runner" | "pleasure-yacht" | "flying-circus" | "prospector" | "rescue-ship" | "passenger-liner" | "heavy-freighter" | "cruiser" | "destroyer" | "heavy-cruiser";
+        /**
+         * @description Ship module slot type per ST3001 ГЛАВА 7 mandatory and optional
+         *     module catalogue. `BRIDGE`, `REACTOR`, `DRIVE` are mandatory on
+         *     every ship; all others are optional and consume module slots.
+         *     Used for both character-inventory SHIP_MODULE items (modules
+         *     the character carries to install) and ship-side module slots
+         *     (modules already installed). Block H of T-2026-05-10-010
+         *     retired the lower-case 7-value `ItemSlotType` enum that used
+         *     to scope inventory items separately — the two contexts now
+         *     share this single canonical enum. Migration mapping for legacy
+         *     item data: `bridge → BRIDGE`, `hull → OTHER` (no canonical
+         *     hull slot), `hold → HOLD`, `weapon → WEAPON`, `drive → DRIVE`,
+         *     `sensor → SENSOR`, `comms → COMMS`.
+         * @enum {string}
+         */
+        ShipModuleSlot: "BRIDGE" | "REACTOR" | "DRIVE" | "HOLD" | "WEAPON" | "TORPEDO" | "SENSOR" | "COMMS" | "HANGAR" | "QUARTERS" | "MEDICAL" | "WORKSHOP" | "CHAPEL" | "ESCAPE-PODS" | "CRYO" | "DOCKING" | "MINING" | "REPAIR" | "CONCEALED-HOLD" | "PROXY-DECK" | "OTHER";
+        /**
+         * @description Ship-combat range bands per ST3001 ГЛАВА 7 Table 7.9. Distinct from
+         *     the personal-scale `ItemRangeEnum`.
+         *     - `zero` — point-blank / boarding range.
+         *     - `close` — within a few hundred metres.
+         *     - `medium` — standard engagement distance.
+         *     - `long` — extended engagement.
+         *     - `extreme` — maximum sensor range.
+         * @enum {string}
+         */
+        ShipWeaponRange: "zero" | "close" | "medium" | "long" | "extreme";
+        /**
+         * @description Crew positions per ST3001 ГЛАВА 7 (crew roles). `sensorOp` is the
+         *     штурман-оператор (navigator/sensor operator) in the rulebook, also
+         *     responsible for combat-meme and info-impulse attacks. All positions
+         *     except `captain` may be filled by automation (усовершенствование
+         *     «Автоматика»).
+         * @enum {string}
+         */
+        CrewPosition: "captain" | "pilot" | "sensorOp" | "gunner" | "engineer" | "serviceCrew";
+        /**
+         * @description A crew position on a ship. Positions without an assigned character are
+         *     vacant (open berth). Multiple characters may not share one position.
+         */
+        CrewSlot: {
+            position: components["schemas"]["CrewPosition"];
+            /**
+             * @description ID of the assigned Character. Null when the berth is vacant.
+             *     The character must be owned by the same user as the ship.
+             */
+            assignedCharacterId?: string | null;
+        };
+        /** @description Fields common to every ship module variant */
+        ShipModuleBase: {
+            /** @description Opaque module identifier (cuid2) */
+            readonly id: string;
+            slot: components["schemas"]["ShipModuleSlot"];
+            /** @description Module name (e.g. "Graviton Projector", "Smuggler hold") */
+            name: string;
+            /** @description Energy points consumed by this module when active */
+            energyUse: number;
+            /** @description Free-text notes; used for damage state, special conditions, etc. */
+            notes?: string | null;
+        };
+        ShipModuleWeapon: components["schemas"]["ShipModuleBase"] & {
+            /** @enum {string} */
+            slot?: "WEAPON";
+            /** @description Modifier dice added to the attack pool (Мод. column in Table 7.9) */
+            weaponBonus: number;
+            weaponRange: components["schemas"]["ShipWeaponRange"];
+            /** @description Structural damage dealt on a hit */
+            weaponDamage: number;
+            /** @description Number of successes required to trigger a critical effect */
+            weaponCritThreshold: number;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "WEAPON";
+        };
+        ShipModuleTorpedo: components["schemas"]["ShipModuleBase"] & {
+            /** @enum {string} */
+            slot?: "TORPEDO";
+            /** @description Number of torpedoes currently loaded */
+            torpedoCount?: number;
+            /** @description Number of mines currently loaded */
+            mineCount?: number;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "TORPEDO";
+        };
+        ShipModuleHold: components["schemas"]["ShipModuleBase"] & {
+            /** @enum {string} */
+            slot?: "HOLD";
+            /** @description Cargo capacity in tonnes (class-dependent per Table 7.6) */
+            cargoTons?: number;
+            /**
+             * @description True for a потайной грузовой отсек (concealed hold)
+             * @default false
+             */
+            concealed: boolean;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "HOLD";
+        };
+        ShipModuleSensor: components["schemas"]["ShipModuleBase"] & {
+            /** @enum {string} */
+            slot?: "SENSOR";
+            /**
+             * @description Modifier added to sensor / dataDjinn checks
+             * @default 1
+             */
+            detectionBonus: number;
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "SENSOR";
+        };
+        ShipModuleOther: components["schemas"]["ShipModuleBase"] & {
+            slot?: components["schemas"]["ShipModuleSlot"];
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "BRIDGE" | "REACTOR" | "DRIVE" | "COMMS" | "HANGAR" | "QUARTERS" | "MEDICAL" | "WORKSHOP" | "CHAPEL" | "ESCAPE-PODS" | "CRYO" | "DOCKING" | "MINING" | "REPAIR" | "CONCEALED-HOLD" | "PROXY-DECK" | "OTHER";
+        };
+        /**
+         * @description Create payload for a WEAPON ship module. No `id` — server-assigned.
+         * @example {
+         *       "slot": "WEAPON",
+         *       "name": "Graviton Projector",
+         *       "energyUse": 2,
+         *       "weaponBonus": 1,
+         *       "weaponRange": "medium",
+         *       "weaponDamage": 3,
+         *       "weaponCritThreshold": 3,
+         *       "notes": null
+         *     }
+         */
+        ShipModuleWeaponCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "WEAPON";
+            name: string;
+            energyUse: number;
+            /** @description Modifier dice added to the attack pool */
+            weaponBonus: number;
+            weaponRange: components["schemas"]["ShipWeaponRange"];
+            /** @description Structural damage dealt on a hit */
+            weaponDamage: number;
+            /** @description Number of successes required to trigger a critical effect */
+            weaponCritThreshold: number;
+            notes?: string | null;
+        };
+        /**
+         * @description Create payload for a TORPEDO ship module. No `id` — server-assigned.
+         * @example {
+         *       "slot": "TORPEDO",
+         *       "name": "Torpedo Bay Alpha",
+         *       "energyUse": 1,
+         *       "torpedoCount": 4,
+         *       "mineCount": 0,
+         *       "notes": null
+         *     }
+         */
+        ShipModuleTorpedoCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "TORPEDO";
+            name: string;
+            energyUse: number;
+            /**
+             * @description Number of torpedoes currently loaded
+             * @default 0
+             */
+            torpedoCount: number;
+            /**
+             * @description Number of mines currently loaded
+             * @default 0
+             */
+            mineCount: number;
+            notes?: string | null;
+        };
+        /**
+         * @description Create payload for a HOLD ship module. No `id` — server-assigned.
+         * @example {
+         *       "slot": "HOLD",
+         *       "name": "Main Cargo Hold",
+         *       "energyUse": 0,
+         *       "cargoTons": 50,
+         *       "concealed": false,
+         *       "notes": null
+         *     }
+         */
+        ShipModuleHoldCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "HOLD";
+            name: string;
+            energyUse: number;
+            /**
+             * @description Cargo capacity in tonnes
+             * @default 0
+             */
+            cargoTons: number;
+            /**
+             * @description True for a concealed hold
+             * @default false
+             */
+            concealed: boolean;
+            notes?: string | null;
+        };
+        /**
+         * @description Create payload for a SENSOR ship module. No `id` — server-assigned.
+         * @example {
+         *       "slot": "SENSOR",
+         *       "name": "Long-Range Sensor Tower",
+         *       "energyUse": 1,
+         *       "detectionBonus": 1,
+         *       "notes": null
+         *     }
+         */
+        ShipModuleSensorCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "SENSOR";
+            name: string;
+            energyUse: number;
+            /**
+             * @description Modifier added to sensor / dataDjinn checks
+             * @default 1
+             */
+            detectionBonus: number;
+            notes?: string | null;
+        };
+        /**
+         * @description Create payload for any other ship module slot type (BRIDGE, REACTOR,
+         *     DRIVE, COMMS, HANGAR, QUARTERS, MEDICAL, WORKSHOP, CHAPEL, ESCAPE-PODS,
+         *     CRYO, DOCKING, MINING, REPAIR, CONCEALED-HOLD, PROXY-DECK, OTHER).
+         *     No `id` — server-assigned.
+         * @example {
+         *       "slot": "COMMS",
+         *       "name": "Long-Range Comms Array",
+         *       "energyUse": 1,
+         *       "notes": null
+         *     }
+         */
+        ShipModuleOtherCreate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "BRIDGE" | "REACTOR" | "DRIVE" | "COMMS" | "HANGAR" | "QUARTERS" | "MEDICAL" | "WORKSHOP" | "CHAPEL" | "ESCAPE-PODS" | "CRYO" | "DOCKING" | "MINING" | "REPAIR" | "CONCEALED-HOLD" | "PROXY-DECK" | "OTHER";
+            name: string;
+            energyUse: number;
+            notes?: string | null;
+        };
+        /**
+         * @description PATCH payload for a WEAPON ship module. All fields optional.
+         * @example {
+         *       "slot": "WEAPON",
+         *       "weaponDamage": 4
+         *     }
+         */
+        ShipModuleWeaponUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "WEAPON";
+            name?: string;
+            energyUse?: number;
+            weaponBonus?: number;
+            weaponRange?: components["schemas"]["ShipWeaponRange"];
+            weaponDamage?: number;
+            weaponCritThreshold?: number;
+            notes?: string | null;
+        };
+        /**
+         * @description PATCH payload for a TORPEDO ship module. All fields optional.
+         * @example {
+         *       "slot": "TORPEDO",
+         *       "torpedoCount": 2
+         *     }
+         */
+        ShipModuleTorpedoUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "TORPEDO";
+            name?: string;
+            energyUse?: number;
+            torpedoCount?: number;
+            mineCount?: number;
+            notes?: string | null;
+        };
+        /**
+         * @description PATCH payload for a HOLD ship module. All fields optional.
+         * @example {
+         *       "slot": "HOLD",
+         *       "cargoTons": 60
+         *     }
+         */
+        ShipModuleHoldUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "HOLD";
+            name?: string;
+            energyUse?: number;
+            cargoTons?: number;
+            concealed?: boolean;
+            notes?: string | null;
+        };
+        /**
+         * @description PATCH payload for a SENSOR ship module. All fields optional.
+         * @example {
+         *       "slot": "SENSOR",
+         *       "detectionBonus": 2
+         *     }
+         */
+        ShipModuleSensorUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "SENSOR";
+            name?: string;
+            energyUse?: number;
+            detectionBonus?: number;
+            notes?: string | null;
+        };
+        /**
+         * @description PATCH payload for any other ship module slot type. All fields optional.
+         *     The `slot` discriminator may not be changed after installation.
+         * @example {
+         *       "slot": "COMMS",
+         *       "notes": "Upgraded to Mk II antenna"
+         *     }
+         */
+        ShipModuleOtherUpdate: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            slot: "BRIDGE" | "REACTOR" | "DRIVE" | "COMMS" | "HANGAR" | "QUARTERS" | "MEDICAL" | "WORKSHOP" | "CHAPEL" | "ESCAPE-PODS" | "CRYO" | "DOCKING" | "MINING" | "REPAIR" | "CONCEALED-HOLD" | "PROXY-DECK" | "OTHER";
+            name?: string;
+            energyUse?: number;
+            notes?: string | null;
+        };
+        /**
+         * @description A discriminated union of all ship module variants. The `slot` field
+         *     determines which variant applies. Generated clients produce a
+         *     correctly-typed sum type from this schema.
+         *
+         *     Mandatory modules (BRIDGE, REACTOR, DRIVE) are always present on a
+         *     ship and are not individually manageable via the module CRUD endpoints.
+         *     They appear in the `modules` array for completeness and energy tracking.
+         */
+        ShipModule: components["schemas"]["ShipModuleWeapon"] | components["schemas"]["ShipModuleTorpedo"] | components["schemas"]["ShipModuleHold"] | components["schemas"]["ShipModuleSensor"] | components["schemas"]["ShipModuleOther"];
+        /**
+         * @description Payload for `POST /api/v1/ships/{id}/modules`. Same discriminated
+         *     union as `ShipModule` but without `id` (server-assigned). The `slot`
+         *     discriminator must be present.
+         *
+         *     Note: BRIDGE, REACTOR, and DRIVE modules are created automatically
+         *     with the ship and cannot be added via this endpoint.
+         */
+        ShipModuleCreate: components["schemas"]["ShipModuleWeaponCreate"] | components["schemas"]["ShipModuleTorpedoCreate"] | components["schemas"]["ShipModuleHoldCreate"] | components["schemas"]["ShipModuleSensorCreate"] | components["schemas"]["ShipModuleOtherCreate"];
+        /**
+         * @description PATCH payload for `PATCH /api/v1/ship-modules/{id}`. The `slot`
+         *     discriminator must match the installed module's slot — changing it
+         *     returns 400 `SHIP_MODULE_SLOT_MISMATCH`. All fields optional.
+         */
+        ShipModuleUpdate: components["schemas"]["ShipModuleWeaponUpdate"] | components["schemas"]["ShipModuleTorpedoUpdate"] | components["schemas"]["ShipModuleHoldUpdate"] | components["schemas"]["ShipModuleSensorUpdate"] | components["schemas"]["ShipModuleOtherUpdate"];
+        /**
+         * @description Full Ship DTO as returned by the v1 API. Ship stats correspond to
+         *     ST3001 ГЛАВА 7 Table 7.5 base stats, modified by the installed
+         *     modules and upgrades.
+         *
+         *     `hull.max` and `energy.max` are tracked as explicit editable values
+         *     (not derived) because they can be altered by upgrades (Прочный корпус
+         *     +1 hull, Мощный реактор +1 energy). `maneuverability` and `signature`
+         *     are signed integers (negative values are valid per the class table).
+         */
+        Ship: {
+            /** @description Opaque ship identifier (cuid2) */
+            readonly id: string;
+            /** @description Identifier of the owning user (cuid2) */
+            readonly ownerId: string;
+            /** @description Ship name (1–80 characters) */
+            name: string;
+            class: components["schemas"]["ShipClass"];
+            /** @description Model / shipyard name (e.g. "Helebian Class III freighter") */
+            model: string | null;
+            /** @description Registry number / transponder code (e.g. "KUA-7741-M") */
+            registry: string | null;
+            /** @description Structural integrity (Прочность in ST3001 ГЛАВА 7) */
+            hull: {
+                /** @description Current hull points */
+                current: number;
+                /** @description Maximum hull points (base per class + Прочный корпус upgrades) */
+                max: number;
+            };
+            /** @description Reactor energy (Энергия in ST3001 ГЛАВА 7) */
+            energy: {
+                /** @description Energy points currently available for allocation */
+                current: number;
+                /** @description Maximum energy points (base per class + Мощный реактор upgrades) */
+                max: number;
+            };
+            /** @description Armor rating — number of dice rolled for the armor check (Броня) */
+            armor: number;
+            /**
+             * @description Maneuverability modifier (Манёвренность). Signed integer — negative
+             *     for large classes (Class IV is −1, Class V is −2). Affects pilot
+             *     skill checks in ship combat per ST3001 ГЛАВА 7.
+             */
+            maneuverability: number;
+            /**
+             * @description Signature modifier (Заметность). Signed integer. Negative values
+             *     mean the ship is harder to detect; positive values mean it is more
+             *     visible. Applied to opponent sensor checks per ГЛАВА 7.
+             */
+            signature: number;
+            /** @description Speed in astronomical units per day (Скорость per ГЛАВА 7 Table 7.5) */
+            speed: number;
+            /**
+             * @description Total cargo capacity in tonnes across all hold modules
+             *     (Вместимость per ГЛАВА 7 Table 7.6: Class III = 50 tonnes).
+             */
+            cargoCapacity: number;
+            /**
+             * @description Installed modules including the three mandatory ones (BRIDGE,
+             *     REACTOR, DRIVE). Optional modules consume the class module-slot
+             *     budget.
+             */
+            modules: components["schemas"]["ShipModule"][];
+            /** @description Crew assignment roster */
+            crew: components["schemas"]["CrewSlot"][];
+            /**
+             * @description List of active ship problems (free-text entries, e.g. damage
+             *     effects or wear-and-tear notes per ГЛАВА 7 wear table).
+             */
+            problems: string[];
+            /** @description Free-form ship history / background text (Markdown) */
+            history: string | null;
+            /** @description GM / player operational notes (Markdown) */
+            notes: string | null;
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        /**
+         * @description Payload for `POST /api/v1/ships`. `name` and `class` are required.
+         *     Server populates base stats from the class table (ST3001 ГЛАВА 7
+         *     Table 7.5) when not explicitly provided. The three mandatory modules
+         *     (BRIDGE, REACTOR, DRIVE) are created automatically.
+         */
+        ShipCreate: {
+            name: string;
+            class: components["schemas"]["ShipClass"];
+            model?: string | null;
+            registry?: string | null;
+            /** @description Override base hull stats from class table */
+            hull?: {
+                current?: number;
+                max?: number;
+            };
+            /** @description Override base energy from class table */
+            energy?: {
+                current?: number;
+                max?: number;
+            };
+            armor?: number;
+            maneuverability?: number;
+            signature?: number;
+            speed?: number;
+            notes?: string | null;
+            history?: string | null;
+        };
+        /**
+         * @description PATCH payload for `PATCH /api/v1/ships/{id}`. All fields optional.
+         *     Read-only fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are
+         *     rejected with 400 if present.
+         */
+        ShipUpdate: {
+            name?: string;
+            model?: string | null;
+            registry?: string | null;
+            hull?: {
+                current?: number;
+                max?: number;
+            };
+            energy?: {
+                current?: number;
+                max?: number;
+            };
+            armor?: number;
+            maneuverability?: number;
+            signature?: number;
+            speed?: number;
+            /** @description Replaces the entire problems list when provided */
+            problems?: string[];
+            history?: string | null;
+            notes?: string | null;
+        };
+        /** @description Cursor-paginated list of ships */
+        ShipList: {
+            items: components["schemas"]["Ship"][];
+            /** @description Opaque cursor for the next page; null when this is the last page */
+            nextCursor: string | null;
+        };
+        HealthStatus: {
+            status: components["schemas"]["DependencyStatus"];
+            /** @description Semantic version of the running backend build */
+            version: string | null;
+            /** @description Seconds since the backend process started */
+            uptimeSeconds: number;
+            dependencies: {
+                db: components["schemas"]["DependencyStatus"];
+                redis: components["schemas"]["DependencyStatus"];
+                centrifugo: components["schemas"]["DependencyStatus"];
+            };
+        };
+        /**
+         * @description Request body for creating a share link. All fields are optional; an
+         *     empty object `{}` creates a permanent link without GM notes.
+         */
+        ShareLinkCreate: {
+            /**
+             * @description When true, the public character endpoint returns the top-level
+             *     `notes` field. When false (default), `notes` is always null in the
+             *     public response regardless of the character's actual notes value.
+             * @default false
+             */
+            includeGmNotes: boolean;
+            /**
+             * Format: date-time
+             * @description ISO-8601 instant after which the link stops resolving. Omit or
+             *     set to null for a permanent link.
+             */
+            expiresAt?: string | null;
+            /**
+             * @description Optional human-readable label to distinguish this link from others
+             *     in the owner's list (e.g. "GM copy", "public preview").
+             */
+            label?: string | null;
+        };
+        /**
+         * @description A share link grants anonymous read-only access to a character via the
+         *     `/api/v1/public/character/{slug}` endpoint.
+         */
+        ShareLink: {
+            /** @description Opaque share-link identifier (cuid2). Used for revocation. */
+            id: string;
+            /**
+             * @description 24-character URL-safe slug. Use in the public URL:
+             *     `/api/v1/public/character/{slug}`.
+             */
+            slug: string;
+            /** @description ID of the character this link exposes. */
+            characterId: string;
+            /**
+             * @description Whether the `notes` field is included in the public character
+             *     response. Always false if not set at creation time.
+             */
+            includeGmNotes: boolean;
+            /** @description Owner-assigned label for this link. */
+            label?: string | null;
+            /**
+             * Format: date-time
+             * @description Expiry instant. Null for permanent links.
+             */
+            expiresAt: string | null;
+            /**
+             * Format: date-time
+             * @description Revocation instant. Null if active. When set, the public endpoint
+             *     returns 410 Gone.
+             */
+            revokedAt: string | null;
+            /**
+             * Format: date-time
+             * @description ISO-8601 instant of the last recorded public view. Updated
+             *     asynchronously (up to 60 seconds lag) via the view-tracker flush job.
+             *     Null until the first view is flushed.
+             */
+            lastViewedAt: string | null;
+            /**
+             * @description Cumulative count of public views. Updated asynchronously; may lag
+             *     by up to 60 seconds.
+             */
+            viewCount: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ShareLinkList: {
+            items: components["schemas"]["ShareLink"][];
+        };
+        /** @description RFC 9457 problem details */
+        Problem: {
+            /**
+             * Format: uri
+             * @default about:blank
+             */
+            type: string | null;
+            title: string | null;
+            /** Format: int32 */
+            status: number;
+            detail?: string | null;
+            instance?: string | null;
+            code?: string | null;
+        };
+        /**
+         * @description The authenticated user's profile as exposed by the v1 API. Fields
+         *     sourced from the Better Auth `user` table. `deletedAt` is an internal
+         *     soft-delete flag and is never surfaced here — deleted users receive a
+         *     404 because their sessions are revoked at deletion time.
+         */
+        Me: {
+            /** @description Opaque user identifier issued by Better Auth (cuid2) */
+            id: string;
+            /**
+             * Format: email
+             * @description Primary email address. Read-only via this API.
+             */
+            email: string;
+            /**
+             * @description User-chosen display name shown in share-link banners and the avatar
+             *     menu. Null when the user has not set one yet.
+             */
+            displayName: string | null;
+            /**
+             * Format: date-time
+             * @description ISO-8601 instant when the account was created. Read-only via this API.
+             */
+            createdAt: string | null;
+            /**
+             * @description UI theme preference. Synced across web + mobile so a player who
+             *     toggles high-contrast on one device sees it everywhere.
+             *     `dark` is the default; `high-contrast` increases colour contrast
+             *     for users who need improved readability.
+             * @default dark
+             * @enum {string}
+             */
+            theme: "dark" | "high-contrast";
+        };
+        /**
+         * @description Partial update payload for PATCH /api/v1/me. `displayName` and `theme`
+         *     are mutable. Omitting a property leaves the corresponding field unchanged.
+         *     Setting `displayName` to null clears the field.
+         */
+        MeUpdate: {
+            /**
+             * @description User-chosen display name. Must be 1–80 characters when non-null.
+             *     Set to null to clear the field.
+             */
+            displayName?: string | null;
+            /**
+             * @description UI theme preference. Must be one of `dark` or `high-contrast`.
+             *     Omitting the field preserves the current value.
+             * @enum {string}
+             */
+            theme?: "dark" | "high-contrast";
+        };
+        /**
+         * @description Lifecycle state of a game session.
+         *     - `active` — session is in progress or available.
+         *     - `archived` — session is closed; hidden from the default list.
+         *     Both directions of the transition are permitted.
+         * @enum {string}
+         */
+        GameSessionStatus: "active" | "archived";
+        /** @description A campaign session container owned by a GM. */
+        GameSession: {
+            /** @description Opaque session identifier (cuid2) */
+            readonly id: string;
+            /** @description User identifier of the GM who owns this session */
+            readonly ownerId: string;
+            /** @description Short name for the session */
+            name: string;
+            /** @description Optional longer description */
+            description?: string | null;
+            status: components["schemas"]["GameSessionStatus"];
+            /** @description Darkness Points counter; mutated by Feature 7.3 */
+            readonly dpCount: number;
+            /**
+             * @description Character ids assigned to this session. Manage via the join
+             *     endpoint (POST / DELETE on /game-sessions/{id}/characters).
+             */
+            readonly characterIds: string[];
+            /** @description Optional ship linked to the session (Epic 8) */
+            shipId?: string | null;
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        /** @description Payload for creating a new game session */
+        GameSessionCreate: {
+            name: string;
+            description?: string | null;
+            shipId?: string | null;
+        };
+        /** @description PATCH payload for a game session — all fields optional */
+        GameSessionUpdate: {
+            name?: string;
+            description?: string | null;
+            status?: components["schemas"]["GameSessionStatus"];
+            shipId?: string | null;
+        };
+        GameSessionList: {
+            items: components["schemas"]["GameSession"][];
+            /** @description Cursor for the next page; null when there are no more results */
+            nextCursor: string | null;
+        };
+        AssignCharacterToSession: {
+            /** @description Identifier of the character to assign */
+            characterId: string;
+        };
+        /** @description Payload for adjusting Darkness Points on a game session */
+        DpAdjustment: {
+            /**
+             * @description Positive to add DP, negative to remove DP. Must be non-zero.
+             *     A negative delta is only accepted from the GM owner of the session.
+             */
+            delta: number;
+            /** @description Optional human-readable reason for the adjustment */
+            reason?: string;
+        };
+        /**
+         * @description Source that originated the DP adjustment.
+         *     - `gm-manual` — GM applied the delta via the HTTP endpoint.
+         *     - `roll-push` — Automatic +1 from a player pushing a roll.
+         *     - `system` — Applied by internal automation.
+         * @enum {string}
+         */
+        DpSource: "gm-manual" | "roll-push" | "system";
+        /** @description A single Darkness Points audit event */
+        DpEvent: {
+            /** @description Opaque event identifier (cuid2) */
+            readonly id: string;
+            /** @description Session the event belongs to */
+            readonly gameSessionId: string;
+            /** @description How many DP were added (positive) or removed (negative) */
+            delta: number;
+            /** @description Optional human-readable reason */
+            reason?: string | null;
+            source: components["schemas"]["DpSource"];
+            /** @description Roll identifier when source is roll-push */
+            rollId?: string | null;
+            /** Format: date-time */
+            readonly createdAt: string;
+        };
+        DpEventList: {
+            items: components["schemas"]["DpEvent"][];
+            /** @description Cursor for the next page; null when there are no more results */
+            nextCursor: string | null;
+        };
+        RealtimeToken: {
+            /** @description Short-lived HMAC-signed JWT for Centrifugo */
+            token: string | null;
+            /**
+             * Format: date-time
+             * @description ISO-8601 instant when the token expires
+             */
+            expiresAt: string | null;
+        };
+        /**
+         * @description Full NPC DTO as returned by the v1 API. NPCs are GM-owned entities
+         *     designed to populate encounters in the combat tracker (ST3001
+         *     ГЛАВА 14). They share the same attribute and skill vocabulary as
+         *     player characters but carry no lifecycle state — any NPC can be
+         *     added to any encounter at any time.
+         *
+         *     `signature` is the NPC's sensor signature score for ship-combat
+         *     checks (signed integer; 0 is the baseline; negative values make the
+         *     NPC harder to detect). `keySkillModifier` is a signed integer bonus
+         *     that the combat tracker adds to the NPC's signature-derived attack
+         *     or defence pool when computing opposed rolls (ST3001 ГЛАВА 14
+         *     "Key Skill Modifier"). Both default to 0.
+         */
+        Npc: {
+            /** @description Opaque NPC identifier (cuid2) */
+            readonly id: string;
+            /** @description Identifier of the owning user (cuid2) */
+            readonly ownerId: string;
+            /** @description NPC name (1–120 characters) */
+            name: string;
+            /** @description Free-form GM notes or narrative description (Markdown, max 2000 chars) */
+            description?: string | null;
+            attributes: components["schemas"]["Attributes"];
+            skills: components["schemas"]["Skills"];
+            /** @description Hit points — both current and max are GM-editable for NPCs */
+            hp: {
+                /** @description Current hit points */
+                current: number;
+                /** @description Maximum hit points */
+                max: number;
+            };
+            /** @description Mind points — both current and max are GM-editable for NPCs */
+            mp: {
+                /** @description Current mind points */
+                current: number;
+                /** @description Maximum mind points */
+                max: number;
+            };
+            /**
+             * @description NPC sensor signature for ship-combat sensor checks (ST3001
+             *     ГЛАВА 14). Signed integer; 0 is baseline; negative makes the
+             *     NPC harder to detect; positive makes them easier.
+             * @default 0
+             */
+            signature: number;
+            /**
+             * @description Signed integer bonus applied by the combat tracker to the NPC's
+             *     attack or defence roll pool when resolving opposed key-skill
+             *     checks (ST3001 ГЛАВА 14). Positive values give the NPC an
+             *     advantage; negative values impose a penalty.
+             * @default 0
+             */
+            keySkillModifier: number;
+            /** @description Armor items carried by the NPC */
+            armor: components["schemas"]["ItemArmor"][];
+            /** @description Weapons carried by the NPC */
+            weapons: components["schemas"]["ItemWeapon"][];
+            /**
+             * @description Free-form GM-side categorisation labels (e.g. "Pirate",
+             *     "Cyborg", "Boss"). Used for filtering in the NPC list and for
+             *     encounter-table grouping. Each tag is a 1–40 character string.
+             */
+            tags: string[];
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        /**
+         * @description Payload for `POST /api/v1/npcs`. Only `name` is required; all
+         *     other fields are optional. The server seeds sensible defaults for
+         *     any omitted field so that a stub NPC can be created with a single
+         *     field.
+         */
+        NpcCreate: {
+            /** @description NPC name (1–120 characters) */
+            name: string;
+            /** @description Free-form description (Markdown, max 2000 chars) */
+            description?: string | null;
+            /** @description Attribute block; missing keys default to 2 */
+            attributes?: components["schemas"]["Attributes"];
+            /** @description Skill block; missing keys default to 0 */
+            skills?: components["schemas"]["Skills"];
+            /** @description Hit points; defaults to {current: 4, max: 4} when omitted */
+            hp?: {
+                current?: number;
+                max?: number;
+            };
+            /** @description Mind points; defaults to {current: 4, max: 4} when omitted */
+            mp?: {
+                current?: number;
+                max?: number;
+            };
+            /**
+             * @description Sensor signature score; defaults to 0
+             * @default 0
+             */
+            signature: number;
+            /**
+             * @description Key skill modifier for combat tracker; defaults to 0
+             * @default 0
+             */
+            keySkillModifier: number;
+            /** @description Armor items; defaults to empty array */
+            armor?: components["schemas"]["ItemArmor"][];
+            /** @description Weapons; defaults to empty array */
+            weapons?: components["schemas"]["ItemWeapon"][];
+            /** @description Categorisation tags; defaults to empty array */
+            tags?: string[];
+        };
+        /**
+         * @description Payload for `PATCH /api/v1/npcs/{id}`. All fields are optional;
+         *     omitted fields are left unchanged. Supplying `weapons` or `armor`
+         *     replaces the entire array (put-semantics for nested collections).
+         */
+        NpcUpdate: {
+            name?: string;
+            description?: string | null;
+            attributes?: components["schemas"]["Attributes"];
+            skills?: components["schemas"]["Skills"];
+            hp?: {
+                current?: number;
+                max?: number;
+            };
+            mp?: {
+                current?: number;
+                max?: number;
+            };
+            signature?: number;
+            keySkillModifier?: number;
+            armor?: components["schemas"]["ItemArmor"][];
+            weapons?: components["schemas"]["ItemWeapon"][];
+            tags?: string[];
+        };
+        /** @description Cursor-paginated list of NPCs */
+        NpcList: {
+            items: components["schemas"]["Npc"][];
+            /** @description Cursor for the next page; null when there are no more results */
+            nextCursor: string | null;
+        };
+        /**
+         * @description Lifecycle state of an encounter (combat tracker).
+         *
+         *     - `setup` — the GM is building the encounter. Combatants can be
+         *       added or removed freely. Initiative has not been rolled. `round`
+         *       is 0 and `activeCombatantId` is null.
+         *     - `active` — combat has started. Initiative is rolled, turn order
+         *       is locked. `round` is bumped to 1 on the `setup → active`
+         *       transition and advances with each full rotation. `activeCombatantId`
+         *       points to the combatant whose turn it is. Combatant mutations are
+         *       only possible through the GM-driven turn-advance and
+         *       initiative-reorder operations (Block 4).
+         *     - `ended` — combat is resolved. The encounter is read-only history.
+         *       `activeCombatantId` is reset to null.
+         *
+         *     **Allowed transitions:** `setup → active`, `active → ended`.
+         *     No reverse transitions and no skipping states are permitted.
+         *     Historical (`ended`) encounters are archived and immutable.
+         * @enum {string}
+         */
+        EncounterStatus: "setup" | "active" | "ended";
+        /**
+         * @description A single combat encounter owned by a game session. The Encounter
+         *     carries the combat metadata (status, round, active turn) but does
+         *     NOT embed the combatant list — combatants live on a separate
+         *     sub-resource added in Block 3.
+         */
+        Encounter: {
+            /** @description Opaque encounter identifier (cuid2) */
+            readonly id: string;
+            /** @description Identifier of the parent game session (cuid2) */
+            readonly gameSessionId: string;
+            /** @description Short descriptive name for the encounter (1–80 characters) */
+            name: string;
+            status: components["schemas"]["EncounterStatus"];
+            /**
+             * @description Current combat round. Starts at 0 while in `setup`. Bumped to 1
+             *     when the encounter transitions to `active`. Increments by 1 each
+             *     time the turn order wraps back to the first combatant (Block 4
+             *     turn-advance operation).
+             * @default 0
+             */
+            round: number;
+            /**
+             * @description Identifier of the combatant whose turn it currently is. Null
+             *     when `status` is `setup` (initiative not yet rolled) or `ended`
+             *     (combat closed). Set by the server on the `setup → active`
+             *     transition and updated by the turn-advance operation (Block 4).
+             */
+            activeCombatantId: string | null;
+            /**
+             * @description Optional GM notes for the encounter in Markdown format
+             *     (max 4096 characters). May be edited at any status.
+             */
+            notes: string | null;
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        /**
+         * @description Payload for `POST /api/v1/game-sessions/{sessionId}/encounters`.
+         *     Only `name` is required. The server seeds `status: setup`,
+         *     `round: 0`, and `activeCombatantId: null`.
+         */
+        EncounterCreate: {
+            /** @description Short descriptive name for the encounter (1–80 characters) */
+            name: string;
+            /** @description Optional GM notes in Markdown (max 4096 characters) */
+            notes?: string | null;
+        };
+        /**
+         * @description PATCH payload for `PATCH /api/v1/encounters/{id}`. All fields are
+         *     optional; omitted fields are left unchanged.
+         *
+         *     Supplying `status` triggers a state-machine transition validated by
+         *     the server. See the endpoint description for the full transition
+         *     table and the 422 error codes.
+         */
+        EncounterUpdate: {
+            /** @description Rename the encounter (allowed at any status) */
+            name?: string;
+            status?: components["schemas"]["EncounterStatus"];
+            /** @description Update GM notes in Markdown (allowed at any status) */
+            notes?: string | null;
+        };
+        /** @description Cursor-paginated list of encounters */
+        EncounterList: {
+            items: components["schemas"]["Encounter"][];
+            /** @description Cursor for the next page; null when there are no more results */
+            nextCursor: string | null;
+        };
+        /**
+         * @description Discriminator field that identifies the source entity type of a combatant.
+         *
+         *     - `pc` — references an existing `Character` owned by the encounter's GM
+         *       (or assigned to the parent `GameSession`).
+         *     - `npc` — references an existing `Npc` owned by the GM.
+         * @enum {string}
+         */
+        CombatantType: "pc" | "npc";
+        /**
+         * @description A single participant in a combat encounter. Combatants store a snapshot
+         *     of the source entity's stats (HP, armor, signature) at the moment of
+         *     add. Mid-combat changes to the source PC's hp via the character sheet
+         *     do NOT propagate to the combatant; the GM mutates `hpCurrent` directly
+         *     on the combatant via `PATCH /api/v1/combatants/{id}`. This protects the
+         *     tracker from accidental scrambling when a player auto-saves their sheet
+         *     during combat.
+         *
+         *     `statusFlags` is intentionally a free-form `string[]` — see the field
+         *     description for the canonical values listed in ST3001 ГЛАВА 5 «Раунды,
+         *     ходы и инициатива» and the rationale for not enum-locking it.
+         * @example {
+         *       "id": "cuid_comb01",
+         *       "encounterId": "cuid_enc01",
+         *       "combatantType": "pc",
+         *       "sourceId": "cuid_char01",
+         *       "displayName": "Zara al-Khatib",
+         *       "initiative": null,
+         *       "turnOrder": null,
+         *       "hpCurrent": 4,
+         *       "hpMax": 4,
+         *       "armor": 2,
+         *       "signature": 0,
+         *       "statusFlags": [],
+         *       "notes": null,
+         *       "createdAt": "2026-05-10T09:00:00Z",
+         *       "updatedAt": "2026-05-10T09:00:00Z"
+         *     }
+         */
+        Combatant: {
+            /** @description Opaque combatant identifier (cuid2) */
+            readonly id: string;
+            /** @description Identifier of the parent encounter (cuid2) */
+            readonly encounterId: string;
+            combatantType: components["schemas"]["CombatantType"];
+            /**
+             * @description Identifier of the source entity. When `combatantType` is `pc` this
+             *     is the `Character.id`; when `npc` it is the `Npc.id`.
+             */
+            readonly sourceId: string;
+            /**
+             * @description Denormalised name of the combatant, copied from the source entity's
+             *     `name` at add-time. Can be overridden in `CombatantCreate.displayName`
+             *     or updated via `PATCH`.
+             */
+            displayName: string;
+            /**
+             * @description d6 initiative result (1–6 per ST3001 ГЛАВА 5 «Раунды, ходы и
+             *     инициатива»: «Бросьте по кубику за всех участников сражения»).
+             *     Null until the encounter's initiative is rolled (Block 4
+             *     operation). Set server-side only.
+             */
+            readonly initiative: number | null;
+            /**
+             * @description 0-based index in the turn sequence after initiative is sorted.
+             *     Null until initiative is rolled. Combatant at index 0 goes first.
+             *     Set server-side only.
+             */
+            readonly turnOrder: number | null;
+            /**
+             * @description Current hit points. **PRD override** — ST3001 ГЛАВА 5 «Урон»
+             *     («запас пунктов здоровья не может опуститься ниже нуля»)
+             *     clamps HP at 0; the canonical mechanic is
+             *     «Небоеспособность» the moment HP reaches 0. The greenfield
+             *     product allows the field to go negative so the GM tracker
+             *     can show damage overflow on a single attack (e.g. a 5-HP
+             *     target taking 8 damage renders as `hpCurrent: -3` until
+             *     the GM resets to 0 next round). UI clients SHOULD render
+             *     negative values in red and surface a one-line note that
+             *     the canon clamp applies for healing math (any heal first
+             *     brings hpCurrent up to 0, then upward).
+             */
+            hpCurrent: number;
+            /** @description Maximum hit points snapshotted from the source at add-time. */
+            hpMax: number;
+            /** @description Armor rating (number of armor dice). Snapshotted from the source at add-time. */
+            armor: number;
+            /**
+             * @description NPC sensor signature score, snapshotted from `Npc.signature`
+             *     at add-time (defaults to 0 for PC combatants). **PRD
+             *     override** — ST3001 has no per-combatant numeric
+             *     `signature` stat; the canonical mechanic for being
+             *     spotted / hidden is the `скрытность` skill (ГЛАВА 3
+             *     «СКРЫТНОСТЬ») rolled at the moment of detection. The
+             *     field is reserved for future GM tooling (sensor sweep,
+             *     ambush detection, ship-combat sensor pings — ГЛАВА 7
+             *     covers ship-scale sensor rules but assigns those values
+             *     to the ship, not the crew). Today the field is mostly
+             *     informational; clients SHOULD allow editing but MUST NOT
+             *     silently use it to bypass a `скрытность` check.
+             */
+            signature: number;
+            /**
+             * @description Free-form short tags describing combat status conditions. The
+             *     canonical taxonomy in ST3001 ГЛАВА 5 «Раунды, ходы и инициатива»
+             *     covers `incapacitated` (HP at 0 — cannot act), `prone` (knocked
+             *     down) and `covered` (behind cover for armor purposes). The field
+             *     is intentionally not enum-locked: GMs are expected to invent
+             *     scene-specific tags (e.g. `bleeding`, `restrained`, `zero-g`),
+             *     and a hard schema would force migrations every time a campaign
+             *     needs a new condition. Clients SHOULD render the canonical tags
+             *     with icons; unknown tags MUST be shown as plain text and
+             *     preserved on PATCH round-trips.
+             * @example [
+             *       "incapacitated"
+             *     ]
+             */
+            statusFlags: string[];
+            /** @description Optional GM notes for this combatant in Markdown format (max 500 characters). */
+            notes: string | null;
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        /**
+         * @description POST payload for `POST /api/v1/encounters/{id}/combatants`.
+         *
+         *     `combatantType` and `sourceId` are required. The server snapshots
+         *     `hpCurrent`, `hpMax`, `armor`, and `signature` from the source entity
+         *     on add; these fields are absent from the request payload and populated
+         *     in the response. `initiative` and `turnOrder` are server-controlled and
+         *     remain null until the Block 4 initiative-roll operation.
+         *
+         *     `displayName` is optional — when omitted the server uses the source
+         *     entity's `name` field.
+         *
+         *     422 error codes:
+         *     - `COMBATANT_SOURCE_NOT_FOUND` — `sourceId` does not exist
+         *     - `COMBATANT_SOURCE_NOT_OWNED` — caller does not own the source entity
+         *     - `COMBATANT_DUPLICATE` — same `(combatantType, sourceId)` already present
+         *     - `ENCOUNTER_LOCKED_FOR_COMBAT` — encounter is not in `setup` status
+         * @example {
+         *       "combatantType": "npc",
+         *       "sourceId": "cuid_npc01",
+         *       "displayName": "Khorredian Elite Guard"
+         *     }
+         */
+        CombatantCreate: {
+            combatantType: components["schemas"]["CombatantType"];
+            /**
+             * @description Identifier of the source entity. Must be a `Character.id` when
+             *     `combatantType` is `pc`, or an `Npc.id` when `combatantType` is `npc`.
+             */
+            sourceId: string;
+            /**
+             * @description Optional override for the combatant display name. When omitted the
+             *     server copies the source entity's `name`.
+             */
+            displayName?: string;
+            /** @description Optional GM notes in Markdown (max 500 characters). */
+            notes?: string | null;
+        };
+        /**
+         * @description PATCH payload for `PATCH /api/v1/combatants/{id}`. All fields are
+         *     optional; omitted fields are left unchanged.
+         *
+         *     `combatantType` and `sourceId` are immutable and absent from this
+         *     schema. `initiative` and `turnOrder` are read-only and can only be
+         *     set via the Block 4 initiative operations.
+         * @example {
+         *       "hpCurrent": 0,
+         *       "statusFlags": [
+         *         "incapacitated"
+         *       ]
+         *     }
+         */
+        CombatantUpdate: {
+            /** @description Update the combatant display name. */
+            displayName?: string;
+            /** @description Update current hit points (may go negative). */
+            hpCurrent?: number;
+            /** @description Update armor rating. */
+            armor?: number;
+            /** @description Update the mystic signature value. */
+            signature?: number;
+            /**
+             * @description Replace the full set of status flags. Free-form `string[]` per the
+             *     `Combatant.statusFlags` description; canonical tags from ST3001
+             *     ГЛАВА 5 are `incapacitated`, `prone`, `covered` (custom tags are
+             *     allowed and round-tripped untouched).
+             */
+            statusFlags?: string[];
+            /** @description Update GM notes in Markdown (max 500 characters). */
+            notes?: string | null;
+            /**
+             * @description Read-only. Initiative is set exclusively by the Block 4
+             *     initiative-roll operation (d6 per ST3001 ГЛАВА 5). This field is
+             *     listed here for documentation purposes only; any value supplied in
+             *     a PATCH request will be ignored.
+             */
+            readonly initiative?: number | null;
+            /**
+             * @description Read-only. Turn order index is set exclusively by the Block 4
+             *     initiative operations. This field is listed here for
+             *     documentation purposes only; any value supplied in a PATCH
+             *     request will be ignored.
+             */
+            readonly turnOrder?: number | null;
+        };
+        /**
+         * @description Non-paginated list of combatants for an encounter. Typical encounters
+         *     have fewer than 20 combatants; a pagination cursor would add unnecessary
+         *     complexity for no practical benefit.
+         */
+        CombatantList: {
+            items: components["schemas"]["Combatant"][];
+        };
+        /**
+         * @description Returned by `POST /api/v1/encounters/{id}/initiative/roll` and
+         *     `PATCH /api/v1/encounters/{id}/initiative`. Carries the full combatant
+         *     list after initiative values and turn-order indices have been assigned,
+         *     plus the current round counter.
+         *
+         *     **Tie-breaking rule (ST3001):** when two combatants share the same d10
+         *     initiative roll the server breaks the tie by `agility` descending — the
+         *     source PC's `attributes.agility` for `pc` combatants, or
+         *     `npcSnapshot.agility` for `npc` combatants. If `agility` is also equal
+         *     the GM is expected to use the `PATCH /api/v1/encounters/{id}/initiative`
+         *     reorder operation to set the final order manually.
+         *
+         *     **Side-effects of `rollInitiative`:**
+         *     1. Encounter status transitions `setup → active`.
+         *     2. `encounter.round` is set from 0 to 1.
+         *     3. `encounter.activeCombatantId` is set to the combatant at `turnOrder: 0`.
+         *     The `PATCH` (reorder) variant does NOT re-roll dice and does NOT alter
+         *     `activeCombatantId` — the GM is adjusting who acts next round, not
+         *     restarting combat.
+         * @example {
+         *       "round": 1,
+         *       "combatants": [
+         *         {
+         *           "id": "cuid_comb03",
+         *           "encounterId": "cuid_enc01",
+         *           "combatantType": "npc",
+         *           "sourceId": "cuid_npc01",
+         *           "displayName": "Khorredian Elite Guard",
+         *           "initiative": 6,
+         *           "turnOrder": 0,
+         *           "hpCurrent": 6,
+         *           "hpMax": 6,
+         *           "armor": 3,
+         *           "signature": 1,
+         *           "statusFlags": [],
+         *           "notes": null,
+         *           "createdAt": "2026-05-10T09:00:00Z",
+         *           "updatedAt": "2026-05-10T10:00:00Z"
+         *         },
+         *         {
+         *           "id": "cuid_comb01",
+         *           "encounterId": "cuid_enc01",
+         *           "combatantType": "pc",
+         *           "sourceId": "cuid_char01",
+         *           "displayName": "Zara al-Khatib",
+         *           "initiative": 5,
+         *           "turnOrder": 1,
+         *           "hpCurrent": 4,
+         *           "hpMax": 4,
+         *           "armor": 2,
+         *           "signature": 0,
+         *           "statusFlags": [],
+         *           "notes": null,
+         *           "createdAt": "2026-05-10T09:00:00Z",
+         *           "updatedAt": "2026-05-10T10:00:00Z"
+         *         },
+         *         {
+         *           "id": "cuid_comb02",
+         *           "encounterId": "cuid_enc01",
+         *           "combatantType": "pc",
+         *           "sourceId": "cuid_char02",
+         *           "displayName": "Tariq al-Asari",
+         *           "initiative": 4,
+         *           "turnOrder": 2,
+         *           "hpCurrent": 5,
+         *           "hpMax": 5,
+         *           "armor": 1,
+         *           "signature": 0,
+         *           "statusFlags": [],
+         *           "notes": null,
+         *           "createdAt": "2026-05-10T09:00:00Z",
+         *           "updatedAt": "2026-05-10T10:00:00Z"
+         *         },
+         *         {
+         *           "id": "cuid_comb04",
+         *           "encounterId": "cuid_enc01",
+         *           "combatantType": "npc",
+         *           "sourceId": "cuid_npc02",
+         *           "displayName": "Khorredian Guard Captain",
+         *           "initiative": 2,
+         *           "turnOrder": 3,
+         *           "hpCurrent": 8,
+         *           "hpMax": 8,
+         *           "armor": 4,
+         *           "signature": 2,
+         *           "statusFlags": [],
+         *           "notes": "Has the bridge key.",
+         *           "createdAt": "2026-05-10T09:00:00Z",
+         *           "updatedAt": "2026-05-10T10:00:00Z"
+         *         }
+         *       ]
+         *     }
+         */
+        InitiativeRollResult: {
+            /**
+             * @description Full updated combatant list sorted by `turnOrder` ascending (0 = acts
+             *     first). Every combatant carries a non-null `initiative` and `turnOrder`
+             *     after this operation.
+             */
+            combatants: components["schemas"]["Combatant"][];
+            /**
+             * @description Current combat round after the operation. For `rollInitiative` this
+             *     is always 1 (the `setup → active` transition sets `round` from 0 to 1).
+             *     For `reorderInitiative` this reflects the encounter's current round
+             *     (unchanged by a reorder).
+             */
+            round: number;
+        };
+        /**
+         * @description Request body for `PATCH /api/v1/encounters/{id}/initiative`. The GM
+         *     supplies the full desired turn order as an ordered array of combatant
+         *     ids. The server reassigns `turnOrder` indices (0-based) matching the
+         *     array position.
+         *
+         *     **Validation — the array must contain every combatant id from the
+         *     encounter exactly once.** Any violation returns 422 with one of:
+         *     - `INITIATIVE_INCOMPLETE` — at least one combatant id from the encounter
+         *       is absent from the array.
+         *     - `INITIATIVE_DUPLICATE` — the same id appears two or more times.
+         *     - `INITIATIVE_UNKNOWN_COMBATANT` — an id in the array does not belong to
+         *       this encounter.
+         *
+         *     The `PATCH` does NOT re-roll initiative dice and does NOT change
+         *     `activeCombatantId` — it only rearranges the turn-order index so the
+         *     GM can correct ties or unexpected results without restarting combat.
+         * @example {
+         *       "combatantIds": [
+         *         "cuid_comb03",
+         *         "cuid_comb02",
+         *         "cuid_comb01",
+         *         "cuid_comb04"
+         *       ]
+         *     }
+         */
+        InitiativeReorderRequest: {
+            /**
+             * @description Ordered list of combatant ids. Position 0 acts first. Must include
+             *     every combatant in the encounter exactly once.
+             */
+            combatantIds: string[];
+        };
+        /**
+         * @description Returned by `POST /api/v1/encounters/{id}/turn/advance`. Identifies the
+         *     combatant whose turn is now active after the advance, the current round
+         *     counter, and whether advancing wrapped past the last combatant (which
+         *     triggers a round increment).
+         *
+         *     **Wrap behaviour:** the server advances
+         *     `activeCombatantId` from the current `turnOrder` index to
+         *     `(currentIndex + 1) % combatants.length`. When `currentIndex + 1`
+         *     equals `combatants.length` the turn wraps to index 0 and `round` is
+         *     incremented by 1; `isNewRound` is `true` in that case.
+         * @example {
+         *       "activeCombatantId": "cuid_comb01",
+         *       "round": 1,
+         *       "isNewRound": false
+         *     }
+         */
+        TurnAdvanceResult: {
+            /**
+             * @description Id of the combatant whose turn is now active (the new
+             *     `encounter.activeCombatantId` after the advance).
+             */
+            activeCombatantId: string;
+            /**
+             * @description Current combat round after the advance. Incremented by 1 when the
+             *     turn wraps from the last combatant back to index 0.
+             */
+            round: number;
+            /**
+             * @description `true` when the advance wrapped past the last combatant and started
+             *     a new round; `false` when the next combatant is within the same
+             *     round.
+             */
+            isNewRound: boolean;
+        };
+    };
+    responses: never;
+    parameters: {
+        /** @description Character identifier (cuid2) */
+        CharacterId: string;
+        /** @description Item identifier (cuid2) */
+        ItemId: string;
+        /** @description Talent identifier (cuid2) */
+        TalentId: string;
+        /** @description Ship identifier (cuid2) */
+        ShipId: string;
+        /** @description Ship module identifier (cuid2) */
+        ShipModuleId: string;
+        /** @description Share link identifier (cuid2) */
+        ShareLinkId: string;
+        /** @description 24-character unambiguous nanoid slug identifying a share link */
+        ShareSlug: string;
+        /** @description Roll identifier (cuid2) */
+        RollId: string;
+        /** @description Game session identifier (cuid2) */
+        GameSessionId: string;
+        /** @description NPC identifier (cuid2) */
+        NpcId: string;
+        /** @description Encounter identifier (cuid2) */
+        EncounterId: string;
+        /** @description Combatant identifier (cuid2) */
+        CombatantId: string;
+    };
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  listCharacters: {
-    parameters: {
-      query?: {
-        /** @description Opaque pagination cursor returned by the previous page */
-        cursor?: string;
-        /** @description Number of characters to return (1–100, default 20) */
-        limit?: number;
-        /**
-         * @description When `false` (default), only `active` characters are returned —
-         *     draft wizard-in-progress characters are hidden from the dashboard.
-         *     When `true`, both `active` and `draft` characters are returned so
-         *     the wizard UI can display in-progress records.
-         */
-        includeDrafts?: boolean;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Paginated character list */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['CharacterList'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  createCharacter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CharacterCreate'];
-      };
-    };
-    responses: {
-      /** @description Character created */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Character'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `CHARACTER_NAME_EMPTY` — name is an empty string.
-       *     - `CHARACTER_NAME_TOO_LONG` — name exceeds 80 characters.
-       *     - `ATTRIBUTE_OUT_OF_RANGE` — an attribute value is outside 1–5.
-       *     - `SKILL_OUT_OF_RANGE` — a skill value is outside its allowed range.
-       *     - `ATTRIBUTE_OUT_OF_CREATION_RANGE` — an attribute value at
-       *       creation is outside 2–4 (Coriolis core book ch.2).
-       *     - `ATTRIBUTE_BUDGET_EXCEEDED` — sum of attributes exceeds the
-       *       budget allowed by the chosen `upbringing`.
-       *     - `SKILL_BUDGET_EXCEEDED` — sum of skills exceeds the budget
-       *       allowed by the chosen `upbringing`.
-       *     - `MUTANT_LINEAGE_REQUIRED` — `mutant=true` was supplied
-       *       without a `mutantLineage`.
-       *     - `MUTANT_LINEAGE_FORBIDDEN` — `mutant=false` (or omitted)
-       *       with a non-null `mutantLineage`.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  getCharacter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Character found */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Character'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller is authenticated but does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  deleteCharacter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Character deleted */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  updateCharacter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CharacterUpdate'];
-      };
-    };
-    responses: {
-      /** @description Updated character */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Character'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `CHARACTER_NAME_EMPTY`
-       *     - `CHARACTER_NAME_TOO_LONG`
-       *     - `ATTRIBUTE_OUT_OF_RANGE`
-       *     - `SKILL_OUT_OF_RANGE`
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  duplicateCharacter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Duplicated character */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Character'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  exportCharacter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Character JSON export */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Character'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  addCharacterItem: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ItemCreate'];
-      };
-    };
-    responses: {
-      /** @description Item created */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Item'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `CHARACTER_NAME_EMPTY` — item name is empty.
-       *     - `ITEM_TYPE_MISMATCH` — payload fields do not match the declared type.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  addCharacterTalent: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['TalentCreate'];
-      };
-    };
-    responses: {
-      /** @description Talent created */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Talent'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `CHARACTER_NAME_EMPTY` — talent name is an empty string.
-       *     - `TALENT_KIND_DUPLICATE` — character already has a talent
-       *       of this non-`personal` kind (e.g. trying to add a second
-       *       `iconGift`).
-       *     - `STIGMA_REQUIRES_MUTANT` — `kind: stigma` may only be
-       *       added to a character with `mutant=true`.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  listShips: {
-    parameters: {
-      query?: {
-        /** @description Opaque pagination cursor returned by the previous page */
-        cursor?: string;
-        /** @description Number of ships to return (1–100, default 20) */
-        limit?: number;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Paginated ship list */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ShipList'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  createShip: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ShipCreate'];
-      };
-    };
-    responses: {
-      /** @description Ship created */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Ship'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `SHIP_NAME_EMPTY` — name is an empty string.
-       *     - `SHIP_NAME_TOO_LONG` — name exceeds 80 characters.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  getShip: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship identifier (cuid2) */
-        id: components['parameters']['ShipId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Ship found */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Ship'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller is authenticated but does not own this ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Ship not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  deleteShip: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship identifier (cuid2) */
-        id: components['parameters']['ShipId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Ship deleted */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Ship not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  updateShip: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship identifier (cuid2) */
-        id: components['parameters']['ShipId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ShipUpdate'];
-      };
-    };
-    responses: {
-      /** @description Updated ship */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Ship'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `SHIP_NAME_EMPTY`
-       *     - `SHIP_NAME_TOO_LONG`
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Ship not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  duplicateShip: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship identifier (cuid2) */
-        id: components['parameters']['ShipId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Duplicated ship */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Ship'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Ship not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  exportShip: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship identifier (cuid2) */
-        id: components['parameters']['ShipId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Ship JSON export */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Ship'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Ship not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  addShipModule: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship identifier (cuid2) */
-        id: components['parameters']['ShipId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ShipModuleCreate'];
-      };
-    };
-    responses: {
-      /** @description Module installed */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ShipModule'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `MODULE_SLOT_INVALID` — slot value not recognised.
-       *     - `MODULE_TYPE_MISMATCH` — payload fields do not match the declared slot.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Ship not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  assignCrew: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship identifier (cuid2) */
-        id: components['parameters']['ShipId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': {
-          position: components['schemas']['CrewPosition'];
-          /** @description ID of the character to assign (must be owned by caller) */
-          characterId: string;
-        };
-      };
-    };
-    responses: {
-      /** @description Crew member assigned */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['CrewSlot'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `CREW_POSITION_TAKEN` — that position is already occupied.
-       *     - `CHARACTER_NOT_FOUND` — characterId does not exist.
-       *     - `CHARACTER_NOT_OWNED` — character is not owned by the caller.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Ship not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  unassignCrew: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship identifier (cuid2) */
-        id: components['parameters']['ShipId'];
-        /** @description Character identifier to remove from the crew */
-        characterId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Crew member unassigned */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Ship or crew assignment not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  deleteShipModule: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship module identifier (cuid2) */
-        id: components['parameters']['ShipModuleId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Module removed */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the parent ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Module not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  updateShipModule: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Ship module identifier (cuid2) */
-        id: components['parameters']['ShipModuleId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ShipModuleUpdate'];
-      };
-    };
-    responses: {
-      /** @description Updated module */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ShipModule'];
-        };
-      };
-      /**
-       * @description Validation error. Possible code:
-       *     - `MODULE_TYPE_MISMATCH` — slot discriminator changed.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the parent ship */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Module not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  getHealth: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Service and all dependencies are operational */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['HealthStatus'];
-        };
-      };
-      /** @description One or more dependencies are degraded or down */
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['HealthStatus'];
-        };
-      };
-    };
-  };
-  deleteItem: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Item identifier (cuid2) */
-        id: components['parameters']['ItemId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Item deleted */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the parent character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Item not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  updateItem: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Item identifier (cuid2) */
-        id: components['parameters']['ItemId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ItemUpdate'];
-      };
-    };
-    responses: {
-      /** @description Updated item */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Item'];
-        };
-      };
-      /**
-       * @description Validation error. Possible code:
-       *     - `ITEM_TYPE_MISMATCH` — type discriminator changed.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the parent character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Item not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  getMe: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description The authenticated user's profile */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Me'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  deleteMe: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /**
-       * @description Account soft-deleted (or was already soft-deleted — idempotent).
-       *     Sessions revoked. No response body.
-       */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  updateMe: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['MeUpdate'];
-      };
-    };
-    responses: {
-      /** @description Updated profile */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Me'];
-        };
-      };
-      /**
-       * @description Validation error. Possible cases:
-       *     - `displayName` is an empty string.
-       *     - `displayName` exceeds 80 characters.
-       *     - `theme` is not one of the allowed enum values.
-       *     - Request body contains read-only fields (`email`, `createdAt`).
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  listNpcs: {
-    parameters: {
-      query?: {
-        /** @description Opaque pagination cursor returned by the previous page */
-        cursor?: string;
-        /** @description Number of NPCs to return (1–100, default 20) */
-        limit?: number;
-        /** @description Filter NPCs that have this tag (exact match, case-sensitive) */
-        tag?: string;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Paginated NPC list */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['NpcList'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  createNpc: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['NpcCreate'];
-      };
-    };
-    responses: {
-      /** @description NPC created */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Npc'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `NPC_NAME_EMPTY` — name is an empty string.
-       *     - `NPC_NAME_TOO_LONG` — name exceeds 120 characters.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  getNpc: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description NPC identifier (cuid2) */
-        id: components['parameters']['NpcId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description NPC found */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Npc'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller is authenticated but does not own this NPC */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description NPC not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  deleteNpc: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description NPC identifier (cuid2) */
-        id: components['parameters']['NpcId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description NPC deleted */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this NPC */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description NPC not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description NPC is still referenced by one or more encounters */
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  updateNpc: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description NPC identifier (cuid2) */
-        id: components['parameters']['NpcId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['NpcUpdate'];
-      };
-    };
-    responses: {
-      /** @description Updated NPC */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Npc'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `NPC_NAME_EMPTY`
-       *     - `NPC_NAME_TOO_LONG`
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this NPC */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description NPC not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  duplicateNpc: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description NPC identifier (cuid2) */
-        id: components['parameters']['NpcId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Duplicated NPC */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Npc'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this NPC */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description NPC not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  issueRealtimeToken: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Token issued */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['RealtimeToken'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  deleteTalent: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Talent identifier (cuid2) */
-        id: components['parameters']['TalentId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Talent deleted */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the parent character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Talent not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  updateTalent: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Talent identifier (cuid2) */
-        id: components['parameters']['TalentId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['TalentUpdate'];
-      };
-    };
-    responses: {
-      /** @description Updated talent */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Talent'];
-        };
-      };
-      /** @description Validation error (rank out of 1–3 range) */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the parent character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Talent not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  listGameSessions: {
-    parameters: {
-      query?: {
-        /** @description Opaque pagination cursor returned by the previous page */
-        cursor?: string;
-        /** @description Number of sessions to return (1–100, default 20) */
-        limit?: number;
-        /** @description Filter sessions by status */
-        status?: components['schemas']['GameSessionStatus'];
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Paginated game session list */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['GameSessionList'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  createGameSession: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['GameSessionCreate'];
-      };
-    };
-    responses: {
-      /** @description Game session created */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['GameSession'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `GAME_SESSION_NAME_EMPTY` — name is an empty string.
-       *     - `GAME_SESSION_NAME_TOO_LONG` — name exceeds 80 characters.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  getGameSession: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Game session identifier (cuid2) */
-        id: components['parameters']['GameSessionId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Game session */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['GameSession'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this session */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Game session not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  deleteGameSession: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Game session identifier (cuid2) */
-        id: components['parameters']['GameSessionId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Game session deleted */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this session */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Game session not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  updateGameSession: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Game session identifier (cuid2) */
-        id: components['parameters']['GameSessionId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['GameSessionUpdate'];
-      };
-    };
-    responses: {
-      /** @description Updated game session */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['GameSession'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `GAME_SESSION_NAME_EMPTY` — name is an empty string.
-       *     - `GAME_SESSION_NAME_TOO_LONG` — name exceeds 80 characters.
-       *     - `INVALID_GAME_SESSION_STATUS_TRANSITION` — invalid status transition.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this session */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Game session not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  assignCharacterToSession: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Game session identifier (cuid2) */
-        id: components['parameters']['GameSessionId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['AssignCharacterToSession'];
-      };
-    };
-    responses: {
-      /** @description Character assigned; returns updated session */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['GameSession'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `CHARACTER_NOT_OWNED` — character does not belong to the caller.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this session */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Game session or character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  unassignCharacterFromSession: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Game session identifier (cuid2) */
-        id: components['parameters']['GameSessionId'];
-        /** @description Character identifier (cuid2) */
-        characterId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Character removed from session */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this session */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Game session not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  adjustDp: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Game session identifier (cuid2) */
-        id: components['parameters']['GameSessionId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['DpAdjustment'];
-      };
-    };
-    responses: {
-      /** @description Updated game session with new dpCount */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['GameSession'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this session (negative delta only) */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Game session not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `DP_INVALID_DELTA` — delta is 0.
-       *     - `DP_BELOW_ZERO` — would result in a negative dpCount.
-       */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  listDpEvents: {
-    parameters: {
-      query?: {
-        /** @description Opaque pagination cursor from the previous page */
-        cursor?: string;
-        /** @description Number of events to return (1–100, default 20) */
-        limit?: number;
-      };
-      header?: never;
-      path: {
-        /** @description Game session identifier (cuid2) */
-        id: components['parameters']['GameSessionId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Paginated DP event list */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['DpEventList'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this session */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Game session not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  listEncounters: {
-    parameters: {
-      query?: {
-        /** @description Opaque pagination cursor returned by the previous page */
-        cursor?: string;
-        /** @description Number of encounters to return (1–100, default 20) */
-        limit?: number;
-        /** @description Filter encounters by status */
-        status?: components['schemas']['EncounterStatus'];
-      };
-      header?: never;
-      path: {
-        /** @description Game session identifier (cuid2) */
-        sessionId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Paginated encounter list */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['EncounterList'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the parent game session */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Game session not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  createEncounter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Game session identifier (cuid2) */
-        sessionId: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['EncounterCreate'];
-      };
-    };
-    responses: {
-      /** @description Encounter created */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Encounter'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `ENCOUNTER_NAME_EMPTY` — name is an empty string.
-       *     - `ENCOUNTER_NAME_TOO_LONG` — name exceeds 80 characters.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the parent game session */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Game session not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  getEncounter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Encounter identifier (cuid2) */
-        id: components['parameters']['EncounterId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Encounter */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Encounter'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the parent game session */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Encounter not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  deleteEncounter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Encounter identifier (cuid2) */
-        id: components['parameters']['EncounterId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Encounter deleted */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the parent game session */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Encounter not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  updateEncounter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Encounter identifier (cuid2) */
-        id: components['parameters']['EncounterId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['EncounterUpdate'];
-      };
-    };
-    responses: {
-      /** @description Updated encounter */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Encounter'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the parent game session */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Encounter not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /**
-       * @description State-machine violation. Possible codes:
-       *     - `ENCOUNTER_INVALID_TRANSITION` — the requested `status` value
-       *       is not reachable from the current status. Illegal moves:
-       *       any → `setup`, `setup → ended`, any → `active` from `ended`,
-       *       any → `ended` from `ended`.
-       *     - `ENCOUNTER_NO_COMBATANTS` — attempted `setup → active`
-       *       transition but the encounter has zero combatants. Add at
-       *       least one combatant first (Block 3 surface).
-       */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  listCombatants: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Encounter identifier (cuid2) */
-        id: components['parameters']['EncounterId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description List of combatants */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['CombatantList'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the encounter */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Encounter not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  addCombatant: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Encounter identifier (cuid2) */
-        id: components['parameters']['EncounterId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CombatantCreate'];
-      };
-    };
-    responses: {
-      /** @description Combatant added */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Combatant'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the encounter */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Encounter not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Business rule violation. `code` identifies the specific error. */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  deleteCombatant: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Combatant identifier (cuid2) */
-        id: components['parameters']['CombatantId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Combatant removed */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the encounter */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Combatant not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Cannot remove a combatant once combat has started */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  updateCombatant: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Combatant identifier (cuid2) */
-        id: components['parameters']['CombatantId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CombatantUpdate'];
-      };
-    };
-    responses: {
-      /** @description Combatant updated */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Combatant'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the encounter */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Combatant not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Encounter is ended — combatant mutations are not allowed */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  rollInitiative: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Encounter identifier (cuid2) */
-        id: components['parameters']['EncounterId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Initiative rolled; encounter is now active */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['InitiativeRollResult'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the encounter */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Encounter not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Business rule violation. `code` identifies the specific error. */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  reorderInitiative: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Encounter identifier (cuid2) */
-        id: components['parameters']['EncounterId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['InitiativeReorderRequest'];
-      };
-    };
-    responses: {
-      /** @description Turn order updated; returns the full combatant list in the new order */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['InitiativeRollResult'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the encounter */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Encounter not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Business rule violation. `code` identifies the specific error. */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  advanceTurn: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Encounter identifier (cuid2) */
-        id: components['parameters']['EncounterId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Turn advanced; returns the new active combatant and round info */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['TurnAdvanceResult'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the encounter */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Encounter not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Business rule violation. `code` identifies the specific error. */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  createShareLink: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ShareLinkCreate'];
-      };
-    };
-    responses: {
-      /** @description Share link created */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ShareLink'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  listShareLinks: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Share link list */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ShareLinkList'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  revokeShareLink: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Share link identifier (cuid2) */
-        id: components['parameters']['ShareLinkId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Share link revoked */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the character associated with this share link */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Share link not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  getPublicCharacter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description 24-character unambiguous nanoid slug identifying a share link */
-        slug: components['parameters']['ShareSlug'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Publicly-shared character */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Character'];
-        };
-      };
-      /** @description Slug not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Share link revoked or expired */
-      410: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  getCharacterOgImage: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description 24-character unambiguous nanoid slug identifying a share link */
-        slug: components['parameters']['ShareSlug'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description PNG image (Feature 6.3 — not yet implemented) */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'image/png': string;
-        };
-      };
-      /** @description OG image renderer not yet implemented (ships in Feature 6.3) */
-      501: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  listRolls: {
-    parameters: {
-      query?: {
-        /** @description Number of rolls to return (1–100, default 50) */
-        limit?: number;
-      };
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Roll history */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['RollList'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  createRoll: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Character identifier (cuid2) */
-        id: components['parameters']['CharacterId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['RollCreate'];
-      };
-    };
-    responses: {
-      /** @description Roll created successfully */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Roll'];
-        };
-      };
-      /** @description Validation error (pool out of range, label too long, etc.) */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this character */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  pushRoll: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Roll identifier (cuid2) */
-        id: components['parameters']['RollId'];
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Roll pushed successfully */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['Roll'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own the character this roll belongs to */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Roll not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Roll cannot be pushed (already pushed or character is exhausted) */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
+    listCharacters: {
+        parameters: {
+            query?: {
+                /** @description Opaque pagination cursor returned by the previous page */
+                cursor?: string;
+                /** @description Number of characters to return (1–100, default 20) */
+                limit?: number;
+                /**
+                 * @description When `false` (default), only `active` characters are returned —
+                 *     draft wizard-in-progress characters are hidden from the dashboard.
+                 *     When `true`, both `active` and `draft` characters are returned so
+                 *     the wizard UI can display in-progress records.
+                 */
+                includeDrafts?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated character list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CharacterList"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    createCharacter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CharacterCreate"];
+            };
+        };
+        responses: {
+            /** @description Character created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Character"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `CHARACTER_NAME_EMPTY` — name is an empty string.
+             *     - `CHARACTER_NAME_TOO_LONG` — name exceeds 80 characters.
+             *     - `ATTRIBUTE_OUT_OF_RANGE` — an attribute value is outside 1–5.
+             *     - `SKILL_OUT_OF_RANGE` — a skill value is outside its allowed range.
+             *     - `ATTRIBUTE_OUT_OF_CREATION_RANGE` — an attribute value at
+             *       creation is outside 2–4 (Coriolis core book ch.2).
+             *     - `ATTRIBUTE_BUDGET_EXCEEDED` — sum of attributes exceeds the
+             *       budget allowed by the chosen `upbringing`.
+             *     - `SKILL_BUDGET_EXCEEDED` — sum of skills exceeds the budget
+             *       allowed by the chosen `upbringing`.
+             *     - `MUTANT_LINEAGE_REQUIRED` — `mutant=true` was supplied
+             *       without a `mutantLineage`.
+             *     - `MUTANT_LINEAGE_FORBIDDEN` — `mutant=false` (or omitted)
+             *       with a non-null `mutantLineage`.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    getCharacter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Character found */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Character"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller is authenticated but does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteCharacter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Character deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateCharacter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CharacterUpdate"];
+            };
+        };
+        responses: {
+            /** @description Updated character */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Character"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `CHARACTER_NAME_EMPTY`
+             *     - `CHARACTER_NAME_TOO_LONG`
+             *     - `ATTRIBUTE_OUT_OF_RANGE`
+             *     - `SKILL_OUT_OF_RANGE`
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    duplicateCharacter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Duplicated character */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Character"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    exportCharacter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Character JSON export */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Character"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    addCharacterItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ItemCreate"];
+            };
+        };
+        responses: {
+            /** @description Item created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `CHARACTER_NAME_EMPTY` — item name is empty.
+             *     - `ITEM_TYPE_MISMATCH` — payload fields do not match the declared type.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    addCharacterTalent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TalentCreate"];
+            };
+        };
+        responses: {
+            /** @description Talent created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Talent"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `CHARACTER_NAME_EMPTY` — talent name is an empty string.
+             *     - `TALENT_KIND_DUPLICATE` — character already has a talent
+             *       of this non-`personal` kind (e.g. trying to add a second
+             *       `iconGift`).
+             *     - `STIGMA_REQUIRES_MUTANT` — `kind: stigma` may only be
+             *       added to a character with `mutant=true`.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    listShips: {
+        parameters: {
+            query?: {
+                /** @description Opaque pagination cursor returned by the previous page */
+                cursor?: string;
+                /** @description Number of ships to return (1–100, default 20) */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated ship list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipList"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    createShip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShipCreate"];
+            };
+        };
+        responses: {
+            /** @description Ship created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ship"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `SHIP_NAME_EMPTY` — name is an empty string.
+             *     - `SHIP_NAME_TOO_LONG` — name exceeds 80 characters.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    getShip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship identifier (cuid2) */
+                id: components["parameters"]["ShipId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ship found */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ship"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller is authenticated but does not own this ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Ship not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteShip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship identifier (cuid2) */
+                id: components["parameters"]["ShipId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ship deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Ship not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateShip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship identifier (cuid2) */
+                id: components["parameters"]["ShipId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShipUpdate"];
+            };
+        };
+        responses: {
+            /** @description Updated ship */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ship"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `SHIP_NAME_EMPTY`
+             *     - `SHIP_NAME_TOO_LONG`
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Ship not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    duplicateShip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship identifier (cuid2) */
+                id: components["parameters"]["ShipId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Duplicated ship */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ship"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Ship not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    exportShip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship identifier (cuid2) */
+                id: components["parameters"]["ShipId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ship JSON export */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ship"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Ship not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    addShipModule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship identifier (cuid2) */
+                id: components["parameters"]["ShipId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShipModuleCreate"];
+            };
+        };
+        responses: {
+            /** @description Module installed */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipModule"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `MODULE_SLOT_INVALID` — slot value not recognised.
+             *     - `MODULE_TYPE_MISMATCH` — payload fields do not match the declared slot.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Ship not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    assignCrew: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship identifier (cuid2) */
+                id: components["parameters"]["ShipId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    position: components["schemas"]["CrewPosition"];
+                    /** @description ID of the character to assign (must be owned by caller) */
+                    characterId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Crew member assigned */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CrewSlot"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `CREW_POSITION_TAKEN` — that position is already occupied.
+             *     - `CHARACTER_NOT_FOUND` — characterId does not exist.
+             *     - `CHARACTER_NOT_OWNED` — character is not owned by the caller.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Ship not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    unassignCrew: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship identifier (cuid2) */
+                id: components["parameters"]["ShipId"];
+                /** @description Character identifier to remove from the crew */
+                characterId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Crew member unassigned */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Ship or crew assignment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteShipModule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship module identifier (cuid2) */
+                id: components["parameters"]["ShipModuleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Module removed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the parent ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Module not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateShipModule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Ship module identifier (cuid2) */
+                id: components["parameters"]["ShipModuleId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShipModuleUpdate"];
+            };
+        };
+        responses: {
+            /** @description Updated module */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipModule"];
+                };
+            };
+            /**
+             * @description Validation error. Possible code:
+             *     - `MODULE_TYPE_MISMATCH` — slot discriminator changed.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the parent ship */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Module not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    getHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Service and all dependencies are operational */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthStatus"];
+                };
+            };
+            /** @description One or more dependencies are degraded or down */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthStatus"];
+                };
+            };
+        };
+    };
+    deleteItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Item identifier (cuid2) */
+                id: components["parameters"]["ItemId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Item deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the parent character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Item not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Item identifier (cuid2) */
+                id: components["parameters"]["ItemId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ItemUpdate"];
+            };
+        };
+        responses: {
+            /** @description Updated item */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item"];
+                };
+            };
+            /**
+             * @description Validation error. Possible code:
+             *     - `ITEM_TYPE_MISMATCH` — type discriminator changed.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the parent character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Item not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    getMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The authenticated user's profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /**
+             * @description Account soft-deleted (or was already soft-deleted — idempotent).
+             *     Sessions revoked. No response body.
+             */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MeUpdate"];
+            };
+        };
+        responses: {
+            /** @description Updated profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            /**
+             * @description Validation error. Possible cases:
+             *     - `displayName` is an empty string.
+             *     - `displayName` exceeds 80 characters.
+             *     - `theme` is not one of the allowed enum values.
+             *     - Request body contains read-only fields (`email`, `createdAt`).
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    listNpcs: {
+        parameters: {
+            query?: {
+                /** @description Opaque pagination cursor returned by the previous page */
+                cursor?: string;
+                /** @description Number of NPCs to return (1–100, default 20) */
+                limit?: number;
+                /** @description Filter NPCs that have this tag (exact match, case-sensitive) */
+                tag?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated NPC list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NpcList"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    createNpc: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NpcCreate"];
+            };
+        };
+        responses: {
+            /** @description NPC created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Npc"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `NPC_NAME_EMPTY` — name is an empty string.
+             *     - `NPC_NAME_TOO_LONG` — name exceeds 120 characters.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    getNpc: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description NPC identifier (cuid2) */
+                id: components["parameters"]["NpcId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description NPC found */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Npc"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller is authenticated but does not own this NPC */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description NPC not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteNpc: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description NPC identifier (cuid2) */
+                id: components["parameters"]["NpcId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description NPC deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this NPC */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description NPC not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description NPC is still referenced by one or more encounters */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateNpc: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description NPC identifier (cuid2) */
+                id: components["parameters"]["NpcId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NpcUpdate"];
+            };
+        };
+        responses: {
+            /** @description Updated NPC */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Npc"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `NPC_NAME_EMPTY`
+             *     - `NPC_NAME_TOO_LONG`
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this NPC */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description NPC not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    duplicateNpc: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description NPC identifier (cuid2) */
+                id: components["parameters"]["NpcId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Duplicated NPC */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Npc"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this NPC */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description NPC not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    issueRealtimeToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Token issued */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RealtimeToken"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteTalent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Talent identifier (cuid2) */
+                id: components["parameters"]["TalentId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Talent deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the parent character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Talent not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateTalent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Talent identifier (cuid2) */
+                id: components["parameters"]["TalentId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TalentUpdate"];
+            };
+        };
+        responses: {
+            /** @description Updated talent */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Talent"];
+                };
+            };
+            /** @description Validation error (rank out of 1–3 range) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the parent character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Talent not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    listGameSessions: {
+        parameters: {
+            query?: {
+                /** @description Opaque pagination cursor returned by the previous page */
+                cursor?: string;
+                /** @description Number of sessions to return (1–100, default 20) */
+                limit?: number;
+                /** @description Filter sessions by status */
+                status?: components["schemas"]["GameSessionStatus"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated game session list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameSessionList"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    createGameSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GameSessionCreate"];
+            };
+        };
+        responses: {
+            /** @description Game session created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameSession"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `GAME_SESSION_NAME_EMPTY` — name is an empty string.
+             *     - `GAME_SESSION_NAME_TOO_LONG` — name exceeds 80 characters.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    getGameSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Game session identifier (cuid2) */
+                id: components["parameters"]["GameSessionId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Game session */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameSession"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this session */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Game session not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteGameSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Game session identifier (cuid2) */
+                id: components["parameters"]["GameSessionId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Game session deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this session */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Game session not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateGameSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Game session identifier (cuid2) */
+                id: components["parameters"]["GameSessionId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GameSessionUpdate"];
+            };
+        };
+        responses: {
+            /** @description Updated game session */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameSession"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `GAME_SESSION_NAME_EMPTY` — name is an empty string.
+             *     - `GAME_SESSION_NAME_TOO_LONG` — name exceeds 80 characters.
+             *     - `INVALID_GAME_SESSION_STATUS_TRANSITION` — invalid status transition.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this session */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Game session not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    assignCharacterToSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Game session identifier (cuid2) */
+                id: components["parameters"]["GameSessionId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignCharacterToSession"];
+            };
+        };
+        responses: {
+            /** @description Character assigned; returns updated session */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameSession"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `CHARACTER_NOT_OWNED` — character does not belong to the caller.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this session */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Game session or character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    unassignCharacterFromSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Game session identifier (cuid2) */
+                id: components["parameters"]["GameSessionId"];
+                /** @description Character identifier (cuid2) */
+                characterId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Character removed from session */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this session */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Game session not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    adjustDp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Game session identifier (cuid2) */
+                id: components["parameters"]["GameSessionId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DpAdjustment"];
+            };
+        };
+        responses: {
+            /** @description Updated game session with new dpCount */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameSession"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this session (negative delta only) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Game session not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `DP_INVALID_DELTA` — delta is 0.
+             *     - `DP_BELOW_ZERO` — would result in a negative dpCount.
+             */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    listDpEvents: {
+        parameters: {
+            query?: {
+                /** @description Opaque pagination cursor from the previous page */
+                cursor?: string;
+                /** @description Number of events to return (1–100, default 20) */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Game session identifier (cuid2) */
+                id: components["parameters"]["GameSessionId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated DP event list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DpEventList"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this session */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Game session not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    listEncounters: {
+        parameters: {
+            query?: {
+                /** @description Opaque pagination cursor returned by the previous page */
+                cursor?: string;
+                /** @description Number of encounters to return (1–100, default 20) */
+                limit?: number;
+                /** @description Filter encounters by status */
+                status?: components["schemas"]["EncounterStatus"];
+            };
+            header?: never;
+            path: {
+                /** @description Game session identifier (cuid2) */
+                sessionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated encounter list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EncounterList"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the parent game session */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Game session not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    createEncounter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Game session identifier (cuid2) */
+                sessionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EncounterCreate"];
+            };
+        };
+        responses: {
+            /** @description Encounter created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Encounter"];
+                };
+            };
+            /**
+             * @description Validation error. Possible codes:
+             *     - `ENCOUNTER_NAME_EMPTY` — name is an empty string.
+             *     - `ENCOUNTER_NAME_TOO_LONG` — name exceeds 80 characters.
+             */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the parent game session */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Game session not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    getEncounter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Encounter identifier (cuid2) */
+                id: components["parameters"]["EncounterId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Encounter */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Encounter"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the parent game session */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Encounter not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteEncounter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Encounter identifier (cuid2) */
+                id: components["parameters"]["EncounterId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Encounter deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the parent game session */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Encounter not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateEncounter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Encounter identifier (cuid2) */
+                id: components["parameters"]["EncounterId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EncounterUpdate"];
+            };
+        };
+        responses: {
+            /** @description Updated encounter */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Encounter"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the parent game session */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Encounter not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /**
+             * @description State-machine violation. Possible codes:
+             *     - `ENCOUNTER_INVALID_TRANSITION` — the requested `status` value
+             *       is not reachable from the current status. Illegal moves:
+             *       any → `setup`, `setup → ended`, any → `active` from `ended`,
+             *       any → `ended` from `ended`.
+             *     - `ENCOUNTER_NO_COMBATANTS` — attempted `setup → active`
+             *       transition but the encounter has zero combatants. Add at
+             *       least one combatant first (Block 3 surface).
+             */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    listCombatants: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Encounter identifier (cuid2) */
+                id: components["parameters"]["EncounterId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of combatants */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CombatantList"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the encounter */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Encounter not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    addCombatant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Encounter identifier (cuid2) */
+                id: components["parameters"]["EncounterId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CombatantCreate"];
+            };
+        };
+        responses: {
+            /** @description Combatant added */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Combatant"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the encounter */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Encounter not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation. `code` identifies the specific error. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteCombatant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Combatant identifier (cuid2) */
+                id: components["parameters"]["CombatantId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Combatant removed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the encounter */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Combatant not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Cannot remove a combatant once combat has started */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateCombatant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Combatant identifier (cuid2) */
+                id: components["parameters"]["CombatantId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CombatantUpdate"];
+            };
+        };
+        responses: {
+            /** @description Combatant updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Combatant"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the encounter */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Combatant not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Encounter is ended — combatant mutations are not allowed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    rollInitiative: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Encounter identifier (cuid2) */
+                id: components["parameters"]["EncounterId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Initiative rolled; encounter is now active */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InitiativeRollResult"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the encounter */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Encounter not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation. `code` identifies the specific error. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    reorderInitiative: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Encounter identifier (cuid2) */
+                id: components["parameters"]["EncounterId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InitiativeReorderRequest"];
+            };
+        };
+        responses: {
+            /** @description Turn order updated; returns the full combatant list in the new order */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InitiativeRollResult"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the encounter */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Encounter not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation. `code` identifies the specific error. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    advanceTurn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Encounter identifier (cuid2) */
+                id: components["parameters"]["EncounterId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Turn advanced; returns the new active combatant and round info */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TurnAdvanceResult"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the encounter */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Encounter not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation. `code` identifies the specific error. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    createShareLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShareLinkCreate"];
+            };
+        };
+        responses: {
+            /** @description Share link created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShareLink"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    listShareLinks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Share link list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShareLinkList"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    revokeShareLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Share link identifier (cuid2) */
+                id: components["parameters"]["ShareLinkId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Share link revoked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the character associated with this share link */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Share link not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    getPublicCharacter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 24-character unambiguous nanoid slug identifying a share link */
+                slug: components["parameters"]["ShareSlug"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Publicly-shared character */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Character"];
+                };
+            };
+            /** @description Slug not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Share link revoked or expired */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    getCharacterOgImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 24-character unambiguous nanoid slug identifying a share link */
+                slug: components["parameters"]["ShareSlug"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PNG image (Feature 6.3 — not yet implemented) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": string;
+                };
+            };
+            /** @description OG image renderer not yet implemented (ships in Feature 6.3) */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    listRolls: {
+        parameters: {
+            query?: {
+                /** @description Number of rolls to return (1–100, default 50) */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Roll history */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RollList"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    createRoll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Character identifier (cuid2) */
+                id: components["parameters"]["CharacterId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RollCreate"];
+            };
+        };
+        responses: {
+            /** @description Roll created successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Roll"];
+                };
+            };
+            /** @description Validation error (pool out of range, label too long, etc.) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own this character */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Character not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    pushRoll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Roll identifier (cuid2) */
+                id: components["parameters"]["RollId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Roll pushed successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Roll"];
+                };
+            };
+            /** @description No active session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Caller does not own the character this roll belongs to */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Roll not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Roll cannot be pushed (already pushed or character is exhausted) */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
 }

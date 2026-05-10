@@ -931,6 +931,20 @@ export type Character = {
      */
     role?: Role | null;
     /**
+     * Server-side flag, true on rows backfilled by the canon-alignment
+     * migration that introduced `Character.role` (T-2026-05-10-010
+     * Block E). The migration assigned each existing character the
+     * first canonical role of their amplua and set this flag so the
+     * web sheet can prompt the user to confirm or pick a different
+     * one. Cleared automatically by the server the first time the
+     * user PATCHes `role` to a non-null value (the explicit
+     * confirmation path). Always false on characters created after
+     * the migration ran. Read-only — clients do not set this; the
+     * server owns the lifecycle.
+     *
+     */
+    readonly roleUnmigrated?: boolean;
+    /**
      * One of the Nine Icons, or null if not chosen yet
      */
     iconId: IconId | null;
