@@ -60,7 +60,7 @@
         AppBar.
   - [x] Block 2 — `/app/npcs/[id]` sheet with auto-save
         on blur, header actions, problems card.
-  - [ ] Block 3 — `useEncountersApi` composable +
+  - [x] Block 3 — `useEncountersApi` composable +
         `EncounterPanel` on the session view. Inline create,
         list, open / delete. State-machine UI hints
         (e.g. "Add ≥1 combatant before rolling initiative").

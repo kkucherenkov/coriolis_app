@@ -2,6 +2,7 @@
   definePageMeta({ layout: 'app' });
 
   import { AppCard, AppButton, AppInput, AppField, AppBanner, AppBadge } from '@app/ui';
+  import EncounterPanel from '~/components/EncounterPanel.vue';
   import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
   import { useGameSessionsApi } from '~/composables/useGameSessionsApi';
   import { useDpApi } from '~/composables/useDpApi';
@@ -661,6 +662,15 @@
           </li>
         </ul>
       </AppCard>
+
+      <!-- Encounters (Block 3) — GM only; players see the combat state
+           read-only in Block 4 / 5 once the tracker widget is wired. -->
+      <EncounterPanel
+        v-if="isGm"
+        :session-id="sessionId"
+        data-testid="encounter-panel-section"
+        @open="(encId) => void navigateTo(`/app/encounters/${encId}`)"
+      />
     </template>
   </section>
 </template>
