@@ -63,7 +63,8 @@
     "errorLoad": "Failed to load characters. Please try again.",
     "retry": "Try again",
     "iconLabel": "Icon",
-    "skeletonAria": "Loading characters…"
+    "skeletonAria": "Loading characters…",
+    "navShips": "Ships"
   },
   "ru": {
     "pageTitle": "Персонажи",
@@ -73,7 +74,8 @@
     "errorLoad": "Не удалось загрузить персонажей. Попробуйте ещё раз.",
     "retry": "Попробовать снова",
     "iconLabel": "Икона",
-    "skeletonAria": "Загрузка персонажей…"
+    "skeletonAria": "Загрузка персонажей…",
+    "navShips": "Корабли"
   },
   "uk": {
     "pageTitle": "[uk-todo] Characters",
@@ -83,7 +85,8 @@
     "errorLoad": "[uk-todo] Failed to load characters",
     "retry": "[uk-todo] Try again",
     "iconLabel": "[uk-todo] Icon",
-    "skeletonAria": "[uk-todo] Loading characters"
+    "skeletonAria": "[uk-todo] Loading characters",
+    "navShips": "[uk-todo] Ships"
   },
   "el": {
     "pageTitle": "[el-todo] Characters",
@@ -93,7 +96,8 @@
     "errorLoad": "[el-todo] Failed to load characters",
     "retry": "[el-todo] Try again",
     "iconLabel": "[el-todo] Icon",
-    "skeletonAria": "[el-todo] Loading characters"
+    "skeletonAria": "[el-todo] Loading characters",
+    "navShips": "[el-todo] Ships"
   }
 }
 </i18n>
@@ -104,13 +108,22 @@
       <h1 class="page-characters__title">
         {{ t('pageTitle') }}
       </h1>
-      <AppButton
-        variant="primary"
-        size="md"
-        @click="navigateTo('/app/characters/new')"
-      >
-        {{ t('newCharacter') }}
-      </AppButton>
+      <div class="page-characters__header-actions">
+        <AppButton
+          variant="ghost"
+          size="md"
+          @click="navigateTo('/app/ships')"
+        >
+          {{ t('navShips') }}
+        </AppButton>
+        <AppButton
+          variant="primary"
+          size="md"
+          @click="navigateTo('/app/characters/new')"
+        >
+          {{ t('newCharacter') }}
+        </AppButton>
+      </div>
     </div>
 
     <!-- Loading skeleton -->
@@ -226,6 +239,12 @@
       align-items: center;
       justify-content: space-between;
       gap: var(--space-4);
+    }
+
+    &__header-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
     }
 
     &__title {
