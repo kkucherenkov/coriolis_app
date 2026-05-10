@@ -1,7 +1,7 @@
 asyncapi: 3.1.0
 info:
   title: App Realtime API
-  version: 0.10.0
+  version: 0.11.0
   description: |
     Real-time channels delivered via Centrifugo. Clients connect with a
     short-lived JWT issued by the backend (`POST /api/v1/realtime/token`)
@@ -146,7 +146,7 @@ components:
 
     RollPushed:
       type: object
-      required: [rollId, characterId, hits]
+      required: [rollId, characterId, kind, hits]
       properties:
         rollId:
           type: string
@@ -155,6 +155,14 @@ components:
         gameSessionId:
           type: string
           nullable: true
+        kind:
+          type: string
+          enum: [skill, save, trauma, initiative, darkness]
+          description: |
+            Roll kind discriminator mirroring the OpenAPI `RollKind` enum
+            (added in T-2026-05-10-015). Always `skill` for push events
+            because only skill rolls can be pushed per ST3001 ГЛАВА 3
+            §«Вознесение молитв»; included for client completeness.
         hits:
           type: integer
           minimum: 0

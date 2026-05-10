@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 1.2.0
+  version: 1.3.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -5831,6 +5831,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Roll"
+              examples:
+                skillRoll:
+                  summary: Typical skill roll (Pilot · Evade)
+                  value:
+                    id: cuid_roll01
+                    characterId: cuid_char01
+                    gameSessionId: null
+                    kind: skill
+                    label: "Pilot · Evade"
+                    pool: 7
+                    dice: [6, 2, 6, 4, 1, 5, 3]
+                    hits: 2
+                    pushed: false
+                    createdAt: "2026-05-10T12:00:00Z"
+                saveRoll:
+                  summary: Armor save roll (non-pushable kind)
+                  value:
+                    id: cuid_roll02
+                    characterId: cuid_char01
+                    gameSessionId: null
+                    kind: save
+                    label: "Armor Save · Exosuit"
+                    pool: 3
+                    dice: [2, 5, 1]
+                    hits: 0
+                    pushed: false
+                    createdAt: "2026-05-10T12:01:00Z"
         "400":
           description: Validation error (pool out of range, label too long, etc.)
           content:
@@ -5884,6 +5911,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RollList"
+              examples:
+                ok:
+                  summary: Recent roll history (two rolls)
+                  value:
+                    items:
+                      - id: cuid_roll01
+                        characterId: cuid_char01
+                        gameSessionId: null
+                        kind: skill
+                        label: "Pilot · Evade"
+                        pool: 7
+                        dice: [6, 2, 6, 4, 1, 5, 3]
+                        hits: 2
+                        pushed: false
+                        createdAt: "2026-05-10T12:00:00Z"
+                      - id: cuid_roll02
+                        characterId: cuid_char01
+                        gameSessionId: null
+                        kind: save
+                        label: "Armor Save · Exosuit"
+                        pool: 3
+                        dice: [2, 5, 1]
+                        hits: 0
+                        pushed: false
+                        createdAt: "2026-05-10T12:01:00Z"
         "401":
           description: No active session
           content:
@@ -5909,7 +5961,9 @@ paths:
       summary: Push (reroll) a roll
       description: |
         Rerolls all non-6 dice exactly once. After a push the roll cannot be
-        pushed again (`pushed` becomes `true`). Returns 422 with code
+        pushed again (`pushed` becomes `true`). Returns 400 with code
+        `PUSH_NOT_ALLOWED_ON_NON_SKILL_ROLL` if the roll's `kind` is not
+        `skill` (ST3001 ГЛАВА 3 §«Вознесение молитв»). Returns 422 with code
         `ROLL_NOT_PUSHABLE` if:
         - The roll has already been pushed.
         - The owning character has the Exhausted condition (PRD §10).
@@ -5926,6 +5980,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Roll"
+              examples:
+                pushed:
+                  summary: Skill roll after push (non-6 dice rerolled)
+                  value:
+                    id: cuid_roll01
+                    characterId: cuid_char01
+                    gameSessionId: null
+                    kind: skill
+                    label: "Pilot · Evade"
+                    pool: 7
+                    dice: [6, 6, 6, 4, 3, 5, 1]
+                    hits: 3
+                    pushed: true
+                    createdAt: "2026-05-10T12:00:00Z"
+        "400":
+          description: Push not allowed — roll kind is not `skill`
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                pushNotAllowedOnNonSkillRoll:
+                  summary: Push attempted on a non-skill roll
+                  value:
+                    type: about:blank
+                    title: Validation Error
+                    status: 400
+                    detail: "Push is only allowed on skill rolls (ST3001 ГЛАВА 3 §«Вознесение молитв»). The roll kind is 'save'."
+                    instance: /api/v1/rolls/cuid_roll01/push
+                    code: PUSH_NOT_ALLOWED_ON_NON_SKILL_ROLL
         "401":
           description: No active session
           content:
@@ -6090,6 +6174,7 @@ components:
       required:
         - id
         - characterId
+        - kind
         - label
         - pool
         - dice
@@ -6110,6 +6195,16 @@ components:
           description: |
             Game session this roll belongs to. Null until Feature 7.2
             (GameSession resource) ships. Clients should tolerate null.
+        kind:
+          $ref: "#/components/schemas/RollKind"
+          description: |
+            What kind of roll this represents (see RollKind for the full
+            taxonomy). Set at create-time and immutable. Drives the
+            push-eligibility gate — only `skill` rolls accept
+            POST `/rolls/{id}/push`.
+
+            The server always emits `kind`; clients SHOULD treat absence
+            as `skill` for backward compatibility with ≤ 1.2 servers.
         label:
           type: string
           minLength: 1
@@ -6157,6 +6252,13 @@ components:
         - label
         - pool
       properties:
+        kind:
+          $ref: "#/components/schemas/RollKind"
+          description: |
+            What kind of roll to create. Defaults to `skill` when omitted
+            (back-compat for callers from before T-2026-05-10-015 landed).
+            Once persisted, the kind is immutable.
+          default: skill
         label:
           type: string
           minLength: 1
@@ -6196,6 +6298,28 @@ components:
     # -------------------------------------------------------------------------
     # Enumerations — define once, reference everywhere
     # -------------------------------------------------------------------------
+
+    RollKind:
+      type: string
+      enum: [skill, save, trauma, initiative, darkness]
+      description: |
+        Discriminator on roll payloads — what *kind* of dice roll the
+        result represents. Drives the push-eligibility gate per ST3001
+        ГЛАВА 3 §«Вознесение молитв» («Молитву можно возносить только
+        при проверках навыков»). Only `skill` rolls can be pushed; the
+        backend rejects push attempts on the other four kinds with
+        `PUSH_NOT_ALLOWED_ON_NON_SKILL_ROLL`.
+
+        - `skill` — standard skill / attribute check. Push-eligible.
+        - `save` — armor save / damage-resist roll (ГЛАВА 5 «Урон»).
+        - `trauma` — critical-injury / trauma roll (ГЛАВА 5
+          «Травмирующие атаки»).
+        - `initiative` — combat initiative d6 (ГЛАВА 5 «Раунды,
+          ходы и инициатива»). The bounded reroll loop landed in
+          T-010 Block A is the canonical mechanic; this is not a
+          push.
+        - `darkness` — GM darkness pool / NPC reaction (ГЛАВА 15
+          «Принципы игры»). GM-side narrative tool; not pushed.
 
     CriticalInjurySeverity:
       type: string
