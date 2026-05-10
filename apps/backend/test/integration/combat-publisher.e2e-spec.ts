@@ -168,10 +168,10 @@ describe('T-007 Block 5 — combat.updated channel delivery', () => {
 
         if ('subscribe' in msg) {
           // Subscription confirmed — trigger publish via the real publisher
-          publisher.publishUpdated(sessionId, encounter, combatants).catch((err: unknown) => {
+          publisher.publishUpdated(sessionId, encounter, combatants).catch((error: unknown) => {
             clearTimeout(timeout);
             ws.close();
-            reject(err instanceof Error ? err : new Error(String(err)));
+            reject(error instanceof Error ? error : new Error(String(error)));
           });
           return;
         }

@@ -34,5 +34,11 @@ export type {
   Upbringing,
   UpbringingBudget,
 } from './rules-engine';
-export { BASE_STATS_BY_CLASS } from './ship-class-table';
-export type { ShipBaseStats } from './ship-class-table';
+export {
+  BASE_STATS_BY_CLASS,
+  BASE_STATS_BY_TIER,
+  TIER_BY_SHIP_TYPE,
+  getBaseStatsByShipType,
+  getTierForShipType,
+} from './ship-class-table';
+export type { ShipBaseStats, ShipTier } from './ship-class-table';

@@ -127,10 +127,10 @@ describe('T-7.4.1.f — realtime dp.changed channel delivery', () => {
             delta: 1,
             source: 'gm-manual',
             at: new Date().toISOString(),
-          }).catch((err: unknown) => {
+          }).catch((error: unknown) => {
             clearTimeout(timeout);
             ws.close();
-            reject(err instanceof Error ? err : new Error(String(err)));
+            reject(error instanceof Error ? error : new Error(String(error)));
           });
           return;
         }

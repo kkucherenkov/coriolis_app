@@ -36,7 +36,9 @@ export class CreateShipHandler implements ICommandHandler<CreateShipCommand, Shi
       maneuverability: dto.maneuverability ?? base.maneuverability,
       signature: dto.signature ?? base.signature,
       speed: dto.speed ?? base.speed,
-      cargoCapacity: base.cargoCapacity,
+      // cargoCapacity is the sum of installed hold modules (ТАБЛИЦА 7.6 § Грузовой отсек)
+      // and is not part of the class tier base stats — default to 0 on create.
+      cargoCapacity: 0,
       notes: dto.notes ?? null,
       history: dto.history ?? null,
     });

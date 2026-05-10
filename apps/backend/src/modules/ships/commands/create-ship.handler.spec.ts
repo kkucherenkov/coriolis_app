@@ -45,7 +45,9 @@ function makeShip(overrides: Partial<ShipReadModel> = {}): ShipReadModel {
     maneuverability: 0,
     signature: 0,
     speed: 2,
-    cargoCapacity: 50,
+    // cargoCapacity is not in ТАБЛИЦА 7.5; it defaults to 0 on create
+    // and grows as HOLD modules are added.
+    cargoCapacity: 0,
     modules: [],
     crew: [],
     problems: [],
@@ -84,12 +86,14 @@ describe('CreateShipHandler', () => {
         ownerId: 'user-1',
         name: 'Madara',
         class: 'light-freighter',
+        // Class III from ТАБЛИЦА 7.5: energyMax=5, hullMax=6, armor=5, speed=2, maneuverability=0, signature=0
         hullMax: 6,
         hullCurrent: 6,
         energyMax: 5,
         energyCurrent: 5,
         armor: 5,
-        cargoCapacity: 50,
+        // cargoCapacity is not a class stat — defaults to 0 on create
+        cargoCapacity: 0,
       }),
     );
   });
@@ -162,11 +166,13 @@ describe('CreateShipHandler', () => {
     expect(repo.create).toHaveBeenCalledWith(
       expect.objectContaining({
         class: 'fighter',
-        hullMax: 4,
+        // Class I from ТАБЛИЦА 7.5: energyMax=3, hullMax=2, armor=3, speed=4, maneuverability=2, signature=-2
+        hullMax: 2,
         energyMax: 3,
         armor: 3,
         speed: 4,
-        cargoCapacity: 2,
+        // cargoCapacity is not a class stat — defaults to 0 on create
+        cargoCapacity: 0,
       }),
     );
   });
