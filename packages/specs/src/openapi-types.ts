@@ -954,6 +954,133 @@ export interface paths {
     patch: operations['updateCombatant'];
     trace?: never;
   };
+  '/api/v1/encounters/{id}/initiative/roll': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Roll initiative for all combatants and start combat
+     * @description Rolls a d10 (`crypto.randomInt(1, 11)`) for every combatant in the
+     *     encounter, sorts them descending, assigns `turnOrder` indices (0-based),
+     *     and transitions the encounter from `setup` to `active`.
+     *
+     *     **Side-effects (all atomic):**
+     *     1. Encounter `status` transitions `setup → active`.
+     *     2. `encounter.round` is set from 0 to 1.
+     *     3. `encounter.activeCombatantId` is set to the combatant with
+     *        `turnOrder: 0` (highest initiative result).
+     *     4. Every combatant row is updated with its `initiative` and `turnOrder`.
+     *
+     *     **Tie-breaking:** equal initiative rolls are broken by `agility`
+     *     descending (`attributes.agility` for PC combatants;
+     *     `npcSnapshot.agility` for NPC combatants snapshotted at add-time).
+     *     Remaining ties (equal initiative **and** equal agility) are left in
+     *     an arbitrary but stable order — the GM should use the
+     *     `PATCH /api/v1/encounters/{id}/initiative` reorder operation to set
+     *     a definitive order before the first turn.
+     *
+     *     **Error codes (422):**
+     *     - `ENCOUNTER_INVALID_TRANSITION` — encounter is not in `setup` status.
+     *       Initiative roll is only valid from `setup`; if the encounter is
+     *       already `active` or `ended` this guard fires.
+     *     - `ENCOUNTER_NO_COMBATANTS` — the encounter has no combatants. Add at
+     *       least one via `POST /api/v1/encounters/{id}/combatants` before
+     *       rolling initiative.
+     */
+    post: operations['rollInitiative'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/encounters/{id}/initiative': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Manually reorder the turn order (GM only)
+     * @description Allows the GM to rearrange the turn order without re-rolling initiative
+     *     dice. The request body must contain the full ordered list of every
+     *     combatant id in the encounter exactly once. The server reassigns
+     *     `turnOrder` indices (0-based) matching the array position.
+     *
+     *     **This operation does NOT:**
+     *     - Re-roll initiative dice (`initiative` values remain unchanged).
+     *     - Change `encounter.activeCombatantId` (the combatant whose turn is
+     *       currently active stays active; the reorder takes effect from the
+     *       next turn advance).
+     *     - Change `encounter.round`.
+     *
+     *     **Allowed only while `status` is `active`.** Returns 422
+     *     `ENCOUNTER_INVALID_STATUS` if called from `setup` (use
+     *     `rollInitiative` instead) or `ended`.
+     *
+     *     **Validation error codes (422):**
+     *     - `ENCOUNTER_INVALID_STATUS` — encounter is not in `active` status.
+     *     - `INITIATIVE_INCOMPLETE` — at least one combatant id from the
+     *       encounter is absent from `combatantIds`.
+     *     - `INITIATIVE_DUPLICATE` — the same id appears two or more times
+     *       in `combatantIds`.
+     *     - `INITIATIVE_UNKNOWN_COMBATANT` — an id in `combatantIds` does not
+     *       belong to this encounter.
+     */
+    patch: operations['reorderInitiative'];
+    trace?: never;
+  };
+  '/api/v1/encounters/{id}/turn/advance': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Advance to the next combatant's turn
+     * @description Moves `encounter.activeCombatantId` forward by one position in the
+     *     turn order: `(currentIndex + 1) % combatants.length`.
+     *
+     *     **Wrap behaviour:** when the advance moves past the last combatant
+     *     (index `combatants.length - 1`), the turn wraps to index 0 and
+     *     `encounter.round` is incremented by 1. `TurnAdvanceResult.isNewRound`
+     *     is `true` in that case.
+     *
+     *     **Allowed only while `status` is `active`.** Returns 422
+     *     `ENCOUNTER_INVALID_STATUS` otherwise.
+     *
+     *     **Defensive guard:** returns 422 `ENCOUNTER_INITIATIVE_NOT_ROLLED`
+     *     when `activeCombatantId` is null (i.e. initiative was never set,
+     *     which should not be reachable via normal `rollInitiative` flow but is
+     *     possible if a future code path bypasses that operation).
+     *
+     *     **Error codes (422):**
+     *     - `ENCOUNTER_INVALID_STATUS` — encounter is not in `active` status.
+     *     - `ENCOUNTER_INITIATIVE_NOT_ROLLED` — `activeCombatantId` is null;
+     *       initiative must be rolled before turns can be advanced.
+     */
+    post: operations['advanceTurn'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/characters/{id}/share': {
     parameters: {
       query?: never;
@@ -3515,6 +3642,183 @@ export interface components {
      */
     CombatantList: {
       items: components['schemas']['Combatant'][];
+    };
+    /**
+     * @description Returned by `POST /api/v1/encounters/{id}/initiative/roll` and
+     *     `PATCH /api/v1/encounters/{id}/initiative`. Carries the full combatant
+     *     list after initiative values and turn-order indices have been assigned,
+     *     plus the current round counter.
+     *
+     *     **Tie-breaking rule (ST3001):** when two combatants share the same d10
+     *     initiative roll the server breaks the tie by `agility` descending — the
+     *     source PC's `attributes.agility` for `pc` combatants, or
+     *     `npcSnapshot.agility` for `npc` combatants. If `agility` is also equal
+     *     the GM is expected to use the `PATCH /api/v1/encounters/{id}/initiative`
+     *     reorder operation to set the final order manually.
+     *
+     *     **Side-effects of `rollInitiative`:**
+     *     1. Encounter status transitions `setup → active`.
+     *     2. `encounter.round` is set from 0 to 1.
+     *     3. `encounter.activeCombatantId` is set to the combatant at `turnOrder: 0`.
+     *     The `PATCH` (reorder) variant does NOT re-roll dice and does NOT alter
+     *     `activeCombatantId` — the GM is adjusting who acts next round, not
+     *     restarting combat.
+     * @example {
+     *       "round": 1,
+     *       "combatants": [
+     *         {
+     *           "id": "cuid_comb03",
+     *           "encounterId": "cuid_enc01",
+     *           "combatantType": "npc",
+     *           "sourceId": "cuid_npc01",
+     *           "displayName": "Khorredian Elite Guard",
+     *           "initiative": 9,
+     *           "turnOrder": 0,
+     *           "hpCurrent": 6,
+     *           "hpMax": 6,
+     *           "armor": 3,
+     *           "signature": 1,
+     *           "statusFlags": [],
+     *           "notes": null,
+     *           "createdAt": "2026-05-10T09:00:00Z",
+     *           "updatedAt": "2026-05-10T10:00:00Z"
+     *         },
+     *         {
+     *           "id": "cuid_comb01",
+     *           "encounterId": "cuid_enc01",
+     *           "combatantType": "pc",
+     *           "sourceId": "cuid_char01",
+     *           "displayName": "Zara al-Khatib",
+     *           "initiative": 7,
+     *           "turnOrder": 1,
+     *           "hpCurrent": 4,
+     *           "hpMax": 4,
+     *           "armor": 2,
+     *           "signature": 0,
+     *           "statusFlags": [],
+     *           "notes": null,
+     *           "createdAt": "2026-05-10T09:00:00Z",
+     *           "updatedAt": "2026-05-10T10:00:00Z"
+     *         },
+     *         {
+     *           "id": "cuid_comb02",
+     *           "encounterId": "cuid_enc01",
+     *           "combatantType": "pc",
+     *           "sourceId": "cuid_char02",
+     *           "displayName": "Tariq al-Asari",
+     *           "initiative": 7,
+     *           "turnOrder": 2,
+     *           "hpCurrent": 5,
+     *           "hpMax": 5,
+     *           "armor": 1,
+     *           "signature": 0,
+     *           "statusFlags": [],
+     *           "notes": null,
+     *           "createdAt": "2026-05-10T09:00:00Z",
+     *           "updatedAt": "2026-05-10T10:00:00Z"
+     *         },
+     *         {
+     *           "id": "cuid_comb04",
+     *           "encounterId": "cuid_enc01",
+     *           "combatantType": "npc",
+     *           "sourceId": "cuid_npc02",
+     *           "displayName": "Khorredian Guard Captain",
+     *           "initiative": 4,
+     *           "turnOrder": 3,
+     *           "hpCurrent": 8,
+     *           "hpMax": 8,
+     *           "armor": 4,
+     *           "signature": 2,
+     *           "statusFlags": [],
+     *           "notes": "Has the bridge key.",
+     *           "createdAt": "2026-05-10T09:00:00Z",
+     *           "updatedAt": "2026-05-10T10:00:00Z"
+     *         }
+     *       ]
+     *     }
+     */
+    InitiativeRollResult: {
+      /**
+       * @description Full updated combatant list sorted by `turnOrder` ascending (0 = acts
+       *     first). Every combatant carries a non-null `initiative` and `turnOrder`
+       *     after this operation.
+       */
+      combatants: components['schemas']['Combatant'][];
+      /**
+       * @description Current combat round after the operation. For `rollInitiative` this
+       *     is always 1 (the `setup → active` transition sets `round` from 0 to 1).
+       *     For `reorderInitiative` this reflects the encounter's current round
+       *     (unchanged by a reorder).
+       */
+      round: number;
+    };
+    /**
+     * @description Request body for `PATCH /api/v1/encounters/{id}/initiative`. The GM
+     *     supplies the full desired turn order as an ordered array of combatant
+     *     ids. The server reassigns `turnOrder` indices (0-based) matching the
+     *     array position.
+     *
+     *     **Validation — the array must contain every combatant id from the
+     *     encounter exactly once.** Any violation returns 422 with one of:
+     *     - `INITIATIVE_INCOMPLETE` — at least one combatant id from the encounter
+     *       is absent from the array.
+     *     - `INITIATIVE_DUPLICATE` — the same id appears two or more times.
+     *     - `INITIATIVE_UNKNOWN_COMBATANT` — an id in the array does not belong to
+     *       this encounter.
+     *
+     *     The `PATCH` does NOT re-roll initiative dice and does NOT change
+     *     `activeCombatantId` — it only rearranges the turn-order index so the
+     *     GM can correct ties or unexpected results without restarting combat.
+     * @example {
+     *       "combatantIds": [
+     *         "cuid_comb03",
+     *         "cuid_comb02",
+     *         "cuid_comb01",
+     *         "cuid_comb04"
+     *       ]
+     *     }
+     */
+    InitiativeReorderRequest: {
+      /**
+       * @description Ordered list of combatant ids. Position 0 acts first. Must include
+       *     every combatant in the encounter exactly once.
+       */
+      combatantIds: string[];
+    };
+    /**
+     * @description Returned by `POST /api/v1/encounters/{id}/turn/advance`. Identifies the
+     *     combatant whose turn is now active after the advance, the current round
+     *     counter, and whether advancing wrapped past the last combatant (which
+     *     triggers a round increment).
+     *
+     *     **Wrap behaviour:** the server advances
+     *     `activeCombatantId` from the current `turnOrder` index to
+     *     `(currentIndex + 1) % combatants.length`. When `currentIndex + 1`
+     *     equals `combatants.length` the turn wraps to index 0 and `round` is
+     *     incremented by 1; `isNewRound` is `true` in that case.
+     * @example {
+     *       "activeCombatantId": "cuid_comb01",
+     *       "round": 1,
+     *       "isNewRound": false
+     *     }
+     */
+    TurnAdvanceResult: {
+      /**
+       * @description Id of the combatant whose turn is now active (the new
+       *     `encounter.activeCombatantId` after the advance).
+       */
+      activeCombatantId: string;
+      /**
+       * @description Current combat round after the advance. Incremented by 1 when the
+       *     turn wraps from the last combatant back to index 0.
+       */
+      round: number;
+      /**
+       * @description `true` when the advance wrapped past the last combatant and started
+       *     a new round; `false` when the next combatant is within the same
+       *     round.
+       */
+      isNewRound: boolean;
     };
   };
   responses: never;
@@ -6401,6 +6705,187 @@ export interface operations {
         };
       };
       /** @description Encounter is ended — combatant mutations are not allowed */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  rollInitiative: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Encounter identifier (cuid2) */
+        id: components['parameters']['EncounterId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Initiative rolled; encounter is now active */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['InitiativeRollResult'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own the encounter */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Encounter not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Business rule violation. `code` identifies the specific error. */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  reorderInitiative: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Encounter identifier (cuid2) */
+        id: components['parameters']['EncounterId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['InitiativeReorderRequest'];
+      };
+    };
+    responses: {
+      /** @description Turn order updated; returns the full combatant list in the new order */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['InitiativeRollResult'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own the encounter */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Encounter not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Business rule violation. `code` identifies the specific error. */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  advanceTurn: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Encounter identifier (cuid2) */
+        id: components['parameters']['EncounterId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Turn advanced; returns the new active combatant and round info */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['TurnAdvanceResult'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own the encounter */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Encounter not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Business rule violation. `code` identifies the specific error. */
       422: {
         headers: {
           [name: string]: unknown;
