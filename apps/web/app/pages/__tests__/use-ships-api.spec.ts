@@ -11,7 +11,7 @@
  * of the app — see share-viewer.spec.ts).
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
 import type { Ship, ShipCreate, Problem } from '@app/api-client-ts';
 
 // ── Fixture ───────────────────────────────────────────────────────────────────
@@ -209,5 +209,144 @@ describe('humaniseClass (page helper)', () => {
     ['courier-yacht', 'Courier Yacht'],
   ])('humaniseClass(%s) → %s', (input, expected) => {
     expect(humaniseClass(input)).toBe(expected);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Block 2 — update() and structural assertions (T-2026-05-10-005 Block 2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function callUpdate(
+  mockFn: (opts: unknown) => Promise<MockResult<Ship>>,
+  id: string,
+  body: Partial<Ship>,
+): Promise<Ship> {
+  const res = await mockFn({ path: { id }, body });
+  if (res.error) throw res.error;
+  return res.data!;
+}
+
+describe('useShipsApi.update', () => {
+  it('PATCHes with the body and returns the updated Ship', async () => {
+    const fixture = makeShipFixture({ name: 'New Name', hull: { current: 5, max: 8 } });
+    const mockUpdate = vi.fn().mockResolvedValue({ data: fixture, error: undefined });
+
+    const result = await callUpdate(mockUpdate, 'ship-id-001', {
+      name: 'New Name',
+      hull: { current: 5, max: 8 },
+    });
+
+    expect(result.name).toBe('New Name');
+    expect(result.hull.current).toBe(5);
+    expect(mockUpdate).toHaveBeenCalledWith({
+      path: { id: 'ship-id-001' },
+      body: { name: 'New Name', hull: { current: 5, max: 8 } },
+    });
+  });
+
+  it('throws Problem with status 403 on forbidden PATCH', async () => {
+    const problem: Problem = {
+      type: null,
+      status: 403,
+      detail: 'You do not own this ship',
+      title: 'Forbidden',
+    };
+    const mockUpdate = vi.fn().mockResolvedValue({ data: undefined, error: problem });
+
+    await expect(callUpdate(mockUpdate, 'ship-id-001', { name: 'Hack' })).rejects.toMatchObject({
+      status: 403,
+      detail: 'You do not own this ship',
+    });
+  });
+
+  it('throws Problem with status 404 on missing ship PATCH', async () => {
+    const problem: Problem = {
+      type: null,
+      status: 404,
+      detail: 'Ship not found',
+      title: 'Not Found',
+    };
+    const mockUpdate = vi.fn().mockResolvedValue({ data: undefined, error: problem });
+
+    await expect(callUpdate(mockUpdate, 'no-such-id', { name: 'Ghost' })).rejects.toMatchObject({
+      status: 404,
+    });
+  });
+
+  it('partial PATCH — only sends the fields provided', async () => {
+    const fixture = makeShipFixture({ notes: 'Updated notes' });
+    const mockUpdate = vi.fn().mockResolvedValue({ data: fixture, error: undefined });
+
+    const result = await callUpdate(mockUpdate, 'ship-id-001', { notes: 'Updated notes' } as Partial<Ship>);
+
+    expect(result.notes).toBe('Updated notes');
+    // Only `notes` sent — not the full Ship shape
+    expect(mockUpdate).toHaveBeenCalledWith({
+      path: { id: 'ship-id-001' },
+      body: { notes: 'Updated notes' },
+    });
+  });
+
+  it('problems array PATCH replaces the full list', async () => {
+    const fixture = makeShipFixture({ problems: ['Hull breach', 'Reactor leak'] });
+    const mockUpdate = vi.fn().mockResolvedValue({ data: fixture, error: undefined });
+
+    const result = await callUpdate(mockUpdate, 'ship-id-001', {
+      problems: ['Hull breach', 'Reactor leak'],
+    } as Partial<Ship>);
+
+    expect(result.problems).toHaveLength(2);
+    expect(result.problems[0]).toBe('Hull breach');
+  });
+});
+
+// ── Structural assertions on Block 2 sheet wiring ────────────────────────────
+// Mirrors the "no edit affordances" guard pattern from share-viewer.spec.ts.
+// We import the page source as text and assert key wiring is present.
+
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import nodePath from 'node:path';
+
+const { resolve, dirname } = nodePath;
+// WHY: unicorn/prefer-module forbids __dirname in ESM .ts files; use import.meta.url instead.
+const _dirname = dirname(fileURLToPath(import.meta.url));
+
+const PAGE_PATH = resolve(_dirname, '../../pages/app/ships/[id].vue');
+
+describe('[id].vue Block 2 — structural wiring', () => {
+  let src: string;
+
+  beforeAll(() => {
+    src = readFileSync(PAGE_PATH, 'utf8');
+  });
+
+  it('imports useAutoSave', () => {
+    expect(src).toContain("from '~/composables/useAutoSave'");
+  });
+
+  it('imports useShipsApi', () => {
+    expect(src).toContain("from '~/composables/useShipsApi'");
+  });
+
+  it('imports AppSavePulse', () => {
+    expect(src).toContain('AppSavePulse');
+  });
+
+  it('uses auto-save with 600 ms debounce', () => {
+    expect(src).toContain('debounceMs: 600');
+  });
+
+  it('handles notfound page state for 404 responses', () => {
+    expect(src).toContain("state.value = 'notfound'");
+    expect(src).toContain('problem.status === 404');
+  });
+
+  it('wires crew roster using CREW_POSITIONS constant', () => {
+    expect(src).toContain('CREW_POSITIONS');
+  });
+
+  it('wires modules grouped with mandatory slots first', () => {
+    expect(src).toContain('MANDATORY_SLOTS');
   });
 });
