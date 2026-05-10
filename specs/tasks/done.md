@@ -57,7 +57,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
     clients re-render from the snapshot rather than computing diffs.
     TS exports `CombatUpdated`; Dart opaque on the wire.
 - Tests: spec-only. Each block ran `pnpm spec:validate &&
-  pnpm spec:bundle && pnpm spec:codegen` green. Codegen idempotent
+pnpm spec:bundle && pnpm spec:codegen` green. Codegen idempotent
   after `0ea94b9`.
 - Design impact: none yet — UX work lands in T-008 (web) and T-009
   (mobile).

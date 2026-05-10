@@ -183,7 +183,8 @@ components:
           type: object
           description: |
             Encounter snapshot mirroring the OpenAPI `Encounter` schema.
-          required: [id, gameSessionId, name, status, round, activeCombatantId, createdAt, updatedAt]
+          required:
+            [id, gameSessionId, name, status, round, activeCombatantId, createdAt, updatedAt]
           properties:
             id:
               type: string
@@ -214,7 +215,8 @@ components:
           description: Full combatant list in current turn order (turnOrder ascending).
           items:
             type: object
-            required: [id, encounterId, combatantType, name, initiative, turnOrder, hpCurrent, hpMax]
+            required:
+              [id, encounterId, combatantType, name, initiative, turnOrder, hpCurrent, hpMax]
             properties:
               id:
                 type: string

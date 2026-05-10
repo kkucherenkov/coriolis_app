@@ -454,18 +454,9 @@
 
 <template>
   <div class="page-wizard">
-    <div
-      v-if="loading"
-      class="page-wizard__loader"
-      role="status"
-      aria-live="polite"
-    />
+    <div v-if="loading" class="page-wizard__loader" role="status" aria-live="polite" />
 
-    <div
-      v-else-if="errorMsg"
-      class="page-wizard__error"
-      role="alert"
-    >
+    <div v-else-if="errorMsg" class="page-wizard__error" role="alert">
       {{ errorMsg }}
     </div>
 
@@ -513,11 +504,7 @@
         @update:age="onAgeUpdate"
       />
 
-      <Step3Icon
-        v-if="step === 3"
-        :icon-id="draftIconId"
-        @update:icon-id="onIconUpdate"
-      />
+      <Step3Icon v-if="step === 3" :icon-id="draftIconId" @update:icon-id="onIconUpdate" />
 
       <Step4Attributes
         v-if="step === 4"

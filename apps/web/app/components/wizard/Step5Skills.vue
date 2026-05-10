@@ -296,18 +296,10 @@
           </span>
         </div>
 
-        <div
-          v-for="key in GENERAL_KEYS"
-          :key="key"
-          class="step-skills__row"
-        >
+        <div v-for="key in GENERAL_KEYS" :key="key" class="step-skills__row">
           <span class="step-skills__name">{{ t(`skill.${key}`) }}</span>
           <span class="step-skills__attr">{{ SKILL_ATTR[key] }}</span>
-          <div
-            class="step-skills__dots"
-            role="group"
-            :aria-label="t(`skill.${key}`)"
-          >
+          <div class="step-skills__dots" role="group" :aria-label="t(`skill.${key}`)">
             <span
               v-for="i in DOT_COUNT"
               :key="i"
@@ -356,18 +348,10 @@
           </span>
         </div>
 
-        <div
-          v-for="key in ADVANCED_KEYS"
-          :key="key"
-          class="step-skills__row"
-        >
+        <div v-for="key in ADVANCED_KEYS" :key="key" class="step-skills__row">
           <span class="step-skills__name">{{ t(`skill.${key}`) }}</span>
           <span class="step-skills__attr">{{ SKILL_ATTR[key] }}</span>
-          <div
-            class="step-skills__dots"
-            role="group"
-            :aria-label="t(`skill.${key}`)"
-          >
+          <div class="step-skills__dots" role="group" :aria-label="t(`skill.${key}`)">
             <span
               v-for="i in DOT_COUNT"
               :key="i"

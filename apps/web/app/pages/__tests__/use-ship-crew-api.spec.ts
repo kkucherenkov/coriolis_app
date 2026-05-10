@@ -33,7 +33,7 @@ async function callAssign(
   body: { position: CrewPosition; characterId: string },
 ): Promise<CrewSlot> {
   const res = await mockFn({ path: { id: shipId }, body });
-   
+
   if (res.error) throw res.error as Problem;
   return res.data!;
 }
@@ -44,7 +44,7 @@ async function callUnassign(
   characterId: string,
 ): Promise<void> {
   const res = await mockFn({ path: { id: shipId, characterId } });
-   
+
   if (res.error) throw res.error as Problem;
 }
 

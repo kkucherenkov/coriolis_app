@@ -576,28 +576,17 @@
   >
     <div class="ship-module-editor">
       <!-- Header -->
-      <h2
-        id="ship-module-editor-title"
-        class="ship-module-editor__title"
-      >
+      <h2 id="ship-module-editor-title" class="ship-module-editor__title">
         {{ isEditMode ? t('titleEdit') : t('titleCreate') }}
       </h2>
 
       <!-- Error banner -->
-      <AppBanner
-        v-if="errorMsg"
-        tone="danger"
-        role="alert"
-        class="ship-module-editor__error"
-      >
+      <AppBanner v-if="errorMsg" tone="danger" role="alert" class="ship-module-editor__error">
         {{ errorMsg }}
       </AppBanner>
 
       <!-- ── Confirm-delete sub-panel ───────────────────────────────────────── -->
-      <div
-        v-if="confirmDelete"
-        class="ship-module-editor__confirm"
-      >
+      <div v-if="confirmDelete" class="ship-module-editor__confirm">
         <p class="ship-module-editor__confirm-title">
           {{ t('deleteConfirmTitle') }}
         </p>
@@ -605,20 +594,10 @@
           {{ t('deleteConfirmBody') }}
         </p>
         <div class="ship-module-editor__confirm-actions">
-          <AppButton
-            variant="danger"
-            size="md"
-            :disabled="deleting"
-            @click="confirmAndDelete"
-          >
+          <AppButton variant="danger" size="md" :disabled="deleting" @click="confirmAndDelete">
             {{ t('deleteConfirmYes') }}
           </AppButton>
-          <AppButton
-            variant="ghost"
-            size="md"
-            :disabled="deleting"
-            @click="confirmDelete = false"
-          >
+          <AppButton variant="ghost" size="md" :disabled="deleting" @click="confirmDelete = false">
             {{ t('deleteConfirmCancel') }}
           </AppButton>
         </div>
@@ -627,11 +606,7 @@
       <!-- ── Main form ──────────────────────────────────────────────────────── -->
       <template v-else>
         <!-- Slot picker — create mode only -->
-        <AppField
-          v-if="!isEditMode"
-          :label="t('fieldSlot')"
-          required
-        >
+        <AppField v-if="!isEditMode" :label="t('fieldSlot')" required>
           <template #default="attrs">
             <AppSelect
               v-bind="attrs"
@@ -644,10 +619,7 @@
         </AppField>
 
         <!-- Name -->
-        <AppField
-          :label="t('fieldName')"
-          required
-        >
+        <AppField :label="t('fieldName')" required>
           <template #default="attrs">
             <AppInput
               v-bind="attrs"
@@ -678,11 +650,7 @@
                 inputmode="numeric"
                 class="ship-module-editor__stepper-input"
               />
-              <AppButton
-                variant="ghost"
-                size="sm"
-                @click="fieldEnergyUse = fieldEnergyUse + 1"
-              >
+              <AppButton variant="ghost" size="sm" @click="fieldEnergyUse = fieldEnergyUse + 1">
                 +
               </AppButton>
             </div>
@@ -844,11 +812,7 @@
                   inputmode="numeric"
                   class="ship-module-editor__stepper-input"
                 />
-                <AppButton
-                  variant="ghost"
-                  size="sm"
-                  @click="fieldMineCount = fieldMineCount + 1"
-                >
+                <AppButton variant="ghost" size="sm" @click="fieldMineCount = fieldMineCount + 1">
                   +
                 </AppButton>
               </div>
@@ -877,11 +841,7 @@
                   inputmode="numeric"
                   class="ship-module-editor__stepper-input"
                 />
-                <AppButton
-                  variant="ghost"
-                  size="sm"
-                  @click="fieldCargoTons = fieldCargoTons + 1"
-                >
+                <AppButton variant="ghost" size="sm" @click="fieldCargoTons = fieldCargoTons + 1">
                   +
                 </AppButton>
               </div>
@@ -890,10 +850,7 @@
 
           <AppField :label="t('fieldConcealed')">
             <template #default>
-              <AppSwitch
-                v-model="fieldConcealed"
-                :label="t('fieldConcealed')"
-              />
+              <AppSwitch v-model="fieldConcealed" :label="t('fieldConcealed')" />
             </template>
           </AppField>
         </template>
@@ -959,20 +916,10 @@
             </AppButton>
           </div>
           <div class="ship-module-editor__footer-right">
-            <AppButton
-              variant="ghost"
-              size="md"
-              :disabled="saving"
-              @click="cancel"
-            >
+            <AppButton variant="ghost" size="md" :disabled="saving" @click="cancel">
               {{ t('cancel') }}
             </AppButton>
-            <AppButton
-              variant="primary"
-              size="md"
-              :disabled="!canSave"
-              @click="save"
-            >
+            <AppButton variant="primary" size="md" :disabled="!canSave" @click="save">
               {{ isEditMode ? t('save') : t('add') }}
             </AppButton>
           </div>
