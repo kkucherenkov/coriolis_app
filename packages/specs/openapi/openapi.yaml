@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 0.12.0
+  version: 0.13.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -45,6 +45,8 @@ tags:
     description: Public read-only endpoints — no authentication required
   - name: dice
     description: Dice rolls — create, push, and roll history
+  - name: npcs
+    description: GM-owned non-player characters — CRUD and duplicate action
 
 paths:
   /api/v1/characters:
@@ -2601,6 +2603,659 @@ paths:
                     instance: /api/v1/me
                     code: NO_ACTIVE_SESSION
 
+  # ---------------------------------------------------------------------------
+  # NPC resource (Phase 6 Block 1)
+  # ---------------------------------------------------------------------------
+
+  /api/v1/npcs:
+    get:
+      operationId: listNpcs
+      summary: List the authenticated user's NPCs
+      description: |
+        Returns a cursor-paginated list of NPCs owned by the authenticated
+        user. Pass `cursor` from a previous response's `nextCursor` to
+        retrieve the following page. Results are ordered newest-first by
+        `createdAt`. Optionally filter by `tag` (exact match against any
+        element of the NPC's `tags` array).
+      tags: [npcs]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque pagination cursor returned by the previous page
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          description: Number of NPCs to return (1–100, default 20)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: tag
+          in: query
+          required: false
+          description: Filter NPCs that have this tag (exact match, case-sensitive)
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paginated NPC list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NpcList"
+              examples:
+                ok:
+                  value:
+                    items:
+                      - id: cuid_npc01
+                        ownerId: cuid_user01
+                        name: Zarqali Guard
+                        description: A veteran soldier of the Zarqali faction
+                        attributes:
+                          strength: 3
+                          agility: 3
+                          wits: 2
+                          empathy: 2
+                        skills:
+                          dexterity: 0
+                          force: 1
+                          infiltration: 1
+                          manipulation: 0
+                          meleeCombat: 2
+                          observation: 1
+                          rangedCombat: 2
+                          survival: 0
+                          command: 0
+                          culture: 0
+                          dataDjinn: 0
+                          medicurgy: 0
+                          mysticPowers: 0
+                          pilot: 0
+                          science: 0
+                          technology: 0
+                        hp:
+                          current: 6
+                          max: 6
+                        mp:
+                          current: 4
+                          max: 4
+                        signature: 0
+                        armor: []
+                        weapons: []
+                        tags: [Zarqali, Soldier]
+                        keySkillModifier: 0
+                        createdAt: "2026-05-10T10:00:00Z"
+                        updatedAt: "2026-05-10T10:00:00Z"
+                    nextCursor: null
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+    post:
+      operationId: createNpc
+      summary: Create a new NPC
+      description: |
+        Creates an NPC owned by the authenticated user. Only `name` is
+        required; all other fields default to playable stubs so a quick
+        encounter-filler can be created with a single call. Server assigns
+        `id`, `ownerId`, `createdAt`, `updatedAt`.
+
+        Default seeds applied by the server when fields are omitted:
+        - `attributes` — all four attributes set to 2
+        - `skills` — all 16 skills set to 0
+        - `hp` — `{ current: 4, max: 4 }`
+        - `mp` — `{ current: 4, max: 4 }`
+        - `armor` — empty array
+        - `weapons` — empty array
+        - `tags` — empty array
+        - `signature` — 0
+        - `keySkillModifier` — 0
+      tags: [npcs]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NpcCreate"
+            examples:
+              minimal:
+                value:
+                  name: Pirate Scout
+              full:
+                value:
+                  name: Elite Corsair Captain
+                  description: Commander of the raiding wing, veteran of the Taoan conflict
+                  attributes:
+                    strength: 3
+                    agility: 4
+                    wits: 3
+                    empathy: 2
+                  skills:
+                    dexterity: 2
+                    force: 1
+                    infiltration: 2
+                    manipulation: 1
+                    meleeCombat: 3
+                    observation: 2
+                    rangedCombat: 4
+                    survival: 1
+                    command: 2
+                    culture: 0
+                    dataDjinn: 0
+                    medicurgy: 0
+                    mysticPowers: 0
+                    pilot: 2
+                    science: 0
+                    technology: 1
+                  hp:
+                    current: 7
+                    max: 7
+                  mp:
+                    current: 5
+                    max: 5
+                  signature: -1
+                  keySkillModifier: 1
+                  tags: [Pirate, Captain, Boss]
+      responses:
+        "201":
+          description: NPC created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Npc"
+              examples:
+                created:
+                  value:
+                    id: cuid_npc02
+                    ownerId: cuid_user01
+                    name: Pirate Scout
+                    description: null
+                    attributes:
+                      strength: 2
+                      agility: 2
+                      wits: 2
+                      empathy: 2
+                    skills:
+                      dexterity: 0
+                      force: 0
+                      infiltration: 0
+                      manipulation: 0
+                      meleeCombat: 0
+                      observation: 0
+                      rangedCombat: 0
+                      survival: 0
+                      command: 0
+                      culture: 0
+                      dataDjinn: 0
+                      medicurgy: 0
+                      mysticPowers: 0
+                      pilot: 0
+                      science: 0
+                      technology: 0
+                    hp:
+                      current: 4
+                      max: 4
+                    mp:
+                      current: 4
+                      max: 4
+                    signature: 0
+                    armor: []
+                    weapons: []
+                    tags: []
+                    keySkillModifier: 0
+                    createdAt: "2026-05-10T12:00:00Z"
+                    updatedAt: "2026-05-10T12:00:00Z"
+        "400":
+          description: |
+            Validation error. Possible codes:
+            - `NPC_NAME_EMPTY` — name is an empty string.
+            - `NPC_NAME_TOO_LONG` — name exceeds 120 characters.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                nameEmpty:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: name must be between 1 and 120 characters
+                    instance: /api/v1/npcs
+                    code: NPC_NAME_EMPTY
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /api/v1/npcs/{id}:
+    get:
+      operationId: getNpc
+      summary: Get an NPC by ID
+      description: |
+        Returns the full Npc DTO. Returns 404 if the NPC does not exist and
+        403 if it is owned by a different user.
+      tags: [npcs]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/NpcId"
+      responses:
+        "200":
+          description: NPC found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Npc"
+              examples:
+                ok:
+                  value:
+                    id: cuid_npc01
+                    ownerId: cuid_user01
+                    name: Zarqali Guard
+                    description: A veteran soldier of the Zarqali faction
+                    attributes:
+                      strength: 3
+                      agility: 3
+                      wits: 2
+                      empathy: 2
+                    skills:
+                      dexterity: 0
+                      force: 1
+                      infiltration: 1
+                      manipulation: 0
+                      meleeCombat: 2
+                      observation: 1
+                      rangedCombat: 2
+                      survival: 0
+                      command: 0
+                      culture: 0
+                      dataDjinn: 0
+                      medicurgy: 0
+                      mysticPowers: 0
+                      pilot: 0
+                      science: 0
+                      technology: 0
+                    hp:
+                      current: 6
+                      max: 6
+                    mp:
+                      current: 4
+                      max: 4
+                    signature: 0
+                    armor: []
+                    weapons:
+                      - id: cuid_wpn01
+                        type: WEAPON
+                        name: Assault Rifle
+                        damage: 2
+                        range: long
+                        bonus: 0
+                        crit: 2
+                        weight: 1
+                        features: [Burst]
+                        equipped: true
+                    tags: [Zarqali, Soldier]
+                    keySkillModifier: 0
+                    createdAt: "2026-05-10T10:00:00Z"
+                    updatedAt: "2026-05-10T10:00:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller is authenticated but does not own this NPC
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this NPC
+                    instance: /api/v1/npcs/cuid_npc01
+                    code: NPC_NOT_OWNED
+        "404":
+          description: NPC not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: NPC cuid_npc01 does not exist
+                    instance: /api/v1/npcs/cuid_npc01
+                    code: NPC_NOT_FOUND
+
+    patch:
+      operationId: updateNpc
+      summary: Partially update an NPC
+      description: |
+        Applies PATCH semantics — omitted fields are left unchanged.
+        Read-only fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are
+        rejected with 400 if included.
+      tags: [npcs]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/NpcId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NpcUpdate"
+            examples:
+              updateName:
+                value:
+                  name: Elite Zarqali Guard
+              updateHp:
+                value:
+                  hp:
+                    current: 3
+              addTag:
+                value:
+                  tags: [Zarqali, Soldier, Veteran]
+      responses:
+        "200":
+          description: Updated NPC
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Npc"
+              examples:
+                ok:
+                  value:
+                    id: cuid_npc01
+                    ownerId: cuid_user01
+                    name: Elite Zarqali Guard
+                    description: A veteran soldier of the Zarqali faction
+                    attributes:
+                      strength: 3
+                      agility: 3
+                      wits: 2
+                      empathy: 2
+                    skills:
+                      dexterity: 0
+                      force: 1
+                      infiltration: 1
+                      manipulation: 0
+                      meleeCombat: 2
+                      observation: 1
+                      rangedCombat: 2
+                      survival: 0
+                      command: 0
+                      culture: 0
+                      dataDjinn: 0
+                      medicurgy: 0
+                      mysticPowers: 0
+                      pilot: 0
+                      science: 0
+                      technology: 0
+                    hp:
+                      current: 6
+                      max: 6
+                    mp:
+                      current: 4
+                      max: 4
+                    signature: 0
+                    armor: []
+                    weapons: []
+                    tags: [Zarqali, Soldier, Veteran]
+                    keySkillModifier: 0
+                    createdAt: "2026-05-10T10:00:00Z"
+                    updatedAt: "2026-05-10T12:30:00Z"
+        "400":
+          description: |
+            Validation error. Possible codes:
+            - `NPC_NAME_EMPTY`
+            - `NPC_NAME_TOO_LONG`
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                nameEmpty:
+                  value:
+                    type: https://coriolis.example.com/problems/validation-error
+                    title: Validation Error
+                    status: 400
+                    detail: name must be between 1 and 120 characters
+                    instance: /api/v1/npcs/cuid_npc01
+                    code: NPC_NAME_EMPTY
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this NPC
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this NPC
+                    instance: /api/v1/npcs/cuid_npc01
+                    code: NPC_NOT_OWNED
+        "404":
+          description: NPC not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: NPC cuid_npc01 does not exist
+                    instance: /api/v1/npcs/cuid_npc01
+                    code: NPC_NOT_FOUND
+
+    delete:
+      operationId: deleteNpc
+      summary: Delete an NPC
+      description: |
+        Permanently deletes an NPC. This action is irreversible. NPCs
+        referenced by active encounters are rejected with 409
+        `NPC_IN_USE` — remove the combatant from the encounter first.
+      tags: [npcs]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/NpcId"
+      responses:
+        "204":
+          description: NPC deleted
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this NPC
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this NPC
+                    instance: /api/v1/npcs/cuid_npc01
+                    code: NPC_NOT_OWNED
+        "404":
+          description: NPC not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: NPC cuid_npc01 does not exist
+                    instance: /api/v1/npcs/cuid_npc01
+                    code: NPC_NOT_FOUND
+        "409":
+          description: NPC is still referenced by one or more encounters
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                inUse:
+                  value:
+                    type: https://coriolis.example.com/problems/conflict
+                    title: Conflict
+                    status: 409
+                    detail: NPC cuid_npc01 is referenced by active encounter cuid_enc01
+                    instance: /api/v1/npcs/cuid_npc01
+                    code: NPC_IN_USE
+
+  /api/v1/npcs/{id}/duplicate:
+    post:
+      operationId: duplicateNpc
+      summary: Duplicate an NPC
+      description: |
+        Creates a deep copy of the NPC (attributes, skills, hp, mp, armor,
+        weapons, tags) and assigns it to the authenticated user. The copy
+        receives a new `id` and a name suffix: "(copy)" for the first
+        duplicate, "(copy 2)" for the second, and so on. The source NPC
+        must be owned by the caller.
+      tags: [npcs]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/NpcId"
+      responses:
+        "201":
+          description: Duplicated NPC
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Npc"
+              examples:
+                created:
+                  value:
+                    id: cuid_npc03
+                    ownerId: cuid_user01
+                    name: Zarqali Guard (copy)
+                    description: A veteran soldier of the Zarqali faction
+                    attributes:
+                      strength: 3
+                      agility: 3
+                      wits: 2
+                      empathy: 2
+                    skills:
+                      dexterity: 0
+                      force: 1
+                      infiltration: 1
+                      manipulation: 0
+                      meleeCombat: 2
+                      observation: 1
+                      rangedCombat: 2
+                      survival: 0
+                      command: 0
+                      culture: 0
+                      dataDjinn: 0
+                      medicurgy: 0
+                      mysticPowers: 0
+                      pilot: 0
+                      science: 0
+                      technology: 0
+                    hp:
+                      current: 6
+                      max: 6
+                    mp:
+                      current: 4
+                      max: 4
+                    signature: 0
+                    armor: []
+                    weapons: []
+                    tags: [Zarqali, Soldier]
+                    keySkillModifier: 0
+                    createdAt: "2026-05-10T13:00:00Z"
+                    updatedAt: "2026-05-10T13:00:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this NPC
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own this NPC
+                    instance: /api/v1/npcs/cuid_npc01/duplicate
+                    code: NPC_NOT_OWNED
+        "404":
+          description: NPC not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: NPC cuid_npc01 does not exist
+                    instance: /api/v1/npcs/cuid_npc01/duplicate
+                    code: NPC_NOT_FOUND
+
   /api/v1/realtime/token:
     post:
       operationId: issueRealtimeToken
@@ -4001,6 +4656,14 @@ components:
       in: path
       required: true
       description: Game session identifier (cuid2)
+      schema:
+        type: string
+
+    NpcId:
+      name: id
+      in: path
+      required: true
+      description: NPC identifier (cuid2)
       schema:
         type: string
 
@@ -6905,3 +7568,267 @@ components:
           type: ["string", "null"]
           format: date-time
           description: ISO-8601 instant when the token expires
+
+    # -------------------------------------------------------------------------
+    # NPC schemas (Phase 6 Block 1)
+    # -------------------------------------------------------------------------
+
+    Npc:
+      type: object
+      description: |
+        Full NPC DTO as returned by the v1 API. NPCs are GM-owned entities
+        designed to populate encounters in the combat tracker (ST3001
+        ГЛАВА 14). They share the same attribute and skill vocabulary as
+        player characters but carry no lifecycle state — any NPC can be
+        added to any encounter at any time.
+
+        `signature` is the NPC's sensor signature score for ship-combat
+        checks (signed integer; 0 is the baseline; negative values make the
+        NPC harder to detect). `keySkillModifier` is a signed integer bonus
+        that the combat tracker adds to the NPC's signature-derived attack
+        or defence pool when computing opposed rolls (ST3001 ГЛАВА 14
+        "Key Skill Modifier"). Both default to 0.
+      required:
+        - id
+        - ownerId
+        - name
+        - attributes
+        - skills
+        - hp
+        - mp
+        - signature
+        - armor
+        - weapons
+        - tags
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: Opaque NPC identifier (cuid2)
+        ownerId:
+          type: string
+          readOnly: true
+          description: Identifier of the owning user (cuid2)
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+          description: NPC name (1–120 characters)
+        description:
+          type: ["string", "null"]
+          maxLength: 2000
+          description: Free-form GM notes or narrative description (Markdown, max 2000 chars)
+        attributes:
+          $ref: "#/components/schemas/Attributes"
+        skills:
+          $ref: "#/components/schemas/Skills"
+        hp:
+          type: object
+          description: Hit points — both current and max are GM-editable for NPCs
+          required: [current, max]
+          properties:
+            current:
+              type: integer
+              minimum: 0
+              description: Current hit points
+            max:
+              type: integer
+              minimum: 1
+              description: Maximum hit points
+        mp:
+          type: object
+          description: Mind points — both current and max are GM-editable for NPCs
+          required: [current, max]
+          properties:
+            current:
+              type: integer
+              minimum: 0
+              description: Current mind points
+            max:
+              type: integer
+              minimum: 1
+              description: Maximum mind points
+        signature:
+          type: integer
+          default: 0
+          description: |
+            NPC sensor signature for ship-combat sensor checks (ST3001
+            ГЛАВА 14). Signed integer; 0 is baseline; negative makes the
+            NPC harder to detect; positive makes them easier.
+        keySkillModifier:
+          type: integer
+          default: 0
+          description: |
+            Signed integer bonus applied by the combat tracker to the NPC's
+            attack or defence roll pool when resolving opposed key-skill
+            checks (ST3001 ГЛАВА 14). Positive values give the NPC an
+            advantage; negative values impose a penalty.
+        armor:
+          type: array
+          items:
+            $ref: "#/components/schemas/ItemArmor"
+          description: Armor items carried by the NPC
+        weapons:
+          type: array
+          items:
+            $ref: "#/components/schemas/ItemWeapon"
+          description: Weapons carried by the NPC
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 40
+          description: |
+            Free-form GM-side categorisation labels (e.g. "Pirate",
+            "Cyborg", "Boss"). Used for filtering in the NPC list and for
+            encounter-table grouping. Each tag is a 1–40 character string.
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    NpcCreate:
+      type: object
+      description: |
+        Payload for `POST /api/v1/npcs`. Only `name` is required; all
+        other fields are optional. The server seeds sensible defaults for
+        any omitted field so that a stub NPC can be created with a single
+        field.
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+          description: NPC name (1–120 characters)
+        description:
+          type: ["string", "null"]
+          maxLength: 2000
+          description: Free-form description (Markdown, max 2000 chars)
+        attributes:
+          $ref: "#/components/schemas/Attributes"
+          description: Attribute block; missing keys default to 2
+        skills:
+          $ref: "#/components/schemas/Skills"
+          description: Skill block; missing keys default to 0
+        hp:
+          type: object
+          description: "Hit points; defaults to {current: 4, max: 4} when omitted"
+          properties:
+            current:
+              type: integer
+              minimum: 0
+            max:
+              type: integer
+              minimum: 1
+        mp:
+          type: object
+          description: "Mind points; defaults to {current: 4, max: 4} when omitted"
+          properties:
+            current:
+              type: integer
+              minimum: 0
+            max:
+              type: integer
+              minimum: 1
+        signature:
+          type: integer
+          default: 0
+          description: Sensor signature score; defaults to 0
+        keySkillModifier:
+          type: integer
+          default: 0
+          description: Key skill modifier for combat tracker; defaults to 0
+        armor:
+          type: array
+          items:
+            $ref: "#/components/schemas/ItemArmor"
+          description: Armor items; defaults to empty array
+        weapons:
+          type: array
+          items:
+            $ref: "#/components/schemas/ItemWeapon"
+          description: Weapons; defaults to empty array
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 40
+          description: Categorisation tags; defaults to empty array
+
+    NpcUpdate:
+      type: object
+      description: |
+        Payload for `PATCH /api/v1/npcs/{id}`. All fields are optional;
+        omitted fields are left unchanged. Supplying `weapons` or `armor`
+        replaces the entire array (put-semantics for nested collections).
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: ["string", "null"]
+          maxLength: 2000
+        attributes:
+          $ref: "#/components/schemas/Attributes"
+        skills:
+          $ref: "#/components/schemas/Skills"
+        hp:
+          type: object
+          properties:
+            current:
+              type: integer
+              minimum: 0
+            max:
+              type: integer
+              minimum: 1
+        mp:
+          type: object
+          properties:
+            current:
+              type: integer
+              minimum: 0
+            max:
+              type: integer
+              minimum: 1
+        signature:
+          type: integer
+        keySkillModifier:
+          type: integer
+        armor:
+          type: array
+          items:
+            $ref: "#/components/schemas/ItemArmor"
+        weapons:
+          type: array
+          items:
+            $ref: "#/components/schemas/ItemWeapon"
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 40
+
+    NpcList:
+      type: object
+      description: Cursor-paginated list of NPCs
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Npc"
+        nextCursor:
+          type: ["string", "null"]
+          description: Cursor for the next page; null when there are no more results
