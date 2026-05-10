@@ -18,6 +18,11 @@ const BRAND = {
   navAriaLabel: 'Main navigation',
 };
 
+const DRAWER_LABELS = {
+  ariaLabel: 'Navigation menu',
+  closeAriaLabel: 'Close menu',
+};
+
 // ── Meta ───────────────────────────────────────────────────────────────────────
 
 const meta: Meta<typeof AppHeader> = {
@@ -119,5 +124,76 @@ export const NoActive: Story = {
       return { args };
     },
     template: `<AppHeader v-bind="args" />`,
+  }),
+};
+
+// ── WithMobileDrawer: hamburger + open drawer with mobile nav content ─────────
+// NOTE: Responsive testing is best done in Storybook's viewport addon at the
+// mobile breakpoint (e.g. 375px width). The hamburger button is hidden via CSS
+// above 768px — switch the Storybook viewport to "Mobile S" or "iPhone SE" to
+// see it in its natural context.
+
+export const WithMobileDrawer: Story = {
+  name: 'WithMobileDrawer — hamburger + drawer with nav/user-menu content',
+  args: {
+    mobileDrawerLabels: DRAWER_LABELS,
+  },
+  render: (args) => ({
+    components: { AppHeader },
+    setup() {
+      return { args };
+    },
+    template: `
+      <AppHeader v-bind="args">
+        <template #user-menu>
+          <div
+            style="
+              padding: 4px 12px;
+              border: 1px solid var(--brand-brass-deep);
+              border-radius: 6px;
+              color: var(--text-secondary);
+              font-size: 0.8rem;
+            "
+          >
+            [UserMenu placeholder]
+          </div>
+        </template>
+
+        <!-- mobile-drawer-content: consumer puts mobile-friendly nav here -->
+        <template #mobile-drawer-content>
+          <nav style="display:flex;flex-direction:column;gap:8px">
+            <a
+              href="/app/characters"
+              style="padding:10px 12px;color:var(--brand-brass-light);text-decoration:none;border-radius:6px;border:1px solid var(--brand-brass-deep)"
+            >Characters</a>
+            <a
+              href="/app/ships"
+              style="padding:10px 12px;color:var(--text-secondary);text-decoration:none;border-radius:6px;border:1px solid var(--brand-brass-deep)"
+            >Ships</a>
+            <a
+              href="/app/npcs"
+              style="padding:10px 12px;color:var(--text-secondary);text-decoration:none;border-radius:6px;border:1px solid var(--brand-brass-deep)"
+            >NPCs</a>
+            <a
+              href="/app/sessions"
+              style="padding:10px 12px;color:var(--text-secondary);text-decoration:none;border-radius:6px;border:1px solid var(--brand-brass-deep)"
+            >Sessions</a>
+          </nav>
+
+          <div
+            style="
+              margin-top: 24px;
+              padding: 8px 12px;
+              border: 1px solid var(--brand-brass-deep);
+              border-radius: 6px;
+              color: var(--text-secondary);
+              font-size: 0.8rem;
+            "
+          >
+            [UserMenu placeholder — mobile copy]
+          </div>
+        </template>
+      </AppHeader>
+    `,
   }),
 };

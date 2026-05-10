@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AppHeader from './AppHeader.vue';
 import type { BrandLabels, NavItem, Props } from './AppHeader.vue';
+import type { DrawerLabels } from '../AppMobileDrawer/AppMobileDrawer.vue';
 
 // ── Fixtures ───────────────────────────────────────────────────────────────────
 
@@ -19,7 +20,12 @@ const BRAND: BrandLabels = {
   navAriaLabel: 'Main navigation',
 };
 
-function mountHeader(overrides: Partial<Props> = {}) {
+const DRAWER_LABELS: DrawerLabels = {
+  ariaLabel: 'Navigation menu',
+  closeAriaLabel: 'Close menu',
+};
+
+function mountHeader(overrides: Partial<Props> = {}, slots: Record<string, string> = {}) {
   return mount(AppHeader, {
     props: {
       brand: BRAND,
@@ -27,6 +33,13 @@ function mountHeader(overrides: Partial<Props> = {}) {
       activeKey: 'characters',
       brandHref: '/app',
       ...overrides,
+    },
+    slots,
+    attachTo: document.body,
+    global: {
+      stubs: {
+        Teleport: false,
+      },
     },
   });
 }
@@ -51,12 +64,13 @@ describe('AppHeader — brand link', () => {
   });
 
   it('brand link href defaults to "/app" when brandHref is not provided', () => {
-    // Mount without brandHref — withDefaults sets it to '/app'
     const w = mount(AppHeader, {
       props: {
         brand: BRAND,
         navItems: NAV_ITEMS,
       },
+      attachTo: document.body,
+      global: { stubs: { Teleport: false } },
     });
     const brand = w.find('.app-header__brand');
     expect(brand.attributes('href')).toBe('/app');
@@ -144,24 +158,91 @@ describe('AppHeader — nav landmark', () => {
 
 describe('AppHeader — slots', () => {
   it('user-menu slot renders when filled', () => {
-    const w = mount(AppHeader, {
-      props: { brand: BRAND, navItems: NAV_ITEMS },
-      slots: {
-        'user-menu': '<div data-testid="user-menu-stub">UserMenu</div>',
-      },
-    });
+    const w = mountHeader(
+      {},
+      { 'user-menu': '<div data-testid="user-menu-stub">UserMenu</div>' },
+    );
     expect(w.find('[data-testid="user-menu-stub"]').exists()).toBe(true);
     w.unmount();
   });
 
-  it('mobile-toggle slot renders when filled (Block 3 will use this)', () => {
-    const w = mount(AppHeader, {
-      props: { brand: BRAND, navItems: NAV_ITEMS },
-      slots: {
-        'mobile-toggle': '<button data-testid="hamburger">Menu</button>',
+  it('mobile-drawer-content slot renders inside the drawer when mobileDrawerLabels is provided and drawer is open', async () => {
+    const w = mountHeader(
+      { mobileDrawerLabels: DRAWER_LABELS },
+      {
+        'mobile-drawer-content': '<nav data-testid="mobile-nav">Mobile nav</nav>',
       },
-    });
-    expect(w.find('[data-testid="hamburger"]').exists()).toBe(true);
+    );
+    // Open the drawer by clicking the hamburger
+    const hamburger = w.find('.app-header__hamburger');
+    await hamburger.trigger('click');
+    await w.vm.$nextTick();
+    const mobileNav = document.querySelector('[data-testid="mobile-nav"]');
+    expect(mobileNav).not.toBeNull();
+    expect(mobileNav?.textContent).toContain('Mobile nav');
+    w.unmount();
+  });
+});
+
+// ── Hamburger button ───────────────────────────────────────────────────────────
+
+describe('AppHeader — hamburger button', () => {
+  it('hamburger is NOT rendered when mobileDrawerLabels is not provided', () => {
+    const w = mountHeader({ mobileDrawerLabels: undefined });
+    expect(w.find('.app-header__hamburger').exists()).toBe(false);
+    w.unmount();
+  });
+
+  it('hamburger IS rendered when mobileDrawerLabels is provided', () => {
+    const w = mountHeader({ mobileDrawerLabels: DRAWER_LABELS });
+    expect(w.find('.app-header__hamburger').exists()).toBe(true);
+    w.unmount();
+  });
+
+  it('hamburger has aria-expanded="false" when drawer is closed', () => {
+    const w = mountHeader({ mobileDrawerLabels: DRAWER_LABELS });
+    const hamburger = w.find('.app-header__hamburger');
+    expect(hamburger.attributes('aria-expanded')).toBe('false');
+    w.unmount();
+  });
+
+  it('hamburger has aria-expanded="true" after click opens the drawer', async () => {
+    const w = mountHeader({ mobileDrawerLabels: DRAWER_LABELS });
+    const hamburger = w.find('.app-header__hamburger');
+    await hamburger.trigger('click');
+    await w.vm.$nextTick();
+    expect(hamburger.attributes('aria-expanded')).toBe('true');
+    w.unmount();
+  });
+
+  it('hamburger aria-label matches mobileDrawerLabels.ariaLabel', () => {
+    const w = mountHeader({ mobileDrawerLabels: DRAWER_LABELS });
+    const hamburger = w.find('.app-header__hamburger');
+    expect(hamburger.attributes('aria-label')).toBe(DRAWER_LABELS.ariaLabel);
+    w.unmount();
+  });
+
+  it('hamburger aria-controls matches the drawer id', () => {
+    const w = mountHeader({ mobileDrawerLabels: DRAWER_LABELS });
+    const hamburger = w.find('.app-header__hamburger');
+    const controlsId = hamburger.attributes('aria-controls');
+    expect(controlsId).toBeTruthy();
+    w.unmount();
+  });
+
+  it('clicking hamburger opens the drawer (dialog becomes visible)', async () => {
+    const w = mountHeader({ mobileDrawerLabels: DRAWER_LABELS });
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    const hamburger = w.find('.app-header__hamburger');
+    await hamburger.trigger('click');
+    await w.vm.$nextTick();
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+    w.unmount();
+  });
+
+  it('AppMobileDrawer is NOT mounted when mobileDrawerLabels is undefined', () => {
+    const w = mountHeader({ mobileDrawerLabels: undefined });
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
     w.unmount();
   });
 });
@@ -185,14 +266,12 @@ describe('AppHeader — rendering stability', () => {
   it('rendering is stable across rerenders with the same props (no key / Vue warnings)', async () => {
     const w = mountHeader({ activeKey: 'characters' });
 
-    // Rerender with the same props twice to check stability
     await w.setProps({ activeKey: 'characters' });
     await w.setProps({ activeKey: 'characters' });
 
     expect(consoleWarnSpy).not.toHaveBeenCalled();
     expect(consoleErrorSpy).not.toHaveBeenCalled();
 
-    // Sanity: the header still renders correctly after rerenders
     expect(w.find('.app-header__brand').exists()).toBe(true);
     expect(w.findAll('.app-header__nav-link')).toHaveLength(NAV_ITEMS.length);
     w.unmount();

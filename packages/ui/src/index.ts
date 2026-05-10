@@ -20,6 +20,8 @@ export { AppInput } from './components/AppInput';
 export { AppKbd } from './components/AppKbd';
 export { AppLabel } from './components/AppLabel';
 export { AppModal } from './components/AppModal';
+export { AppMobileDrawer } from './components/AppMobileDrawer';
+export type { DrawerLabels, AppMobileDrawerProps } from './components/AppMobileDrawer';
 export { AppPopover } from './components/AppPopover';
 export { AppProgress } from './components/AppProgress';
 export { AppSegControl } from './components/AppSegControl';

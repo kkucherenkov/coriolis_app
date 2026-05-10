@@ -1,4 +1,9 @@
 <script setup lang="ts">
+  import { ref } from 'vue';
+
+  import AppMobileDrawer from '../AppMobileDrawer/AppMobileDrawer.vue';
+  import type { DrawerLabels } from '../AppMobileDrawer/AppMobileDrawer.vue';
+
   export interface NavItem {
     /**
      * Stable key used for active-link comparison. Matches the page-side
@@ -31,17 +36,81 @@
     activeKey?: string;
     /** Brand link target — usually '/app'. */
     brandHref?: string;
+    /**
+     * When provided, renders a hamburger button at the mobile breakpoint and
+     * mounts an AppMobileDrawer with these translated labels. The drawer's
+     * content is filled via the `mobile-drawer-content` slot.
+     */
+    mobileDrawerLabels?: DrawerLabels;
   }
 
   withDefaults(defineProps<Props>(), {
     activeKey: undefined,
     brandHref: '/app',
+    mobileDrawerLabels: undefined,
   });
+
+  /**
+   * Slots:
+   * - `user-menu`            — Right-side user account widget (e.g. <UserMenu>).
+   * - `mobile-drawer-content` — Content rendered inside the mobile drawer
+   *                             (nav links, user menu copy, etc.). Only active
+   *                             when `mobileDrawerLabels` is provided.
+   */
+
+  // Unique id used to link the hamburger button to the drawer via aria-controls.
+  const drawerId = `app-header-drawer-${Math.random().toString(36).slice(2, 8)}`;
+
+  const drawerOpen = ref(false);
 </script>
 
 <template>
   <header class="app-header">
-    <!-- Brand / logo — left side -->
+    <!-- Hamburger — mobile only, rendered only when mobileDrawerLabels is given -->
+    <button
+      v-if="mobileDrawerLabels"
+      class="app-header__hamburger"
+      type="button"
+      :aria-label="mobileDrawerLabels.ariaLabel"
+      :aria-controls="drawerId"
+      :aria-expanded="drawerOpen"
+      @click="drawerOpen = true"
+    >
+      <!-- Hamburger SVG icon -->
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <line
+          x1="3"
+          y1="6"
+          x2="21"
+          y2="6"
+        />
+        <line
+          x1="3"
+          y1="12"
+          x2="21"
+          y2="12"
+        />
+        <line
+          x1="3"
+          y1="18"
+          x2="21"
+          y2="18"
+        />
+      </svg>
+    </button>
+
+    <!-- Brand / logo -->
     <a
       class="app-header__brand"
       :href="brandHref"
@@ -72,15 +141,21 @@
       </a>
     </nav>
 
-    <!-- Right side: mobile-toggle slot (Block 3) + user-menu slot -->
+    <!-- Right side: user-menu slot -->
     <div class="app-header__actions">
-      <!-- Block 3 hamburger button will drop in here -->
-      <slot name="mobile-toggle" />
-
-      <!-- Parent slots in <UserMenu> or any other account widget -->
       <slot name="user-menu" />
     </div>
   </header>
+
+  <!-- Mobile drawer — mounted outside the header flow via Teleport (inside AppMobileDrawer) -->
+  <AppMobileDrawer
+    v-if="mobileDrawerLabels"
+    v-model:open="drawerOpen"
+    :labels="mobileDrawerLabels"
+    :panel-id="drawerId"
+  >
+    <slot name="mobile-drawer-content" />
+  </AppMobileDrawer>
 </template>
 
 <style lang="scss" scoped>
@@ -95,6 +170,40 @@
     padding: var(--space-5) var(--space-7);
     background: var(--surface-night, #15193f);
     border-bottom: 1px solid var(--brand-brass-shadow);
+
+    // ── Hamburger ────────────────────────────────────────────────────────────
+
+    &__hamburger {
+      display: none; // visible only at the mobile breakpoint
+
+      @media (max-width: 768px) {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        padding: var(--space-1);
+        flex-shrink: 0;
+        background: transparent;
+        border: 1px solid var(--brand-brass-deep);
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition:
+          color var(--motion-duration-fast, 150ms) var(--motion-ease-standard, ease),
+          background-color var(--motion-duration-fast, 150ms) var(--motion-ease-standard, ease);
+
+        &:hover {
+          color: var(--brand-brass-light);
+          background-color: color-mix(in srgb, var(--brand-brass) 8%, transparent);
+        }
+
+        &:focus-visible {
+          outline: 2px solid var(--brand-brass);
+          outline-offset: 2px;
+        }
+      }
+    }
 
     // ── Brand link ──────────────────────────────────────────────────────────
 
@@ -135,7 +244,7 @@
       flex: 1;
       justify-content: center;
 
-      // Hide below mobile breakpoint — Block 3 will wire the drawer
+      // Hide below mobile breakpoint — mobile nav lives inside the drawer
       @media (max-width: 768px) {
         display: none;
       }
