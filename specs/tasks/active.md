@@ -77,17 +77,36 @@
         `apps/backend/prisma/migrations/20260510000004_encounters/`.
         Design call: IGameSessionAccess injected as a DI port
         (GAME_SESSION_ACCESS token) with a Prisma adapter in infra/
-        (renamed .adapter.ts to avoid *.service.ts lint rule that bans
+        (renamed .adapter.ts to avoid \*.service.ts lint rule that bans
         direct PrismaService injection). All endpoints GM-owner-only
         per spec (spec overrides task desc on member reads).
         Test delta: +53 (561 → 614 total).
-  - [ ] Block 3 — Combatant sub-resource. Table `Combatant`
+  - [x] Block 3 — Combatant sub-resource. Table `Combatant`
         with discriminator + snapshot JSON columns
         (`pcSnapshot` / `npcSnapshot`). Read-once-at-add
         copy semantics implemented in
         `commands/add-combatant.handler.ts`. List / patch /
         delete handlers. Encounter `setup → active` becomes
         legal once ≥1 row.
+        Result: commit TBD. Files:
+        `apps/backend/src/modules/combatants/` (domain, infra,
+        commands ×3 + specs ×3, queries ×1 + spec ×1,
+        controllers ×2, module),
+        `apps/backend/prisma/migrations/20260510000005_combatants/`.
+        Test delta: +35 (632 → 667 total).
+        Design calls: (1) `hasCombatants` flows through
+        `ICombatantCount` port — `CombatantRepo` implements both
+        `ICombatantRepo` and `ICombatantCount`, exported under
+        separate tokens, imported into `EncountersModule` via
+        `forwardRef(() => CombatantsModule)` to break the circular
+        dep. (2) Deleting the active combatant is allowed in `setup`
+        status only (spec); the `onDelete:SetNull` on
+        `Encounter.activeCombatant` relation cascades the FK to null
+        automatically in the same Prisma call. (3) Spec overrides
+        prose: `hpCurrent` has no upper cap — CT3001 allows going
+        below 0 and the spec says "May go below 0"; task prose
+        mentions `COMBATANT_HP_OVER_MAX` but that code does not
+        appear anywhere in the spec, so it was not implemented.
   - [ ] Block 4 — Initiative + turn ops. `rollInitiative`
         as a single transactional handler (d10 per row,
         agility tie-break, `turnOrder` index assignment,
