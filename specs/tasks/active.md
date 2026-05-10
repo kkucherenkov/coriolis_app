@@ -99,11 +99,29 @@
         `createEncounter`, `getEncounter`, `updateEncounter`,
         `deleteEncounter`. Dart: `encounters_api.dart` + model files
         + `.g.dart` serializers via build_runner.
-  - [ ] Block 3 — `Combatant` sub-resource. Schemas + paths.
+  - [x] Block 3 — `Combatant` sub-resource. Schemas + paths.
         `combatantType` discriminator. Combatants store the
         snapshot of stats at the moment of add (not a live ref)
         — protects against PC mid-fight edits scrambling the
         tracker. Documented in the schema description.
+        Landed in 55d792e (spec v0.15.0) + codegen commit.
+        `pnpm spec:validate && pnpm spec:bundle && pnpm spec:codegen`
+        green. New schemas: `CombatantType`, `Combatant`,
+        `CombatantCreate`, `CombatantUpdate`, `CombatantList`,
+        `CombatantId` parameter. New operationIds:
+        `listCombatants`, `addCombatant`, `updateCombatant`,
+        `deleteCombatant`. Design call: `statusFlags` is a
+        free-form `string[]` with four well-known values documented
+        in the schema description (`broken`, `exposed`, `covered`,
+        `prone`) — no inline enum so GMs can add custom tags in v1
+        without a spec bump. `initiative` and `turnOrder` are
+        `readOnly: true` on `CombatantUpdate` so generators emit
+        them as read-only; Block 4 sets them via dedicated ops.
+        Dart `.g.dart` files generated for `combatant_list`,
+        `combatant_type`, `combatant_update`; `combatant.dart`
+        and `combatant_create.dart` did not get `.g.dart` files
+        (pre-existing build_runner limitation with complex types —
+        same pattern as Blocks 1+2).
   - [ ] Block 4 — Initiative + turn order ops. Three new path
         actions on the encounter resource (roll, reorder,
         advance). `InitiativeRollResult` returns the sorted
