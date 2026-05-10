@@ -14,7 +14,7 @@
 - Acceptance:
   - `/app/ships` lists the owner's ships with create-ship inline
     form, per-card Open / Duplicate / Delete actions. Empty state
-    + retry on error.
+    - retry on error.
   - `/app/ships/[id]` renders the ship sheet: header (name +
     class + duplicate / delete), top stat block (hull / energy /
     armor / maneuverability / signature / speed / cargoCapacity),
@@ -56,14 +56,13 @@
         index AppBar so the page is reachable. Stub
         `/app/ships/[id]` so the create-flow redirect doesn't
         404 — Block 2 fills it in.
-  - [x] Block 2 — `/app/ships/[id]` sheet: header (name + class
-        + actions), stat block, modules list grouped by slot
+  - [x] Block 2 — `/app/ships/[id]` sheet: header (name + class + actions), stat block, modules list grouped by slot
         (read-only), crew roster (read-only). All scalar PATCH
         edits live here (rename, hull current, energy current,
         notes). Loads `Ship` once on mount; sub-resource mutations
         in Blocks 3 + 4 patch the local state via the shared
         cubit.
-  - [ ] Block 3 — Module editor modal: discriminator-aware form
+  - [x] Block 3 — Module editor modal: discriminator-aware form
         switching on `slot`. Add / Edit / Delete via
         `useShipModulesApi` (new sibling composable wrapping
         `addShipModule` / `updateShipModule` / `deleteShipModule`).
@@ -77,14 +76,44 @@
         the local Ship after each assignment because the backend
         returns CrewSlot — easier than threading a partial-state
         update.
-  - [ ] Block 5 — Polish: ship duplication wired from both list
-        + sheet, delete confirmation modal, "Recently created"
+  - [ ] Block 5 — Polish: ship duplication wired from both list + sheet, delete confirmation modal, "Recently created"
         toast on the index page after a duplicate redirect, link
         to `/api/v1/ships/{id}/export` (501 stub — render the
         affordance behind a feature flag so it can light up when
         the backend ships).
 - Status: in-progress
 - Blockers: —
+
+### Block 3 done — follow-up note (2026-05-10)
+
+Block 3 shipped: `useShipModulesApi.ts` composable (addModule / updateModule /
+deleteModule, RFC 9457 error throw, re-exports ShipModule / ShipModuleCreate /
+ShipModuleUpdate / ShipModuleSlot / ShipWeaponRange types), and
+`apps/web/app/components/sheet/ShipModuleEditor.vue` — a discriminator-aware
+AppModal with three modes (create / edit / confirm-delete). Create mode shows
+the full slot picker (18 user-selectable slots, BRIDGE/REACTOR/DRIVE excluded);
+edit mode freezes the slot and shows its discriminator fields inline. WEAPON
+branch: bonus stepper + AppSegControl range (zero/close/medium/long/extreme) +
+damage stepper + crit-threshold stepper. TORPEDO: torpedo + mine steppers. HOLD:
+cargo-tons stepper + AppSwitch concealed. SENSOR: detection-bonus stepper.
+Other/base slots: name + energyUse + notes only. Delete button hidden for
+mandatory slots (isMandatory guard). Confirm-delete sub-panel renders inline
+inside the modal (no route push). The `[id].vue` sheet: disabled "Add module"
+button replaced with an active `+ Add module` trigger; module rows are now
+tappable (cursor: pointer + click/keyboard handlers) and open the editor in edit
+mode; `onModuleUpdated` / `onModuleDeleted` patch `ship.value.modules` locally
+without a full refetch. 27 new vitest cases (was 79, now 106): 3 happy-path +
+error-routing cases per composable method (addModule / updateModule /
+deleteModule), plus 10 structural assertions on ShipModuleEditor (discriminator
+switch per slot, isMandatory guard, slot picker visibility, emit shape) and 7
+structural assertions on the updated [id].vue page wiring. typecheck and lint
+both clean.
+
+Block 4 next: crew assignment widget on the sheet. Row per position; assigned
+character renders by name, vacant slot renders an Assign action (select from
+owner's active characters not already on this ship). Remove action drives
+unassignCrew. The sheet refreshes local Ship after each assignment because the
+backend returns CrewSlot.
 
 ### Block 2 done — follow-up note (2026-05-10)
 
