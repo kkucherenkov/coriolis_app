@@ -11,9 +11,12 @@
  * 6. Compute nextIndex = (currentIndex + 1) % combatants.length.
  * 7. isNewRound = nextIndex === 0.
  * 8. Persist: activeCombatantId, and round if new round.
- * 9. Return TurnAdvanceResult.
+ *    «инициатива остаётся прежней до конца сражения» — round wrap is canon-correct
+ *    per ST3001 ГЛАВА 5; initiative values are preserved across rounds.
+ * 9. Publish combat.updated snapshot (non-fatal).
+ * 10. Return TurnAdvanceResult.
  */
-import { Inject } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { COMBATANT_REPO } from '../../combatants/domain/combatant.ports';
@@ -25,20 +28,25 @@ import {
 } from '../domain/encounter.errors';
 import { GAME_SESSION_ACCESS } from '../domain/game-session-access.ports';
 import { ENCOUNTER_REPO, INITIATIVE_REPO } from '../domain/encounter.ports';
+import { COMBAT_PUBLISHER } from '../infra/combat.publisher';
 
 import { AdvanceTurnCommand } from './advance-turn.command';
 
 import type { ICombatantRepo } from '../../combatants/domain/combatant.ports';
 import type { IGameSessionAccess } from '../domain/game-session-access.ports';
 import type { IEncounterRepo, IInitiativeRepo, TurnAdvanceResult } from '../domain/encounter.ports';
+import type { ICombatPublisher } from '../infra/combat.publisher';
 
 @CommandHandler(AdvanceTurnCommand)
 export class AdvanceTurnHandler implements ICommandHandler<AdvanceTurnCommand, TurnAdvanceResult> {
+  private readonly logger = new Logger(AdvanceTurnHandler.name);
+
   constructor(
     @Inject(ENCOUNTER_REPO) private readonly repo: IEncounterRepo,
     @Inject(GAME_SESSION_ACCESS) private readonly access: IGameSessionAccess,
     @Inject(COMBATANT_REPO) private readonly combatantRepo: ICombatantRepo,
     @Inject(INITIATIVE_REPO) private readonly initiativeRepo: IInitiativeRepo,
+    @Inject(COMBAT_PUBLISHER) private readonly combatPublisher: ICombatPublisher,
   ) {}
 
   async execute(command: AdvanceTurnCommand): Promise<TurnAdvanceResult> {
@@ -91,11 +99,29 @@ export class AdvanceTurnHandler implements ICommandHandler<AdvanceTurnCommand, T
       round: newRound,
     });
 
-    // 9. Return result
-    return {
+    const result: TurnAdvanceResult = {
       activeCombatantId: nextCombatantId,
       round: newRound,
       isNewRound,
     };
+
+    // 9. Publish combat.updated — non-fatal; DB write is already committed
+    try {
+      const updatedEncounter = await this.repo.findById(encounterId);
+      if (updatedEncounter) {
+        await this.combatPublisher.publishUpdated(
+          updatedEncounter.gameSessionId,
+          updatedEncounter,
+          combatants,
+        );
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to publish combat.updated for encounter ${encounterId}: ${String(error)}`,
+      );
+    }
+
+    // 10. Return result
+    return result;
   }
 }

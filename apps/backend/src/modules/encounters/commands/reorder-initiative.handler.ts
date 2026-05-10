@@ -11,9 +11,10 @@
  *    - unknown ids → INITIATIVE_UNKNOWN_COMBATANT
  *    - missing ids → INITIATIVE_INCOMPLETE
  * 5. Persist new turnOrder atomically.
- * 6. Return InitiativeRollResult (does NOT change activeCombatantId/round/initiative).
+ * 6. Publish combat.updated snapshot (non-fatal).
+ * 7. Return InitiativeRollResult (does NOT change activeCombatantId/round/initiative).
  */
-import { Inject } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { COMBATANT_REPO } from '../../combatants/domain/combatant.ports';
@@ -27,6 +28,7 @@ import {
 } from '../domain/encounter.errors';
 import { GAME_SESSION_ACCESS } from '../domain/game-session-access.ports';
 import { ENCOUNTER_REPO, INITIATIVE_REPO } from '../domain/encounter.ports';
+import { COMBAT_PUBLISHER } from '../infra/combat.publisher';
 
 import { ReorderInitiativeCommand } from './reorder-initiative.command';
 
@@ -37,17 +39,21 @@ import type {
   IInitiativeRepo,
   InitiativeRollResult,
 } from '../domain/encounter.ports';
+import type { ICombatPublisher } from '../infra/combat.publisher';
 
 @CommandHandler(ReorderInitiativeCommand)
 export class ReorderInitiativeHandler implements ICommandHandler<
   ReorderInitiativeCommand,
   InitiativeRollResult
 > {
+  private readonly logger = new Logger(ReorderInitiativeHandler.name);
+
   constructor(
     @Inject(ENCOUNTER_REPO) private readonly repo: IEncounterRepo,
     @Inject(GAME_SESSION_ACCESS) private readonly access: IGameSessionAccess,
     @Inject(COMBATANT_REPO) private readonly combatantRepo: ICombatantRepo,
     @Inject(INITIATIVE_REPO) private readonly initiativeRepo: IInitiativeRepo,
+    @Inject(COMBAT_PUBLISHER) private readonly combatPublisher: ICombatPublisher,
   ) {}
 
   async execute(command: ReorderInitiativeCommand): Promise<InitiativeRollResult> {
@@ -100,9 +106,27 @@ export class ReorderInitiativeHandler implements ICommandHandler<
     }
 
     // 5. Persist new turnOrder atomically
-    return this.initiativeRepo.reorderInitiative({
+    const result = await this.initiativeRepo.reorderInitiative({
       encounterId,
       orderedIds: received,
     });
+
+    // 6. Publish combat.updated — non-fatal; DB write is already committed
+    try {
+      const updatedEncounter = await this.repo.findById(encounterId);
+      if (updatedEncounter) {
+        await this.combatPublisher.publishUpdated(
+          updatedEncounter.gameSessionId,
+          updatedEncounter,
+          result.combatants,
+        );
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to publish combat.updated for encounter ${encounterId}: ${String(error)}`,
+      );
+    }
+
+    return result;
   }
 }

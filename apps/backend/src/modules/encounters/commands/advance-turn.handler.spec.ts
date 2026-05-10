@@ -20,6 +20,7 @@ import type {
   IEncounterRepo,
   IInitiativeRepo,
 } from '../domain/encounter.ports';
+import type { ICombatPublisher } from '../infra/combat.publisher';
 
 // --------------- Helpers ---------------
 
@@ -59,6 +60,10 @@ function makeInitiativeRepo(): IInitiativeRepo {
     reorderInitiative: vi.fn(),
     advanceTurn: vi.fn(),
   };
+}
+
+function makeCombatPublisher(): ICombatPublisher {
+  return { publishUpdated: vi.fn().mockResolvedValue(undefined) };
 }
 
 function makeEncounter(overrides: Partial<EncounterReadModel> = {}): EncounterReadModel {
@@ -103,6 +108,7 @@ describe('AdvanceTurnHandler', () => {
   let access: IGameSessionAccess;
   let combatantRepo: ICombatantRepo;
   let initiativeRepo: IInitiativeRepo;
+  let combatPublisher: ICombatPublisher;
   let handler: AdvanceTurnHandler;
 
   beforeEach(() => {
@@ -110,7 +116,8 @@ describe('AdvanceTurnHandler', () => {
     access = makeAccess();
     combatantRepo = makeCombatantRepo();
     initiativeRepo = makeInitiativeRepo();
-    handler = new AdvanceTurnHandler(repo, access, combatantRepo, initiativeRepo);
+    combatPublisher = makeCombatPublisher();
+    handler = new AdvanceTurnHandler(repo, access, combatantRepo, initiativeRepo, combatPublisher);
 
     vi.mocked(access.getOwnerId).mockResolvedValue('user-1');
     vi.mocked(initiativeRepo.advanceTurn).mockResolvedValue(undefined);
@@ -208,5 +215,39 @@ describe('AdvanceTurnHandler', () => {
       activeCombatantId: 'cb-1',
       round: 2,
     });
+  });
+
+  it('calls combatPublisher.publishUpdated after successful advance', async () => {
+    vi.mocked(repo.findById).mockResolvedValueOnce(
+      makeEncounter({ activeCombatantId: 'cb-1', round: 1 }),
+    ); // initial load
+    const combatants = [makeCombatant('cb-1', 0), makeCombatant('cb-2', 1)];
+    vi.mocked(combatantRepo.listByEncounter).mockResolvedValue(combatants);
+    const updatedEncounter = makeEncounter({ activeCombatantId: 'cb-2', round: 1 });
+    vi.mocked(repo.findById).mockResolvedValueOnce(updatedEncounter); // post-commit re-fetch
+
+    await handler.execute(new AdvanceTurnCommand('enc-1', 'user-1'));
+
+    expect(combatPublisher.publishUpdated).toHaveBeenCalledWith('gs-1', updatedEncounter, combatants);
+  });
+
+  it('publish failure does not break the flow — returns TurnAdvanceResult normally', async () => {
+    vi.mocked(repo.findById).mockResolvedValueOnce(
+      makeEncounter({ activeCombatantId: 'cb-1', round: 1 }),
+    ); // initial load
+    vi.mocked(combatantRepo.listByEncounter).mockResolvedValue([
+      makeCombatant('cb-1', 0),
+      makeCombatant('cb-2', 1),
+    ]);
+    vi.mocked(repo.findById).mockResolvedValueOnce(
+      makeEncounter({ activeCombatantId: 'cb-2', round: 1 }),
+    ); // post-commit re-fetch
+    vi.mocked(combatPublisher.publishUpdated).mockRejectedValueOnce(new Error('Centrifugo down'));
+
+    const result = await handler.execute(new AdvanceTurnCommand('enc-1', 'user-1'));
+
+    expect(result.activeCombatantId).toBe('cb-2');
+    expect(result.round).toBe(1);
+    expect(result.isNewRound).toBe(false);
   });
 });

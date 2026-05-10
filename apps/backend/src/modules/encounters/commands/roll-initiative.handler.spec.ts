@@ -26,6 +26,7 @@ import type {
   InitiativeRollResult,
   RollInitiativeData,
 } from '../domain/encounter.ports';
+import type { ICombatPublisher } from '../infra/combat.publisher';
 
 // Mock crypto so we control the dice roll
 const mockRandomInt = vi.fn<() => number>().mockReturnValue(5);
@@ -71,6 +72,10 @@ function makeInitiativeRepo(): IInitiativeRepo {
     reorderInitiative: vi.fn(),
     advanceTurn: vi.fn(),
   };
+}
+
+function makeCombatPublisher(): ICombatPublisher {
+  return { publishUpdated: vi.fn().mockResolvedValue(undefined) };
 }
 
 function makeEncounter(overrides: Partial<EncounterReadModel> = {}): EncounterReadModel {
@@ -156,6 +161,7 @@ describe('RollInitiativeHandler', () => {
   let access: IGameSessionAccess;
   let combatantRepo: ICombatantRepo;
   let initiativeRepo: IInitiativeRepo;
+  let combatPublisher: ICombatPublisher;
   let handler: RollInitiativeHandler;
 
   beforeEach(() => {
@@ -166,7 +172,8 @@ describe('RollInitiativeHandler', () => {
     access = makeAccess();
     combatantRepo = makeCombatantRepo();
     initiativeRepo = makeInitiativeRepo();
-    handler = new RollInitiativeHandler(repo, access, combatantRepo, initiativeRepo);
+    combatPublisher = makeCombatPublisher();
+    handler = new RollInitiativeHandler(repo, access, combatantRepo, initiativeRepo, combatPublisher);
 
     vi.mocked(access.getOwnerId).mockResolvedValue('user-1');
   });
@@ -225,10 +232,12 @@ describe('RollInitiativeHandler', () => {
   it('assigns turnOrder 0..N-1 and sets activeCombatantId to first', async () => {
     mockRandomInt.mockReturnValue(5);
 
-    vi.mocked(repo.findById).mockResolvedValue(makeEncounter());
+    vi.mocked(repo.findById).mockResolvedValueOnce(makeEncounter()); // initial load (setup)
     const combatants = [makeCombatantWithSnapshot('cb-1'), makeCombatantWithSnapshot('cb-2')];
     vi.mocked(combatantRepo.listByEncounterWithSnapshot).mockResolvedValue(combatants);
-    vi.mocked(initiativeRepo.rollInitiative).mockResolvedValue(makeRollResult(['cb-1', 'cb-2']));
+    const rollResult = makeRollResult(['cb-1', 'cb-2']);
+    vi.mocked(initiativeRepo.rollInitiative).mockResolvedValue(rollResult);
+    vi.mocked(repo.findById).mockResolvedValueOnce(makeEncounter({ status: 'active', round: 1 })); // post-commit re-fetch
 
     await handler.execute(new RollInitiativeCommand('enc-1', 'user-1'));
 
@@ -246,11 +255,13 @@ describe('RollInitiativeHandler', () => {
   it('sets encounter to active with round=1', async () => {
     mockRandomInt.mockReturnValue(7);
 
-    vi.mocked(repo.findById).mockResolvedValue(makeEncounter());
+    vi.mocked(repo.findById).mockResolvedValueOnce(makeEncounter()); // initial load
     vi.mocked(combatantRepo.listByEncounterWithSnapshot).mockResolvedValue([
       makeCombatantWithSnapshot('cb-1'),
     ]);
-    vi.mocked(initiativeRepo.rollInitiative).mockResolvedValue(makeRollResult(['cb-1']));
+    const rollResult = makeRollResult(['cb-1']);
+    vi.mocked(initiativeRepo.rollInitiative).mockResolvedValue(rollResult);
+    vi.mocked(repo.findById).mockResolvedValueOnce(makeEncounter({ status: 'active', round: 1 })); // post-commit re-fetch
 
     const result = await handler.execute(new RollInitiativeCommand('enc-1', 'user-1'));
 
@@ -264,7 +275,7 @@ describe('RollInitiativeHandler', () => {
     // Both get same initiative roll
     mockRandomInt.mockReturnValue(6);
 
-    vi.mocked(repo.findById).mockResolvedValue(makeEncounter());
+    vi.mocked(repo.findById).mockResolvedValueOnce(makeEncounter()); // initial load
     const combatants = [
       makeCombatantWithSnapshot('cb-low-agi', 2),
       makeCombatantWithSnapshot('cb-high-agi', 5),
@@ -273,6 +284,7 @@ describe('RollInitiativeHandler', () => {
     vi.mocked(initiativeRepo.rollInitiative).mockResolvedValue(
       makeRollResult(['cb-high-agi', 'cb-low-agi']),
     );
+    vi.mocked(repo.findById).mockResolvedValueOnce(makeEncounter({ status: 'active', round: 1 })); // post-commit re-fetch
 
     await handler.execute(new RollInitiativeCommand('enc-1', 'user-1'));
 
@@ -283,5 +295,39 @@ describe('RollInitiativeHandler', () => {
     const lowAgiPatch = callData.combatantPatches.find((p) => p.id === 'cb-low-agi');
     expect(highAgiPatch?.turnOrder).toBe(0);
     expect(lowAgiPatch?.turnOrder).toBe(1);
+  });
+
+  it('calls combatPublisher.publishUpdated after successful roll', async () => {
+    vi.mocked(repo.findById).mockResolvedValueOnce(makeEncounter()); // initial load
+    vi.mocked(combatantRepo.listByEncounterWithSnapshot).mockResolvedValue([
+      makeCombatantWithSnapshot('cb-1'),
+    ]);
+    const rollResult = makeRollResult(['cb-1']);
+    vi.mocked(initiativeRepo.rollInitiative).mockResolvedValue(rollResult);
+    const activeEncounter = makeEncounter({ status: 'active', round: 1 });
+    vi.mocked(repo.findById).mockResolvedValueOnce(activeEncounter); // post-commit re-fetch
+
+    await handler.execute(new RollInitiativeCommand('enc-1', 'user-1'));
+
+    expect(combatPublisher.publishUpdated).toHaveBeenCalledWith(
+      'gs-1',
+      activeEncounter,
+      rollResult.combatants,
+    );
+  });
+
+  it('publish failure does not break the flow — returns roll result normally', async () => {
+    vi.mocked(repo.findById).mockResolvedValueOnce(makeEncounter()); // initial load
+    vi.mocked(combatantRepo.listByEncounterWithSnapshot).mockResolvedValue([
+      makeCombatantWithSnapshot('cb-1'),
+    ]);
+    const rollResult = makeRollResult(['cb-1']);
+    vi.mocked(initiativeRepo.rollInitiative).mockResolvedValue(rollResult);
+    vi.mocked(repo.findById).mockResolvedValueOnce(makeEncounter({ status: 'active', round: 1 })); // post-commit re-fetch
+    vi.mocked(combatPublisher.publishUpdated).mockRejectedValueOnce(new Error('Centrifugo down'));
+
+    const result = await handler.execute(new RollInitiativeCommand('enc-1', 'user-1'));
+
+    expect(result).toEqual(rollResult);
   });
 });

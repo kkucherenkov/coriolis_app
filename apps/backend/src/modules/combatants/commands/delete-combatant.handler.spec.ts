@@ -11,6 +11,7 @@ import { DeleteCombatantHandler } from './delete-combatant.handler';
 
 import type { IGameSessionAccess } from '../../encounters/domain/game-session-access.ports';
 import type { EncounterReadModel, IEncounterRepo } from '../../encounters/domain/encounter.ports';
+import type { ICombatPublisher } from '../../encounters/infra/combat.publisher';
 import type { CombatantReadModel, ICombatantRepo } from '../domain/combatant.ports';
 
 // --------------- Factory helpers ---------------
@@ -36,13 +37,17 @@ function makeAccess(): IGameSessionAccess {
 function makeCombatantRepo(): ICombatantRepo {
   return {
     findById: vi.fn(),
-    listByEncounter: vi.fn(),
+    listByEncounter: vi.fn().mockResolvedValue([]),
     listByEncounterWithSnapshot: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
     countByEncounter: vi.fn(),
   };
+}
+
+function makeCombatPublisher(): ICombatPublisher {
+  return { publishUpdated: vi.fn().mockResolvedValue(undefined) };
 }
 
 function makeEncounter(overrides: Partial<EncounterReadModel> = {}): EncounterReadModel {
@@ -87,13 +92,15 @@ describe('DeleteCombatantHandler', () => {
   let combatantRepo: ICombatantRepo;
   let encounterRepo: IEncounterRepo;
   let access: IGameSessionAccess;
+  let combatPublisher: ICombatPublisher;
   let handler: DeleteCombatantHandler;
 
   beforeEach(() => {
     combatantRepo = makeCombatantRepo();
     encounterRepo = makeEncounterRepo();
     access = makeAccess();
-    handler = new DeleteCombatantHandler(combatantRepo, encounterRepo, access);
+    combatPublisher = makeCombatPublisher();
+    handler = new DeleteCombatantHandler(combatantRepo, encounterRepo, access, combatPublisher);
 
     vi.mocked(access.getOwnerId).mockResolvedValue('user-1');
     vi.mocked(combatantRepo.findById).mockResolvedValue(makeCombatant());
@@ -188,5 +195,25 @@ describe('DeleteCombatantHandler', () => {
     await expect(
       handler.execute(new DeleteCombatantCommand('comb-missing', 'user-1')),
     ).rejects.toMatchObject({ code: 'COMBATANT_NOT_FOUND', status: 404 });
+  });
+
+  it('calls combatPublisher.publishUpdated with remaining combatants after delete', async () => {
+    const remaining: CombatantReadModel[] = [];
+    vi.mocked(combatantRepo.listByEncounter).mockResolvedValue(remaining);
+
+    await handler.execute(new DeleteCombatantCommand('comb-1', 'user-1'));
+
+    expect(combatPublisher.publishUpdated).toHaveBeenCalledWith('gs-1', makeEncounter(), remaining);
+  });
+
+  it('publish failure does not break the flow — void return is preserved', async () => {
+    vi.mocked(combatantRepo.listByEncounter).mockResolvedValue([]);
+    vi.mocked(combatPublisher.publishUpdated).mockRejectedValueOnce(new Error('Centrifugo down'));
+
+    await expect(
+      handler.execute(new DeleteCombatantCommand('comb-1', 'user-1')),
+    ).resolves.toBeUndefined();
+
+    expect(combatantRepo.delete).toHaveBeenCalledWith('comb-1');
   });
 });

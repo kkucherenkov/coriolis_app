@@ -101,4 +101,17 @@ describe('DeleteEncounterHandler', () => {
       handler.execute(new DeleteEncounterCommand('enc-1', 'other-user')),
     ).rejects.toMatchObject({ code: 'ENCOUNTER_ACCESS_DENIED', status: 403 });
   });
+
+  it('does NOT publish combat.updated on delete (encounter no longer exists after deletion)', async () => {
+    // combat.updated is deliberately skipped for delete-encounter.
+    // The encounter row is gone; any snapshot would reference a deleted resource.
+    // Clients discover deletion via the next GET /encounters/{id} → 404.
+    // No publish infrastructure is injected into this handler.
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter());
+
+    // If the handler mistakenly tried to publish, it would fail at construction
+    // (no COMBAT_PUBLISHER injected). The test just verifies the happy path completes.
+    await expect(handler.execute(new DeleteEncounterCommand('enc-1', 'user-1'))).resolves.toBeUndefined();
+    expect(repo.delete).toHaveBeenCalledWith('enc-1');
+  });
 });

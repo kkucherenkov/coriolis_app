@@ -11,11 +11,14 @@
  * Circular dependency handling:
  * - EncountersModule imports CombatantsModule (to consume COMBATANT_COUNT).
  * - CombatantsModule imports EncountersModule via forwardRef (to consume
- *   ENCOUNTER_REPO and GAME_SESSION_ACCESS needed by combatant command handlers).
+ *   ENCOUNTER_REPO, GAME_SESSION_ACCESS, and COMBAT_PUBLISHER needed by
+ *   combatant command handlers).
  * NestJS forwardRef() breaks the circular module reference at the DI graph level.
  *
  * COMBATANT_COUNT is exported so EncountersModule can inject it into
  * UpdateEncounterHandler for the setup → active state-machine guard.
+ * COMBAT_PUBLISHER is exported from EncountersModule and flows into
+ * combatant handlers via the forwardRef import.
  */
 import { Module, forwardRef } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';

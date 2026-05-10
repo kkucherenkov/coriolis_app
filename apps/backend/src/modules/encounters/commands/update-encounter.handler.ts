@@ -1,31 +1,37 @@
-import { Inject } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { COMBATANT_COUNT } from '../../combatants/domain/combatant.ports';
+import { COMBATANT_COUNT, COMBATANT_REPO } from '../../combatants/domain/combatant.ports';
 import { EncounterAccessDeniedError, EncounterNotFoundError } from '../domain/encounter.errors';
 import { GAME_SESSION_ACCESS } from '../domain/game-session-access.ports';
 import { ENCOUNTER_REPO } from '../domain/encounter.ports';
 import { guardTransition, requiresCombatants } from '../domain/encounter.state-machine';
+import { COMBAT_PUBLISHER } from '../infra/combat.publisher';
 
 import { UpdateEncounterCommand } from './update-encounter.command';
 
-import type { ICombatantCount } from '../../combatants/domain/combatant.ports';
+import type { ICombatantCount, ICombatantRepo } from '../../combatants/domain/combatant.ports';
 import type { IGameSessionAccess } from '../domain/game-session-access.ports';
 import type {
   EncounterReadModel,
   EncounterUpdateData,
   IEncounterRepo,
 } from '../domain/encounter.ports';
+import type { ICombatPublisher } from '../infra/combat.publisher';
 
 @CommandHandler(UpdateEncounterCommand)
 export class UpdateEncounterHandler implements ICommandHandler<
   UpdateEncounterCommand,
   EncounterReadModel
 > {
+  private readonly logger = new Logger(UpdateEncounterHandler.name);
+
   constructor(
     @Inject(ENCOUNTER_REPO) private readonly repo: IEncounterRepo,
     @Inject(GAME_SESSION_ACCESS) private readonly access: IGameSessionAccess,
     @Inject(COMBATANT_COUNT) private readonly combatantCount: ICombatantCount,
+    @Inject(COMBATANT_REPO) private readonly combatantRepo: ICombatantRepo,
+    @Inject(COMBAT_PUBLISHER) private readonly combatPublisher: ICombatPublisher,
   ) {}
 
   async execute(command: UpdateEncounterCommand): Promise<EncounterReadModel> {
@@ -63,6 +69,18 @@ export class UpdateEncounterHandler implements ICommandHandler<
     if (dto.name !== undefined) patch.name = dto.name.trim();
     if ('notes' in dto) patch.notes = dto.notes ?? null;
 
-    return this.repo.update(id, patch);
+    const updated = await this.repo.update(id, patch);
+
+    // Publish snapshot — non-fatal; DB write is already committed
+    try {
+      const combatants = await this.combatantRepo.listByEncounter(id);
+      await this.combatPublisher.publishUpdated(updated.gameSessionId, updated, combatants);
+    } catch (error) {
+      this.logger.error(
+        `Failed to fetch combatants for combat.updated publish (encounter ${id}): ${String(error)}`,
+      );
+    }
+
+    return updated;
   }
 }

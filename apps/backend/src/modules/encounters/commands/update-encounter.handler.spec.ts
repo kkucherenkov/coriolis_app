@@ -13,9 +13,10 @@ import {
 import { UpdateEncounterCommand, UpdateEncounterDto } from './update-encounter.command';
 import { UpdateEncounterHandler } from './update-encounter.handler';
 
-import type { ICombatantCount } from '../../../modules/combatants/domain/combatant.ports';
+import type { ICombatantCount, ICombatantRepo } from '../../../modules/combatants/domain/combatant.ports';
 import type { IGameSessionAccess } from '../domain/game-session-access.ports';
 import type { EncounterReadModel, IEncounterRepo } from '../domain/encounter.ports';
+import type { ICombatPublisher } from '../infra/combat.publisher';
 
 function makeRepo(): IEncounterRepo {
   return {
@@ -41,6 +42,22 @@ function makeCombatantCount(count = 0): ICombatantCount {
   };
 }
 
+function makeCombatantRepo(): ICombatantRepo {
+  return {
+    findById: vi.fn(),
+    listByEncounter: vi.fn().mockResolvedValue([]),
+    listByEncounterWithSnapshot: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    countByEncounter: vi.fn(),
+  };
+}
+
+function makeCombatPublisher(): ICombatPublisher {
+  return { publishUpdated: vi.fn().mockResolvedValue(undefined) };
+}
+
 function makeEncounter(overrides: Partial<EncounterReadModel> = {}): EncounterReadModel {
   return {
     id: 'enc-1',
@@ -64,13 +81,17 @@ describe('UpdateEncounterHandler', () => {
   let repo: IEncounterRepo;
   let access: IGameSessionAccess;
   let combatantCount: ICombatantCount;
+  let combatantRepo: ICombatantRepo;
+  let combatPublisher: ICombatPublisher;
   let handler: UpdateEncounterHandler;
 
   beforeEach(() => {
     repo = makeRepo();
     access = makeAccess();
     combatantCount = makeCombatantCount(0);
-    handler = new UpdateEncounterHandler(repo, access, combatantCount);
+    combatantRepo = makeCombatantRepo();
+    combatPublisher = makeCombatPublisher();
+    handler = new UpdateEncounterHandler(repo, access, combatantCount, combatantRepo, combatPublisher);
     vi.mocked(access.getOwnerId).mockResolvedValue('user-1');
   });
 
@@ -273,5 +294,34 @@ describe('UpdateEncounterHandler', () => {
       'enc-1',
       expect.not.objectContaining({ status: expect.anything() }),
     );
+  });
+
+  it('calls combatPublisher.publishUpdated after successful update', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter());
+    const updated = makeEncounter({ name: 'Renamed' });
+    vi.mocked(repo.update).mockResolvedValue(updated);
+    vi.mocked(combatantRepo.listByEncounter).mockResolvedValue([]);
+
+    await handler.execute(
+      new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ name: 'Renamed' })),
+    );
+
+    expect(combatPublisher.publishUpdated).toHaveBeenCalledWith('gs-1', updated, []);
+  });
+
+  it('publish failure does not break the flow — returns updated encounter', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter());
+    const updated = makeEncounter({ name: 'Renamed' });
+    vi.mocked(repo.update).mockResolvedValue(updated);
+    vi.mocked(combatantRepo.listByEncounter).mockResolvedValue([]);
+    vi.mocked(combatPublisher.publishUpdated).mockRejectedValueOnce(
+      new Error('Centrifugo down'),
+    );
+
+    const result = await handler.execute(
+      new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ name: 'Renamed' })),
+    );
+
+    expect(result).toEqual(updated);
   });
 });

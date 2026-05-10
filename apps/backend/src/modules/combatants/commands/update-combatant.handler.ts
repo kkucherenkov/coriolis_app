@@ -8,14 +8,16 @@
  * 3. Reject if encounter is 'ended' (ENCOUNTER_ENDED 422).
  * 4. Apply patch (hpCurrent, armor, signature, statusFlags, notes, displayName).
  *    initiative and turnOrder are NOT accepted here — Block 4 only.
+ * 5. Publish combat.updated snapshot (non-fatal).
  *
  * No Prisma in this file. All I/O via injected ports.
  */
-import { Inject } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { GAME_SESSION_ACCESS } from '../../encounters/domain/game-session-access.ports';
 import { ENCOUNTER_REPO } from '../../encounters/domain/encounter.ports';
+import { COMBAT_PUBLISHER } from '../../encounters/infra/combat.publisher';
 import { COMBATANT_REPO } from '../domain/combatant.ports';
 import { CombatantNotFoundError, EncounterEndedError } from '../domain/combatant.errors';
 
@@ -23,6 +25,7 @@ import { UpdateCombatantCommand } from './update-combatant.command';
 
 import type { IGameSessionAccess } from '../../encounters/domain/game-session-access.ports';
 import type { IEncounterRepo } from '../../encounters/domain/encounter.ports';
+import type { ICombatPublisher } from '../../encounters/infra/combat.publisher';
 import type {
   ICombatantRepo,
   CombatantReadModel,
@@ -34,10 +37,13 @@ export class UpdateCombatantHandler implements ICommandHandler<
   UpdateCombatantCommand,
   CombatantReadModel
 > {
+  private readonly logger = new Logger(UpdateCombatantHandler.name);
+
   constructor(
     @Inject(COMBATANT_REPO) private readonly combatantRepo: ICombatantRepo,
     @Inject(ENCOUNTER_REPO) private readonly encounterRepo: IEncounterRepo,
     @Inject(GAME_SESSION_ACCESS) private readonly access: IGameSessionAccess,
+    @Inject(COMBAT_PUBLISHER) private readonly combatPublisher: ICombatPublisher,
   ) {}
 
   async execute(command: UpdateCombatantCommand): Promise<CombatantReadModel> {
@@ -71,6 +77,18 @@ export class UpdateCombatantHandler implements ICommandHandler<
     if ('notes' in dto) patch.notes = dto.notes ?? null;
     // initiative and turnOrder intentionally excluded — Block 4 only
 
-    return this.combatantRepo.update(id, patch);
+    const updated = await this.combatantRepo.update(id, patch);
+
+    // Publish combat.updated — non-fatal; DB write is already committed
+    try {
+      const allCombatants = await this.combatantRepo.listByEncounter(encounter.id);
+      await this.combatPublisher.publishUpdated(encounter.gameSessionId, encounter, allCombatants);
+    } catch (error) {
+      this.logger.error(
+        `Failed to publish combat.updated for encounter ${encounter.id}: ${String(error)}`,
+      );
+    }
+
+    return updated;
   }
 }

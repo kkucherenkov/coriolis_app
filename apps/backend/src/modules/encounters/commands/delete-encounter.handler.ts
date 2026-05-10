@@ -28,5 +28,11 @@ export class DeleteEncounterHandler implements ICommandHandler<DeleteEncounterCo
     if (ownerId !== callerId) throw new EncounterAccessDeniedError(id);
 
     await this.repo.delete(id);
+
+    // combat.updated is NOT published for delete-encounter.
+    // The encounter no longer exists after this point; any snapshot would reference
+    // a deleted resource. Clients will discover the deletion on the next
+    // GET /encounters/{id} (404). Tombstone publishing is deferred until a
+    // client-side "encounter.deleted" event type is agreed upon in the AsyncAPI spec.
   }
 }

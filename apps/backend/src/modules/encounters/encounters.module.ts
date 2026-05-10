@@ -2,17 +2,19 @@
  * WHY this file exists:
  * Composition root for the encounters bounded context.
  * Wires all CQRS handlers, the Prisma repo adapter, the GameSessionAccess
- * adapter, and both controllers.
+ * adapter, the CentrifugoCombatPublisher, and both controllers.
  *
  * PrismaModule is @Global() (via AppModule), so EncounterRepo and
  * GameSessionAccessService can inject PrismaService without importing
  * PrismaModule here.
  * AuthModule is @Global(), so SessionGuard is available without importing here.
+ * RealtimeModule is @Global() (provides CENTRIFUGO_CLIENT), so
+ * CentrifugoCombatPublisher can inject it without importing RealtimeModule here.
  *
  * CombatantsModule is imported to make COMBATANT_COUNT and COMBATANT_REPO
  * available. This is a one-way dependency: encounters → combatants.
- * CombatantsModule does NOT import EncountersModule (it injects ENCOUNTER_REPO
- * and GAME_SESSION_ACCESS tokens which are re-exported here).
+ * CombatantsModule does NOT import EncountersModule (it injects ENCOUNTER_REPO,
+ * GAME_SESSION_ACCESS, and COMBAT_PUBLISHER tokens which are re-exported here).
  * This pattern avoids a circular module dep.
  */
 import { Module, forwardRef } from '@nestjs/common';
@@ -31,6 +33,7 @@ import { ENCOUNTER_REPO, INITIATIVE_REPO } from './domain/encounter.ports';
 import { EncounterRepo } from './infra/encounter.repo';
 import { GameSessionAccessService } from './infra/game-session-access.adapter';
 import { InitiativeRepo } from './infra/initiative.repo';
+import { COMBAT_PUBLISHER, CentrifugoCombatPublisher } from './infra/combat.publisher';
 import { GetEncounterHandler } from './queries/get-encounter.handler';
 import { ListEncountersHandler } from './queries/list-encounters.handler';
 import { EncountersController } from './encounters.controller';
@@ -54,7 +57,8 @@ import { NestedEncountersController } from './nested-encounters.controller';
     { provide: ENCOUNTER_REPO, useClass: EncounterRepo },
     { provide: GAME_SESSION_ACCESS, useClass: GameSessionAccessService },
     { provide: INITIATIVE_REPO, useClass: InitiativeRepo },
+    { provide: COMBAT_PUBLISHER, useClass: CentrifugoCombatPublisher },
   ],
-  exports: [ENCOUNTER_REPO, GAME_SESSION_ACCESS],
+  exports: [ENCOUNTER_REPO, GAME_SESSION_ACCESS, COMBAT_PUBLISHER],
 })
 export class EncountersModule {}

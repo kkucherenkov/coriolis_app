@@ -21,6 +21,7 @@ import type {
   IInitiativeRepo,
   InitiativeRollResult,
 } from '../domain/encounter.ports';
+import type { ICombatPublisher } from '../infra/combat.publisher';
 
 // --------------- Helpers ---------------
 
@@ -60,6 +61,10 @@ function makeInitiativeRepo(): IInitiativeRepo {
     reorderInitiative: vi.fn(),
     advanceTurn: vi.fn(),
   };
+}
+
+function makeCombatPublisher(): ICombatPublisher {
+  return { publishUpdated: vi.fn().mockResolvedValue(undefined) };
 }
 
 function makeEncounter(overrides: Partial<EncounterReadModel> = {}): EncounterReadModel {
@@ -117,6 +122,7 @@ describe('ReorderInitiativeHandler', () => {
   let access: IGameSessionAccess;
   let combatantRepo: ICombatantRepo;
   let initiativeRepo: IInitiativeRepo;
+  let combatPublisher: ICombatPublisher;
   let handler: ReorderInitiativeHandler;
 
   beforeEach(() => {
@@ -124,7 +130,8 @@ describe('ReorderInitiativeHandler', () => {
     access = makeAccess();
     combatantRepo = makeCombatantRepo();
     initiativeRepo = makeInitiativeRepo();
-    handler = new ReorderInitiativeHandler(repo, access, combatantRepo, initiativeRepo);
+    combatPublisher = makeCombatPublisher();
+    handler = new ReorderInitiativeHandler(repo, access, combatantRepo, initiativeRepo, combatPublisher);
 
     vi.mocked(access.getOwnerId).mockResolvedValue('user-1');
   });
@@ -221,9 +228,8 @@ describe('ReorderInitiativeHandler', () => {
       makeCombatant('cb-1'),
       makeCombatant('cb-2'),
     ]);
-    vi.mocked(initiativeRepo.reorderInitiative).mockResolvedValue(
-      makeReorderResult(['cb-2', 'cb-1']),
-    );
+    const reorderResult = makeReorderResult(['cb-2', 'cb-1']);
+    vi.mocked(initiativeRepo.reorderInitiative).mockResolvedValue(reorderResult);
 
     const result = await handler.execute(
       new ReorderInitiativeCommand('enc-1', 'user-1', makeDto(['cb-2', 'cb-1'])),
@@ -254,5 +260,45 @@ describe('ReorderInitiativeHandler', () => {
     expect(initiativeRepo.rollInitiative).not.toHaveBeenCalled();
     expect(initiativeRepo.advanceTurn).not.toHaveBeenCalled();
     expect(repo.update).not.toHaveBeenCalled();
+  });
+
+  it('calls combatPublisher.publishUpdated after successful reorder', async () => {
+    const enc = makeEncounter();
+    vi.mocked(repo.findById).mockResolvedValueOnce(enc); // initial load
+    vi.mocked(combatantRepo.listByEncounter).mockResolvedValue([
+      makeCombatant('cb-1'),
+      makeCombatant('cb-2'),
+    ]);
+    const reorderResult = makeReorderResult(['cb-2', 'cb-1']);
+    vi.mocked(initiativeRepo.reorderInitiative).mockResolvedValue(reorderResult);
+    vi.mocked(repo.findById).mockResolvedValueOnce(enc); // post-commit re-fetch
+
+    await handler.execute(
+      new ReorderInitiativeCommand('enc-1', 'user-1', makeDto(['cb-2', 'cb-1'])),
+    );
+
+    expect(combatPublisher.publishUpdated).toHaveBeenCalledWith(
+      'gs-1',
+      enc,
+      reorderResult.combatants,
+    );
+  });
+
+  it('publish failure does not break the flow — returns reorder result normally', async () => {
+    vi.mocked(repo.findById).mockResolvedValueOnce(makeEncounter()); // initial load
+    vi.mocked(combatantRepo.listByEncounter).mockResolvedValue([
+      makeCombatant('cb-1'),
+      makeCombatant('cb-2'),
+    ]);
+    const reorderResult = makeReorderResult(['cb-2', 'cb-1']);
+    vi.mocked(initiativeRepo.reorderInitiative).mockResolvedValue(reorderResult);
+    vi.mocked(repo.findById).mockResolvedValueOnce(makeEncounter()); // post-commit re-fetch
+    vi.mocked(combatPublisher.publishUpdated).mockRejectedValueOnce(new Error('Centrifugo down'));
+
+    const result = await handler.execute(
+      new ReorderInitiativeCommand('enc-1', 'user-1', makeDto(['cb-2', 'cb-1'])),
+    );
+
+    expect(result).toEqual(reorderResult);
   });
 });

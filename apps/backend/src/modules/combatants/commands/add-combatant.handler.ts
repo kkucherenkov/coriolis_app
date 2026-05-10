@@ -9,10 +9,11 @@
  * 4. Build the snapshot (read-once-at-add-time — subsequent mutations to the
  *    source entity do NOT propagate to the combatant row).
  * 5. Create the Combatant row via ICombatantRepo.
+ * 6. Publish combat.updated snapshot (non-fatal).
  *
  * No Prisma in this file. All I/O via injected ports.
  */
-import { Inject } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import {
@@ -21,6 +22,7 @@ import {
 } from '../../encounters/domain/encounter.errors';
 import { GAME_SESSION_ACCESS } from '../../encounters/domain/game-session-access.ports';
 import { ENCOUNTER_REPO } from '../../encounters/domain/encounter.ports';
+import { COMBAT_PUBLISHER } from '../../encounters/infra/combat.publisher';
 import { COMBATANT_REPO } from '../domain/combatant.ports';
 import { SOURCE_LOOKUP } from '../domain/source-lookup.ports';
 import {
@@ -33,6 +35,7 @@ import { AddCombatantCommand } from './add-combatant.command';
 
 import type { IGameSessionAccess } from '../../encounters/domain/game-session-access.ports';
 import type { IEncounterRepo } from '../../encounters/domain/encounter.ports';
+import type { ICombatPublisher } from '../../encounters/infra/combat.publisher';
 import type {
   ICombatantRepo,
   CombatantReadModel,
@@ -46,11 +49,14 @@ export class AddCombatantHandler implements ICommandHandler<
   AddCombatantCommand,
   CombatantReadModel
 > {
+  private readonly logger = new Logger(AddCombatantHandler.name);
+
   constructor(
     @Inject(ENCOUNTER_REPO) private readonly encounterRepo: IEncounterRepo,
     @Inject(GAME_SESSION_ACCESS) private readonly access: IGameSessionAccess,
     @Inject(COMBATANT_REPO) private readonly combatantRepo: ICombatantRepo,
     @Inject(SOURCE_LOOKUP) private readonly sourceLookup: ISourceLookup,
+    @Inject(COMBAT_PUBLISHER) private readonly combatPublisher: ICombatPublisher,
   ) {}
 
   async execute(command: AddCombatantCommand): Promise<CombatantReadModel> {
@@ -70,6 +76,8 @@ export class AddCombatantHandler implements ICommandHandler<
       throw new EncounterLockedForCombatError();
     }
 
+    let created: CombatantReadModel;
+
     if (dto.combatantType === 'pc') {
       const character = await this.sourceLookup.findCharacterById(dto.sourceId);
       if (!character) throw new CombatantSourceNotFoundError(dto.sourceId);
@@ -81,7 +89,7 @@ export class AddCombatantHandler implements ICommandHandler<
         hpMax: character.hpMax,
       };
 
-      return this.combatantRepo.create({
+      created = await this.combatantRepo.create({
         encounterId,
         combatantType: 'pc',
         characterId: dto.sourceId,
@@ -105,7 +113,7 @@ export class AddCombatantHandler implements ICommandHandler<
         signature: npc.signature,
       };
 
-      return this.combatantRepo.create({
+      created = await this.combatantRepo.create({
         encounterId,
         combatantType: 'npc',
         npcId: dto.sourceId,
@@ -118,5 +126,17 @@ export class AddCombatantHandler implements ICommandHandler<
         npcSnapshot,
       });
     }
+
+    // Publish combat.updated — non-fatal; DB write is already committed
+    try {
+      const allCombatants = await this.combatantRepo.listByEncounter(encounterId);
+      await this.combatPublisher.publishUpdated(encounter.gameSessionId, encounter, allCombatants);
+    } catch (error) {
+      this.logger.error(
+        `Failed to publish combat.updated for encounter ${encounterId}: ${String(error)}`,
+      );
+    }
+
+    return created;
   }
 }

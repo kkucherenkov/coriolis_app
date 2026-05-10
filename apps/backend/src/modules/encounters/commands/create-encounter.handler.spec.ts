@@ -1,6 +1,6 @@
 /**
  * Unit tests for CreateEncounterHandler.
- * Repo and GameSessionAccess are vi.fn() mocks — no NestJS or Prisma.
+ * Repo, GameSessionAccess, CombatantRepo, and CombatPublisher are vi.fn() mocks — no NestJS or Prisma.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -9,8 +9,10 @@ import { EncounterAccessDeniedError, EncounterNotFoundError } from '../domain/en
 import { CreateEncounterCommand, CreateEncounterDto } from './create-encounter.command';
 import { CreateEncounterHandler } from './create-encounter.handler';
 
+import type { ICombatantRepo, CombatantReadModel } from '../../combatants/domain/combatant.ports';
 import type { IGameSessionAccess } from '../domain/game-session-access.ports';
 import type { EncounterReadModel, IEncounterRepo } from '../domain/encounter.ports';
+import type { ICombatPublisher } from '../infra/combat.publisher';
 
 function makeRepo(): IEncounterRepo {
   return {
@@ -28,6 +30,22 @@ function makeAccess(): IGameSessionAccess {
     isMember: vi.fn(),
     getOwnerId: vi.fn(),
   };
+}
+
+function makeCombatantRepo(): ICombatantRepo {
+  return {
+    findById: vi.fn(),
+    listByEncounter: vi.fn().mockResolvedValue([]),
+    listByEncounterWithSnapshot: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    countByEncounter: vi.fn(),
+  };
+}
+
+function makeCombatPublisher(): ICombatPublisher {
+  return { publishUpdated: vi.fn().mockResolvedValue(undefined) };
 }
 
 function makeEncounter(overrides: Partial<EncounterReadModel> = {}): EncounterReadModel {
@@ -52,12 +70,16 @@ function makeDto(overrides: Partial<CreateEncounterDto> = {}): CreateEncounterDt
 describe('CreateEncounterHandler', () => {
   let repo: IEncounterRepo;
   let access: IGameSessionAccess;
+  let combatantRepo: ICombatantRepo;
+  let combatPublisher: ICombatPublisher;
   let handler: CreateEncounterHandler;
 
   beforeEach(() => {
     repo = makeRepo();
     access = makeAccess();
-    handler = new CreateEncounterHandler(repo, access);
+    combatantRepo = makeCombatantRepo();
+    combatPublisher = makeCombatPublisher();
+    handler = new CreateEncounterHandler(repo, access, combatantRepo, combatPublisher);
   });
 
   it('creates an encounter when caller is GM owner', async () => {
@@ -124,5 +146,31 @@ describe('CreateEncounterHandler', () => {
     await expect(
       handler.execute(new CreateEncounterCommand('gs-1', 'other-user', makeDto())),
     ).rejects.toMatchObject({ code: 'ENCOUNTER_ACCESS_DENIED', status: 403 });
+  });
+
+  it('calls combatPublisher.publishUpdated after successful create', async () => {
+    vi.mocked(access.getOwnerId).mockResolvedValue('user-1');
+    const enc = makeEncounter();
+    vi.mocked(repo.create).mockResolvedValue(enc);
+    const combatants: CombatantReadModel[] = [];
+    vi.mocked(combatantRepo.listByEncounter).mockResolvedValue(combatants);
+
+    await handler.execute(new CreateEncounterCommand('gs-1', 'user-1', makeDto()));
+
+    expect(combatPublisher.publishUpdated).toHaveBeenCalledWith('gs-1', enc, combatants);
+  });
+
+  it('publish failure does not break the flow — returns encounter normally', async () => {
+    vi.mocked(access.getOwnerId).mockResolvedValue('user-1');
+    const enc = makeEncounter();
+    vi.mocked(repo.create).mockResolvedValue(enc);
+    vi.mocked(combatantRepo.listByEncounter).mockResolvedValue([]);
+    vi.mocked(combatPublisher.publishUpdated).mockRejectedValueOnce(
+      new Error('Centrifugo down'),
+    );
+
+    const result = await handler.execute(new CreateEncounterCommand('gs-1', 'user-1', makeDto()));
+
+    expect(result).toEqual(enc);
   });
 });

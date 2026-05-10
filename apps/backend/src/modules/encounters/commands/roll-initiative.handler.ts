@@ -11,10 +11,11 @@
  * 6. Sort: sortInitiative() — initiative desc, agility desc, createdAt asc.
  * 7. Assign turnOrder 0..N-1.
  * 8. Persist atomically; encounter → active, round=1, activeCombatantId=first.
- * 9. Return InitiativeRollResult.
+ * 9. Publish combat.updated snapshot (non-fatal).
+ * 10. Return InitiativeRollResult.
  */
 import { randomInt } from 'node:crypto';
-import { Inject } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { COMBATANT_REPO } from '../../combatants/domain/combatant.ports';
@@ -27,6 +28,7 @@ import {
 import { GAME_SESSION_ACCESS } from '../domain/game-session-access.ports';
 import { ENCOUNTER_REPO, INITIATIVE_REPO } from '../domain/encounter.ports';
 import { sortInitiative } from '../domain/initiative';
+import { COMBAT_PUBLISHER } from '../infra/combat.publisher';
 
 import { RollInitiativeCommand } from './roll-initiative.command';
 
@@ -37,17 +39,21 @@ import type {
   IInitiativeRepo,
   InitiativeRollResult,
 } from '../domain/encounter.ports';
+import type { ICombatPublisher } from '../infra/combat.publisher';
 
 @CommandHandler(RollInitiativeCommand)
 export class RollInitiativeHandler implements ICommandHandler<
   RollInitiativeCommand,
   InitiativeRollResult
 > {
+  private readonly logger = new Logger(RollInitiativeHandler.name);
+
   constructor(
     @Inject(ENCOUNTER_REPO) private readonly repo: IEncounterRepo,
     @Inject(GAME_SESSION_ACCESS) private readonly access: IGameSessionAccess,
     @Inject(COMBATANT_REPO) private readonly combatantRepo: ICombatantRepo,
     @Inject(INITIATIVE_REPO) private readonly initiativeRepo: IInitiativeRepo,
+    @Inject(COMBAT_PUBLISHER) private readonly combatPublisher: ICombatPublisher,
   ) {}
 
   async execute(command: RollInitiativeCommand): Promise<InitiativeRollResult> {
@@ -103,10 +109,28 @@ export class RollInitiativeHandler implements ICommandHandler<
     const firstCombatantId = firstItem.combatant.id;
 
     // 9. Persist atomically
-    return this.initiativeRepo.rollInitiative({
+    const result = await this.initiativeRepo.rollInitiative({
       encounterId,
       combatantPatches,
       activeCombatantId: firstCombatantId,
     });
+
+    // 10. Publish combat.updated — non-fatal; DB write is already committed
+    try {
+      const updatedEncounter = await this.repo.findById(encounterId);
+      if (updatedEncounter) {
+        await this.combatPublisher.publishUpdated(
+          updatedEncounter.gameSessionId,
+          updatedEncounter,
+          result.combatants,
+        );
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to publish combat.updated for encounter ${encounterId}: ${String(error)}`,
+      );
+    }
+
+    return result;
   }
 }

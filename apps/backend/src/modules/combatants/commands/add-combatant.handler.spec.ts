@@ -20,6 +20,7 @@ import { AddCombatantHandler } from './add-combatant.handler';
 
 import type { IGameSessionAccess } from '../../encounters/domain/game-session-access.ports';
 import type { EncounterReadModel, IEncounterRepo } from '../../encounters/domain/encounter.ports';
+import type { ICombatPublisher } from '../../encounters/infra/combat.publisher';
 import type { ICombatantRepo, CombatantReadModel } from '../domain/combatant.ports';
 import type { ISourceLookup, SourceCharacter, SourceNpc } from '../domain/source-lookup.ports';
 
@@ -46,7 +47,7 @@ function makeAccess(): IGameSessionAccess {
 function makeCombatantRepo(): ICombatantRepo {
   return {
     findById: vi.fn(),
-    listByEncounter: vi.fn(),
+    listByEncounter: vi.fn().mockResolvedValue([]),
     listByEncounterWithSnapshot: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
@@ -60,6 +61,10 @@ function makeSourceLookup(): ISourceLookup {
     findCharacterById: vi.fn(),
     findNpcById: vi.fn(),
   };
+}
+
+function makeCombatPublisher(): ICombatPublisher {
+  return { publishUpdated: vi.fn().mockResolvedValue(undefined) };
 }
 
 function makeEncounter(overrides: Partial<EncounterReadModel> = {}): EncounterReadModel {
@@ -143,6 +148,7 @@ describe('AddCombatantHandler', () => {
   let access: IGameSessionAccess;
   let combatantRepo: ICombatantRepo;
   let sourceLookup: ISourceLookup;
+  let combatPublisher: ICombatPublisher;
   let handler: AddCombatantHandler;
 
   beforeEach(() => {
@@ -150,7 +156,8 @@ describe('AddCombatantHandler', () => {
     access = makeAccess();
     combatantRepo = makeCombatantRepo();
     sourceLookup = makeSourceLookup();
-    handler = new AddCombatantHandler(encounterRepo, access, combatantRepo, sourceLookup);
+    combatPublisher = makeCombatPublisher();
+    handler = new AddCombatantHandler(encounterRepo, access, combatantRepo, sourceLookup, combatPublisher);
 
     vi.mocked(access.getOwnerId).mockResolvedValue('user-1');
   });
@@ -377,5 +384,35 @@ describe('AddCombatantHandler', () => {
     await expect(
       handler.execute(new AddCombatantCommand('enc-1', 'user-1', makeDto())),
     ).rejects.toMatchObject({ code: 'COMBATANT_DUPLICATE', status: 422 });
+  });
+
+  it('calls combatPublisher.publishUpdated after successful add', async () => {
+    vi.mocked(encounterRepo.findById).mockResolvedValue(makeEncounter());
+    vi.mocked(sourceLookup.findCharacterById).mockResolvedValue(makeCharacter());
+    const created = makeCombatant();
+    vi.mocked(combatantRepo.create).mockResolvedValue(created);
+    const allCombatants = [created];
+    vi.mocked(combatantRepo.listByEncounter).mockResolvedValue(allCombatants);
+
+    await handler.execute(new AddCombatantCommand('enc-1', 'user-1', makeDto()));
+
+    expect(combatPublisher.publishUpdated).toHaveBeenCalledWith(
+      'gs-1',
+      makeEncounter(),
+      allCombatants,
+    );
+  });
+
+  it('publish failure does not break the flow — returns created combatant', async () => {
+    vi.mocked(encounterRepo.findById).mockResolvedValue(makeEncounter());
+    vi.mocked(sourceLookup.findCharacterById).mockResolvedValue(makeCharacter());
+    const created = makeCombatant();
+    vi.mocked(combatantRepo.create).mockResolvedValue(created);
+    vi.mocked(combatantRepo.listByEncounter).mockResolvedValue([created]);
+    vi.mocked(combatPublisher.publishUpdated).mockRejectedValueOnce(new Error('Centrifugo down'));
+
+    const result = await handler.execute(new AddCombatantCommand('enc-1', 'user-1', makeDto()));
+
+    expect(result).toEqual(created);
   });
 });
