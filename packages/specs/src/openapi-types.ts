@@ -490,6 +490,105 @@ export interface paths {
     patch: operations['updateMe'];
     trace?: never;
   };
+  '/api/v1/npcs': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List the authenticated user's NPCs
+     * @description Returns a cursor-paginated list of NPCs owned by the authenticated
+     *     user. Pass `cursor` from a previous response's `nextCursor` to
+     *     retrieve the following page. Results are ordered newest-first by
+     *     `createdAt`. Optionally filter by `tag` (exact match against any
+     *     element of the NPC's `tags` array).
+     */
+    get: operations['listNpcs'];
+    put?: never;
+    /**
+     * Create a new NPC
+     * @description Creates an NPC owned by the authenticated user. Only `name` is
+     *     required; all other fields default to playable stubs so a quick
+     *     encounter-filler can be created with a single call. Server assigns
+     *     `id`, `ownerId`, `createdAt`, `updatedAt`.
+     *
+     *     Default seeds applied by the server when fields are omitted:
+     *     - `attributes` — all four attributes set to 2
+     *     - `skills` — all 16 skills set to 0
+     *     - `hp` — `{ current: 4, max: 4 }`
+     *     - `mp` — `{ current: 4, max: 4 }`
+     *     - `armor` — empty array
+     *     - `weapons` — empty array
+     *     - `tags` — empty array
+     *     - `signature` — 0
+     *     - `keySkillModifier` — 0
+     */
+    post: operations['createNpc'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/npcs/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get an NPC by ID
+     * @description Returns the full Npc DTO. Returns 404 if the NPC does not exist and
+     *     403 if it is owned by a different user.
+     */
+    get: operations['getNpc'];
+    put?: never;
+    post?: never;
+    /**
+     * Delete an NPC
+     * @description Permanently deletes an NPC. This action is irreversible. NPCs
+     *     referenced by active encounters are rejected with 409
+     *     `NPC_IN_USE` — remove the combatant from the encounter first.
+     */
+    delete: operations['deleteNpc'];
+    options?: never;
+    head?: never;
+    /**
+     * Partially update an NPC
+     * @description Applies PATCH semantics — omitted fields are left unchanged.
+     *     Read-only fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are
+     *     rejected with 400 if included.
+     */
+    patch: operations['updateNpc'];
+    trace?: never;
+  };
+  '/api/v1/npcs/{id}/duplicate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Duplicate an NPC
+     * @description Creates a deep copy of the NPC (attributes, skills, hp, mp, armor,
+     *     weapons, tags) and assigns it to the authenticated user. The copy
+     *     receives a new `id` and a name suffix: "(copy)" for the first
+     *     duplicate, "(copy 2)" for the second, and so on. The source NPC
+     *     must be owned by the caller.
+     */
+    post: operations['duplicateNpc'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/realtime/token': {
     parameters: {
       query?: never;
@@ -2836,6 +2935,147 @@ export interface components {
        */
       expiresAt: string | null;
     };
+    /**
+     * @description Full NPC DTO as returned by the v1 API. NPCs are GM-owned entities
+     *     designed to populate encounters in the combat tracker (ST3001
+     *     ГЛАВА 14). They share the same attribute and skill vocabulary as
+     *     player characters but carry no lifecycle state — any NPC can be
+     *     added to any encounter at any time.
+     *
+     *     `signature` is the NPC's sensor signature score for ship-combat
+     *     checks (signed integer; 0 is the baseline; negative values make the
+     *     NPC harder to detect). `keySkillModifier` is a signed integer bonus
+     *     that the combat tracker adds to the NPC's signature-derived attack
+     *     or defence pool when computing opposed rolls (ST3001 ГЛАВА 14
+     *     "Key Skill Modifier"). Both default to 0.
+     */
+    Npc: {
+      /** @description Opaque NPC identifier (cuid2) */
+      readonly id: string;
+      /** @description Identifier of the owning user (cuid2) */
+      readonly ownerId: string;
+      /** @description NPC name (1–120 characters) */
+      name: string;
+      /** @description Free-form GM notes or narrative description (Markdown, max 2000 chars) */
+      description?: string | null;
+      attributes: components['schemas']['Attributes'];
+      skills: components['schemas']['Skills'];
+      /** @description Hit points — both current and max are GM-editable for NPCs */
+      hp: {
+        /** @description Current hit points */
+        current: number;
+        /** @description Maximum hit points */
+        max: number;
+      };
+      /** @description Mind points — both current and max are GM-editable for NPCs */
+      mp: {
+        /** @description Current mind points */
+        current: number;
+        /** @description Maximum mind points */
+        max: number;
+      };
+      /**
+       * @description NPC sensor signature for ship-combat sensor checks (ST3001
+       *     ГЛАВА 14). Signed integer; 0 is baseline; negative makes the
+       *     NPC harder to detect; positive makes them easier.
+       * @default 0
+       */
+      signature: number;
+      /**
+       * @description Signed integer bonus applied by the combat tracker to the NPC's
+       *     attack or defence roll pool when resolving opposed key-skill
+       *     checks (ST3001 ГЛАВА 14). Positive values give the NPC an
+       *     advantage; negative values impose a penalty.
+       * @default 0
+       */
+      keySkillModifier: number;
+      /** @description Armor items carried by the NPC */
+      armor: components['schemas']['ItemArmor'][];
+      /** @description Weapons carried by the NPC */
+      weapons: components['schemas']['ItemWeapon'][];
+      /**
+       * @description Free-form GM-side categorisation labels (e.g. "Pirate",
+       *     "Cyborg", "Boss"). Used for filtering in the NPC list and for
+       *     encounter-table grouping. Each tag is a 1–40 character string.
+       */
+      tags: string[];
+      /** Format: date-time */
+      readonly createdAt: string;
+      /** Format: date-time */
+      readonly updatedAt: string;
+    };
+    /**
+     * @description Payload for `POST /api/v1/npcs`. Only `name` is required; all
+     *     other fields are optional. The server seeds sensible defaults for
+     *     any omitted field so that a stub NPC can be created with a single
+     *     field.
+     */
+    NpcCreate: {
+      /** @description NPC name (1–120 characters) */
+      name: string;
+      /** @description Free-form description (Markdown, max 2000 chars) */
+      description?: string | null;
+      /** @description Attribute block; missing keys default to 2 */
+      attributes?: components['schemas']['Attributes'];
+      /** @description Skill block; missing keys default to 0 */
+      skills?: components['schemas']['Skills'];
+      /** @description Hit points; defaults to {current: 4, max: 4} when omitted */
+      hp?: {
+        current?: number;
+        max?: number;
+      };
+      /** @description Mind points; defaults to {current: 4, max: 4} when omitted */
+      mp?: {
+        current?: number;
+        max?: number;
+      };
+      /**
+       * @description Sensor signature score; defaults to 0
+       * @default 0
+       */
+      signature: number;
+      /**
+       * @description Key skill modifier for combat tracker; defaults to 0
+       * @default 0
+       */
+      keySkillModifier: number;
+      /** @description Armor items; defaults to empty array */
+      armor?: components['schemas']['ItemArmor'][];
+      /** @description Weapons; defaults to empty array */
+      weapons?: components['schemas']['ItemWeapon'][];
+      /** @description Categorisation tags; defaults to empty array */
+      tags?: string[];
+    };
+    /**
+     * @description Payload for `PATCH /api/v1/npcs/{id}`. All fields are optional;
+     *     omitted fields are left unchanged. Supplying `weapons` or `armor`
+     *     replaces the entire array (put-semantics for nested collections).
+     */
+    NpcUpdate: {
+      name?: string;
+      description?: string | null;
+      attributes?: components['schemas']['Attributes'];
+      skills?: components['schemas']['Skills'];
+      hp?: {
+        current?: number;
+        max?: number;
+      };
+      mp?: {
+        current?: number;
+        max?: number;
+      };
+      signature?: number;
+      keySkillModifier?: number;
+      armor?: components['schemas']['ItemArmor'][];
+      weapons?: components['schemas']['ItemWeapon'][];
+      tags?: string[];
+    };
+    /** @description Cursor-paginated list of NPCs */
+    NpcList: {
+      items: components['schemas']['Npc'][];
+      /** @description Cursor for the next page; null when there are no more results */
+      nextCursor: string | null;
+    };
   };
   responses: never;
   parameters: {
@@ -2857,6 +3097,8 @@ export interface components {
     RollId: string;
     /** @description Game session identifier (cuid2) */
     GameSessionId: string;
+    /** @description NPC identifier (cuid2) */
+    NpcId: string;
   };
   requestBodies: never;
   headers: never;
@@ -4257,6 +4499,312 @@ export interface operations {
       };
       /** @description No active session */
       401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  listNpcs: {
+    parameters: {
+      query?: {
+        /** @description Opaque pagination cursor returned by the previous page */
+        cursor?: string;
+        /** @description Number of NPCs to return (1–100, default 20) */
+        limit?: number;
+        /** @description Filter NPCs that have this tag (exact match, case-sensitive) */
+        tag?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Paginated NPC list */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['NpcList'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  createNpc: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['NpcCreate'];
+      };
+    };
+    responses: {
+      /** @description NPC created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Npc'];
+        };
+      };
+      /**
+       * @description Validation error. Possible codes:
+       *     - `NPC_NAME_EMPTY` — name is an empty string.
+       *     - `NPC_NAME_TOO_LONG` — name exceeds 120 characters.
+       */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  getNpc: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description NPC identifier (cuid2) */
+        id: components['parameters']['NpcId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description NPC found */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Npc'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller is authenticated but does not own this NPC */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description NPC not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  deleteNpc: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description NPC identifier (cuid2) */
+        id: components['parameters']['NpcId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description NPC deleted */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this NPC */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description NPC not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description NPC is still referenced by one or more encounters */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  updateNpc: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description NPC identifier (cuid2) */
+        id: components['parameters']['NpcId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['NpcUpdate'];
+      };
+    };
+    responses: {
+      /** @description Updated NPC */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Npc'];
+        };
+      };
+      /**
+       * @description Validation error. Possible codes:
+       *     - `NPC_NAME_EMPTY`
+       *     - `NPC_NAME_TOO_LONG`
+       */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this NPC */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description NPC not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  duplicateNpc: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description NPC identifier (cuid2) */
+        id: components['parameters']['NpcId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Duplicated NPC */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Npc'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this NPC */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description NPC not found */
+      404: {
         headers: {
           [name: string]: unknown;
         };

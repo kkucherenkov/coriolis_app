@@ -2015,6 +2015,197 @@ export type RealtimeToken = {
 };
 
 /**
+ * Full NPC DTO as returned by the v1 API. NPCs are GM-owned entities
+ * designed to populate encounters in the combat tracker (ST3001
+ * ГЛАВА 14). They share the same attribute and skill vocabulary as
+ * player characters but carry no lifecycle state — any NPC can be
+ * added to any encounter at any time.
+ *
+ * `signature` is the NPC's sensor signature score for ship-combat
+ * checks (signed integer; 0 is the baseline; negative values make the
+ * NPC harder to detect). `keySkillModifier` is a signed integer bonus
+ * that the combat tracker adds to the NPC's signature-derived attack
+ * or defence pool when computing opposed rolls (ST3001 ГЛАВА 14
+ * "Key Skill Modifier"). Both default to 0.
+ *
+ */
+export type Npc = {
+    /**
+     * Opaque NPC identifier (cuid2)
+     */
+    readonly id: string;
+    /**
+     * Identifier of the owning user (cuid2)
+     */
+    readonly ownerId: string;
+    /**
+     * NPC name (1–120 characters)
+     */
+    name: string;
+    /**
+     * Free-form GM notes or narrative description (Markdown, max 2000 chars)
+     */
+    description?: string | null;
+    attributes: Attributes;
+    skills: Skills;
+    /**
+     * Hit points — both current and max are GM-editable for NPCs
+     */
+    hp: {
+        /**
+         * Current hit points
+         */
+        current: number;
+        /**
+         * Maximum hit points
+         */
+        max: number;
+    };
+    /**
+     * Mind points — both current and max are GM-editable for NPCs
+     */
+    mp: {
+        /**
+         * Current mind points
+         */
+        current: number;
+        /**
+         * Maximum mind points
+         */
+        max: number;
+    };
+    /**
+     * NPC sensor signature for ship-combat sensor checks (ST3001
+     * ГЛАВА 14). Signed integer; 0 is baseline; negative makes the
+     * NPC harder to detect; positive makes them easier.
+     *
+     */
+    signature: number;
+    /**
+     * Signed integer bonus applied by the combat tracker to the NPC's
+     * attack or defence roll pool when resolving opposed key-skill
+     * checks (ST3001 ГЛАВА 14). Positive values give the NPC an
+     * advantage; negative values impose a penalty.
+     *
+     */
+    keySkillModifier?: number;
+    /**
+     * Armor items carried by the NPC
+     */
+    armor: Array<ItemArmor>;
+    /**
+     * Weapons carried by the NPC
+     */
+    weapons: Array<ItemWeapon>;
+    /**
+     * Free-form GM-side categorisation labels (e.g. "Pirate",
+     * "Cyborg", "Boss"). Used for filtering in the NPC list and for
+     * encounter-table grouping. Each tag is a 1–40 character string.
+     *
+     */
+    tags: Array<string>;
+    readonly createdAt: string;
+    readonly updatedAt: string;
+};
+
+/**
+ * Payload for `POST /api/v1/npcs`. Only `name` is required; all
+ * other fields are optional. The server seeds sensible defaults for
+ * any omitted field so that a stub NPC can be created with a single
+ * field.
+ *
+ */
+export type NpcCreate = {
+    /**
+     * NPC name (1–120 characters)
+     */
+    name: string;
+    /**
+     * Free-form description (Markdown, max 2000 chars)
+     */
+    description?: string | null;
+    /**
+     * Attribute block; missing keys default to 2
+     */
+    attributes?: Attributes;
+    /**
+     * Skill block; missing keys default to 0
+     */
+    skills?: Skills;
+    /**
+     * Hit points; defaults to {current: 4, max: 4} when omitted
+     */
+    hp?: {
+        current?: number;
+        max?: number;
+    };
+    /**
+     * Mind points; defaults to {current: 4, max: 4} when omitted
+     */
+    mp?: {
+        current?: number;
+        max?: number;
+    };
+    /**
+     * Sensor signature score; defaults to 0
+     */
+    signature?: number;
+    /**
+     * Key skill modifier for combat tracker; defaults to 0
+     */
+    keySkillModifier?: number;
+    /**
+     * Armor items; defaults to empty array
+     */
+    armor?: Array<ItemArmor>;
+    /**
+     * Weapons; defaults to empty array
+     */
+    weapons?: Array<ItemWeapon>;
+    /**
+     * Categorisation tags; defaults to empty array
+     */
+    tags?: Array<string>;
+};
+
+/**
+ * Payload for `PATCH /api/v1/npcs/{id}`. All fields are optional;
+ * omitted fields are left unchanged. Supplying `weapons` or `armor`
+ * replaces the entire array (put-semantics for nested collections).
+ *
+ */
+export type NpcUpdate = {
+    name?: string;
+    description?: string | null;
+    attributes?: Attributes;
+    skills?: Skills;
+    hp?: {
+        current?: number;
+        max?: number;
+    };
+    mp?: {
+        current?: number;
+        max?: number;
+    };
+    signature?: number;
+    keySkillModifier?: number;
+    armor?: Array<ItemArmor>;
+    weapons?: Array<ItemWeapon>;
+    tags?: Array<string>;
+};
+
+/**
+ * Cursor-paginated list of NPCs
+ */
+export type NpcList = {
+    items: Array<Npc>;
+    /**
+     * Cursor for the next page; null when there are no more results
+     */
+    nextCursor: string | null;
+};
+
+/**
  * A single Coriolis dice roll. Dice are rolled server-side using a
  * cryptographically secure RNG. Hits = count of 6s. A roll can be pushed
  * at most once (PRD §10). `gameSessionId` is null until Feature 7.2 lands.
@@ -2441,6 +2632,101 @@ export type DpEventListWritable = {
 };
 
 /**
+ * Full NPC DTO as returned by the v1 API. NPCs are GM-owned entities
+ * designed to populate encounters in the combat tracker (ST3001
+ * ГЛАВА 14). They share the same attribute and skill vocabulary as
+ * player characters but carry no lifecycle state — any NPC can be
+ * added to any encounter at any time.
+ *
+ * `signature` is the NPC's sensor signature score for ship-combat
+ * checks (signed integer; 0 is the baseline; negative values make the
+ * NPC harder to detect). `keySkillModifier` is a signed integer bonus
+ * that the combat tracker adds to the NPC's signature-derived attack
+ * or defence pool when computing opposed rolls (ST3001 ГЛАВА 14
+ * "Key Skill Modifier"). Both default to 0.
+ *
+ */
+export type NpcWritable = {
+    /**
+     * NPC name (1–120 characters)
+     */
+    name: string;
+    /**
+     * Free-form GM notes or narrative description (Markdown, max 2000 chars)
+     */
+    description?: string | null;
+    attributes: Attributes;
+    skills: Skills;
+    /**
+     * Hit points — both current and max are GM-editable for NPCs
+     */
+    hp: {
+        /**
+         * Current hit points
+         */
+        current: number;
+        /**
+         * Maximum hit points
+         */
+        max: number;
+    };
+    /**
+     * Mind points — both current and max are GM-editable for NPCs
+     */
+    mp: {
+        /**
+         * Current mind points
+         */
+        current: number;
+        /**
+         * Maximum mind points
+         */
+        max: number;
+    };
+    /**
+     * NPC sensor signature for ship-combat sensor checks (ST3001
+     * ГЛАВА 14). Signed integer; 0 is baseline; negative makes the
+     * NPC harder to detect; positive makes them easier.
+     *
+     */
+    signature: number;
+    /**
+     * Signed integer bonus applied by the combat tracker to the NPC's
+     * attack or defence roll pool when resolving opposed key-skill
+     * checks (ST3001 ГЛАВА 14). Positive values give the NPC an
+     * advantage; negative values impose a penalty.
+     *
+     */
+    keySkillModifier?: number;
+    /**
+     * Armor items carried by the NPC
+     */
+    armor: Array<ItemArmor>;
+    /**
+     * Weapons carried by the NPC
+     */
+    weapons: Array<ItemWeapon>;
+    /**
+     * Free-form GM-side categorisation labels (e.g. "Pirate",
+     * "Cyborg", "Boss"). Used for filtering in the NPC list and for
+     * encounter-table grouping. Each tag is a 1–40 character string.
+     *
+     */
+    tags: Array<string>;
+};
+
+/**
+ * Cursor-paginated list of NPCs
+ */
+export type NpcListWritable = {
+    items: Array<NpcWritable>;
+    /**
+     * Cursor for the next page; null when there are no more results
+     */
+    nextCursor: string | null;
+};
+
+/**
  * Character identifier (cuid2)
  */
 export type CharacterId = string;
@@ -2484,6 +2770,11 @@ export type RollId = string;
  * Game session identifier (cuid2)
  */
 export type GameSessionId = string;
+
+/**
+ * NPC identifier (cuid2)
+ */
+export type NpcId = string;
 
 export type ListCharactersData = {
     body?: never;
@@ -3540,6 +3831,239 @@ export type UpdateMeResponses = {
 };
 
 export type UpdateMeResponse = UpdateMeResponses[keyof UpdateMeResponses];
+
+export type ListNpcsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Opaque pagination cursor returned by the previous page
+         */
+        cursor?: string;
+        /**
+         * Number of NPCs to return (1–100, default 20)
+         */
+        limit?: number;
+        /**
+         * Filter NPCs that have this tag (exact match, case-sensitive)
+         */
+        tag?: string;
+    };
+    url: '/api/v1/npcs';
+};
+
+export type ListNpcsErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+};
+
+export type ListNpcsError = ListNpcsErrors[keyof ListNpcsErrors];
+
+export type ListNpcsResponses = {
+    /**
+     * Paginated NPC list
+     */
+    200: NpcList;
+};
+
+export type ListNpcsResponse = ListNpcsResponses[keyof ListNpcsResponses];
+
+export type CreateNpcData = {
+    body: NpcCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/npcs';
+};
+
+export type CreateNpcErrors = {
+    /**
+     * Validation error. Possible codes:
+     * - `NPC_NAME_EMPTY` — name is an empty string.
+     * - `NPC_NAME_TOO_LONG` — name exceeds 120 characters.
+     *
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+};
+
+export type CreateNpcError = CreateNpcErrors[keyof CreateNpcErrors];
+
+export type CreateNpcResponses = {
+    /**
+     * NPC created
+     */
+    201: Npc;
+};
+
+export type CreateNpcResponse = CreateNpcResponses[keyof CreateNpcResponses];
+
+export type DeleteNpcData = {
+    body?: never;
+    path: {
+        /**
+         * NPC identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/npcs/{id}';
+};
+
+export type DeleteNpcErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this NPC
+     */
+    403: Problem;
+    /**
+     * NPC not found
+     */
+    404: Problem;
+    /**
+     * NPC is still referenced by one or more encounters
+     */
+    409: Problem;
+};
+
+export type DeleteNpcError = DeleteNpcErrors[keyof DeleteNpcErrors];
+
+export type DeleteNpcResponses = {
+    /**
+     * NPC deleted
+     */
+    204: void;
+};
+
+export type DeleteNpcResponse = DeleteNpcResponses[keyof DeleteNpcResponses];
+
+export type GetNpcData = {
+    body?: never;
+    path: {
+        /**
+         * NPC identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/npcs/{id}';
+};
+
+export type GetNpcErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller is authenticated but does not own this NPC
+     */
+    403: Problem;
+    /**
+     * NPC not found
+     */
+    404: Problem;
+};
+
+export type GetNpcError = GetNpcErrors[keyof GetNpcErrors];
+
+export type GetNpcResponses = {
+    /**
+     * NPC found
+     */
+    200: Npc;
+};
+
+export type GetNpcResponse = GetNpcResponses[keyof GetNpcResponses];
+
+export type UpdateNpcData = {
+    body: NpcUpdate;
+    path: {
+        /**
+         * NPC identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/npcs/{id}';
+};
+
+export type UpdateNpcErrors = {
+    /**
+     * Validation error. Possible codes:
+     * - `NPC_NAME_EMPTY`
+     * - `NPC_NAME_TOO_LONG`
+     *
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this NPC
+     */
+    403: Problem;
+    /**
+     * NPC not found
+     */
+    404: Problem;
+};
+
+export type UpdateNpcError = UpdateNpcErrors[keyof UpdateNpcErrors];
+
+export type UpdateNpcResponses = {
+    /**
+     * Updated NPC
+     */
+    200: Npc;
+};
+
+export type UpdateNpcResponse = UpdateNpcResponses[keyof UpdateNpcResponses];
+
+export type DuplicateNpcData = {
+    body?: never;
+    path: {
+        /**
+         * NPC identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/npcs/{id}/duplicate';
+};
+
+export type DuplicateNpcErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this NPC
+     */
+    403: Problem;
+    /**
+     * NPC not found
+     */
+    404: Problem;
+};
+
+export type DuplicateNpcError = DuplicateNpcErrors[keyof DuplicateNpcErrors];
+
+export type DuplicateNpcResponses = {
+    /**
+     * Duplicated NPC
+     */
+    201: Npc;
+};
+
+export type DuplicateNpcResponse = DuplicateNpcResponses[keyof DuplicateNpcResponses];
 
 export type IssueRealtimeTokenData = {
     body?: never;

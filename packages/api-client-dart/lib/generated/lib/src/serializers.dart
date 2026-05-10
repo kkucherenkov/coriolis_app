@@ -72,6 +72,15 @@ import 'package:app_api_client/src/model/item_weapon_update.dart';
 import 'package:app_api_client/src/model/me.dart';
 import 'package:app_api_client/src/model/me_update.dart';
 import 'package:app_api_client/src/model/mutant_lineage.dart';
+import 'package:app_api_client/src/model/npc.dart';
+import 'package:app_api_client/src/model/npc_create.dart';
+import 'package:app_api_client/src/model/npc_create_hp.dart';
+import 'package:app_api_client/src/model/npc_create_mp.dart';
+import 'package:app_api_client/src/model/npc_hp.dart';
+import 'package:app_api_client/src/model/npc_list.dart';
+import 'package:app_api_client/src/model/npc_mp.dart';
+import 'package:app_api_client/src/model/npc_update.dart';
+import 'package:app_api_client/src/model/npc_update_hp.dart';
 import 'package:app_api_client/src/model/problem.dart';
 import 'package:app_api_client/src/model/realtime_token.dart';
 import 'package:app_api_client/src/model/relationship.dart';
@@ -181,6 +190,15 @@ part 'serializers.g.dart';
   Me,
   MeUpdate,
   MutantLineage,
+  Npc,
+  NpcCreate,
+  NpcCreateHp,
+  NpcCreateMp,
+  NpcHp,
+  NpcList,
+  NpcMp,
+  NpcUpdate,
+  NpcUpdateHp,
   Problem,
   RealtimeToken,
   Relationship,

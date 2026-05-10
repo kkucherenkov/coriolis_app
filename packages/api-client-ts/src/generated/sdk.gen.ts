@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddCharacterItemData, AddCharacterItemErrors, AddCharacterItemResponses, AddCharacterTalentData, AddCharacterTalentErrors, AddCharacterTalentResponses, AddShipModuleData, AddShipModuleErrors, AddShipModuleResponses, AdjustDpData, AdjustDpErrors, AdjustDpResponses, AssignCharacterToSessionData, AssignCharacterToSessionErrors, AssignCharacterToSessionResponses, AssignCrewData, AssignCrewErrors, AssignCrewResponses, CreateCharacterData, CreateCharacterErrors, CreateCharacterResponses, CreateGameSessionData, CreateGameSessionErrors, CreateGameSessionResponses, CreateRollData, CreateRollErrors, CreateRollResponses, CreateShareLinkData, CreateShareLinkErrors, CreateShareLinkResponses, CreateShipData, CreateShipErrors, CreateShipResponses, DeleteCharacterData, DeleteCharacterErrors, DeleteCharacterResponses, DeleteGameSessionData, DeleteGameSessionErrors, DeleteGameSessionResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteShipData, DeleteShipErrors, DeleteShipModuleData, DeleteShipModuleErrors, DeleteShipModuleResponses, DeleteShipResponses, DeleteTalentData, DeleteTalentErrors, DeleteTalentResponses, DuplicateCharacterData, DuplicateCharacterErrors, DuplicateCharacterResponses, DuplicateShipData, DuplicateShipErrors, DuplicateShipResponses, ExportCharacterData, ExportCharacterErrors, ExportCharacterResponses, ExportShipData, ExportShipErrors, ExportShipResponses, GetCharacterData, GetCharacterErrors, GetCharacterOgImageData, GetCharacterOgImageErrors, GetCharacterOgImageResponses, GetCharacterResponses, GetGameSessionData, GetGameSessionErrors, GetGameSessionResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetMeData, GetMeErrors, GetMeResponses, GetPublicCharacterData, GetPublicCharacterErrors, GetPublicCharacterResponses, GetShipData, GetShipErrors, GetShipResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, ListCharactersData, ListCharactersErrors, ListCharactersResponses, ListDpEventsData, ListDpEventsErrors, ListDpEventsResponses, ListGameSessionsData, ListGameSessionsErrors, ListGameSessionsResponses, ListRollsData, ListRollsErrors, ListRollsResponses, ListShareLinksData, ListShareLinksErrors, ListShareLinksResponses, ListShipsData, ListShipsErrors, ListShipsResponses, PushRollData, PushRollErrors, PushRollResponses, RevokeShareLinkData, RevokeShareLinkErrors, RevokeShareLinkResponses, UnassignCharacterFromSessionData, UnassignCharacterFromSessionErrors, UnassignCharacterFromSessionResponses, UnassignCrewData, UnassignCrewErrors, UnassignCrewResponses, UpdateCharacterData, UpdateCharacterErrors, UpdateCharacterResponses, UpdateGameSessionData, UpdateGameSessionErrors, UpdateGameSessionResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses, UpdateShipData, UpdateShipErrors, UpdateShipModuleData, UpdateShipModuleErrors, UpdateShipModuleResponses, UpdateShipResponses, UpdateTalentData, UpdateTalentErrors, UpdateTalentResponses } from './types.gen';
+import type { AddCharacterItemData, AddCharacterItemErrors, AddCharacterItemResponses, AddCharacterTalentData, AddCharacterTalentErrors, AddCharacterTalentResponses, AddShipModuleData, AddShipModuleErrors, AddShipModuleResponses, AdjustDpData, AdjustDpErrors, AdjustDpResponses, AssignCharacterToSessionData, AssignCharacterToSessionErrors, AssignCharacterToSessionResponses, AssignCrewData, AssignCrewErrors, AssignCrewResponses, CreateCharacterData, CreateCharacterErrors, CreateCharacterResponses, CreateGameSessionData, CreateGameSessionErrors, CreateGameSessionResponses, CreateNpcData, CreateNpcErrors, CreateNpcResponses, CreateRollData, CreateRollErrors, CreateRollResponses, CreateShareLinkData, CreateShareLinkErrors, CreateShareLinkResponses, CreateShipData, CreateShipErrors, CreateShipResponses, DeleteCharacterData, DeleteCharacterErrors, DeleteCharacterResponses, DeleteGameSessionData, DeleteGameSessionErrors, DeleteGameSessionResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteNpcData, DeleteNpcErrors, DeleteNpcResponses, DeleteShipData, DeleteShipErrors, DeleteShipModuleData, DeleteShipModuleErrors, DeleteShipModuleResponses, DeleteShipResponses, DeleteTalentData, DeleteTalentErrors, DeleteTalentResponses, DuplicateCharacterData, DuplicateCharacterErrors, DuplicateCharacterResponses, DuplicateNpcData, DuplicateNpcErrors, DuplicateNpcResponses, DuplicateShipData, DuplicateShipErrors, DuplicateShipResponses, ExportCharacterData, ExportCharacterErrors, ExportCharacterResponses, ExportShipData, ExportShipErrors, ExportShipResponses, GetCharacterData, GetCharacterErrors, GetCharacterOgImageData, GetCharacterOgImageErrors, GetCharacterOgImageResponses, GetCharacterResponses, GetGameSessionData, GetGameSessionErrors, GetGameSessionResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetMeData, GetMeErrors, GetMeResponses, GetNpcData, GetNpcErrors, GetNpcResponses, GetPublicCharacterData, GetPublicCharacterErrors, GetPublicCharacterResponses, GetShipData, GetShipErrors, GetShipResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, ListCharactersData, ListCharactersErrors, ListCharactersResponses, ListDpEventsData, ListDpEventsErrors, ListDpEventsResponses, ListGameSessionsData, ListGameSessionsErrors, ListGameSessionsResponses, ListNpcsData, ListNpcsErrors, ListNpcsResponses, ListRollsData, ListRollsErrors, ListRollsResponses, ListShareLinksData, ListShareLinksErrors, ListShareLinksResponses, ListShipsData, ListShipsErrors, ListShipsResponses, PushRollData, PushRollErrors, PushRollResponses, RevokeShareLinkData, RevokeShareLinkErrors, RevokeShareLinkResponses, UnassignCharacterFromSessionData, UnassignCharacterFromSessionErrors, UnassignCharacterFromSessionResponses, UnassignCrewData, UnassignCrewErrors, UnassignCrewResponses, UpdateCharacterData, UpdateCharacterErrors, UpdateCharacterResponses, UpdateGameSessionData, UpdateGameSessionErrors, UpdateGameSessionResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses, UpdateNpcData, UpdateNpcErrors, UpdateNpcResponses, UpdateShipData, UpdateShipErrors, UpdateShipModuleData, UpdateShipModuleErrors, UpdateShipModuleResponses, UpdateShipResponses, UpdateTalentData, UpdateTalentErrors, UpdateTalentResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -590,6 +590,137 @@ export const updateMe = <ThrowOnError extends boolean = false>(options: Options<
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * List the authenticated user's NPCs
+ *
+ * Returns a cursor-paginated list of NPCs owned by the authenticated
+ * user. Pass `cursor` from a previous response's `nextCursor` to
+ * retrieve the following page. Results are ordered newest-first by
+ * `createdAt`. Optionally filter by `tag` (exact match against any
+ * element of the NPC's `tags` array).
+ *
+ */
+export const listNpcs = <ThrowOnError extends boolean = false>(options?: Options<ListNpcsData, ThrowOnError>) => (options?.client ?? client).get<ListNpcsResponses, ListNpcsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/npcs',
+    ...options
+});
+
+/**
+ * Create a new NPC
+ *
+ * Creates an NPC owned by the authenticated user. Only `name` is
+ * required; all other fields default to playable stubs so a quick
+ * encounter-filler can be created with a single call. Server assigns
+ * `id`, `ownerId`, `createdAt`, `updatedAt`.
+ *
+ * Default seeds applied by the server when fields are omitted:
+ * - `attributes` — all four attributes set to 2
+ * - `skills` — all 16 skills set to 0
+ * - `hp` — `{ current: 4, max: 4 }`
+ * - `mp` — `{ current: 4, max: 4 }`
+ * - `armor` — empty array
+ * - `weapons` — empty array
+ * - `tags` — empty array
+ * - `signature` — 0
+ * - `keySkillModifier` — 0
+ *
+ */
+export const createNpc = <ThrowOnError extends boolean = false>(options: Options<CreateNpcData, ThrowOnError>) => (options.client ?? client).post<CreateNpcResponses, CreateNpcErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/npcs',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete an NPC
+ *
+ * Permanently deletes an NPC. This action is irreversible. NPCs
+ * referenced by active encounters are rejected with 409
+ * `NPC_IN_USE` — remove the combatant from the encounter first.
+ *
+ */
+export const deleteNpc = <ThrowOnError extends boolean = false>(options: Options<DeleteNpcData, ThrowOnError>) => (options.client ?? client).delete<DeleteNpcResponses, DeleteNpcErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/npcs/{id}',
+    ...options
+});
+
+/**
+ * Get an NPC by ID
+ *
+ * Returns the full Npc DTO. Returns 404 if the NPC does not exist and
+ * 403 if it is owned by a different user.
+ *
+ */
+export const getNpc = <ThrowOnError extends boolean = false>(options: Options<GetNpcData, ThrowOnError>) => (options.client ?? client).get<GetNpcResponses, GetNpcErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/npcs/{id}',
+    ...options
+});
+
+/**
+ * Partially update an NPC
+ *
+ * Applies PATCH semantics — omitted fields are left unchanged.
+ * Read-only fields (`id`, `ownerId`, `createdAt`, `updatedAt`) are
+ * rejected with 400 if included.
+ *
+ */
+export const updateNpc = <ThrowOnError extends boolean = false>(options: Options<UpdateNpcData, ThrowOnError>) => (options.client ?? client).patch<UpdateNpcResponses, UpdateNpcErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/npcs/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Duplicate an NPC
+ *
+ * Creates a deep copy of the NPC (attributes, skills, hp, mp, armor,
+ * weapons, tags) and assigns it to the authenticated user. The copy
+ * receives a new `id` and a name suffix: "(copy)" for the first
+ * duplicate, "(copy 2)" for the second, and so on. The source NPC
+ * must be owned by the caller.
+ *
+ */
+export const duplicateNpc = <ThrowOnError extends boolean = false>(options: Options<DuplicateNpcData, ThrowOnError>) => (options.client ?? client).post<DuplicateNpcResponses, DuplicateNpcErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/npcs/{id}/duplicate',
+    ...options
 });
 
 /**
