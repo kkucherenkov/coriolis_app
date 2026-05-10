@@ -1724,6 +1724,21 @@ export interface components {
             /** @description Feature tags (e.g. "Vacuum Sealed", "Exo-Skeleton") */
             features: string[];
             equipped: boolean;
+            /**
+             * @description Extra encumbrance slots this armor grants its wearer when
+             *     equipped (ST3001 ТАБЛИЦА 6.14 «Дополнительные свойства»
+             *     column). The wearer's encumbrance limit becomes
+             *     `STR × 2 + sum(equipped armor extraSlotCount)` per the
+             *     rules-engine. Canonical values from the printed table:
+             *     most armors 0; Тяжёлый экзоскафандр / Лёгкая броня /
+             *     Тяжёлая броня 1; Экзодоспех 2; Тяжёлый экзодоспех 5.
+             *     The 0..6 envelope leaves one point of headroom for
+             *     GM-defined exotics. Stacks across multiple equipped
+             *     pieces (e.g. armour + tactical shield), but only when
+             *     each piece carries the property — most shields are 0.
+             * @default 0
+             */
+            extraSlotCount: number;
         } & {
             /**
              * @description discriminator enum property added by openapi-typescript
@@ -1849,13 +1864,14 @@ export interface components {
          * @description Create payload for an ARMOR item. No `id` — server-assigned.
          * @example {
          *       "type": "ARMOR",
-         *       "name": "Coriolis Guard Suit",
+         *       "name": "Лёгкая броня",
          *       "armorRating": 3,
          *       "weight": 1,
          *       "features": [
          *         "Vacuum Sealed"
          *       ],
-         *       "equipped": false
+         *       "equipped": false,
+         *       "extraSlotCount": 1
          *     }
          */
         ItemArmorCreate: {
@@ -1873,6 +1889,13 @@ export interface components {
             features: string[];
             /** @default false */
             equipped: boolean;
+            /**
+             * @description Extra encumbrance slots this armor grants its wearer when
+             *     equipped (ST3001 ТАБЛИЦА 6.14 «Дополнительные свойства»
+             *     column). Omit to default to 0.
+             * @default 0
+             */
+            extraSlotCount: number;
         };
         /**
          * @description Create payload for a GEAR item. No `id` — server-assigned.
@@ -2011,6 +2034,12 @@ export interface components {
             weight?: number;
             features?: string[];
             equipped?: boolean;
+            /**
+             * @description Extra encumbrance slots this armor grants its wearer when
+             *     equipped (ST3001 ТАБЛИЦА 6.14 «Дополнительные свойства»
+             *     column). Omit to leave unchanged.
+             */
+            extraSlotCount?: number;
         };
         /**
          * @description PATCH payload for a GEAR item. All fields optional.
