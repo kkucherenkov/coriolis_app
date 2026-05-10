@@ -57,11 +57,17 @@
         doesn't use `_prisma_migrations` yet); migration SQL
         committed as the canonical artefact. 434/434 backend tests
         pass.
-  - [ ] Block 2 — `ShipsModule` core CRUD: list / get / create /
+  - [x] Block 2 — `ShipsModule` core CRUD: list / get / create /
         update / delete commands and queries, controller mounting
         `/api/v1/ships*`. Class-table seed for ST3001 base stats
         (lives in `rules-engine` so the data is reusable from the
         web class picker later). Cursor pagination on list.
+        Commit `400b186`. All five CRUD commands + two 501 stubs
+        (duplicate, export), SessionGuard-protected controller,
+        ShipRepo using single `include: { modules, crew }` query,
+        ship-class-table with all 20 classes. Ran `prisma generate`
+        to pick up Block 1 schema. 463/463 tests pass (+29 new
+        specs); lint clean. Next: Block 3 — module sub-resource.
   - [ ] Block 3 — Module sub-resource: `addModule`, `updateModule`,
         `deleteModule` commands. Discriminator-aware request body
         validation (HOLD vs WEAPON vs TORPEDO vs SENSOR vs OTHER —
