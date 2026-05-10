@@ -2,6 +2,123 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-10-007 — Phase 6 backend: NPC + Encounter + Combatant + initiative + combat realtime
+
+- Completed: 2026-05-10
+- Owner: claude
+- Spec: T-2026-05-10-006 locked the wire contract
+  (`packages/specs/openapi/openapi.yaml` v0.16.0 +
+  `packages/specs/asyncapi/centrifugo.yaml` v0.9.0). This task
+  delivered the matching backend modules.
+- Goal (delivered): NestJS implementation behind every Phase 6
+  path so the generated TS + Dart clients are live. Standard
+  CQRS layout per existing modules (`apps/backend/src/modules/`
+  `ships`, `.../game-sessions`): `domain` ports + errors,
+  `infra` Prisma repo, `commands` + `queries` handlers,
+  controller(s), `module.ts`. Centrifugo `combat.updated`
+  publish is wired from the same unit that mutates encounter /
+  combatant state — atomic with the DB transaction (publish
+  _after_ commit, before HTTP 200, mirrors `update-dp.handler`
+  precedent).
+- Test count: 511 → 728 (+217 across all 5 blocks, exceeding
+  the ≥80 budget). 81 spec files green.
+- Sub-blocks (delivered):
+  - [x] Block 1 — NPC module + Prisma migration. commit 34a1fca.
+        Files: `apps/backend/src/modules/npcs/` (domain, infra,
+        commands ×4, queries ×2, controller, module),
+        `apps/backend/prisma/migrations/20260510000003_npcs/`.
+        Test delta: +50 (511 → 561).
+  - [x] Block 2 — Encounter module + state machine. commit 87688a3.
+        Files: `apps/backend/src/modules/encounters/` (domain,
+        infra, commands ×3, queries ×2, controllers ×2, module),
+        `apps/backend/prisma/migrations/20260510000004_encounters/`.
+        Design call: IGameSessionAccess injected as a DI port
+        (GAME_SESSION_ACCESS token) with a Prisma adapter (renamed
+        `.adapter.ts` to avoid the `*.service.ts` lint rule that
+        bans direct PrismaService injection). All endpoints
+        GM-owner-only per spec.
+        Test delta: +53 (561 → 614).
+  - [x] Block 3 — Combatant sub-resource + snapshot semantics.
+        commit 0655d91.
+        Files: `apps/backend/src/modules/combatants/` (domain,
+        infra, commands ×3 + specs ×3, queries ×1 + spec ×1,
+        controllers ×2, module),
+        `apps/backend/prisma/migrations/20260510000005_combatants/`.
+        Test delta: +35 (632 → 667).
+        Design calls: (1) `hasCombatants` flows through
+        `ICombatantCount` port — `CombatantRepo` implements both
+        `ICombatantRepo` and `ICombatantCount`, exported under
+        separate tokens, imported into `EncountersModule` via
+        `forwardRef(() => CombatantsModule)` to break the circular
+        dep. (2) Deleting the active combatant is allowed in
+        `setup` status only (spec); the `onDelete:SetNull` on
+        `Encounter.activeCombatant` cascades the FK to null
+        automatically in the same Prisma call. (3) Spec overrides
+        prose: `hpCurrent` has no upper cap — task prose
+        mentioned `COMBATANT_HP_OVER_MAX` but that code does not
+        appear anywhere in the spec, so it was not implemented.
+        ⚠️ Librarian audit (2026-05-10) flagged that the canon
+        rule «HP не может опуститься ниже нуля» (ГЛАВА 5 line 189)
+        contradicts the spec's "may go below 0" wording — soft
+        mismatch tracked in T-2026-05-10-010 Block I.
+  - [x] Block 4 — Initiative + turn ops. commit 022309c.
+        Files: `apps/backend/src/modules/encounters/commands/`
+        (roll-initiative ×3, reorder-initiative ×3,
+        advance-turn ×3), `domain/initiative.{ts,spec.ts}`,
+        `infra/initiative.repo.ts` (atomic `$transaction`
+        adapter), updates to `encounter.errors.ts` (+5 errors:
+        `ENCOUNTER_INVALID_STATUS`,
+        `ENCOUNTER_INITIATIVE_NOT_ROLLED`,
+        `INITIATIVE_DUPLICATE`,
+        `INITIATIVE_UNKNOWN_COMBATANT`,
+        `INITIATIVE_INCOMPLETE`),
+        `encounter.ports.ts` (`InitiativeRollResult`,
+        `TurnAdvanceResult`, `IInitiativeRepo` port),
+        `encounters.controller.ts` (+3 routes),
+        `encounters.module.ts` (wire-up), and
+        `combatants/{domain,infra}/combatant.{ports,repo}.ts`
+        (`listByEncounterWithSnapshot` for snapshot-aware
+        tie-break load).
+        Test delta: +34 (667 → 701).
+        Design calls: (1) `IInitiativeRepo` is a separate port
+        (`INITIATIVE_REPO` token) rather than extending
+        `IEncounterRepo`, so the atomic `$transaction` stays
+        in infra without leaking Prisma into command handlers.
+        (2) Spec overrides task prose: the reorder error codes
+        are not `ENCOUNTER_REORDER_MISMATCH` (a single umbrella
+        code mentioned in the task) but the three granular codes
+        shipped in T-006 (`INITIATIVE_DUPLICATE` /
+        `INITIATIVE_UNKNOWN_COMBATANT` / `INITIATIVE_INCOMPLETE`).
+        (3) Tie-break — agility — pulls from
+        `pcSnapshot.attributes.agility` and
+        `npcSnapshot.attributes.agility` snapshotted at add-time
+        (Block 3); no Character / NPC join at roll-time.
+        ⚠️ Librarian audit (2026-05-10) flagged that ST3001 uses
+        d6 for initiative (not d10) and re-rolls d6 for ties (not
+        agility-desc). Both are leaks from Year-Zero / Forbidden
+        Lands and are tracked in T-2026-05-10-010 Block A.
+  - [x] Block 5 — Centrifugo `combat.updated` publisher.
+        commit a9b0298.
+        Files: `apps/backend/src/modules/encounters/infra/`
+        `combat.publisher.ts` + `combat.publisher.spec.ts`,
+        `apps/backend/test/integration/combat-publisher.e2e-spec.ts`,
+        updated `encounters.module.ts` + all 9 mutation handlers
+        + their specs.
+        Design calls: (1) delete-encounter intentionally skips
+        publish — encounter is gone after delete; clients
+        discover via 404 on next fetch. Tombstone deferred
+        until an `encounter.deleted` AsyncAPI event is added.
+        (2) For roll / reorder / advance, encounter is re-fetched
+        post-commit to get the updated status / activeCombatantId
+        / round for the snapshot. (3) `COMBAT_PUBLISHER` exported
+        from `EncountersModule`, flows into `CombatantsModule`
+        via the existing forwardRef — no additional imports
+        required.
+        Test delta: +27 (701 → 728).
+- Status: done
+
+---
+
 ## T-2026-05-10-009 — Wizard step-5 skills: collapse fake "general/advanced" pool split
 
 - Completed: 2026-05-10
