@@ -26,6 +26,17 @@ export type Roll = {
      */
     gameSessionId?: string | null;
     /**
+     * What kind of roll this represents (see RollKind for the full
+     * taxonomy). Set at create-time and immutable. Drives the
+     * push-eligibility gate — only `skill` rolls accept
+     * POST `/rolls/{id}/push`.
+     *
+     * The server always emits `kind`; clients SHOULD treat absence
+     * as `skill` for backward compatibility with ≤ 1.2 servers.
+     *
+     */
+    kind: RollKind;
+    /**
      * Human-readable roll label, e.g. "Pilot · Evade"
      */
     label: string;
@@ -63,6 +74,13 @@ export type Roll = {
  */
 export type RollCreate = {
     /**
+     * What kind of roll to create. Defaults to `skill` when omitted
+     * (back-compat for callers from before T-2026-05-10-015 landed).
+     * Once persisted, the kind is immutable.
+     *
+     */
+    kind?: RollKind;
+    /**
      * Human-readable roll label, e.g. "Pilot · Evade"
      */
     label: string;
@@ -92,6 +110,28 @@ export type RollCreate = {
 export type RollList = {
     items: Array<Roll>;
 };
+
+/**
+ * Discriminator on roll payloads — what *kind* of dice roll the
+ * result represents. Drives the push-eligibility gate per ST3001
+ * ГЛАВА 3 §«Вознесение молитв» («Молитву можно возносить только
+ * при проверках навыков»). Only `skill` rolls can be pushed; the
+ * backend rejects push attempts on the other four kinds with
+ * `PUSH_NOT_ALLOWED_ON_NON_SKILL_ROLL`.
+ *
+ * - `skill` — standard skill / attribute check. Push-eligible.
+ * - `save` — armor save / damage-resist roll (ГЛАВА 5 «Урон»).
+ * - `trauma` — critical-injury / trauma roll (ГЛАВА 5
+ * «Травмирующие атаки»).
+ * - `initiative` — combat initiative d6 (ГЛАВА 5 «Раунды,
+ * ходы и инициатива»). The bounded reroll loop landed in
+ * T-010 Block A is the canonical mechanic; this is not a
+ * push.
+ * - `darkness` — GM darkness pool / NPC reaction (ГЛАВА 15
+ * «Принципы игры»). GM-side narrative tool; not pushed.
+ *
+ */
+export type RollKind = 'skill' | 'save' | 'trauma' | 'initiative' | 'darkness';
 
 /**
  * Severity tier of a critical injury per Coriolis core rules.
@@ -2857,6 +2897,17 @@ export type RollWritable = {
      *
      */
     gameSessionId?: string | null;
+    /**
+     * What kind of roll this represents (see RollKind for the full
+     * taxonomy). Set at create-time and immutable. Drives the
+     * push-eligibility gate — only `skill` rolls accept
+     * POST `/rolls/{id}/push`.
+     *
+     * The server always emits `kind`; clients SHOULD treat absence
+     * as `skill` for backward compatibility with ≤ 1.2 servers.
+     *
+     */
+    kind: RollKind;
     /**
      * Human-readable roll label, e.g. "Pilot · Evade"
      */
@@ -6217,6 +6268,10 @@ export type PushRollData = {
 };
 
 export type PushRollErrors = {
+    /**
+     * Push not allowed — roll kind is not `skill`
+     */
+    400: Problem;
     /**
      * No active session
      */

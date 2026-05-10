@@ -1454,7 +1454,9 @@ export const createRoll = <ThrowOnError extends boolean = false>(options: Option
  * Push (reroll) a roll
  *
  * Rerolls all non-6 dice exactly once. After a push the roll cannot be
- * pushed again (`pushed` becomes `true`). Returns 422 with code
+ * pushed again (`pushed` becomes `true`). Returns 400 with code
+ * `PUSH_NOT_ALLOWED_ON_NON_SKILL_ROLL` if the roll's `kind` is not
+ * `skill` (ST3001 ГЛАВА 3 §«Вознесение молитв»). Returns 422 with code
  * `ROLL_NOT_PUSHABLE` if:
  * - The roll has already been pushed.
  * - The owning character has the Exhausted condition (PRD §10).
