@@ -1,10 +1,15 @@
 /**
- * CombatTracker.spec.ts — logic unit tests (T-2026-05-10-008 Block 4).
+ * CombatTracker.spec.ts — logic unit tests (T-2026-05-10-008 Block 4 + 5).
  *
  * Follows the same no-mount pattern as EncounterPanel.spec.ts: tests
  * the pure-logic functions extracted from the SFC without a Nuxt runtime.
- * Mount-level interaction tests are deferred to the Playwright smoke spec
- * scheduled for Block 5.
+ * Mount-level interaction tests are deferred to the Playwright smoke spec.
+ *
+ * Block 5 additions:
+ *   - Initiative button enabled/disabled guard logic
+ *   - Drag-reorder dispatch guard (setup vs active)
+ *   - Realtime snapshot reconciliation (combatSnapshot replace-wholesale)
+ *   - rollInitiative / advanceTurn API error handling
  */
 
 import { describe, it, expect, vi } from 'vitest';
@@ -338,6 +343,215 @@ describe('CombatTracker — adds combatant via SDK', () => {
     const mock = vi.fn().mockResolvedValue({ data: undefined, error: problem });
     await expect(addCombatantViaApi(mock, 'enc-001', 'npc', 'npc-001')).rejects.toMatchObject({
       detail: 'COMBATANT_DUPLICATE',
+    });
+  });
+});
+
+// ── Block 5: initiative button guard logic ─────────────────────────────────────
+
+type EncounterStatus = 'setup' | 'active' | 'ended';
+
+function canRollInitiative(status: EncounterStatus, combatantCount: number): boolean {
+  return status === 'setup' && combatantCount > 0;
+}
+
+function canAdvanceTurn(status: EncounterStatus, combatantCount: number): boolean {
+  return status === 'active' && combatantCount > 0;
+}
+
+function canDispatchReorder(status: EncounterStatus): boolean {
+  return status === 'active';
+}
+
+describe('CombatTracker — Roll Initiative button guard', () => {
+  it('enabled when status=setup and combatants.length > 0', () => {
+    expect(canRollInitiative('setup', 2)).toBe(true);
+  });
+
+  it('disabled when status=setup but no combatants', () => {
+    expect(canRollInitiative('setup', 0)).toBe(false);
+  });
+
+  it('disabled when status=active', () => {
+    expect(canRollInitiative('active', 3)).toBe(false);
+  });
+
+  it('disabled when status=ended', () => {
+    expect(canRollInitiative('ended', 3)).toBe(false);
+  });
+});
+
+describe('CombatTracker — Advance Turn button guard', () => {
+  it('enabled when status=active and combatants.length > 0', () => {
+    expect(canAdvanceTurn('active', 2)).toBe(true);
+  });
+
+  it('disabled when status=active but no combatants', () => {
+    expect(canAdvanceTurn('active', 0)).toBe(false);
+  });
+
+  it('disabled when status=setup', () => {
+    expect(canAdvanceTurn('setup', 3)).toBe(false);
+  });
+
+  it('disabled when status=ended', () => {
+    expect(canAdvanceTurn('ended', 3)).toBe(false);
+  });
+});
+
+describe('CombatTracker — drag reorder dispatch guard', () => {
+  it('dispatches reorder when status=active', () => {
+    expect(canDispatchReorder('active')).toBe(true);
+  });
+
+  it('does NOT dispatch reorder when status=setup', () => {
+    expect(canDispatchReorder('setup')).toBe(false);
+  });
+
+  it('does NOT dispatch reorder when status=ended', () => {
+    expect(canDispatchReorder('ended')).toBe(false);
+  });
+});
+
+// ── Block 5: realtime snapshot reconciliation ──────────────────────────────────
+
+describe('CombatTracker — combatSnapshot replace-wholesale', () => {
+  it('replaces local list from snapshot matching encounterId', () => {
+    const encounterId = 'enc-001';
+    let localCombatants: Combatant[] = [makeCombatant({ id: 'old-1' })];
+
+    const snapshot = {
+      encounterId,
+      combatants: [
+        makeCombatant({ id: 'new-1', turnOrder: 0, initiative: 6 }),
+        makeCombatant({ id: 'new-2', turnOrder: 1, initiative: 4 }),
+      ],
+    };
+
+    if (snapshot.encounterId === encounterId) {
+      localCombatants = [...snapshot.combatants];
+    }
+
+    expect(localCombatants).toHaveLength(2);
+    expect(localCombatants[0]!.id).toBe('new-1');
+    expect(localCombatants[1]!.id).toBe('new-2');
+  });
+
+  it('ignores snapshot for a different encounterId', () => {
+    const encounterId = 'enc-001';
+    const localCombatants: Combatant[] = [makeCombatant({ id: 'original' })];
+    const snapshot = { encounterId: 'enc-999', combatants: [makeCombatant({ id: 'other' })] };
+
+    const result =
+      snapshot.encounterId === encounterId ? [...snapshot.combatants] : localCombatants;
+
+    expect(result).toHaveLength(1);
+    expect(result[0]!.id).toBe('original');
+  });
+
+  it('null snapshot leaves local state unchanged', () => {
+    const localCombatants: Combatant[] = [makeCombatant({ id: 'stable' })];
+    const snapshot = null;
+    const result = snapshot ? [...(snapshot as { combatants: Combatant[] }).combatants] : localCombatants;
+    expect(result[0]!.id).toBe('stable');
+  });
+});
+
+// ── Block 5: rollInitiative / advanceTurn API mock ────────────────────────────
+
+interface MockResult<T> {
+  data: T | undefined;
+  error: import('@app/api-client-ts').Problem | undefined;
+}
+
+async function rollInitiativeViaApi(
+  mockFn: (opts: unknown) => Promise<MockResult<{ combatants: Combatant[]; round: number }>>,
+  encounterId: string,
+): Promise<{ combatants: Combatant[]; round: number }> {
+  const res = await mockFn({ path: { id: encounterId } });
+  if (res.error) throw res.error;
+  return res.data!;
+}
+
+async function advanceTurnViaApi(
+  mockFn: (opts: unknown) => Promise<MockResult<{ activeCombatantId: string; round: number; isNewRound: boolean }>>,
+  encounterId: string,
+): Promise<{ activeCombatantId: string; round: number; isNewRound: boolean }> {
+  const res = await mockFn({ path: { id: encounterId } });
+  if (res.error) throw res.error;
+  return res.data!;
+}
+
+describe('CombatTracker — rollInitiative via SDK', () => {
+  it('returns combatants in initiative order and round=1', async () => {
+    const combatants = [
+      makeCombatant({ id: 'c1', turnOrder: 0, initiative: 6 }),
+      makeCombatant({ id: 'c2', turnOrder: 1, initiative: 3 }),
+    ];
+    const mock = vi.fn().mockResolvedValue({ data: { combatants, round: 1 }, error: undefined });
+    const result = await rollInitiativeViaApi(mock, 'enc-001');
+    expect(result.round).toBe(1);
+    expect(result.combatants[0]!.initiative).toBe(6);
+  });
+
+  it('throws ENCOUNTER_NO_COMBATANTS when encounter is empty', async () => {
+    const problem = {
+      type: 'about:blank',
+      title: 'Unprocessable',
+      status: 422,
+      detail: 'ENCOUNTER_NO_COMBATANTS',
+    };
+    const mock = vi.fn().mockResolvedValue({ data: undefined, error: problem });
+    await expect(rollInitiativeViaApi(mock, 'enc-001')).rejects.toMatchObject({
+      detail: 'ENCOUNTER_NO_COMBATANTS',
+    });
+  });
+
+  it('throws ENCOUNTER_INVALID_TRANSITION when not in setup', async () => {
+    const problem = {
+      type: 'about:blank',
+      title: 'Unprocessable',
+      status: 422,
+      detail: 'ENCOUNTER_INVALID_TRANSITION',
+    };
+    const mock = vi.fn().mockResolvedValue({ data: undefined, error: problem });
+    await expect(rollInitiativeViaApi(mock, 'enc-001')).rejects.toMatchObject({
+      detail: 'ENCOUNTER_INVALID_TRANSITION',
+    });
+  });
+});
+
+describe('CombatTracker — advanceTurn via SDK', () => {
+  it('returns activeCombatantId and isNewRound=false within a round', async () => {
+    const mock = vi.fn().mockResolvedValue({
+      data: { activeCombatantId: 'c2', round: 1, isNewRound: false },
+      error: undefined,
+    });
+    const result = await advanceTurnViaApi(mock, 'enc-001');
+    expect(result.activeCombatantId).toBe('c2');
+    expect(result.isNewRound).toBe(false);
+  });
+
+  it('returns isNewRound=true when wrap-around occurs', async () => {
+    const mock = vi.fn().mockResolvedValue({
+      data: { activeCombatantId: 'c1', round: 2, isNewRound: true },
+      error: undefined,
+    });
+    const result = await advanceTurnViaApi(mock, 'enc-001');
+    expect(result.round).toBe(2);
+    expect(result.isNewRound).toBe(true);
+  });
+
+  it('throws ENCOUNTER_INVALID_STATUS when encounter is not active', async () => {
+    const problem = {
+      type: 'about:blank',
+      title: 'Unprocessable',
+      status: 422,
+      detail: 'ENCOUNTER_INVALID_STATUS',
+    };
+    const mock = vi.fn().mockResolvedValue({ data: undefined, error: problem });
+    await expect(advanceTurnViaApi(mock, 'enc-001')).rejects.toMatchObject({
+      detail: 'ENCOUNTER_INVALID_STATUS',
     });
   });
 });

@@ -26,6 +26,13 @@
     sessionId: string;
     /** IDs of Characters assigned to this session — forwarded to CombatTracker for the PC picker. */
     sessionCharacterIds?: string[];
+    /** True when the current user is the session GM. Forwarded to CombatTracker for GM-only buttons. */
+    isGm?: boolean;
+    /**
+     * Latest combat.updated snapshot from useSessionRealtime. When non-null and
+     * matching an open encounter, CombatTracker replaces its local state wholesale.
+     */
+    combatSnapshot: import('~/composables/useSessionRealtime').CombatUpdatedPayload | null;
   }>();
 
   const { t } = useI18n({ useScope: 'local' });
@@ -158,6 +165,23 @@
     } finally {
       createBusy.value = false;
     }
+  }
+
+  // ── Realtime encounter status patch ────────────────────────────────────────
+  // Called by CombatTracker's encounterStatusChanged emit when a combat.updated
+  // snapshot changes the encounter's status or activeCombatantId. We patch the
+  // local encounters list in-place so the status badge and setup hint update
+  // without a full panel refetch.
+  function onEncounterStatusChanged(
+    encounterId: string,
+    status: import('@app/api-client-ts').EncounterStatus,
+    activeCombatantId: string | null,
+  ): void {
+    const idx = encounters.value.findIndex((e) => e.id === encounterId);
+    if (idx === -1) return;
+    const existing = encounters.value[idx];
+    if (!existing) return;
+    encounters.value[idx] = { ...existing, status, activeCombatantId };
   }
 
   // ── Delete ──────────────────────────────────────────────────────────────────
@@ -444,14 +468,18 @@
           </AppButton>
         </div>
 
-        <!-- Inline CombatTracker expansion (Block 4) -->
+        <!-- Inline CombatTracker expansion (Block 5) -->
         <CombatTracker
           v-if="openEncounterId === encounter.id"
           class="encounter-panel__tracker"
           :encounter-id="encounter.id"
           :session-character-ids="sessionCharacterIds ?? []"
           :active-combatant-id="encounter.activeCombatantId"
+          :encounter-status="encounter.status"
+          :is-gm="isGm ?? false"
+          :combat-snapshot="combatSnapshot"
           data-testid="inline-combat-tracker"
+          @encounter-status-changed="onEncounterStatusChanged"
         />
       </li>
     </ul>

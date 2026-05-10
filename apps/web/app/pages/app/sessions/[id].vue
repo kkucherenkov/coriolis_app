@@ -12,6 +12,7 @@
     useSessionRealtime,
     type DpChangedPayload,
     type RollPushedPayload,
+    type CombatUpdatedPayload,
   } from '~/composables/useSessionRealtime';
   import type { GameSession } from '~/composables/useGameSessionsApi';
   import type { DpEvent, DpSource } from '~/composables/useDpApi';
@@ -88,6 +89,8 @@
   // to push DP / roll-pushed events into the visible state.
   const realtime = useSessionRealtime(sessionId.value);
   const recentRollPushed = ref<RollPushedPayload | null>(null);
+  // Last combat.updated snapshot forwarded to EncounterPanel → CombatTracker.
+  const lastCombatSnapshot = ref<CombatUpdatedPayload | null>(null);
 
   watch(
     () => realtime.lastDpChanged.value,
@@ -135,6 +138,16 @@
       globalThis.setTimeout(() => {
         if (recentRollPushed.value === payload) recentRollPushed.value = null;
       }, 5000);
+    },
+  );
+
+  watch(
+    () => realtime.lastCombatUpdated.value,
+    (payload: CombatUpdatedPayload | null) => {
+      if (!payload) return;
+      // Replace local snapshot reference — EncounterPanel and CombatTracker
+      // consume this via the combatSnapshot prop.
+      lastCombatSnapshot.value = payload;
     },
   );
 
@@ -663,12 +676,14 @@
         </ul>
       </AppCard>
 
-      <!-- Encounters (Block 3+4) — GM only; players see the combat state
-           read-only in Block 5 once the realtime tracker is wired. -->
+      <!-- Encounters (Block 5) — GM only; players see the combat state
+           read-only once a player-view encounter display is designed. -->
       <EncounterPanel
         v-if="isGm"
         :session-id="sessionId"
         :session-character-ids="session?.characterIds ?? []"
+        :is-gm="isGm"
+        :combat-snapshot="lastCombatSnapshot"
         data-testid="encounter-panel-section"
       />
     </template>

@@ -1,37 +1,67 @@
 <script setup lang="ts">
   /**
-   * CombatTracker — inline combat encounter widget (T-2026-05-10-008 Block 4).
+   * CombatTracker — inline combat encounter widget (T-2026-05-10-008 Block 5).
    *
    * Props:
    *   encounterId         — the encounter being tracked
    *   sessionCharacterIds — IDs of Characters assigned to the parent session.
    *                         The component fetches all of the current user's
    *                         characters and filters by this list for the PC picker.
+   *   encounterStatus     — current encounter lifecycle status forwarded from
+   *                         EncounterPanel; drives button enabled states.
+   *   isGm                — when true GM-only buttons (Roll Initiative, Advance
+   *                         Turn) are rendered.
+   *   combatSnapshot      — when non-null, the component replaces local combatant
+   *                         state wholesale from this realtime payload.
    *
-   * Block 4 scope: list, add (PC/NPC), remove, status-flag chips, drag handle.
-   * NO Roll Initiative / Advance Turn / reorder-dispatch — Block 5 adds those.
-   * Drag reorder reorders local state only (no backend PATCH in this block).
+   * Block 5 additions:
+   *   - Roll Initiative button (GM, setup → active)
+   *   - Advance Turn button (GM, active only)
+   *   - Drag-end dispatches reorderInitiative PATCH (optimistic + realtime reconcile)
+   *   - combatSnapshot prop replaces local state on combat.updated events
    */
 
-  import { ref, computed, onMounted } from 'vue';
+  import { ref, computed, onMounted, watch } from 'vue';
   import { AppButton, AppBadge, AppChip, AppInput, AppBanner } from '@app/ui';
   import { useCombatantsApi } from '~/composables/useCombatantsApi';
+  import { useEncountersApi } from '~/composables/useEncountersApi';
   import { useNpcsApi } from '~/composables/useNpcsApi';
   import { useCharactersApi } from '~/composables/useCharactersApi';
-  import type { Combatant } from '~/composables/useEncountersApi';
+  import type { Combatant, EncounterStatus } from '~/composables/useEncountersApi';
   import type { Npc } from '~/composables/useNpcsApi';
   import type { Character } from '@app/api-client-ts';
+  import type { CombatUpdatedPayload } from '~/composables/useSessionRealtime';
 
   const props = defineProps<{
     encounterId: string;
     sessionCharacterIds: string[];
     /** Id of the currently active combatant (from encounter.activeCombatantId) */
     activeCombatantId: string | null;
+    /** Lifecycle status of the encounter — drives initiative button states. */
+    encounterStatus: EncounterStatus;
+    /** True when the current user is the session GM. */
+    isGm: boolean;
+    /**
+     * When non-null, the component replaces local combatant state wholesale
+     * from this realtime snapshot. Parent sets this from useSessionRealtime
+     * .lastCombatUpdated filtered to the matching encounterId.
+     */
+    combatSnapshot: CombatUpdatedPayload | null;
+  }>();
+
+  const emit = defineEmits<{
+    /**
+     * Emitted when the realtime snapshot triggers an encounter status change
+     * (e.g. setup → active after rollInitiative). Parent (EncounterPanel)
+     * should patch its local encounter list from this value.
+     */
+    encounterStatusChanged: [encounterId: string, status: EncounterStatus, activeCombatantId: string | null];
   }>();
 
   const { t } = useI18n({ useScope: 'local' });
 
   const combatantsApi = useCombatantsApi();
+  const encountersApi = useEncountersApi();
   const npcsApi = useNpcsApi();
   const charactersApi = useCharactersApi();
 
@@ -72,8 +102,13 @@
     void loadCombatants();
   });
 
-  // ── Drag reorder (local-only in Block 4) ─────────────────────────────────────
+  // ── Drag reorder ──────────────────────────────────────────────────────────────
+  // Optimistic: local state is updated immediately on drag. On drag-end, the
+  // ordered IDs are PATCHed to the backend. Realtime reconciliation (from the
+  // combat.updated snapshot) is the source of truth on success; on error, the
+  // error banner shows and the list reverts on the next realtime push or reload.
   const dragFromIndex = ref<number | null>(null);
+  const reorderError = ref('');
 
   function onDragStart(index: number): void {
     dragFromIndex.value = index;
@@ -93,7 +128,79 @@
 
   function onDragEnd(): void {
     dragFromIndex.value = null;
-    // Block 5 will dispatch reorder to backend here
+    // Only dispatch when the encounter is active — reorderInitiative only works
+    // in active status (setup uses rollInitiative; ended is immutable).
+    if (props.encounterStatus !== 'active') return;
+    const orderedIds = combatants.value.map((c) => c.id);
+    void dispatchReorder(orderedIds);
+  }
+
+  async function dispatchReorder(orderedIds: string[]): Promise<void> {
+    reorderError.value = '';
+    try {
+      await combatantsApi.reorder(props.encounterId, orderedIds);
+      // Realtime combat.updated will arrive and reconcile state wholesale.
+    } catch (err) {
+      const problem = err as { detail?: string };
+      reorderError.value = problem.detail ?? t('errorReorder');
+    }
+  }
+
+  // ── Realtime snapshot reconciliation ─────────────────────────────────────────
+  // When combatSnapshot changes and matches this encounterId, replace local
+  // combatant state wholesale (no diff). This is the Block 5 reconcile path for
+  // rollInitiative, advanceTurn, and drag-reorder.
+  watch(
+    () => props.combatSnapshot,
+    (snapshot) => {
+      if (!snapshot || snapshot.encounterId !== props.encounterId) return;
+      combatants.value = [...snapshot.combatants];
+      listState.value = 'loaded';
+      // Bubble status change up so EncounterPanel can patch its encounter list.
+      emit('encounterStatusChanged', props.encounterId, snapshot.encounter.status, snapshot.encounter.activeCombatantId);
+    },
+  );
+
+  // ── Initiative actions (GM only) ──────────────────────────────────────────────
+  const initiativeBusy = ref(false);
+  const initiativeError = ref('');
+
+  /**
+   * Roll initiative — transitions the encounter from setup → active.
+   * Fires optimistically: the response is NOT used to update local state
+   * directly. Instead, the backend emits combat.updated via Centrifugo and
+   * the combatSnapshot watcher reconciles the list wholesale (no double-render).
+   */
+  async function doRollInitiative(): Promise<void> {
+    initiativeBusy.value = true;
+    initiativeError.value = '';
+    try {
+      await encountersApi.rollInitiative(props.encounterId);
+      // Realtime combat.updated arrives → combatSnapshot watcher reconciles.
+    } catch (err) {
+      const problem = err as { detail?: string };
+      initiativeError.value = problem.detail ?? t('errorRollInitiative');
+    } finally {
+      initiativeBusy.value = false;
+    }
+  }
+
+  /**
+   * Advance turn — moves activeCombatantId to the next combatant.
+   * Same optimistic pattern: realtime snapshot is the source of truth.
+   */
+  async function doAdvanceTurn(): Promise<void> {
+    initiativeBusy.value = true;
+    initiativeError.value = '';
+    try {
+      await encountersApi.advanceTurn(props.encounterId);
+      // Realtime combat.updated arrives → combatSnapshot watcher reconciles.
+    } catch (err) {
+      const problem = err as { detail?: string };
+      initiativeError.value = problem.detail ?? t('errorAdvanceTurn');
+    } finally {
+      initiativeBusy.value = false;
+    }
   }
 
   // ── Remove ────────────────────────────────────────────────────────────────────
@@ -322,11 +429,16 @@
     "orderLabel": "Order",
     "dragHandle": "Drag to reorder",
     "retryButton": "Retry",
+    "rollInitiativeButton": "Roll Initiative",
+    "advanceTurnButton": "Advance Turn",
     "errorLoad": "Couldn't load combatants.",
     "errorAdd": "Couldn't add combatant.",
     "errorRemove": "Couldn't remove combatant.",
     "errorLoadPcs": "Couldn't load characters.",
-    "errorLoadNpcs": "Couldn't load NPCs."
+    "errorLoadNpcs": "Couldn't load NPCs.",
+    "errorRollInitiative": "Couldn't roll initiative.",
+    "errorAdvanceTurn": "Couldn't advance turn.",
+    "errorReorder": "Couldn't save turn order."
   },
   "ru": {
     "heading": "Участники",
@@ -353,11 +465,16 @@
     "orderLabel": "Порядок",
     "dragHandle": "Перетащить для сортировки",
     "retryButton": "Повторить",
+    "rollInitiativeButton": "Бросить инициативу",
+    "advanceTurnButton": "Следующий ход",
     "errorLoad": "Не удалось загрузить участников.",
     "errorAdd": "Не удалось добавить участника.",
     "errorRemove": "Не удалось удалить участника.",
     "errorLoadPcs": "Не удалось загрузить персонажей.",
-    "errorLoadNpcs": "Не удалось загрузить НПС."
+    "errorLoadNpcs": "Не удалось загрузить НПС.",
+    "errorRollInitiative": "Не удалось бросить инициативу.",
+    "errorAdvanceTurn": "Не удалось перейти к следующему ходу.",
+    "errorReorder": "Не удалось сохранить порядок ходов."
   },
   "uk": {
     "heading": "[uk-todo] Combatants",
@@ -384,11 +501,16 @@
     "orderLabel": "[uk-todo] Order",
     "dragHandle": "[uk-todo] Drag to reorder",
     "retryButton": "[uk-todo] Retry",
+    "rollInitiativeButton": "[uk-todo] Roll Initiative",
+    "advanceTurnButton": "[uk-todo] Advance Turn",
     "errorLoad": "[uk-todo] Couldn't load combatants.",
     "errorAdd": "[uk-todo] Couldn't add combatant.",
     "errorRemove": "[uk-todo] Couldn't remove combatant.",
     "errorLoadPcs": "[uk-todo] Couldn't load characters.",
-    "errorLoadNpcs": "[uk-todo] Couldn't load NPCs."
+    "errorLoadNpcs": "[uk-todo] Couldn't load NPCs.",
+    "errorRollInitiative": "[uk-todo] Couldn't roll initiative.",
+    "errorAdvanceTurn": "[uk-todo] Couldn't advance turn.",
+    "errorReorder": "[uk-todo] Couldn't save turn order."
   },
   "el": {
     "heading": "[el-todo] Combatants",
@@ -415,22 +537,52 @@
     "orderLabel": "[el-todo] Order",
     "dragHandle": "[el-todo] Drag to reorder",
     "retryButton": "[el-todo] Retry",
+    "rollInitiativeButton": "[el-todo] Roll Initiative",
+    "advanceTurnButton": "[el-todo] Advance Turn",
     "errorLoad": "[el-todo] Couldn't load combatants.",
     "errorAdd": "[el-todo] Couldn't add combatant.",
     "errorRemove": "[el-todo] Couldn't remove combatant.",
     "errorLoadPcs": "[el-todo] Couldn't load characters.",
-    "errorLoadNpcs": "[el-todo] Couldn't load NPCs."
+    "errorLoadNpcs": "[el-todo] Couldn't load NPCs.",
+    "errorRollInitiative": "[el-todo] Couldn't roll initiative.",
+    "errorAdvanceTurn": "[el-todo] Couldn't advance turn.",
+    "errorReorder": "[el-todo] Couldn't save turn order."
   }
 }
 </i18n>
 
 <template>
   <div class="combat-tracker" data-testid="combat-tracker">
-    <!-- Header (Block 5 will add Roll Initiative / Advance Turn here) -->
+    <!-- Header -->
     <header class="combat-tracker__header">
       <h4 class="combat-tracker__title">{{ t('heading') }}</h4>
-      <!-- Placeholder for Block 5 initiative action buttons -->
       <div class="combat-tracker__header-actions">
+        <!-- Roll Initiative: GM only, enabled when status=setup and ≥1 combatant -->
+        <AppButton
+          v-if="isGm && encounterStatus === 'setup'"
+          variant="primary"
+          size="sm"
+          :loading="initiativeBusy"
+          :disabled="initiativeBusy || combatants.length === 0"
+          data-testid="btn-roll-initiative"
+          @click="doRollInitiative"
+        >
+          {{ t('rollInitiativeButton') }}
+        </AppButton>
+
+        <!-- Advance Turn: GM only, enabled when status=active and ≥1 combatant -->
+        <AppButton
+          v-if="isGm && encounterStatus === 'active'"
+          variant="ghost"
+          size="sm"
+          :loading="initiativeBusy"
+          :disabled="initiativeBusy || combatants.length === 0"
+          data-testid="btn-advance-turn"
+          @click="doAdvanceTurn"
+        >
+          {{ t('advanceTurnButton') }}
+        </AppButton>
+
         <AppButton
           variant="ghost"
           size="sm"
@@ -441,6 +593,18 @@
         </AppButton>
       </div>
     </header>
+
+    <!-- Initiative / reorder error banner -->
+    <div
+      v-if="initiativeError || reorderError"
+      class="combat-tracker__banner"
+      role="alert"
+      data-testid="combat-tracker-initiative-error"
+    >
+      <AppBanner tone="danger">
+        {{ initiativeError || reorderError }}
+      </AppBanner>
+    </div>
 
     <!-- Error banner -->
     <div

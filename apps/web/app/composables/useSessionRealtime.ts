@@ -29,7 +29,7 @@
 import { ref, type Ref } from 'vue';
 import { Centrifuge, type PublicationContext } from 'centrifuge';
 import { issueRealtimeToken } from '@app/api-client-ts';
-import type { Problem } from '@app/api-client-ts';
+import type { Problem, Combatant, EncounterStatus } from '@app/api-client-ts';
 
 async function fetchRealtimeToken(): Promise<string> {
   const res = await issueRealtimeToken({ body: undefined });
@@ -59,6 +59,29 @@ export interface RollPushedPayload {
   at?: string;
 }
 
+/** Encounter snapshot inside a combat.updated payload (mirrors AsyncAPI CombatUpdated.encounter). */
+export interface CombatUpdatedEncounterSnapshot {
+  id: string;
+  gameSessionId: string;
+  name: string;
+  status: EncounterStatus;
+  round: number;
+  activeCombatantId: string | null;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Full combat.updated payload per AsyncAPI v0.11+ CombatUpdated schema. */
+export interface CombatUpdatedPayload {
+  gameSessionId: string;
+  encounterId: string;
+  encounter: CombatUpdatedEncounterSnapshot;
+  /** Full combatant list in current turn order (turnOrder ascending). */
+  combatants: Combatant[];
+  at: string;
+}
+
 export interface SessionRealtimeHandle {
   /** True while the websocket is connected and subscribed. */
   connected: Ref<boolean>;
@@ -68,6 +91,12 @@ export interface SessionRealtimeHandle {
   lastDpChanged: Ref<DpChangedPayload | null>;
   /** Most recent roll.pushed payload (null until one arrives). */
   lastRollPushed: Ref<RollPushedPayload | null>;
+  /**
+   * Most recent combat.updated payload (null until one arrives).
+   * Consumers replace their local combatant state wholesale from
+   * `payload.combatants` — no diffing.
+   */
+  lastCombatUpdated: Ref<CombatUpdatedPayload | null>;
   /** Open the connection and subscribe. Idempotent. */
   start(): Promise<void>;
   /** Close the subscription and the socket. Safe to call from onUnmounted. */
@@ -82,6 +111,7 @@ export function useSessionRealtime(gameSessionId: string): SessionRealtimeHandle
   const error = ref<string | null>(null);
   const lastDpChanged = ref<DpChangedPayload | null>(null);
   const lastRollPushed = ref<RollPushedPayload | null>(null);
+  const lastCombatUpdated = ref<CombatUpdatedPayload | null>(null);
 
   let centrifuge: Centrifuge | null = null;
 
@@ -122,15 +152,20 @@ export function useSessionRealtime(gameSessionId: string): SessionRealtimeHandle
       sub.on('publication', (ctx: PublicationContext) => {
         const data = ctx.data as Record<string, unknown> | undefined;
         if (!data || typeof data !== 'object') return;
-        // Both dp.changed and roll.pushed share `gameSessionId`. We
-        // discriminate by structural shape — `dpCount` is unique to
-        // dp.changed, `rollId` is unique to roll.pushed.
+        // Discriminate by structural shape:
+        //   dp.changed    → unique field `dpCount`
+        //   roll.pushed   → unique field `rollId`
+        //   combat.updated → unique field `encounterId` + `combatants` array
         if ('dpCount' in data && typeof data.dpCount === 'number') {
           lastDpChanged.value = data as unknown as DpChangedPayload;
           return;
         }
         if ('rollId' in data && typeof data.rollId === 'string') {
           lastRollPushed.value = data as unknown as RollPushedPayload;
+          return;
+        }
+        if ('encounterId' in data && typeof data.encounterId === 'string' && Array.isArray(data.combatants)) {
+          lastCombatUpdated.value = data as unknown as CombatUpdatedPayload;
         }
       });
 
@@ -155,5 +190,5 @@ export function useSessionRealtime(gameSessionId: string): SessionRealtimeHandle
     return Promise.resolve();
   }
 
-  return { connected, error, lastDpChanged, lastRollPushed, start, stop };
+  return { connected, error, lastDpChanged, lastRollPushed, lastCombatUpdated, start, stop };
 }

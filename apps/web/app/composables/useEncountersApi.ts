@@ -24,6 +24,8 @@ import {
   updateEncounter,
   deleteEncounter,
   listCombatants,
+  rollInitiative,
+  advanceTurn,
 } from '@app/api-client-ts';
 import type {
   Encounter,
@@ -32,6 +34,8 @@ import type {
   EncounterStatus,
   EncounterUpdate,
   Combatant,
+  InitiativeRollResult,
+  TurnAdvanceResult,
   Problem,
 } from '@app/api-client-ts';
 
@@ -57,6 +61,16 @@ export interface EncountersApiClient {
   update(id: string, patch: EncounterUpdate): Promise<Encounter>;
   remove(id: string): Promise<void>;
   listCombatants(encounterId: string): Promise<ListCombatantsResult>;
+  /**
+   * Roll initiative for all combatants; transitions encounter setup → active.
+   * Returns combatants in new turnOrder and the starting round (always 1).
+   */
+  rollInitiative(encounterId: string): Promise<InitiativeRollResult>;
+  /**
+   * Advance to the next combatant's turn. Returns the new activeCombatantId,
+   * current round, and whether a new round just started.
+   */
+  advanceTurn(encounterId: string): Promise<TurnAdvanceResult>;
 }
 
 export function useEncountersApi(): EncountersApiClient {
@@ -104,6 +118,20 @@ export function useEncountersApi(): EncountersApiClient {
       if (res.error) throw res.error as Problem;
       return { items: res.data.items };
     },
+
+    async rollInitiative(encounterId) {
+      const res = await rollInitiative({ path: { id: encounterId } });
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
+      if (res.error) throw res.error as Problem;
+      return res.data;
+    },
+
+    async advanceTurn(encounterId) {
+      const res = await advanceTurn({ path: { id: encounterId } });
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
+      if (res.error) throw res.error as Problem;
+      return res.data;
+    },
   };
 }
 
@@ -114,4 +142,6 @@ export type {
   EncounterStatus,
   EncounterUpdate,
   Combatant,
+  InitiativeRollResult,
+  TurnAdvanceResult,
 } from '@app/api-client-ts';
