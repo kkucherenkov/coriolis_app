@@ -62,13 +62,15 @@
         opens an AlertDialog with the full dice strip. Drive-by:
         `Roll` now extends Equatable so list-of-Roll state diffs
         compare structurally. 65/65 mobile tests pass (+6 new).
-  - [ ] Block 3 — `features/sessions/` skeleton: list + detail.
-        `GameSession` domain model, repository wrapping
-        `app_api_client.GameSessionsApi`. List page shows active /
-        archived tabs (compact compared to web). Detail page
-        renders DP counter, assigned characters, and a GM-only
-        control row (`+1` / `-1` taps via DarknessPointsApi).
-        Player view hides the GM controls.
+  - [x] Block 3 — `features/sessions/` end-to-end. List page (tabbed
+        active/archived, FAB → create sheet, popup-menu archive
+        toggle), detail page (GM/player branching via me.id vs
+        ownerId, +1/-1 taps + audit card for GM only, glance-only
+        for players). Drops web's free-form delta+reason form by
+        design — phone is glance-and-tweak. Drive-by:
+        `fix(api-client-dart)` patched a latent
+        `ShipModuleSlot` import bug in the openapi-generator output
+        that build_runner exposed. 65/65 tests still pass.
   - [ ] Block 4 — Centrifugo subscription via the `centrifuge_dart`
         package. Token mint reuses the existing realtime endpoint;
         on `dp.changed` patch the visible counter, on `roll.pushed`
