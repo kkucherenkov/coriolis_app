@@ -122,10 +122,7 @@ describe('roleCatalogue — drift guard', () => {
 
   it('every Role in ALL_ROLES is a key of ROLE_KEY_SKILLS (no missing entries)', () => {
     for (const role of ALL_ROLES) {
-      expect(
-        ROLE_KEY_SKILLS,
-        `ROLE_KEY_SKILLS is missing role: "${role}"`,
-      ).toHaveProperty(role);
+      expect(ROLE_KEY_SKILLS, `ROLE_KEY_SKILLS is missing role: "${role}"`).toHaveProperty(role);
     }
   });
 
@@ -163,10 +160,7 @@ describe('ROLE_KEY_SKILLS', () => {
   it('all key skills across all roles are valid SkillKey values', () => {
     for (const role of ALL_ROLES) {
       for (const skill of ROLE_KEY_SKILLS[role]) {
-        expect(
-          VALID_SKILLS,
-          `role "${role}" has invalid skill key: "${skill}"`,
-        ).toContain(skill);
+        expect(VALID_SKILLS, `role "${role}" has invalid skill key: "${skill}"`).toContain(skill);
       }
     }
   });
@@ -175,20 +169,16 @@ describe('ROLE_KEY_SKILLS', () => {
 describe('CONCEPT_BY_ROLE', () => {
   it('is exhaustive — every canonical role maps to a concept', () => {
     for (const role of ALL_ROLES) {
-      expect(
-        CONCEPT_BY_ROLE,
-        `CONCEPT_BY_ROLE missing role: "${role}"`,
-      ).toHaveProperty(role);
+      expect(CONCEPT_BY_ROLE, `CONCEPT_BY_ROLE missing role: "${role}"`).toHaveProperty(role);
     }
   });
 
   it('is the exact inverse of CONCEPT_ROLES (round-trip check)', () => {
     for (const concept of ALL_CONCEPTS) {
       for (const role of CONCEPT_ROLES[concept]) {
-        expect(
-          CONCEPT_BY_ROLE[role],
-          `conceptForRole("${role}") should be "${concept}"`,
-        ).toBe(concept);
+        expect(CONCEPT_BY_ROLE[role], `conceptForRole("${role}") should be "${concept}"`).toBe(
+          concept,
+        );
       }
     }
   });

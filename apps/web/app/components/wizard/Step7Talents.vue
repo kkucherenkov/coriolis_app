@@ -236,10 +236,7 @@
         {{ t('personal.help') }}
       </p>
 
-      <div
-        v-if="concept"
-        class="step-7-talents__filter"
-      >
+      <div v-if="concept" class="step-7-talents__filter">
         <label class="step-7-talents__filter-toggle">
           <input
             v-model="showOnlyRecommendedForConcept"
@@ -259,10 +256,7 @@
           }}
         </span>
       </div>
-      <p
-        v-else
-        class="step-7-talents__section-help step-7-talents__section-help--hint"
-      >
+      <p v-else class="step-7-talents__section-help step-7-talents__section-help--hint">
         {{ t('personal.noConceptHint') }}
       </p>
 
@@ -282,10 +276,7 @@
         >
           <div class="step-7-talents__card-head">
             <span class="step-7-talents__talent-name">{{ l10n(talent.name) }}</span>
-            <span
-              v-if="isPersonalPicked(talent.id)"
-              class="step-7-talents__badge"
-            >
+            <span v-if="isPersonalPicked(talent.id)" class="step-7-talents__badge">
               {{ t('pickedBadge') }}
             </span>
           </div>
@@ -322,10 +313,7 @@
           >
             <div class="step-7-talents__card-head">
               <span class="step-7-talents__talent-name">{{ l10n(talent.name) }}</span>
-              <span
-                v-if="isCrewPicked(talent.id)"
-                class="step-7-talents__badge"
-              >
+              <span v-if="isCrewPicked(talent.id)" class="step-7-talents__badge">
                 {{ t('pickedBadge') }}
               </span>
             </div>
@@ -335,10 +323,7 @@
           </div>
         </div>
       </template>
-      <div
-        v-else
-        class="step-7-talents__slot step-7-talents__slot--empty"
-      >
+      <div v-else class="step-7-talents__slot step-7-talents__slot--empty">
         {{ t('crew.noCrew') }}
       </div>
     </section>
@@ -349,26 +334,17 @@
           {{ t('iconGift.title') }}
         </h3>
       </header>
-      <div
-        v-if="iconGift"
-        class="step-7-talents__slot step-7-talents__slot--filled"
-      >
+      <div v-if="iconGift" class="step-7-talents__slot step-7-talents__slot--filled">
         <span class="step-7-talents__slot-label">{{ l10n(iconGift.name) }}</span>
         <span class="step-7-talents__slot-help">{{ l10n(iconGift.description) }}</span>
         <span class="step-7-talents__slot-meta">{{ t('iconGift.help') }}</span>
       </div>
-      <div
-        v-else
-        class="step-7-talents__slot step-7-talents__slot--empty"
-      >
+      <div v-else class="step-7-talents__slot step-7-talents__slot--empty">
         {{ t('iconGift.noIcon') }}
       </div>
     </section>
 
-    <section
-      v-if="mutant"
-      class="step-7-talents__section"
-    >
+    <section v-if="mutant" class="step-7-talents__section">
       <header class="step-7-talents__section-head">
         <h3 class="step-7-talents__section-title">
           {{ t('stigma.title') }}
@@ -396,10 +372,7 @@
         >
           <div class="step-7-talents__card-head">
             <span class="step-7-talents__talent-name">{{ l10n(talent.name) }}</span>
-            <span
-              v-if="isStigmaPicked(talent.id)"
-              class="step-7-talents__badge"
-            >
+            <span v-if="isStigmaPicked(talent.id)" class="step-7-talents__badge">
               {{ t('pickedBadge') }}
             </span>
           </div>
@@ -414,6 +387,7 @@
 
 <style lang="scss" scoped>
   $talents-max-width: 1000px;
+  $filter-checkbox-size: 16px;
 
   .step-7-talents {
     max-width: $talents-max-width;
@@ -492,8 +466,8 @@
     }
 
     &__filter-checkbox {
-      width: 16px;
-      height: 16px;
+      width: $filter-checkbox-size;
+      height: $filter-checkbox-size;
       accent-color: var(--brand-brass);
       cursor: pointer;
     }

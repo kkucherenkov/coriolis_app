@@ -12,7 +12,6 @@
 
 import type { Concept, Role } from '@app/api-client-ts';
 
-
 /**
  * The 16 canonical skill keys, matching the backend's SkillKey type
  * (rules-engine.ts) and the OpenAPI schema.
@@ -44,21 +43,19 @@ export type RoleKeySkills = readonly [SkillKey, SkillKey, SkillKey, SkillKey];
  * Concept → ordered triple of roles in the canonical ST3001 sequence.
  * Order matches ГЛАВА 2 table order and determines UI render order.
  */
-export const CONCEPT_ROLES: Readonly<Record<Concept, readonly [Role, Role, Role]>> = Object.freeze(
-  {
-    artist: ['companion', 'musician', 'poet'],
-    networker: ['analyst', 'correspondent', 'network-djinn'],
-    fugitive: ['criminal', 'mystic', 'revolutionary'],
-    negotiator: ['agitator', 'diplomat', 'dealer'],
-    operative: ['assassin', 'guard', 'spy'],
-    pilot: ['ace', 'driver', 'trucker'],
-    pioneer: ['colonist', 'prospector', 'scout'],
-    preacher: ['ascetic', 'missionary', 'prophet'],
-    scientist: ['archaeologist', 'medicurg', 'technologist'],
-    sailor: ['ship-engineer', 'labourer', 'loader'],
-    soldier: ['legionnaire', 'mercenary', 'officer'],
-  } as const,
-);
+export const CONCEPT_ROLES: Readonly<Record<Concept, readonly [Role, Role, Role]>> = Object.freeze({
+  artist: ['companion', 'musician', 'poet'],
+  networker: ['analyst', 'correspondent', 'network-djinn'],
+  fugitive: ['criminal', 'mystic', 'revolutionary'],
+  negotiator: ['agitator', 'diplomat', 'dealer'],
+  operative: ['assassin', 'guard', 'spy'],
+  pilot: ['ace', 'driver', 'trucker'],
+  pioneer: ['colonist', 'prospector', 'scout'],
+  preacher: ['ascetic', 'missionary', 'prophet'],
+  scientist: ['archaeologist', 'medicurg', 'technologist'],
+  sailor: ['ship-engineer', 'labourer', 'loader'],
+  soldier: ['legionnaire', 'mercenary', 'officer'],
+} as const);
 
 // --------------- Role → Key Skills ---------------
 
@@ -149,7 +146,7 @@ export function keySkillsForRole(role: Role): RoleKeySkills {
   // bypassed validation). The lookup is typed as Record<Role,…> so TS sees
   // the condition as always-false for well-typed inputs — that's intentional:
   // the guard fires only when a non-canonical string is cast to Role.
-   
+
   const skills = (ROLE_KEY_SKILLS as Record<string, RoleKeySkills | undefined>)[role];
   if (!skills) throw new Error(`Unknown role: ${role}`);
   return skills;
@@ -169,4 +166,4 @@ export function conceptForRole(role: Role): Concept {
 
 // Re-export for consumers that only pull from this module.
 
-export {type Concept, type Role} from '@app/api-client-ts';
+export { type Concept, type Role } from '@app/api-client-ts';
