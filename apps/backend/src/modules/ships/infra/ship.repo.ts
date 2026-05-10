@@ -202,7 +202,9 @@ export class ShipRepo implements IShipRepo {
     await this.prisma.ship.delete({ where: { id } });
   }
 
-  async findModuleById(moduleId: string): Promise<(ShipModuleReadModel & { shipId: string }) | null> {
+  async findModuleById(
+    moduleId: string,
+  ): Promise<(ShipModuleReadModel & { shipId: string }) | null> {
     const row = await this.prisma.shipModule.findFirst({
       where: { id: moduleId },
       select: { id: true, shipId: true, slot: true, name: true, energyUse: true, data: true },
@@ -263,7 +265,10 @@ export class ShipRepo implements IShipRepo {
     await this.prisma.shipModule.delete({ where: { id: moduleId } });
   }
 
-  async findCrewSlot(shipId: string, position: string): Promise<import('../domain/ship.ports').CrewSlotReadModel | null> {
+  async findCrewSlot(
+    shipId: string,
+    position: string,
+  ): Promise<import('../domain/ship.ports').CrewSlotReadModel | null> {
     const row = await this.prisma.crewSlot.findFirst({
       where: { shipId, position },
       select: { position: true, assignedCharacterId: true },
@@ -272,7 +277,10 @@ export class ShipRepo implements IShipRepo {
     return { position: row.position, assignedCharacterId: row.assignedCharacterId };
   }
 
-  async findCrewSlotByCharacter(shipId: string, characterId: string): Promise<import('../domain/ship.ports').CrewSlotReadModel | null> {
+  async findCrewSlotByCharacter(
+    shipId: string,
+    characterId: string,
+  ): Promise<import('../domain/ship.ports').CrewSlotReadModel | null> {
     const row = await this.prisma.crewSlot.findFirst({
       where: { shipId, assignedCharacterId: characterId },
       select: { position: true, assignedCharacterId: true },
@@ -281,7 +289,11 @@ export class ShipRepo implements IShipRepo {
     return { position: row.position, assignedCharacterId: row.assignedCharacterId };
   }
 
-  async assignCrewSlot(shipId: string, position: string, characterId: string): Promise<import('../domain/ship.ports').CrewSlotReadModel> {
+  async assignCrewSlot(
+    shipId: string,
+    position: string,
+    characterId: string,
+  ): Promise<import('../domain/ship.ports').CrewSlotReadModel> {
     const row = await this.prisma.crewSlot.update({
       where: { shipId_position: { shipId, position } },
       data: { assignedCharacterId: characterId },

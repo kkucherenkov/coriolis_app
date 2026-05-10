@@ -53,7 +53,10 @@ function makeShip(overrides: Partial<ShipReadModel> = {}): ShipReadModel {
       { id: 'mod-2', slot: 'REACTOR', name: 'Reactor', energyUse: 0, data: {} },
       { id: 'mod-3', slot: 'DRIVE', name: 'Drive', energyUse: 2, data: {} },
     ],
-    crew: CREW_POSITIONS.map((p) => ({ position: p as ShipReadModel['crew'][number]['position'], assignedCharacterId: null })),
+    crew: CREW_POSITIONS.map((p) => ({
+      position: p as ShipReadModel['crew'][number]['position'],
+      assignedCharacterId: null,
+    })),
     problems: [],
     history: null,
     notes: null,
@@ -72,7 +75,10 @@ function makeCopy(name: string): ShipReadModel {
       { id: 'mod-c2', slot: 'REACTOR', name: 'Reactor', energyUse: 0, data: {} },
       { id: 'mod-c3', slot: 'DRIVE', name: 'Drive', energyUse: 2, data: {} },
     ],
-    crew: CREW_POSITIONS.map((p) => ({ position: p as ShipReadModel['crew'][number]['position'], assignedCharacterId: null })),
+    crew: CREW_POSITIONS.map((p) => ({
+      position: p as ShipReadModel['crew'][number]['position'],
+      assignedCharacterId: null,
+    })),
   });
 }
 

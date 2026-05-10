@@ -22,7 +22,10 @@ import { CommandBus } from '@nestjs/cqrs';
 import { SessionGuard } from '../../common/auth/auth.guard';
 
 import { DeleteShipModuleCommand } from './commands/delete-ship-module.command';
-import { UpdateShipModuleCommand, UpdateShipModuleDto } from './commands/update-ship-module.command';
+import {
+  UpdateShipModuleCommand,
+  UpdateShipModuleDto,
+} from './commands/update-ship-module.command';
 
 import type { AuthenticatedRequest } from '../../common/auth/auth.guard';
 import type { ShipModuleReadModel } from './domain/ship.ports';

@@ -509,7 +509,8 @@
         >
           {{
             t('rollPushedToast', {
-              character: assignedCharacters.find((c) => c.id === recentRollPushed?.characterId)?.name ?? '#',
+              character:
+                assignedCharacters.find((c) => c.id === recentRollPushed?.characterId)?.name ?? '#',
               hits: recentRollPushed.hits,
             })
           }}
@@ -639,9 +640,7 @@
             class="page-session-detail__char-row"
           >
             <span class="page-session-detail__char-name">
-              {{
-                assignedCharacters.find((c) => c.id === characterId)?.name ?? `#${characterId}`
-              }}
+              {{ assignedCharacters.find((c) => c.id === characterId)?.name ?? `#${characterId}` }}
             </span>
             <AppButton
               v-if="isGm"

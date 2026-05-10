@@ -94,11 +94,12 @@ describe('AddShipModuleHandler', () => {
     vi.mocked(repo.findById).mockResolvedValue(makeShip());
     vi.mocked(repo.addModule).mockResolvedValue(makeModule());
 
-    const result = await handler.execute(
-      new AddShipModuleCommand('ship-1', 'user-1', makeDto()),
-    );
+    const result = await handler.execute(new AddShipModuleCommand('ship-1', 'user-1', makeDto()));
 
-    expect(repo.addModule).toHaveBeenCalledWith('ship-1', expect.objectContaining({ slot: 'HOLD' }));
+    expect(repo.addModule).toHaveBeenCalledWith(
+      'ship-1',
+      expect.objectContaining({ slot: 'HOLD' }),
+    );
     expect(result.slot).toBe('HOLD');
   });
 

@@ -99,7 +99,9 @@ describe('AssignCrewHandler', () => {
     vi.mocked(shipRepo.findCrewSlot).mockResolvedValue(makeSlot('captain'));
     vi.mocked(shipRepo.assignCrewSlot).mockResolvedValue(makeSlot('captain', 'char-1'));
 
-    const result = await handler.execute(new AssignCrewCommand('ship-1', 'user-1', makeDto('captain', 'char-1')));
+    const result = await handler.execute(
+      new AssignCrewCommand('ship-1', 'user-1', makeDto('captain', 'char-1')),
+    );
 
     expect(shipRepo.assignCrewSlot).toHaveBeenCalledWith('ship-1', 'captain', 'char-1');
     expect(result).toEqual({ position: 'captain', assignedCharacterId: 'char-1' });
@@ -110,7 +112,9 @@ describe('AssignCrewHandler', () => {
     vi.mocked(charRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user-1' });
     vi.mocked(shipRepo.findCrewSlotByCharacter).mockResolvedValue(makeSlot('captain', 'char-1'));
 
-    const result = await handler.execute(new AssignCrewCommand('ship-1', 'user-1', makeDto('captain', 'char-1')));
+    const result = await handler.execute(
+      new AssignCrewCommand('ship-1', 'user-1', makeDto('captain', 'char-1')),
+    );
 
     expect(shipRepo.assignCrewSlot).not.toHaveBeenCalled();
     expect(result).toEqual({ position: 'captain', assignedCharacterId: 'char-1' });
@@ -123,7 +127,9 @@ describe('AssignCrewHandler', () => {
     vi.mocked(shipRepo.findCrewSlot).mockResolvedValue(makeSlot('pilot')); // target is empty
     vi.mocked(shipRepo.assignCrewSlot).mockResolvedValue(makeSlot('pilot', 'char-1'));
 
-    const result = await handler.execute(new AssignCrewCommand('ship-1', 'user-1', makeDto('pilot', 'char-1')));
+    const result = await handler.execute(
+      new AssignCrewCommand('ship-1', 'user-1', makeDto('pilot', 'char-1')),
+    );
 
     expect(shipRepo.unassignCrewSlot).toHaveBeenCalledWith('ship-1', 'char-1');
     expect(shipRepo.assignCrewSlot).toHaveBeenCalledWith('ship-1', 'pilot', 'char-1');

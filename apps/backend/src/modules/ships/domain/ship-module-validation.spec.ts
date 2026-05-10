@@ -80,9 +80,9 @@ describe('validateModuleCreate', () => {
   // ---------------------------------------------------------------------------
 
   it('throws ShipModuleSlotInvalidError for an unknown slot', () => {
-    expect(() =>
-      validateModuleCreate({ slot: 'UNKNOWN', name: 'X', energyUse: 0 }),
-    ).toThrow(ShipModuleSlotInvalidError);
+    expect(() => validateModuleCreate({ slot: 'UNKNOWN', name: 'X', energyUse: 0 })).toThrow(
+      ShipModuleSlotInvalidError,
+    );
   });
 
   it('throws ShipModuleTypeMismatchError when weaponBonus is provided for slot HOLD', () => {
@@ -92,9 +92,9 @@ describe('validateModuleCreate', () => {
   });
 
   it('throws ShipModuleTypeMismatchError when WEAPON is missing required fields', () => {
-    expect(() =>
-      validateModuleCreate({ slot: 'WEAPON', name: 'X', energyUse: 0 }),
-    ).toThrow(ShipModuleTypeMismatchError);
+    expect(() => validateModuleCreate({ slot: 'WEAPON', name: 'X', energyUse: 0 })).toThrow(
+      ShipModuleTypeMismatchError,
+    );
   });
 });
 
@@ -108,14 +108,14 @@ describe('validateModuleUpdate', () => {
   });
 
   it('throws ShipModuleTypeMismatchError when slot discriminator changes', () => {
-    expect(() =>
-      validateModuleUpdate({ slot: 'WEAPON' }, 'HOLD'),
-    ).toThrow(ShipModuleTypeMismatchError);
+    expect(() => validateModuleUpdate({ slot: 'WEAPON' }, 'HOLD')).toThrow(
+      ShipModuleTypeMismatchError,
+    );
   });
 
   it('throws ShipModuleTypeMismatchError when foreign field is included', () => {
-    expect(() =>
-      validateModuleUpdate({ slot: 'HOLD', weaponBonus: 1 }, 'HOLD'),
-    ).toThrow(ShipModuleTypeMismatchError);
+    expect(() => validateModuleUpdate({ slot: 'HOLD', weaponBonus: 1 }, 'HOLD')).toThrow(
+      ShipModuleTypeMismatchError,
+    );
   });
 });

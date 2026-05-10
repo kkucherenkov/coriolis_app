@@ -15,9 +15,10 @@ import { UpdateShipModuleCommand } from './update-ship-module.command';
 import type { ShipModuleReadModel, IShipRepo, ShipModuleSlot } from '../domain/ship.ports';
 
 @CommandHandler(UpdateShipModuleCommand)
-export class UpdateShipModuleHandler
-  implements ICommandHandler<UpdateShipModuleCommand, ShipModuleReadModel>
-{
+export class UpdateShipModuleHandler implements ICommandHandler<
+  UpdateShipModuleCommand,
+  ShipModuleReadModel
+> {
   constructor(@Inject(SHIP_REPO) private readonly repo: IShipRepo) {}
 
   async execute(command: UpdateShipModuleCommand): Promise<ShipModuleReadModel> {
@@ -31,7 +32,7 @@ export class UpdateShipModuleHandler
     if (ship?.ownerId !== ownerId) throw new ShipModuleNotOwnedError(moduleId);
 
     // validateModuleUpdate throws ShipModuleTypeMismatchError if slot changed or foreign fields present
-     
+
     const validated = validateModuleUpdate(dto, module.slot as ShipModuleSlot);
 
     // Merge existing data with the validated partial override

@@ -64,7 +64,10 @@ export class ShipsController {
   /** POST /api/v1/ships */
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Req() req: AuthenticatedRequest, @Body() body: CreateShipDto): Promise<ShipReadModel> {
+  async create(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: CreateShipDto,
+  ): Promise<ShipReadModel> {
     return this.commandBus.execute(new CreateShipCommand(req.userId, body));
   }
 

@@ -75,26 +75,27 @@ describe('DeleteShipHandler', () => {
   it('throws ShipNotFoundError when ship does not exist', async () => {
     vi.mocked(repo.findById).mockResolvedValue(null);
 
-    await expect(
-      handler.execute(new DeleteShipCommand('ship-x', 'user-1')),
-    ).rejects.toBeInstanceOf(ShipNotFoundError);
+    await expect(handler.execute(new DeleteShipCommand('ship-x', 'user-1'))).rejects.toBeInstanceOf(
+      ShipNotFoundError,
+    );
     expect(repo.delete).not.toHaveBeenCalled();
   });
 
   it('throws ShipNotOwnerError when caller is not the owner', async () => {
     vi.mocked(repo.findById).mockResolvedValue(makeShip({ ownerId: 'user-2' }));
 
-    await expect(
-      handler.execute(new DeleteShipCommand('ship-1', 'user-1')),
-    ).rejects.toBeInstanceOf(ShipNotOwnerError);
+    await expect(handler.execute(new DeleteShipCommand('ship-1', 'user-1'))).rejects.toBeInstanceOf(
+      ShipNotOwnerError,
+    );
     expect(repo.delete).not.toHaveBeenCalled();
   });
 
   it('throws ShipNotOwnerError with code SHIP_NOT_OWNED and status 403', async () => {
     vi.mocked(repo.findById).mockResolvedValue(makeShip({ ownerId: 'user-2' }));
 
-    await expect(
-      handler.execute(new DeleteShipCommand('ship-1', 'user-1')),
-    ).rejects.toMatchObject({ code: 'SHIP_NOT_OWNED', status: 403 });
+    await expect(handler.execute(new DeleteShipCommand('ship-1', 'user-1'))).rejects.toMatchObject({
+      code: 'SHIP_NOT_OWNED',
+      status: 403,
+    });
   });
 });

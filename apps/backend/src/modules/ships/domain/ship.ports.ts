@@ -31,13 +31,7 @@ export type ShipClass =
   | 'destroyer'
   | 'heavy-cruiser';
 
-export type CrewPosition =
-  | 'captain'
-  | 'pilot'
-  | 'sensorOp'
-  | 'gunner'
-  | 'engineer'
-  | 'serviceCrew';
+export type CrewPosition = 'captain' | 'pilot' | 'sensorOp' | 'gunner' | 'engineer' | 'serviceCrew';
 
 export interface CrewSlotReadModel {
   position: CrewPosition;
@@ -193,7 +187,11 @@ export interface IShipRepo {
    * Update a crew slot's assignedCharacterId.
    * The slot row is guaranteed to exist (pre-seeded on ship creation).
    */
-  assignCrewSlot(shipId: string, position: CrewPosition, characterId: string): Promise<CrewSlotReadModel>;
+  assignCrewSlot(
+    shipId: string,
+    position: CrewPosition,
+    characterId: string,
+  ): Promise<CrewSlotReadModel>;
 
   /**
    * Clear assignedCharacterId for the given character on the given ship.

@@ -134,10 +134,7 @@ describe('UpdateShipHandler', () => {
     const dto = Object.assign(new UpdateShipDto(), { hull: { current: 3 } });
     await handler.execute(new UpdateShipCommand('ship-1', 'user-1', dto));
 
-    expect(repo.update).toHaveBeenCalledWith(
-      'ship-1',
-      expect.objectContaining({ hullCurrent: 3 }),
-    );
+    expect(repo.update).toHaveBeenCalledWith('ship-1', expect.objectContaining({ hullCurrent: 3 }));
     expect(repo.update).toHaveBeenCalledWith(
       'ship-1',
       expect.not.objectContaining({ hullMax: expect.anything() }),

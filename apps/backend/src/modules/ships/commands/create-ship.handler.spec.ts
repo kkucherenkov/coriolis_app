@@ -107,9 +107,7 @@ describe('CreateShipHandler', () => {
   it('seeds hullCurrent from hullMax override when current not provided', async () => {
     vi.mocked(repo.create).mockResolvedValue(makeShip({ hull: { current: 8, max: 8 } }));
 
-    await handler.execute(
-      new CreateShipCommand('user-1', makeDto({ hull: { max: 8 } })),
-    );
+    await handler.execute(new CreateShipCommand('user-1', makeDto({ hull: { max: 8 } })));
 
     expect(repo.create).toHaveBeenCalledWith(
       expect.objectContaining({ hullCurrent: 8, hullMax: 8 }),
@@ -155,7 +153,9 @@ describe('CreateShipHandler', () => {
   it('uses fighter base stats for fighter class', async () => {
     vi.mocked(repo.create).mockResolvedValue(makeShip({ class: 'fighter' }));
 
-    await handler.execute(new CreateShipCommand('user-1', makeDto({ name: 'X-Wing', class: 'fighter' })));
+    await handler.execute(
+      new CreateShipCommand('user-1', makeDto({ name: 'X-Wing', class: 'fighter' })),
+    );
 
     expect(repo.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -175,10 +175,7 @@ describe('CreateShipHandler', () => {
     );
 
     await handler.execute(
-      new CreateShipCommand(
-        'user-1',
-        makeDto({ model: 'Helebian III', registry: 'KUA-7741-M' }),
-      ),
+      new CreateShipCommand('user-1', makeDto({ model: 'Helebian III', registry: 'KUA-7741-M' })),
     );
 
     expect(repo.create).toHaveBeenCalledWith(

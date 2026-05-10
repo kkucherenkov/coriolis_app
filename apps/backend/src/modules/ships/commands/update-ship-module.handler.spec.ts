@@ -91,10 +91,17 @@ describe('UpdateShipModuleHandler', () => {
     vi.mocked(repo.updateModule).mockResolvedValue(makeModuleRow({ name: 'Smuggler Hold' }));
 
     const result = await handler.execute(
-      new UpdateShipModuleCommand('mod-1', 'user-1', makeDto({ slot: 'HOLD', name: 'Smuggler Hold' })),
+      new UpdateShipModuleCommand(
+        'mod-1',
+        'user-1',
+        makeDto({ slot: 'HOLD', name: 'Smuggler Hold' }),
+      ),
     );
 
-    expect(repo.updateModule).toHaveBeenCalledWith('mod-1', expect.objectContaining({ name: 'Smuggler Hold' }));
+    expect(repo.updateModule).toHaveBeenCalledWith(
+      'mod-1',
+      expect.objectContaining({ name: 'Smuggler Hold' }),
+    );
     expect(result.name).toBe('Smuggler Hold');
   });
 
@@ -121,9 +128,7 @@ describe('UpdateShipModuleHandler', () => {
     vi.mocked(repo.findById).mockResolvedValue(makeShip());
 
     await expect(
-      handler.execute(
-        new UpdateShipModuleCommand('mod-1', 'user-1', makeDto({ slot: 'WEAPON' })),
-      ),
+      handler.execute(new UpdateShipModuleCommand('mod-1', 'user-1', makeDto({ slot: 'WEAPON' }))),
     ).rejects.toBeInstanceOf(ShipModuleTypeMismatchError);
     expect(repo.updateModule).not.toHaveBeenCalled();
   });

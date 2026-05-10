@@ -20,12 +20,7 @@
  */
 
 import { adjustDp, listDpEvents } from '@app/api-client-ts';
-import type {
-  GameSession,
-  DpEvent,
-  DpAdjustment,
-  Problem,
-} from '@app/api-client-ts';
+import type { GameSession, DpEvent, DpAdjustment, Problem } from '@app/api-client-ts';
 
 export interface ListDpEventsOptions {
   limit?: number;

@@ -15,7 +15,10 @@ import { AddShipModuleCommand } from './add-ship-module.command';
 import type { ShipModuleReadModel, IShipRepo } from '../domain/ship.ports';
 
 @CommandHandler(AddShipModuleCommand)
-export class AddShipModuleHandler implements ICommandHandler<AddShipModuleCommand, ShipModuleReadModel> {
+export class AddShipModuleHandler implements ICommandHandler<
+  AddShipModuleCommand,
+  ShipModuleReadModel
+> {
   constructor(@Inject(SHIP_REPO) private readonly repo: IShipRepo) {}
 
   async execute(command: AddShipModuleCommand): Promise<ShipModuleReadModel> {

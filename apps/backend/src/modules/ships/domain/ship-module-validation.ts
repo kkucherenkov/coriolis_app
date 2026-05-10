@@ -6,10 +6,7 @@
  * field presence / absence so we can produce typed DomainErrors instead of generic 400s.
  */
 
-import {
-  ShipModuleSlotInvalidError,
-  ShipModuleTypeMismatchError,
-} from './ship.errors';
+import { ShipModuleSlotInvalidError, ShipModuleTypeMismatchError } from './ship.errors';
 import type { ShipModuleSlot, ShipWeaponRange } from './ship.ports';
 
 export const VALID_SLOTS = new Set<ShipModuleSlot>([
@@ -45,7 +42,12 @@ export function assertValidSlot(slot: unknown): asserts slot is ShipModuleSlot {
 }
 
 /** Weapon-specific required fields */
-const WEAPON_FIELDS = ['weaponBonus', 'weaponRange', 'weaponDamage', 'weaponCritThreshold'] as const;
+const WEAPON_FIELDS = [
+  'weaponBonus',
+  'weaponRange',
+  'weaponDamage',
+  'weaponCritThreshold',
+] as const;
 /** Slot-specific field sets (for type-mismatch guard). Only typed slots are listed. */
 const TYPED_FIELD_SETS: Record<string, ReadonlySet<string>> = {
   WEAPON: new Set(WEAPON_FIELDS),
@@ -107,10 +109,12 @@ export function validateModuleCreate(body: RawBody): ValidatedModuleCreate {
         throw new ShipModuleTypeMismatchError(`${field} is required for slot WEAPON`);
       }
     }
-     
+
     const range = String(body['weaponRange']);
     if (!WEAPON_RANGES.has(range as ShipWeaponRange)) {
-      throw new ShipModuleTypeMismatchError(`weaponRange "${range}" is not a valid ShipWeaponRange`);
+      throw new ShipModuleTypeMismatchError(
+        `weaponRange "${range}" is not a valid ShipWeaponRange`,
+      );
     }
   }
 
@@ -147,10 +151,11 @@ export function validateModuleUpdate(
   }
 
   if (installedSlot === 'WEAPON' && body['weaponRange'] !== undefined) {
-     
     const range = String(body['weaponRange']);
     if (!WEAPON_RANGES.has(range as ShipWeaponRange)) {
-      throw new ShipModuleTypeMismatchError(`weaponRange "${range}" is not a valid ShipWeaponRange`);
+      throw new ShipModuleTypeMismatchError(
+        `weaponRange "${range}" is not a valid ShipWeaponRange`,
+      );
     }
   }
 
@@ -168,24 +173,32 @@ function buildData(slot: ShipModuleSlot, body: RawBody, partial = false): Record
 
   switch (slot) {
     case 'WEAPON': {
-      if (!partial || body['weaponBonus'] !== undefined) d['weaponBonus'] = Number(body['weaponBonus'] ?? 0);
+      if (!partial || body['weaponBonus'] !== undefined)
+        d['weaponBonus'] = Number(body['weaponBonus'] ?? 0);
       if (!partial || body['weaponRange'] !== undefined) d['weaponRange'] = body['weaponRange'];
-      if (!partial || body['weaponDamage'] !== undefined) d['weaponDamage'] = Number(body['weaponDamage'] ?? 0);
-      if (!partial || body['weaponCritThreshold'] !== undefined) d['weaponCritThreshold'] = Number(body['weaponCritThreshold'] ?? 3);
+      if (!partial || body['weaponDamage'] !== undefined)
+        d['weaponDamage'] = Number(body['weaponDamage'] ?? 0);
+      if (!partial || body['weaponCritThreshold'] !== undefined)
+        d['weaponCritThreshold'] = Number(body['weaponCritThreshold'] ?? 3);
       break;
     }
     case 'TORPEDO': {
-      if (!partial || body['torpedoCount'] !== undefined) d['torpedoCount'] = Number(body['torpedoCount'] ?? 0);
-      if (!partial || body['mineCount'] !== undefined) d['mineCount'] = Number(body['mineCount'] ?? 0);
+      if (!partial || body['torpedoCount'] !== undefined)
+        d['torpedoCount'] = Number(body['torpedoCount'] ?? 0);
+      if (!partial || body['mineCount'] !== undefined)
+        d['mineCount'] = Number(body['mineCount'] ?? 0);
       break;
     }
     case 'HOLD': {
-      if (!partial || body['cargoTons'] !== undefined) d['cargoTons'] = Number(body['cargoTons'] ?? 0);
-      if (!partial || body['concealed'] !== undefined) d['concealed'] = Boolean(body['concealed'] ?? false);
+      if (!partial || body['cargoTons'] !== undefined)
+        d['cargoTons'] = Number(body['cargoTons'] ?? 0);
+      if (!partial || body['concealed'] !== undefined)
+        d['concealed'] = Boolean(body['concealed'] ?? false);
       break;
     }
     case 'SENSOR': {
-      if (!partial || body['detectionBonus'] !== undefined) d['detectionBonus'] = Number(body['detectionBonus'] ?? 1);
+      if (!partial || body['detectionBonus'] !== undefined)
+        d['detectionBonus'] = Number(body['detectionBonus'] ?? 1);
       break;
     }
     default: {

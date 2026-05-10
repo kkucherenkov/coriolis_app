@@ -32,7 +32,8 @@ export class DeleteShipModuleHandler implements ICommandHandler<DeleteShipModule
     const ship = await this.repo.findById(module.shipId);
     if (ship?.ownerId !== ownerId) throw new ShipModuleNotOwnedError(moduleId);
 
-    if (MANDATORY_SLOTS.has(module.slot as ShipModuleSlot)) { // cast needed: slot is string in read model
+    if (MANDATORY_SLOTS.has(module.slot as ShipModuleSlot)) {
+      // cast needed: slot is string in read model
       throw new ShipModuleMandatoryError(module.slot);
     }
 

@@ -1,7 +1,12 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { ShipNameEmptyError, ShipNameTooLongError, ShipNotFoundError, ShipNotOwnerError } from '../domain/ship.errors';
+import {
+  ShipNameEmptyError,
+  ShipNameTooLongError,
+  ShipNotFoundError,
+  ShipNotOwnerError,
+} from '../domain/ship.errors';
 import { SHIP_REPO, ShipReadModel } from '../domain/ship.ports';
 
 import { UpdateShipCommand } from './update-ship.command';
