@@ -308,7 +308,11 @@ describe('UpdateCombatantHandler', () => {
       new UpdateCombatantCommand('comb-1', 'user-1', makeDto({ hpCurrent: 2 })),
     );
 
-    expect(combatPublisher.publishUpdated).toHaveBeenCalledWith('gs-1', makeEncounter(), allCombatants);
+    expect(combatPublisher.publishUpdated).toHaveBeenCalledWith(
+      'gs-1',
+      makeEncounter(),
+      allCombatants,
+    );
   });
 
   it('publish failure does not break the flow — returns updated combatant', async () => {

@@ -165,9 +165,7 @@ describe('CentrifugoCombatPublisher', () => {
     // Spy on the Logger prototype to capture the error call without accessing private fields.
     const errorSpy = vi.spyOn(Logger.prototype, 'error');
 
-    await expect(
-      publisher.publishUpdated('gs-1', makeEncounter(), []),
-    ).resolves.toBeUndefined();
+    await expect(publisher.publishUpdated('gs-1', makeEncounter(), [])).resolves.toBeUndefined();
 
     expect(errorSpy).toHaveBeenCalledOnce();
     expect(errorSpy.mock.calls[0]![0]).toContain('Failed to publish combat.updated');

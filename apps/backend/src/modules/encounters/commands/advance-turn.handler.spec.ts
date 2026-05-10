@@ -228,7 +228,11 @@ describe('AdvanceTurnHandler', () => {
 
     await handler.execute(new AdvanceTurnCommand('enc-1', 'user-1'));
 
-    expect(combatPublisher.publishUpdated).toHaveBeenCalledWith('gs-1', updatedEncounter, combatants);
+    expect(combatPublisher.publishUpdated).toHaveBeenCalledWith(
+      'gs-1',
+      updatedEncounter,
+      combatants,
+    );
   });
 
   it('publish failure does not break the flow — returns TurnAdvanceResult normally', async () => {

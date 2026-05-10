@@ -131,7 +131,13 @@ describe('ReorderInitiativeHandler', () => {
     combatantRepo = makeCombatantRepo();
     initiativeRepo = makeInitiativeRepo();
     combatPublisher = makeCombatPublisher();
-    handler = new ReorderInitiativeHandler(repo, access, combatantRepo, initiativeRepo, combatPublisher);
+    handler = new ReorderInitiativeHandler(
+      repo,
+      access,
+      combatantRepo,
+      initiativeRepo,
+      combatPublisher,
+    );
 
     vi.mocked(access.getOwnerId).mockResolvedValue('user-1');
   });

@@ -111,7 +111,9 @@ describe('DeleteEncounterHandler', () => {
 
     // If the handler mistakenly tried to publish, it would fail at construction
     // (no COMBAT_PUBLISHER injected). The test just verifies the happy path completes.
-    await expect(handler.execute(new DeleteEncounterCommand('enc-1', 'user-1'))).resolves.toBeUndefined();
+    await expect(
+      handler.execute(new DeleteEncounterCommand('enc-1', 'user-1')),
+    ).resolves.toBeUndefined();
     expect(repo.delete).toHaveBeenCalledWith('enc-1');
   });
 });

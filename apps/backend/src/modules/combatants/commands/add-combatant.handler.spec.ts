@@ -157,7 +157,13 @@ describe('AddCombatantHandler', () => {
     combatantRepo = makeCombatantRepo();
     sourceLookup = makeSourceLookup();
     combatPublisher = makeCombatPublisher();
-    handler = new AddCombatantHandler(encounterRepo, access, combatantRepo, sourceLookup, combatPublisher);
+    handler = new AddCombatantHandler(
+      encounterRepo,
+      access,
+      combatantRepo,
+      sourceLookup,
+      combatPublisher,
+    );
 
     vi.mocked(access.getOwnerId).mockResolvedValue('user-1');
   });

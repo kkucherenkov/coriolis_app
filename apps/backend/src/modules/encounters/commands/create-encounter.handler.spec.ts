@@ -165,9 +165,7 @@ describe('CreateEncounterHandler', () => {
     const enc = makeEncounter();
     vi.mocked(repo.create).mockResolvedValue(enc);
     vi.mocked(combatantRepo.listByEncounter).mockResolvedValue([]);
-    vi.mocked(combatPublisher.publishUpdated).mockRejectedValueOnce(
-      new Error('Centrifugo down'),
-    );
+    vi.mocked(combatPublisher.publishUpdated).mockRejectedValueOnce(new Error('Centrifugo down'));
 
     const result = await handler.execute(new CreateEncounterCommand('gs-1', 'user-1', makeDto()));
 

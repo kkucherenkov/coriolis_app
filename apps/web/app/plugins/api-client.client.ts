@@ -32,8 +32,7 @@ export default defineNuxtPlugin(() => {
       // Content-Type and triggering 415 on every JSON POST/PATCH.
       // Seed the Headers from the Request (or init) and clone via Request
       // so the body / method / signal stay intact.
-      const baseHeaders =
-        init?.headers ?? (input instanceof Request ? input.headers : undefined);
+      const baseHeaders = init?.headers ?? (input instanceof Request ? input.headers : undefined);
       const headers = new Headers(baseHeaders);
       const token = readBearerToken();
       if (token && !headers.has('Authorization')) {

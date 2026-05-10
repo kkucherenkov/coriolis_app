@@ -1,9 +1,9 @@
 /**
- * Unit tests for sortInitiative pure function.
+ * Unit tests for the pure initiative domain functions.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { sortInitiative } from './initiative';
+import { MAX_REROLL_PASSES, rerollTies, sortInitiative } from './initiative';
 
 import type {
   CombatantWithSnapshot,
@@ -34,57 +34,32 @@ function makeCombatant(overrides: Partial<CombatantReadModel> = {}): CombatantRe
 function makeItem(
   id: string,
   initiative: number,
-  agility: number,
   createdAt = '2026-05-10T10:00:00.000Z',
-  combatantType: 'pc' | 'npc' = 'pc',
 ): CombatantWithSnapshot {
-  const combatant = makeCombatant({ id, initiative, combatantType, createdAt });
-
-  if (combatantType === 'pc') {
-    return {
-      combatant,
-      pcSnapshot: {
-        attributes: { strength: 2, agility, wits: 2, empathy: 2 },
-        skills: {},
-        hpMax: 4,
-      },
-      npcSnapshot: null,
-    };
-  }
-
   return {
-    combatant,
-    pcSnapshot: null,
-    npcSnapshot: {
-      attributes: { strength: 2, agility, wits: 2, empathy: 2 },
+    combatant: makeCombatant({ id, initiative, createdAt }),
+    pcSnapshot: {
+      attributes: { strength: 2, agility: 2, wits: 2, empathy: 2 },
       skills: {},
       hpMax: 4,
-      signature: 0,
     },
+    npcSnapshot: null,
   };
 }
 
 describe('sortInitiative', () => {
   it('sorts by initiative descending', () => {
-    const items = [makeItem('cb-low', 3, 2), makeItem('cb-high', 9, 2), makeItem('cb-mid', 6, 2)];
+    const items = [makeItem('cb-low', 2), makeItem('cb-high', 6), makeItem('cb-mid', 4)];
 
     const result = sortInitiative(items);
 
     expect(result.map((i) => i.combatant.id)).toEqual(['cb-high', 'cb-mid', 'cb-low']);
   });
 
-  it('breaks ties by agility descending', () => {
-    const items = [makeItem('cb-low-agi', 7, 2), makeItem('cb-high-agi', 7, 4)];
-
-    const result = sortInitiative(items);
-
-    expect(result.map((i) => i.combatant.id)).toEqual(['cb-high-agi', 'cb-low-agi']);
-  });
-
-  it('breaks agility ties by createdAt ascending (stable)', () => {
+  it('breaks lingering ties by createdAt ascending (stable fallback)', () => {
     const items = [
-      makeItem('cb-later', 5, 3, '2026-05-10T10:01:00.000Z'),
-      makeItem('cb-earlier', 5, 3, '2026-05-10T09:00:00.000Z'),
+      makeItem('cb-later', 4, '2026-05-10T10:01:00.000Z'),
+      makeItem('cb-earlier', 4, '2026-05-10T09:00:00.000Z'),
     ];
 
     const result = sortInitiative(items);
@@ -92,19 +67,8 @@ describe('sortInitiative', () => {
     expect(result.map((i) => i.combatant.id)).toEqual(['cb-earlier', 'cb-later']);
   });
 
-  it('works with NPC snapshots for agility tiebreak', () => {
-    const items = [
-      makeItem('npc-low', 6, 1, '2026-05-10T10:00:00.000Z', 'npc'),
-      makeItem('npc-high', 6, 5, '2026-05-10T10:00:00.000Z', 'npc'),
-    ];
-
-    const result = sortInitiative(items);
-
-    expect(result.at(0)?.combatant.id).toBe('npc-high');
-  });
-
   it('does not mutate the input array', () => {
-    const items = [makeItem('cb-1', 5, 2), makeItem('cb-2', 9, 2)];
+    const items = [makeItem('cb-1', 3), makeItem('cb-2', 6)];
     const originalFirst = items.at(0)?.combatant.id;
     const originalSecond = items.at(1)?.combatant.id;
 
@@ -115,25 +79,94 @@ describe('sortInitiative', () => {
   });
 
   it('handles a single combatant', () => {
-    const items = [makeItem('cb-solo', 7, 3)];
+    const items = [makeItem('cb-solo', 5)];
     const result = sortInitiative(items);
     expect(result).toHaveLength(1);
     expect(result.at(0)?.combatant.id).toBe('cb-solo');
   });
+});
 
-  it('falls back to 0 agility when snapshot is absent', () => {
-    const items: CombatantWithSnapshot[] = [
-      {
-        combatant: makeCombatant({ id: 'cb-no-snap', initiative: 5 }),
-        pcSnapshot: null,
-        npcSnapshot: null,
-      },
-      makeItem('cb-with-snap', 5, 3),
-    ];
+describe('rerollTies', () => {
+  it('returns the input unchanged when there are no ties', () => {
+    const items = [makeItem('cb-1', 5), makeItem('cb-2', 3), makeItem('cb-3', 6)];
+    const rollD6 = vi.fn(() => 4);
 
-    const result = sortInitiative(items);
+    const result = rerollTies(items, rollD6);
 
-    // cb-with-snap has agility 3, cb-no-snap has agility 0 → cb-with-snap first
-    expect(result.at(0)?.combatant.id).toBe('cb-with-snap');
+    expect(rollD6).not.toHaveBeenCalled();
+    expect(result.map((i) => i.combatant.initiative)).toEqual([5, 3, 6]);
+  });
+
+  it('rerolls only the tied combatants and resolves on the first pass', () => {
+    const items = [makeItem('cb-tied-a', 4), makeItem('cb-tied-b', 4), makeItem('cb-loner', 6)];
+    // Two tied → two reroll calls; produce distinct values.
+    const rollD6 = vi.fn<() => number>().mockReturnValueOnce(2).mockReturnValueOnce(5);
+
+    const result = rerollTies(items, rollD6);
+
+    expect(rollD6).toHaveBeenCalledTimes(2);
+    expect(result.find((i) => i.combatant.id === 'cb-tied-a')?.combatant.initiative).toBe(2);
+    expect(result.find((i) => i.combatant.id === 'cb-tied-b')?.combatant.initiative).toBe(5);
+    expect(result.find((i) => i.combatant.id === 'cb-loner')?.combatant.initiative).toBe(6);
+  });
+
+  it('keeps re-rolling tied combatants across passes until ties resolve', () => {
+    const items = [makeItem('cb-a', 3), makeItem('cb-b', 3)];
+    // Pass 1: both reroll to 4 → still tied.
+    // Pass 2: rerolls to 5 and 1 → resolved.
+    const rollD6 = vi
+      .fn<() => number>()
+      .mockReturnValueOnce(4)
+      .mockReturnValueOnce(4)
+      .mockReturnValueOnce(5)
+      .mockReturnValueOnce(1);
+
+    const result = rerollTies(items, rollD6);
+
+    expect(rollD6).toHaveBeenCalledTimes(4);
+    const values = result.map((i) => i.combatant.initiative).toSorted();
+    expect(values).toEqual([1, 5]);
+  });
+
+  it('gives up after MAX_REROLL_PASSES and leaves the (still-tied) values in place', () => {
+    const items = [makeItem('cb-a', 3), makeItem('cb-b', 3)];
+    // Always roll the same number → never resolves.
+    const rollD6 = vi.fn<() => number>().mockReturnValue(2);
+
+    const result = rerollTies(items, rollD6);
+
+    // 2 combatants × MAX_REROLL_PASSES passes
+    expect(rollD6).toHaveBeenCalledTimes(2 * MAX_REROLL_PASSES);
+    expect(result.every((i) => i.combatant.initiative === 2)).toBe(true);
+  });
+
+  it('does not mutate the input array', () => {
+    const items = [makeItem('cb-1', 4), makeItem('cb-2', 4)];
+    const originalInitiatives = items.map((i) => i.combatant.initiative);
+    const rollD6 = vi.fn<() => number>().mockReturnValue(6).mockReturnValueOnce(2);
+
+    rerollTies(items, rollD6);
+
+    expect(items.map((i) => i.combatant.initiative)).toEqual(originalInitiatives);
+  });
+
+  it('handles a single combatant (no ties possible)', () => {
+    const items = [makeItem('cb-solo', 4)];
+    const rollD6 = vi.fn(() => 1);
+
+    const result = rerollTies(items, rollD6);
+
+    expect(rollD6).not.toHaveBeenCalled();
+    expect(result.map((i) => i.combatant.id)).toEqual(['cb-solo']);
+  });
+
+  it('resolves a partial tie among three combatants without rolling for the loner', () => {
+    const items = [makeItem('cb-a', 5), makeItem('cb-b', 5), makeItem('cb-c', 6)];
+    const rollD6 = vi.fn<() => number>().mockReturnValueOnce(2).mockReturnValueOnce(4);
+
+    const result = rerollTies(items, rollD6);
+
+    expect(rollD6).toHaveBeenCalledTimes(2);
+    expect(result.find((i) => i.combatant.id === 'cb-c')?.combatant.initiative).toBe(6);
   });
 });

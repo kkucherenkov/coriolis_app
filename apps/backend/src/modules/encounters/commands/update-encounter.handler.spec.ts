@@ -13,7 +13,10 @@ import {
 import { UpdateEncounterCommand, UpdateEncounterDto } from './update-encounter.command';
 import { UpdateEncounterHandler } from './update-encounter.handler';
 
-import type { ICombatantCount, ICombatantRepo } from '../../../modules/combatants/domain/combatant.ports';
+import type {
+  ICombatantCount,
+  ICombatantRepo,
+} from '../../../modules/combatants/domain/combatant.ports';
 import type { IGameSessionAccess } from '../domain/game-session-access.ports';
 import type { EncounterReadModel, IEncounterRepo } from '../domain/encounter.ports';
 import type { ICombatPublisher } from '../infra/combat.publisher';
@@ -91,7 +94,13 @@ describe('UpdateEncounterHandler', () => {
     combatantCount = makeCombatantCount(0);
     combatantRepo = makeCombatantRepo();
     combatPublisher = makeCombatPublisher();
-    handler = new UpdateEncounterHandler(repo, access, combatantCount, combatantRepo, combatPublisher);
+    handler = new UpdateEncounterHandler(
+      repo,
+      access,
+      combatantCount,
+      combatantRepo,
+      combatPublisher,
+    );
     vi.mocked(access.getOwnerId).mockResolvedValue('user-1');
   });
 
@@ -314,9 +323,7 @@ describe('UpdateEncounterHandler', () => {
     const updated = makeEncounter({ name: 'Renamed' });
     vi.mocked(repo.update).mockResolvedValue(updated);
     vi.mocked(combatantRepo.listByEncounter).mockResolvedValue([]);
-    vi.mocked(combatPublisher.publishUpdated).mockRejectedValueOnce(
-      new Error('Centrifugo down'),
-    );
+    vi.mocked(combatPublisher.publishUpdated).mockRejectedValueOnce(new Error('Centrifugo down'));
 
     const result = await handler.execute(
       new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ name: 'Renamed' })),

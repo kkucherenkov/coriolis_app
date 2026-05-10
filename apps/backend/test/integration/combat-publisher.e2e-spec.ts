@@ -126,98 +126,96 @@ function makeCombatantSnapshot(encounterId: string): CombatantReadModel {
 
 describe('T-007 Block 5 — combat.updated channel delivery', () => {
   it('subscriber receives combat.updated within 1000ms of publish', async () => {
-      if (!centrifugoUp) {
-        console.log(
-          '[SKIP] Centrifugo not reachable — start the Docker stack to run this test.',
-        );
-        return;
-      }
+    if (!centrifugoUp) {
+      console.log('[SKIP] Centrifugo not reachable — start the Docker stack to run this test.');
+      return;
+    }
 
-      const sessionId = 'test-gs-combat-e2e-1';
-      const encounterId = 'test-enc-e2e-1';
-      const channel = `session.${sessionId}`;
-      const userId = 'test-user-gm-combat';
-      const token = makeCentrifugoJwt(userId, [channel]);
+    const sessionId = 'test-gs-combat-e2e-1';
+    const encounterId = 'test-enc-e2e-1';
+    const channel = `session.${sessionId}`;
+    const userId = 'test-user-gm-combat';
+    const token = makeCentrifugoJwt(userId, [channel]);
 
-      // Build publisher with the real CentrifugoClient (talks to Docker stack)
-      const config = makeAppConfig();
-      const centrifugoClient = new CentrifugoClient(config);
-      const publisher = new CentrifugoCombatPublisher(centrifugoClient);
+    // Build publisher with the real CentrifugoClient (talks to Docker stack)
+    const config = makeAppConfig();
+    const centrifugoClient = new CentrifugoClient(config);
+    const publisher = new CentrifugoCombatPublisher(centrifugoClient);
 
-      const encounter = makeEncounterSnapshot(sessionId, encounterId);
-      const combatants = [makeCombatantSnapshot(encounterId)];
+    const encounter = makeEncounterSnapshot(sessionId, encounterId);
+    const combatants = [makeCombatantSnapshot(encounterId)];
 
-      const received = await new Promise<Record<string, unknown>>((resolve, reject) => {
-        const ws = new WebSocket(`${CENTRIFUGO_WS_URL}/connection/websocket?cf_token=${token}`);
-        const timeout = setTimeout(() => {
-          ws.close();
-          reject(new Error('Timed out waiting for combat.updated within 1000ms'));
-        }, 1000);
+    const received = await new Promise<Record<string, unknown>>((resolve, reject) => {
+      const ws = new WebSocket(`${CENTRIFUGO_WS_URL}/connection/websocket?cf_token=${token}`);
+      const timeout = setTimeout(() => {
+        ws.close();
+        reject(new Error('Timed out waiting for combat.updated within 1000ms'));
+      }, 1000);
 
-        ws.addEventListener('open', () => {
-          ws.send(JSON.stringify({ id: 1, connect: {} }));
-        });
-
-        let connected = false;
-        ws.addEventListener('message', (event: MessageEvent) => {
-          const msg = JSON.parse(event.data as string) as Record<string, unknown>;
-
-          if (!connected && 'connect' in msg) {
-            connected = true;
-            ws.send(JSON.stringify({ id: 2, subscribe: { channel } }));
-            return;
-          }
-
-          if ('subscribe' in msg) {
-            // Subscription confirmed — trigger publish via the real publisher
-            publisher.publishUpdated(sessionId, encounter, combatants).catch((err: unknown) => {
-              clearTimeout(timeout);
-              ws.close();
-              reject(err instanceof Error ? err : new Error(String(err)));
-            });
-            return;
-          }
-
-          if ('push' in msg) {
-            const push = msg['push'] as Record<string, unknown>;
-            const pub = push['pub'] as Record<string, unknown> | undefined;
-            if (pub && push['channel'] === channel) {
-              clearTimeout(timeout);
-              ws.close();
-              resolve(pub['data'] as Record<string, unknown>);
-            }
-          }
-        });
-
-        ws.addEventListener('error', (err: Event) => {
-          clearTimeout(timeout);
-          reject(new Error(`WebSocket error: ${String(err)}`));
-        });
+      ws.addEventListener('open', () => {
+        ws.send(JSON.stringify({ id: 1, connect: {} }));
       });
 
-      // Verify envelope shape matches AsyncAPI CombatUpdated schema
-      expect(received).toMatchObject({
+      let connected = false;
+      ws.addEventListener('message', (event: MessageEvent) => {
+        const msg = JSON.parse(event.data as string) as Record<string, unknown>;
+
+        if (!connected && 'connect' in msg) {
+          connected = true;
+          ws.send(JSON.stringify({ id: 2, subscribe: { channel } }));
+          return;
+        }
+
+        if ('subscribe' in msg) {
+          // Subscription confirmed — trigger publish via the real publisher
+          publisher.publishUpdated(sessionId, encounter, combatants).catch((err: unknown) => {
+            clearTimeout(timeout);
+            ws.close();
+            reject(err instanceof Error ? err : new Error(String(err)));
+          });
+          return;
+        }
+
+        if ('push' in msg) {
+          const push = msg['push'] as Record<string, unknown>;
+          const pub = push['pub'] as Record<string, unknown> | undefined;
+          if (pub && push['channel'] === channel) {
+            clearTimeout(timeout);
+            ws.close();
+            resolve(pub['data'] as Record<string, unknown>);
+          }
+        }
+      });
+
+      ws.addEventListener('error', (err: Event) => {
+        clearTimeout(timeout);
+        reject(new Error(`WebSocket error: ${String(err)}`));
+      });
+    });
+
+    // Verify envelope shape matches AsyncAPI CombatUpdated schema
+    expect(received).toMatchObject({
+      gameSessionId: sessionId,
+      encounterId,
+      encounter: expect.objectContaining({
+        id: encounterId,
         gameSessionId: sessionId,
-        encounterId,
-        encounter: expect.objectContaining({
-          id: encounterId,
-          gameSessionId: sessionId,
-          status: 'active',
-          round: 1,
+        status: 'active',
+        round: 1,
+      }),
+      combatants: expect.arrayContaining([
+        expect.objectContaining({
+          id: 'test-comb-1',
+          name: 'Test Guard', // displayName → name mapping
+          referenceId: 'test-npc-1', // sourceId → referenceId mapping
+          initiative: 7,
+          turnOrder: 0,
+          hpCurrent: 6,
+          hpMax: 6,
         }),
-        combatants: expect.arrayContaining([
-          expect.objectContaining({
-            id: 'test-comb-1',
-            name: 'Test Guard',     // displayName → name mapping
-            referenceId: 'test-npc-1', // sourceId → referenceId mapping
-            initiative: 7,
-            turnOrder: 0,
-            hpCurrent: 6,
-            hpMax: 6,
-          }),
-        ]),
-      });
-      expect(typeof received['at']).toBe('string');
-      expect(new Date(received['at'] as string).toISOString()).toBe(received['at']);
+      ]),
+    });
+    expect(typeof received['at']).toBe('string');
+    expect(new Date(received['at'] as string).toISOString()).toBe(received['at']);
   });
 });

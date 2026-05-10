@@ -7,12 +7,17 @@
  * 2. Guard: status must be 'setup' (ENCOUNTER_INVALID_TRANSITION).
  * 3. Guard: encounter must have ≥1 combatant (ENCOUNTER_NO_COMBATANTS).
  * 4. Load combatants with snapshots (single query, no N+1).
- * 5. Roll initiative for each via crypto.randomInt(1, 11).
- * 6. Sort: sortInitiative() — initiative desc, agility desc, createdAt asc.
- * 7. Assign turnOrder 0..N-1.
- * 8. Persist atomically; encounter → active, round=1, activeCombatantId=first.
- * 9. Publish combat.updated snapshot (non-fatal).
- * 10. Return InitiativeRollResult.
+ * 5. Roll a d6 for each combatant via crypto.randomInt(1, 7) — ST3001
+ *    ГЛАВА 5 «Бросьте по кубику за всех участников сражения».
+ * 6. Reroll d6 for ties (ST3001 ГЛАВА 5: «В случае ничьей… бросьте ещё
+ *    по одному кубику, только на этот раз безо всяких модификаторов»),
+ *    up to rerollTies() bounded passes.
+ * 7. Sort: sortInitiative() — initiative desc, createdAt asc as a stable
+ *    fallback for combatants still tied after the reroll budget.
+ * 8. Assign turnOrder 0..N-1.
+ * 9. Persist atomically; encounter → active, round=1, activeCombatantId=first.
+ * 10. Publish combat.updated snapshot (non-fatal).
+ * 11. Return InitiativeRollResult.
  */
 import { randomInt } from 'node:crypto';
 import { Inject, Logger } from '@nestjs/common';
@@ -27,7 +32,7 @@ import {
 } from '../domain/encounter.errors';
 import { GAME_SESSION_ACCESS } from '../domain/game-session-access.ports';
 import { ENCOUNTER_REPO, INITIATIVE_REPO } from '../domain/encounter.ports';
-import { sortInitiative } from '../domain/initiative';
+import { rerollTies, sortInitiative } from '../domain/initiative';
 import { COMBAT_PUBLISHER } from '../infra/combat.publisher';
 
 import { RollInitiativeCommand } from './roll-initiative.command';
@@ -82,17 +87,18 @@ export class RollInitiativeHandler implements ICommandHandler<
       throw new EncounterNoCombatantsError();
     }
 
-    // 6. Roll initiative for each combatant
+    // 6. Roll a d6 for each combatant (ST3001 ГЛАВА 5)
     const withRolls = combatantsWithSnapshots.map((item) => ({
       ...item,
       combatant: {
         ...item.combatant,
-        initiative: randomInt(1, 11), // 1..10 inclusive
+        initiative: randomInt(1, 7), // 1..6 inclusive
       },
     }));
 
-    // 7. Sort: initiative desc, agility desc, createdAt asc
-    const sorted = sortInitiative(withRolls);
+    // 7. Reroll d6 for ties (bounded passes) and sort
+    const broken = rerollTies(withRolls, () => randomInt(1, 7));
+    const sorted = sortInitiative(broken);
 
     // 8. Assign turnOrder 0..N-1
     const combatantPatches = sorted.map((item, index) => ({
