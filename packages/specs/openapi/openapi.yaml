@@ -6433,13 +6433,6 @@ components:
         Distinct from `ShipWeaponRange` (5-band ship-combat ladder
         from ГЛАВА 7 Table 7.9 — that enum keeps its `zero` band).
 
-    ItemSlotType:
-      type: string
-      enum: [bridge, hull, hold, weapon, drive, sensor, comms]
-      description: |
-        Ship module slot type. Used only for SHIP_MODULE items. Matches the
-        slot categories from Coriolis core book ship construction rules.
-
     RelationshipKind:
       type: string
       enum: [ally, rival, family, mentor, debtor, creditor]
@@ -6876,7 +6869,7 @@ components:
               type: string
               enum: [SHIP_MODULE]
             slot:
-              $ref: "#/components/schemas/ItemSlotType"
+              $ref: "#/components/schemas/ShipModuleSlot"
             effect:
               type: string
               description: Description of the module's effect and energy use
@@ -7054,14 +7047,14 @@ components:
           type: string
           minLength: 1
         slot:
-          $ref: "#/components/schemas/ItemSlotType"
+          $ref: "#/components/schemas/ShipModuleSlot"
         effect:
           type: string
           description: Description of the module's effect and energy use
       example:
         type: SHIP_MODULE
         name: Sensor Upgrade Mk I
-        slot: sensor
+        slot: SENSOR
         effect: +1 die to sensor checks
 
     ItemOtherCreate:
@@ -7207,7 +7200,7 @@ components:
           type: string
           minLength: 1
         slot:
-          $ref: "#/components/schemas/ItemSlotType"
+          $ref: "#/components/schemas/ShipModuleSlot"
         effect:
           type: string
       example:
@@ -7860,12 +7853,18 @@ components:
         - PROXY-DECK
         - OTHER
       description: |
-        Ship module slot type per ST3001 ГЛАВА 7 mandatory and optional module
-        catalogue. `BRIDGE`, `REACTOR`, `DRIVE` are mandatory on every ship.
-        All others are optional and consume module slots. The existing
-        `ItemSlotType` enum covers character-inventory ship modules; this enum
-        covers actual installed ship modules and provides richer coverage of
-        the full ГЛАВА 7 catalogue.
+        Ship module slot type per ST3001 ГЛАВА 7 mandatory and optional
+        module catalogue. `BRIDGE`, `REACTOR`, `DRIVE` are mandatory on
+        every ship; all others are optional and consume module slots.
+        Used for both character-inventory SHIP_MODULE items (modules
+        the character carries to install) and ship-side module slots
+        (modules already installed). Block H of T-2026-05-10-010
+        retired the lower-case 7-value `ItemSlotType` enum that used
+        to scope inventory items separately — the two contexts now
+        share this single canonical enum. Migration mapping for legacy
+        item data: `bridge → BRIDGE`, `hull → OTHER` (no canonical
+        hull slot), `hold → HOLD`, `weapon → WEAPON`, `drive → DRIVE`,
+        `sensor → SENSOR`, `comms → COMMS`.
 
     ShipWeaponRange:
       type: string
