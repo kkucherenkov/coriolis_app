@@ -47,6 +47,7 @@ function makeCombatantRepo(): ICombatantRepo {
   return {
     findById: vi.fn(),
     listByEncounter: vi.fn(),
+    listByEncounterWithSnapshot: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),

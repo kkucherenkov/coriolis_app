@@ -60,3 +60,65 @@ export interface IEncounterRepo {
 
   delete(id: string): Promise<void>;
 }
+
+// --------------- Initiative transactions ---------------
+
+export interface CombatantInitiativePatch {
+  id: string;
+  initiative: number;
+  turnOrder: number;
+}
+
+export interface RollInitiativeData {
+  encounterId: string;
+  combatantPatches: CombatantInitiativePatch[];
+  /** New encounter state after roll */
+  activeCombatantId: string;
+}
+
+export interface ReorderInitiativeData {
+  encounterId: string;
+  /** Ordered list of combatant ids; index = new turnOrder */
+  orderedIds: string[];
+}
+
+export interface AdvanceTurnData {
+  encounterId: string;
+  activeCombatantId: string;
+  round: number;
+}
+
+/** Rolled/reordered combatant read model (includes initiative fields) */
+export interface InitiativeRollResult {
+  round: number;
+  combatants: import('../../combatants/domain/combatant.ports').CombatantReadModel[];
+}
+
+export interface TurnAdvanceResult {
+  activeCombatantId: string;
+  round: number;
+  isNewRound: boolean;
+}
+
+export const INITIATIVE_REPO = Symbol('INITIATIVE_REPO');
+
+export interface IInitiativeRepo {
+  /**
+   * Atomically: updates all combatant initiative/turnOrder fields,
+   * transitions encounter setup→active, sets round=1 and activeCombatantId.
+   * Returns combatants sorted by turnOrder asc.
+   */
+  rollInitiative(data: RollInitiativeData): Promise<InitiativeRollResult>;
+
+  /**
+   * Atomically: reassigns turnOrder to match orderedIds array positions.
+   * Does NOT touch initiative, activeCombatantId, or round.
+   * Returns combatants sorted by new turnOrder asc.
+   */
+  reorderInitiative(data: ReorderInitiativeData): Promise<InitiativeRollResult>;
+
+  /**
+   * Atomically: advances activeCombatantId and optionally increments round.
+   */
+  advanceTurn(data: AdvanceTurnData): Promise<void>;
+}

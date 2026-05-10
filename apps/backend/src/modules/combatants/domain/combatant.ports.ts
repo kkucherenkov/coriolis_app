@@ -86,12 +86,21 @@ export interface CombatantUpdateData {
   turnOrder?: number | null;
 }
 
+export interface CombatantWithSnapshot {
+  combatant: CombatantReadModel;
+  pcSnapshot: PcSnapshot | null;
+  npcSnapshot: NpcSnapshot | null;
+}
+
 export const COMBATANT_REPO = Symbol('COMBATANT_REPO');
 
 export interface ICombatantRepo {
   findById(id: string): Promise<CombatantReadModel | null>;
 
   listByEncounter(encounterId: string): Promise<CombatantReadModel[]>;
+
+  /** Loads combatants with their snapshots in a single query (Block 4 initiative). */
+  listByEncounterWithSnapshot(encounterId: string): Promise<CombatantWithSnapshot[]>;
 
   create(data: CombatantCreateData): Promise<CombatantReadModel>;
 

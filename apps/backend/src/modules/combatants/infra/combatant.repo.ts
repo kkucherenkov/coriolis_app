@@ -21,6 +21,7 @@ import type {
   CombatantReadModel,
   CombatantTypeValue,
   CombatantUpdateData,
+  CombatantWithSnapshot,
   ICombatantCount,
   ICombatantRepo,
   NpcSnapshot,
@@ -134,6 +135,23 @@ export class CombatantRepo implements ICombatantRepo, ICombatantCount {
       orderBy: [{ turnOrder: 'asc' }, { createdAt: 'asc' }],
     });
     return rows.map((r) => toReadModel(r));
+  }
+
+  async listByEncounterWithSnapshot(encounterId: string): Promise<CombatantWithSnapshot[]> {
+    const rows = await this.prisma.combatant.findMany({
+      where: { encounterId },
+      select: {
+        ...COMBATANT_SELECT,
+        pcSnapshot: true,
+        npcSnapshot: true,
+      },
+      orderBy: [{ createdAt: 'asc' }],
+    });
+    return rows.map((r) => ({
+      combatant: toReadModel(r),
+      pcSnapshot: r.pcSnapshot as PcSnapshot | null,
+      npcSnapshot: r.npcSnapshot as NpcSnapshot | null,
+    }));
   }
 
   async create(data: CombatantCreateData): Promise<CombatantReadModel> {

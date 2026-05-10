@@ -53,3 +53,61 @@ export class EncounterNoCombatantsError extends DomainError {
     });
   }
 }
+
+export class EncounterInvalidStatusError extends DomainError {
+  readonly extensions: { currentStatus: string; expectedStatus: string };
+
+  constructor(currentStatus: string, expectedStatus: string, context: string) {
+    super({
+      code: 'ENCOUNTER_INVALID_STATUS',
+      status: 422,
+      title: 'Invalid encounter status',
+      detail: `${context} Current status: ${currentStatus}.`,
+    });
+    this.extensions = { currentStatus, expectedStatus };
+  }
+}
+
+export class EncounterInitiativeNotRolledError extends DomainError {
+  constructor() {
+    super({
+      code: 'ENCOUNTER_INITIATIVE_NOT_ROLLED',
+      status: 422,
+      title: 'Initiative not rolled',
+      detail: 'activeCombatantId is null — roll initiative before advancing turns.',
+    });
+  }
+}
+
+export class InitiativeDuplicateError extends DomainError {
+  constructor(duplicateId: string) {
+    super({
+      code: 'INITIATIVE_DUPLICATE',
+      status: 422,
+      title: 'Duplicate combatant id',
+      detail: `${duplicateId} appears more than once in combatantIds.`,
+    });
+  }
+}
+
+export class InitiativeUnknownCombatantError extends DomainError {
+  constructor(unknownId: string, encounterId: string) {
+    super({
+      code: 'INITIATIVE_UNKNOWN_COMBATANT',
+      status: 422,
+      title: 'Unknown combatant',
+      detail: `${unknownId} does not belong to encounter ${encounterId}.`,
+    });
+  }
+}
+
+export class InitiativeIncompleteError extends DomainError {
+  constructor(missingId: string) {
+    super({
+      code: 'INITIATIVE_INCOMPLETE',
+      status: 422,
+      title: 'Incomplete initiative order',
+      detail: `combatantIds is missing id: ${missingId}. Every combatant must appear exactly once.`,
+    });
+  }
+}
