@@ -80,13 +80,19 @@
         polish). Ship-share parity captured as a deferred
         follow-up — Phase 5 PRD scope ("ship sharing") did
         not ship.
-  - [ ] Block 5 — `phase-6.md` (NPC + Encounter +
+  - [x] Block 5 — `phase-6.md` (NPC + Encounter +
         Combatant + initiative + combat realtime backend,
-        ST3001 canon remediation). Cut `phase-6-be-complete`
-        at the T-007 final commit. Note in the summary that
-        `phase-6-complete` is intentionally deferred until
-        T-008 (web tracker) and T-2026-05-11-002
-        (mobile read-along) land.
+        ST3001 canon remediation). Tag `phase-6-be-complete`
+        cut at `5c04d49` (HEAD before this task's docs ran)
+        — final backend commit covering all Phase 6 backend
+        + canon remediation + Block J spin-offs. 119 commits
+        classified into 6 groups (T-006 spec, T-007 backend,
+        T-010 + T-012..T-016 canon remediation crowned by
+        OpenAPI v1.0.0 major bump, T-011 wizard role picker,
+        T-017 Playwright bootstrap, T-018 web global nav).
+        `phase-6-complete` deliberately deferred — reserved
+        for when T-008 + T-2026-05-11-002 (web tracker + mobile
+        read-along) land.
 - Status: in-progress
 - Blockers: —
 
