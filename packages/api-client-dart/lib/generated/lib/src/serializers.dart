@@ -97,6 +97,7 @@ import 'package:app_api_client/src/model/problem.dart';
 import 'package:app_api_client/src/model/realtime_token.dart';
 import 'package:app_api_client/src/model/relationship.dart';
 import 'package:app_api_client/src/model/relationship_kind.dart';
+import 'package:app_api_client/src/model/role.dart';
 import 'package:app_api_client/src/model/roll.dart';
 import 'package:app_api_client/src/model/roll_create.dart';
 import 'package:app_api_client/src/model/roll_list.dart';
@@ -228,6 +229,7 @@ part 'serializers.g.dart';
   RealtimeToken,
   Relationship,
   RelationshipKind,
+  Role,
   Roll,
   RollCreate,
   RollList,

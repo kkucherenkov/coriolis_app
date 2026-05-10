@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **name** | **String** |  | 
 **concept** | [**Concept**](Concept.md) |  | [optional] 
+**role** | [**Role**](Role.md) |  | [optional] 
 **iconId** | [**IconId**](IconId.md) |  | [optional] 
 **upbringing** | [**Upbringing**](Upbringing.md) |  | 
 **origin** | **String** |  | [optional] 

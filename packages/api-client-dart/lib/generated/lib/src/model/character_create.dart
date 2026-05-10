@@ -13,6 +13,7 @@ import 'package:built_collection/built_collection.dart';
 import 'package:app_api_client/src/model/character_create_hp.dart';
 import 'package:app_api_client/src/model/concept.dart';
 import 'package:app_api_client/src/model/icon_id.dart';
+import 'package:app_api_client/src/model/role.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -23,6 +24,7 @@ part 'character_create.g.dart';
 /// Properties:
 /// * [name] 
 /// * [concept] 
+/// * [role] 
 /// * [iconId] 
 /// * [upbringing] 
 /// * [origin] 
@@ -45,6 +47,10 @@ abstract class CharacterCreate implements Built<CharacterCreate, CharacterCreate
   @BuiltValueField(wireName: r'concept')
   Concept? get concept;
   // enum conceptEnum {  artist,  networker,  fugitive,  negotiator,  operative,  pilot,  pioneer,  preacher,  scientist,  sailor,  soldier,  };
+
+  @BuiltValueField(wireName: r'role')
+  Role? get role;
+  // enum roleEnum {  companion,  musician,  poet,  analyst,  correspondent,  network-djinn,  criminal,  mystic,  revolutionary,  agitator,  diplomat,  dealer,  assassin,  guard,  spy,  ace,  driver,  trucker,  colonist,  prospector,  scout,  ascetic,  missionary,  prophet,  archaeologist,  medicurg,  technologist,  ship-engineer,  labourer,  loader,  legionnaire,  mercenary,  officer,  };
 
   @BuiltValueField(wireName: r'iconId')
   IconId? get iconId;
@@ -131,6 +137,13 @@ class _$CharacterCreateSerializer implements PrimitiveSerializer<CharacterCreate
       yield serializers.serialize(
         object.concept,
         specifiedType: const FullType.nullable(Concept),
+      );
+    }
+    if (object.role != null) {
+      yield r'role';
+      yield serializers.serialize(
+        object.role,
+        specifiedType: const FullType.nullable(Role),
       );
     }
     if (object.iconId != null) {
@@ -266,6 +279,14 @@ class _$CharacterCreateSerializer implements PrimitiveSerializer<CharacterCreate
           ) as Concept?;
           if (valueDes == null) continue;
           result.concept = valueDes;
+          break;
+        case r'role':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Role),
+          ) as Role?;
+          if (valueDes == null) continue;
+          result.role = valueDes;
           break;
         case r'iconId':
           final valueDes = serializers.deserialize(

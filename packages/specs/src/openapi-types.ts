@@ -1404,6 +1404,73 @@ export interface components {
       | 'sailor'
       | 'soldier';
     /**
+     * @description Coriolis canonical role (роль) within an amplua (ГЛАВА 2
+     *     «АМПЛУА И РОЛИ»). The 11 amplua each have exactly three roles;
+     *     a character picks one role at creation. The role narrows the
+     *     amplua's union of key skills to exactly four of them — those
+     *     four are the character's own key skills.
+     *
+     *     Skill caps at creation time (per ST3001 ch.2):
+     *     - Key skill (role's four): up to 3 points
+     *     - Non-key skill: up to 1 point
+     *
+     *     Role + concept together drive the creation-time validation;
+     *     the server enforces `ROLE_CONCEPT_MISMATCH` when the chosen
+     *     role does not belong to the chosen concept.
+     *
+     *     Role names are unique across all amplua, so this enum is flat.
+     *
+     *     Russian display names:
+     *     companion=Компаньон, musician=Музыкант, poet=Поэт,
+     *     analyst=Аналитик, correspondent=Корреспондент,
+     *     network-djinn=Сетевой джинн, criminal=Преступник,
+     *     mystic=Мистик, revolutionary=Революционер,
+     *     agitator=Агитатор, diplomat=Дипломат, dealer=Делец,
+     *     assassin=Ассасин, guard=Стражник, spy=Шпион,
+     *     ace=Ас, driver=Водитель, trucker=Дальнобойщик,
+     *     colonist=Колонист, prospector=Старатель, scout=Скаут,
+     *     ascetic=Аскет, missionary=Миссионер, prophet=Пророк,
+     *     archaeologist=Археолог, medicurg=Медикург,
+     *     technologist=Технологик, ship-engineer=Бортинженер,
+     *     labourer=Разнорабочий, loader=Грузчик,
+     *     legionnaire=Легионер, mercenary=Наёмник, officer=Офицер.
+     * @enum {string}
+     */
+    Role:
+      | 'companion'
+      | 'musician'
+      | 'poet'
+      | 'analyst'
+      | 'correspondent'
+      | 'network-djinn'
+      | 'criminal'
+      | 'mystic'
+      | 'revolutionary'
+      | 'agitator'
+      | 'diplomat'
+      | 'dealer'
+      | 'assassin'
+      | 'guard'
+      | 'spy'
+      | 'ace'
+      | 'driver'
+      | 'trucker'
+      | 'colonist'
+      | 'prospector'
+      | 'scout'
+      | 'ascetic'
+      | 'missionary'
+      | 'prophet'
+      | 'archaeologist'
+      | 'medicurg'
+      | 'technologist'
+      | 'ship-engineer'
+      | 'labourer'
+      | 'loader'
+      | 'legionnaire'
+      | 'mercenary'
+      | 'officer';
+    /**
      * @description Social stratum a character was raised in (Coriolis core book ch.2,
      *     table 2.2 — "Воспитание"). Upbringing is set once at character
      *     creation and is **immutable**; it determines the starting
@@ -2081,6 +2148,16 @@ export interface components {
        *     reputation modifier applied on top of `upbringing`.
        */
       concept: components['schemas']['Concept'] | null;
+      /**
+       * @description The character's chosen role (роль) within their amplua. Nullable
+       *     for drafts and for legacy characters created before role-tracking
+       *     landed; the wizard prompts for a role on the next edit when
+       *     `role` is null but `concept` is set ("unmigrated"). Once the
+       *     character is `active`, the server enforces that the role belongs
+       *     to the chosen `concept` — `ROLE_CONCEPT_MISMATCH` is returned
+       *     otherwise.
+       */
+      role?: components['schemas']['Role'] | null;
       /** @description One of the Nine Icons, or null if not chosen yet */
       iconId: components['schemas']['IconId'] | null;
       /**
@@ -2202,6 +2279,13 @@ export interface components {
     CharacterCreate: {
       name: string;
       concept?: components['schemas']['Concept'] | null;
+      /**
+       * @description Optional role within the chosen amplua. Step 5 of the creation
+       *     wizard (skill distribution) is now preceded by a role pick within
+       *     the chosen amplua. Must belong to `concept` when both are set;
+       *     validated server-side with `ROLE_CONCEPT_MISMATCH`.
+       */
+      role?: components['schemas']['Role'] | null;
       iconId?: components['schemas']['IconId'] | null;
       upbringing: components['schemas']['Upbringing'];
       origin?: string | null;
@@ -2283,6 +2367,15 @@ export interface components {
        *     becomes immutable.
        */
       concept?: components['schemas']['Concept'] | null;
+      /**
+       * @description The character's role within their amplua. Allowed while
+       *     `status` is `draft`; once `active`, the server enforces that
+       *     the role matches the chosen concept — `ROLE_CONCEPT_MISMATCH`.
+       *     Changing the concept while drafting should clear or re-validate
+       *     the role. Step 5 of the creation wizard (skill distribution) is
+       *     now preceded by a role pick within the chosen amplua.
+       */
+      role?: components['schemas']['Role'] | null;
       iconId?: components['schemas']['IconId'] | null;
       /**
        * @description Allowed only while `status` is `draft` — used by the wizard

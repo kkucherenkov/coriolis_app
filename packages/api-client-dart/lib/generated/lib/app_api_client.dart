@@ -105,6 +105,7 @@ export 'package:app_api_client/src/model/problem.dart';
 export 'package:app_api_client/src/model/realtime_token.dart';
 export 'package:app_api_client/src/model/relationship.dart';
 export 'package:app_api_client/src/model/relationship_kind.dart';
+export 'package:app_api_client/src/model/role.dart';
 export 'package:app_api_client/src/model/roll.dart';
 export 'package:app_api_client/src/model/roll_create.dart';
 export 'package:app_api_client/src/model/roll_list.dart';
