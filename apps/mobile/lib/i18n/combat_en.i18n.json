@@ -1,0 +1,17 @@
+{
+  "cardTitle": "Active Combat",
+  "emptyHeading": "No active encounter",
+  "emptyBody": "Combat begins when the GM starts an encounter.",
+  "errorHeading": "Failed to load combat",
+  "retryButton": "Retry",
+  "stateSetup": "Setup",
+  "stateActive": "Active",
+  "stateEnded": "Ended",
+  "stateUnknown": "Unknown",
+  "hp": "HP",
+  "mp": "MP",
+  "flagIncapacitated": "Incapacitated",
+  "flagProne": "Prone",
+  "flagCovered": "Covered",
+  "roundLabel": "Round"
+}

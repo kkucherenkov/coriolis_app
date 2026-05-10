@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import 'dart:async';
 
 import 'package:coriolis_companion/features/auth/domain/auth_repository.dart';
+import 'package:coriolis_companion/features/combat/presentation/blocs/active_combat/active_combat_cubit.dart';
+import 'package:coriolis_companion/features/combat/presentation/widgets/active_combat_card.dart';
 import 'package:coriolis_companion/features/sessions/domain/game_session.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/session_detail/session_detail_cubit.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/session_detail/session_detail_state.dart';
@@ -25,8 +27,15 @@ class SessionDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<SessionDetailCubit>(
-      create: (_) => getIt<SessionDetailCubit>()..load(sessionId),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<SessionDetailCubit>(
+          create: (_) => getIt<SessionDetailCubit>()..load(sessionId),
+        ),
+        BlocProvider<ActiveCombatCubit>(
+          create: (_) => getIt<ActiveCombatCubit>()..load(sessionId),
+        ),
+      ],
       child: _SessionDetailBody(sessionId: sessionId),
     );
   }
@@ -203,6 +212,8 @@ class _DetailContentState extends State<_DetailContent> {
           submitting: widget.dpSubmitting,
           error: widget.dpError,
         ),
+        const SizedBox(height: 12),
+        ActiveCombatCard(sessionId: widget.session.id),
         const SizedBox(height: 12),
         _CharactersCard(characterIds: s.characterIds),
         if (widget.isGm) ...[

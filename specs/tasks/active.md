@@ -70,9 +70,17 @@
         class idiom (matches sessions/characters cubits,
         no freezed). 8 cubit tests added — total combat
         scope 15/15 passing.
-  - [ ] Block 3 — `ActiveCombatCard` widget integrated
+  - [x] Block 3 — `ActiveCombatCard` widget integrated
         into the session detail screen. Empty / active /
-        ended state goldens.
+        ended state widget tests (11 widget tests). Card
+        listens to ActiveCombatCubit, renders read-only
+        combatant list ordered by turnOrder, canonical
+        flag chips (incapacitated / prone / covered) with
+        themed icons + free-form chips. Mounted below the
+        DP counter via MultiBlocProvider. i18n: 4 new
+        combat_*.i18n.json source files (ru full, uk + el
+        placeholders); strings_*.g.dart regenerated via
+        `dart run slang`.
   - [ ] Block 4 — Realtime: extend the existing
         `session.{id}` subscription router (T-003) to
         branch on `payload.type` and feed `combat.updated`

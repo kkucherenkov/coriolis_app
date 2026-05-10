@@ -1,0 +1,17 @@
+{
+  "cardTitle": "Активный бой",
+  "emptyHeading": "Нет активной схватки",
+  "emptyBody": "Бой начнётся, когда Мастер запустит схватку.",
+  "errorHeading": "Не удалось загрузить бой",
+  "retryButton": "Повторить",
+  "stateSetup": "Подготовка",
+  "stateActive": "Активно",
+  "stateEnded": "Завершено",
+  "stateUnknown": "Неизвестно",
+  "hp": "ОЗ",
+  "mp": "ОД",
+  "flagIncapacitated": "Нетрудоспособен",
+  "flagProne": "Лёжа",
+  "flagCovered": "В укрытии",
+  "roundLabel": "Раунд"
+}

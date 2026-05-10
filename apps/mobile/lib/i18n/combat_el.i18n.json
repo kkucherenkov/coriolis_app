@@ -1,0 +1,17 @@
+{
+  "cardTitle": "[el-todo] Active Combat",
+  "emptyHeading": "[el-todo] No active encounter",
+  "emptyBody": "[el-todo] Combat begins when the GM starts an encounter.",
+  "errorHeading": "[el-todo] Failed to load combat",
+  "retryButton": "[el-todo] Retry",
+  "stateSetup": "[el-todo] Setup",
+  "stateActive": "[el-todo] Active",
+  "stateEnded": "[el-todo] Ended",
+  "stateUnknown": "[el-todo] Unknown",
+  "hp": "[el-todo] HP",
+  "mp": "[el-todo] MP",
+  "flagIncapacitated": "[el-todo] Incapacitated",
+  "flagProne": "[el-todo] Prone",
+  "flagCovered": "[el-todo] Covered",
+  "roundLabel": "[el-todo] Round"
+}

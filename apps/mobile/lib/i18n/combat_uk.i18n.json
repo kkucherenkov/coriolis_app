@@ -1,0 +1,17 @@
+{
+  "cardTitle": "[uk-todo] Active Combat",
+  "emptyHeading": "[uk-todo] No active encounter",
+  "emptyBody": "[uk-todo] Combat begins when the GM starts an encounter.",
+  "errorHeading": "[uk-todo] Failed to load combat",
+  "retryButton": "[uk-todo] Retry",
+  "stateSetup": "[uk-todo] Setup",
+  "stateActive": "[uk-todo] Active",
+  "stateEnded": "[uk-todo] Ended",
+  "stateUnknown": "[uk-todo] Unknown",
+  "hp": "[uk-todo] HP",
+  "mp": "[uk-todo] MP",
+  "flagIncapacitated": "[uk-todo] Incapacitated",
+  "flagProne": "[uk-todo] Prone",
+  "flagCovered": "[uk-todo] Covered",
+  "roundLabel": "[uk-todo] Round"
+}

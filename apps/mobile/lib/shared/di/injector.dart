@@ -23,6 +23,7 @@ import 'package:coriolis_companion/features/rolls/presentation/blocs/dice_roller
 import 'package:coriolis_companion/features/rolls/presentation/blocs/roll_history/roll_history_cubit.dart';
 import 'package:coriolis_companion/features/combat/data/combat_repository_impl.dart';
 import 'package:coriolis_companion/features/combat/domain/combat_repository.dart';
+import 'package:coriolis_companion/features/combat/presentation/blocs/active_combat/active_combat_cubit.dart';
 import 'package:coriolis_companion/features/sessions/data/session_repository_impl.dart';
 import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/session_detail/session_detail_cubit.dart';
@@ -102,6 +103,10 @@ void configureDependencies() {
   // ── Combat domain (Phase 6 Block 1) ──────────────────────────────────────
   getIt.registerLazySingleton<CombatRepository>(
     () => CombatRepositoryImpl(api: getIt<EncountersApi>()),
+  );
+
+  getIt.registerFactory<ActiveCombatCubit>(
+    () => ActiveCombatCubit(repository: getIt<CombatRepository>()),
   );
 
   // ── Cubit factories ─────────────────────────────────────────────────────
