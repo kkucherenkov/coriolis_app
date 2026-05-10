@@ -49,12 +49,14 @@
   enough specs to keep the new module's coverage ≥ 80% (consistent
   with the rest of the backend).
 - Sub-blocks (one commit + push + active.md follow-up per block):
-  - [ ] Block 1 — Prisma migration. New `Ship` model, `ShipModule`
-        table (one-to-many ship → modules), `CrewSlot` join table
-        (composite PK on `(shipId, position)`). `Ship.ownerId`
-        cascades from User. `Concept`-style enums for `ShipClass`,
-        `ShipModuleSlot`, `CrewPosition`. Single migration named
-        `ships`. No backend wiring this block — DB plumbing only.
+  - [x] Block 1 — Prisma migration `20260510000002_ships`. Three
+        tables (ship / ship_module / crew_slot), three enums
+        (ship_class / ship_module_slot / crew_position).
+        ShipModule subtype payload lives in `data: Json` mirroring
+        the Item table. Schema applied via `db push` (the project
+        doesn't use `_prisma_migrations` yet); migration SQL
+        committed as the canonical artefact. 434/434 backend tests
+        pass.
   - [ ] Block 2 — `ShipsModule` core CRUD: list / get / create /
         update / delete commands and queries, controller mounting
         `/api/v1/ships*`. Class-table seed for ST3001 base stats
