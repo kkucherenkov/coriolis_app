@@ -81,11 +81,20 @@
         combat_*.i18n.json source files (ru full, uk + el
         placeholders); strings_*.g.dart regenerated via
         `dart run slang`.
-  - [ ] Block 4 — Realtime: extend the existing
-        `session.{id}` subscription router (T-003) to
-        branch on `payload.type` and feed `combat.updated`
-        snapshots into the cubit. Integration test with
-        a fake centrifuge.
+  - [x] Block 4 — Realtime: extended the existing
+        `session.{id}` subscription router (T-003) — new
+        `combat_updated_payload.dart` isolates the wire →
+        domain boundary, `_onPublication` in
+        `session_realtime.dart` branches on `payload.type`
+        before structural fallback. session_detail_page
+        subscribes to the new `combatUpdated` stream and
+        calls `ActiveCombatCubit.replaceSnapshot(...)` on
+        each emission. AsyncAPI `name` → OpenAPI
+        `displayName` mapped at the parser boundary;
+        AsyncAPI `status` → domain `state`,
+        `combatantType` → `source`, `referenceId` →
+        `sourceId`. 12 new tests (8 payload + 4 cubit
+        integration). Total combat scope 40/40.
   - [ ] Block 5 — i18n + a11y pass (semantics labels for
         the active row, screen-reader cue when the active
         turn rotates, RTL-safe layout).

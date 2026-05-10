@@ -28,12 +28,20 @@ class SessionDetailCubit extends Cubit<SessionDetailState> {
 
   StreamSubscription<DpChangedPayload>? _dpSub;
   StreamSubscription<RollPushedPayload>? _rollSub;
+  StreamSubscription<CombatUpdatedPayload>? _combatSub;
   final _rollPushedController = StreamController<RollPushedPayload>.broadcast();
+  final _combatUpdatedController =
+      StreamController<CombatUpdatedPayload>.broadcast();
 
   /// Stream of `roll.pushed` events the page subscribes to for the
   /// SnackBar. Cubit forwards from the realtime adapter so the page
   /// doesn't have to reach into infra.
   Stream<RollPushedPayload> get rollPushed => _rollPushedController.stream;
+
+  /// Stream of `combat.updated` snapshots forwarded from the realtime adapter.
+  /// The page wires this into [ActiveCombatCubit.replaceSnapshot].
+  Stream<CombatUpdatedPayload> get combatUpdated =>
+      _combatUpdatedController.stream;
 
   Future<void> load(String sessionId) async {
     emit(state.copyWith(status: SessionDetailStatus.loading, clearError: true));
@@ -113,6 +121,7 @@ class SessionDetailCubit extends Cubit<SessionDetailState> {
         );
       });
       _rollSub = _realtime.rollPushed.listen(_rollPushedController.add);
+      _combatSub = _realtime.combatUpdated.listen(_combatUpdatedController.add);
     } on Object catch (e) {
       // A websocket failure shouldn't sink the rest of the page; keep
       // the state in `loaded` and surface the error via dpError so the
@@ -126,8 +135,10 @@ class SessionDetailCubit extends Cubit<SessionDetailState> {
   Future<void> close() async {
     await _dpSub?.cancel();
     await _rollSub?.cancel();
+    await _combatSub?.cancel();
     await _realtime.dispose();
     await _rollPushedController.close();
+    await _combatUpdatedController.close();
     await super.close();
   }
 }

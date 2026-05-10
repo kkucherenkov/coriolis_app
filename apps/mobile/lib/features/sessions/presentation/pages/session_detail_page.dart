@@ -53,6 +53,7 @@ class _SessionDetailBody extends StatefulWidget {
 class _SessionDetailBodyState extends State<_SessionDetailBody> {
   String? _meId;
   StreamSubscription<RollPushedPayload>? _rollPushedSub;
+  StreamSubscription<CombatUpdatedPayload>? _combatUpdatedSub;
 
   @override
   void initState() {
@@ -63,15 +64,23 @@ class _SessionDetailBodyState extends State<_SessionDetailBody> {
     // on dispose so a navigated-away page doesn't keep posting toasts.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final cubit = context.read<SessionDetailCubit>();
-      _rollPushedSub = cubit.rollPushed.listen(_onRollPushed);
+      final sessionCubit = context.read<SessionDetailCubit>();
+      _rollPushedSub = sessionCubit.rollPushed.listen(_onRollPushed);
+      // Wire combat snapshots into ActiveCombatCubit without a round-trip.
+      _combatUpdatedSub = sessionCubit.combatUpdated.listen(_onCombatUpdated);
     });
   }
 
   @override
   void dispose() {
     _rollPushedSub?.cancel();
+    _combatUpdatedSub?.cancel();
     super.dispose();
+  }
+
+  void _onCombatUpdated(CombatUpdatedPayload payload) {
+    if (!mounted) return;
+    context.read<ActiveCombatCubit>().replaceSnapshot(payload.snapshot);
   }
 
   void _onRollPushed(RollPushedPayload payload) {

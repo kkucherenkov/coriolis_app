@@ -5,6 +5,9 @@ import 'package:app_api_client/app_api_client.dart' as api_client show RealtimeA
 import 'package:centrifuge/centrifuge.dart' as cf;
 
 import 'package:coriolis_companion/shared/config/app_config.dart';
+import 'package:coriolis_companion/shared/realtime/combat_updated_payload.dart';
+
+export 'package:coriolis_companion/shared/realtime/combat_updated_payload.dart';
 
 /// Payload of a `dp.changed` Centrifugo publication.
 class DpChangedPayload {
@@ -44,10 +47,11 @@ class RollPushedPayload {
 /// Block 4 mobile).
 ///
 /// Mints a JWT via `RealtimeApi.issueRealtimeToken`, opens the
-/// websocket, subscribes, and surfaces the two domain payloads
-/// (`dp.changed`, `roll.pushed`) as broadcast streams. The page wires
-/// `dpChanged` → `SessionDetailCubit.applyDpChanged` and surfaces
-/// `rollPushed` as a SnackBar.
+/// websocket, subscribes, and surfaces the three domain payloads
+/// (`dp.changed`, `roll.pushed`, `combat.updated`) as broadcast streams.
+/// The page wires `dpChanged` → `SessionDetailCubit.applyDpChanged`,
+/// surfaces `rollPushed` as a SnackBar, and feeds `combatUpdated`
+/// snapshots into `ActiveCombatCubit.replaceSnapshot`.
 ///
 /// Token rotation is handled automatically by the Centrifuge client
 /// via `ClientConfig.getToken` — the callback fires before the
@@ -68,10 +72,18 @@ class SessionRealtime {
 
   final _dpChangedController = StreamController<DpChangedPayload>.broadcast();
   final _rollPushedController = StreamController<RollPushedPayload>.broadcast();
+  final _combatUpdatedController =
+      StreamController<CombatUpdatedPayload>.broadcast();
   final _connectedController = StreamController<bool>.broadcast();
 
   Stream<DpChangedPayload> get dpChanged => _dpChangedController.stream;
   Stream<RollPushedPayload> get rollPushed => _rollPushedController.stream;
+
+  /// Emits a domain snapshot on every `combat.updated` publication.
+  /// Malformed payloads are silently dropped — the stream never errors.
+  Stream<CombatUpdatedPayload> get combatUpdated =>
+      _combatUpdatedController.stream;
+
   Stream<bool> get connected => _connectedController.stream;
 
   Future<String> _fetchToken() async {
@@ -115,6 +127,15 @@ class SessionRealtime {
     } on Object {
       // Centrifugo can publish bytes that aren't JSON (e.g. presence
       // pings); ignore them silently rather than crashing the page.
+      return;
+    }
+
+    // `combat.updated` carries an explicit `type` discriminator field.
+    // Check it first so the structural fallbacks below never misfire on
+    // a combat payload that happens to contain numeric fields.
+    if (data['type'] == 'combat.updated') {
+      final payload = CombatUpdatedPayload.tryParse(data);
+      if (payload != null) _combatUpdatedController.add(payload);
       return;
     }
 
@@ -177,7 +198,7 @@ class SessionRealtime {
     _connectedController.add(false);
   }
 
-  /// Tear down both streams; call when the host page is permanently
+  /// Tear down all streams; call when the host page is permanently
   /// destroyed (not just navigated away from). For now the
   /// SessionRealtime is registered as a factory in DI so each
   /// detail-page instance gets its own — `dispose` runs on
@@ -186,6 +207,7 @@ class SessionRealtime {
     await stop();
     await _dpChangedController.close();
     await _rollPushedController.close();
+    await _combatUpdatedController.close();
     await _connectedController.close();
   }
 }
