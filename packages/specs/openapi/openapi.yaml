@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 1.3.0
+  version: 1.4.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -5812,6 +5812,11 @@ paths:
         Pool is clamped by the server from the submitted value. Condition penalties
         must be pre-applied by the caller before sending `pool`; the server does not
         re-apply them from character state.
+
+        When an optional `breakdown` object is supplied alongside `pool`, the server
+        validates that `attribute + skill + gear + modifier + helpers === pool`; a
+        mismatch is rejected with HTTP 400 `ROLL_BREAKDOWN_MISMATCH`. Programmatic
+        callers (internal command handlers, dice engine) can omit `breakdown` entirely.
       tags: [dice]
       security:
         - cookieAuth: []
@@ -5844,9 +5849,29 @@ paths:
                     dice: [6, 2, 6, 4, 1, 5, 3]
                     hits: 2
                     pushed: false
+                    breakdown: null
                     createdAt: "2026-05-10T12:00:00Z"
+                skillRollWithBreakdown:
+                  summary: Skill roll submitted with component breakdown (Dexterity + Ranged Combat + gear)
+                  value:
+                    id: cuid_roll03
+                    characterId: cuid_char01
+                    gameSessionId: null
+                    kind: skill
+                    label: "Ranged Combat · Shoot"
+                    pool: 9
+                    dice: [6, 1, 6, 3, 2, 6, 4, 5, 2]
+                    hits: 3
+                    pushed: false
+                    breakdown:
+                      attribute: 4
+                      skill: 2
+                      gear: 2
+                      modifier: 1
+                      helpers: 0
+                    createdAt: "2026-05-10T12:02:00Z"
                 saveRoll:
-                  summary: Armor save roll (non-pushable kind)
+                  summary: Armor save roll (non-pushable kind, no breakdown)
                   value:
                     id: cuid_roll02
                     characterId: cuid_char01
@@ -5857,13 +5882,24 @@ paths:
                     dice: [2, 5, 1]
                     hits: 0
                     pushed: false
+                    breakdown: null
                     createdAt: "2026-05-10T12:01:00Z"
         "400":
-          description: Validation error (pool out of range, label too long, etc.)
+          description: Validation error (pool out of range, label too long, breakdown mismatch, etc.)
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+              examples:
+                rollBreakdownMismatch:
+                  summary: Roll breakdown sum doesn't match the declared pool
+                  value:
+                    type: about:blank
+                    title: Validation Error
+                    status: 400
+                    detail: Roll breakdown sum 8 does not equal the declared pool 9. Components must add up exactly when breakdown is supplied.
+                    instance: /api/v1/rolls
+                    code: ROLL_BREAKDOWN_MISMATCH
         "401":
           description: No active session
           content:
@@ -5993,6 +6029,7 @@ paths:
                     dice: [6, 6, 6, 4, 3, 5, 1]
                     hits: 3
                     pushed: true
+                    breakdown: null
                     createdAt: "2026-05-10T12:00:00Z"
         "400":
           description: Push not allowed — roll kind is not `skill`
@@ -6240,6 +6277,19 @@ components:
         pushed:
           type: boolean
           description: Whether this roll has been pushed. Once true, further pushes are rejected.
+        breakdown:
+          oneOf:
+            - $ref: "#/components/schemas/RollBreakdown"
+            - type: "null"
+          description: |
+            Optional structured breakdown of the dice pool — surfaces
+            the math behind the `pool` total for the GM-tools audit
+            view. Server-side, when both `breakdown` and `pool` are
+            supplied on `RollCreate`, the handler asserts the sum
+            equals the pool and rejects mismatched payloads with
+            `ROLL_BREAKDOWN_MISMATCH` (HTTP 400). Null when the
+            roll was created programmatically (e.g. by an internal
+            handler) without a UI breakdown to record.
         createdAt:
           type: string
           format: date-time
@@ -6285,6 +6335,19 @@ components:
           description: |
             Optional game session identifier. Reserved for Feature 7.2.
             Pass null or omit until GameSession lands.
+        breakdown:
+          oneOf:
+            - $ref: "#/components/schemas/RollBreakdown"
+            - type: "null"
+          description: |
+            Optional structured breakdown of the dice pool — surfaces
+            the math behind the `pool` total for the GM-tools audit
+            view. Server-side, when both `breakdown` and `pool` are
+            supplied on `RollCreate`, the handler asserts the sum
+            equals the pool and rejects mismatched payloads with
+            `ROLL_BREAKDOWN_MISMATCH` (HTTP 400). Null when the
+            roll was created programmatically (e.g. by an internal
+            handler) without a UI breakdown to record.
 
     RollList:
       type: object
@@ -6294,6 +6357,56 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Roll"
+
+    RollBreakdown:
+      type: object
+      description: |
+        Structured breakdown of a roll's dice pool — what each component
+        contributed. The server enforces `attribute + skill + gear +
+        modifier + helpers === pool` when both `breakdown` and `pool`
+        are supplied on a `RollCreate` (catches UI math bugs). Each
+        component is a non-negative integer 0..10; the sum bound is
+        the same 0..20 envelope as `RollCreate.pool` (T-010 Block C).
+
+        Components:
+        - `attribute` — the base attribute the skill is governed by
+          (1..5 typical, but stored as 0..10 to allow GM exotics).
+        - `skill` — the skill rank.
+        - `gear` — bonus dice from equipment / weapons.
+        - `modifier` — situational ad-hoc modifier (positive only).
+        - `helpers` — dice from cooperative helpers (ГЛАВА 3 §«Помощь»).
+
+        All five components are required when `breakdown` is supplied.
+      required: [attribute, skill, gear, modifier, helpers]
+      properties:
+        attribute:
+          type: integer
+          minimum: 0
+          maximum: 10
+          description: Attribute contribution (e.g. STR 4 → 4).
+        skill:
+          type: integer
+          minimum: 0
+          maximum: 10
+          description: Skill rank contribution (e.g. Force 2 → 2).
+        gear:
+          type: integer
+          minimum: 0
+          maximum: 10
+          description: Bonus dice from equipment (weapon `bonus`,
+            armor +1, gear-specific dice).
+        modifier:
+          type: integer
+          minimum: 0
+          maximum: 10
+          description: Situational positive modifier (cover, range,
+            ambush, etc).
+        helpers:
+          type: integer
+          minimum: 0
+          maximum: 10
+          description: Dice from cooperative helpers
+            (ST3001 ГЛАВА 3 §«Помощь»).
 
     # -------------------------------------------------------------------------
     # Enumerations — define once, reference everywhere
