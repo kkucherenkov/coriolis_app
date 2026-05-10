@@ -24,10 +24,23 @@ export default defineNuxtPlugin(() => {
   client.setConfig({
     baseUrl: pub.authBaseUrl,
     fetch: async (input, init) => {
-      const headers = new Headers(init?.headers);
+      // The Hey API generated client calls `fetch(request)` with a Request
+      // object (body + headers including Content-Type already set) and no
+      // init. If we build headers from `init?.headers` here we'd start with
+      // an empty Headers, only add Authorization, and then `fetch(request,
+      // { headers })` overrides the Request's own headers — wiping
+      // Content-Type and triggering 415 on every JSON POST/PATCH.
+      // Seed the Headers from the Request (or init) and clone via Request
+      // so the body / method / signal stay intact.
+      const baseHeaders =
+        init?.headers ?? (input instanceof Request ? input.headers : undefined);
+      const headers = new Headers(baseHeaders);
       const token = readBearerToken();
       if (token && !headers.has('Authorization')) {
         headers.set('Authorization', `Bearer ${token}`);
+      }
+      if (input instanceof Request && !init) {
+        return globalThis.fetch(new Request(input, { headers }));
       }
       return globalThis.fetch(input, { ...init, headers });
     },
