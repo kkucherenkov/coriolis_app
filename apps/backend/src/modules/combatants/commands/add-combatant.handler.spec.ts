@@ -106,7 +106,7 @@ function makeNpc(overrides: Partial<SourceNpc> = {}): SourceNpc {
     hpMax: 6,
     armor: 3,
     signature: 2,
-    attributes: { strength: 3, agility: 2, wits: 2, empathy: 1 },
+    attributes: { strength: 3, agility: 2, wits: 2, empathy: 2 },
     skills: { rangedCombat: 2, meleeCombat: 1 },
     ...overrides,
   };
