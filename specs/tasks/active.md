@@ -372,12 +372,47 @@
         per-implant XP, so 5 is the most defensible
         default).
         Backend vitest count 851 → 853 (+2).
-  - [ ] Block H — **`ItemSlotType` deprecation.** Soft
-        mismatch (already self-documented in
-        `openapi.yaml:7697-7699`).
-        Repoint `ItemShipModule.slot` at `ShipModuleSlot`;
-        delete `ItemSlotType` after a one-version
-        deprecation window. Run codegen.
+  - [x] Block H — **`ItemSlotType` deprecation.** Soft
+        mismatch closed. **Done in c5cde35 (spec) + 78e556e
+        (codegen) + 9bc569b (backend + migration).**
+        The lowercase 7-value `ItemSlotType` enum is
+        retired entirely; `ItemShipModule(.slot)` /
+        `ItemShipModuleCreate(.slot)` /
+        `ItemShipModuleUpdate(.slot)` now reference the
+        canonical 21-value `ShipModuleSlot` from
+        ГЛАВА 7. The two contexts (character-inventory
+        ship-modules and installed ship-modules) share
+        one enum.
+        Migration mapping for the JSONB rewrite:
+        `bridge → BRIDGE`, `hull → OTHER` (no canonical
+        hull slot in ГЛАВА 7's slot taxonomy — armour
+        and structural pieces are baked into hull-class
+        Table 7.5, not slot-level), `hold → HOLD`,
+        `weapon → WEAPON`, `drive → DRIVE`,
+        `sensor → SENSOR`, `comms → COMMS`. Documented
+        on `ShipModuleSlot.description`.
+        Backend: `add-item.command.ts` and
+        `update-item.command.ts` import
+        `VALID_SHIP_MODULE_SLOTS` (new export from
+        `ships/domain/ship-module-validation.ts`); the
+        existing `VALID_SLOTS` Set is now built from the
+        same canonical list to keep one source of truth.
+        Tests: 2 new boundary cases in
+        `add-item.handler.spec.ts` (legacy lower-case
+        rejected; canonical upper-case accepted).
+        Backend vitest count 853 → 855 (+2).
+        Codegen: deleted Dart `item_slot_type.dart` /
+        `item_slot_type.g.dart` /
+        `item_slot_type_test.dart` (51 + 112 + 9
+        lines); TS client `ItemSlotType` symbol gone;
+        consumer code that still imports the old type
+        now hits a compile error — fix-forward in this
+        PR.
+        Prisma migration `20260510000009_canonicalise_ship`
+        `_module_slot`: idempotent JSONB rewrite of
+        `item.data.slot` for `type = 'SHIP_MODULE'`
+        rows. Applied with `prisma migrate deploy`;
+        backend container restarted.
   - [ ] Block I — **PRD-override comments on soft
         mismatches.** Inline annotations:
         - `Combatant.hpCurrent`: «PRD override —
@@ -426,53 +461,169 @@
   The backend half (spec, codegen, rules-engine refactor,
   Prisma migration with backfill) shipped in 059f661 + 1e6ca54
   + 80bf2d8.
-- Goal: add a role-picker to the web character-creation wizard
-  so the user explicitly chooses 1 of 3 canonical roles within
-  their amplua, and the chosen role drives the per-skill cap
-  on Step 5 (skill distribution).
-- Depends on: T-2026-05-10-010 Block E (already done — wire
-  contract + backend validation in place).
+- Goal: add a role-picker step to the web character-creation
+  wizard so the user explicitly chooses 1 of 3 canonical roles
+  within their chosen amplua (ГЛАВА 2 «АМПЛУА И РОЛИ»). The
+  chosen role drives the per-skill cap on the skill-
+  distribution step (key skills cap at 3, non-key at 1, role-
+  scoped, not concept-scoped). Existing characters whose
+  `roleUnmigrated === true` (set by the Block E backfill) are
+  re-prompted on next edit.
+- Why now: backend is fully ready (spec contract, validation,
+  migration). The current wizard silently breaks on `role`
+  submission — it never sets the field, so any character
+  forged by the wizard hits the server with `role: null` and
+  the server then enforces `ROLE_CONCEPT_MISMATCH` only when
+  the user later adds a role. Without this task the role
+  field is dead UX.
+- Depends on:
+  - T-2026-05-10-010 Block E (done — wire contract + backend
+    validation in place).
+  - Generated TS client (`packages/api-client-ts`) — `Role`
+    enum already exposed.
 - Acceptance:
-  - New `Step5Role.vue` between the existing concept step and
-    the skill-distribution step (renumbering all later steps),
-    wired into `WizardShell.vue` and the wizard store.
-  - The picker shows the 3 canonical roles for the chosen
-    `concept` with their Russian display names + a one-line
-    Russian flavour text from the rulebook (see
-    `Step1Concept.vue` for the existing concept-card pattern).
-  - The component reads `CONCEPT_ROLES` (or the regenerated
-    client equivalent — TS client exposes the full
-    `Role` enum and the consumer needs a tiny mapping table
-    `concept → role[]` since the OpenAPI enum is flat).
-  - Step 5 (skill distribution) uses the chosen role's 4 key
-    skills for its UI cap of 3 (currently 5 from the union);
-    add a hint "Key skills: X / Y / Z / W (max 3 each)".
-  - i18n keys for both ru and en exist for every label;
-    Russian display names from the canonical table live in
-    `apps/web/i18n/locales/ru.json` keyed under
-    `wizard.role.<slug>.label` (and similar for `description`).
-  - Wizard payload posted to `POST /api/v1/characters` includes
-    `role`. Backend already enforces `ROLE_CONCEPT_MISMATCH`
-    if the value is wrong.
-  - Existing characters whose `roleUnmigrated === true` (set
-    by the Block E migration backfill) trigger a banner on the
-    character sheet header inviting the user to confirm the
-    role; on confirmation the PATCH clears the flag (server-
-    side logic already lands in 80bf2d8).
-  - Storybook stories for `Step5Role.vue` (3 states: empty
-    concept, role list, selected role).
-  - Vitest count climbs by ≥10.
+  - **Wizard step renumbering**: insert a new `Step5Role.vue`
+    between the current `Step4Attributes.vue` and the current
+    `Step5Skills.vue`. The current `Step5Skills.vue` becomes
+    `Step6Skills.vue`, and `Step6Talents.vue` becomes
+    `Step7Talents.vue`. Update `WizardShell.vue` step list +
+    progress indicator + the wizard-store `currentStep` enum.
+  - `Step5Role.vue`: shows the 3 canonical roles for the
+    chosen concept as cards (extending the concept-card
+    pattern from `Step1Concept.vue`). Each card carries the
+    Russian display name (from the rulebook), a one-line
+    Russian flavour text (extracted from ГЛАВА 2 §РОЛИ for
+    that role), and the four key skills as chip tags. The
+    selected card highlights via the same focus-ring tokens
+    Step1Concept uses.
+  - **Concept→roles mapping in web**: a small `roleCatalogue.ts`
+    module under `apps/web/app/composables/` (or
+    `apps/web/app/utils/`) exposes
+    `CONCEPT_ROLES: Record<Concept, ReadonlyArray<{slug: Role,
+    ruLabel: string, ruFlavour: string, keySkills:
+    [SkillKey,SkillKey,SkillKey,SkillKey]}>>` mirroring the
+    backend's `CONCEPT_ROLES` (single source of truth in the
+    backend; the web reproduces the data because the OpenAPI
+    enum is intentionally flat to keep the wire contract
+    simple — duplicate the 33 entries by hand and unit-test
+    them against the regenerated `Role` enum to catch drift).
+  - **Skill distribution step uses role-scoped key skills**:
+    `Step6Skills.vue` (was Step5Skills) reads the chosen role
+    from the wizard store and caps the four role-keys at 3
+    points each, the other twelve at 1 point each. The "key
+    skills" hint at the top of the step lists the four
+    role-keys ("Key skills: X / Y / Z / W — max 3 each").
+    Existing budget logic per Upbringing stays untouched.
+  - **roleUnmigrated banner**: on
+    `apps/web/app/pages/app/characters/[id].vue` (or
+    `CharacterHeader.vue` if there's a dedicated header
+    component), when the loaded character has
+    `roleUnmigrated === true`, render a non-dismissable banner
+    inviting the user to confirm the role. Clicking "Confirm"
+    opens a small dialog with the same role-card list scoped
+    to the character's concept; selecting a role fires
+    PATCH `/api/v1/characters/{id}` with the chosen `role`,
+    after which the backend clears `roleUnmigrated` (logic
+    already in 80bf2d8) and the banner disappears on the next
+    re-render.
+  - **Wizard payload**: the wizard store includes `role` in
+    the POST `/api/v1/characters` body. The role is required
+    when status flips to `active`; it stays nullable while
+    `status === 'draft'` so users can step backwards.
+  - **i18n**: every user-visible string keyed in
+    `apps/web/i18n/locales/{ru,en}.json`. Russian display
+    names from the canonical rulebook table (Компаньон,
+    Музыкант, Поэт, Аналитик, Корреспондент, Сетевой джинн,
+    Преступник, Мистик, Революционер, Агитатор, Дипломат,
+    Делец, Ассасин, Стражник, Шпион, Ас, Водитель,
+    Дальнобойщик, Колонист, Старатель, Скаут, Аскет,
+    Миссионер, Пророк, Археолог, Медикург, Технологик,
+    Бортинженер, Разнорабочий, Грузчик, Легионер, Наёмник,
+    Офицер) keyed under `wizard.role.<slug>.label`. English
+    translations keyed under the same path. Flavour text
+    keyed under `wizard.role.<slug>.flavour`. Page-level
+    strings ("Choose your role", "Confirm role", etc.) keyed
+    under `wizard.role.headline`, `wizard.role.cta`, banner
+    strings under `character.roleUnmigrated.banner.*`.
+  - **Storybook**: stories for `Step5Role.vue` (4 states:
+    no concept selected → empty placeholder; concept chosen,
+    no role selected → 3 cards; role selected → focus-ring on
+    one card; loading → skeleton). Stories for the
+    `RoleUnmigratedBanner` if it's split out as its own
+    component (3 states: hidden, visible, dialog open).
+  - **Vitest count climbs by ≥15**: `Step5Role.spec.ts` (≥6
+    cases — render with each concept's role triplet, click
+    selects, keyboard nav, no-concept guard), `Step6Skills.`
+    `spec.ts` updates (≥3 cases — role-scoped cap of 3 for
+    role keys, cap of 1 for non-role keys, hint renders the
+    4 keys), `roleCatalogue.spec.ts` (≥4 cases — every
+    `Role` enum value present, every concept has exactly 3
+    roles, every role has exactly 4 key skills, all key
+    skills are valid `SkillKey` values), banner spec (≥2
+    cases — visible when flag true, hides after PATCH).
+  - **Playwright smoke** (optional but encouraged): one new
+    flow `wizard-role-picker.spec.ts` — concept → role →
+    skills → forge, asserting the created character has
+    `role: <slug>` and `roleUnmigrated: false`.
+  - **a11y**: role cards use `role="radio"` with proper
+    `aria-checked` state; the radiogroup container carries
+    `role="radiogroup"` and an accessible name; arrow-key
+    navigation between cards. Banner uses `role="status"`
+    until clicked, then the dialog uses `role="dialog"` with
+    a labelled heading + `aria-describedby`.
 - Spec diff: none — wire contract already lands in T-010
-  Block E (Character.role + Role enum).
-- Codegen impact: none.
+  Block E (Character.role + Role enum + ROLE_CONCEPT_MISMATCH).
+- Codegen impact: none — generated TS client already exposes
+  the new types.
 - Design impact: extend the existing concept-card pattern to
-  role cards (smaller, denser); reuse design tokens, no new
-  ones needed.
-- Tests: `Step5Role.spec.ts` (component test) + smoke flow
-  (concept → role → skills) + roleUnmigrated banner test.
-- Sub-blocks: single feat-web commit + active.md follow-up.
+  role cards (smaller, denser, role-coloured if amplua already
+  has a colour token; otherwise reuse the neutral surface
+  tokens). No new design tokens needed — reuse spacing /
+  radius / focus-ring / role-chip styles already in the
+  design system. The card density goal: 3 cards must fit in
+  one row on the laptop breakpoint (≥1024px) and stack
+  vertically on the mobile breakpoint (<640px).
+- Tests: per-block vitest as listed above; one Playwright
+  smoke; one i18n-completeness lint that asserts the 33
+  `wizard.role.<slug>.label` and `wizard.role.<slug>.flavour`
+  keys exist in both `ru.json` and `en.json` (drives the
+  `i18n-keys` lint rule already in `apps/web`).
+- Sub-blocks (one feat-web commit per block + one active.md
+  follow-up commit, per `feedback_block_workflow.md`):
+  - [ ] Block 1 — `roleCatalogue.ts` + i18n strings. Add the
+        33-entry mapping module under `apps/web/app/utils/`,
+        wire its types into the wizard store, and seed all
+        66 ru/en i18n keys (33 labels + 33 flavours). No UI
+        yet — Storybook story for the catalogue's
+        smoke-render only. Drift test against the regenerated
+        `Role` enum from `@app/api-client-ts`.
+  - [ ] Block 2 — `Step5Role.vue` + WizardShell renumbering.
+        Build the new step component (radiogroup of 3 role
+        cards), insert it between Step4Attributes and the
+        existing Step5Skills, renumber Step5Skills →
+        Step6Skills and Step6Talents → Step7Talents in the
+        store + shell + progress bar. No skill-cap wiring
+        yet — Step6Skills still uses the union from
+        Step1Concept.
+  - [ ] Block 3 — Step6Skills role-scoped caps. Read the
+        chosen role from the store; cap the four role-keys
+        at 3 each, the other twelve at 1 each. Update the
+        "Key skills" hint at the top of the step. Add the
+        Storybook variant that previews a concept+role pair
+        (e.g. pilot + driver) so designers can verify the
+        chip rendering of the four role-keys.
+  - [ ] Block 4 — `RoleUnmigratedBanner.vue` on the
+        character sheet header. Add the
+        `useCharactersApi.update()` PATCH wiring; clear the
+        flag on success; surface the same role-card dialog
+        (factored out of Step5Role for reuse). Storybook
+        states + banner spec.
+  - [ ] Block 5 — Playwright smoke (`wizard-role-picker.`
+        `spec.ts`) + i18n-completeness lint rule. Wraps up
+        the task with a green CI run.
 - Status: queued (no blockers, but lower priority than the
-  remaining T-010 blocks F–J)
+  remaining T-010 blocks I and J — finish the canon-
+  remediation surface first, then ship the UI follow-up).
 - Blockers: —
 
 ---
