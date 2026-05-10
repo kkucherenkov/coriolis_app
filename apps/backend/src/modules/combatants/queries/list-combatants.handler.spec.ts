@@ -194,7 +194,7 @@ describe('ListCombatantsHandler', () => {
       hpMax: 4,
       armor: 2,
       signature: 0,
-      statusFlags: ['broken'],
+      statusFlags: ['incapacitated'],
     });
     vi.mocked(combatantRepo.listByEncounter).mockResolvedValue([comb]);
 
@@ -206,6 +206,6 @@ describe('ListCombatantsHandler', () => {
     expect(item.sourceId).toBe('char-1');
     expect(item.hpCurrent).toBe(3);
     expect(item.hpMax).toBe(4);
-    expect(item.statusFlags).toEqual(['broken']);
+    expect(item.statusFlags).toEqual(['incapacitated']);
   });
 });

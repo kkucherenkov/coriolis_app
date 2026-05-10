@@ -225,16 +225,16 @@ describe('UpdateCombatantHandler', () => {
   });
 
   it('updates statusFlags', async () => {
-    const updated = makeCombatant({ statusFlags: ['broken'] });
+    const updated = makeCombatant({ statusFlags: ['incapacitated'] });
     vi.mocked(combatantRepo.update).mockResolvedValue(updated);
 
     await handler.execute(
-      new UpdateCombatantCommand('comb-1', 'user-1', makeDto({ statusFlags: ['broken'] })),
+      new UpdateCombatantCommand('comb-1', 'user-1', makeDto({ statusFlags: ['incapacitated'] })),
     );
 
     expect(combatantRepo.update).toHaveBeenCalledWith(
       'comb-1',
-      expect.objectContaining({ statusFlags: ['broken'] }),
+      expect.objectContaining({ statusFlags: ['incapacitated'] }),
     );
   });
 
