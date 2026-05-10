@@ -9,6 +9,7 @@ import 'package:coriolis_companion/features/characters/presentation/widgets/attr
 import 'package:coriolis_companion/features/characters/presentation/widgets/conditions_panel.dart';
 import 'package:coriolis_companion/features/characters/presentation/widgets/hero_counters.dart';
 import 'package:coriolis_companion/features/characters/presentation/widgets/item_editor.dart';
+import 'package:coriolis_companion/features/rolls/presentation/widgets/dice_bottom_sheet.dart';
 import 'package:coriolis_companion/features/characters/presentation/widgets/sheet_header.dart';
 import 'package:coriolis_companion/features/characters/presentation/widgets/skills_block.dart';
 import 'package:coriolis_companion/features/characters/presentation/widgets/talent_editor.dart';
@@ -78,6 +79,18 @@ class _CharacterSheetView extends StatelessWidget {
                 onPressed: () => _confirmDelete(context, t),
               ),
             ],
+          ),
+          // Phase 4 dice roller — opens the player's roll bottom sheet.
+          // GameSession wiring lands in Block 4; for now we call out to
+          // the personal-roll flow with `gameSessionId: null`.
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () => DiceBottomSheet.show(
+              context,
+              characterId: character.id,
+              exhausted: character.conditions.exhausted,
+            ),
+            icon: const Icon(Icons.casino),
+            label: const Text('Roll'),
           ),
           // Bottom tab bar — fixed at screen bottom, matching the mockup.
           bottomNavigationBar: _SheetTabBar(activeTab: state.activeTab),

@@ -49,7 +49,7 @@ import 'package:app_api_client/app_api_client.dart'
         ItemOther,
         ItemShipModule,
         Talent;
-import 'package:app_api_client/app_api_client.dart' as api_client show Character;
+import 'package:app_api_client/app_api_client.dart' as api_client show Character, Concept;
 
 import 'package:built_collection/built_collection.dart';
 import 'package:one_of/one_of.dart';
@@ -73,7 +73,11 @@ class CharacterRepositoryImpl implements CharacterRepository {
         id: src.id,
         ownerId: src.ownerId,
         name: src.name,
-        concept: src.concept,
+        // The regenerated SDK ships `Concept` as an EnumClass; the mobile
+        // domain still carries the wire string for now (matches the web's
+        // `Concept` string-literal type). Promote to a typed enum on the
+        // domain side in a follow-up.
+        concept: src.concept?.name,
         attributes: CharacterAttributes(
           strength: src.attributes.strength,
           agility: src.attributes.agility,
@@ -122,7 +126,7 @@ class CharacterRepositoryImpl implements CharacterRepository {
   static CharacterSummary _toSummary(api_client.Character src) => CharacterSummary(
         id: src.id,
         name: src.name,
-        concept: src.concept,
+        concept: src.concept?.name,
       );
 
   static DomainCriticalInjury _ciToDomain(CriticalInjury ci) =>
@@ -307,7 +311,9 @@ class CharacterRepositoryImpl implements CharacterRepository {
   }) async {
     final payload = CharacterUpdate((b) {
       if (name != null) b.name = name;
-      if (concept != null) b.concept = concept;
+      // Domain concept is still a wire string; the SDK now expects the
+      // typed `Concept` enum, so route through `Concept.valueOf`.
+      if (concept != null) b.concept = api_client.Concept.valueOf(concept);
       if (experience != null) b.experience = experience;
       if (notes != null) b.notes = notes;
       if (status != null) {

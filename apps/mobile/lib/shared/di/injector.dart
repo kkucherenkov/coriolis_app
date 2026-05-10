@@ -1,4 +1,5 @@
-import 'package:app_api_client/app_api_client.dart' show CharactersApi, standardSerializers;
+import 'package:app_api_client/app_api_client.dart'
+    show CharactersApi, DiceApi, standardSerializers;
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 
@@ -10,6 +11,9 @@ import 'package:coriolis_companion/features/characters/domain/character_reposito
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_sheet/character_sheet_cubit.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/characters_list/characters_list_cubit.dart';
+import 'package:coriolis_companion/features/rolls/data/roll_repository_impl.dart';
+import 'package:coriolis_companion/features/rolls/domain/roll_repository.dart';
+import 'package:coriolis_companion/features/rolls/presentation/blocs/dice_roller/dice_roller_cubit.dart';
 import 'package:coriolis_companion/shared/auth/token_storage.dart';
 import 'package:coriolis_companion/shared/config/app_config.dart';
 import 'package:coriolis_companion/shared/network/api_client.dart';
@@ -49,13 +53,22 @@ void configureDependencies() {
   );
 
   // ── Generated API singletons ─────────────────────────────────────────────
-  getIt.registerLazySingleton<CharactersApi>(
-    () => CharactersApi(getIt<Dio>(), standardSerializers),
-  );
+  getIt
+    ..registerLazySingleton<CharactersApi>(
+      () => CharactersApi(getIt<Dio>(), standardSerializers),
+    )
+    ..registerLazySingleton<DiceApi>(
+      () => DiceApi(getIt<Dio>(), standardSerializers),
+    );
 
   // ── Characters domain ────────────────────────────────────────────────────
   getIt.registerLazySingleton<CharacterRepository>(
     () => CharacterRepositoryImpl(api: getIt<CharactersApi>()),
+  );
+
+  // ── Rolls domain (Phase 4 Feature 7.1) ───────────────────────────────────
+  getIt.registerLazySingleton<RollRepository>(
+    () => RollRepositoryImpl(api: getIt<DiceApi>()),
   );
 
   // ── Cubit factories ─────────────────────────────────────────────────────
@@ -73,6 +86,10 @@ void configureDependencies() {
 
   getIt.registerFactory<CharacterWizardCubit>(
     () => CharacterWizardCubit(repository: getIt<CharacterRepository>()),
+  );
+
+  getIt.registerFactory<DiceRollerCubit>(
+    () => DiceRollerCubit(repository: getIt<RollRepository>()),
   );
 }
 
