@@ -705,6 +705,20 @@
 
 ## T-2026-05-10-018 — Web global navigation + language switcher + settings
 
+**Status: done — ready to archive.** Landed across 5 sub-blocks.
+
+- Block 1 (66912e6) — `<UserMenu>` composite in `@app/ui` (avatar/initials trigger, AppPopover-backed panel, language `menuitemradio` group, Settings + Sign out menuitems, full ARIA + keyboard nav). 28 vitest cases, 4 Storybook stories.
+- Block 2 (6423582) — `<AppHeader>` desktop component (brand link + nav links + `user-menu` slot + `mobile-toggle` placeholder slot; active-link via prop, not `useRoute()`, so Storybook stays portable). 13 vitest cases, 4 stories.
+- Block 3 (0603c2c) — `<AppMobileDrawer>` composite (focus trap, ESC, overlay click, body-scroll lock, reduced-motion respect, side left/right). AppHeader integration: hamburger button + `mobile-drawer-content` slot supersedes the Block-2 `mobile-toggle` placeholder. 21 new vitest cases.
+- Block 4 (cabe22a) — new `apps/web/app/layouts/app.vue` wraps every `/app/*` page (8 pages opted in via `definePageMeta({ layout: 'app' })`); `default.vue` stays for public routes; activeKey derived from `route.path` prefix; skip-link to `#main-content`; UserMenu wires `setLocale()` for the language radio, `navigateTo('/app/settings')` for Settings, `auth.client.signOut()` then `navigateTo('/login')` for Sign out; full en + ru i18n, `[uk-todo]` / `[el-todo]` placeholders. 21 new layout vitest cases.
+- Block 5 — `/app/settings` page already existed with profile editing + language switcher (preceded T-018 by an earlier task); only the layout opt-in was needed. New `tests/e2e/nav-smoke.spec.ts` Playwright spec walks the user's original bug — round-trip Characters → Ships → Characters via header nav, plus skip-link keyboard-accessibility and user-menu reachability. Auth-gated, mirroring the `CORIOLIS_E2E_SESSION_COOKIE` skip pattern.
+
+`@app/ui` vitest count grew by ~62 cases across Blocks 1–3. `@app/web` grew by 21 layout cases. Total Playwright suite: 8 → 11 tests across 4 files.
+
+Original task body retained below for archive context.
+
+
+
 - Created: 2026-05-10
 - Owner: claude
 - Source: user-requested mid-session 2026-05-10 — «if I navigate
