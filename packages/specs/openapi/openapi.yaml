@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 0.14.0
+  version: 0.15.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -4502,6 +4502,427 @@ paths:
                     code: ENCOUNTER_NOT_FOUND
 
   # ---------------------------------------------------------------------------
+  # Combatants (Phase 6 Block 3) — nested list/create + flat mutate/delete
+  # ---------------------------------------------------------------------------
+
+  /api/v1/encounters/{id}/combatants:
+    get:
+      operationId: listCombatants
+      summary: List combatants for an encounter
+      description: |
+        Returns all combatants belonging to the encounter identified by `id`.
+        Results are unordered until initiative is rolled (Block 4); after
+        rolling they are returned sorted by `turnOrder` ascending.
+
+        Owner-gated through the encounter's parent game session.
+      tags: [encounters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EncounterId"
+      responses:
+        "200":
+          description: List of combatants
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CombatantList"
+              examples:
+                ok:
+                  value:
+                    items:
+                      - id: cuid_comb01
+                        encounterId: cuid_enc01
+                        combatantType: pc
+                        sourceId: cuid_char01
+                        displayName: Zara al-Khatib
+                        initiative: null
+                        turnOrder: null
+                        hpCurrent: 4
+                        hpMax: 4
+                        armor: 2
+                        signature: 0
+                        statusFlags: []
+                        notes: null
+                        createdAt: "2026-05-10T09:00:00Z"
+                        updatedAt: "2026-05-10T09:00:00Z"
+                      - id: cuid_comb02
+                        encounterId: cuid_enc01
+                        combatantType: npc
+                        sourceId: cuid_npc01
+                        displayName: Khorredian Guard
+                        initiative: null
+                        turnOrder: null
+                        hpCurrent: 6
+                        hpMax: 6
+                        armor: 3
+                        signature: 2
+                        statusFlags: [exposed]
+                        notes: "Stationed near the south gate."
+                        createdAt: "2026-05-10T09:01:00Z"
+                        updatedAt: "2026-05-10T09:05:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the encounter
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own the game session for this encounter
+                    instance: /api/v1/encounters/cuid_enc01/combatants
+                    code: ENCOUNTER_NOT_OWNED
+        "404":
+          description: Encounter not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Encounter cuid_enc01 does not exist
+                    instance: /api/v1/encounters/cuid_enc01/combatants
+                    code: ENCOUNTER_NOT_FOUND
+
+    post:
+      operationId: addCombatant
+      summary: Add a combatant to an encounter
+      description: |
+        Adds a PC or NPC as a combatant to the encounter. The server snapshots
+        `hpCurrent`, `hpMax`, `armor`, and `signature` from the source entity
+        at the moment of this call. Subsequent changes to the source's stats
+        (e.g. the player saving their character sheet mid-combat) do NOT
+        propagate to the combatant record — the GM mutates `hpCurrent` directly
+        on the combatant via `PATCH /api/v1/combatants/{id}`.
+
+        Only allowed while the encounter is in `setup` status. `initiative` and
+        `turnOrder` remain null until the initiative roll operation in Block 4.
+
+        Error codes:
+        - `COMBATANT_SOURCE_NOT_FOUND` — the `sourceId` does not exist
+        - `COMBATANT_SOURCE_NOT_OWNED` — the caller does not own the source Character or Npc
+        - `COMBATANT_DUPLICATE` — the same `(combatantType, sourceId)` pair is already on the encounter
+        - `ENCOUNTER_LOCKED_FOR_COMBAT` — the encounter is `active` or `ended`; combatants may only be added during `setup`
+      tags: [encounters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EncounterId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CombatantCreate"
+            examples:
+              addPc:
+                summary: Add a PC combatant
+                value:
+                  combatantType: pc
+                  sourceId: cuid_char01
+              addNpc:
+                summary: Add an NPC combatant with display-name override
+                value:
+                  combatantType: npc
+                  sourceId: cuid_npc01
+                  displayName: Khorredian Elite Guard
+                  notes: "Stationed near the south gate. Known to call for backup."
+      responses:
+        "201":
+          description: Combatant added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Combatant"
+              examples:
+                pcCreated:
+                  summary: PC combatant created
+                  value:
+                    id: cuid_comb01
+                    encounterId: cuid_enc01
+                    combatantType: pc
+                    sourceId: cuid_char01
+                    displayName: Zara al-Khatib
+                    initiative: null
+                    turnOrder: null
+                    hpCurrent: 4
+                    hpMax: 4
+                    armor: 2
+                    signature: 0
+                    statusFlags: []
+                    notes: null
+                    createdAt: "2026-05-10T09:00:00Z"
+                    updatedAt: "2026-05-10T09:00:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the encounter
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own the game session for this encounter
+                    instance: /api/v1/encounters/cuid_enc01/combatants
+                    code: ENCOUNTER_NOT_OWNED
+        "404":
+          description: Encounter not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Encounter cuid_enc01 does not exist
+                    instance: /api/v1/encounters/cuid_enc01/combatants
+                    code: ENCOUNTER_NOT_FOUND
+        "422":
+          description: |
+            Business rule violation. `code` identifies the specific error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                sourceNotFound:
+                  summary: Source entity not found
+                  value:
+                    type: https://coriolis.example.com/problems/unprocessable
+                    title: Unprocessable Entity
+                    status: 422
+                    detail: The source entity cuid_char01 does not exist
+                    instance: /api/v1/encounters/cuid_enc01/combatants
+                    code: COMBATANT_SOURCE_NOT_FOUND
+                duplicate:
+                  summary: Combatant already on encounter
+                  value:
+                    type: https://coriolis.example.com/problems/unprocessable
+                    title: Unprocessable Entity
+                    status: 422
+                    detail: "Combatant with type 'pc' and sourceId 'cuid_char01' is already on this encounter"
+                    instance: /api/v1/encounters/cuid_enc01/combatants
+                    code: COMBATANT_DUPLICATE
+                lockedForCombat:
+                  summary: Cannot add combatants during active combat
+                  value:
+                    type: https://coriolis.example.com/problems/unprocessable
+                    title: Unprocessable Entity
+                    status: 422
+                    detail: Combatants can only be added while the encounter is in setup status
+                    instance: /api/v1/encounters/cuid_enc01/combatants
+                    code: ENCOUNTER_LOCKED_FOR_COMBAT
+
+  /api/v1/combatants/{id}:
+    patch:
+      operationId: updateCombatant
+      summary: Update a combatant
+      description: |
+        Applies PATCH semantics to a combatant. Only mutable fields are
+        accepted: `hpCurrent`, `armor`, `signature`, `statusFlags`, `notes`,
+        `displayName`. Immutable fields (`combatantType`, `sourceId`) are
+        absent from the schema. `initiative` and `turnOrder` are read-only
+        here and are only set via the initiative operations (Block 4).
+
+        Allowed during both `setup` and `active` encounters. Returns 422
+        `ENCOUNTER_ENDED` if the encounter status is `ended`.
+
+        ACL is resolved through the encounter's parent game session owner.
+      tags: [encounters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CombatantId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CombatantUpdate"
+            examples:
+              applyDamage:
+                summary: Apply damage and mark combatant as broken
+                value:
+                  hpCurrent: 0
+                  statusFlags: [broken]
+      responses:
+        "200":
+          description: Combatant updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Combatant"
+              examples:
+                updated:
+                  value:
+                    id: cuid_comb02
+                    encounterId: cuid_enc01
+                    combatantType: npc
+                    sourceId: cuid_npc01
+                    displayName: Khorredian Guard
+                    initiative: 7
+                    turnOrder: 0
+                    hpCurrent: 0
+                    hpMax: 6
+                    armor: 3
+                    signature: 2
+                    statusFlags: [broken]
+                    notes: "Stationed near the south gate."
+                    createdAt: "2026-05-10T09:01:00Z"
+                    updatedAt: "2026-05-10T09:12:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the encounter
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own the game session for this encounter
+                    instance: /api/v1/combatants/cuid_comb02
+                    code: ENCOUNTER_NOT_OWNED
+        "404":
+          description: Combatant not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Combatant cuid_comb02 does not exist
+                    instance: /api/v1/combatants/cuid_comb02
+                    code: COMBATANT_NOT_FOUND
+        "422":
+          description: Encounter is ended — combatant mutations are not allowed
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                ended:
+                  value:
+                    type: https://coriolis.example.com/problems/unprocessable
+                    title: Unprocessable Entity
+                    status: 422
+                    detail: Encounter cuid_enc01 is ended; combatant mutations are not allowed
+                    instance: /api/v1/combatants/cuid_comb02
+                    code: ENCOUNTER_ENDED
+
+    delete:
+      operationId: deleteCombatant
+      summary: Remove a combatant from an encounter
+      description: |
+        Permanently removes the combatant from the encounter. Only allowed
+        while the encounter is in `setup` status. Returns 422
+        `ENCOUNTER_LOCKED_FOR_COMBAT` when the encounter is `active` or
+        `ended`.
+
+        ACL is resolved through the encounter's parent game session owner.
+      tags: [encounters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CombatantId"
+      responses:
+        "204":
+          description: Combatant removed
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the encounter
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own the game session for this encounter
+                    instance: /api/v1/combatants/cuid_comb01
+                    code: ENCOUNTER_NOT_OWNED
+        "404":
+          description: Combatant not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Combatant cuid_comb01 does not exist
+                    instance: /api/v1/combatants/cuid_comb01
+                    code: COMBATANT_NOT_FOUND
+        "422":
+          description: Cannot remove a combatant once combat has started
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                lockedForCombat:
+                  value:
+                    type: https://coriolis.example.com/problems/unprocessable
+                    title: Unprocessable Entity
+                    status: 422
+                    detail: Combatants can only be removed while the encounter is in setup status
+                    instance: /api/v1/combatants/cuid_comb01
+                    code: ENCOUNTER_LOCKED_FOR_COMBAT
+
+  # ---------------------------------------------------------------------------
   # Share links (Epic 6 Feature 6.1)
   # ---------------------------------------------------------------------------
 
@@ -5131,6 +5552,14 @@ components:
       in: path
       required: true
       description: Encounter identifier (cuid2)
+      schema:
+        type: string
+
+    CombatantId:
+      name: id
+      in: path
+      required: true
+      description: Combatant identifier (cuid2)
       schema:
         type: string
 
@@ -8443,3 +8872,261 @@ components:
         nextCursor:
           type: ["string", "null"]
           description: Cursor for the next page; null when there are no more results
+
+    # -------------------------------------------------------------------------
+    # Combatant schemas (Phase 6 Block 3)
+    # -------------------------------------------------------------------------
+
+    CombatantType:
+      type: string
+      enum: [pc, npc]
+      description: |
+        Discriminator field that identifies the source entity type of a combatant.
+
+        - `pc` — references an existing `Character` owned by the encounter's GM
+          (or assigned to the parent `GameSession`).
+        - `npc` — references an existing `Npc` owned by the GM.
+
+    Combatant:
+      type: object
+      description: |
+        A single participant in a combat encounter. Combatants store a snapshot
+        of the source entity's stats (HP, armor, signature) at the moment of
+        add. Mid-combat changes to the source PC's hp via the character sheet
+        do NOT propagate to the combatant; the GM mutates `hpCurrent` directly
+        on the combatant via `PATCH /api/v1/combatants/{id}`. This protects the
+        tracker from accidental scrambling when a player auto-saves their sheet
+        during combat.
+
+        Well-known `statusFlags` values: `broken` (all attributes halved per
+        ST3001 p.77), `exposed` (no armor dice), `covered` (+2 armor dice),
+        `prone` (-2 to attack dice). Additional free-form tags are accepted for
+        v1 custom conditions.
+      required:
+        - id
+        - encounterId
+        - combatantType
+        - sourceId
+        - displayName
+        - initiative
+        - turnOrder
+        - hpCurrent
+        - hpMax
+        - armor
+        - signature
+        - statusFlags
+        - notes
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: Opaque combatant identifier (cuid2)
+        encounterId:
+          type: string
+          readOnly: true
+          description: Identifier of the parent encounter (cuid2)
+        combatantType:
+          $ref: "#/components/schemas/CombatantType"
+        sourceId:
+          type: string
+          readOnly: true
+          description: |
+            Identifier of the source entity. When `combatantType` is `pc` this
+            is the `Character.id`; when `npc` it is the `Npc.id`.
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: |
+            Denormalised name of the combatant, copied from the source entity's
+            `name` at add-time. Can be overridden in `CombatantCreate.displayName`
+            or updated via `PATCH`.
+        initiative:
+          type: ["integer", "null"]
+          minimum: 1
+          maximum: 10
+          description: |
+            d10 initiative result (1–10 per ST3001). Null until the encounter's
+            initiative is rolled (Block 4 operation). Set server-side only.
+          readOnly: true
+        turnOrder:
+          type: ["integer", "null"]
+          minimum: 0
+          description: |
+            0-based index in the turn sequence after initiative is sorted.
+            Null until initiative is rolled. Combatant at index 0 goes first.
+            Set server-side only.
+          readOnly: true
+        hpCurrent:
+          type: integer
+          description: Current hit points. May go below 0 (CT3001 does not clamp).
+        hpMax:
+          type: integer
+          minimum: 1
+          description: Maximum hit points snapshotted from the source at add-time.
+        armor:
+          type: integer
+          minimum: 0
+          description: Armor rating (number of armor dice). Snapshotted from the source at add-time.
+        signature:
+          type: integer
+          description: |
+            Mystic Darkness signature value. Defaults to 0 for PC combatants;
+            copied from `Npc.signature` for NPC combatants at add-time.
+        statusFlags:
+          type: array
+          items:
+            type: string
+          description: |
+            Free-form short tags describing combat status conditions. Well-known
+            values: `broken`, `exposed`, `covered`, `prone`. Clients should
+            render known tags with icons; unknown tags are shown as plain text.
+          example: [broken, exposed]
+        notes:
+          type: ["string", "null"]
+          maxLength: 500
+          description: Optional GM notes for this combatant in Markdown format (max 500 characters).
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+      example:
+        id: cuid_comb01
+        encounterId: cuid_enc01
+        combatantType: pc
+        sourceId: cuid_char01
+        displayName: Zara al-Khatib
+        initiative: null
+        turnOrder: null
+        hpCurrent: 4
+        hpMax: 4
+        armor: 2
+        signature: 0
+        statusFlags: []
+        notes: null
+        createdAt: "2026-05-10T09:00:00Z"
+        updatedAt: "2026-05-10T09:00:00Z"
+
+    CombatantCreate:
+      type: object
+      description: |
+        POST payload for `POST /api/v1/encounters/{id}/combatants`.
+
+        `combatantType` and `sourceId` are required. The server snapshots
+        `hpCurrent`, `hpMax`, `armor`, and `signature` from the source entity
+        on add; these fields are absent from the request payload and populated
+        in the response. `initiative` and `turnOrder` are server-controlled and
+        remain null until the Block 4 initiative-roll operation.
+
+        `displayName` is optional — when omitted the server uses the source
+        entity's `name` field.
+
+        422 error codes:
+        - `COMBATANT_SOURCE_NOT_FOUND` — `sourceId` does not exist
+        - `COMBATANT_SOURCE_NOT_OWNED` — caller does not own the source entity
+        - `COMBATANT_DUPLICATE` — same `(combatantType, sourceId)` already present
+        - `ENCOUNTER_LOCKED_FOR_COMBAT` — encounter is not in `setup` status
+      required:
+        - combatantType
+        - sourceId
+      properties:
+        combatantType:
+          $ref: "#/components/schemas/CombatantType"
+        sourceId:
+          type: string
+          description: |
+            Identifier of the source entity. Must be a `Character.id` when
+            `combatantType` is `pc`, or an `Npc.id` when `combatantType` is `npc`.
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: |
+            Optional override for the combatant display name. When omitted the
+            server copies the source entity's `name`.
+        notes:
+          type: ["string", "null"]
+          maxLength: 500
+          description: Optional GM notes in Markdown (max 500 characters).
+      example:
+        combatantType: npc
+        sourceId: cuid_npc01
+        displayName: Khorredian Elite Guard
+
+    CombatantUpdate:
+      type: object
+      description: |
+        PATCH payload for `PATCH /api/v1/combatants/{id}`. All fields are
+        optional; omitted fields are left unchanged.
+
+        `combatantType` and `sourceId` are immutable and absent from this
+        schema. `initiative` and `turnOrder` are read-only and can only be
+        set via the Block 4 initiative operations.
+      properties:
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Update the combatant display name.
+        hpCurrent:
+          type: integer
+          description: Update current hit points (may go negative).
+        armor:
+          type: integer
+          minimum: 0
+          description: Update armor rating.
+        signature:
+          type: integer
+          description: Update the mystic signature value.
+        statusFlags:
+          type: array
+          items:
+            type: string
+          description: |
+            Replace the full set of status flags. Well-known values:
+            `broken`, `exposed`, `covered`, `prone`.
+        notes:
+          type: ["string", "null"]
+          maxLength: 500
+          description: Update GM notes in Markdown (max 500 characters).
+        initiative:
+          type: ["integer", "null"]
+          minimum: 1
+          maximum: 10
+          readOnly: true
+          description: |
+            Read-only. Initiative is set exclusively by the Block 4
+            initiative-roll operation. This field is listed here for
+            documentation purposes only; any value supplied in a PATCH
+            request will be ignored.
+        turnOrder:
+          type: ["integer", "null"]
+          minimum: 0
+          readOnly: true
+          description: |
+            Read-only. Turn order index is set exclusively by the Block 4
+            initiative operations. This field is listed here for
+            documentation purposes only; any value supplied in a PATCH
+            request will be ignored.
+      example:
+        hpCurrent: 0
+        statusFlags: [broken]
+
+    CombatantList:
+      type: object
+      description: |
+        Non-paginated list of combatants for an encounter. Typical encounters
+        have fewer than 20 combatants; a pagination cursor would add unnecessary
+        complexity for no practical benefit.
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Combatant"
