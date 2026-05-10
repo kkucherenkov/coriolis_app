@@ -1,3 +1,5 @@
+export { AppHeader } from './components/AppHeader';
+export type { AppHeaderProps, BrandLabels, NavItem } from './components/AppHeader';
 export { AppArabesqueCorner } from './components/AppArabesqueCorner';
 export type { ArabesqueOrientation } from './components/AppArabesqueCorner';
 export { AppAvatar } from './components/AppAvatar';
