@@ -520,7 +520,7 @@ import 'package:app_api_client/api.dart';
 
 final api = AppApiClient().getEncountersApi();
 final String id = id_example; // String | Combatant identifier (cuid2)
-final CombatantUpdate combatantUpdate = {"hpCurrent":0,"statusFlags":["broken"]}; // CombatantUpdate | 
+final CombatantUpdate combatantUpdate = {"hpCurrent":0,"statusFlags":["incapacitated"]}; // CombatantUpdate | 
 
 try {
     final response = api.updateCombatant(id, combatantUpdate);

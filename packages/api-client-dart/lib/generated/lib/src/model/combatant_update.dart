@@ -16,7 +16,7 @@ part 'combatant_update.g.dart';
 /// * [hpCurrent] - Update current hit points (may go negative).
 /// * [armor] - Update armor rating.
 /// * [signature] - Update the mystic signature value.
-/// * [statusFlags] - Replace the full set of status flags. Well-known values: `broken`, `exposed`, `covered`, `prone`. 
+/// * [statusFlags] - Replace the full set of status flags. Free-form `string[]` per the `Combatant.statusFlags` description; canonical tags from ST3001 ГЛАВА 5 are `incapacitated`, `prone`, `covered` (custom tags are allowed and round-tripped untouched). 
 /// * [notes] - Update GM notes in Markdown (max 500 characters).
 /// * [initiative] - Read-only. Initiative is set exclusively by the Block 4 initiative-roll operation (d6 per ST3001 ГЛАВА 5). This field is listed here for documentation purposes only; any value supplied in a PATCH request will be ignored. 
 /// * [turnOrder] - Read-only. Turn order index is set exclusively by the Block 4 initiative operations. This field is listed here for documentation purposes only; any value supplied in a PATCH request will be ignored. 
@@ -38,7 +38,7 @@ abstract class CombatantUpdate implements Built<CombatantUpdate, CombatantUpdate
   @BuiltValueField(wireName: r'signature')
   int? get signature;
 
-  /// Replace the full set of status flags. Well-known values: `broken`, `exposed`, `covered`, `prone`. 
+  /// Replace the full set of status flags. Free-form `string[]` per the `Combatant.statusFlags` description; canonical tags from ST3001 ГЛАВА 5 are `incapacitated`, `prone`, `covered` (custom tags are allowed and round-tripped untouched). 
   @BuiltValueField(wireName: r'statusFlags')
   BuiltList<String>? get statusFlags;
 

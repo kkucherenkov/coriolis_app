@@ -2342,10 +2342,9 @@ export type CombatantType = 'pc' | 'npc';
  * tracker from accidental scrambling when a player auto-saves their sheet
  * during combat.
  *
- * Well-known `statusFlags` values: `broken` (all attributes halved per
- * ST3001 p.77), `exposed` (no armor dice), `covered` (+2 armor dice),
- * `prone` (-2 to attack dice). Additional free-form tags are accepted for
- * v1 custom conditions.
+ * `statusFlags` is intentionally a free-form `string[]` — see the field
+ * description for the canonical values listed in ST3001 ГЛАВА 5 «Раунды,
+ * ходы и инициатива» and the rationale for not enum-locking it.
  *
  */
 export type Combatant = {
@@ -2405,9 +2404,16 @@ export type Combatant = {
      */
     signature: number;
     /**
-     * Free-form short tags describing combat status conditions. Well-known
-     * values: `broken`, `exposed`, `covered`, `prone`. Clients should
-     * render known tags with icons; unknown tags are shown as plain text.
+     * Free-form short tags describing combat status conditions. The
+     * canonical taxonomy in ST3001 ГЛАВА 5 «Раунды, ходы и инициатива»
+     * covers `incapacitated` (HP at 0 — cannot act), `prone` (knocked
+     * down) and `covered` (behind cover for armor purposes). The field
+     * is intentionally not enum-locked: GMs are expected to invent
+     * scene-specific tags (e.g. `bleeding`, `restrained`, `zero-g`),
+     * and a hard schema would force migrations every time a campaign
+     * needs a new condition. Clients SHOULD render the canonical tags
+     * with icons; unknown tags MUST be shown as plain text and
+     * preserved on PATCH round-trips.
      *
      */
     statusFlags: Array<string>;
@@ -2485,8 +2491,10 @@ export type CombatantUpdate = {
      */
     signature?: number;
     /**
-     * Replace the full set of status flags. Well-known values:
-     * `broken`, `exposed`, `covered`, `prone`.
+     * Replace the full set of status flags. Free-form `string[]` per the
+     * `Combatant.statusFlags` description; canonical tags from ST3001
+     * ГЛАВА 5 are `incapacitated`, `prone`, `covered` (custom tags are
+     * allowed and round-tripped untouched).
      *
      */
     statusFlags?: Array<string>;
@@ -3203,10 +3211,9 @@ export type EncounterListWritable = {
  * tracker from accidental scrambling when a player auto-saves their sheet
  * during combat.
  *
- * Well-known `statusFlags` values: `broken` (all attributes halved per
- * ST3001 p.77), `exposed` (no armor dice), `covered` (+2 armor dice),
- * `prone` (-2 to attack dice). Additional free-form tags are accepted for
- * v1 custom conditions.
+ * `statusFlags` is intentionally a free-form `string[]` — see the field
+ * description for the canonical values listed in ST3001 ГЛАВА 5 «Раунды,
+ * ходы и инициатива» and the rationale for not enum-locking it.
  *
  */
 export type CombatantWritable = {
@@ -3237,9 +3244,16 @@ export type CombatantWritable = {
      */
     signature: number;
     /**
-     * Free-form short tags describing combat status conditions. Well-known
-     * values: `broken`, `exposed`, `covered`, `prone`. Clients should
-     * render known tags with icons; unknown tags are shown as plain text.
+     * Free-form short tags describing combat status conditions. The
+     * canonical taxonomy in ST3001 ГЛАВА 5 «Раунды, ходы и инициатива»
+     * covers `incapacitated` (HP at 0 — cannot act), `prone` (knocked
+     * down) and `covered` (behind cover for armor purposes). The field
+     * is intentionally not enum-locked: GMs are expected to invent
+     * scene-specific tags (e.g. `bleeding`, `restrained`, `zero-g`),
+     * and a hard schema would force migrations every time a campaign
+     * needs a new condition. Clients SHOULD render the canonical tags
+     * with icons; unknown tags MUST be shown as plain text and
+     * preserved on PATCH round-trips.
      *
      */
     statusFlags: Array<string>;
@@ -3276,8 +3290,10 @@ export type CombatantUpdateWritable = {
      */
     signature?: number;
     /**
-     * Replace the full set of status flags. Well-known values:
-     * `broken`, `exposed`, `covered`, `prone`.
+     * Replace the full set of status flags. Free-form `string[]` per the
+     * `Combatant.statusFlags` description; canonical tags from ST3001
+     * ГЛАВА 5 are `incapacitated`, `prone`, `covered` (custom tags are
+     * allowed and round-tripped untouched).
      *
      */
     statusFlags?: Array<string>;

@@ -19,7 +19,7 @@ Name | Type | Description | Notes
 **hpMax** | **int** | Maximum hit points snapshotted from the source at add-time. | 
 **armor** | **int** | Armor rating (number of armor dice). Snapshotted from the source at add-time. | 
 **signature** | **int** | Mystic Darkness signature value. Defaults to 0 for PC combatants; copied from `Npc.signature` for NPC combatants at add-time.  | 
-**statusFlags** | **BuiltList&lt;String&gt;** | Free-form short tags describing combat status conditions. Well-known values: `broken`, `exposed`, `covered`, `prone`. Clients should render known tags with icons; unknown tags are shown as plain text.  | 
+**statusFlags** | **BuiltList&lt;String&gt;** | Free-form short tags describing combat status conditions. The canonical taxonomy in ST3001 ГЛАВА 5 «Раунды, ходы и инициатива» covers `incapacitated` (HP at 0 — cannot act), `prone` (knocked down) and `covered` (behind cover for armor purposes). The field is intentionally not enum-locked: GMs are expected to invent scene-specific tags (e.g. `bleeding`, `restrained`, `zero-g`), and a hard schema would force migrations every time a campaign needs a new condition. Clients SHOULD render the canonical tags with icons; unknown tags MUST be shown as plain text and preserved on PATCH round-trips.  | 
 **notes** | **String** | Optional GM notes for this combatant in Markdown format (max 500 characters). | 
 **createdAt** | [**DateTime**](DateTime.md) |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 

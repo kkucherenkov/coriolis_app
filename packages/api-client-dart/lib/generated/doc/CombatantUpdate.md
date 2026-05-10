@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 **hpCurrent** | **int** | Update current hit points (may go negative). | [optional] 
 **armor** | **int** | Update armor rating. | [optional] 
 **signature** | **int** | Update the mystic signature value. | [optional] 
-**statusFlags** | **BuiltList&lt;String&gt;** | Replace the full set of status flags. Well-known values: `broken`, `exposed`, `covered`, `prone`.  | [optional] 
+**statusFlags** | **BuiltList&lt;String&gt;** | Replace the full set of status flags. Free-form `string[]` per the `Combatant.statusFlags` description; canonical tags from ST3001 ГЛАВА 5 are `incapacitated`, `prone`, `covered` (custom tags are allowed and round-tripped untouched).  | [optional] 
 **notes** | **String** | Update GM notes in Markdown (max 500 characters). | [optional] 
 **initiative** | **int** | Read-only. Initiative is set exclusively by the Block 4 initiative-roll operation (d6 per ST3001 ГЛАВА 5). This field is listed here for documentation purposes only; any value supplied in a PATCH request will be ignored.  | [optional] 
 **turnOrder** | **int** | Read-only. Turn order index is set exclusively by the Block 4 initiative operations. This field is listed here for documentation purposes only; any value supplied in a PATCH request will be ignored.  | [optional] 

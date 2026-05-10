@@ -89,7 +89,12 @@ export interface CombatUpdated {
     hpCurrent: number;
     hpMax: number;
     /**
-     * Well-known values: broken, exposed, covered, prone.
+     * Free-form `string[]` mirror of `Combatant.statusFlags` from
+     * the OpenAPI schema. Canonical tags from ST3001 ГЛАВА 5
+     * «Раунды, ходы и инициатива» are `incapacitated`, `prone`,
+     * `covered`; custom GM tags are allowed and pass through
+     * unchanged.
+     *
      */
     statusFlags?: string[];
   }[];
