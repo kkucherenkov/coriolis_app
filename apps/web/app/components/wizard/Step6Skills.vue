@@ -1,13 +1,17 @@
 <script setup lang="ts">
   import { computed } from 'vue';
-  import type { Concept, Skills } from '@app/api-client-ts';
+  import type { Concept, Role, Skills } from '@app/api-client-ts';
+  import { keySkillsForRole } from '~/utils/roleCatalogue';
 
   // ST3001 ch.2 table 2.4 — single skill-point pool sized by upbringing.
-  // Per-skill caps at creation depend on the chosen concept: key skills
-  // cap at 3, every other skill caps at 1. The General / Advanced split
-  // in the layout below is purely visual — it groups skills by the ch.3
-  // action-economy rule (advanced skills require ≥1 rank to roll), not
-  // by an artificial pool partition.
+  // Per-skill caps at creation depend on the chosen role: the role's
+  // four key skills cap at 3, every other skill caps at 1. Falls back
+  // to the concept-union (5 skills) when role is null (legacy drafts
+  // without a role-pick — Block 4 will surface a roleUnmigrated banner
+  // for those). The General / Advanced split in the layout below is
+  // purely visual — it groups skills by the ch.3 action-economy rule
+  // (advanced skills require ≥1 rank to roll), not by an artificial
+  // pool partition.
   type Upbringing = 'plebeian' | 'stationary' | 'aristocrat';
 
   const props = defineProps<Props>();
@@ -45,11 +49,20 @@
     skills: Skills;
     upbringing: Upbringing | null;
     concept: Concept | null;
+    role: Role | null;
   }
 
-  const keySkillSet = computed<ReadonlySet<keyof Skills>>(
-    () => new Set(props.concept ? CONCEPT_KEY_SKILLS[props.concept] : []),
-  );
+  const keySkillSet = computed<ReadonlySet<keyof Skills>>(() => {
+    // Role wins when present — the four canonical key skills per
+    // ST3001 ГЛАВА 2 «АМПЛУА И РОЛИ» / «КЛЮЧЕВЫЕ НАВЫКИ».
+    if (props.role) return new Set(keySkillsForRole(props.role));
+    // Legacy fallback: concept-union (5 skills) when no role is picked
+    // yet. The wizard's role step (Step 5) lands the role for new
+    // drafts; legacy drafts get the union until the user re-confirms
+    // via the roleUnmigrated banner (Block 4).
+    if (props.concept) return new Set(CONCEPT_KEY_SKILLS[props.concept]);
+    return new Set();
+  });
 
   function maxRank(key: keyof Skills): number {
     return keySkillSet.value.has(key) ? KEY_SKILL_MAX : NONKEY_SKILL_MAX;
@@ -60,6 +73,15 @@
   );
 
   const { t } = useI18n({ useScope: 'local' });
+
+  /** Localised, comma-separated list of the role's 4 key skill labels.
+   *  Empty when no role is picked yet. */
+  const keySkillsLabel = computed<string>(() => {
+    if (!props.role) return '';
+    return keySkillsForRole(props.role)
+      .map((key) => t(`skill.${key}`))
+      .join(', ');
+  });
 
   type GeneralSkillKey =
     | 'force'
@@ -158,6 +180,7 @@
     "advancedTitle": "Advanced Skills",
     "pointsLeft": "Points left",
     "hint": "{pool} skill points · Key skills up to {max}, others up to {nonKeyMax}.",
+    "keySkillsForRole": "Key skills for your role: {skills} (max {max} each).",
     "skill": {
       "force": "Force",
       "meleeCombat": "Melee Combat",
@@ -184,6 +207,7 @@
     "advancedTitle": "Продвинутые навыки",
     "pointsLeft": "Осталось",
     "hint": "Очков навыков: {pool} · Ключевые до {max}, остальные до {nonKeyMax}.",
+    "keySkillsForRole": "Ключевые навыки роли: {skills} (по {max} макс.).",
     "skill": {
       "force": "Сила",
       "meleeCombat": "Рукопашный бой",
@@ -210,6 +234,7 @@
     "advancedTitle": "[uk-todo] Advanced Skills",
     "pointsLeft": "[uk-todo] Points left",
     "hint": "[uk-todo] {pool} skill points · Key skills up to {max}, others up to {nonKeyMax}.",
+    "keySkillsForRole": "[uk-todo] Key skills for your role: {skills} (max {max} each).",
     "skill": {
       "force": "[uk-todo] Force",
       "meleeCombat": "[uk-todo] Melee Combat",
@@ -236,6 +261,7 @@
     "advancedTitle": "[el-todo] Advanced Skills",
     "pointsLeft": "[el-todo] Points left",
     "hint": "[el-todo] {pool} skill points · Key skills up to {max}, others up to {nonKeyMax}.",
+    "keySkillsForRole": "[el-todo] Key skills for your role: {skills} (max {max} each).",
     "skill": {
       "force": "[el-todo] Force",
       "meleeCombat": "[el-todo] Melee Combat",
@@ -271,6 +297,12 @@
         })
       }}
     </p>
+    <p
+      v-if="role"
+      class="step-6-skills__role-hint"
+    >
+      {{ t('keySkillsForRole', { skills: keySkillsLabel, max: KEY_SKILL_MAX }) }}
+    </p>
 
     <div class="step-6-skills__cols">
       <!-- General skills -->
@@ -285,18 +317,10 @@
           </span>
         </div>
 
-        <div
-          v-for="key in GENERAL_KEYS"
-          :key="key"
-          class="step-6-skills__row"
-        >
+        <div v-for="key in GENERAL_KEYS" :key="key" class="step-6-skills__row">
           <span class="step-6-skills__name">{{ t(`skill.${key}`) }}</span>
           <span class="step-6-skills__attr">{{ SKILL_ATTR[key] }}</span>
-          <div
-            class="step-6-skills__dots"
-            role="group"
-            :aria-label="t(`skill.${key}`)"
-          >
+          <div class="step-6-skills__dots" role="group" :aria-label="t(`skill.${key}`)">
             <span
               v-for="i in DOT_COUNT"
               :key="i"
@@ -345,18 +369,10 @@
           </span>
         </div>
 
-        <div
-          v-for="key in ADVANCED_KEYS"
-          :key="key"
-          class="step-6-skills__row"
-        >
+        <div v-for="key in ADVANCED_KEYS" :key="key" class="step-6-skills__row">
           <span class="step-6-skills__name">{{ t(`skill.${key}`) }}</span>
           <span class="step-6-skills__attr">{{ SKILL_ATTR[key] }}</span>
-          <div
-            class="step-6-skills__dots"
-            role="group"
-            :aria-label="t(`skill.${key}`)"
-          >
+          <div class="step-6-skills__dots" role="group" :aria-label="t(`skill.${key}`)">
             <span
               v-for="i in DOT_COUNT"
               :key="i"
@@ -407,11 +423,19 @@
 
   .step-6-skills {
     &__hint {
-      margin: 0 0 var(--space-6);
+      margin: 0 0 var(--space-3);
       font-family: var(--font-body);
       font-size: var(--type-body-sm-font-size);
       color: var(--text-secondary);
       font-style: italic;
+      text-align: center;
+    }
+
+    &__role-hint {
+      margin: 0 0 var(--space-6);
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--brand-brass);
       text-align: center;
     }
 

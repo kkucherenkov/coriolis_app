@@ -558,6 +558,7 @@
         :skills="draftSkills"
         :upbringing="draftUpbringing"
         :concept="draftConcept"
+        :role="draftRole"
         @update:skills="onSkillsUpdate"
       />
 
