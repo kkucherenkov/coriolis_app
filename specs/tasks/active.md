@@ -53,10 +53,16 @@
 - Sub-blocks (one `feat(mobile)` commit per block + one
   active.md follow-up commit, per
   `feedback_block_workflow.md`):
-  - [ ] Block 1 — `lib/features/combat/` skeleton
+  - [x] Block 1 — `lib/features/combat/` skeleton
         (data + domain + presentation), `CombatRepository`
         over the generated Dart client, fixture-backed
-        widget catalogue entry.
+        widget catalogue entry. 8 unit tests on the
+        repository impl. Codegen-drift follow-up noted:
+        the generated Dart client has stale .g.dart files
+        post-T-010 Block H (ShipModuleSlot import missing
+        in 4 ship-module modules) — flagged for a separate
+        `chore(codegen)` task; NOT fixed in this block since
+        the combat module doesn't depend on those models.
   - [ ] Block 2 — `ActiveCombatCubit` (load by sessionId →
         resolve active encounter → fetch combatants),
         states (loading / empty / ready / error), unit

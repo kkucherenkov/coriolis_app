@@ -1,5 +1,11 @@
 import 'package:app_api_client/app_api_client.dart'
-    show CharactersApi, DiceApi, GameSessionsApi, RealtimeApi, standardSerializers;
+    show
+        CharactersApi,
+        DiceApi,
+        EncountersApi,
+        GameSessionsApi,
+        RealtimeApi,
+        standardSerializers;
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 
@@ -15,6 +21,8 @@ import 'package:coriolis_companion/features/rolls/data/roll_repository_impl.dart
 import 'package:coriolis_companion/features/rolls/domain/roll_repository.dart';
 import 'package:coriolis_companion/features/rolls/presentation/blocs/dice_roller/dice_roller_cubit.dart';
 import 'package:coriolis_companion/features/rolls/presentation/blocs/roll_history/roll_history_cubit.dart';
+import 'package:coriolis_companion/features/combat/data/combat_repository_impl.dart';
+import 'package:coriolis_companion/features/combat/domain/combat_repository.dart';
 import 'package:coriolis_companion/features/sessions/data/session_repository_impl.dart';
 import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/session_detail/session_detail_cubit.dart';
@@ -71,6 +79,9 @@ void configureDependencies() {
     )
     ..registerLazySingleton<RealtimeApi>(
       () => RealtimeApi(getIt<Dio>(), standardSerializers),
+    )
+    ..registerLazySingleton<EncountersApi>(
+      () => EncountersApi(getIt<Dio>(), standardSerializers),
     );
 
   // ── Characters domain ────────────────────────────────────────────────────
@@ -86,6 +97,11 @@ void configureDependencies() {
   // ── Sessions domain (Phase 4 Features 7.2 + 7.3) ─────────────────────────
   getIt.registerLazySingleton<SessionRepository>(
     () => SessionRepositoryImpl(api: getIt<GameSessionsApi>()),
+  );
+
+  // ── Combat domain (Phase 6 Block 1) ──────────────────────────────────────
+  getIt.registerLazySingleton<CombatRepository>(
+    () => CombatRepositoryImpl(api: getIt<EncountersApi>()),
   );
 
   // ── Cubit factories ─────────────────────────────────────────────────────

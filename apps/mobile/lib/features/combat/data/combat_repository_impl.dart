@@ -1,0 +1,82 @@
+// Wire–domain naming gap note
+// ────────────────────────────────────────────────────────────────────────────
+// The REST API (OpenAPI / EncountersApi) uses `displayName` for the
+// combatant's visible name.  The AsyncAPI (Centrifugo real-time channel)
+// uses `combatants[].name` in the push payload — see
+// `packages/specs/asyncapi/centrifugo.yaml`.
+//
+// This repository only consumes REST, so the gap is NOT an issue here.
+// When Block 4 wires up the real-time channel a mapping shim will be needed
+// at the AsyncAPI → domain boundary (not in this file).
+// ────────────────────────────────────────────────────────────────────────────
+
+import 'package:app_api_client/app_api_client.dart' as api_client
+    show EncountersApi, Encounter, Combatant;
+
+import 'package:coriolis_companion/features/combat/domain/combat_repository.dart';
+import 'package:coriolis_companion/features/combat/domain/combatant.dart';
+import 'package:coriolis_companion/features/combat/domain/encounter.dart';
+
+/// Adapter bridging `EncountersApi` (which hosts both encounter and combatant
+/// endpoints) with the domain `CombatRepository`. SDK types stay in this
+/// file; the presentation layer never imports `app_api_client`.
+class CombatRepositoryImpl implements CombatRepository {
+  const CombatRepositoryImpl({required api_client.EncountersApi api})
+      : _api = api;
+
+  final api_client.EncountersApi _api;
+
+  // ── Mapping ─────────────────────────────────────────────────────────────
+
+  static Encounter _encounterToDomain(api_client.Encounter src) => Encounter(
+        id: src.id,
+        sessionId: src.gameSessionId,
+        name: src.name,
+        state: src.status.name,
+        round: src.round,
+        activeCombatantId: src.activeCombatantId,
+        notes: src.notes,
+        // combatantCount is not part of the Encounter REST response; it
+        // remains null until the caller fetches combatants separately.
+        combatantCount: null,
+      );
+
+  static Combatant _combatantToDomain(api_client.Combatant src) => Combatant(
+        id: src.id,
+        encounterId: src.encounterId,
+        // CombatantType is a built_value enum; `.name` gives the wire string.
+        source: src.combatantType.name,
+        sourceId: src.sourceId,
+        // REST uses `displayName` (see file header for AsyncAPI gap note).
+        displayName: src.displayName,
+        initiative: src.initiative,
+        turnOrder: src.turnOrder,
+        hpCurrent: src.hpCurrent,
+        hpMax: src.hpMax,
+        armor: src.armor,
+        signature: src.signature,
+        statusFlags: src.statusFlags.toList(growable: false),
+        notes: src.notes,
+      );
+
+  // ── Implementation ──────────────────────────────────────────────────────
+
+  @override
+  Future<List<Encounter>> listEncounters(
+    String sessionId, {
+    int limit = 20,
+  }) async {
+    final res = await _api.listEncounters(sessionId: sessionId, limit: limit);
+    final list = res.data;
+    if (list == null) return const [];
+    return list.items.map(_encounterToDomain).toList(growable: false);
+  }
+
+  @override
+  Future<List<Combatant>> listCombatants(String encounterId) async {
+    final res = await _api.listCombatants(id: encounterId);
+    final list = res.data;
+    if (list == null) return const [];
+    return list.items.map(_combatantToDomain).toList(growable: false);
+  }
+}
