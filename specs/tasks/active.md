@@ -703,6 +703,162 @@
 
 ---
 
+## T-2026-05-10-018 — Web global navigation + language switcher + settings
+
+- Created: 2026-05-10
+- Owner: claude
+- Source: user-requested mid-session 2026-05-10 — «if I navigate
+  to ships, I can't get back to characters. And add settings, or
+  at least language select». Brought up while T-010 Block H was
+  in-flight; deferred so the canon-remediation finished cleanly,
+  then formalised here so it doesn't get lost.
+- Goal: a persistent global header on every authenticated `/app/*`
+  page that lets the user move between the major sections
+  (Characters, Ships, NPCs, Sessions) and reach a user menu with
+  language switcher, theme toggle (if tokens exist), settings
+  page link, and sign-out. Today the only way to get from
+  `/app/ships` back to `/app/characters` is to type the URL or
+  open a new tab — that's a real UX gap that's been masking the
+  rest of the site's depth.
+- Why now: T-010 + T-011 made the canon surface honest; T-018
+  makes the *navigation* surface honest. With the wizard reflow
+  landing in T-011, character creation surfaces ~7 steps and a
+  banner — the site is genuinely an app now, not a single-page
+  prototype, and deserves real chrome.
+- Depends on: T-2026-05-10-011 done (banner + role picker landed
+  the last greenfield wizard work); the i18n glossary in
+  `.claude/docs/i18n.md` is the translator's source of truth for
+  any new copy.
+- Acceptance:
+  - **Global `<AppHeader>` component** in `packages/ui`
+    (Storybook story + colocated spec — required for `@app/ui`
+    per CLAUDE.md). Renders:
+    - Brand mark / logo on the left (link to `/app` dashboard).
+    - Centre nav: links to Characters, Ships, NPCs, Sessions
+      with the current section highlighted via an active-style
+      token (use the existing `--brand-brass` accent — no new
+      tokens). Each link uses `<NuxtLink>` with `prefetch`.
+    - Right side: `<UserMenu>` dropdown (see below).
+    - Mobile: a hamburger that opens a side drawer with the
+      same links + user menu nested. Use the existing breakpoint
+      tokens (768px). a11y: hamburger is a `<button>` with
+      `aria-controls` and `aria-expanded`; drawer is a
+      `<dialog>` with focus trap.
+  - **`<UserMenu>` dropdown** in `packages/ui`:
+    - Avatar + display name (from `useMeApi`).
+    - Submenu items:
+      - Language: ru / en / uk / el (radio-group inside menu;
+        switching calls `setLocale(code)` and persists via the
+        existing `i18n_locale` cookie set in `nuxt.config.ts`;
+        the locale list is the source of truth — read from the
+        i18n config, not hard-coded).
+      - Theme (optional, only if design tokens already cover
+        light + dark — check `specs/design/tokens/`; if
+        single-theme today, leave a `[ ] dark theme` follow-up
+        on T-018's sub-block for v1.1).
+      - Settings (link to `/app/settings`).
+      - Sign out (calls Better Auth signOut endpoint, then
+        navigates to `/login` or wherever the project's logout
+        landing is — read what the existing logout button
+        does; reuse, don't reinvent).
+    - a11y: trigger button has `aria-haspopup="menu"` and
+      `aria-expanded`; menu has `role="menu"`, items use
+      `role="menuitem"` with `role="menuitemradio"` for the
+      language radios; arrow-key navigation; ESC closes.
+  - **Layout integration**: extend the existing default Nuxt
+    layout (`apps/web/app/layouts/default.vue` if it exists,
+    otherwise create one) to mount `<AppHeader />` above the
+    `<NuxtPage />` for every `/app/*` route. Public pages
+    (`/login`, `/register`, share-link viewer at
+    `/share/{token}`) keep their existing chrome — the header
+    is for authenticated app routes only.
+  - **`/app/settings` page** stub: a page that hosts the
+    language / theme / sign-out controls in a full-page form,
+    mirroring the dropdown but without the menu chrome. v1
+    can be just a placeholder that hosts the language switcher
+    again with a "more settings coming" note; the goal is to
+    have the route reachable so the menu link is not a
+    dead-end.
+  - **Active-section detection**: the header reads the current
+    route via `useRoute()` and applies the active style to the
+    matching link. Sections: Characters (`/app/characters/*`),
+    Ships (`/app/ships/*`), NPCs (`/app/npcs/*`), Sessions
+    (`/app/sessions/*`).
+  - **i18n**: every label keyed in colocated `<i18n>` blocks
+    (`nav.characters`, `nav.ships`, `nav.npcs`, `nav.sessions`,
+    `userMenu.language.label`, `userMenu.signOut`,
+    `userMenu.settings`, `header.brand` if there's a brand
+    string). en + ru translated; uk + el follow the existing
+    `[uk-todo]` / `[el-todo]` pattern. The four locale display
+    names (English / Русский / Українська / Ελληνικά) come
+    from `nuxt.config.ts`'s i18n locales config.
+  - **Language switcher persistence**: switching language
+    updates the `i18n_locale` cookie (already configured in
+    `nuxt.config.ts`) so the choice survives reload. No backend
+    round-trip is needed today; if the user wants the locale
+    persisted server-side later, that's a separate task.
+  - **Storybook**: `<AppHeader>` gets ≥4 stories — desktop +
+    selected section, desktop + user menu open, mobile +
+    drawer closed, mobile + drawer open. `<UserMenu>` gets
+    its own stories.
+  - **Tests**:
+    - `packages/ui` colocated specs for both new components
+      (≥10 vitest cases — render, click handlers, keyboard
+      nav, language-change cookie write).
+    - `apps/web` integration test asserting the header
+      mounts on `/app/characters` and `/app/ships` and links
+      navigate (use `@nuxt/test-utils`).
+- Spec diff: none — this is pure client work. No new wire
+  contract, no codegen.
+- Codegen impact: none.
+- Design impact: a header pattern is new — sketch it in
+  `specs/design/mockups/` (one PNG / SVG / JSX is fine), or at
+  minimum capture the layout in the Storybook stories. Reuse
+  existing tokens; do not introduce new colour or radius
+  tokens for this task. The active-link accent uses
+  `--brand-brass`; the mobile drawer overlay uses
+  `--surface-void` with a `--alpha-overlay` (or whatever the
+  existing dialog overlay uses).
+- a11y / responsive checklist:
+  - Skip-link (`<a href="#main-content">Skip to content</a>`)
+    that becomes visible on focus, anchored at the top of the
+    layout. Required for keyboard navigation of any page that
+    has navigation chrome.
+  - Lighthouse a11y score on `/app/characters` should not
+    regress.
+  - Mobile drawer focus trap: pressing Tab cycles within the
+    drawer until ESC closes it.
+  - Reduced motion: drawer slide-in respects
+    `prefers-reduced-motion` (instant open instead of
+    animation).
+- Sub-blocks (one feat-* commit per block + active.md
+  follow-up, per `feedback_block_workflow.md`):
+  - [ ] Block 1 — `@app/ui` `<UserMenu>` component
+        (dropdown, language radio-group, sign-out wiring,
+        Storybook + spec). No header yet — UserMenu standalone
+        so the wizard / standalone settings page can also
+        adopt it.
+  - [ ] Block 2 — `@app/ui` `<AppHeader>` component
+        (brand + nav + UserMenu slot, active-link styling,
+        Storybook + spec). Desktop only — mobile drawer is
+        Block 3.
+  - [ ] Block 3 — Mobile drawer: hamburger + slide-in
+        nav + a11y focus trap. AppHeader stories grow to
+        cover the mobile breakpoint.
+  - [ ] Block 4 — `apps/web` layout integration: default
+        Nuxt layout mounts `<AppHeader>`; every `/app/*`
+        page picks it up; `/login`, `/register`, and
+        share-link viewer stay on their existing minimal
+        chrome. Skip-link + active-section detection wired.
+  - [ ] Block 5 — `/app/settings` page stub + final a11y
+        / Lighthouse pass + nav integration test.
+- Status: queued (no blockers — UI work, ready when the user
+  picks it). Higher user-value than the spec follow-ups
+  T-012..T-016, which are mostly back-end polish.
+- Blockers: —
+
+---
+
 ## T-2026-05-10-017 — `apps/web` Playwright bootstrap + role-picker smoke
 
 - Created: 2026-05-10
