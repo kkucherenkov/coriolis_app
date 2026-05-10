@@ -1187,9 +1187,12 @@ export const updateCombatant = <ThrowOnError extends boolean = false>(options: O
 /**
  * Roll initiative for all combatants and start combat
  *
- * Rolls a d10 (`crypto.randomInt(1, 11)`) for every combatant in the
- * encounter, sorts them descending, assigns `turnOrder` indices (0-based),
- * and transitions the encounter from `setup` to `active`.
+ * Rolls a d6 (`crypto.randomInt(1, 7)`) for every combatant in the
+ * encounter, sorts them by initiative descending, assigns `turnOrder`
+ * indices (0-based), and transitions the encounter from `setup` to
+ * `active`. Per ST3001 ГЛАВА 5 «Раунды, ходы и инициатива»: «Бросьте
+ * по кубику за всех участников сражения… Выпавший на кубике результат —
+ * значение инициативы для этого персонажа».
  *
  * **Side-effects (all atomic):**
  * 1. Encounter `status` transitions `setup → active`.
@@ -1198,11 +1201,13 @@ export const updateCombatant = <ThrowOnError extends boolean = false>(options: O
  * `turnOrder: 0` (highest initiative result).
  * 4. Every combatant row is updated with its `initiative` and `turnOrder`.
  *
- * **Tie-breaking:** equal initiative rolls are broken by `agility`
- * descending (`attributes.agility` for PC combatants;
- * `npcSnapshot.agility` for NPC combatants snapshotted at add-time).
- * Remaining ties (equal initiative **and** equal agility) are left in
- * an arbitrary but stable order — the GM should use the
+ * **Tie-breaking (ST3001 ГЛАВА 5):** equal initiative rolls are broken
+ * by re-rolling a fresh d6 for the tied combatants — «В случае ничьей
+ * определите очерёдность хода случайным образом (бросьте ещё по одному
+ * кубику, только на этот раз безо всяких модификаторов — у кого больше,
+ * тот и ходит раньше)». The server runs at most three reroll passes to
+ * keep the operation bounded; any combatants still tied after that are
+ * left in stable insertion order and the GM is expected to use the
  * `PATCH /api/v1/encounters/{id}/initiative` reorder operation to set
  * a definitive order before the first turn.
  *

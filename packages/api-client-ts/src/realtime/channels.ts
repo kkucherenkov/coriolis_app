@@ -79,6 +79,11 @@ export interface CombatUpdated {
      */
     referenceId?: string;
     name: string;
+    /**
+     * d6 initiative result (1–6 per ST3001 ГЛАВА 5). Null until
+     * the encounter's initiative is rolled.
+     *
+     */
     initiative: number;
     turnOrder: number;
     hpCurrent: number;

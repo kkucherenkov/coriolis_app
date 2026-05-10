@@ -2372,8 +2372,10 @@ export type Combatant = {
      */
     displayName: string;
     /**
-     * d10 initiative result (1–10 per ST3001). Null until the encounter's
-     * initiative is rolled (Block 4 operation). Set server-side only.
+     * d6 initiative result (1–6 per ST3001 ГЛАВА 5 «Раунды, ходы и
+     * инициатива»: «Бросьте по кубику за всех участников сражения»).
+     * Null until the encounter's initiative is rolled (Block 4
+     * operation). Set server-side only.
      *
      */
     readonly initiative: number | null;
@@ -2494,9 +2496,9 @@ export type CombatantUpdate = {
     notes?: string | null;
     /**
      * Read-only. Initiative is set exclusively by the Block 4
-     * initiative-roll operation. This field is listed here for
-     * documentation purposes only; any value supplied in a PATCH
-     * request will be ignored.
+     * initiative-roll operation (d6 per ST3001 ГЛАВА 5). This field is
+     * listed here for documentation purposes only; any value supplied in
+     * a PATCH request will be ignored.
      *
      */
     readonly initiative?: number | null;

@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 **combatantType** | [**CombatantType**](CombatantType.md) |  | 
 **sourceId** | **String** | Identifier of the source entity. When `combatantType` is `pc` this is the `Character.id`; when `npc` it is the `Npc.id`.  | 
 **displayName** | **String** | Denormalised name of the combatant, copied from the source entity's `name` at add-time. Can be overridden in `CombatantCreate.displayName` or updated via `PATCH`.  | 
-**initiative** | **int** | d10 initiative result (1–10 per ST3001). Null until the encounter's initiative is rolled (Block 4 operation). Set server-side only.  | 
+**initiative** | **int** | d6 initiative result (1–6 per ST3001 ГЛАВА 5 «Раунды, ходы и инициатива»: «Бросьте по кубику за всех участников сражения»). Null until the encounter's initiative is rolled (Block 4 operation). Set server-side only.  | 
 **turnOrder** | **int** | 0-based index in the turn sequence after initiative is sorted. Null until initiative is rolled. Combatant at index 0 goes first. Set server-side only.  | 
 **hpCurrent** | **int** | Current hit points. May go below 0 (CT3001 does not clamp). | 
 **hpMax** | **int** | Maximum hit points snapshotted from the source at add-time. | 

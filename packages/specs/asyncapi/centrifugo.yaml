@@ -234,8 +234,11 @@ components:
               initiative:
                 type: integer
                 minimum: 1
-                maximum: 10
+                maximum: 6
                 nullable: true
+                description: |
+                  d6 initiative result (1–6 per ST3001 ГЛАВА 5). Null until
+                  the encounter's initiative is rolled.
               turnOrder:
                 type: integer
                 minimum: 0

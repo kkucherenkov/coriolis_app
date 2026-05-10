@@ -18,7 +18,7 @@ part 'combatant_update.g.dart';
 /// * [signature] - Update the mystic signature value.
 /// * [statusFlags] - Replace the full set of status flags. Well-known values: `broken`, `exposed`, `covered`, `prone`. 
 /// * [notes] - Update GM notes in Markdown (max 500 characters).
-/// * [initiative] - Read-only. Initiative is set exclusively by the Block 4 initiative-roll operation. This field is listed here for documentation purposes only; any value supplied in a PATCH request will be ignored. 
+/// * [initiative] - Read-only. Initiative is set exclusively by the Block 4 initiative-roll operation (d6 per ST3001 ГЛАВА 5). This field is listed here for documentation purposes only; any value supplied in a PATCH request will be ignored. 
 /// * [turnOrder] - Read-only. Turn order index is set exclusively by the Block 4 initiative operations. This field is listed here for documentation purposes only; any value supplied in a PATCH request will be ignored. 
 @BuiltValue()
 abstract class CombatantUpdate implements Built<CombatantUpdate, CombatantUpdateBuilder> {
@@ -46,7 +46,7 @@ abstract class CombatantUpdate implements Built<CombatantUpdate, CombatantUpdate
   @BuiltValueField(wireName: r'notes')
   String? get notes;
 
-  /// Read-only. Initiative is set exclusively by the Block 4 initiative-roll operation. This field is listed here for documentation purposes only; any value supplied in a PATCH request will be ignored. 
+  /// Read-only. Initiative is set exclusively by the Block 4 initiative-roll operation (d6 per ST3001 ГЛАВА 5). This field is listed here for documentation purposes only; any value supplied in a PATCH request will be ignored. 
   @BuiltValueField(wireName: r'initiative')
   int? get initiative;
 
