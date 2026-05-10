@@ -23,6 +23,8 @@ function makeRepo(): IShipRepo {
     findCrewSlotByCharacter: vi.fn(),
     assignCrewSlot: vi.fn(),
     unassignCrewSlot: vi.fn(),
+    duplicate: vi.fn(),
+    listNamesByPrefix: vi.fn(),
   };
 }
 

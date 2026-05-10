@@ -155,8 +155,8 @@ describe('ListCombatantsHandler', () => {
     const result = await handler.execute(new ListCombatantsQuery('enc-1', 'user-1'));
 
     expect(result.items).toHaveLength(2);
-    expect(result.items[0].id).toBe('comb-1');
-    expect(result.items[1].id).toBe('comb-2');
+    expect(result.items[0]!.id).toBe('comb-1');
+    expect(result.items[1]!.id).toBe('comb-2');
   });
 
   it('returns combatants with null turnOrder before initiative roll', async () => {
@@ -172,8 +172,8 @@ describe('ListCombatantsHandler', () => {
     const result = await handler.execute(new ListCombatantsQuery('enc-1', 'user-1'));
 
     expect(result.items).toHaveLength(2);
-    expect(result.items[0].turnOrder).toBeNull();
-    expect(result.items[1].turnOrder).toBeNull();
+    expect(result.items[0]!.turnOrder).toBeNull();
+    expect(result.items[1]!.turnOrder).toBeNull();
   });
 
   it('passes encounterId to repo correctly', async () => {
@@ -199,7 +199,7 @@ describe('ListCombatantsHandler', () => {
 
     const result = await handler.execute(new ListCombatantsQuery('enc-1', 'user-1'));
 
-    const item = result.items[0];
+    const item = result.items[0]!;
     expect(item.id).toBe('comb-1');
     expect(item.combatantType).toBe('pc');
     expect(item.sourceId).toBe('char-1');

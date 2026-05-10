@@ -30,7 +30,7 @@ const ALLOWED_TRANSITIONS: ReadonlySet<`${EncounterStatus}->${EncounterStatus}`>
  */
 export function assertCanTransition(from: EncounterStatus, to: EncounterStatus): void {
   const edge = `${from}->${to}`;
-  if (!ALLOWED_TRANSITIONS.has(edge)) {
+  if (!ALLOWED_TRANSITIONS.has(edge as `${EncounterStatus}->${EncounterStatus}`)) {
     throw new EncounterInvalidTransitionError(from, to);
   }
 }

@@ -38,11 +38,13 @@ export class UpdateShipModuleHandler implements ICommandHandler<
     // Merge existing data with the validated partial override
     const mergedData = { ...module.data, ...validated.data };
 
-    return this.repo.updateModule(moduleId, {
-      name: validated.name,
-      energyUse: validated.energyUse,
-      notes: 'notes' in validated ? validated.notes : undefined,
+    const patch: import('../domain/ship.ports').ShipModuleUpdateData = {
+      ...(validated.name !== undefined && { name: validated.name }),
+      ...(validated.energyUse !== undefined && { energyUse: validated.energyUse }),
+      ...('notes' in validated && { notes: validated.notes }),
       data: mergedData,
-    });
+    };
+
+    return this.repo.updateModule(moduleId, patch);
   }
 }

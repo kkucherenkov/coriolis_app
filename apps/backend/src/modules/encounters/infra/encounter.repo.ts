@@ -9,6 +9,8 @@
  */
 import { Injectable } from '@nestjs/common';
 
+import { type EncounterStatus as PrismaEncounterStatus } from '@prisma/client';
+
 import { PrismaService } from '../../../common/prisma/prisma.service';
 
 import type {
@@ -52,8 +54,8 @@ function toStatus(s: string): EncounterStatus {
   return s.toLowerCase() as EncounterStatus;
 }
 
-function toPrismaStatus(s: EncounterStatus): string {
-  return s.toUpperCase();
+function toPrismaStatus(s: EncounterStatus): PrismaEncounterStatus {
+  return s.toUpperCase() as PrismaEncounterStatus;
 }
 
 function toReadModel(row: PrismaEncounterRow): EncounterReadModel {

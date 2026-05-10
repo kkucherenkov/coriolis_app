@@ -9,6 +9,13 @@
  */
 import { Injectable } from '@nestjs/common';
 
+import {
+  Prisma,
+  type ShipClass as PrismaShipClass,
+  type ShipModuleSlot as PrismaShipModuleSlot,
+  type CrewPosition as PrismaCrewPosition,
+} from '@prisma/client';
+
 import { PrismaService } from '../../../common/prisma/prisma.service';
 import { toShipReadModel } from './ship.mapper';
 
@@ -21,6 +28,21 @@ import type {
   ShipModuleUpdateData,
   ShipReadModel,
 } from '../domain/ship.ports';
+
+/** Wire kebab-case ShipClass → Prisma underscore_case ShipClass */
+function toDbShipClass(c: ShipClass): PrismaShipClass {
+  return c.replaceAll('-', '_') as PrismaShipClass;
+}
+
+/** Wire SCREAMING-KEBAB ShipModuleSlot → Prisma SCREAMING_UNDERSCORE ShipModuleSlot */
+function toDbSlot(s: string): PrismaShipModuleSlot {
+  return s.replaceAll('-', '_') as PrismaShipModuleSlot;
+}
+
+/** Wire CrewPosition → Prisma CrewPosition (same values, cast only) */
+function toDbPosition(p: string): PrismaCrewPosition {
+  return p as PrismaCrewPosition;
+}
 
 const SHIP_INCLUDE = {
   modules: {
@@ -115,7 +137,7 @@ export class ShipRepo implements IShipRepo {
       data: {
         ownerId: data.ownerId,
         name: data.name,
-        class: data.class,
+        class: toDbShipClass(data.class),
         model: data.model ?? null,
         registry: data.registry ?? null,
         hullCurrent: data.hullCurrent,
@@ -224,10 +246,10 @@ export class ShipRepo implements IShipRepo {
     const row = await this.prisma.shipModule.create({
       data: {
         shipId,
-        slot: data.slot,
+        slot: toDbSlot(data.slot),
         name: data.name,
         energyUse: data.energyUse,
-        data: data.data,
+        data: data.data as Prisma.InputJsonValue,
       },
       select: { id: true, slot: true, name: true, energyUse: true, data: true },
     });
@@ -270,7 +292,7 @@ export class ShipRepo implements IShipRepo {
     position: string,
   ): Promise<import('../domain/ship.ports').CrewSlotReadModel | null> {
     const row = await this.prisma.crewSlot.findFirst({
-      where: { shipId, position },
+      where: { shipId, position: toDbPosition(position) },
       select: { position: true, assignedCharacterId: true },
     });
     if (!row) return null;
@@ -295,7 +317,7 @@ export class ShipRepo implements IShipRepo {
     characterId: string,
   ): Promise<import('../domain/ship.ports').CrewSlotReadModel> {
     const row = await this.prisma.crewSlot.update({
-      where: { shipId_position: { shipId, position } },
+      where: { shipId_position: { shipId, position: toDbPosition(position) } },
       data: { assignedCharacterId: characterId },
       select: { position: true, assignedCharacterId: true },
     });

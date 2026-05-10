@@ -9,6 +9,8 @@
  */
 import { Injectable } from '@nestjs/common';
 
+import { Prisma } from '@prisma/client';
+
 import { PrismaService } from '../../../common/prisma/prisma.service';
 
 import type {
@@ -122,16 +124,16 @@ export class NpcRepo implements INpcRepo {
         ownerId: data.ownerId,
         name: data.name,
         description: data.description ?? null,
-        attributes: data.attributes,
-        skills: data.skills,
+        attributes: data.attributes as unknown as Prisma.InputJsonValue,
+        skills: data.skills as unknown as Prisma.InputJsonValue,
         hpCurrent: data.hpCurrent,
         hpMax: data.hpMax,
         mpCurrent: data.mpCurrent,
         mpMax: data.mpMax,
         signature: data.signature,
         keySkillModifier: data.keySkillModifier,
-        armor: data.armor,
-        weapons: data.weapons,
+        armor: data.armor as unknown as Prisma.InputJsonValue,
+        weapons: data.weapons as unknown as Prisma.InputJsonValue,
         tags: data.tags,
       },
       select: NPC_SELECT,
