@@ -35,6 +35,11 @@ Serializers _$serializers = (new Serializers().toBuilder()
       ..add(DpEvent.serializer)
       ..add(DpEventList.serializer)
       ..add(DpSource.serializer)
+      ..add(Encounter.serializer)
+      ..add(EncounterCreate.serializer)
+      ..add(EncounterList.serializer)
+      ..add(EncounterStatus.serializer)
+      ..add(EncounterUpdate.serializer)
       ..add(GameSession.serializer)
       ..add(GameSessionCreate.serializer)
       ..add(GameSessionList.serializer)
@@ -83,6 +88,15 @@ Serializers _$serializers = (new Serializers().toBuilder()
       ..add(MeUpdate.serializer)
       ..add(MeUpdateThemeEnum.serializer)
       ..add(MutantLineage.serializer)
+      ..add(Npc.serializer)
+      ..add(NpcCreate.serializer)
+      ..add(NpcCreateHp.serializer)
+      ..add(NpcCreateMp.serializer)
+      ..add(NpcHp.serializer)
+      ..add(NpcList.serializer)
+      ..add(NpcMp.serializer)
+      ..add(NpcUpdate.serializer)
+      ..add(NpcUpdateHp.serializer)
       ..add(Problem.serializer)
       ..add(RealtimeToken.serializer)
       ..add(Relationship.serializer)
@@ -159,8 +173,41 @@ Serializers _$serializers = (new Serializers().toBuilder()
           const FullType(BuiltList, const [const FullType(DpEvent)]),
           () => new ListBuilder<DpEvent>())
       ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(Encounter)]),
+          () => new ListBuilder<Encounter>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(GameSession)]),
           () => new ListBuilder<GameSession>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(ItemArmor)]),
+          () => new ListBuilder<ItemArmor>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(ItemWeapon)]),
+          () => new ListBuilder<ItemWeapon>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(String)]),
+          () => new ListBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(ItemArmor)]),
+          () => new ListBuilder<ItemArmor>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(ItemWeapon)]),
+          () => new ListBuilder<ItemWeapon>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(String)]),
+          () => new ListBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(ItemArmor)]),
+          () => new ListBuilder<ItemArmor>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(ItemWeapon)]),
+          () => new ListBuilder<ItemWeapon>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(String)]),
+          () => new ListBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(Npc)]),
+          () => new ListBuilder<Npc>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(Roll)]),
           () => new ListBuilder<Roll>())

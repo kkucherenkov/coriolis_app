@@ -37,6 +37,11 @@ import 'package:app_api_client/src/model/dp_adjustment.dart';
 import 'package:app_api_client/src/model/dp_event.dart';
 import 'package:app_api_client/src/model/dp_event_list.dart';
 import 'package:app_api_client/src/model/dp_source.dart';
+import 'package:app_api_client/src/model/encounter.dart';
+import 'package:app_api_client/src/model/encounter_create.dart';
+import 'package:app_api_client/src/model/encounter_list.dart';
+import 'package:app_api_client/src/model/encounter_status.dart';
+import 'package:app_api_client/src/model/encounter_update.dart';
 import 'package:app_api_client/src/model/game_session.dart';
 import 'package:app_api_client/src/model/game_session_create.dart';
 import 'package:app_api_client/src/model/game_session_list.dart';
@@ -155,6 +160,11 @@ part 'serializers.g.dart';
   DpEvent,
   DpEventList,
   DpSource,
+  Encounter,
+  EncounterCreate,
+  EncounterList,
+  EncounterStatus,
+  EncounterUpdate,
   GameSession,
   GameSessionCreate,
   GameSessionList,

@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddCharacterItemData, AddCharacterItemErrors, AddCharacterItemResponses, AddCharacterTalentData, AddCharacterTalentErrors, AddCharacterTalentResponses, AddShipModuleData, AddShipModuleErrors, AddShipModuleResponses, AdjustDpData, AdjustDpErrors, AdjustDpResponses, AssignCharacterToSessionData, AssignCharacterToSessionErrors, AssignCharacterToSessionResponses, AssignCrewData, AssignCrewErrors, AssignCrewResponses, CreateCharacterData, CreateCharacterErrors, CreateCharacterResponses, CreateGameSessionData, CreateGameSessionErrors, CreateGameSessionResponses, CreateNpcData, CreateNpcErrors, CreateNpcResponses, CreateRollData, CreateRollErrors, CreateRollResponses, CreateShareLinkData, CreateShareLinkErrors, CreateShareLinkResponses, CreateShipData, CreateShipErrors, CreateShipResponses, DeleteCharacterData, DeleteCharacterErrors, DeleteCharacterResponses, DeleteGameSessionData, DeleteGameSessionErrors, DeleteGameSessionResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteNpcData, DeleteNpcErrors, DeleteNpcResponses, DeleteShipData, DeleteShipErrors, DeleteShipModuleData, DeleteShipModuleErrors, DeleteShipModuleResponses, DeleteShipResponses, DeleteTalentData, DeleteTalentErrors, DeleteTalentResponses, DuplicateCharacterData, DuplicateCharacterErrors, DuplicateCharacterResponses, DuplicateNpcData, DuplicateNpcErrors, DuplicateNpcResponses, DuplicateShipData, DuplicateShipErrors, DuplicateShipResponses, ExportCharacterData, ExportCharacterErrors, ExportCharacterResponses, ExportShipData, ExportShipErrors, ExportShipResponses, GetCharacterData, GetCharacterErrors, GetCharacterOgImageData, GetCharacterOgImageErrors, GetCharacterOgImageResponses, GetCharacterResponses, GetGameSessionData, GetGameSessionErrors, GetGameSessionResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetMeData, GetMeErrors, GetMeResponses, GetNpcData, GetNpcErrors, GetNpcResponses, GetPublicCharacterData, GetPublicCharacterErrors, GetPublicCharacterResponses, GetShipData, GetShipErrors, GetShipResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, ListCharactersData, ListCharactersErrors, ListCharactersResponses, ListDpEventsData, ListDpEventsErrors, ListDpEventsResponses, ListGameSessionsData, ListGameSessionsErrors, ListGameSessionsResponses, ListNpcsData, ListNpcsErrors, ListNpcsResponses, ListRollsData, ListRollsErrors, ListRollsResponses, ListShareLinksData, ListShareLinksErrors, ListShareLinksResponses, ListShipsData, ListShipsErrors, ListShipsResponses, PushRollData, PushRollErrors, PushRollResponses, RevokeShareLinkData, RevokeShareLinkErrors, RevokeShareLinkResponses, UnassignCharacterFromSessionData, UnassignCharacterFromSessionErrors, UnassignCharacterFromSessionResponses, UnassignCrewData, UnassignCrewErrors, UnassignCrewResponses, UpdateCharacterData, UpdateCharacterErrors, UpdateCharacterResponses, UpdateGameSessionData, UpdateGameSessionErrors, UpdateGameSessionResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses, UpdateNpcData, UpdateNpcErrors, UpdateNpcResponses, UpdateShipData, UpdateShipErrors, UpdateShipModuleData, UpdateShipModuleErrors, UpdateShipModuleResponses, UpdateShipResponses, UpdateTalentData, UpdateTalentErrors, UpdateTalentResponses } from './types.gen';
+import type { AddCharacterItemData, AddCharacterItemErrors, AddCharacterItemResponses, AddCharacterTalentData, AddCharacterTalentErrors, AddCharacterTalentResponses, AddShipModuleData, AddShipModuleErrors, AddShipModuleResponses, AdjustDpData, AdjustDpErrors, AdjustDpResponses, AssignCharacterToSessionData, AssignCharacterToSessionErrors, AssignCharacterToSessionResponses, AssignCrewData, AssignCrewErrors, AssignCrewResponses, CreateCharacterData, CreateCharacterErrors, CreateCharacterResponses, CreateEncounterData, CreateEncounterErrors, CreateEncounterResponses, CreateGameSessionData, CreateGameSessionErrors, CreateGameSessionResponses, CreateNpcData, CreateNpcErrors, CreateNpcResponses, CreateRollData, CreateRollErrors, CreateRollResponses, CreateShareLinkData, CreateShareLinkErrors, CreateShareLinkResponses, CreateShipData, CreateShipErrors, CreateShipResponses, DeleteCharacterData, DeleteCharacterErrors, DeleteCharacterResponses, DeleteEncounterData, DeleteEncounterErrors, DeleteEncounterResponses, DeleteGameSessionData, DeleteGameSessionErrors, DeleteGameSessionResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteNpcData, DeleteNpcErrors, DeleteNpcResponses, DeleteShipData, DeleteShipErrors, DeleteShipModuleData, DeleteShipModuleErrors, DeleteShipModuleResponses, DeleteShipResponses, DeleteTalentData, DeleteTalentErrors, DeleteTalentResponses, DuplicateCharacterData, DuplicateCharacterErrors, DuplicateCharacterResponses, DuplicateNpcData, DuplicateNpcErrors, DuplicateNpcResponses, DuplicateShipData, DuplicateShipErrors, DuplicateShipResponses, ExportCharacterData, ExportCharacterErrors, ExportCharacterResponses, ExportShipData, ExportShipErrors, ExportShipResponses, GetCharacterData, GetCharacterErrors, GetCharacterOgImageData, GetCharacterOgImageErrors, GetCharacterOgImageResponses, GetCharacterResponses, GetEncounterData, GetEncounterErrors, GetEncounterResponses, GetGameSessionData, GetGameSessionErrors, GetGameSessionResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetMeData, GetMeErrors, GetMeResponses, GetNpcData, GetNpcErrors, GetNpcResponses, GetPublicCharacterData, GetPublicCharacterErrors, GetPublicCharacterResponses, GetShipData, GetShipErrors, GetShipResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, ListCharactersData, ListCharactersErrors, ListCharactersResponses, ListDpEventsData, ListDpEventsErrors, ListDpEventsResponses, ListEncountersData, ListEncountersErrors, ListEncountersResponses, ListGameSessionsData, ListGameSessionsErrors, ListGameSessionsResponses, ListNpcsData, ListNpcsErrors, ListNpcsResponses, ListRollsData, ListRollsErrors, ListRollsResponses, ListShareLinksData, ListShareLinksErrors, ListShareLinksResponses, ListShipsData, ListShipsErrors, ListShipsResponses, PushRollData, PushRollErrors, PushRollResponses, RevokeShareLinkData, RevokeShareLinkErrors, RevokeShareLinkResponses, UnassignCharacterFromSessionData, UnassignCharacterFromSessionErrors, UnassignCharacterFromSessionResponses, UnassignCrewData, UnassignCrewErrors, UnassignCrewResponses, UpdateCharacterData, UpdateCharacterErrors, UpdateCharacterResponses, UpdateEncounterData, UpdateEncounterErrors, UpdateEncounterResponses, UpdateGameSessionData, UpdateGameSessionErrors, UpdateGameSessionResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses, UpdateNpcData, UpdateNpcErrors, UpdateNpcResponses, UpdateShipData, UpdateShipErrors, UpdateShipModuleData, UpdateShipModuleErrors, UpdateShipModuleResponses, UpdateShipResponses, UpdateTalentData, UpdateTalentErrors, UpdateTalentResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -961,6 +961,123 @@ export const listDpEvents = <ThrowOnError extends boolean = false>(options: Opti
         }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/game-sessions/{id}/dp/events',
     ...options
+});
+
+/**
+ * List encounters for a game session
+ *
+ * Returns a cursor-paginated list of encounters belonging to the game
+ * session identified by `sessionId`. Optionally filter by `status`.
+ * Only the GM who owns the session may call this endpoint. Results are
+ * ordered newest-first by `createdAt`.
+ *
+ */
+export const listEncounters = <ThrowOnError extends boolean = false>(options: Options<ListEncountersData, ThrowOnError>) => (options.client ?? client).get<ListEncountersResponses, ListEncountersErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/game-sessions/{sessionId}/encounters',
+    ...options
+});
+
+/**
+ * Create an encounter in a game session
+ *
+ * Creates a new encounter owned by the game session. The encounter is
+ * seeded with `status: setup`, `round: 0`, and
+ * `activeCombatantId: null`. Combatants can be freely added or removed
+ * while the encounter is in `setup` status (Block 3 surface).
+ *
+ */
+export const createEncounter = <ThrowOnError extends boolean = false>(options: Options<CreateEncounterData, ThrowOnError>) => (options.client ?? client).post<CreateEncounterResponses, CreateEncounterErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/game-sessions/{sessionId}/encounters',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete an encounter
+ *
+ * Permanently deletes an encounter and cascades to all of its
+ * combatants (Block 3 schema). The encounter's parent game session
+ * must be owned by the authenticated user.
+ *
+ */
+export const deleteEncounter = <ThrowOnError extends boolean = false>(options: Options<DeleteEncounterData, ThrowOnError>) => (options.client ?? client).delete<DeleteEncounterResponses, DeleteEncounterErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/encounters/{id}',
+    ...options
+});
+
+/**
+ * Get an encounter by ID
+ *
+ * Returns the full encounter DTO. The encounter's parent game session
+ * must be owned by the authenticated user — the server checks
+ * `encounter.gameSession.ownerId === caller.id`. Returns 404 if the
+ * encounter does not exist or 403 if the caller does not own the
+ * parent session.
+ *
+ */
+export const getEncounter = <ThrowOnError extends boolean = false>(options: Options<GetEncounterData, ThrowOnError>) => (options.client ?? client).get<GetEncounterResponses, GetEncounterErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/encounters/{id}',
+    ...options
+});
+
+/**
+ * Update an encounter
+ *
+ * Applies PATCH semantics to an encounter. All fields are optional.
+ *
+ * **Allowed status transitions:**
+ * - `setup → active` — starts combat. Bumps `round` to 1, sets
+ * `activeCombatantId` to the first combatant in initiative order.
+ * **Requires at least one combatant** on the encounter; if the
+ * encounter has zero combatants the server returns 422
+ * `ENCOUNTER_NO_COMBATANTS` (combatants are added via the Block 3
+ * surface at `POST /api/v1/encounters/{id}/combatants`).
+ * - `active → ended` — closes combat. The encounter becomes
+ * read-only history; `activeCombatantId` is set to null.
+ *
+ * **Forbidden transitions** (422 `ENCOUNTER_INVALID_TRANSITION`):
+ * - Any transition back to `setup` from `active` or `ended`.
+ * - `setup → ended` (must go through `active` first).
+ * - Any transition out of `ended`.
+ *
+ * Renaming and notes editing are permitted regardless of status.
+ *
+ */
+export const updateEncounter = <ThrowOnError extends boolean = false>(options: Options<UpdateEncounterData, ThrowOnError>) => (options.client ?? client).patch<UpdateEncounterResponses, UpdateEncounterErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/encounters/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**

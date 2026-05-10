@@ -2206,6 +2206,124 @@ export type NpcList = {
 };
 
 /**
+ * Lifecycle state of an encounter (combat tracker).
+ *
+ * - `setup` — the GM is building the encounter. Combatants can be
+ * added or removed freely. Initiative has not been rolled. `round`
+ * is 0 and `activeCombatantId` is null.
+ * - `active` — combat has started. Initiative is rolled, turn order
+ * is locked. `round` is bumped to 1 on the `setup → active`
+ * transition and advances with each full rotation. `activeCombatantId`
+ * points to the combatant whose turn it is. Combatant mutations are
+ * only possible through the GM-driven turn-advance and
+ * initiative-reorder operations (Block 4).
+ * - `ended` — combat is resolved. The encounter is read-only history.
+ * `activeCombatantId` is reset to null.
+ *
+ * **Allowed transitions:** `setup → active`, `active → ended`.
+ * No reverse transitions and no skipping states are permitted.
+ * Historical (`ended`) encounters are archived and immutable.
+ *
+ */
+export type EncounterStatus = 'setup' | 'active' | 'ended';
+
+/**
+ * A single combat encounter owned by a game session. The Encounter
+ * carries the combat metadata (status, round, active turn) but does
+ * NOT embed the combatant list — combatants live on a separate
+ * sub-resource added in Block 3.
+ *
+ */
+export type Encounter = {
+    /**
+     * Opaque encounter identifier (cuid2)
+     */
+    readonly id: string;
+    /**
+     * Identifier of the parent game session (cuid2)
+     */
+    readonly gameSessionId: string;
+    /**
+     * Short descriptive name for the encounter (1–80 characters)
+     */
+    name: string;
+    status: EncounterStatus;
+    /**
+     * Current combat round. Starts at 0 while in `setup`. Bumped to 1
+     * when the encounter transitions to `active`. Increments by 1 each
+     * time the turn order wraps back to the first combatant (Block 4
+     * turn-advance operation).
+     *
+     */
+    round: number;
+    /**
+     * Identifier of the combatant whose turn it currently is. Null
+     * when `status` is `setup` (initiative not yet rolled) or `ended`
+     * (combat closed). Set by the server on the `setup → active`
+     * transition and updated by the turn-advance operation (Block 4).
+     *
+     */
+    activeCombatantId: string | null;
+    /**
+     * Optional GM notes for the encounter in Markdown format
+     * (max 4096 characters). May be edited at any status.
+     *
+     */
+    notes: string | null;
+    readonly createdAt: string;
+    readonly updatedAt: string;
+};
+
+/**
+ * Payload for `POST /api/v1/game-sessions/{sessionId}/encounters`.
+ * Only `name` is required. The server seeds `status: setup`,
+ * `round: 0`, and `activeCombatantId: null`.
+ *
+ */
+export type EncounterCreate = {
+    /**
+     * Short descriptive name for the encounter (1–80 characters)
+     */
+    name: string;
+    /**
+     * Optional GM notes in Markdown (max 4096 characters)
+     */
+    notes?: string | null;
+};
+
+/**
+ * PATCH payload for `PATCH /api/v1/encounters/{id}`. All fields are
+ * optional; omitted fields are left unchanged.
+ *
+ * Supplying `status` triggers a state-machine transition validated by
+ * the server. See the endpoint description for the full transition
+ * table and the 422 error codes.
+ *
+ */
+export type EncounterUpdate = {
+    /**
+     * Rename the encounter (allowed at any status)
+     */
+    name?: string;
+    status?: EncounterStatus;
+    /**
+     * Update GM notes in Markdown (allowed at any status)
+     */
+    notes?: string | null;
+};
+
+/**
+ * Cursor-paginated list of encounters
+ */
+export type EncounterList = {
+    items: Array<Encounter>;
+    /**
+     * Cursor for the next page; null when there are no more results
+     */
+    nextCursor: string | null;
+};
+
+/**
  * A single Coriolis dice roll. Dice are rolled server-side using a
  * cryptographically secure RNG. Hits = count of 6s. A roll can be pushed
  * at most once (PRD §10). `gameSessionId` is null until Feature 7.2 lands.
@@ -2727,6 +2845,54 @@ export type NpcListWritable = {
 };
 
 /**
+ * A single combat encounter owned by a game session. The Encounter
+ * carries the combat metadata (status, round, active turn) but does
+ * NOT embed the combatant list — combatants live on a separate
+ * sub-resource added in Block 3.
+ *
+ */
+export type EncounterWritable = {
+    /**
+     * Short descriptive name for the encounter (1–80 characters)
+     */
+    name: string;
+    status: EncounterStatus;
+    /**
+     * Current combat round. Starts at 0 while in `setup`. Bumped to 1
+     * when the encounter transitions to `active`. Increments by 1 each
+     * time the turn order wraps back to the first combatant (Block 4
+     * turn-advance operation).
+     *
+     */
+    round: number;
+    /**
+     * Identifier of the combatant whose turn it currently is. Null
+     * when `status` is `setup` (initiative not yet rolled) or `ended`
+     * (combat closed). Set by the server on the `setup → active`
+     * transition and updated by the turn-advance operation (Block 4).
+     *
+     */
+    activeCombatantId: string | null;
+    /**
+     * Optional GM notes for the encounter in Markdown format
+     * (max 4096 characters). May be edited at any status.
+     *
+     */
+    notes: string | null;
+};
+
+/**
+ * Cursor-paginated list of encounters
+ */
+export type EncounterListWritable = {
+    items: Array<EncounterWritable>;
+    /**
+     * Cursor for the next page; null when there are no more results
+     */
+    nextCursor: string | null;
+};
+
+/**
  * Character identifier (cuid2)
  */
 export type CharacterId = string;
@@ -2775,6 +2941,11 @@ export type GameSessionId = string;
  * NPC identifier (cuid2)
  */
 export type NpcId = string;
+
+/**
+ * Encounter identifier (cuid2)
+ */
+export type EncounterId = string;
 
 export type ListCharactersData = {
     body?: never;
@@ -4539,6 +4710,228 @@ export type ListDpEventsResponses = {
 };
 
 export type ListDpEventsResponse = ListDpEventsResponses[keyof ListDpEventsResponses];
+
+export type ListEncountersData = {
+    body?: never;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        sessionId: string;
+    };
+    query?: {
+        /**
+         * Opaque pagination cursor returned by the previous page
+         */
+        cursor?: string;
+        /**
+         * Number of encounters to return (1–100, default 20)
+         */
+        limit?: number;
+        /**
+         * Filter encounters by status
+         */
+        status?: EncounterStatus;
+    };
+    url: '/api/v1/game-sessions/{sessionId}/encounters';
+};
+
+export type ListEncountersErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the parent game session
+     */
+    403: Problem;
+    /**
+     * Game session not found
+     */
+    404: Problem;
+};
+
+export type ListEncountersError = ListEncountersErrors[keyof ListEncountersErrors];
+
+export type ListEncountersResponses = {
+    /**
+     * Paginated encounter list
+     */
+    200: EncounterList;
+};
+
+export type ListEncountersResponse = ListEncountersResponses[keyof ListEncountersResponses];
+
+export type CreateEncounterData = {
+    body: EncounterCreate;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        sessionId: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{sessionId}/encounters';
+};
+
+export type CreateEncounterErrors = {
+    /**
+     * Validation error. Possible codes:
+     * - `ENCOUNTER_NAME_EMPTY` — name is an empty string.
+     * - `ENCOUNTER_NAME_TOO_LONG` — name exceeds 80 characters.
+     *
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the parent game session
+     */
+    403: Problem;
+    /**
+     * Game session not found
+     */
+    404: Problem;
+};
+
+export type CreateEncounterError = CreateEncounterErrors[keyof CreateEncounterErrors];
+
+export type CreateEncounterResponses = {
+    /**
+     * Encounter created
+     */
+    201: Encounter;
+};
+
+export type CreateEncounterResponse = CreateEncounterResponses[keyof CreateEncounterResponses];
+
+export type DeleteEncounterData = {
+    body?: never;
+    path: {
+        /**
+         * Encounter identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/encounters/{id}';
+};
+
+export type DeleteEncounterErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the parent game session
+     */
+    403: Problem;
+    /**
+     * Encounter not found
+     */
+    404: Problem;
+};
+
+export type DeleteEncounterError = DeleteEncounterErrors[keyof DeleteEncounterErrors];
+
+export type DeleteEncounterResponses = {
+    /**
+     * Encounter deleted
+     */
+    204: void;
+};
+
+export type DeleteEncounterResponse = DeleteEncounterResponses[keyof DeleteEncounterResponses];
+
+export type GetEncounterData = {
+    body?: never;
+    path: {
+        /**
+         * Encounter identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/encounters/{id}';
+};
+
+export type GetEncounterErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the parent game session
+     */
+    403: Problem;
+    /**
+     * Encounter not found
+     */
+    404: Problem;
+};
+
+export type GetEncounterError = GetEncounterErrors[keyof GetEncounterErrors];
+
+export type GetEncounterResponses = {
+    /**
+     * Encounter
+     */
+    200: Encounter;
+};
+
+export type GetEncounterResponse = GetEncounterResponses[keyof GetEncounterResponses];
+
+export type UpdateEncounterData = {
+    body: EncounterUpdate;
+    path: {
+        /**
+         * Encounter identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/encounters/{id}';
+};
+
+export type UpdateEncounterErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the parent game session
+     */
+    403: Problem;
+    /**
+     * Encounter not found
+     */
+    404: Problem;
+    /**
+     * State-machine violation. Possible codes:
+     * - `ENCOUNTER_INVALID_TRANSITION` — the requested `status` value
+     * is not reachable from the current status. Illegal moves:
+     * any → `setup`, `setup → ended`, any → `active` from `ended`,
+     * any → `ended` from `ended`.
+     * - `ENCOUNTER_NO_COMBATANTS` — attempted `setup → active`
+     * transition but the encounter has zero combatants. Add at
+     * least one combatant first (Block 3 surface).
+     *
+     */
+    422: Problem;
+};
+
+export type UpdateEncounterError = UpdateEncounterErrors[keyof UpdateEncounterErrors];
+
+export type UpdateEncounterResponses = {
+    /**
+     * Updated encounter
+     */
+    200: Encounter;
+};
+
+export type UpdateEncounterResponse = UpdateEncounterResponses[keyof UpdateEncounterResponses];
 
 export type CreateShareLinkData = {
     body: ShareLinkCreate;

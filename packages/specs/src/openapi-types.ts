@@ -793,6 +793,87 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/game-sessions/{sessionId}/encounters': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List encounters for a game session
+     * @description Returns a cursor-paginated list of encounters belonging to the game
+     *     session identified by `sessionId`. Optionally filter by `status`.
+     *     Only the GM who owns the session may call this endpoint. Results are
+     *     ordered newest-first by `createdAt`.
+     */
+    get: operations['listEncounters'];
+    put?: never;
+    /**
+     * Create an encounter in a game session
+     * @description Creates a new encounter owned by the game session. The encounter is
+     *     seeded with `status: setup`, `round: 0`, and
+     *     `activeCombatantId: null`. Combatants can be freely added or removed
+     *     while the encounter is in `setup` status (Block 3 surface).
+     */
+    post: operations['createEncounter'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/encounters/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get an encounter by ID
+     * @description Returns the full encounter DTO. The encounter's parent game session
+     *     must be owned by the authenticated user — the server checks
+     *     `encounter.gameSession.ownerId === caller.id`. Returns 404 if the
+     *     encounter does not exist or 403 if the caller does not own the
+     *     parent session.
+     */
+    get: operations['getEncounter'];
+    put?: never;
+    post?: never;
+    /**
+     * Delete an encounter
+     * @description Permanently deletes an encounter and cascades to all of its
+     *     combatants (Block 3 schema). The encounter's parent game session
+     *     must be owned by the authenticated user.
+     */
+    delete: operations['deleteEncounter'];
+    options?: never;
+    head?: never;
+    /**
+     * Update an encounter
+     * @description Applies PATCH semantics to an encounter. All fields are optional.
+     *
+     *     **Allowed status transitions:**
+     *     - `setup → active` — starts combat. Bumps `round` to 1, sets
+     *       `activeCombatantId` to the first combatant in initiative order.
+     *       **Requires at least one combatant** on the encounter; if the
+     *       encounter has zero combatants the server returns 422
+     *       `ENCOUNTER_NO_COMBATANTS` (combatants are added via the Block 3
+     *       surface at `POST /api/v1/encounters/{id}/combatants`).
+     *     - `active → ended` — closes combat. The encounter becomes
+     *       read-only history; `activeCombatantId` is set to null.
+     *
+     *     **Forbidden transitions** (422 `ENCOUNTER_INVALID_TRANSITION`):
+     *     - Any transition back to `setup` from `active` or `ended`.
+     *     - `setup → ended` (must go through `active` first).
+     *     - Any transition out of `ended`.
+     *
+     *     Renaming and notes editing are permitted regardless of status.
+     */
+    patch: operations['updateEncounter'];
+    trace?: never;
+  };
   '/api/v1/characters/{id}/share': {
     parameters: {
       query?: never;
@@ -3076,6 +3157,98 @@ export interface components {
       /** @description Cursor for the next page; null when there are no more results */
       nextCursor: string | null;
     };
+    /**
+     * @description Lifecycle state of an encounter (combat tracker).
+     *
+     *     - `setup` — the GM is building the encounter. Combatants can be
+     *       added or removed freely. Initiative has not been rolled. `round`
+     *       is 0 and `activeCombatantId` is null.
+     *     - `active` — combat has started. Initiative is rolled, turn order
+     *       is locked. `round` is bumped to 1 on the `setup → active`
+     *       transition and advances with each full rotation. `activeCombatantId`
+     *       points to the combatant whose turn it is. Combatant mutations are
+     *       only possible through the GM-driven turn-advance and
+     *       initiative-reorder operations (Block 4).
+     *     - `ended` — combat is resolved. The encounter is read-only history.
+     *       `activeCombatantId` is reset to null.
+     *
+     *     **Allowed transitions:** `setup → active`, `active → ended`.
+     *     No reverse transitions and no skipping states are permitted.
+     *     Historical (`ended`) encounters are archived and immutable.
+     * @enum {string}
+     */
+    EncounterStatus: 'setup' | 'active' | 'ended';
+    /**
+     * @description A single combat encounter owned by a game session. The Encounter
+     *     carries the combat metadata (status, round, active turn) but does
+     *     NOT embed the combatant list — combatants live on a separate
+     *     sub-resource added in Block 3.
+     */
+    Encounter: {
+      /** @description Opaque encounter identifier (cuid2) */
+      readonly id: string;
+      /** @description Identifier of the parent game session (cuid2) */
+      readonly gameSessionId: string;
+      /** @description Short descriptive name for the encounter (1–80 characters) */
+      name: string;
+      status: components['schemas']['EncounterStatus'];
+      /**
+       * @description Current combat round. Starts at 0 while in `setup`. Bumped to 1
+       *     when the encounter transitions to `active`. Increments by 1 each
+       *     time the turn order wraps back to the first combatant (Block 4
+       *     turn-advance operation).
+       * @default 0
+       */
+      round: number;
+      /**
+       * @description Identifier of the combatant whose turn it currently is. Null
+       *     when `status` is `setup` (initiative not yet rolled) or `ended`
+       *     (combat closed). Set by the server on the `setup → active`
+       *     transition and updated by the turn-advance operation (Block 4).
+       */
+      activeCombatantId: string | null;
+      /**
+       * @description Optional GM notes for the encounter in Markdown format
+       *     (max 4096 characters). May be edited at any status.
+       */
+      notes: string | null;
+      /** Format: date-time */
+      readonly createdAt: string;
+      /** Format: date-time */
+      readonly updatedAt: string;
+    };
+    /**
+     * @description Payload for `POST /api/v1/game-sessions/{sessionId}/encounters`.
+     *     Only `name` is required. The server seeds `status: setup`,
+     *     `round: 0`, and `activeCombatantId: null`.
+     */
+    EncounterCreate: {
+      /** @description Short descriptive name for the encounter (1–80 characters) */
+      name: string;
+      /** @description Optional GM notes in Markdown (max 4096 characters) */
+      notes?: string | null;
+    };
+    /**
+     * @description PATCH payload for `PATCH /api/v1/encounters/{id}`. All fields are
+     *     optional; omitted fields are left unchanged.
+     *
+     *     Supplying `status` triggers a state-machine transition validated by
+     *     the server. See the endpoint description for the full transition
+     *     table and the 422 error codes.
+     */
+    EncounterUpdate: {
+      /** @description Rename the encounter (allowed at any status) */
+      name?: string;
+      status?: components['schemas']['EncounterStatus'];
+      /** @description Update GM notes in Markdown (allowed at any status) */
+      notes?: string | null;
+    };
+    /** @description Cursor-paginated list of encounters */
+    EncounterList: {
+      items: components['schemas']['Encounter'][];
+      /** @description Cursor for the next page; null when there are no more results */
+      nextCursor: string | null;
+    };
   };
   responses: never;
   parameters: {
@@ -3099,6 +3272,8 @@ export interface components {
     GameSessionId: string;
     /** @description NPC identifier (cuid2) */
     NpcId: string;
+    /** @description Encounter identifier (cuid2) */
+    EncounterId: string;
   };
   requestBodies: never;
   headers: never;
@@ -5431,6 +5606,300 @@ export interface operations {
       };
       /** @description Game session not found */
       404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  listEncounters: {
+    parameters: {
+      query?: {
+        /** @description Opaque pagination cursor returned by the previous page */
+        cursor?: string;
+        /** @description Number of encounters to return (1–100, default 20) */
+        limit?: number;
+        /** @description Filter encounters by status */
+        status?: components['schemas']['EncounterStatus'];
+      };
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        sessionId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Paginated encounter list */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['EncounterList'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own the parent game session */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Game session not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  createEncounter: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        sessionId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['EncounterCreate'];
+      };
+    };
+    responses: {
+      /** @description Encounter created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Encounter'];
+        };
+      };
+      /**
+       * @description Validation error. Possible codes:
+       *     - `ENCOUNTER_NAME_EMPTY` — name is an empty string.
+       *     - `ENCOUNTER_NAME_TOO_LONG` — name exceeds 80 characters.
+       */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own the parent game session */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Game session not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  getEncounter: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Encounter identifier (cuid2) */
+        id: components['parameters']['EncounterId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Encounter */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Encounter'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own the parent game session */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Encounter not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  deleteEncounter: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Encounter identifier (cuid2) */
+        id: components['parameters']['EncounterId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Encounter deleted */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own the parent game session */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Encounter not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  updateEncounter: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Encounter identifier (cuid2) */
+        id: components['parameters']['EncounterId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['EncounterUpdate'];
+      };
+    };
+    responses: {
+      /** @description Updated encounter */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Encounter'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own the parent game session */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Encounter not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /**
+       * @description State-machine violation. Possible codes:
+       *     - `ENCOUNTER_INVALID_TRANSITION` — the requested `status` value
+       *       is not reachable from the current status. Illegal moves:
+       *       any → `setup`, `setup → ended`, any → `active` from `ended`,
+       *       any → `ended` from `ended`.
+       *     - `ENCOUNTER_NO_COMBATANTS` — attempted `setup → active`
+       *       transition but the encounter has zero combatants. Add at
+       *       least one combatant first (Block 3 surface).
+       */
+      422: {
         headers: {
           [name: string]: unknown;
         };
