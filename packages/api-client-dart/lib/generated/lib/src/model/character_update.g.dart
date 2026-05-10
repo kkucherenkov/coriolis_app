@@ -64,9 +64,21 @@ class _$CharacterUpdate extends CharacterUpdate {
   @override
   final String? name;
   @override
-  final String? concept;
+  final Concept? concept;
   @override
   final IconId? iconId;
+  @override
+  final Upbringing? upbringing;
+  @override
+  final String? origin;
+  @override
+  final CrewConcept? crewConcept;
+  @override
+  final bool? mutant;
+  @override
+  final MutantLineage? mutantLineage;
+  @override
+  final int? reputation;
   @override
   final Attributes? attributes;
   @override
@@ -93,6 +105,12 @@ class _$CharacterUpdate extends CharacterUpdate {
       {this.name,
       this.concept,
       this.iconId,
+      this.upbringing,
+      this.origin,
+      this.crewConcept,
+      this.mutant,
+      this.mutantLineage,
+      this.reputation,
       this.attributes,
       this.skills,
       this.hp,
@@ -119,6 +137,12 @@ class _$CharacterUpdate extends CharacterUpdate {
         name == other.name &&
         concept == other.concept &&
         iconId == other.iconId &&
+        upbringing == other.upbringing &&
+        origin == other.origin &&
+        crewConcept == other.crewConcept &&
+        mutant == other.mutant &&
+        mutantLineage == other.mutantLineage &&
+        reputation == other.reputation &&
         attributes == other.attributes &&
         skills == other.skills &&
         hp == other.hp &&
@@ -136,6 +160,12 @@ class _$CharacterUpdate extends CharacterUpdate {
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, concept.hashCode);
     _$hash = $jc(_$hash, iconId.hashCode);
+    _$hash = $jc(_$hash, upbringing.hashCode);
+    _$hash = $jc(_$hash, origin.hashCode);
+    _$hash = $jc(_$hash, crewConcept.hashCode);
+    _$hash = $jc(_$hash, mutant.hashCode);
+    _$hash = $jc(_$hash, mutantLineage.hashCode);
+    _$hash = $jc(_$hash, reputation.hashCode);
     _$hash = $jc(_$hash, attributes.hashCode);
     _$hash = $jc(_$hash, skills.hashCode);
     _$hash = $jc(_$hash, hp.hashCode);
@@ -155,6 +185,12 @@ class _$CharacterUpdate extends CharacterUpdate {
           ..add('name', name)
           ..add('concept', concept)
           ..add('iconId', iconId)
+          ..add('upbringing', upbringing)
+          ..add('origin', origin)
+          ..add('crewConcept', crewConcept)
+          ..add('mutant', mutant)
+          ..add('mutantLineage', mutantLineage)
+          ..add('reputation', reputation)
           ..add('attributes', attributes)
           ..add('skills', skills)
           ..add('hp', hp)
@@ -176,13 +212,39 @@ class CharacterUpdateBuilder
   String? get name => _$this._name;
   set name(String? name) => _$this._name = name;
 
-  String? _concept;
-  String? get concept => _$this._concept;
-  set concept(String? concept) => _$this._concept = concept;
+  Concept? _concept;
+  Concept? get concept => _$this._concept;
+  set concept(Concept? concept) => _$this._concept = concept;
 
   IconId? _iconId;
   IconId? get iconId => _$this._iconId;
   set iconId(IconId? iconId) => _$this._iconId = iconId;
+
+  Upbringing? _upbringing;
+  Upbringing? get upbringing => _$this._upbringing;
+  set upbringing(Upbringing? upbringing) => _$this._upbringing = upbringing;
+
+  String? _origin;
+  String? get origin => _$this._origin;
+  set origin(String? origin) => _$this._origin = origin;
+
+  CrewConcept? _crewConcept;
+  CrewConcept? get crewConcept => _$this._crewConcept;
+  set crewConcept(CrewConcept? crewConcept) =>
+      _$this._crewConcept = crewConcept;
+
+  bool? _mutant;
+  bool? get mutant => _$this._mutant;
+  set mutant(bool? mutant) => _$this._mutant = mutant;
+
+  MutantLineage? _mutantLineage;
+  MutantLineage? get mutantLineage => _$this._mutantLineage;
+  set mutantLineage(MutantLineage? mutantLineage) =>
+      _$this._mutantLineage = mutantLineage;
+
+  int? _reputation;
+  int? get reputation => _$this._reputation;
+  set reputation(int? reputation) => _$this._reputation = reputation;
 
   AttributesBuilder? _attributes;
   AttributesBuilder get attributes =>
@@ -238,6 +300,12 @@ class CharacterUpdateBuilder
       _name = $v.name;
       _concept = $v.concept;
       _iconId = $v.iconId;
+      _upbringing = $v.upbringing;
+      _origin = $v.origin;
+      _crewConcept = $v.crewConcept;
+      _mutant = $v.mutant;
+      _mutantLineage = $v.mutantLineage;
+      _reputation = $v.reputation;
       _attributes = $v.attributes?.toBuilder();
       _skills = $v.skills?.toBuilder();
       _hp = $v.hp?.toBuilder();
@@ -274,6 +342,12 @@ class CharacterUpdateBuilder
               name: name,
               concept: concept,
               iconId: iconId,
+              upbringing: upbringing,
+              origin: origin,
+              crewConcept: crewConcept,
+              mutant: mutant,
+              mutantLineage: mutantLineage,
+              reputation: reputation,
               attributes: _attributes?.build(),
               skills: _skills?.build(),
               hp: _hp?.build(),

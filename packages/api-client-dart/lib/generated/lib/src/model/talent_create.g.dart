@@ -8,6 +8,8 @@ part of 'talent_create.dart';
 
 class _$TalentCreate extends TalentCreate {
   @override
+  final TalentKind? kind;
+  @override
   final String name;
   @override
   final String description;
@@ -17,7 +19,8 @@ class _$TalentCreate extends TalentCreate {
   factory _$TalentCreate([void Function(TalentCreateBuilder)? updates]) =>
       (new TalentCreateBuilder()..update(updates))._build();
 
-  _$TalentCreate._({required this.name, required this.description, this.rank})
+  _$TalentCreate._(
+      {this.kind, required this.name, required this.description, this.rank})
       : super._() {
     BuiltValueNullFieldError.checkNotNull(name, r'TalentCreate', 'name');
     BuiltValueNullFieldError.checkNotNull(
@@ -35,6 +38,7 @@ class _$TalentCreate extends TalentCreate {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is TalentCreate &&
+        kind == other.kind &&
         name == other.name &&
         description == other.description &&
         rank == other.rank;
@@ -43,6 +47,7 @@ class _$TalentCreate extends TalentCreate {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, description.hashCode);
     _$hash = $jc(_$hash, rank.hashCode);
@@ -53,6 +58,7 @@ class _$TalentCreate extends TalentCreate {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'TalentCreate')
+          ..add('kind', kind)
           ..add('name', name)
           ..add('description', description)
           ..add('rank', rank))
@@ -63,6 +69,10 @@ class _$TalentCreate extends TalentCreate {
 class TalentCreateBuilder
     implements Builder<TalentCreate, TalentCreateBuilder> {
   _$TalentCreate? _$v;
+
+  TalentKind? _kind;
+  TalentKind? get kind => _$this._kind;
+  set kind(TalentKind? kind) => _$this._kind = kind;
 
   String? _name;
   String? get name => _$this._name;
@@ -83,6 +93,7 @@ class TalentCreateBuilder
   TalentCreateBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _kind = $v.kind;
       _name = $v.name;
       _description = $v.description;
       _rank = $v.rank;
@@ -108,6 +119,7 @@ class TalentCreateBuilder
   _$TalentCreate _build() {
     final _$result = _$v ??
         new _$TalentCreate._(
+            kind: kind,
             name: BuiltValueNullFieldError.checkNotNull(
                 name, r'TalentCreate', 'name'),
             description: BuiltValueNullFieldError.checkNotNull(

@@ -67,9 +67,23 @@ class _$Character extends Character {
   @override
   final String name;
   @override
-  final String? concept;
+  final Concept? concept;
   @override
   final IconId? iconId;
+  @override
+  final Upbringing upbringing;
+  @override
+  final String? origin;
+  @override
+  final int reputation;
+  @override
+  final int startingWealth;
+  @override
+  final CrewConcept? crewConcept;
+  @override
+  final bool mutant;
+  @override
+  final MutantLineage? mutantLineage;
   @override
   final Attributes attributes;
   @override
@@ -110,6 +124,13 @@ class _$Character extends Character {
       required this.name,
       this.concept,
       this.iconId,
+      required this.upbringing,
+      this.origin,
+      required this.reputation,
+      required this.startingWealth,
+      this.crewConcept,
+      required this.mutant,
+      this.mutantLineage,
       required this.attributes,
       required this.skills,
       required this.hp,
@@ -129,6 +150,13 @@ class _$Character extends Character {
     BuiltValueNullFieldError.checkNotNull(id, r'Character', 'id');
     BuiltValueNullFieldError.checkNotNull(ownerId, r'Character', 'ownerId');
     BuiltValueNullFieldError.checkNotNull(name, r'Character', 'name');
+    BuiltValueNullFieldError.checkNotNull(
+        upbringing, r'Character', 'upbringing');
+    BuiltValueNullFieldError.checkNotNull(
+        reputation, r'Character', 'reputation');
+    BuiltValueNullFieldError.checkNotNull(
+        startingWealth, r'Character', 'startingWealth');
+    BuiltValueNullFieldError.checkNotNull(mutant, r'Character', 'mutant');
     BuiltValueNullFieldError.checkNotNull(
         attributes, r'Character', 'attributes');
     BuiltValueNullFieldError.checkNotNull(skills, r'Character', 'skills');
@@ -167,6 +195,13 @@ class _$Character extends Character {
         name == other.name &&
         concept == other.concept &&
         iconId == other.iconId &&
+        upbringing == other.upbringing &&
+        origin == other.origin &&
+        reputation == other.reputation &&
+        startingWealth == other.startingWealth &&
+        crewConcept == other.crewConcept &&
+        mutant == other.mutant &&
+        mutantLineage == other.mutantLineage &&
         attributes == other.attributes &&
         skills == other.skills &&
         hp == other.hp &&
@@ -192,6 +227,13 @@ class _$Character extends Character {
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, concept.hashCode);
     _$hash = $jc(_$hash, iconId.hashCode);
+    _$hash = $jc(_$hash, upbringing.hashCode);
+    _$hash = $jc(_$hash, origin.hashCode);
+    _$hash = $jc(_$hash, reputation.hashCode);
+    _$hash = $jc(_$hash, startingWealth.hashCode);
+    _$hash = $jc(_$hash, crewConcept.hashCode);
+    _$hash = $jc(_$hash, mutant.hashCode);
+    _$hash = $jc(_$hash, mutantLineage.hashCode);
     _$hash = $jc(_$hash, attributes.hashCode);
     _$hash = $jc(_$hash, skills.hashCode);
     _$hash = $jc(_$hash, hp.hashCode);
@@ -219,6 +261,13 @@ class _$Character extends Character {
           ..add('name', name)
           ..add('concept', concept)
           ..add('iconId', iconId)
+          ..add('upbringing', upbringing)
+          ..add('origin', origin)
+          ..add('reputation', reputation)
+          ..add('startingWealth', startingWealth)
+          ..add('crewConcept', crewConcept)
+          ..add('mutant', mutant)
+          ..add('mutantLineage', mutantLineage)
           ..add('attributes', attributes)
           ..add('skills', skills)
           ..add('hp', hp)
@@ -253,13 +302,44 @@ class CharacterBuilder implements Builder<Character, CharacterBuilder> {
   String? get name => _$this._name;
   set name(String? name) => _$this._name = name;
 
-  String? _concept;
-  String? get concept => _$this._concept;
-  set concept(String? concept) => _$this._concept = concept;
+  Concept? _concept;
+  Concept? get concept => _$this._concept;
+  set concept(Concept? concept) => _$this._concept = concept;
 
   IconId? _iconId;
   IconId? get iconId => _$this._iconId;
   set iconId(IconId? iconId) => _$this._iconId = iconId;
+
+  Upbringing? _upbringing;
+  Upbringing? get upbringing => _$this._upbringing;
+  set upbringing(Upbringing? upbringing) => _$this._upbringing = upbringing;
+
+  String? _origin;
+  String? get origin => _$this._origin;
+  set origin(String? origin) => _$this._origin = origin;
+
+  int? _reputation;
+  int? get reputation => _$this._reputation;
+  set reputation(int? reputation) => _$this._reputation = reputation;
+
+  int? _startingWealth;
+  int? get startingWealth => _$this._startingWealth;
+  set startingWealth(int? startingWealth) =>
+      _$this._startingWealth = startingWealth;
+
+  CrewConcept? _crewConcept;
+  CrewConcept? get crewConcept => _$this._crewConcept;
+  set crewConcept(CrewConcept? crewConcept) =>
+      _$this._crewConcept = crewConcept;
+
+  bool? _mutant;
+  bool? get mutant => _$this._mutant;
+  set mutant(bool? mutant) => _$this._mutant = mutant;
+
+  MutantLineage? _mutantLineage;
+  MutantLineage? get mutantLineage => _$this._mutantLineage;
+  set mutantLineage(MutantLineage? mutantLineage) =>
+      _$this._mutantLineage = mutantLineage;
 
   AttributesBuilder? _attributes;
   AttributesBuilder get attributes =>
@@ -345,6 +425,13 @@ class CharacterBuilder implements Builder<Character, CharacterBuilder> {
       _name = $v.name;
       _concept = $v.concept;
       _iconId = $v.iconId;
+      _upbringing = $v.upbringing;
+      _origin = $v.origin;
+      _reputation = $v.reputation;
+      _startingWealth = $v.startingWealth;
+      _crewConcept = $v.crewConcept;
+      _mutant = $v.mutant;
+      _mutantLineage = $v.mutantLineage;
       _attributes = $v.attributes.toBuilder();
       _skills = $v.skills.toBuilder();
       _hp = $v.hp.toBuilder();
@@ -391,6 +478,17 @@ class CharacterBuilder implements Builder<Character, CharacterBuilder> {
                   name, r'Character', 'name'),
               concept: concept,
               iconId: iconId,
+              upbringing: BuiltValueNullFieldError.checkNotNull(
+                  upbringing, r'Character', 'upbringing'),
+              origin: origin,
+              reputation: BuiltValueNullFieldError.checkNotNull(
+                  reputation, r'Character', 'reputation'),
+              startingWealth: BuiltValueNullFieldError.checkNotNull(
+                  startingWealth, r'Character', 'startingWealth'),
+              crewConcept: crewConcept,
+              mutant: BuiltValueNullFieldError.checkNotNull(
+                  mutant, r'Character', 'mutant'),
+              mutantLineage: mutantLineage,
               attributes: attributes.build(),
               skills: skills.build(),
               hp: hp.build(),
@@ -408,8 +506,8 @@ class CharacterBuilder implements Builder<Character, CharacterBuilder> {
                   status, r'Character', 'status'),
               createdAt: BuiltValueNullFieldError.checkNotNull(
                   createdAt, r'Character', 'createdAt'),
-              updatedAt: BuiltValueNullFieldError.checkNotNull(
-                  updatedAt, r'Character', 'updatedAt'));
+              updatedAt:
+                  BuiltValueNullFieldError.checkNotNull(updatedAt, r'Character', 'updatedAt'));
     } catch (_) {
       late String _$failedField;
       try {

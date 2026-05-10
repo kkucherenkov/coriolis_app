@@ -9,6 +9,7 @@ part of 'serializers.dart';
 Serializers _$serializers = (new Serializers().toBuilder()
       ..add($ItemBase.serializer)
       ..add($ShipModuleBase.serializer)
+      ..add(AssignCharacterToSession.serializer)
       ..add(AssignCrewRequest.serializer)
       ..add(Attributes.serializer)
       ..add(Character.serializer)
@@ -22,12 +23,23 @@ Serializers _$serializers = (new Serializers().toBuilder()
       ..add(CharacterStatusEnum.serializer)
       ..add(CharacterUpdate.serializer)
       ..add(CharacterUpdateStatusEnum.serializer)
+      ..add(Concept.serializer)
       ..add(ConditionFlags.serializer)
+      ..add(CrewConcept.serializer)
       ..add(CrewPosition.serializer)
       ..add(CrewSlot.serializer)
       ..add(CriticalInjury.serializer)
       ..add(CriticalInjurySeverity.serializer)
       ..add(DependencyStatus.serializer)
+      ..add(DpAdjustment.serializer)
+      ..add(DpEvent.serializer)
+      ..add(DpEventList.serializer)
+      ..add(DpSource.serializer)
+      ..add(GameSession.serializer)
+      ..add(GameSessionCreate.serializer)
+      ..add(GameSessionList.serializer)
+      ..add(GameSessionStatus.serializer)
+      ..add(GameSessionUpdate.serializer)
       ..add(HealthStatus.serializer)
       ..add(HealthStatusDependencies.serializer)
       ..add(IconId.serializer)
@@ -70,10 +82,14 @@ Serializers _$serializers = (new Serializers().toBuilder()
       ..add(MeThemeEnum.serializer)
       ..add(MeUpdate.serializer)
       ..add(MeUpdateThemeEnum.serializer)
+      ..add(MutantLineage.serializer)
       ..add(Problem.serializer)
       ..add(RealtimeToken.serializer)
       ..add(Relationship.serializer)
       ..add(RelationshipKind.serializer)
+      ..add(Roll.serializer)
+      ..add(RollCreate.serializer)
+      ..add(RollList.serializer)
       ..add(ShareLink.serializer)
       ..add(ShareLinkCreate.serializer)
       ..add(ShareLinkList.serializer)
@@ -118,7 +134,9 @@ Serializers _$serializers = (new Serializers().toBuilder()
       ..add(Skills.serializer)
       ..add(Talent.serializer)
       ..add(TalentCreate.serializer)
+      ..add(TalentKind.serializer)
       ..add(TalentUpdate.serializer)
+      ..add(Upbringing.serializer)
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(Character)]),
           () => new ListBuilder<Character>())
@@ -137,6 +155,15 @@ Serializers _$serializers = (new Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(Item)]),
           () => new ListBuilder<Item>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(DpEvent)]),
+          () => new ListBuilder<DpEvent>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(GameSession)]),
+          () => new ListBuilder<GameSession>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(Roll)]),
+          () => new ListBuilder<Roll>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(ShareLink)]),
           () => new ListBuilder<ShareLink>())
@@ -172,7 +199,13 @@ Serializers _$serializers = (new Serializers().toBuilder()
           () => new ListBuilder<String>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(String)]),
-          () => new ListBuilder<String>()))
+          () => new ListBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(String)]),
+          () => new ListBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(int)]),
+          () => new ListBuilder<int>()))
     .build();
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

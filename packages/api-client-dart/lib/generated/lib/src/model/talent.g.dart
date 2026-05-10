@@ -10,6 +10,8 @@ class _$Talent extends Talent {
   @override
   final String id;
   @override
+  final TalentKind kind;
+  @override
   final String name;
   @override
   final String description;
@@ -23,12 +25,14 @@ class _$Talent extends Talent {
 
   _$Talent._(
       {required this.id,
+      required this.kind,
       required this.name,
       required this.description,
       required this.rank,
       required this.acquiredAt})
       : super._() {
     BuiltValueNullFieldError.checkNotNull(id, r'Talent', 'id');
+    BuiltValueNullFieldError.checkNotNull(kind, r'Talent', 'kind');
     BuiltValueNullFieldError.checkNotNull(name, r'Talent', 'name');
     BuiltValueNullFieldError.checkNotNull(
         description, r'Talent', 'description');
@@ -48,6 +52,7 @@ class _$Talent extends Talent {
     if (identical(other, this)) return true;
     return other is Talent &&
         id == other.id &&
+        kind == other.kind &&
         name == other.name &&
         description == other.description &&
         rank == other.rank &&
@@ -58,6 +63,7 @@ class _$Talent extends Talent {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, id.hashCode);
+    _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, description.hashCode);
     _$hash = $jc(_$hash, rank.hashCode);
@@ -70,6 +76,7 @@ class _$Talent extends Talent {
   String toString() {
     return (newBuiltValueToStringHelper(r'Talent')
           ..add('id', id)
+          ..add('kind', kind)
           ..add('name', name)
           ..add('description', description)
           ..add('rank', rank)
@@ -84,6 +91,10 @@ class TalentBuilder implements Builder<Talent, TalentBuilder> {
   String? _id;
   String? get id => _$this._id;
   set id(String? id) => _$this._id = id;
+
+  TalentKind? _kind;
+  TalentKind? get kind => _$this._kind;
+  set kind(TalentKind? kind) => _$this._kind = kind;
 
   String? _name;
   String? get name => _$this._name;
@@ -109,6 +120,7 @@ class TalentBuilder implements Builder<Talent, TalentBuilder> {
     final $v = _$v;
     if ($v != null) {
       _id = $v.id;
+      _kind = $v.kind;
       _name = $v.name;
       _description = $v.description;
       _rank = $v.rank;
@@ -136,6 +148,8 @@ class TalentBuilder implements Builder<Talent, TalentBuilder> {
     final _$result = _$v ??
         new _$Talent._(
             id: BuiltValueNullFieldError.checkNotNull(id, r'Talent', 'id'),
+            kind:
+                BuiltValueNullFieldError.checkNotNull(kind, r'Talent', 'kind'),
             name:
                 BuiltValueNullFieldError.checkNotNull(name, r'Talent', 'name'),
             description: BuiltValueNullFieldError.checkNotNull(
