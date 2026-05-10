@@ -2,6 +2,51 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-10-005 — Phase 5 web frontend: ship list + sheet + module editor + crew
+
+- Completed: 2026-05-10
+- Owner: claude
+- Spec: PRD §11 Phase 5. Backend was complete (T-2026-05-10-004);
+  web SPA had no Ship-related composables, pages, or nav surface.
+- Goal: Wire the Phase-5 backend into the web SPA so a player can
+  build a ship, install / edit modules, assign their characters as
+  crew, and duplicate.
+- Result: shipped on `main` across five feature commits + per-block
+  bookkeeping. Web tests climbed 53 → 143 (+90 vitest cases).
+  - `40483a0` `feat(web): T-2026-05-10-005 Block 1 — useShipsApi + /app/ships index page`
+  - `dbf0351` `feat(web): T-2026-05-10-005 Block 2 — ship sheet with scalar PATCH editing`
+  - `3472047` `feat(web): T-2026-05-10-005 Block 3 — discriminator-aware module editor`
+  - `e065118` `feat(web): T-2026-05-10-005 Block 4 — crew assignment widget on the ship sheet`
+  - `c8f6d11` `feat(web): T-2026-05-10-005 Block 5 — polish (delete confirm, duplicate toast, export, empty state)`
+- Spec diff: none. Codegen impact: none.
+- Acceptance check (against the original list):
+  - ✅ `/app/ships` index with inline create form (all 20 ship
+    classes, humanised picker), per-card Open / Duplicate / Delete,
+    empty state + retry, nav link from characters AppBar.
+  - ✅ `/app/ships/[id]` sheet with header (rename + duplicate +
+    delete + export + AppSavePulse), full editable stat block,
+    auto-save on blur via `useAutoSave` (600 ms debounce), notes /
+    history / problems cards.
+  - ✅ Discriminator-aware `ShipModuleEditor` modal (WEAPON /
+    TORPEDO / HOLD / SENSOR / OTHER variants); mandatory-module
+    Delete hidden for BRIDGE / REACTOR / DRIVE.
+  - ✅ Editable crew card with `<optgroup>` picker splitting
+    "Available" vs "Already on this ship (will move)" so the
+    backend's move semantics is visible before commit.
+  - ✅ Duplicate wired from both list + sheet, "Recently created"
+    toast on the index page (cleared via `router.replace` so a
+    refresh doesn't re-trigger), Export affordance with
+    experimental chip linking to the 501 stub.
+- Tests: 143/143 web (+90). typecheck and lint clean at every block
+  boundary.
+- Open follow-ups:
+  - Pre-existing px-dimension stylelint violations in Blocks 1–4
+    (`max-width: 960px`, etc) — separate cleanup task.
+  - Export real implementation will replace the 501 stub once the
+    backend ships it.
+  - Phase 5 mobile (read-only ship sheet) is the natural mobile
+    follow-on.
+
 ## T-2026-05-10-004 — Phase 5 backend: Ships module (CRUD + modules + crew)
 
 - Completed: 2026-05-10
@@ -38,7 +83,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
     SENSOR / OTHER). Mandatory-module delete returns 422
     `SHIP_MODULE_MANDATORY`. Module endpoints live on a second
     controller `ShipModulesController` at `/api/v1/ship-modules/
-    {id}` — that's how the spec splits the surface.
+{id}` — that's how the spec splits the surface.
   - ✅ `assignCrew` / `unassignCrew` use **move semantics** rather
     than the undocumented 422 `CREW_ALREADY_ASSIGNED` from the
     original task entry: re-assigning a character to a vacant
@@ -62,7 +107,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
     matches the task spec but the spec section itself is sketchy).
   - `_prisma_migrations` baselining so `migrate deploy` becomes
     the canonical apply path. Currently the codebase uses `db
-    push` because `migrate dev` fails on the
+push` because `migrate dev` fails on the
     `20260508000001_character_status` migration's shadow-DB step.
     Tracked as a Phase-7 hardening item.
   - Frontend wire-up — Phase 5 web (next task) and Phase 5 mobile
@@ -105,7 +150,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
     casino-icon action on the characters list AppBar) lists
     active / archived sessions with FAB → create + popup-menu
     archive toggle. Detail page branches on `me.id ==
-    session.ownerId`.
+session.ownerId`.
   - ✅ Detail page subscribes to `session.{id}` over Centrifugo
     via `shared/realtime/SessionRealtime` (wraps `centrifuge`
     0.18.0). `dp.changed` patches the visible counter via
@@ -173,9 +218,9 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
     archived tabs, inline create form (auto-redirects to detail),
     and per-card archive / unarchive actions.
   - ✅ `/app/sessions/[id]` branches GM vs player. GM gets DP +/-
-    + delta-with-reason form, audit log tail, character
-    `<select>` assign / unassign. Players see read-only DP +
-    assigned list.
+    - delta-with-reason form, audit log tail, character
+      `<select>` assign / unassign. Players see read-only DP +
+      assigned list.
   - ✅ Detail page subscribes to `session.{id}` over Centrifugo;
     `dp.changed` patches the visible counter and prepends a
     synthetic audit row (de-duped against the GM's own adjust);
