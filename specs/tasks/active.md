@@ -53,9 +53,13 @@
         groups (a11y CI, primitives, auto-save, sheet body,
         inventory, draft-state ADR, web wizard, mobile
         parity).
-  - [ ] Block 2 — `phase-3.md` (share links, public
+  - [x] Block 2 — `phase-3.md` (share links, public
         read-only views, OG image route, mobile pass, a11y
-        audit). Tag is already cut; the summary doc is new.
+        audit). Tag already at `03e2c6c`; only the summary
+        doc is new. 35 commits classified into 5 feature
+        groups (Flutter 3.41 compat, share-link backend +
+        ADR-0003, public viewer + OG renderer, mobile pass,
+        theme persist + a11y/reduced-motion sweep).
   - [ ] Block 3 — `phase-4.md` (dice roller web + mobile,
         push mechanic, GameSession, Darkness Points,
         Centrifugo channel for live DP). Cut
