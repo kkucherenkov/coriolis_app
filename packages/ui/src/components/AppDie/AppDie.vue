@@ -105,10 +105,29 @@
     >
       <defs>
         <!-- Hit: mystic-teal glow filter -->
-        <filter v-if="state === 'hit'" :id="filterId" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="3" result="blur" />
-          <feFlood flood-color="var(--state-mystic-teal)" flood-opacity="0.6" result="color" />
-          <feComposite in="color" in2="blur" operator="in" result="teal-glow" />
+        <filter
+          v-if="state === 'hit'"
+          :id="filterId"
+          x="-30%"
+          y="-30%"
+          width="160%"
+          height="160%"
+        >
+          <feGaussianBlur
+            stdDeviation="3"
+            result="blur"
+          />
+          <feFlood
+            flood-color="var(--state-mystic-teal)"
+            flood-opacity="0.6"
+            result="color"
+          />
+          <feComposite
+            in="color"
+            in2="blur"
+            operator="in"
+            result="teal-glow"
+          />
           <feMerge>
             <feMergeNode in="teal-glow" />
             <feMergeNode in="SourceGraphic" />
@@ -124,9 +143,21 @@
           width="160%"
           height="160%"
         >
-          <feGaussianBlur stdDeviation="4" result="blur" />
-          <feFlood flood-color="var(--state-crimson)" flood-opacity="0.5" result="color" />
-          <feComposite in="color" in2="blur" operator="in" result="crimson-glow" />
+          <feGaussianBlur
+            stdDeviation="4"
+            result="blur"
+          />
+          <feFlood
+            flood-color="var(--state-crimson)"
+            flood-opacity="0.5"
+            result="color"
+          />
+          <feComposite
+            in="color"
+            in2="blur"
+            operator="in"
+            result="crimson-glow"
+          />
           <feMerge>
             <feMergeNode in="crimson-glow" />
             <feMergeNode in="SourceGraphic" />

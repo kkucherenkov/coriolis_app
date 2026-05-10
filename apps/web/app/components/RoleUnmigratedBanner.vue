@@ -112,10 +112,18 @@
   <!-- Render nothing when the banner is not needed -->
   <template v-if="roleUnmigrated && concept !== null">
     <!-- ── Banner ──────────────────────────────────────────────────────────── -->
-    <AppBanner tone="warning" class="role-unmigrated-banner" aria-live="polite">
+    <AppBanner
+      tone="warning"
+      class="role-unmigrated-banner"
+      aria-live="polite"
+    >
       {{ t('bannerText') }}
       <template #actions>
-        <AppButton variant="primary" size="sm" @click="openDialog">
+        <AppButton
+          variant="primary"
+          size="sm"
+          @click="openDialog"
+        >
           {{ t('cta') }}
         </AppButton>
       </template>
@@ -136,15 +144,25 @@
         :aria-labelledby="headingId"
         :aria-describedby="descId"
       >
-        <h2 :id="headingId" class="role-unmigrated-banner__dialog-heading">
+        <h2
+          :id="headingId"
+          class="role-unmigrated-banner__dialog-heading"
+        >
           {{ t('dialogHeading') }}
         </h2>
-        <p :id="descId" class="role-unmigrated-banner__dialog-desc">
+        <p
+          :id="descId"
+          class="role-unmigrated-banner__dialog-desc"
+        >
           {{ t('dialogDescription') }}
         </p>
 
         <!-- Error message (inline, dialog stays open) -->
-        <AppBanner v-if="errorMsg" tone="danger" class="role-unmigrated-banner__dialog-error">
+        <AppBanner
+          v-if="errorMsg"
+          tone="danger"
+          class="role-unmigrated-banner__dialog-error"
+        >
           {{ errorMsg }}
         </AppBanner>
 
@@ -158,7 +176,12 @@
 
         <!-- Dialog footer -->
         <div class="role-unmigrated-banner__dialog-footer">
-          <AppButton variant="ghost" size="md" :disabled="saving" @click="closeDialog">
+          <AppButton
+            variant="ghost"
+            size="md"
+            :disabled="saving"
+            @click="closeDialog"
+          >
             {{ t('cancelLabel') }}
           </AppButton>
           <AppButton

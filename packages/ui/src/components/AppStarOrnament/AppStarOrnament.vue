@@ -48,7 +48,10 @@
 </script>
 
 <template>
-  <span :class="classes" :style="opacity !== 1 ? { opacity } : undefined">
+  <span
+    :class="classes"
+    :style="opacity !== 1 ? { opacity } : undefined"
+  >
     <svg
       :width="sizePx"
       :height="sizePx"
@@ -58,7 +61,10 @@
       xmlns="http://www.w3.org/2000/svg"
       class="app-star-ornament__svg"
     >
-      <polygon :points="STAR_POINTS" class="app-star-ornament__shape" />
+      <polygon
+        :points="STAR_POINTS"
+        class="app-star-ornament__shape"
+      />
     </svg>
   </span>
 </template>

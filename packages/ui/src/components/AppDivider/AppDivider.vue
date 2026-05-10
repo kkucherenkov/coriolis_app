@@ -31,8 +31,17 @@
 </script>
 
 <template>
-  <hr v-if="!isVertical" :class="classes" aria-orientation="horizontal" />
-  <div v-else :class="classes" role="separator" aria-orientation="vertical" />
+  <hr
+    v-if="!isVertical"
+    :class="classes"
+    aria-orientation="horizontal"
+  />
+  <div
+    v-else
+    :class="classes"
+    role="separator"
+    aria-orientation="vertical"
+  />
 </template>
 
 <style lang="scss" scoped>

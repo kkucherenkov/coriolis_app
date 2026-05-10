@@ -1240,6 +1240,11 @@ export interface paths {
          *     Pool is clamped by the server from the submitted value. Condition penalties
          *     must be pre-applied by the caller before sending `pool`; the server does not
          *     re-apply them from character state.
+         *
+         *     When an optional `breakdown` object is supplied alongside `pool`, the server
+         *     validates that `attribute + skill + gear + modifier + helpers === pool`; a
+         *     mismatch is rejected with HTTP 400 `ROLL_BREAKDOWN_MISMATCH`. Programmatic
+         *     callers (internal command handlers, dice engine) can omit `breakdown` entirely.
          */
         post: operations["createRoll"];
         delete?: never;
@@ -1264,7 +1269,9 @@ export interface paths {
         /**
          * Push (reroll) a roll
          * @description Rerolls all non-6 dice exactly once. After a push the roll cannot be
-         *     pushed again (`pushed` becomes `true`). Returns 422 with code
+         *     pushed again (`pushed` becomes `true`). Returns 400 with code
+         *     `PUSH_NOT_ALLOWED_ON_NON_SKILL_ROLL` if the roll's `kind` is not
+         *     `skill` (ST3001 ГЛАВА 3 §«Вознесение молитв»). Returns 422 with code
          *     `ROLL_NOT_PUSHABLE` if:
          *     - The roll has already been pushed.
          *     - The owning character has the Exhausted condition (PRD §10).
@@ -1291,6 +1298,16 @@ export interface components {
              *     (GameSession resource) ships. Clients should tolerate null.
              */
             gameSessionId?: string | null;
+            /**
+             * @description What kind of roll this represents (see RollKind for the full
+             *     taxonomy). Set at create-time and immutable. Drives the
+             *     push-eligibility gate — only `skill` rolls accept
+             *     POST `/rolls/{id}/push`.
+             *
+             *     The server always emits `kind`; clients SHOULD treat absence
+             *     as `skill` for backward compatibility with ≤ 1.2 servers.
+             */
+            kind: components["schemas"]["RollKind"];
             /** @description Human-readable roll label, e.g. "Pilot · Evade" */
             label: string;
             /**
@@ -1313,11 +1330,29 @@ export interface components {
             readonly hits: number;
             /** @description Whether this roll has been pushed. Once true, further pushes are rejected. */
             pushed: boolean;
+            /**
+             * @description Optional structured breakdown of the dice pool — surfaces
+             *     the math behind the `pool` total for the GM-tools audit
+             *     view. Server-side, when both `breakdown` and `pool` are
+             *     supplied on `RollCreate`, the handler asserts the sum
+             *     equals the pool and rejects mismatched payloads with
+             *     `ROLL_BREAKDOWN_MISMATCH` (HTTP 400). Null when the
+             *     roll was created programmatically (e.g. by an internal
+             *     handler) without a UI breakdown to record.
+             */
+            breakdown?: components["schemas"]["RollBreakdown"] | null;
             /** Format: date-time */
             readonly createdAt: string;
         };
         /** @description Payload for POST /api/v1/characters/{id}/rolls */
         RollCreate: {
+            /**
+             * @description What kind of roll to create. Defaults to `skill` when omitted
+             *     (back-compat for callers from before T-2026-05-10-015 landed).
+             *     Once persisted, the kind is immutable.
+             * @default skill
+             */
+            kind: components["schemas"]["RollKind"];
             /** @description Human-readable roll label, e.g. "Pilot · Evade" */
             label: string;
             /**
@@ -1339,10 +1374,72 @@ export interface components {
              *     Pass null or omit until GameSession lands.
              */
             gameSessionId?: string | null;
+            /**
+             * @description Optional structured breakdown of the dice pool — surfaces
+             *     the math behind the `pool` total for the GM-tools audit
+             *     view. Server-side, when both `breakdown` and `pool` are
+             *     supplied on `RollCreate`, the handler asserts the sum
+             *     equals the pool and rejects mismatched payloads with
+             *     `ROLL_BREAKDOWN_MISMATCH` (HTTP 400). Null when the
+             *     roll was created programmatically (e.g. by an internal
+             *     handler) without a UI breakdown to record.
+             */
+            breakdown?: components["schemas"]["RollBreakdown"] | null;
         };
         RollList: {
             items: components["schemas"]["Roll"][];
         };
+        /**
+         * @description Structured breakdown of a roll's dice pool — what each component
+         *     contributed. The server enforces `attribute + skill + gear +
+         *     modifier + helpers === pool` when both `breakdown` and `pool`
+         *     are supplied on a `RollCreate` (catches UI math bugs). Each
+         *     component is a non-negative integer 0..10; the sum bound is
+         *     the same 0..20 envelope as `RollCreate.pool` (T-010 Block C).
+         *
+         *     Components:
+         *     - `attribute` — the base attribute the skill is governed by
+         *       (1..5 typical, but stored as 0..10 to allow GM exotics).
+         *     - `skill` — the skill rank.
+         *     - `gear` — bonus dice from equipment / weapons.
+         *     - `modifier` — situational ad-hoc modifier (positive only).
+         *     - `helpers` — dice from cooperative helpers (ГЛАВА 3 §«Помощь»).
+         *
+         *     All five components are required when `breakdown` is supplied.
+         */
+        RollBreakdown: {
+            /** @description Attribute contribution (e.g. STR 4 → 4). */
+            attribute: number;
+            /** @description Skill rank contribution (e.g. Force 2 → 2). */
+            skill: number;
+            /** @description Bonus dice from equipment (weapon `bonus`, armor +1, gear-specific dice). */
+            gear: number;
+            /** @description Situational positive modifier (cover, range, ambush, etc). */
+            modifier: number;
+            /** @description Dice from cooperative helpers (ST3001 ГЛАВА 3 §«Помощь»). */
+            helpers: number;
+        };
+        /**
+         * @description Discriminator on roll payloads — what *kind* of dice roll the
+         *     result represents. Drives the push-eligibility gate per ST3001
+         *     ГЛАВА 3 §«Вознесение молитв» («Молитву можно возносить только
+         *     при проверках навыков»). Only `skill` rolls can be pushed; the
+         *     backend rejects push attempts on the other four kinds with
+         *     `PUSH_NOT_ALLOWED_ON_NON_SKILL_ROLL`.
+         *
+         *     - `skill` — standard skill / attribute check. Push-eligible.
+         *     - `save` — armor save / damage-resist roll (ГЛАВА 5 «Урон»).
+         *     - `trauma` — critical-injury / trauma roll (ГЛАВА 5
+         *       «Травмирующие атаки»).
+         *     - `initiative` — combat initiative d6 (ГЛАВА 5 «Раунды,
+         *       ходы и инициатива»). The bounded reroll loop landed in
+         *       T-010 Block A is the canonical mechanic; this is not a
+         *       push.
+         *     - `darkness` — GM darkness pool / NPC reaction (ГЛАВА 15
+         *       «Принципы игры»). GM-side narrative tool; not pushed.
+         * @enum {string}
+         */
+        RollKind: "skill" | "save" | "trauma" | "initiative" | "darkness";
         /**
          * @description Severity tier of a critical injury per Coriolis core rules.
          *     - `light` — minor wound, no long-term mechanical effect.
@@ -7279,7 +7376,7 @@ export interface operations {
                     "application/json": components["schemas"]["Roll"];
                 };
             };
-            /** @description Validation error (pool out of range, label too long, etc.) */
+            /** @description Validation error (pool out of range, label too long, breakdown mismatch, etc.) */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -7336,6 +7433,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Roll"];
+                };
+            };
+            /** @description Push not allowed — roll kind is not `skill` */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
             /** @description No active session */

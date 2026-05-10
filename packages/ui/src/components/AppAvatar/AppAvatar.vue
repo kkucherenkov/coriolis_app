@@ -50,7 +50,11 @@
 </script>
 
 <template>
-  <span :class="classes" role="img" :aria-label="name">
+  <span
+    :class="classes"
+    role="img"
+    :aria-label="name"
+  >
     <img
       v-if="showImage"
       class="app-avatar__image"
@@ -61,7 +65,10 @@
       @error="handleError"
     />
     <template v-else>
-      <span class="app-avatar__initials" aria-hidden="true">{{ initials }}</span>
+      <span
+        class="app-avatar__initials"
+        aria-hidden="true"
+      >{{ initials }}</span>
       <span class="app-avatar__sr">{{ name }}</span>
     </template>
   </span>

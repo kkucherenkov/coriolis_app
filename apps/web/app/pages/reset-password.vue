@@ -162,7 +162,10 @@
 </i18n>
 
 <template>
-  <div class="page-reset" data-testid="page-reset">
+  <div
+    class="page-reset"
+    data-testid="page-reset"
+  >
     <div class="page-reset__shell">
       <h1 class="page-reset__wordmark">
         {{ t('wordmark') }}
@@ -178,11 +181,19 @@
           </p>
         </div>
 
-        <p v-if="errorMsg" role="alert" class="page-reset__error">
+        <p
+          v-if="errorMsg"
+          role="alert"
+          class="page-reset__error"
+        >
           {{ errorMsg }}
         </p>
 
-        <p v-if="successMsg" role="status" class="page-reset__success">
+        <p
+          v-if="successMsg"
+          role="status"
+          class="page-reset__success"
+        >
           {{ successMsg }}
         </p>
 
@@ -198,7 +209,10 @@
           <p class="page-reset__token-missing-body">
             {{ t('tokenMissingBody') }}
           </p>
-          <NuxtLink to="/forgot-password" class="page-reset__link">
+          <NuxtLink
+            to="/forgot-password"
+            class="page-reset__link"
+          >
             {{ t('requestNew') }}
           </NuxtLink>
         </div>
@@ -209,7 +223,11 @@
           novalidate
           @submit.prevent="onSubmit"
         >
-          <AppField :label="t('passwordLabel')" :help="t('passwordHint')" required>
+          <AppField
+            :label="t('passwordLabel')"
+            :help="t('passwordHint')"
+            required
+          >
             <template #default="slotAttrs">
               <AppInput
                 v-bind="slotAttrs"
@@ -220,7 +238,11 @@
             </template>
           </AppField>
 
-          <AppField :label="t('confirmLabel')" :help="t('confirmHint')" required>
+          <AppField
+            :label="t('confirmLabel')"
+            :help="t('confirmHint')"
+            required
+          >
             <template #default="slotAttrs">
               <AppInput
                 v-bind="slotAttrs"

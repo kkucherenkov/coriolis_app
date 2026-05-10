@@ -62,7 +62,10 @@
 <template>
   <!-- When there is a visible label (slot or prop), wrap with <label> so clicks
        on the label text activate the switch natively. -->
-  <label v-if="hasVisibleLabel" :class="rootClasses">
+  <label
+    v-if="hasVisibleLabel"
+    :class="rootClasses"
+  >
     <button
       type="button"
       role="switch"
@@ -74,7 +77,10 @@
       @click="toggle"
       @keydown="onKeydown"
     >
-      <span class="app-switch__track" aria-hidden="true">
+      <span
+        class="app-switch__track"
+        aria-hidden="true"
+      >
         <span class="app-switch__thumb" />
       </span>
     </button>
@@ -98,7 +104,10 @@
     @click="toggle"
     @keydown="onKeydown"
   >
-    <span class="app-switch__track" aria-hidden="true">
+    <span
+      class="app-switch__track"
+      aria-hidden="true"
+    >
       <span class="app-switch__thumb" />
     </span>
   </button>

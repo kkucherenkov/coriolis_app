@@ -28,9 +28,16 @@
     -->
     <template v-if="keyList.length === 1">{{ keyList[0] }}</template>
     <template v-else>
-      <template v-for="(key, idx) in keyList" :key="idx">
+      <template
+        v-for="(key, idx) in keyList"
+        :key="idx"
+      >
         <kbd class="app-kbd__key">{{ key }}</kbd>
-        <span v-if="idx < keyList.length - 1" class="app-kbd__sep" aria-hidden="true">+</span>
+        <span
+          v-if="idx < keyList.length - 1"
+          class="app-kbd__sep"
+          aria-hidden="true"
+        >+</span>
       </template>
     </template>
   </kbd>

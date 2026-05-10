@@ -142,7 +142,11 @@
 </script>
 
 <template>
-  <div :class="rootClasses" role="radiogroup" :aria-disabled="disabled ? 'true' : undefined">
+  <div
+    :class="rootClasses"
+    role="radiogroup"
+    :aria-disabled="disabled ? 'true' : undefined"
+  >
     <!--
       Roving focus pattern:
       - Only the checked option has tabindex="0"; all others have tabindex="-1".

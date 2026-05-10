@@ -20,7 +20,11 @@
     UModal wrapping (AppModal primitive) was intentionally deferred to a later
     batch so this primitive ships without extra scope.
   -->
-  <span :class="classes" aria-hidden="true" role="presentation">
+  <span
+    :class="classes"
+    aria-hidden="true"
+    role="presentation"
+  >
     <span class="app-save-pulse__dot" />
   </span>
 </template>

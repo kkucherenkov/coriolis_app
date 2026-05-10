@@ -123,7 +123,11 @@
 <template>
   <div :class="rootClasses">
     <!-- Trigger wrapper — click toggles the panel. -->
-    <div ref="triggerRef" class="app-popover__trigger" @click="onTriggerClick">
+    <div
+      ref="triggerRef"
+      class="app-popover__trigger"
+      @click="onTriggerClick"
+    >
       <slot name="trigger" />
     </div>
 

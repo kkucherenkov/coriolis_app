@@ -101,7 +101,10 @@
 </i18n>
 
 <template>
-  <div class="page-forgot" data-testid="page-forgot">
+  <div
+    class="page-forgot"
+    data-testid="page-forgot"
+  >
     <div class="page-forgot__shell">
       <h1 class="page-forgot__wordmark">
         {{ t('wordmark') }}
@@ -117,7 +120,11 @@
           </p>
         </div>
 
-        <p v-if="errorMsg" role="alert" class="page-forgot__error">
+        <p
+          v-if="errorMsg"
+          role="alert"
+          class="page-forgot__error"
+        >
           {{ errorMsg }}
         </p>
 
@@ -135,8 +142,17 @@
           </p>
         </div>
 
-        <form v-else class="page-forgot__form" novalidate @submit.prevent="onSubmit">
-          <AppField :label="t('emailLabel')" :help="t('emailHint')" required>
+        <form
+          v-else
+          class="page-forgot__form"
+          novalidate
+          @submit.prevent="onSubmit"
+        >
+          <AppField
+            :label="t('emailLabel')"
+            :help="t('emailHint')"
+            required
+          >
             <template #default="slotAttrs">
               <AppInput
                 v-bind="slotAttrs"
@@ -161,7 +177,10 @@
         </form>
 
         <p class="page-forgot__footnote-link">
-          <NuxtLink to="/login" class="page-forgot__link">
+          <NuxtLink
+            to="/login"
+            class="page-forgot__link"
+          >
             {{ t('backToSignIn') }}
           </NuxtLink>
         </p>

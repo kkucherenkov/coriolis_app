@@ -56,9 +56,15 @@
     :aria-label="label || undefined"
   >
     <div class="app-progress__track">
-      <div class="app-progress__fill" :style="fillStyle" />
+      <div
+        class="app-progress__fill"
+        :style="fillStyle"
+      />
     </div>
-    <span v-if="showLabel" class="app-progress__label">{{ labelText }}</span>
+    <span
+      v-if="showLabel"
+      class="app-progress__label"
+    >{{ labelText }}</span>
   </div>
 </template>
 

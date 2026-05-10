@@ -20,14 +20,23 @@
 </script>
 
 <template>
-  <component :is="as" :class="classes">
-    <div v-if="$slots['header']" class="app-card__header">
+  <component
+    :is="as"
+    :class="classes"
+  >
+    <div
+      v-if="$slots['header']"
+      class="app-card__header"
+    >
       <slot name="header" />
     </div>
     <div class="app-card__body">
       <slot />
     </div>
-    <div v-if="$slots['footer']" class="app-card__footer">
+    <div
+      v-if="$slots['footer']"
+      class="app-card__footer"
+    >
       <slot name="footer" />
     </div>
   </component>
