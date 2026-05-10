@@ -21,7 +21,7 @@ Name | Type | Description | Notes
 **armorRating** | **int** | Armor rating — reduces incoming damage | 
 **quantity** | **int** | Number of units | 
 **notes** | **String** | Optional free-text notes | [optional] 
-**bodyPoints** | **int** | System strain points consumed (0–6) | 
+**xpCost** | **int** | XP spent to acquire this cybernetic implant. Cybernetics count as both equipment and talents (ST3001 ГЛАВА 6 «КИБЕРНЕТИЧЕСКИЕ ИМПЛАНТАТЫ»: «считается и снаряжением, и достоинством, так что на его покупку тебе понадобятся не только бирры, но и пункты опыта»). The canonical acquisition cost is 5 XP per ГЛАВА 4 «Новые достоинства» («Накопив 5 пунктов опыта, персонаж получает возможность обменять их на любое новое достоинство»); the field accepts 0..15 to allow GM concessions (0 for in-game gifts) and high-rank exotics (up to 3 ranks × 5 XP). The implant's birr price lives in the regular `cost` (or wherever ItemBase carries item value) — XP is tracked separately because it draws from the character's XP pool, not their wallet.  | 
 **effect** | **String** | Description of the module's effect and energy use | 
 **slot** | [**ItemSlotType**](ItemSlotType.md) |  | 
 

@@ -16,17 +16,17 @@ part 'item_cybernetic.g.dart';
 /// * [id] - Opaque identifier (cuid2)
 /// * [type] 
 /// * [name] - Item name
-/// * [bodyPoints] - System strain points consumed (0–6)
+/// * [xpCost] - XP spent to acquire this cybernetic implant. Cybernetics count as both equipment and talents (ST3001 ГЛАВА 6 «КИБЕРНЕТИЧЕСКИЕ ИМПЛАНТАТЫ»: «считается и снаряжением, и достоинством, так что на его покупку тебе понадобятся не только бирры, но и пункты опыта»). The canonical acquisition cost is 5 XP per ГЛАВА 4 «Новые достоинства» («Накопив 5 пунктов опыта, персонаж получает возможность обменять их на любое новое достоинство»); the field accepts 0..15 to allow GM concessions (0 for in-game gifts) and high-rank exotics (up to 3 ranks × 5 XP). The implant's birr price lives in the regular `cost` (or wherever ItemBase carries item value) — XP is tracked separately because it draws from the character's XP pool, not their wallet. 
 /// * [effect] - Description of the cybernetic's effect
 @BuiltValue()
 abstract class ItemCybernetic implements ItemBase, Built<ItemCybernetic, ItemCyberneticBuilder> {
-  /// System strain points consumed (0–6)
-  @BuiltValueField(wireName: r'bodyPoints')
-  int get bodyPoints;
-
   /// Description of the cybernetic's effect
   @BuiltValueField(wireName: r'effect')
   String get effect;
+
+  /// XP spent to acquire this cybernetic implant. Cybernetics count as both equipment and talents (ST3001 ГЛАВА 6 «КИБЕРНЕТИЧЕСКИЕ ИМПЛАНТАТЫ»: «считается и снаряжением, и достоинством, так что на его покупку тебе понадобятся не только бирры, но и пункты опыта»). The canonical acquisition cost is 5 XP per ГЛАВА 4 «Новые достоинства» («Накопив 5 пунктов опыта, персонаж получает возможность обменять их на любое новое достоинство»); the field accepts 0..15 to allow GM concessions (0 for in-game gifts) and high-rank exotics (up to 3 ranks × 5 XP). The implant's birr price lives in the regular `cost` (or wherever ItemBase carries item value) — XP is tracked separately because it draws from the character's XP pool, not their wallet. 
+  @BuiltValueField(wireName: r'xpCost')
+  int get xpCost;
 
   ItemCybernetic._();
 
@@ -56,6 +56,11 @@ class _$ItemCyberneticSerializer implements PrimitiveSerializer<ItemCybernetic> 
       object.name,
       specifiedType: const FullType(String),
     );
+    yield r'xpCost';
+    yield serializers.serialize(
+      object.xpCost,
+      specifiedType: const FullType(int),
+    );
     yield r'id';
     yield serializers.serialize(
       object.id,
@@ -65,11 +70,6 @@ class _$ItemCyberneticSerializer implements PrimitiveSerializer<ItemCybernetic> 
     yield serializers.serialize(
       object.type,
       specifiedType: const FullType(String),
-    );
-    yield r'bodyPoints';
-    yield serializers.serialize(
-      object.bodyPoints,
-      specifiedType: const FullType(int),
     );
     yield r'effect';
     yield serializers.serialize(
@@ -106,6 +106,13 @@ class _$ItemCyberneticSerializer implements PrimitiveSerializer<ItemCybernetic> 
           ) as String;
           result.name = valueDes;
           break;
+        case r'xpCost':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.xpCost = valueDes;
+          break;
         case r'id':
           final valueDes = serializers.deserialize(
             value,
@@ -119,13 +126,6 @@ class _$ItemCyberneticSerializer implements PrimitiveSerializer<ItemCybernetic> 
             specifiedType: const FullType(String),
           ) as String;
           result.type = valueDes;
-          break;
-        case r'bodyPoints':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.bodyPoints = valueDes;
           break;
         case r'effect':
           final valueDes = serializers.deserialize(

@@ -1795,8 +1795,23 @@ export interface components {
     ItemCybernetic: components['schemas']['ItemBase'] & {
       /** @enum {string} */
       type?: 'CYBERNETIC';
-      /** @description System strain points consumed (0–6) */
-      bodyPoints: number;
+      /**
+       * @description XP spent to acquire this cybernetic implant. Cybernetics
+       *     count as both equipment and talents (ST3001 ГЛАВА 6
+       *     «КИБЕРНЕТИЧЕСКИЕ ИМПЛАНТАТЫ»: «считается и снаряжением,
+       *     и достоинством, так что на его покупку тебе понадобятся
+       *     не только бирры, но и пункты опыта»). The canonical
+       *     acquisition cost is 5 XP per ГЛАВА 4 «Новые достоинства»
+       *     («Накопив 5 пунктов опыта, персонаж получает возможность
+       *     обменять их на любое новое достоинство»); the field
+       *     accepts 0..15 to allow GM concessions (0 for in-game
+       *     gifts) and high-rank exotics (up to 3 ranks × 5 XP).
+       *     The implant's birr price lives in the regular `cost`
+       *     (or wherever ItemBase carries item value) — XP is
+       *     tracked separately because it draws from the
+       *     character's XP pool, not their wallet.
+       */
+      xpCost: number;
       /** @description Description of the cybernetic's effect */
       effect: string;
     } & {
@@ -1926,7 +1941,7 @@ export interface components {
      * @example {
      *       "type": "CYBERNETIC",
      *       "name": "Neural Interface",
-     *       "bodyPoints": 2,
+     *       "xpCost": 5,
      *       "effect": "Grants +1 die to Data Djinn checks"
      *     }
      */
@@ -1937,8 +1952,12 @@ export interface components {
        */
       type: 'CYBERNETIC';
       name: string;
-      /** @description System strain points consumed (0–6) */
-      bodyPoints: number;
+      /**
+       * @description XP spent to acquire this implant (canonical cost 5 XP per
+       *     ГЛАВА 4; accepts 0..15 for GM concessions and high-rank
+       *     exotics). Birr price is carried in the item's `cost` field.
+       */
+      xpCost: number;
       /** @description Description of the cybernetic's effect */
       effect: string;
     };
@@ -2058,7 +2077,7 @@ export interface components {
        */
       type: 'CYBERNETIC';
       name?: string;
-      bodyPoints?: number;
+      xpCost?: number;
       effect?: string;
     };
     /**

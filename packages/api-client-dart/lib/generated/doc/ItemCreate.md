@@ -20,7 +20,7 @@ Name | Type | Description | Notes
 **armorRating** | **int** | Armor rating — reduces incoming damage | 
 **quantity** | **int** | Number of units | 
 **notes** | **String** | Optional free-text notes | [optional] 
-**bodyPoints** | **int** | System strain points consumed (0–6) | 
+**xpCost** | **int** | XP spent to acquire this implant (canonical cost 5 XP per ГЛАВА 4; accepts 0..15 for GM concessions and high-rank exotics). Birr price is carried in the item's `cost` field.  | 
 **effect** | **String** | Description of the module's effect and energy use | 
 **slot** | [**ItemSlotType**](ItemSlotType.md) |  | 
 

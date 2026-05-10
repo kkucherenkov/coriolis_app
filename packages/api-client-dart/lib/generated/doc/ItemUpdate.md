@@ -20,7 +20,7 @@ Name | Type | Description | Notes
 **armorRating** | **int** |  | [optional] 
 **quantity** | **int** |  | [optional] 
 **notes** | **String** |  | [optional] 
-**bodyPoints** | **int** |  | [optional] 
+**xpCost** | **int** |  | [optional] 
 **effect** | **String** |  | [optional] 
 **slot** | [**ItemSlotType**](ItemSlotType.md) |  | [optional] 
 

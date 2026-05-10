@@ -14,7 +14,7 @@ part 'item_cybernetic_create.g.dart';
 /// Properties:
 /// * [type] 
 /// * [name] 
-/// * [bodyPoints] - System strain points consumed (0–6)
+/// * [xpCost] - XP spent to acquire this implant (canonical cost 5 XP per ГЛАВА 4; accepts 0..15 for GM concessions and high-rank exotics). Birr price is carried in the item's `cost` field. 
 /// * [effect] - Description of the cybernetic's effect
 @BuiltValue()
 abstract class ItemCyberneticCreate implements Built<ItemCyberneticCreate, ItemCyberneticCreateBuilder> {
@@ -25,9 +25,9 @@ abstract class ItemCyberneticCreate implements Built<ItemCyberneticCreate, ItemC
   @BuiltValueField(wireName: r'name')
   String get name;
 
-  /// System strain points consumed (0–6)
-  @BuiltValueField(wireName: r'bodyPoints')
-  int get bodyPoints;
+  /// XP spent to acquire this implant (canonical cost 5 XP per ГЛАВА 4; accepts 0..15 for GM concessions and high-rank exotics). Birr price is carried in the item's `cost` field. 
+  @BuiltValueField(wireName: r'xpCost')
+  int get xpCost;
 
   /// Description of the cybernetic's effect
   @BuiltValueField(wireName: r'effect')
@@ -66,9 +66,9 @@ class _$ItemCyberneticCreateSerializer implements PrimitiveSerializer<ItemCybern
       object.name,
       specifiedType: const FullType(String),
     );
-    yield r'bodyPoints';
+    yield r'xpCost';
     yield serializers.serialize(
-      object.bodyPoints,
+      object.xpCost,
       specifiedType: const FullType(int),
     );
     yield r'effect';
@@ -113,12 +113,12 @@ class _$ItemCyberneticCreateSerializer implements PrimitiveSerializer<ItemCybern
           ) as String;
           result.name = valueDes;
           break;
-        case r'bodyPoints':
+        case r'xpCost':
           final valueDes = serializers.deserialize(
             value,
             specifiedType: const FullType(int),
           ) as int;
-          result.bodyPoints = valueDes;
+          result.xpCost = valueDes;
           break;
         case r'effect':
           final valueDes = serializers.deserialize(

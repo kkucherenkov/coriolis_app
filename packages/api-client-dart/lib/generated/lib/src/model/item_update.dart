@@ -33,7 +33,7 @@ part 'item_update.g.dart';
 /// * [armorRating] 
 /// * [quantity] 
 /// * [notes] 
-/// * [bodyPoints] 
+/// * [xpCost] 
 /// * [effect] 
 /// * [slot] 
 @BuiltValue()

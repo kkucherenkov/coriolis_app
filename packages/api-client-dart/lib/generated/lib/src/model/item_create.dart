@@ -33,7 +33,7 @@ part 'item_create.g.dart';
 /// * [armorRating] - Armor rating — reduces incoming damage
 /// * [quantity] - Number of units
 /// * [notes] - Optional free-text notes
-/// * [bodyPoints] - System strain points consumed (0–6)
+/// * [xpCost] - XP spent to acquire this implant (canonical cost 5 XP per ГЛАВА 4; accepts 0..15 for GM concessions and high-rank exotics). Birr price is carried in the item's `cost` field. 
 /// * [effect] - Description of the module's effect and energy use
 /// * [slot] 
 @BuiltValue()

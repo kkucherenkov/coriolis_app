@@ -10,7 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **type** | **String** |  | [optional] 
 **name** | **String** |  | [optional] 
-**bodyPoints** | **int** |  | [optional] 
+**xpCost** | **int** |  | [optional] 
 **effect** | **String** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

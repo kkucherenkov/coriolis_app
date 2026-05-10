@@ -14,7 +14,7 @@ part 'item_cybernetic_update.g.dart';
 /// Properties:
 /// * [type] 
 /// * [name] 
-/// * [bodyPoints] 
+/// * [xpCost] 
 /// * [effect] 
 @BuiltValue()
 abstract class ItemCyberneticUpdate implements Built<ItemCyberneticUpdate, ItemCyberneticUpdateBuilder> {
@@ -25,8 +25,8 @@ abstract class ItemCyberneticUpdate implements Built<ItemCyberneticUpdate, ItemC
   @BuiltValueField(wireName: r'name')
   String? get name;
 
-  @BuiltValueField(wireName: r'bodyPoints')
-  int? get bodyPoints;
+  @BuiltValueField(wireName: r'xpCost')
+  int? get xpCost;
 
   @BuiltValueField(wireName: r'effect')
   String? get effect;
@@ -68,10 +68,10 @@ class _$ItemCyberneticUpdateSerializer implements PrimitiveSerializer<ItemCybern
         specifiedType: const FullType(String),
       );
     }
-    if (object.bodyPoints != null) {
-      yield r'bodyPoints';
+    if (object.xpCost != null) {
+      yield r'xpCost';
       yield serializers.serialize(
-        object.bodyPoints,
+        object.xpCost,
         specifiedType: const FullType(int),
       );
     }
@@ -119,12 +119,12 @@ class _$ItemCyberneticUpdateSerializer implements PrimitiveSerializer<ItemCybern
           ) as String;
           result.name = valueDes;
           break;
-        case r'bodyPoints':
+        case r'xpCost':
           final valueDes = serializers.deserialize(
             value,
             specifiedType: const FullType(int),
           ) as int;
-          result.bodyPoints = valueDes;
+          result.xpCost = valueDes;
           break;
         case r'effect':
           final valueDes = serializers.deserialize(
