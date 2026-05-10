@@ -413,24 +413,64 @@
         `item.data.slot` for `type = 'SHIP_MODULE'`
         rows. Applied with `prisma migrate deploy`;
         backend container restarted.
-  - [ ] Block I — **PRD-override comments on soft
-        mismatches.** Inline annotations:
-        - `Combatant.hpCurrent`: «PRD override —
-          ГЛАВА 5 line 189: HP не опускается ниже нуля.
-          Greenfield product allows negative for damage
-          overflow display».
-        - `Combatant.signature`: «PRD: NPC sensor signature.
+  - [x] Block I — **PRD-override comments on soft
+        mismatches.** Done as a spec / codegen / backend
+        triplet (SHAs surfaced in commit log; spec
+        carries Combatant.hpCurrent + Combatant.signature
+        rewrites, codegen carries the TS client regen,
+        backend carries rules-engine canPush docblock +
+        the new `.claude/docs/i18n.md` glossary section).
+        - `Combatant.hpCurrent` description rewritten to
+          name the PRD override explicitly: ГЛАВА 5
+          «Урон» («запас пунктов здоровья не может
+          опуститься ниже нуля») clamps HP at 0; the
+          greenfield product allows the field to go
+          negative for damage-overflow display, with
+          prescribed UI behaviour (red rendering +
+          healing math note).
+        - `Combatant.signature` description rewritten:
           ST3001 has no per-combatant numeric signature
-          stat — the canonical mechanic is скрытность
-          (skill, ГЛАВА 3) at roll time. Field reserved
-          for future GM tooling».
-        - `rules-engine.ts` Exhausted-blocks-push:
-          «PRD override — ST3001 (ГЛАВА 3) only restricts
-          push to skill checks and once per check;
-          Exhausted is a greenfield UX gate».
-        - i18n glossary entry: `push → молитва Ликам /
-          re-roll`, never «толкнуть» / «пуш».
-        - Round-wrap one-liner already covered in Block A.
+          stat; the canonical detection mechanic is
+          `скрытность` (ГЛАВА 3 «СКРЫТНОСТЬ») rolled at
+          detection-time. The field is reserved for
+          future GM tooling and clients MUST NOT
+          silently bypass a скрытность check by reading
+          it.
+        - `rules-engine.ts canPush` PRD §10 docblock now
+          spells out the override: ГЛАВА 3 §«Вознесение
+          молитв» restricts push to skill checks and
+          one-per-check, but does NOT gate on
+          Exhausted; Exhausted-blocks-push is a
+          greenfield UX gate. The «only-on-skill-checks»
+          half is tracked as a Block-J follow-up
+          (`RollKind` discriminator).
+        - `.claude/docs/i18n.md` gained a "Glossary —
+          non-negotiable canon translations" section.
+          Codifies the audit's `push → молитва Ликам /
+          re-roll` rule (never «толкнуть» / «пуш»)
+          alongside other game-mechanic mappings
+          (Mercy → Владычица Слёз, Faceless One →
+          Лик-без-лика, key skill → ключевой навык,
+          Exhausted → Истощён, prone → Лёжа, covered →
+          В укрытии, Mystic Darkness → Межзвёздная
+          Тьма, …). Becomes the translator's source of
+          truth since web `<i18n>` blocks are
+          colocated (no central JSON to maintain).
+        - Round-wrap one-liner already covered in
+          Block A — no change needed.
+        Soft mismatch noted: Dart codegen
+        (openapi-generator-cli dart-dio) failed on this
+        run with a non-deterministic generator-internal
+        error unrelated to the spec content (schema is
+        unchanged; prior blocks regenerated fine). TS
+        client picked up the new docstrings; Dart client
+        lags by exactly these two doc-comments. Wire
+        shape and runtime behaviour stay correct — only
+        Dart in-IDE help is stale on Combatant.hpCurrent
+        / signature. The next codegen run that touches
+        the dart-dio cache (typically the next spec
+        change) will catch up automatically.
+        No vitest delta (description-only).
   - [ ] Block J — **Spec-silence follow-ups split into
         deferred tasks.** Each becomes its own active.md
         push when needed:
