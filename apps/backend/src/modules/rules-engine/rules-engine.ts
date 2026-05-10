@@ -54,8 +54,9 @@ export const UPBRINGING_BUDGETS: Readonly<Record<Upbringing, UpbringingBudget>> 
  * Coriolis core book ch.2 — character archetypes (амплуа). Each concept
  * has:
  *   - one **key attribute**, capped at 5 instead of 4 at creation;
- *   - a set of **key skills** (union of the 3 roles' key skills),
- *     capped at 3 instead of 1 at creation;
+ *   - a set of **key skills** (union of the 3 roles' key skills — see
+ *     CONCEPT_ROLES for the per-role breakdown), capped at 3 instead of 1
+ *     at creation;
  *   - a **reputation modifier** added to the upbringing baseline.
  *
  * Skills mapped from the Russian rulebook to the project's 16-skill
@@ -80,6 +81,168 @@ export type Concept =
   | 'sailor'
   | 'soldier';
 
+// --------------- Role types ---------------
+
+/**
+ * One of 33 canonical roles (роли) across the 11 amplua.
+ * Three roles per amplua per ГЛАВА 2 «АМПЛУА И РОЛИ» ST3001.
+ */
+export type Role =
+  | 'companion'
+  | 'musician'
+  | 'poet'
+  | 'analyst'
+  | 'correspondent'
+  | 'network-djinn'
+  | 'criminal'
+  | 'mystic'
+  | 'revolutionary'
+  | 'agitator'
+  | 'diplomat'
+  | 'dealer'
+  | 'assassin'
+  | 'guard'
+  | 'spy'
+  | 'ace'
+  | 'driver'
+  | 'trucker'
+  | 'colonist'
+  | 'prospector'
+  | 'scout'
+  | 'ascetic'
+  | 'missionary'
+  | 'prophet'
+  | 'archaeologist'
+  | 'medicurg'
+  | 'technologist'
+  | 'ship-engineer'
+  | 'labourer'
+  | 'loader'
+  | 'legionnaire'
+  | 'mercenary'
+  | 'officer';
+
+export interface RoleData {
+  /** Russian display name (ГЛАВА 2). UI clients should localise via i18n. */
+  ru: string;
+  /** Exactly 4 key skills — narrows the amplua's union per ГЛАВА 2. */
+  keySkills: readonly [SkillKey, SkillKey, SkillKey, SkillKey];
+}
+
+/** Helper to create a RoleData entry with a strongly-typed 4-tuple. */
+function rd(ru: string, s1: SkillKey, s2: SkillKey, s3: SkillKey, s4: SkillKey): RoleData {
+  return { ru, keySkills: [s1, s2, s3, s4] as const };
+}
+
+/**
+ * Canonical role data per amplua per role, sourced verbatim from
+ * ГЛАВА 2 «АМПЛУА И РОЛИ» ST3001 Russian rulebook.
+ * Single source of truth — CONCEPT_KEYS.keySkills is derived from here.
+ */
+export const CONCEPT_ROLES: Readonly<Record<Concept, Readonly<Record<string, RoleData>>>> =
+  Object.freeze({
+    artist: Object.freeze({
+      companion: rd('Компаньон', 'manipulation', 'culture', 'dexterity', 'observation'),
+      musician: rd('Музыкант', 'manipulation', 'culture', 'infiltration', 'observation'),
+      poet: rd('Поэт', 'manipulation', 'culture', 'dexterity', 'infiltration'),
+    }),
+    networker: Object.freeze({
+      analyst: rd('Аналитик', 'dataDjinn', 'culture', 'manipulation', 'science'),
+      correspondent: rd('Корреспондент', 'culture', 'manipulation', 'infiltration', 'observation'),
+      'network-djinn': rd('Сетевой джинн', 'dataDjinn', 'manipulation', 'observation', 'science'),
+    }),
+    fugitive: Object.freeze({
+      criminal: rd('Преступник', 'force', 'meleeCombat', 'dexterity', 'infiltration'),
+      mystic: rd('Мистик', 'manipulation', 'mysticPowers', 'dexterity', 'infiltration'),
+      revolutionary: rd('Революционер', 'rangedCombat', 'dexterity', 'observation', 'survival'),
+    }),
+    negotiator: Object.freeze({
+      agitator: rd('Агитатор', 'dataDjinn', 'force', 'manipulation', 'culture'),
+      diplomat: rd('Дипломат', 'command', 'culture', 'manipulation', 'meleeCombat'),
+      dealer: rd('Делец', 'culture', 'manipulation', 'observation', 'pilot'),
+    }),
+    operative: Object.freeze({
+      assassin: rd('Ассасин', 'infiltration', 'dexterity', 'meleeCombat', 'rangedCombat'),
+      guard: rd('Стражник', 'force', 'meleeCombat', 'rangedCombat', 'observation'),
+      spy: rd('Шпион', 'dataDjinn', 'manipulation', 'infiltration', 'rangedCombat'),
+    }),
+    pilot: Object.freeze({
+      ace: rd('Ас', 'dataDjinn', 'pilot', 'rangedCombat', 'technology'),
+      driver: rd('Водитель', 'force', 'pilot', 'rangedCombat', 'survival'),
+      trucker: rd('Дальнобойщик', 'dataDjinn', 'force', 'pilot', 'technology'),
+    }),
+    pioneer: Object.freeze({
+      colonist: rd('Колонист', 'force', 'dexterity', 'rangedCombat', 'survival'),
+      prospector: rd('Старатель', 'pilot', 'technology', 'science', 'survival'),
+      scout: rd('Скаут', 'infiltration', 'rangedCombat', 'observation', 'survival'),
+    }),
+    preacher: Object.freeze({
+      ascetic: rd('Аскет', 'force', 'culture', 'dexterity', 'science'),
+      missionary: rd('Миссионер', 'culture', 'manipulation', 'dexterity', 'survival'),
+      prophet: rd('Пророк', 'force', 'culture', 'manipulation', 'observation'),
+    }),
+    scientist: Object.freeze({
+      archaeologist: rd('Археолог', 'culture', 'observation', 'science', 'survival'),
+      medicurg: rd('Медикург', 'medicurgy', 'manipulation', 'observation', 'science'),
+      technologist: rd('Технологик', 'force', 'technology', 'observation', 'science'),
+    }),
+    sailor: Object.freeze({
+      'ship-engineer': rd('Бортинженер', 'dataDjinn', 'force', 'observation', 'technology'),
+      labourer: rd('Разнорабочий', 'force', 'manipulation', 'dexterity', 'culture'),
+      loader: rd('Грузчик', 'force', 'meleeCombat', 'dexterity', 'technology'),
+    }),
+    soldier: Object.freeze({
+      legionnaire: rd('Легионер', 'force', 'meleeCombat', 'rangedCombat', 'survival'),
+      mercenary: rd('Наёмник', 'meleeCombat', 'dexterity', 'observation', 'rangedCombat'),
+      officer: rd('Офицер', 'command', 'culture', 'meleeCombat', 'rangedCombat'),
+    }),
+  });
+
+/**
+ * The three canonical role slugs per amplua, in the canonical order from
+ * ГЛАВА 2. The first entry is the default role used by backfill migrations.
+ */
+export const ROLE_BY_CONCEPT: Readonly<Record<Concept, readonly Role[]>> = Object.freeze(
+  Object.fromEntries(
+    (Object.keys(CONCEPT_ROLES) as Concept[]).map(
+      (c) => [c, Object.keys(CONCEPT_ROLES[c]) as Role[]] as const,
+    ),
+  ) as unknown as Record<Concept, readonly Role[]>,
+);
+
+/**
+ * Reverse lookup: given a role slug, returns its amplua.
+ * Useful for validating that a role belongs to the character's concept.
+ */
+export const CONCEPT_BY_ROLE: Readonly<Record<Role, Concept>> = Object.freeze(
+  Object.fromEntries(
+    (Object.keys(CONCEPT_ROLES) as Concept[]).flatMap((c) =>
+      Object.keys(CONCEPT_ROLES[c]).map((role) => [role, c]),
+    ),
+  ) as Record<Role, Concept>,
+);
+
+/** Returns the 4 key skills for the given role. */
+export function getRoleKeySkills(role: Role): readonly SkillKey[] {
+  const concept = CONCEPT_BY_ROLE[role];
+  // Both lookups are always defined for valid Role values (CONCEPT_ROLES is
+  // the single source of truth and CONCEPT_BY_ROLE is derived from it).
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- derived from CONCEPT_ROLES, always present
+  return CONCEPT_ROLES[concept][role]!.keySkills;
+}
+
+/**
+ * Returns the first canonical role for a concept — used by the migration
+ * backfill so existing characters get a deterministic, canon-respectful
+ * default. Order follows ГЛАВА 2 exactly (see CONCEPT_ROLES).
+ */
+export function defaultRoleForConcept(concept: Concept): Role {
+  // ROLE_BY_CONCEPT always has exactly 3 entries per concept (derived from
+  // CONCEPT_ROLES), so index [0] is always defined.
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- 3 roles per concept, index 0 always present
+  return ROLE_BY_CONCEPT[concept][0]!;
+}
+
 export type AttributeKey = 'strength' | 'agility' | 'wits' | 'empathy';
 
 export type SkillKey =
@@ -103,66 +266,77 @@ export type SkillKey =
 export interface ConceptKeys {
   /** Capped at 5 instead of 4 at creation. */
   keyAttribute: AttributeKey;
-  /** Each capped at 3 instead of 1 at creation. */
+  /**
+   * Union of all three roles' key skills for this amplua — each capped at 3
+   * instead of 1 at creation. Derived automatically from CONCEPT_ROLES so
+   * there is a single source of truth. For role-specific skill caps (tighter
+   * set of exactly 4), use getRoleKeySkills(role) instead.
+   */
   keySkills: readonly SkillKey[];
   /** Added to `UPBRINGING_BUDGETS[u].reputation`. */
   reputationModifier: number;
 }
 
+/** Derives the union of key skills across all three roles for a concept. */
+function deriveConceptKeySkills(concept: Concept): readonly SkillKey[] {
+  const roles = CONCEPT_ROLES[concept];
+  return [...new Set(Object.values(roles).flatMap((r) => [...r.keySkills]))];
+}
+
 export const CONCEPT_KEYS: Readonly<Record<Concept, ConceptKeys>> = Object.freeze({
   artist: {
     keyAttribute: 'empathy',
-    keySkills: ['manipulation', 'culture', 'dexterity', 'observation', 'infiltration'],
+    keySkills: deriveConceptKeySkills('artist'),
     reputationModifier: 1,
   },
   networker: {
     keyAttribute: 'wits',
-    keySkills: ['dataDjinn', 'culture', 'manipulation', 'observation', 'infiltration'],
+    keySkills: deriveConceptKeySkills('networker'),
     reputationModifier: 0,
   },
   fugitive: {
     keyAttribute: 'empathy',
-    keySkills: ['meleeCombat', 'infiltration', 'culture', 'mysticPowers', 'manipulation'],
+    keySkills: deriveConceptKeySkills('fugitive'),
     reputationModifier: -2,
   },
   negotiator: {
     keyAttribute: 'empathy',
-    keySkills: ['manipulation', 'culture', 'observation', 'command', 'infiltration'],
+    keySkills: deriveConceptKeySkills('negotiator'),
     reputationModifier: 1,
   },
   operative: {
     keyAttribute: 'agility',
-    keySkills: ['meleeCombat', 'rangedCombat', 'infiltration', 'observation', 'manipulation'],
+    keySkills: deriveConceptKeySkills('operative'),
     reputationModifier: 0,
   },
   pilot: {
     keyAttribute: 'agility',
-    keySkills: ['pilot', 'rangedCombat', 'technology', 'observation', 'dataDjinn'],
+    keySkills: deriveConceptKeySkills('pilot'),
     reputationModifier: 0,
   },
   pioneer: {
     keyAttribute: 'wits',
-    keySkills: ['survival', 'observation', 'technology', 'infiltration', 'science'],
+    keySkills: deriveConceptKeySkills('pioneer'),
     reputationModifier: 0,
   },
   preacher: {
     keyAttribute: 'empathy',
-    keySkills: ['culture', 'mysticPowers', 'manipulation', 'command', 'observation'],
+    keySkills: deriveConceptKeySkills('preacher'),
     reputationModifier: 1,
   },
   scientist: {
     keyAttribute: 'wits',
-    keySkills: ['science', 'culture', 'technology', 'medicurgy', 'dataDjinn'],
+    keySkills: deriveConceptKeySkills('scientist'),
     reputationModifier: 1,
   },
   sailor: {
     keyAttribute: 'strength',
-    keySkills: ['meleeCombat', 'force', 'technology', 'observation', 'pilot'],
+    keySkills: deriveConceptKeySkills('sailor'),
     reputationModifier: -1,
   },
   soldier: {
     keyAttribute: 'agility',
-    keySkills: ['rangedCombat', 'meleeCombat', 'force', 'command', 'observation'],
+    keySkills: deriveConceptKeySkills('soldier'),
     reputationModifier: -1,
   },
 });

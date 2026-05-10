@@ -2,8 +2,15 @@ import { Inject } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { getIconGiftByIconId } from '@app/specs';
 
-import { CONCEPT_KEYS, UPBRINGING_BUDGETS, sumAttributes, sumSkills } from '../../rules-engine';
-import type { AttributeKey, SkillKey } from '../../rules-engine';
+import {
+  CONCEPT_BY_ROLE,
+  CONCEPT_KEYS,
+  UPBRINGING_BUDGETS,
+  getRoleKeySkills,
+  sumAttributes,
+  sumSkills,
+} from '../../rules-engine';
+import type { AttributeKey, Role, SkillKey } from '../../rules-engine';
 import {
   AttributeBudgetExceededError,
   AttributeOutOfCreationRangeError,
@@ -13,6 +20,7 @@ import {
   IconUnknownError,
   MutantLineageForbiddenError,
   MutantLineageRequiredError,
+  RoleConceptMismatchError,
   SkillBudgetExceededError,
   SkillOutOfRangeError,
 } from '../domain/character.errors';
@@ -83,8 +91,18 @@ function validateAttributesAtCreation(attrs: Attributes, concept: Concept | null
   }
 }
 
-function validateSkillsAtCreation(skills: Skills, concept: Concept | null): void {
-  const keySet: ReadonlySet<SkillKey> = new Set(concept ? CONCEPT_KEYS[concept].keySkills : []);
+function validateSkillsAtCreation(
+  skills: Skills,
+  concept: Concept | null,
+  role: Role | null,
+): void {
+  // When a role is provided, use the exact 4 key skills for that role.
+  // When only a concept is provided (no role yet), use the union of all
+  // three roles' key skills from CONCEPT_KEYS (preserves legacy behaviour).
+  const keySet: ReadonlySet<SkillKey> = role
+    ? new Set(getRoleKeySkills(role))
+    : new Set(concept ? CONCEPT_KEYS[concept].keySkills : []);
+
   for (const [key, val] of Object.entries(skills) as [SkillKey, number][]) {
     if (val < 0 || val > 5) {
       throw new SkillOutOfRangeError(key, val);
@@ -125,6 +143,18 @@ export class CreateCharacterHandler implements ICommandHandler<
     const budget = UPBRINGING_BUDGETS[upbringing];
     const concept = dto.concept ?? null;
     const conceptKeys = concept ? CONCEPT_KEYS[concept] : null;
+
+    // Role validation: if a role is provided, ensure it belongs to the concept.
+    // dto.role is an arbitrary string from the wire; cast defensively and guard
+    // against unknown values that aren't in CONCEPT_BY_ROLE at runtime.
+    const role: Role | null = (dto.role ?? null) as Role | null;
+    if (role !== null) {
+      const roleConcept = (CONCEPT_BY_ROLE as Record<string, string | undefined>)[role];
+      if (!roleConcept || roleConcept !== concept) {
+        throw new RoleConceptMismatchError(role, concept ?? '(none)');
+      }
+    }
+
     const crewConcept = dto.crewConcept ?? null;
     if (crewConcept && !VALID_CREW_CONCEPTS.has(crewConcept)) {
       // ValidationPipe should reject this; defence-in-depth.
@@ -149,7 +179,7 @@ export class CreateCharacterHandler implements ICommandHandler<
     const conditions: ConditionFlags = { ...DEFAULT_CONDITIONS, ...dto.conditions };
 
     validateAttributesAtCreation(attributes, concept);
-    validateSkillsAtCreation(skills, concept);
+    validateSkillsAtCreation(skills, concept, role);
 
     const attributeTotal = sumAttributes(attributes);
     if (attributeTotal > budget.attributes) {
@@ -187,6 +217,8 @@ export class CreateCharacterHandler implements ICommandHandler<
       ownerId,
       name: dto.name.trim(),
       concept,
+      role,
+      roleUnmigrated: false,
       iconId: dto.iconId ?? null,
       upbringing,
       origin: dto.origin ?? null,

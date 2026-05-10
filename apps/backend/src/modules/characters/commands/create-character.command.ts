@@ -114,6 +114,15 @@ export class CreateCharacterDto {
   @IsIn(VALID_CONCEPTS)
   concept?: Concept | null;
 
+  /**
+   * Canonical role within the chosen amplua (ГЛАВА 2 «АМПЛУА И РОЛИ»).
+   * Optional at creation — the wizard sets it before flipping to active.
+   * Validated against the concept at the handler layer.
+   */
+  @IsOptional()
+  @IsString()
+  role?: string | null;
+
   @IsOptional()
   @IsIn(VALID_ICONS)
   iconId?: IconId | null;

@@ -61,6 +61,8 @@ const CHARACTER_FULL_SELECT = {
   ownerId: true,
   name: true,
   concept: true,
+  role: true,
+  roleUnmigrated: true,
   iconId: true,
   upbringing: true,
   origin: true,
@@ -118,6 +120,8 @@ interface PrismaCharacterFull {
   ownerId: string;
   name: string;
   concept: string | null;
+  role: string | null;
+  roleUnmigrated: boolean;
   iconId: string | null;
   upbringing: string;
   origin: string | null;
@@ -215,6 +219,8 @@ function mapCharacter(row: PrismaCharacterFull): CharacterReadModel {
     ownerId: row.ownerId,
     name: row.name,
     concept: row.concept as Concept | null,
+    role: row.role,
+    roleUnmigrated: row.roleUnmigrated,
     iconId: row.iconId as IconId | null,
     upbringing: row.upbringing as Upbringing,
     origin: row.origin,

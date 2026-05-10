@@ -58,6 +58,8 @@ const CHARACTER_FULL_SELECT = {
   ownerId: true,
   name: true,
   concept: true,
+  role: true,
+  roleUnmigrated: true,
   iconId: true,
   upbringing: true,
   origin: true,
@@ -116,6 +118,8 @@ interface PrismaCharacterFull {
   ownerId: string;
   name: string;
   concept: string | null;
+  role: string | null;
+  roleUnmigrated: boolean;
   iconId: string | null;
   upbringing: string;
   origin: string | null;
@@ -220,6 +224,8 @@ function toReadModel(row: PrismaCharacterFull): CharacterReadModel {
     ownerId: row.ownerId,
     name: row.name,
     concept: row.concept as Concept | null,
+    role: row.role,
+    roleUnmigrated: row.roleUnmigrated,
     iconId: row.iconId as unknown as IconId | null,
     upbringing: row.upbringing as Upbringing,
     origin: row.origin,
@@ -332,6 +338,8 @@ export class CharacterRepo implements ICharacterRepo {
     ownerId: string;
     name: string;
     concept?: Concept | null;
+    role?: string | null;
+    roleUnmigrated?: boolean;
     iconId?: IconId | null;
     upbringing: Upbringing;
     origin?: string | null;
@@ -358,6 +366,8 @@ export class CharacterRepo implements ICharacterRepo {
         ownerId: data.ownerId,
         name: data.name,
         concept: data.concept ?? null,
+        role: data.role ?? null,
+        roleUnmigrated: data.roleUnmigrated ?? false,
         iconId: data.iconId ? this.toIconIdEnum(data.iconId) : null,
         upbringing: data.upbringing,
         origin: data.origin ?? null,
@@ -402,6 +412,8 @@ export class CharacterRepo implements ICharacterRepo {
     data: Partial<{
       name: string;
       concept: Concept | null;
+      role: string | null;
+      roleUnmigrated: boolean;
       iconId: IconId | null;
       upbringing: Upbringing;
       origin: string | null;

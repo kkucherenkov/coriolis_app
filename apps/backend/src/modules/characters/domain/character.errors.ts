@@ -273,6 +273,22 @@ export class ReadOnlyFieldError extends DomainError {
 }
 
 /**
+ * Thrown when a role is assigned to a character whose concept does not
+ * include that role. Per ГЛАВА 2 «АМПЛУА И РОЛИ» ST3001, each amplua has
+ * exactly three canonical roles — any other combination is invalid.
+ */
+export class RoleConceptMismatchError extends DomainError {
+  constructor(role: string, concept: string) {
+    super({
+      code: 'ROLE_CONCEPT_MISMATCH',
+      status: 400,
+      title: 'Validation Error',
+      detail: `Role '${role}' does not belong to concept '${concept}'.`,
+    });
+  }
+}
+
+/**
  * Thrown when the client attempts an illegal status transition.
  * Only draft → active (forge) is permitted. The reverse (active → draft)
  * is a product rule violation — ADR 0002.

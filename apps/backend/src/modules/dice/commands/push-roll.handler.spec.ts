@@ -19,6 +19,8 @@ const MOCK_CHARACTER: CharacterReadModel = {
   ownerId: 'user_01',
   name: 'Tariq',
   concept: null,
+  role: null,
+  roleUnmigrated: false,
   iconId: null,
   upbringing: 'plebeian',
   origin: null,

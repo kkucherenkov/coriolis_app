@@ -161,6 +161,19 @@ export interface CharacterReadModel {
   ownerId: string;
   name: string;
   concept: Concept | null;
+  /**
+   * Canonical role within the chosen amplua (ГЛАВА 2 «АМПЛУА И РОЛИ»).
+   * Null for drafts that pre-date role-tracking and for new drafts where the
+   * user hasn't picked a role yet.
+   */
+  role: string | null;
+  /**
+   * True when `role` was set by the canon-alignment backfill migration rather
+   * than by an explicit user pick. The wizard re-prompts for a role on the
+   * next edit when this is true; once the user confirms, the handler clears
+   * the flag.
+   */
+  roleUnmigrated: boolean;
   iconId: IconId | null;
   upbringing: Upbringing;
   origin: string | null;
@@ -249,6 +262,10 @@ export interface ICharacterRepo {
     ownerId: string;
     name: string;
     concept?: Concept | null;
+    /** Canonical role within the chosen amplua. Null until the wizard picks one. */
+    role?: string | null;
+    /** True only when set by the backfill migration; false for explicit user picks. */
+    roleUnmigrated?: boolean;
     iconId?: IconId | null;
     upbringing: Upbringing;
     origin?: string | null;
@@ -275,6 +292,10 @@ export interface ICharacterRepo {
     data: Partial<{
       name: string;
       concept: Concept | null;
+      /** Canonical role within the chosen amplua. */
+      role: string | null;
+      /** Cleared (set to false) when the user explicitly picks a role. */
+      roleUnmigrated: boolean;
       iconId: IconId | null;
       upbringing: Upbringing;
       origin: string | null;

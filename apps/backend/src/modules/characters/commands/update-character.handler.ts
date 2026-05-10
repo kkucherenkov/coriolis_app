@@ -1,7 +1,8 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 
-import { CONCEPT_KEYS, UPBRINGING_BUDGETS } from '../../rules-engine';
+import { CONCEPT_BY_ROLE, CONCEPT_KEYS, UPBRINGING_BUDGETS } from '../../rules-engine';
+import type { Role } from '../../rules-engine';
 import {
   AttributeOutOfRangeError,
   CharacterNameEmptyError,
@@ -16,6 +17,7 @@ import {
   MutantLineageForbiddenError,
   MutantLineageRequiredError,
   ReadOnlyFieldError,
+  RoleConceptMismatchError,
   SkillOutOfRangeError,
   UpbringingImmutableError,
 } from '../domain/character.errors';
@@ -138,6 +140,19 @@ export class UpdateCharacterHandler implements ICommandHandler<
       throw new CrewConceptImmutableError();
     }
 
+    // Role validation: if a role is provided, ensure it belongs to the current
+    // (or incoming, if concept is also changing) concept.
+    // dto.role is an arbitrary string from the wire; cast defensively and guard
+    // against unknown values that aren't in CONCEPT_BY_ROLE at runtime.
+    if (dto.role !== undefined && dto.role !== null) {
+      const role = dto.role as Role;
+      const effectiveConcept = conceptChanging ? (dto.concept ?? null) : existing.concept;
+      const roleConcept = (CONCEPT_BY_ROLE as Record<string, string | undefined>)[role];
+      if (!roleConcept || roleConcept !== effectiveConcept) {
+        throw new RoleConceptMismatchError(role, effectiveConcept ?? '(none)');
+      }
+    }
+
     // Mutant flag + lineage are mutable only while draft (mirrors crewConcept).
     // The two fields must remain consistent: mutant=true requires a lineage,
     // mutant=false forbids one. We compute the post-update pair and validate.
@@ -174,9 +189,19 @@ export class UpdateCharacterHandler implements ICommandHandler<
       acquiredAt: inj.acquiredAt ?? new Date().toISOString(),
     }));
 
+    // When the user explicitly sets a role, clear the roleUnmigrated flag.
+    const roleUpdate: Record<string, unknown> = {};
+    if (dto.role !== undefined) {
+      roleUpdate['role'] = dto.role;
+      if (dto.role !== null) {
+        roleUpdate['roleUnmigrated'] = false;
+      }
+    }
+
     const updated = await this.repo.update(characterId, {
       ...(dto.name === undefined ? {} : { name: dto.name.trim() }),
       ...(dto.concept === undefined ? {} : { concept: dto.concept }),
+      ...roleUpdate,
       ...(dto.iconId === undefined ? {} : { iconId: dto.iconId }),
       ...(dto.upbringing === undefined ? {} : { upbringing: dto.upbringing }),
       ...(dto.origin === undefined ? {} : { origin: dto.origin }),

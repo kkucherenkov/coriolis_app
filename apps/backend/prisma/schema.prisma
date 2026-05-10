@@ -196,6 +196,16 @@ model Character {
   /// One of 11 archetypes (амплуа). Nullable so the wizard can save a
   /// draft before the user picks; required (validated) on `active`.
   concept             Concept?
+  /// Canonical role within the chosen amplua (ГЛАВА 2 «АМПЛУА И РОЛИ»).
+  /// 33-value enum stored as a string for now (we can promote to a Postgres
+  /// enum later — keeping it loose during the migration window). Nullable
+  /// for drafts and for legacy rows created before role-tracking landed.
+  role                String?
+  /// Marks rows whose `role` was filled in by the canon-alignment backfill
+  /// migration rather than by an explicit user pick. The wizard re-prompts
+  /// for a role on the next edit when this is true; once the user confirms,
+  /// the handler clears the flag.
+  roleUnmigrated      Boolean         @default(false)
   iconId              IconId?
   /// Social stratum at birth — drives the creation-time attribute / skill
   /// budgets, starting reputation, and starting wealth (ch.2 table 2.2).

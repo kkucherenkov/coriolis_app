@@ -26,6 +26,8 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     ownerId: 'user-1',
     name: 'Kalim',
     concept: null,
+    role: null,
+    roleUnmigrated: false,
     iconId: null,
     upbringing: 'plebeian',
     origin: null,

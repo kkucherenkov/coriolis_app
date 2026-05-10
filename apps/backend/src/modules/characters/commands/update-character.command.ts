@@ -91,6 +91,14 @@ export class UpdateCharacterDto {
   @IsIn(VALID_CONCEPTS)
   concept?: Concept | null;
 
+  /**
+   * Canonical role within the chosen amplua (ГЛАВА 2 «АМПЛУА И РОЛИ»).
+   * Validated against the current concept at the handler layer.
+   */
+  @IsOptional()
+  @IsString()
+  role?: string | null;
+
   @IsOptional()
   @IsIn(VALID_ICONS)
   iconId?: IconId | null;

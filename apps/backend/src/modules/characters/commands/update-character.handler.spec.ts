@@ -11,6 +11,7 @@ import {
   MutantLineageForbiddenError,
   MutantLineageRequiredError,
   ReadOnlyFieldError,
+  RoleConceptMismatchError,
   SkillOutOfRangeError,
 } from '../domain/character.errors';
 import { DEFAULT_CONDITIONS, DEFAULT_SKILLS } from '../domain/character.ports';
@@ -40,6 +41,8 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     ownerId: 'user-1',
     name: 'Kalim al-Rashid',
     concept: null,
+    role: null,
+    roleUnmigrated: false,
     iconId: null,
     upbringing: 'plebeian',
     origin: null,
@@ -381,6 +384,77 @@ describe('UpdateCharacterHandler', () => {
 
     const updateArg = vi.mocked(repo.update).mock.calls[0]?.[1] ?? {};
     expect(Object.hasOwn(updateArg, 'crewConcept')).toBe(false);
+  });
+
+  // -------- Role validation (Block E) --------
+
+  describe('role validation on update', () => {
+    it('setting a role that belongs to the concept succeeds and clears roleUnmigrated', async () => {
+      vi.mocked(repo.findActiveById).mockResolvedValue(
+        makeCharacter({ status: 'draft', concept: 'pilot', role: 'ace', roleUnmigrated: true }),
+      );
+      vi.mocked(repo.update).mockResolvedValue(
+        makeCharacter({ status: 'draft', concept: 'pilot', role: 'driver', roleUnmigrated: false }),
+      );
+
+      const dto = Object.assign(new UpdateCharacterDto(), { role: 'driver' });
+      await handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto));
+
+      expect(repo.update).toHaveBeenCalledWith(
+        'char-1',
+        expect.objectContaining({ role: 'driver', roleUnmigrated: false }),
+      );
+    });
+
+    it('clearing roleUnmigrated when user explicitly picks a role on a migrated row', async () => {
+      vi.mocked(repo.findActiveById).mockResolvedValue(
+        makeCharacter({
+          status: 'draft',
+          concept: 'soldier',
+          role: 'legionnaire',
+          roleUnmigrated: true,
+        }),
+      );
+      vi.mocked(repo.update).mockResolvedValue(
+        makeCharacter({
+          status: 'draft',
+          concept: 'soldier',
+          role: 'officer',
+          roleUnmigrated: false,
+        }),
+      );
+
+      const dto = Object.assign(new UpdateCharacterDto(), { role: 'officer' });
+      await handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto));
+
+      expect(repo.update).toHaveBeenCalledWith(
+        'char-1',
+        expect.objectContaining({ role: 'officer', roleUnmigrated: false }),
+      );
+    });
+
+    it('throws RoleConceptMismatchError when role does not belong to existing concept', async () => {
+      vi.mocked(repo.findActiveById).mockResolvedValue(
+        makeCharacter({ status: 'draft', concept: 'pilot' }),
+      );
+
+      const dto = Object.assign(new UpdateCharacterDto(), { role: 'legionnaire' });
+      await expect(
+        handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+      ).rejects.toBeInstanceOf(RoleConceptMismatchError);
+      expect(repo.update).not.toHaveBeenCalled();
+    });
+
+    it('RoleConceptMismatchError has status 400 and code ROLE_CONCEPT_MISMATCH', async () => {
+      vi.mocked(repo.findActiveById).mockResolvedValue(
+        makeCharacter({ status: 'draft', concept: 'artist' }),
+      );
+
+      const dto = Object.assign(new UpdateCharacterDto(), { role: 'ace' });
+      await expect(
+        handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+      ).rejects.toMatchObject({ status: 400, code: 'ROLE_CONCEPT_MISMATCH' });
+    });
   });
 
   describe('mutant flag (ST3001 ch.4)', () => {

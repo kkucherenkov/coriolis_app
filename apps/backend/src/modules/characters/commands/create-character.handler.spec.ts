@@ -13,6 +13,7 @@ import {
   IconUnknownError,
   MutantLineageForbiddenError,
   MutantLineageRequiredError,
+  RoleConceptMismatchError,
   SkillBudgetExceededError,
   SkillOutOfRangeError,
 } from '../domain/character.errors';
@@ -43,6 +44,8 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     ownerId: 'user-1',
     name: 'Kalim al-Rashid',
     concept: null,
+    role: null,
+    roleUnmigrated: false,
     iconId: null,
     upbringing: 'plebeian',
     origin: null,
@@ -593,6 +596,114 @@ describe('CreateCharacterHandler', () => {
     // a tight enough invariant to catch regressions if the seed reverts to
     // the old empty-string placeholder while still allowing prose tweaks.
     expect(createArgs?.talents?.[0]?.description).toMatch(/sixes/i);
+  });
+
+  // -------- Role-scoped key skills (Block E) --------
+
+  describe('role validation at creation', () => {
+    it('valid: concept=pilot, role=driver → succeeds', async () => {
+      vi.mocked(repo.create).mockResolvedValue(makeCharacter({ concept: 'pilot', role: 'driver' }));
+      await expect(
+        handler.execute(
+          new CreateCharacterCommand(
+            'user-1',
+            makeDto({ upbringing: 'stationary', concept: 'pilot', role: 'driver' }),
+          ),
+        ),
+      ).resolves.toBeDefined();
+      expect(repo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ concept: 'pilot', role: 'driver', roleUnmigrated: false }),
+      );
+    });
+
+    it('valid: driver key skills (force, pilot, rangedCombat, survival) each at rank 3 are allowed', async () => {
+      vi.mocked(repo.create).mockResolvedValue(
+        makeCharacter({ concept: 'pilot', role: 'driver', upbringing: 'aristocrat' }),
+      );
+      // aristocrat budget = 12 skill points; 4 key skills × 3 = 12 total — exact fit
+      await expect(
+        handler.execute(
+          new CreateCharacterCommand(
+            'user-1',
+            makeDto({
+              upbringing: 'aristocrat',
+              concept: 'pilot',
+              role: 'driver',
+              skills: {
+                ...DEFAULT_SKILLS,
+                force: 3,
+                pilot: 3,
+                rangedCombat: 3,
+                survival: 3,
+              },
+            }),
+          ),
+        ),
+      ).resolves.toBeDefined();
+    });
+
+    it('invalid: driver role — dataDjinn (key for ace/trucker, not driver) cap is 1', async () => {
+      // dataDjinn is NOT a key skill for driver, so cap = 1
+      await expect(
+        handler.execute(
+          new CreateCharacterCommand(
+            'user-1',
+            makeDto({
+              upbringing: 'aristocrat',
+              concept: 'pilot',
+              role: 'driver',
+              skills: {
+                ...DEFAULT_SKILLS,
+                dataDjinn: 2, // exceeds non-key cap
+              },
+            }),
+          ),
+        ),
+      ).rejects.toBeInstanceOf(SkillOutOfRangeError);
+    });
+
+    it('mismatch: concept=pilot, role=companion → RoleConceptMismatchError (400)', async () => {
+      await expect(
+        handler.execute(
+          new CreateCharacterCommand(
+            'user-1',
+            makeDto({ upbringing: 'plebeian', concept: 'pilot', role: 'companion' }),
+          ),
+        ),
+      ).rejects.toBeInstanceOf(RoleConceptMismatchError);
+      expect(repo.create).not.toHaveBeenCalled();
+    });
+
+    it('mismatch error has status 400 and code ROLE_CONCEPT_MISMATCH', async () => {
+      await expect(
+        handler.execute(
+          new CreateCharacterCommand(
+            'user-1',
+            makeDto({ upbringing: 'plebeian', concept: 'soldier', role: 'analyst' }),
+          ),
+        ),
+      ).rejects.toMatchObject({ status: 400, code: 'ROLE_CONCEPT_MISMATCH' });
+    });
+
+    it('null role: creation without a role still works (uses union key-skill set from CONCEPT_KEYS)', async () => {
+      vi.mocked(repo.create).mockResolvedValue(makeCharacter({ concept: 'pilot' }));
+      await expect(
+        handler.execute(
+          new CreateCharacterCommand(
+            'user-1',
+            makeDto({
+              upbringing: 'stationary',
+              concept: 'pilot',
+              // no role — uses union: dataDjinn, force, pilot, rangedCombat, survival, technology
+              skills: { ...DEFAULT_SKILLS, pilot: 3, rangedCombat: 3 },
+            }),
+          ),
+        ),
+      ).resolves.toBeDefined();
+      expect(repo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ role: null, roleUnmigrated: false }),
+      );
+    });
   });
 
   describe('mutant flag (ST3001 ch.4)', () => {

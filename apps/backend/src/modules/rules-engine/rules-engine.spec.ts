@@ -11,7 +11,10 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  CONCEPT_BY_ROLE,
   CONCEPT_KEYS,
+  CONCEPT_ROLES,
+  ROLE_BY_CONCEPT,
   UPBRINGING_BUDGETS,
   applyConditions,
   canPush,
@@ -19,10 +22,12 @@ import {
   computeEncumbranceMax,
   computeHpMax,
   computeMpMax,
+  defaultRoleForConcept,
+  getRoleKeySkills,
   sumAttributes,
   sumSkills,
 } from './rules-engine';
-import type { ConditionFlags } from './rules-engine';
+import type { Concept, ConditionFlags, Role, SkillKey } from './rules-engine';
 
 import type { ItemReadModel } from '../characters/domain/character.ports';
 
@@ -392,5 +397,201 @@ describe('CONCEPT_KEYS', () => {
 
   it('is frozen — accidental mutation throws in strict mode', () => {
     expect(Object.isFrozen(CONCEPT_KEYS)).toBe(true);
+  });
+
+  it('CONCEPT_KEYS.keySkills is the union of the three roles keySkills (no duplicates, full coverage)', () => {
+    for (const concept of Object.keys(CONCEPT_ROLES) as Concept[]) {
+      const roleSkills = Object.values(CONCEPT_ROLES[concept]).flatMap((r) => [...r.keySkills]);
+      const expectedUnion = [...new Set(roleSkills)];
+      const conceptKeySkills = [...CONCEPT_KEYS[concept].keySkills] as SkillKey[];
+      // Every skill from any role must be in the union.
+      for (const skill of roleSkills) {
+        expect(conceptKeySkills).toContain(skill);
+      }
+      // No duplicates in the derived list.
+      expect(conceptKeySkills.length).toBe(new Set(conceptKeySkills).size);
+      // Derived count must match the expected union count.
+      expect(conceptKeySkills.length).toBe(expectedUnion.length);
+    }
+  });
+});
+
+// --------------- CONCEPT_ROLES — 33 canonical role → 4 key skills ---------------
+
+describe('CONCEPT_ROLES', () => {
+  // Table-driven: [concept, role, [...4 key skills in canonical order]]
+  const ROLE_TABLE: [Concept, Role, SkillKey[]][] = [
+    // artist
+    ['artist', 'companion', ['manipulation', 'culture', 'dexterity', 'observation']],
+    ['artist', 'musician', ['manipulation', 'culture', 'infiltration', 'observation']],
+    ['artist', 'poet', ['manipulation', 'culture', 'dexterity', 'infiltration']],
+    // networker
+    ['networker', 'analyst', ['dataDjinn', 'culture', 'manipulation', 'science']],
+    ['networker', 'correspondent', ['culture', 'manipulation', 'infiltration', 'observation']],
+    ['networker', 'network-djinn', ['dataDjinn', 'manipulation', 'observation', 'science']],
+    // fugitive
+    ['fugitive', 'criminal', ['force', 'meleeCombat', 'dexterity', 'infiltration']],
+    ['fugitive', 'mystic', ['manipulation', 'mysticPowers', 'dexterity', 'infiltration']],
+    ['fugitive', 'revolutionary', ['rangedCombat', 'dexterity', 'observation', 'survival']],
+    // negotiator
+    ['negotiator', 'agitator', ['dataDjinn', 'force', 'manipulation', 'culture']],
+    ['negotiator', 'diplomat', ['command', 'culture', 'manipulation', 'meleeCombat']],
+    ['negotiator', 'dealer', ['culture', 'manipulation', 'observation', 'pilot']],
+    // operative
+    ['operative', 'assassin', ['infiltration', 'dexterity', 'meleeCombat', 'rangedCombat']],
+    ['operative', 'guard', ['force', 'meleeCombat', 'rangedCombat', 'observation']],
+    ['operative', 'spy', ['dataDjinn', 'manipulation', 'infiltration', 'rangedCombat']],
+    // pilot
+    ['pilot', 'ace', ['dataDjinn', 'pilot', 'rangedCombat', 'technology']],
+    ['pilot', 'driver', ['force', 'pilot', 'rangedCombat', 'survival']],
+    ['pilot', 'trucker', ['dataDjinn', 'force', 'pilot', 'technology']],
+    // pioneer
+    ['pioneer', 'colonist', ['force', 'dexterity', 'rangedCombat', 'survival']],
+    ['pioneer', 'prospector', ['pilot', 'technology', 'science', 'survival']],
+    ['pioneer', 'scout', ['infiltration', 'rangedCombat', 'observation', 'survival']],
+    // preacher
+    ['preacher', 'ascetic', ['force', 'culture', 'dexterity', 'science']],
+    ['preacher', 'missionary', ['culture', 'manipulation', 'dexterity', 'survival']],
+    ['preacher', 'prophet', ['force', 'culture', 'manipulation', 'observation']],
+    // scientist
+    ['scientist', 'archaeologist', ['culture', 'observation', 'science', 'survival']],
+    ['scientist', 'medicurg', ['medicurgy', 'manipulation', 'observation', 'science']],
+    ['scientist', 'technologist', ['force', 'technology', 'observation', 'science']],
+    // sailor
+    ['sailor', 'ship-engineer', ['dataDjinn', 'force', 'observation', 'technology']],
+    ['sailor', 'labourer', ['force', 'manipulation', 'dexterity', 'culture']],
+    ['sailor', 'loader', ['force', 'meleeCombat', 'dexterity', 'technology']],
+    // soldier
+    ['soldier', 'legionnaire', ['force', 'meleeCombat', 'rangedCombat', 'survival']],
+    ['soldier', 'mercenary', ['meleeCombat', 'dexterity', 'observation', 'rangedCombat']],
+    ['soldier', 'officer', ['command', 'culture', 'meleeCombat', 'rangedCombat']],
+  ];
+
+  it('has exactly 11 amplua', () => {
+    expect(Object.keys(CONCEPT_ROLES).length).toBe(11);
+  });
+
+  it('has exactly 33 roles total (3 per amplua)', () => {
+    const total = Object.values(CONCEPT_ROLES).reduce((s, r) => s + Object.keys(r).length, 0);
+    expect(total).toBe(33);
+  });
+
+  it.each(ROLE_TABLE)(
+    '%s / %s has correct 4 canonical key skills',
+    (concept, role, expectedSkills) => {
+      const data = CONCEPT_ROLES[concept][role];
+      expect(data).toBeDefined();
+      expect([...data!.keySkills]).toEqual(expectedSkills);
+    },
+  );
+
+  it('every role entry has a non-empty Russian display name', () => {
+    for (const roles of Object.values(CONCEPT_ROLES)) {
+      for (const data of Object.values(roles)) {
+        expect(typeof data.ru).toBe('string');
+        expect(data.ru.length).toBeGreaterThan(0);
+      }
+    }
+  });
+});
+
+// --------------- ROLE_BY_CONCEPT ---------------
+
+describe('ROLE_BY_CONCEPT', () => {
+  it('each concept has exactly 3 roles', () => {
+    for (const [concept, roles] of Object.entries(ROLE_BY_CONCEPT) as [Concept, Role[]][]) {
+      expect(roles.length).toBe(3);
+      // Verify they match the keys from CONCEPT_ROLES
+      expect(roles).toEqual(Object.keys(CONCEPT_ROLES[concept]));
+    }
+  });
+});
+
+// --------------- CONCEPT_BY_ROLE — reverse lookup ---------------
+
+describe('CONCEPT_BY_ROLE', () => {
+  it('has exactly 33 entries', () => {
+    expect(Object.keys(CONCEPT_BY_ROLE).length).toBe(33);
+  });
+
+  it.each([
+    ['companion', 'artist'],
+    ['musician', 'artist'],
+    ['poet', 'artist'],
+    ['analyst', 'networker'],
+    ['correspondent', 'networker'],
+    ['network-djinn', 'networker'],
+    ['criminal', 'fugitive'],
+    ['mystic', 'fugitive'],
+    ['revolutionary', 'fugitive'],
+    ['agitator', 'negotiator'],
+    ['diplomat', 'negotiator'],
+    ['dealer', 'negotiator'],
+    ['assassin', 'operative'],
+    ['guard', 'operative'],
+    ['spy', 'operative'],
+    ['ace', 'pilot'],
+    ['driver', 'pilot'],
+    ['trucker', 'pilot'],
+    ['colonist', 'pioneer'],
+    ['prospector', 'pioneer'],
+    ['scout', 'pioneer'],
+    ['ascetic', 'preacher'],
+    ['missionary', 'preacher'],
+    ['prophet', 'preacher'],
+    ['archaeologist', 'scientist'],
+    ['medicurg', 'scientist'],
+    ['technologist', 'scientist'],
+    ['ship-engineer', 'sailor'],
+    ['labourer', 'sailor'],
+    ['loader', 'sailor'],
+    ['legionnaire', 'soldier'],
+    ['mercenary', 'soldier'],
+    ['officer', 'soldier'],
+  ] as [Role, Concept][])('CONCEPT_BY_ROLE[%s] === %s', (role, expectedConcept) => {
+    expect(CONCEPT_BY_ROLE[role]).toBe(expectedConcept);
+  });
+});
+
+// --------------- getRoleKeySkills ---------------
+
+describe('getRoleKeySkills', () => {
+  it('returns exactly 4 skills for every role', () => {
+    for (const role of Object.keys(CONCEPT_BY_ROLE) as Role[]) {
+      expect(getRoleKeySkills(role).length).toBe(4);
+    }
+  });
+
+  it('driver returns [force, pilot, rangedCombat, survival]', () => {
+    expect([...getRoleKeySkills('driver')]).toEqual(['force', 'pilot', 'rangedCombat', 'survival']);
+  });
+
+  it('ace returns [dataDjinn, pilot, rangedCombat, technology]', () => {
+    expect([...getRoleKeySkills('ace')]).toEqual([
+      'dataDjinn',
+      'pilot',
+      'rangedCombat',
+      'technology',
+    ]);
+  });
+});
+
+// --------------- defaultRoleForConcept ---------------
+
+describe('defaultRoleForConcept', () => {
+  it.each([
+    ['artist', 'companion'],
+    ['networker', 'analyst'],
+    ['fugitive', 'criminal'],
+    ['negotiator', 'agitator'],
+    ['operative', 'assassin'],
+    ['pilot', 'ace'],
+    ['pioneer', 'colonist'],
+    ['preacher', 'ascetic'],
+    ['scientist', 'archaeologist'],
+    ['sailor', 'ship-engineer'],
+    ['soldier', 'legionnaire'],
+  ] as [Concept, Role][])('defaultRoleForConcept(%s) === %s', (concept, expectedRole) => {
+    expect(defaultRoleForConcept(concept)).toBe(expectedRole);
   });
 });
