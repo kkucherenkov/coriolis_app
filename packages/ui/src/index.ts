@@ -30,3 +30,5 @@ export { AppSwitch } from './components/AppSwitch';
 export { AppTab } from './components/AppTab';
 export { AppTextarea } from './components/AppTextarea';
 export { AppTooltip } from './components/AppTooltip';
+export { UserMenu } from './components/UserMenu';
+export type { Locale, MenuLabels, UserMenuProps } from './components/UserMenu';
