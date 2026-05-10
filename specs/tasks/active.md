@@ -976,6 +976,10 @@
     reads as 0 by the handler's `?? 0` guard. Legacy weapons stay
     valid without a backfill.
 
+---
+
+## T-2026-05-10-013 — `ItemArmor.extraSlotCount` (Block J split)
+
 - Created: 2026-05-10
 - Owner: claude
 - Source: split from T-2026-05-10-010 Block J. ST3001 ТАБЛИЦА 6.14
@@ -996,7 +1000,26 @@
     equipped armor counts.
 - Spec diff: small.
 - Codegen impact: TS + Dart regen.
-- Status: queued
+- Status: **done — ready to archive.** Landed in 196e8ed (spec) +
+  459febd (codegen) + 998901a (backend).
+  - Spec: `ItemArmor.extraSlotCount: integer 0..6, default 0` on
+    `ItemArmor` / `ItemArmorCreate` / `ItemArmorUpdate`. NPC armor
+    inherits via the existing `$ref: ItemArmor` indirection — no
+    separate schema needed. Canonical printed values: most armors 0;
+    Тяжёлый экзоскафандр / Лёгкая броня / Тяжёлая броня 1; Экзодоспех
+    2; Тяжёлый экзодоспех 5. OpenAPI version 1.1.0 → 1.2.0.
+  - Backend: `computeEncumbranceMax` gained an optional second
+    parameter `armorExtraSlots = 0` (back-compat); new pure helper
+    `sumArmorExtraSlots` filters equipped ARMOR items and sums their
+    `extraSlotCount` (uses `for...of` to satisfy
+    `unicorn/no-array-reduce`). `character.repo.toReadModel` wires
+    the sum into the encumbrance.max derivation — no extra DB hit
+    (the inventory was already loaded for `computeEncumbranceCurrent`).
+    NPC encumbrance not surfaced today; no NPC-side wiring needed.
+  - Tests: 15 new vitest cases (6 `computeEncumbranceMax` boundary
+    cases + 9 `sumArmorExtraSlots` cases). Backend vitest 872 → 887.
+  - Migration: none — JSONB absence reads as 0 via the handler's
+    `?? 0` guard.
 - Blockers: —
 
 ---
