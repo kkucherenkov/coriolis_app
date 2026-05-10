@@ -13,5 +13,9 @@
   "flagIncapacitated": "Нетрудоспособен",
   "flagProne": "Лёжа",
   "flagCovered": "В укрытии",
-  "roundLabel": "Раунд"
+  "roundLabel": "Раунд",
+  "semanticsCurrentTurn": "{name}, текущий ход",
+  "semanticsStatusPrefix": "Статус: {flag}",
+  "semanticsHp": "Очки здоровья: {current} из {max}",
+  "semanticsMp": "Очки Мистической Тьмы: {value}"
 }

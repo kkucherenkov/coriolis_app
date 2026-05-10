@@ -13,5 +13,9 @@
   "flagIncapacitated": "[uk-todo] Incapacitated",
   "flagProne": "[uk-todo] Prone",
   "flagCovered": "[uk-todo] Covered",
-  "roundLabel": "[uk-todo] Round"
+  "roundLabel": "[uk-todo] Round",
+  "semanticsCurrentTurn": "[uk-todo] {name}, current turn",
+  "semanticsStatusPrefix": "[uk-todo] Status: {flag}",
+  "semanticsHp": "[uk-todo] Hit points: {current} of {max}",
+  "semanticsMp": "[uk-todo] Mystic Darkness Points: {value}"
 }

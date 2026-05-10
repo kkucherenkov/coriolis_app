@@ -13,5 +13,9 @@
   "flagIncapacitated": "Incapacitated",
   "flagProne": "Prone",
   "flagCovered": "Covered",
-  "roundLabel": "Round"
+  "roundLabel": "Round",
+  "semanticsCurrentTurn": "{name}, current turn",
+  "semanticsStatusPrefix": "Status: {flag}",
+  "semanticsHp": "Hit points: {current} of {max}",
+  "semanticsMp": "Mystic Darkness Points: {value}"
 }

@@ -13,5 +13,9 @@
   "flagIncapacitated": "[el-todo] Incapacitated",
   "flagProne": "[el-todo] Prone",
   "flagCovered": "[el-todo] Covered",
-  "roundLabel": "[el-todo] Round"
+  "roundLabel": "[el-todo] Round",
+  "semanticsCurrentTurn": "[el-todo] {name}, current turn",
+  "semanticsStatusPrefix": "[el-todo] Status: {flag}",
+  "semanticsHp": "[el-todo] Hit points: {current} of {max}",
+  "semanticsMp": "[el-todo] Mystic Darkness Points: {value}"
 }

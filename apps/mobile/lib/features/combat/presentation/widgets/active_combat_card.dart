@@ -284,19 +284,47 @@ class _CombatantRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.t.combat;
 
+    // When this combatant is the active one, wrap the row in a live-region
+    // Semantics node so TalkBack / VoiceOver announces the turn change.
+    // The display name widget: when active, wrap it in a live-region Semantics
+    // so TalkBack / VoiceOver announces the turn change. The Semantics node is
+    // scoped tightly to the name so that HP/MP remain independent nodes.
+    final nameWidget = isActive
+        ? Semantics(
+            label: t.semanticsCurrentTurn(name: combatant.displayName),
+            liveRegion: true,
+            // excludeSemantics keeps the inner Text from creating a duplicate.
+            excludeSemantics: true,
+            child: Text(
+              combatant.displayName,
+              style: AppTypography.bodySm.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: AppFontWeight.semibold,
+              ),
+            ),
+          )
+        : Text(
+            combatant.displayName,
+            style: AppTypography.bodySm.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: AppFontWeight.regular,
+            ),
+          );
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.s2),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Active-turn indicator.
+          // Active-turn indicator dot.
           SizedBox(
             width: AppSpacing.s3,
             child: isActive
                 ? Container(
                     width: 6,
                     height: 6,
-                    margin: const EdgeInsets.only(top: 5),
+                    // EdgeInsetsDirectional so the top offset is RTL-neutral.
+                    margin: const EdgeInsetsDirectional.only(top: 5),
                     decoration: const BoxDecoration(
                       color: AppColors.stateSuccess,
                       shape: BoxShape.circle,
@@ -309,23 +337,26 @@ class _CombatantRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  combatant.displayName,
-                  style: AppTypography.bodySm.copyWith(
-                    color: isActive
-                        ? AppColors.textPrimary
-                        : AppColors.textSecondary,
-                    fontWeight: isActive
-                        ? AppFontWeight.semibold
-                        : AppFontWeight.regular,
-                  ),
-                ),
+                nameWidget,
                 const SizedBox(height: 2),
                 Row(
                   children: [
-                    _StatLabel(label: t.hp, value: combatant.hpCurrent, max: combatant.hpMax),
+                    _StatLabel(
+                      label: t.hp,
+                      value: combatant.hpCurrent,
+                      max: combatant.hpMax,
+                      semanticsLabel: t.semanticsHp(
+                        current: combatant.hpCurrent,
+                        max: combatant.hpMax,
+                      ),
+                    ),
                     const SizedBox(width: AppSpacing.s3),
-                    _StatLabel(label: t.mp, value: combatant.signature, max: null),
+                    _StatLabel(
+                      label: t.mp,
+                      value: combatant.signature,
+                      max: null,
+                      semanticsLabel: t.semanticsMp(value: combatant.signature),
+                    ),
                   ],
                 ),
                 if (combatant.statusFlags.isNotEmpty) ...[
@@ -352,34 +383,40 @@ class _StatLabel extends StatelessWidget {
     required this.label,
     required this.value,
     required this.max,
+    required this.semanticsLabel,
   });
 
   final String label;
   final int value;
   final int? max;
+  final String semanticsLabel;
 
   @override
   Widget build(BuildContext context) {
     final display = max != null ? '$value/$max' : '$value';
-    return RichText(
-      text: TextSpan(
-        children: [
-          TextSpan(
-            text: '$label ',
-            style: AppTypography.bodySm.copyWith(
-              color: AppColors.brandBrassDeep,
-              fontSize: 11,
-              fontWeight: AppFontWeight.medium,
+    return Semantics(
+      label: semanticsLabel,
+      excludeSemantics: true,
+      child: RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: '$label ',
+              style: AppTypography.bodySm.copyWith(
+                color: AppColors.brandBrassDeep,
+                fontSize: 11,
+                fontWeight: AppFontWeight.medium,
+              ),
             ),
-          ),
-          TextSpan(
-            text: display,
-            style: AppTypography.monoStatMd.copyWith(
-              color: AppColors.textPrimary,
-              fontSize: 12,
+            TextSpan(
+              text: display,
+              style: AppTypography.monoStatMd.copyWith(
+                color: AppColors.textPrimary,
+                fontSize: 12,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -408,37 +445,41 @@ class _StatusFlag extends StatelessWidget {
       _ => flag,
     };
 
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.s2,
-        vertical: 2,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.stateCrimson.withValues(alpha: 0.12),
-        border: Border.all(color: AppColors.stateCrimson),
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(
-              icon,
-              size: 10,
-              color: AppColors.stateCrimsonBright,
+    return Semantics(
+      label: t.semanticsStatusPrefix(flag: label),
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.s2,
+          vertical: 2,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.stateCrimson.withValues(alpha: 0.12),
+          border: Border.all(color: AppColors.stateCrimson),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 10,
+                color: AppColors.stateCrimsonBright,
+              ),
+              const SizedBox(width: 3),
+            ],
+            Text(
+              label,
+              style: AppTypography.bodySm.copyWith(
+                fontSize: 10,
+                color: AppColors.stateCrimsonBright,
+                fontWeight: AppFontWeight.medium,
+                height: 1,
+              ),
             ),
-            const SizedBox(width: 3),
           ],
-          Text(
-            label,
-            style: AppTypography.bodySm.copyWith(
-              fontSize: 10,
-              color: AppColors.stateCrimsonBright,
-              fontWeight: AppFontWeight.medium,
-              height: 1,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
