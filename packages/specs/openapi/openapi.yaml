@@ -7371,6 +7371,21 @@ components:
             character is `active`, the server enforces that the role belongs
             to the chosen `concept` — `ROLE_CONCEPT_MISMATCH` is returned
             otherwise.
+        roleUnmigrated:
+          type: boolean
+          readOnly: true
+          description: |
+            Server-side flag, true on rows backfilled by the canon-alignment
+            migration that introduced `Character.role` (T-2026-05-10-010
+            Block E). The migration assigned each existing character the
+            first canonical role of their amplua and set this flag so the
+            web sheet can prompt the user to confirm or pick a different
+            one. Cleared automatically by the server the first time the
+            user PATCHes `role` to a non-null value (the explicit
+            confirmation path). Always false on characters created after
+            the migration ran. Read-only — clients do not set this; the
+            server owns the lifecycle.
+          default: false
         iconId:
           oneOf:
             - $ref: "#/components/schemas/IconId"
