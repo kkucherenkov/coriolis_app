@@ -1099,6 +1099,36 @@ record.
 
 ## T-2026-05-10-015 — `RollKind` discriminator + push gate (Block J split)
 
+**Status: done — ready to archive.** Landed in f3c03d1 (spec) +
+a7fe95b (codegen) + df349c1 (backend + migration).
+
+What landed:
+
+- Spec: new `RollKind` enum `[skill, save, trauma, initiative,
+  darkness]` with full canon citations (ГЛАВА 3 «Вознесение
+  молитв», ГЛАВА 5 «Урон» / «Травмирующие атаки», ГЛАВА 5
+  «Раунды, ходы и инициатива», ГЛАВА 15). `Roll.kind` required;
+  `RollCreate.kind` optional with `default: skill` for back-compat.
+  New error `PUSH_NOT_ALLOWED_ON_NON_SKILL_ROLL` (HTTP 400) on
+  the push endpoint. AsyncAPI rollPushed gained the field;
+  AsyncAPI version 0.10.0 → 0.11.0; OpenAPI version 1.2.0 → 1.3.0.
+- Backend: Prisma migration `20260510000010_add_roll_kind` adds
+  `kind text NOT NULL DEFAULT 'skill'` (idempotent backfill — all
+  existing rolls become 'skill', the canonical safe default).
+  `RollReadModel` gains `kind: RollKind`; defence-in-depth
+  `toRollKind()` narrowing on the read path logs a warning if
+  Prisma returns an unknown value. `CreateRollDto` gains optional
+  `@IsIn(...)` decorator; handler defaults to 'skill' when omitted.
+  `PushRollHandler` checks `roll.kind !== 'skill'` *before*
+  `canPush` so the kind-error wins precedence over
+  `ROLL_ALREADY_PUSHED`. `rules-engine.canPush` docblock trimmed
+  — the «only-on-skill-checks» Block-J flag is now resolved.
+- Tests: 9 new vitest cases (2 create-roll defaults, 6 push-handler
+  rejection paths including precedence lock, 1 read-model
+  surfacing). Backend vitest 930 → 939.
+
+
+
 - Created: 2026-05-10
 - Owner: claude
 - Source: split from T-2026-05-10-010 Block J. ST3001 ГЛАВА 3
