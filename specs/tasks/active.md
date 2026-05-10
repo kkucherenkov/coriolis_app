@@ -101,9 +101,14 @@
         Commit `0e4a01c`. 490 → 503 tests (+13 specs, 2 files);
         lint clean. Next: Block 5 — duplicateShip + getShipExport
         stub.
-  - [ ] Block 5 — `duplicateShip` command (deep copy with name
+  - [x] Block 5 — `duplicateShip` command (deep copy with name
         suffix), stub `getShipExport` returning 501. Closes the
         Ship API surface so the Phase 5 frontend tasks can wire
         against a complete contract.
-- Status: in-progress
+        `duplicate()` + `listNamesByPrefix()` added to IShipRepo +
+        ShipRepo. Handler resolves "(copy)" / "(copy 2)" / ...
+        suffix from owner's existing names. 7 new specs in
+        `duplicate-ship.handler.spec.ts`. 503 → 511 tests; lint
+        clean.
+- Status: done — ready to archive
 - Blockers: —
