@@ -29,6 +29,7 @@ model User {
   accounts            Account[]
   characters          Character[]
   gameSessions        GameSession[]
+  ships               Ship[]
 
   @@map("user")
 }
@@ -241,6 +242,7 @@ model Character {
   shareLinks          ShareLink[]
   rolls               Roll[]
   gameSessions        CharacterGameSession[]
+  crewAssignments     CrewSlot[]
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
 
@@ -498,4 +500,168 @@ model Roll {
   @@index([characterId, createdAt])
   @@index([gameSessionId])
   @@map("roll")
+}
+
+// ----- Ships (Phase 5) -----
+
+/// Ship hull class per ST3001 ГЛАВА 7 Table 7.4. The class drives the
+/// base stat block (energy, hull, maneuverability, signature, armor,
+/// speed, module-slot budget) the create handler seeds from the
+/// rules-engine class table. Wire values are kebab-case; Prisma
+/// `@map`s them so the database column matches the OpenAPI enum.
+enum ShipClass {
+  fighter
+  shuttle
+  torpedo_boat    @map("torpedo-boat")
+  light_freighter @map("light-freighter")
+  light_passenger @map("light-passenger")
+  courier_yacht   @map("courier-yacht")
+  clipper
+  patrol_boat     @map("patrol-boat")
+  gunboat
+  assault_ship    @map("assault-ship")
+  blockade_runner @map("blockade-runner")
+  pleasure_yacht  @map("pleasure-yacht")
+  flying_circus   @map("flying-circus")
+  prospector
+  rescue_ship     @map("rescue-ship")
+  passenger_liner @map("passenger-liner")
+  heavy_freighter @map("heavy-freighter")
+  cruiser
+  destroyer
+  heavy_cruiser   @map("heavy-cruiser")
+
+  @@map("ship_class")
+}
+
+/// Ship-module slot per ST3001 ГЛАВА 7 — distinct from the
+/// character-inventory `ItemSlotType`. BRIDGE / REACTOR / DRIVE are
+/// mandatory on every ship; the create handler seeds them and the
+/// delete handler refuses to drop them (`SHIP_MODULE_MANDATORY` 422).
+enum ShipModuleSlot {
+  BRIDGE
+  REACTOR
+  DRIVE
+  HOLD
+  WEAPON
+  TORPEDO
+  SENSOR
+  COMMS
+  HANGAR
+  QUARTERS
+  MEDICAL
+  WORKSHOP
+  CHAPEL
+  ESCAPE_PODS    @map("ESCAPE-PODS")
+  CRYO
+  DOCKING
+  MINING
+  REPAIR
+  CONCEALED_HOLD @map("CONCEALED-HOLD")
+  PROXY_DECK     @map("PROXY-DECK")
+  OTHER
+
+  @@map("ship_module_slot")
+}
+
+/// Crew positions per ST3001 ГЛАВА 7. Six slots per ship, composite
+/// PK on `(shipId, position)` so the same ship can have at most one
+/// holder per role; the same character can hold one position per
+/// ship but may serve on multiple ships.
+enum CrewPosition {
+  captain
+  pilot
+  sensorOp
+  gunner
+  engineer
+  serviceCrew
+
+  @@map("crew_position")
+}
+
+/// A ship as the v1 API sees it. Maps to the OpenAPI `Ship` schema.
+///
+/// Design notes:
+/// - `hull.current/max` and `energy.current/max` are flat columns
+///   (not Json) — they're frequently mutated independently and the
+///   denormalised shape matches the `Hp`/`Mp` columns on Character.
+/// - `problems` is a Postgres text array. Free-text entries from the
+///   ГЛАВА 7 wear-and-tear table; not enumerated.
+/// - `cargoCapacity` is stored explicitly rather than derived from
+///   the HOLD modules. The create handler seeds it from the class
+///   table; module mutations don't auto-update it (the spec says
+///   "Total cargo capacity in tonnes across all hold modules" but
+///   leaves the recalculation to the client). Tracked as a follow-up.
+/// - Cascade delete: dropping a Ship drops its modules and crew slots.
+model Ship {
+  id              String         @id @default(cuid())
+  ownerId         String
+  owner           User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name            String
+  class           ShipClass
+  model           String?
+  registry        String?
+  hullCurrent     Int            @default(0)
+  hullMax         Int            @default(0)
+  energyCurrent   Int            @default(0)
+  energyMax       Int            @default(0)
+  armor           Int            @default(0)
+  maneuverability Int            @default(0)
+  signature       Int            @default(0)
+  speed           Int            @default(0)
+  cargoCapacity   Int            @default(0)
+  problems        String[]
+  history         String?
+  notes           String?
+  modules         ShipModule[]
+  crew            CrewSlot[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([ownerId])
+  @@map("ship")
+}
+
+/// An installed ship module. Discriminated union on the API side
+/// (`HoldModule`, `WeaponModule`, `TorpedoModule`, `SensorModule`,
+/// `OtherModule`) — server stores the type-specific payload as a Json
+/// column keyed off `slot`, mirroring the Item table. Validation of
+/// the inner shape happens in the command handler against the spec's
+/// `ShipModuleCreate` oneOf variants.
+model ShipModule {
+  id        String         @id @default(cuid())
+  shipId    String
+  ship      Ship           @relation(fields: [shipId], references: [id], onDelete: Cascade)
+  slot      ShipModuleSlot
+  name      String
+  energyUse Int            @default(0)
+  /// Type-specific payload. Structure depends on `slot`:
+  ///   HOLD:    { capacityTons, concealed }
+  ///   WEAPON:  { damage, range, bonus, crit }
+  ///   TORPEDO: { count, damage }
+  ///   SENSOR:  { bonus, range }
+  ///   OTHER:   { effect }
+  ///   BRIDGE/REACTOR/DRIVE/etc: typically empty or a small effect blurb
+  data      Json           @default("{}")
+  createdAt DateTime       @default(now())
+
+  @@index([shipId])
+  @@map("ship_module")
+}
+
+/// Crew assignment row. Six slots per ship, optional character
+/// reference. ON DELETE SET NULL on the character so the slot stays
+/// (the position remains visible as vacant) — mirrors the spec note
+/// "Positions without an assigned character are vacant".
+model CrewSlot {
+  shipId              String
+  ship                Ship         @relation(fields: [shipId], references: [id], onDelete: Cascade)
+  position            CrewPosition
+  assignedCharacterId String?
+  assignedCharacter   Character?   @relation(fields: [assignedCharacterId], references: [id], onDelete: SetNull)
+  assignedAt          DateTime?
+
+  @@id([shipId, position])
+  @@index([assignedCharacterId])
+  @@map("crew_slot")
 }
