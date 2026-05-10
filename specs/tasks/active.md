@@ -47,21 +47,38 @@
   combat round end-to-end with the corrected rules.
 - Sub-blocks (one feat-* commit per block + one
   active.md follow-up commit, per `feedback_block_workflow.md`):
-  - [ ] Block A — **Initiative die + tie-break.** Hard
-        violations H1, H2.
-        Spec: change `initiative` field range to 1..6 with
-        description «d6 — ГЛАВА 5 line 18»; rewrite the
-        `InitiativeRollResult` description; drop agility
-        tie-break from the spec narrative.
-        Code: `roll-initiative.handler.ts` → `randomInt(1, 7)`;
-        `initiative.ts` → re-roll d6 for ties (loop until
-        every initiative value is unique within the encounter,
-        or fall back to GM reorder after N=3 reroll passes).
-        Update `roll-initiative.handler.spec.ts`,
-        `initiative.spec.ts`. Adds: one-line code comment in
-        `advance-turn.handler.ts:80-82` citing «инициатива
-        остаётся прежней до конца сражения» (round wrap is
-        canon-correct, just not documented).
+  - [x] Block A — **Initiative die + tie-break.** Hard
+        violations H1, H2. **Done in d0e553b (spec) +
+        bf41a9a (backend).**
+        Spec change: `Combatant.initiative.maximum` 10 → 6 in
+        OpenAPI and AsyncAPI; descriptions cite ГЛАВА 5
+        «Бросьте по кубику…»; `rollInitiative` and
+        `InitiativeRollResult` rewritten to describe a bounded
+        d6 reroll loop (≤3 passes) and drop the agility
+        tie-break narrative; example values repointed into
+        the 1..6 range.
+        Backend: `roll-initiative.handler.ts` switched to
+        `randomInt(1, 7)`; new pure `rerollTies(items, rollD6)`
+        in `domain/initiative.ts`; `sortInitiative` simplified
+        to initiative-desc + createdAt-asc; `getAgility`
+        deleted. Tests added: 7 `rerollTies` cases
+        (no-tie short-circuit, first-pass resolve, multi-pass
+        resolve, give-up after MAX_REROLL_PASSES, partial tie
+        among three, single combatant, no-mutation invariant)
+        plus a reroll-tiebreak handler test and a d6-range
+        guard. Backend vitest count grew by +5 (tied to
+        Block A).
+        Round-wrap canon citation already in
+        `advance-turn.handler.ts:14-15` (landed with
+        T-007 Block 5).
+        Baseline collateral fix shipped on the way:
+        a7367f4 imports `RealtimeModule` into
+        `EncountersModule` (the T-007 Block 5 publisher
+        couldn't resolve `CENTRIFUGO_CLIENT` because the
+        module was never `@Global()`); 7a09ee5 exempts
+        `specs/tasks/{active,done}.md` from prettier so
+        the next `pnpm format` doesn't collapse the nested
+        list outline.
   - [ ] Block B — **Combatant statusFlags taxonomy.** Hard
         violation H3.
         Spec: drop the `[broken, exposed, covered, prone]`
