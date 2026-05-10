@@ -4,6 +4,7 @@ import {
   CharacterNotFoundError,
   CharacterNotOwnedError,
 } from '../../characters/domain/character.errors';
+import { RollPoolOutOfRangeError } from '../domain/roll.errors';
 
 import { CreateRollCommand, CreateRollDto } from './create-roll.command';
 import { CreateRollHandler } from './create-roll.handler';
@@ -148,5 +149,97 @@ describe('CreateRollHandler', () => {
     await expect(
       handler.execute(new CreateRollCommand('user_01', 'char_01', dto)),
     ).rejects.toBeInstanceOf(CharacterNotOwnedError);
+  });
+
+  // -------------------------------------------------------------------------
+  // T-2026-05-10-010 Block C: pool 0..20 + Ноль кубиков (ГЛАВА 3 line 161)
+  // -------------------------------------------------------------------------
+
+  it('rolls 2 dice when pool === 0 (Ноль кубиков) and stores them on the row', async () => {
+    vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user_01' });
+    vi.mocked(rollRepo.create).mockImplementation(async (data) => ({
+      ...MOCK_ROLL,
+      pool: data.pool,
+      dice: data.dice,
+      hits: data.hits,
+    }));
+
+    const dto = new CreateRollDto();
+    dto.label = 'Pilot · forced landing';
+    dto.pool = 0;
+
+    const result = await handler.execute(new CreateRollCommand('user_01', 'char_01', dto));
+
+    expect(result.pool).toBe(0);
+    expect(result.dice).toHaveLength(2);
+    // Hits is 1 only when both dice are 6, otherwise 0 — never the raw 6-count.
+    expect([0, 1]).toContain(result.hits);
+    if (result.hits === 1) {
+      expect(result.dice).toEqual([6, 6]);
+    }
+  });
+
+  it('counts a Ноль кубиков success only on a double six', async () => {
+    vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user_01' });
+    vi.mocked(rollRepo.create).mockImplementation(async (data) => ({
+      ...MOCK_ROLL,
+      pool: data.pool,
+      dice: data.dice,
+      hits: data.hits,
+    }));
+
+    const dto = new CreateRollDto();
+    dto.label = 'zero-dice trial';
+    dto.pool = 0;
+
+    // Run a batch and verify the hits/dice invariant on every outcome.
+    for (let trial = 0; trial < 50; trial++) {
+      const r = await handler.execute(new CreateRollCommand('user_01', 'char_01', dto));
+      const bothSixes = r.dice.length === 2 && r.dice.every((d) => d === 6);
+      expect(r.hits).toBe(bothSixes ? 1 : 0);
+    }
+  });
+
+  it('accepts a 20-die pool at the upper bound', async () => {
+    vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user_01' });
+    vi.mocked(rollRepo.create).mockImplementation(async (data) => ({
+      ...MOCK_ROLL,
+      pool: data.pool,
+      dice: data.dice,
+      hits: data.hits,
+    }));
+
+    const dto = new CreateRollDto();
+    dto.label = 'max stack';
+    dto.pool = 20;
+
+    const result = await handler.execute(new CreateRollCommand('user_01', 'char_01', dto));
+
+    expect(result.pool).toBe(20);
+    expect(result.dice).toHaveLength(20);
+  });
+
+  it('rejects pool === 21 (one above the upper bound)', async () => {
+    vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user_01' });
+
+    const dto = new CreateRollDto();
+    dto.label = 'too many dice';
+    dto.pool = 21;
+
+    await expect(
+      handler.execute(new CreateRollCommand('user_01', 'char_01', dto)),
+    ).rejects.toBeInstanceOf(RollPoolOutOfRangeError);
+  });
+
+  it('rejects negative pool (below the new lower bound of 0)', async () => {
+    vi.mocked(characterRepo.findOwnerIdById).mockResolvedValue({ ownerId: 'user_01' });
+
+    const dto = new CreateRollDto();
+    dto.label = 'negative pool';
+    dto.pool = -1;
+
+    await expect(
+      handler.execute(new CreateRollCommand('user_01', 'char_01', dto)),
+    ).rejects.toBeInstanceOf(RollPoolOutOfRangeError);
   });
 });

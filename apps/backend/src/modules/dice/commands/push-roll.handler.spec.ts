@@ -203,6 +203,39 @@ describe('PushRollHandler', () => {
     expect((err as RollNotPushableError).code).toBe('ROLL_NOT_PUSHABLE');
   });
 
+  // -------------------------------------------------------------------------
+  // T-2026-05-10-010 Block C: pushing a Ноль кубиков roll keeps the
+  // double-six success rule (ГЛАВА 3 line 161). The push rerolls the non-6
+  // die; hits stays 0 unless both post-push dice are 6.
+  // -------------------------------------------------------------------------
+
+  it('pushes a zero-pool roll and applies the Ноль кубиков success rule', async () => {
+    const ZERO_POOL_FRESH: RollReadModel = {
+      ...MOCK_ROLL_FRESH,
+      pool: 0,
+      dice: [6, 1],
+      hits: 0,
+    };
+    vi.mocked(rollRepo.findById).mockResolvedValue(ZERO_POOL_FRESH);
+    vi.mocked(characterRepo.findActiveById).mockResolvedValue(MOCK_CHARACTER);
+    vi.mocked(rollRepo.push).mockImplementation(async (_id, dice, hits) => ({
+      ...ZERO_POOL_FRESH,
+      dice,
+      hits,
+      pushed: true,
+    }));
+
+    const result = await handler.execute(new PushRollCommand('user_01', 'roll_01'));
+
+    expect(result.pool).toBe(0);
+    expect(result.dice).toHaveLength(2);
+    // The first die was a 6 and is preserved by `pushDice`.
+    expect(result.dice[0]).toBe(6);
+    // Hits = 1 only if the rerolled second die is also a 6.
+    const expectedHits = result.dice[1] === 6 ? 1 : 0;
+    expect(result.hits).toBe(expectedHits);
+  });
+
   it('does not emit event when push is rejected', async () => {
     vi.mocked(rollRepo.findById).mockResolvedValue({ ...MOCK_ROLL_FRESH, pushed: true });
     vi.mocked(characterRepo.findActiveById).mockResolvedValue(MOCK_CHARACTER);

@@ -26,7 +26,7 @@ export class CreateRollHandler implements ICommandHandler<CreateRollCommand, Rol
     const { callerId, characterId, dto } = command;
 
     // Validate pool bounds (belt-and-suspenders on top of class-validator DTO)
-    if (dto.pool < 1 || dto.pool > 10) {
+    if (!Number.isInteger(dto.pool) || dto.pool < 0 || dto.pool > 20) {
       throw new RollPoolOutOfRangeError(dto.pool);
     }
 
@@ -39,9 +39,10 @@ export class CreateRollHandler implements ICommandHandler<CreateRollCommand, Rol
       throw new CharacterNotOwnedError(characterId);
     }
 
-    // Roll the dice server-side with crypto.randomInt
+    // Roll the dice server-side with crypto.randomInt.
+    // pool === 0 triggers Ноль кубиков (ГЛАВА 3): 2 dice rolled, success only on double 6.
     const dice = rollPool(dto.pool);
-    const hits = countHits(dice);
+    const hits = countHits(dice, dto.pool);
 
     return this.rollRepo.create({
       characterId,

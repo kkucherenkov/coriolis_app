@@ -51,9 +51,10 @@ export class PushRollHandler implements ICommandHandler<PushRollCommand, RollRea
       throw new RollNotPushableError(eligibility.reason);
     }
 
-    // Reroll all non-6 dice
+    // Reroll all non-6 dice. Pool is preserved; for a Ноль кубиков roll
+    // (pool === 0) we still need both post-push dice to be 6 to score a hit.
     const newDice = pushDice(roll.dice);
-    const newHits = countHits(newDice);
+    const newHits = countHits(newDice, roll.pool);
 
     // Persist and emit event
     const updated = await this.rollRepo.push(rollId, newDice, newHits);

@@ -39,7 +39,7 @@ export class RollPoolOutOfRangeError extends DomainError {
       code: 'ROLL_POOL_OUT_OF_RANGE',
       status: 422,
       title: 'Validation Error',
-      detail: `Pool ${String(pool)} is outside the permitted range (1–10).`,
+      detail: `Pool ${String(pool)} is outside the permitted range (0–20).`,
     });
   }
 }

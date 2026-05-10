@@ -7,8 +7,8 @@ export class CreateRollDto {
   label!: string;
 
   @IsInt()
-  @Min(1)
-  @Max(10)
+  @Min(0)
+  @Max(20)
   pool!: number;
 
   @IsOptional()
