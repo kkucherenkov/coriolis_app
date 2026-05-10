@@ -465,6 +465,17 @@ export type CanPushResult = { ok: true } | { ok: false; reason: 'ALREADY_PUSHED'
  * Only the `exhausted` condition flag blocks push; sleepless / thirsty / hungry
  * do not (PRD §10 explicitly singles out Exhausted).
  *
+ * **PRD override on canon** — ST3001 ГЛАВА 3 §«Вознесение молитв»
+ * («Молитву можно возносить только при проверках навыков и только один раз
+ * за проверку») restricts the push to *skill checks* and limits it to one
+ * per check, but the rulebook does NOT gate push on the Exhausted condition.
+ * The Exhausted-blocks-push rule is a greenfield UX gate added by the PRD
+ * to give the player a tactile reason to manage rest at the table; it
+ * stays here as the deliberate divergence. The «one push per check» rule
+ * (rule 2 above) is canon-aligned. The «only on skill checks» half is
+ * tracked separately as a Block-J spec follow-up (`RollKind` discriminator;
+ * push then gates on `kind === 'skill'`).
+ *
  * Returns `{ ok: true }` when the push is allowed, or `{ ok: false, reason }`
  * with a machine-readable code when it is blocked.
  */
