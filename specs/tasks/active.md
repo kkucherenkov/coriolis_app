@@ -107,20 +107,56 @@
         below 0 and the spec says "May go below 0"; task prose
         mentions `COMBATANT_HP_OVER_MAX` but that code does not
         appear anywhere in the spec, so it was not implemented.
-  - [ ] Block 4 — Initiative + turn ops. `rollInitiative`
+  - [x] Block 4 — Initiative + turn ops. `rollInitiative`
         as a single transactional handler (d10 per row,
         agility tie-break, `turnOrder` index assignment,
         encounter status transition, `round = 1`,
         `activeCombatantId = turnOrder:0`).
         `reorderInitiative` validates the request array
         permutes the existing combatant set 1:1 (422
-        `ENCOUNTER_REORDER_MISMATCH` otherwise) then
-        rewrites `turnOrder`. `advanceTurn` rotates,
-        increments `round` on wrap, returns
-        `{ activeCombatantId, round, isNewRound }`.
+        `INITIATIVE_DUPLICATE` / `INITIATIVE_UNKNOWN_COMBATANT`
+        / `INITIATIVE_INCOMPLETE`) then rewrites `turnOrder`.
+        `advanceTurn` rotates, increments `round` on wrap,
+        returns `{ activeCombatantId, round, isNewRound }`.
         Defensive 422 `ENCOUNTER_INITIATIVE_NOT_ROLLED`
-        if `advanceTurn` is called from `setup` (currently
-        unreachable but documented in the spec).
+        if `advanceTurn` is called when `activeCombatantId`
+        is null (currently unreachable via `rollInitiative`
+        but documented in the spec).
+        Result: commit 022309c. Files:
+        `apps/backend/src/modules/encounters/commands/`
+        (roll-initiative ×3, reorder-initiative ×3,
+        advance-turn ×3), `domain/initiative.{ts,spec.ts}`
+        (pure tie-break sort), `infra/initiative.repo.ts`
+        (atomic `$transaction` adapter), updates to
+        `encounter.errors.ts` (+5 errors:
+        `ENCOUNTER_INVALID_STATUS`,
+        `ENCOUNTER_INITIATIVE_NOT_ROLLED`,
+        `INITIATIVE_DUPLICATE`,
+        `INITIATIVE_UNKNOWN_COMBATANT`,
+        `INITIATIVE_INCOMPLETE`),
+        `encounter.ports.ts` (`InitiativeRollResult`,
+        `TurnAdvanceResult`, `IInitiativeRepo` port),
+        `encounters.controller.ts` (+3 routes),
+        `encounters.module.ts` (wire-up), and
+        `combatants/{domain,infra}/combatant.{ports,repo}.ts`
+        (`listByEncounterWithSnapshot` for snapshot-aware
+        tie-break load).
+        Test delta: +34 (667 → 701 total).
+        Design calls: (1) `IInitiativeRepo` is a separate
+        port (`INITIATIVE_REPO` token) rather than extending
+        `IEncounterRepo`, so the atomic `$transaction` stays
+        in infra without leaking Prisma into command handlers.
+        (2) Spec overrides task prose: the reorder error
+        codes are not `ENCOUNTER_REORDER_MISMATCH` (a single
+        umbrella code mentioned in the task) but the three
+        granular codes shipped in T-006
+        (`INITIATIVE_DUPLICATE` / `INITIATIVE_UNKNOWN_COMBATANT`
+        / `INITIATIVE_INCOMPLETE`).
+        (3) Tie-break — agility — pulls from
+        `pcSnapshot.attributes.agility` and
+        `npcSnapshot.attributes.agility` snapshotted at
+        add-time (Block 3); no Character / NPC join at
+        roll-time.
   - [ ] Block 5 — Centrifugo `combat.updated` publisher.
         New `CombatPublisher` interface in
         `apps/backend/src/modules/encounters/infra/combat.publisher.ts` + `CentrifugoCombatPublisher` impl mirroring
