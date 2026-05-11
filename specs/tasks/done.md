@@ -2,6 +2,43 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-11-006 — Phase 7: web bundle-size budgets
+
+- Created: 2026-05-11
+- Completed: 2026-05-11
+- Owner: claude
+- Spec: PRD §11 (Phase 7 — Hardening · "performance tuning"); PRD §6 (NFR — performance budgets)
+- Goal: lock today's `apps/web` JS / CSS sizes behind a CI gate so the upcoming Phase-7 service-worker work can't silently inflate the wire payload that the SW will end up caching.
+- Result: [PR #13](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/13) on Forgejo — branch `feat/phase-7/web-bundle-budgets`, merged as `3e4b556`. 5 files / +120 / −1.
+- Acceptance — all met:
+  - `pnpm --filter @app/web size` exits non-zero when any tracked bucket exceeds its budget. Verified by dropping the Total-JS limit from 410 kB → 300 kB (size-limit returned 1).
+  - 4 buckets locked, all brotli-compressed: Total JS 384 → **410 kB** (~7 % headroom), Total CSS 54 → **60 kB** (~12 %), Entry CSS 23 → **25 kB** (~9 %), `_id_` route CSS 8 → **10 kB** (~21 %).
+  - Budgets live in `apps/web/.size-limit.json` so the value, glob, and rationale are one diff.
+  - `.forgejo/workflows/ci.yml` `checks` job runs `pnpm --filter @app/web build && pnpm --filter @app/web size` — adds ~30 s, no new job.
+- Spec diff: none
+- Codegen impact: no
+- Design impact: none
+- Tests:
+  - 4 size-limit assertions act as the test suite.
+  - Manual regression: lower a budget → exit 1; restore → exit 0.
+- Notable decisions:
+  - **Per-chunk JS budgets skipped.** Nuxt 4 names client JS chunks by content hash only (`DdLCW58Z.js`), so `vendor.*.js`-style globs don't exist. Coarse Total-JS ceiling instead. CSS chunks DO keep human prefixes (`entry.`, `_id_`, `new.`, `app.`), so individual budgets exist where they matter for first paint.
+  - **Brotli, not gzip.** size-limit's default; matches what modern CDN-edge serves to real clients.
+  - **5–21 % headroom**, not a flat number — small bundles need more wiggle (one feature can spike `_id_` CSS).
+- Status: shipped
+- Blockers: —
+
+## Open follow-up (Phase 7 backlog)
+
+Same list as before plus the bundle-budget consequence:
+
+- **Web offline service-worker + IndexedDB cache** — the immediate next PR. The new size budgets make the SW cache strategy bounded.
+- Lighthouse CI gate (LCP / CLS / TBT) — deferred from T-006.
+- Backend p95 targets per PRD §6 — deferred from T-006.
+- Drop `.github/dependabot.yml` (dead config on Forgejo origin).
+- `AppPopover` `role` prop so menus / listboxes don't have to mimic dialog.
+- Restore secret scanning (trufflehog binary or runner outbound github.com).
+
 ## T-2026-05-11-005 — CI consolidation: port courseShelf 2-job structure to Forgejo
 
 - Created: 2026-05-11
