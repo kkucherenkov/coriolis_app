@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 1.4.0
+  version: 1.5.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -2608,6 +2608,82 @@ paths:
                     status: 401
                     detail: No active session found. Sign in and retry.
                     instance: /api/v1/me
+                    code: NO_ACTIVE_SESSION
+
+  # ---------------------------------------------------------------------------
+  # Me export (Phase 7 Block 1a — T-2026-05-11-003)
+  # ---------------------------------------------------------------------------
+
+  /api/v1/me/export:
+    get:
+      operationId: exportMe
+      summary: Download a JSON bundle of the user's data.
+      description: |
+        Returns every character, ship, and game session owned by the
+        authenticated user as a single versioned JSON envelope. Intended
+        for GDPR-style data portability per PRD §6.
+
+        The response is served with `Content-Disposition: attachment` and a
+        filename of the form `coriolis-export-<userId>-<YYYY-MM-DD>.json`,
+        so a browser fetch triggers a file download rather than a render.
+
+        The envelope's `$schemaVersion` is a string literal `"1"` — future
+        shape changes ship as `"2"` etc., so a downstream re-import path
+        can branch on it deterministically.
+
+        Bundle scope:
+        - **Characters** with nested `inventory` (items) and `talents`.
+        - **Ships** with nested `modules` and `crew`.
+        - **Game sessions** with nested `npcs` (each with `weapons` / `armor`),
+          `encounters`, and each encounter's `combatants`.
+
+        Out of scope: rolls log, share-link tokens, push records, user
+        settings. Those are tracked as deferred follow-ups in the design
+        doc.
+      tags: [users]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      responses:
+        "200":
+          description: The user's data bundle.
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              description: |
+                Always `attachment; filename="coriolis-export-<userId>-<date>.json"`.
+                Clients should parse the filename when triggering downloads.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeExportBundle"
+              examples:
+                ok:
+                  value:
+                    $schemaVersion: "1"
+                    exportedAt: "2026-05-11T13:42:00Z"
+                    user:
+                      id: cuid_01j9zxk5e0000qw3h8m7n6p4r2
+                      displayName: Kalim al-Rashid
+                      locale: en
+                    characters: []
+                    ships: []
+                    gameSessions: []
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                unauthenticated:
+                  value:
+                    type: https://coriolis.example.com/problems/unauthorized
+                    title: Unauthorized
+                    status: 401
+                    detail: No active session found. Sign in and retry.
+                    instance: /api/v1/me/export
                     code: NO_ACTIVE_SESSION
 
   # ---------------------------------------------------------------------------
@@ -9251,6 +9327,150 @@ components:
           description: |
             UI theme preference. Must be one of `dark` or `high-contrast`.
             Omitting the field preserves the current value.
+
+    # -------------------------------------------------------------------------
+    # Me export schemas (Phase 7 Block 1a — T-2026-05-11-003)
+    # -------------------------------------------------------------------------
+
+    MeExportUser:
+      type: object
+      description: |
+        Minimal user envelope for the JSON export. Intentionally excludes
+        `email` — the dump may be saved to disk or shared, and auth-side
+        identifiers should not leak into the file. The opaque `id` is
+        retained so a future re-import path can disambiguate.
+      required: [id, displayName, locale]
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        displayName:
+          type: ["string", "null"]
+        locale:
+          type: string
+          description: BCP-47 locale tag (e.g. `en`, `ru`).
+
+    MeExportEncounter:
+      type: object
+      description: |
+        Export-only wrapper for an `Encounter` that inlines the combatant
+        list. The base `Encounter` schema deliberately omits combatants
+        (they are a sub-resource in the REST surface); this schema adds
+        the `combatants` array so the export bundle is self-contained.
+      required: [id, gameSessionId, name, status, round, activeCombatantId, notes, createdAt, updatedAt, combatants]
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          readOnly: true
+        gameSessionId:
+          type: string
+          readOnly: true
+        name:
+          type: string
+        status:
+          $ref: "#/components/schemas/EncounterStatus"
+        round:
+          type: integer
+          minimum: 0
+        activeCombatantId:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+        combatants:
+          type: array
+          items:
+            $ref: "#/components/schemas/Combatant"
+
+    MeExportGameSession:
+      type: object
+      description: |
+        Export-only wrapper for a `GameSession` that inlines the NPC and
+        encounter lists (with combatants). The base `GameSession` schema
+        omits these sub-resources; this schema adds them so the export
+        bundle is self-contained.
+      required: [id, ownerId, name, status, dpCount, characterIds, createdAt, updatedAt, npcs, encounters]
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          readOnly: true
+        ownerId:
+          type: string
+          readOnly: true
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        status:
+          $ref: "#/components/schemas/GameSessionStatus"
+        dpCount:
+          type: integer
+          minimum: 0
+          readOnly: true
+        characterIds:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        shipId:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+        npcs:
+          type: array
+          description: All NPCs owned by the GM and used in this session.
+          items:
+            $ref: "#/components/schemas/Npc"
+        encounters:
+          type: array
+          description: All encounters in this session, each with its combatants inlined.
+          items:
+            $ref: "#/components/schemas/MeExportEncounter"
+
+    MeExportBundle:
+      type: object
+      description: |
+        Versioned envelope returned by `GET /api/v1/me/export`. `$schemaVersion`
+        is a string literal so future shape changes can branch
+        deterministically.
+      required: [$schemaVersion, exportedAt, user, characters, ships, gameSessions]
+      additionalProperties: false
+      properties:
+        $schemaVersion:
+          type: string
+          const: "1"
+        exportedAt:
+          type: string
+          format: date-time
+        user:
+          $ref: "#/components/schemas/MeExportUser"
+        characters:
+          type: array
+          items:
+            $ref: "#/components/schemas/Character"
+        ships:
+          type: array
+          items:
+            $ref: "#/components/schemas/Ship"
+        gameSessions:
+          type: array
+          items:
+            $ref: "#/components/schemas/MeExportGameSession"
 
     # -------------------------------------------------------------------------
     # Game Sessions (Epic 7 Feature 7.2)
