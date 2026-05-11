@@ -40,21 +40,21 @@ function mountMenu(props: Partial<InstanceType<typeof UserMenu>['$props']> = {})
 describe('UserMenu — trigger aria attributes', () => {
   it('has aria-haspopup="menu" on the trigger button', () => {
     const w = mountMenu();
-    const btn = w.find('.user-menu__trigger');
+    const btn = w.find('.app-user-menu__trigger');
     expect(btn.attributes('aria-haspopup')).toBe('menu');
     w.unmount();
   });
 
   it('has aria-expanded="false" when closed', () => {
     const w = mountMenu({ open: false });
-    const btn = w.find('.user-menu__trigger');
+    const btn = w.find('.app-user-menu__trigger');
     expect(btn.attributes('aria-expanded')).toBe('false');
     w.unmount();
   });
 
   it('has aria-expanded="true" when open', () => {
     const w = mountMenu({ open: true });
-    const btn = w.find('.user-menu__trigger');
+    const btn = w.find('.app-user-menu__trigger');
     expect(btn.attributes('aria-expanded')).toBe('true');
     w.unmount();
   });
@@ -65,14 +65,14 @@ describe('UserMenu — trigger aria attributes', () => {
 describe('UserMenu — avatar rendering', () => {
   it('shows initials when avatarUrl is null', () => {
     const w = mountMenu({ avatarUrl: null, displayName: 'Zara al-Khatib' });
-    expect(w.find('.user-menu__avatar-initials').exists()).toBe(true);
-    expect(w.find('.user-menu__avatar-img').exists()).toBe(false);
+    expect(w.find('.app-user-menu__avatar-initials').exists()).toBe(true);
+    expect(w.find('.app-user-menu__avatar-img').exists()).toBe(false);
     w.unmount();
   });
 
   it('shows initials when avatarUrl is empty string', () => {
     const w = mountMenu({ avatarUrl: '', displayName: 'Zara al-Khatib' });
-    expect(w.find('.user-menu__avatar-initials').exists()).toBe(true);
+    expect(w.find('.app-user-menu__avatar-initials').exists()).toBe(true);
     w.unmount();
   });
 
@@ -81,8 +81,8 @@ describe('UserMenu — avatar rendering', () => {
       avatarUrl: 'data:image/png;base64,iVBORw0KGgo=',
       displayName: 'Zara al-Khatib',
     });
-    expect(w.find('.user-menu__avatar-img').exists()).toBe(true);
-    expect(w.find('.user-menu__avatar-initials').exists()).toBe(false);
+    expect(w.find('.app-user-menu__avatar-img').exists()).toBe(true);
+    expect(w.find('.app-user-menu__avatar-initials').exists()).toBe(false);
     w.unmount();
   });
 });
@@ -92,32 +92,32 @@ describe('UserMenu — avatar rendering', () => {
 describe('UserMenu — initials helper', () => {
   it('produces "Z" for a single-word name', () => {
     const w = mountMenu({ avatarUrl: null, displayName: 'Zara' });
-    expect(w.find('.user-menu__avatar-initials').text()).toBe('Z');
+    expect(w.find('.app-user-menu__avatar-initials').text()).toBe('Z');
     w.unmount();
   });
 
   it('produces "ZK" for a two-word name', () => {
     const w = mountMenu({ avatarUrl: null, displayName: 'Zara Khatib' });
-    expect(w.find('.user-menu__avatar-initials').text()).toBe('ZK');
+    expect(w.find('.app-user-menu__avatar-initials').text()).toBe('ZK');
     w.unmount();
   });
 
   it('caps at 2 chars for a three-word name', () => {
     const w = mountMenu({ avatarUrl: null, displayName: 'Zara al-Khatib' });
     // "Zara" → Z, "al-Khatib" → a → "ZA"
-    expect(w.find('.user-menu__avatar-initials').text()).toHaveLength(2);
+    expect(w.find('.app-user-menu__avatar-initials').text()).toHaveLength(2);
     w.unmount();
   });
 
   it('returns "?" for an empty displayName', () => {
     const w = mountMenu({ avatarUrl: null, displayName: '' });
-    expect(w.find('.user-menu__avatar-initials').text()).toBe('?');
+    expect(w.find('.app-user-menu__avatar-initials').text()).toBe('?');
     w.unmount();
   });
 
   it('returns "?" for a whitespace-only displayName', () => {
     const w = mountMenu({ avatarUrl: null, displayName: '   ' });
-    expect(w.find('.user-menu__avatar-initials').text()).toBe('?');
+    expect(w.find('.app-user-menu__avatar-initials').text()).toBe('?');
     w.unmount();
   });
 });
@@ -127,7 +127,7 @@ describe('UserMenu — initials helper', () => {
 describe('UserMenu — trigger click', () => {
   it('emits update:open=true when clicking the trigger while closed', async () => {
     const w = mountMenu({ open: false });
-    await w.find('.user-menu__trigger').trigger('click');
+    await w.find('.app-user-menu__trigger').trigger('click');
     const emitted = w.emitted('update:open') as boolean[][];
     expect(emitted).toBeDefined();
     expect(emitted[0]).toEqual([true]);
@@ -136,7 +136,7 @@ describe('UserMenu — trigger click', () => {
 
   it('emits update:open=false when clicking the trigger while open', async () => {
     const w = mountMenu({ open: true });
-    await w.find('.user-menu__trigger').trigger('click');
+    await w.find('.app-user-menu__trigger').trigger('click');
     const emitted = w.emitted('update:open') as boolean[][];
     expect(emitted).toBeDefined();
     expect(emitted[0]).toEqual([false]);
@@ -343,7 +343,7 @@ describe('UserMenu — keyboard navigation', () => {
 describe('UserMenu — display name', () => {
   it('renders the displayName inside the trigger', () => {
     const w = mountMenu({ displayName: 'Ibrahim al-Sayed' });
-    expect(w.find('.user-menu__name').text()).toBe('Ibrahim al-Sayed');
+    expect(w.find('.app-user-menu__name').text()).toBe('Ibrahim al-Sayed');
     w.unmount();
   });
 });

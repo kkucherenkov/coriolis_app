@@ -1,7 +1,7 @@
 /**
  * Design inventory audit — cross-checks the canonical inventory in
  * `specs/design/README.md` against the actual component folders in
- * `packages/ui/src/components/` (Vue) and `packages/ui_flutter/lib/src/`
+ * `packages/ui/src/components/` (Vue) and `packages/ui_flutter/lib/src/widgets/`
  * (Flutter).
  *
  * Reports:
@@ -22,7 +22,7 @@ const repoRoot = path.resolve(here, '..', '..', '..');
 
 const inventoryPath = path.join(repoRoot, 'specs/design/README.md');
 const vueDir = path.join(repoRoot, 'packages/ui/src/components');
-const flutterDir = path.join(repoRoot, 'packages/ui_flutter/lib/src');
+const flutterDir = path.join(repoRoot, 'packages/ui_flutter/lib/src/widgets');
 
 // Flutter folder names (snake_case) map to PascalCase component names.
 function pascalise(snake: string): string {
@@ -90,7 +90,9 @@ const flutterPascal = new Set(
 );
 
 // Non-component folders we know about — exclude from drift checks.
-const flutterNonComponent = new Set(['AppTheme']);
+// (Currently empty — `lib/src/widgets/` only holds widget folders. Theme
+// lives in `lib/src/theme/` which we no longer scan.)
+const flutterNonComponent = new Set<string>();
 
 const vueMissingInInventory = [...vueFolders].filter((name) => !inventory.has(name)).toSorted();
 const inventoryMissingInVue = [...inventory]

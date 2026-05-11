@@ -561,10 +561,7 @@
 </i18n>
 
 <template>
-  <div
-    class="combat-tracker"
-    data-testid="combat-tracker"
-  >
+  <div class="combat-tracker" data-testid="combat-tracker">
     <!-- Header -->
     <header class="combat-tracker__header">
       <h4 class="combat-tracker__title">
@@ -597,12 +594,7 @@
           {{ t('advanceTurnButton') }}
         </AppButton>
 
-        <AppButton
-          variant="ghost"
-          size="sm"
-          data-testid="btn-add-combatant"
-          @click="openPicker"
-        >
+        <AppButton variant="ghost" size="sm" data-testid="btn-add-combatant" @click="openPicker">
           {{ t('addButton') }}
         </AppButton>
       </div>
@@ -629,24 +621,14 @@
     >
       <AppBanner tone="danger">
         {{ listError }}
-        <AppButton
-          variant="ghost"
-          size="sm"
-          class="combat-tracker__retry"
-          @click="loadCombatants"
-        >
+        <AppButton variant="ghost" size="sm" class="combat-tracker__retry" @click="loadCombatants">
           {{ t('retryButton') }}
         </AppButton>
       </AppBanner>
     </div>
 
     <!-- Loading -->
-    <p
-      v-if="listState === 'loading'"
-      class="combat-tracker__placeholder"
-    >
-      &hellip;
-    </p>
+    <p v-if="listState === 'loading'" class="combat-tracker__placeholder">&hellip;</p>
 
     <!-- Empty state -->
     <div
@@ -707,33 +689,21 @@
         <div class="combat-tracker__row-body">
           <div class="combat-tracker__row-top">
             <span class="combat-tracker__name">{{ combatant.displayName }}</span>
-            <AppBadge
-              variant="brass"
-              size="sm"
-            >
+            <AppBadge variant="brass" size="sm">
               {{ combatant.combatantType === 'pc' ? t('tabPc') : t('tabNpc') }}
             </AppBadge>
             <span class="combat-tracker__hp">
               {{ t('hpLabel') }}: {{ combatant.hpCurrent }}/{{ combatant.hpMax }}
             </span>
-            <span
-              v-if="combatant.initiative !== null"
-              class="combat-tracker__initiative"
-            >
+            <span v-if="combatant.initiative !== null" class="combat-tracker__initiative">
               {{ t('initiativeLabel') }}: {{ combatant.initiative }}
             </span>
           </div>
 
           <!-- Status-flag chips -->
-          <div
-            class="combat-tracker__flags"
-            data-testid="status-flags"
-          >
+          <div class="combat-tracker__flags" data-testid="status-flags">
             <!-- Canonical flags: toggleable with icon -->
-            <template
-              v-for="flag in CANONICAL_FLAGS"
-              :key="flag"
-            >
+            <template v-for="flag in CANONICAL_FLAGS" :key="flag">
               <AppChip
                 :model-value="combatant.statusFlags.includes(flag)"
                 :variant="canonicalFlagVariant(flag)"
@@ -743,10 +713,7 @@
                 :data-testid="`chip-canonical-${flag}`"
                 @update:model-value="toggleFlag(combatant, flag)"
               >
-                <UIcon
-                  :name="canonicalFlagIcon(flag)"
-                  class="combat-tracker__flag-icon"
-                />
+                <UIcon :name="canonicalFlagIcon(flag)" class="combat-tracker__flag-icon" />
                 {{ t(`flag${flag.charAt(0).toUpperCase() + flag.slice(1)}`) }}
               </AppChip>
             </template>
@@ -770,10 +737,7 @@
             </template>
 
             <!-- Add-chip input -->
-            <form
-              class="combat-tracker__add-flag"
-              @submit.prevent="submitAddFlag(combatant)"
-            >
+            <form class="combat-tracker__add-flag" @submit.prevent="submitAddFlag(combatant)">
               <AppInput
                 :model-value="addFlagInput[combatant.id] ?? ''"
                 type="text"
@@ -809,17 +773,10 @@
     </ul>
 
     <!-- Add Combatant picker -->
-    <div
-      v-if="showPicker"
-      class="combat-tracker__picker"
-      data-testid="combatant-picker"
-    >
+    <div v-if="showPicker" class="combat-tracker__picker" data-testid="combatant-picker">
       <div class="combat-tracker__picker-header">
         <!-- Tab bar -->
-        <div
-          class="combat-tracker__picker-tabs"
-          role="tablist"
-        >
+        <div class="combat-tracker__picker-tabs" role="tablist">
           <button
             type="button"
             role="tab"
@@ -843,33 +800,15 @@
             {{ t('tabNpc') }}
           </button>
         </div>
-        <AppButton
-          variant="ghost"
-          size="sm"
-          data-testid="btn-close-picker"
-          @click="closePicker"
-        >
+        <AppButton variant="ghost" size="sm" data-testid="btn-close-picker" @click="closePicker">
           {{ t('closePickerButton') }}
         </AppButton>
       </div>
 
       <!-- PC tab -->
-      <div
-        v-if="pickerTab === 'pc'"
-        role="tabpanel"
-        data-testid="picker-panel-pc"
-      >
-        <p
-          v-if="pcPickerState === 'loading'"
-          class="combat-tracker__placeholder"
-        >
-          &hellip;
-        </p>
-        <p
-          v-if="pcPickerError"
-          class="combat-tracker__picker-error"
-          role="alert"
-        >
+      <div v-if="pickerTab === 'pc'" role="tabpanel" data-testid="picker-panel-pc">
+        <p v-if="pcPickerState === 'loading'" class="combat-tracker__placeholder">&hellip;</p>
+        <p v-if="pcPickerError" class="combat-tracker__picker-error" role="alert">
           {{ pcPickerError }}
         </p>
         <p
@@ -906,22 +845,9 @@
       </div>
 
       <!-- NPC tab -->
-      <div
-        v-if="pickerTab === 'npc'"
-        role="tabpanel"
-        data-testid="picker-panel-npc"
-      >
-        <p
-          v-if="npcPickerState === 'loading'"
-          class="combat-tracker__placeholder"
-        >
-          &hellip;
-        </p>
-        <p
-          v-if="npcPickerError"
-          class="combat-tracker__picker-error"
-          role="alert"
-        >
+      <div v-if="pickerTab === 'npc'" role="tabpanel" data-testid="picker-panel-npc">
+        <p v-if="npcPickerState === 'loading'" class="combat-tracker__placeholder">&hellip;</p>
+        <p v-if="npcPickerError" class="combat-tracker__picker-error" role="alert">
           {{ npcPickerError }}
         </p>
         <p
@@ -1038,7 +964,7 @@
       padding: var(--space-2) var(--space-3);
       border: 1px solid var(--brand-brass-shadow);
       border-radius: var(--radius-sm);
-      transition: background-color 0.15s;
+      transition: background-color var(--motion-duration-fast) var(--motion-ease-standard);
 
       &--active {
         border-color: var(--brand-brass);
@@ -1159,8 +1085,8 @@
       color: var(--text-secondary);
       cursor: pointer;
       transition:
-        color 0.15s,
-        border-color 0.15s;
+        color var(--motion-duration-fast) var(--motion-ease-standard),
+        border-color var(--motion-duration-fast) var(--motion-ease-standard);
 
       &--active {
         color: var(--brand-brass-light);

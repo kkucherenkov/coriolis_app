@@ -307,17 +307,11 @@
 </i18n>
 
 <template>
-  <AppCard
-    class="encounter-panel"
-    data-testid="encounter-panel"
-  >
+  <AppCard class="encounter-panel" data-testid="encounter-panel">
     <header class="encounter-panel__header">
       <h3 class="encounter-panel__title">
         {{ t('heading') }}
-        <span
-          v-if="panelState === 'loaded'"
-          class="encounter-panel__count"
-        >
+        <span v-if="panelState === 'loaded'" class="encounter-panel__count">
           ({{ encounterCount }})
         </span>
       </h3>
@@ -340,23 +334,13 @@
       data-testid="encounter-panel-error"
     >
       {{ errorMsg }}
-      <AppButton
-        variant="ghost"
-        size="sm"
-        class="encounter-panel__retry"
-        @click="loadEncounters"
-      >
+      <AppButton variant="ghost" size="sm" class="encounter-panel__retry" @click="loadEncounters">
         {{ t('retryButton') }}
       </AppButton>
     </AppBanner>
 
     <!-- Loading placeholder -->
-    <p
-      v-if="panelState === 'loading'"
-      class="encounter-panel__placeholder"
-    >
-      &hellip;
-    </p>
+    <p v-if="panelState === 'loading'" class="encounter-panel__placeholder">&hellip;</p>
 
     <!-- Inline create form -->
     <form
@@ -366,19 +350,11 @@
       novalidate
       @submit.prevent="submitCreate"
     >
-      <AppBanner
-        v-if="createError"
-        tone="danger"
-        role="alert"
-        data-testid="encounter-create-error"
-      >
+      <AppBanner v-if="createError" tone="danger" role="alert" data-testid="encounter-create-error">
         {{ createError }}
       </AppBanner>
 
-      <AppField
-        :label="t('nameLabel')"
-        required
-      >
+      <AppField :label="t('nameLabel')" required>
         <template #default="slotAttrs">
           <AppInput
             v-bind="slotAttrs"
@@ -456,10 +432,7 @@
       >
         <div class="encounter-panel__card-top">
           <span class="encounter-panel__card-name">{{ encounter.name }}</span>
-          <AppBadge
-            :variant="stateBadgeVariant(encounter.status)"
-            size="sm"
-          >
+          <AppBadge :variant="stateBadgeVariant(encounter.status)" size="sm">
             {{ stateLabel(encounter.status) }}
           </AppBadge>
         </div>

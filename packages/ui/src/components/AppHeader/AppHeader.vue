@@ -144,7 +144,7 @@
     gap: var(--space-4);
     width: 100%;
     padding: var(--space-5) var(--space-7);
-    background: var(--surface-night, #15193f);
+    background: var(--surface-night);
     border-bottom: 1px solid var(--brand-brass-shadow);
 
     // ── Hamburger ────────────────────────────────────────────────────────────
@@ -156,8 +156,8 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 40px;
-        height: 40px;
+        width: var(--space-8);
+        height: var(--space-8);
         padding: var(--space-1);
         flex-shrink: 0;
         background: transparent;
@@ -166,8 +166,8 @@
         color: var(--text-secondary);
         cursor: pointer;
         transition:
-          color var(--motion-duration-fast, 150ms) var(--motion-ease-standard, ease),
-          background-color var(--motion-duration-fast, 150ms) var(--motion-ease-standard, ease);
+          color var(--motion-duration-fast) var(--motion-ease-standard),
+          background-color var(--motion-duration-fast) var(--motion-ease-standard);
 
         &:hover {
           color: var(--brand-brass-light);
@@ -194,7 +194,7 @@
       font-size: var(--type-display-sm-font-size, 1.125rem);
       font-weight: 700;
       letter-spacing: 0.03em;
-      transition: opacity var(--motion-duration-fast, 150ms) var(--motion-ease-standard, ease);
+      transition: opacity var(--motion-duration-fast) var(--motion-ease-standard);
 
       &:hover {
         opacity: 0.85;
@@ -238,9 +238,9 @@
       border-radius: var(--radius-md, 6px);
       border-bottom: 2px solid transparent;
       transition:
-        color var(--motion-duration-fast, 150ms) var(--motion-ease-standard, ease),
-        border-color var(--motion-duration-fast, 150ms) var(--motion-ease-standard, ease),
-        background-color var(--motion-duration-fast, 150ms) var(--motion-ease-standard, ease);
+        color var(--motion-duration-fast) var(--motion-ease-standard),
+        border-color var(--motion-duration-fast) var(--motion-ease-standard),
+        background-color var(--motion-duration-fast) var(--motion-ease-standard);
 
       &:hover {
         color: var(--brand-brass-light);

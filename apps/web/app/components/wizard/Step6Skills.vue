@@ -297,10 +297,7 @@
         })
       }}
     </p>
-    <p
-      v-if="role"
-      class="step-6-skills__role-hint"
-    >
+    <p v-if="role" class="step-6-skills__role-hint">
       {{ t('keySkillsForRole', { skills: keySkillsLabel, max: KEY_SKILL_MAX }) }}
     </p>
 
@@ -317,18 +314,10 @@
           </span>
         </div>
 
-        <div
-          v-for="key in GENERAL_KEYS"
-          :key="key"
-          class="step-6-skills__row"
-        >
+        <div v-for="key in GENERAL_KEYS" :key="key" class="step-6-skills__row">
           <span class="step-6-skills__name">{{ t(`skill.${key}`) }}</span>
           <span class="step-6-skills__attr">{{ SKILL_ATTR[key] }}</span>
-          <div
-            class="step-6-skills__dots"
-            role="group"
-            :aria-label="t(`skill.${key}`)"
-          >
+          <div class="step-6-skills__dots" role="group" :aria-label="t(`skill.${key}`)">
             <span
               v-for="i in DOT_COUNT"
               :key="i"
@@ -377,18 +366,10 @@
           </span>
         </div>
 
-        <div
-          v-for="key in ADVANCED_KEYS"
-          :key="key"
-          class="step-6-skills__row"
-        >
+        <div v-for="key in ADVANCED_KEYS" :key="key" class="step-6-skills__row">
           <span class="step-6-skills__name">{{ t(`skill.${key}`) }}</span>
           <span class="step-6-skills__attr">{{ SKILL_ATTR[key] }}</span>
-          <div
-            class="step-6-skills__dots"
-            role="group"
-            :aria-label="t(`skill.${key}`)"
-          >
+          <div class="step-6-skills__dots" role="group" :aria-label="t(`skill.${key}`)">
             <span
               v-for="i in DOT_COUNT"
               :key="i"

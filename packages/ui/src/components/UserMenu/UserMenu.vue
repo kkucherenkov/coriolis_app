@@ -45,7 +45,7 @@
   }>();
 
   // Stable ID for aria-controls relationship.
-  const menuId = `user-menu-panel-${Math.random().toString(36).slice(2, 8)}`;
+  const menuId = `app-user-menu-panel-${Math.random().toString(36).slice(2, 8)}`;
 
   const imageError = ref(false);
 
@@ -165,13 +165,13 @@
 </script>
 
 <template>
-  <div class="user-menu">
+  <div class="app-user-menu">
     <AppPopover :open="open" placement="bottom" @update:open="emit('update:open', $event)">
       <!-- Trigger: avatar + name button -->
       <template #trigger>
         <button
           type="button"
-          class="user-menu__trigger"
+          class="app-user-menu__trigger"
           :aria-label="labels.triggerAriaLabel"
           aria-haspopup="menu"
           :aria-expanded="open"
@@ -179,24 +179,24 @@
           @click="onTriggerClick"
         >
           <!-- Avatar or initials -->
-          <span class="user-menu__avatar" aria-hidden="true">
+          <span class="app-user-menu__avatar" aria-hidden="true">
             <img
               v-if="showImage"
-              class="user-menu__avatar-img"
+              class="app-user-menu__avatar-img"
               :src="avatarUrl!"
               :alt="displayName"
               loading="lazy"
               decoding="async"
               @error="handleImageError"
             />
-            <span v-else class="user-menu__avatar-initials">{{ initials }}</span>
+            <span v-else class="app-user-menu__avatar-initials">{{ initials }}</span>
           </span>
 
           <!-- Display name -->
-          <span class="user-menu__name">{{ displayName }}</span>
+          <span class="app-user-menu__name">{{ displayName }}</span>
 
           <!-- Chevron indicator -->
-          <span class="user-menu__chevron" aria-hidden="true">&#8964;</span>
+          <span class="app-user-menu__chevron" aria-hidden="true">&#8964;</span>
         </button>
       </template>
 
@@ -206,12 +206,12 @@
         ref="menuRef"
         role="menu"
         aria-orientation="vertical"
-        class="user-menu__panel"
+        class="app-user-menu__panel"
         @keydown="onMenuKeydown"
       >
         <!-- Language section -->
-        <div role="group" :aria-label="labels.languageLabel" class="user-menu__section">
-          <div class="user-menu__section-label" aria-hidden="true">
+        <div role="group" :aria-label="labels.languageLabel" class="app-user-menu__section">
+          <div class="app-user-menu__section-label" aria-hidden="true">
             {{ labels.languageLabel }}
           </div>
 
@@ -221,11 +221,11 @@
             type="button"
             role="menuitemradio"
             :aria-checked="locale.code === currentLocale"
-            class="user-menu__item user-menu__item--radio"
-            :class="{ 'user-menu__item--checked': locale.code === currentLocale }"
+            class="app-user-menu__item app-user-menu__item--radio"
+            :class="{ 'app-user-menu__item--checked': locale.code === currentLocale }"
             @click="onLocaleClick(locale.code)"
           >
-            <span class="user-menu__radio-indicator" aria-hidden="true">
+            <span class="app-user-menu__radio-indicator" aria-hidden="true">
               {{ locale.code === currentLocale ? '●' : '○' }}
             </span>
             {{ locale.name }}
@@ -233,10 +233,10 @@
         </div>
 
         <!-- Divider -->
-        <div role="separator" class="user-menu__divider" />
+        <div role="separator" class="app-user-menu__divider" />
 
         <!-- Settings -->
-        <button type="button" role="menuitem" class="user-menu__item" @click="onSettingsClick">
+        <button type="button" role="menuitem" class="app-user-menu__item" @click="onSettingsClick">
           {{ labels.settingsLabel }}
         </button>
 
@@ -244,7 +244,7 @@
         <button
           type="button"
           role="menuitem"
-          class="user-menu__item user-menu__item--danger"
+          class="app-user-menu__item app-user-menu__item--danger"
           @click="onSignOutClick"
         >
           {{ labels.signOutLabel }}
@@ -259,7 +259,13 @@
   $trigger-avatar-size: 32px;
   $trigger-avatar-initials-ratio: 0.38;
 
-  .user-menu {
+  // Menu panel min width — sized for the longest locale name + radio indicator.
+  $panel-min-width: 200px;
+
+  // Section label — caption typography below body-sm (no token for 10px).
+  $section-label-font-size: 10px;
+
+  .app-user-menu {
     display: inline-flex;
     position: relative;
 
@@ -345,7 +351,7 @@
     &__panel {
       display: flex;
       flex-direction: column;
-      min-width: 200px;
+      min-width: $panel-min-width;
       padding: var(--space-2) 0;
     }
 
@@ -359,7 +365,7 @@
     &__section-label {
       padding: var(--space-1) var(--space-3);
       font-family: var(--type-display-sm-font-family);
-      font-size: 10px;
+      font-size: $section-label-font-size;
       font-weight: var(--type-label-sm-font-weight, 600);
       letter-spacing: 0.1em;
       text-transform: uppercase;
