@@ -54,6 +54,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # openapi-generator-cli (used to emit the dart-dio client) shells out
+      # to `java -jar`; the catthehacker/ubuntu:act-22.04 runner image
+      # ships without a JRE, so install one before codegen.
+      - name: Install Java (openapi-generator-cli runtime)
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends default-jre-headless
+          java -version
+
       - name: Regenerate clients
         run: pnpm spec:codegen
 
