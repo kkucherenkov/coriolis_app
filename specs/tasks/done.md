@@ -2,6 +2,34 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-11-009b — Phase 7: release workflow on Forgejo (tag → GHCR + Release page)
+
+- Created: 2026-05-11
+- Completed: 2026-05-11
+- Owner: claude
+- Spec: PRD §11 (Phase 7 — Hardening · "beta release"). Half-2 of the courseShelf release-flow port; built on T-009a's production packaging.
+- Result: [PR #17](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/17) on Forgejo — branch `feat/phase-7/release-workflow`, merged as `16d03af`. 2 files / +352.
+- Acceptance — all met:
+  - `.forgejo/workflows/release.yml` triggers on `push: tags: ['v*.*.*-release']`. Tag-parse step rejects malformed tags before docker runs.
+  - Builds + pushes `coriolis-backend` + `coriolis-web` to `${REGISTRY}/${GHCR_USER}/<name>` under `:semver` / `:major.minor` / `:major` / `:latest`.
+  - Renders `compose-release-vX.Y.Z.yml` from `docker/compose.release.yml`, validates with `docker compose config --quiet` from inside `STAGE/`.
+  - Generates release notes via `git-cliff --current` against the just-pushed tag.
+  - Creates a Forgejo release (`draft: false`, `prerelease: false`) via curl + `GITEA_TOKEN`, uploading four assets (tarball + standalone compose + .env example + raw notes).
+- Spec diff: none
+- Codegen impact: no
+- Design impact: none (CI-only)
+- Tests:
+  - `yq eval` parses the workflow clean.
+  - Local dry-run of the stage-bundle shell logic against `SEMVER=0.1.0` produces a valid rendered compose; `docker compose config --quiet` exits 0; image refs resolve to `ghcr.io/kkucherenkov/coriolis-{backend,web}:0.1.0`.
+  - First real verification happens when the operator pushes the first tag.
+- Notable decisions:
+  - **`git-cliff` installed as a binary**, not via an action — same pattern as Trivy in `.forgejo/workflows/trivy.yml`; no dependency on a (possibly unmirrored) action repo.
+  - **Source label `code.homelab.local/<user>/coriolis_app`**, not a github URL. GHCR shows it verbatim on the package page; matches truth that the source lives on Forgejo.
+  - **Re-pushing the same tag fails at `docker push`** — registries reject overwriting an immutable tag. Bump-and-retag is the only way to re-cut.
+  - **Operator must set `GHCR_USER` + `GHCR_TOKEN`** in Forgejo Settings → Actions → Secrets before the first tag push; documented in both the workflow header and the PR.
+- Status: shipped (release flow now armed; not yet fired — needs an operator to push a tag)
+- Blockers: —
+
 ## T-2026-05-11-009a — Phase 7: release packaging (Dockerfiles + compose.release + nginx)
 
 - Created: 2026-05-11
