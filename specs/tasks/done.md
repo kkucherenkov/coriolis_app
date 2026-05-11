@@ -10,7 +10,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
 - Spec: [docs/superpowers/specs/2026-05-11-me-export-design.md](../../docs/superpowers/specs/2026-05-11-me-export-design.md)
 - Plan: [docs/superpowers/plans/2026-05-11-me-export.md](../../docs/superpowers/plans/2026-05-11-me-export.md)
 - Goal: an authenticated user can download a versioned JSON bundle of every character, ship, and game session they own from the settings page.
-- Result: PR pending — branch `feat/phase-7/me-export`, final tip `9d75410` (`fix(backend): T-2026-05-11-003 review-2 — delegate to ListQuery handlers`). 14 commits across spec, codegen, backend, web, and tests.
+- Result: [PR #9](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/9) on Forgejo — branch `feat/phase-7/me-export`, final tip `89338b2` (`chore(lint): clear web ESLint blockers carried over from drift commit`). 22 commits across spec, codegen, backend, web, tests, format catch-up, and final lint cleanup. No conflicts.
 - Acceptance — all met:
   - `GET /api/v1/me/export` (bearer auth) returns `200 application/json` with `$schemaVersion: "1"`; `401` without auth (smoke-confirmed via curl).
   - Bundle contains characters / ships / npcs / gameSessions for the authenticated user only, with canonical read-model shape (delegates to existing `List{Resource}Query` handlers via QueryBus so `express-openapi-validator` accepts the response).
