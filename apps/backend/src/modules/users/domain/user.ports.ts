@@ -58,3 +58,44 @@ export interface IUserRepo {
    */
   softDelete(id: string, deletedAt: Date): Promise<Date | null>;
 }
+
+// ── Export port ───────────────────────────────────────────────────────────
+
+export const EXPORT_REPO = Symbol('EXPORT_REPO');
+
+/**
+ * Minimal user envelope used inside the export bundle. Mirrors the
+ * MeExportUser OpenAPI schema. Excludes email by design.
+ */
+export interface MeExportUserDto {
+  id: string;
+  displayName: string | null;
+  locale: string;
+}
+
+/**
+ * The bundle shape returned by ExportMeHandler. Nested array types use
+ * `unknown[]` because they are owned by other bounded contexts
+ * (Characters, Ships, Npcs, GameSessions) and rebuilt verbatim from
+ * Prisma. The OpenAPI schema is the contract — runtime validation by
+ * `express-openapi-validator` is the safety net.
+ */
+export interface MeExportBundle {
+  $schemaVersion: '1';
+  exportedAt: string; // ISO-8601 UTC
+  user: MeExportUserDto;
+  characters: unknown[];
+  ships: unknown[];
+  npcs: unknown[];
+  gameSessions: unknown[];
+}
+
+export interface IExportRepo {
+  /**
+   * Read the user + their characters, ships, npcs, and game sessions in
+   * the shape expected by the OpenAPI export schemas. NPCs are
+   * user-scoped (not session-scoped) in this codebase, so they are
+   * loaded as a separate top-level read.
+   */
+  loadBundleFor(userId: string): Promise<MeExportBundle>;
+}

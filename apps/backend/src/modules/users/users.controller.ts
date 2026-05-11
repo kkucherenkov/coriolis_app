@@ -19,6 +19,7 @@ import {
   HttpStatus,
   Patch,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -28,9 +29,11 @@ import { SessionGuard } from '../../common/auth/auth.guard';
 import { DeleteMeCommand } from './commands/delete-me.command';
 import { UpdateMeCommand, UpdateMeDto } from './commands/update-me.command';
 import { GetMeQuery } from './queries/get-me.query';
+import { ExportMeQuery } from './queries/export-me.query';
 
 import type { AuthenticatedRequest } from '../../common/auth/auth.guard';
-import type { MeReadModel } from './domain/user.ports';
+import type { MeReadModel, MeExportBundle } from './domain/user.ports';
+import type { Response } from 'express';
 
 @UseGuards(SessionGuard)
 @Controller({ path: 'me', version: '1' })
@@ -68,5 +71,26 @@ export class UsersController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteMe(@Req() req: AuthenticatedRequest): Promise<void> {
     return this.commandBus.execute(new DeleteMeCommand(req.userId));
+  }
+
+  /**
+   * GET /api/v1/me/export
+   *
+   * Streams the user's full data bundle as a downloadable JSON
+   * attachment. The bundle is buffered (built in-memory) for v1 —
+   * see the design doc for the streaming follow-up trigger.
+   */
+  @Get('export')
+  async exportMe(
+    @Req() req: AuthenticatedRequest,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<MeExportBundle> {
+    const bundle = await this.queryBus.execute<ExportMeQuery, MeExportBundle>(
+      new ExportMeQuery(req.userId),
+    );
+    const today = new Date().toISOString().slice(0, 10);
+    const filename = `coriolis-export-${req.userId}-${today}.json`;
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return bundle;
   }
 }
