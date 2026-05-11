@@ -1,0 +1,60 @@
+name: Codegen drift guard
+
+# Path-filtered: Flutter setup is heavy (~60 s install + cache miss), so the
+# job only runs on PRs / pushes that touch the spec sources or this workflow
+# itself. The CI `checks` job covers everything else.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/specs/**"
+      - "packages/api-client-ts/**"
+      - "packages/api-client-dart/**"
+      - ".forgejo/workflows/codegen-drift.yml"
+  pull_request:
+    paths:
+      - "packages/specs/**"
+      - "packages/api-client-ts/**"
+      - "packages/api-client-dart/**"
+      - ".forgejo/workflows/codegen-drift.yml"
+
+concurrency:
+  group: codegen-drift-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "24"
+  FLUTTER_VERSION: "3.41.0"
+
+jobs:
+  drift:
+    name: Regenerate clients and fail on diff
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Regenerate clients
+        run: pnpm spec:codegen
+
+      - name: Fail if generated clients drifted from committed sources
+        run: |
+          git diff --exit-code -- packages/api-client-ts packages/api-client-dart \
+            || (echo '::error::Generated clients are out of date. Run `pnpm spec:codegen` locally and commit the diff.' && exit 1)
