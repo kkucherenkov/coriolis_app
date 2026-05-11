@@ -59,8 +59,6 @@ test.describe('Settings — export', () => {
         .click(),
     ]);
 
-    expect(download.suggestedFilename()).toMatch(
-      /^coriolis-export-.+-\d{4}-\d{2}-\d{2}\.json$/,
-    );
+    expect(download.suggestedFilename()).toMatch(/^coriolis-export-.+-\d{4}-\d{2}-\d{2}\.json$/);
   });
 });

@@ -75,9 +75,10 @@ export interface MeExportUserDto {
 /**
  * The bundle shape returned by ExportMeHandler. Nested array types use
  * `unknown[]` because they are owned by other bounded contexts
- * (Characters, Ships, Npcs, GameSessions) and rebuilt verbatim from
- * Prisma. The OpenAPI schema is the contract — runtime validation by
- * `express-openapi-validator` is the safety net.
+ * (Characters, Ships, Npcs, GameSessions) and produced by each
+ * context's canonical list handler via QueryBus. The OpenAPI schema is
+ * the contract — runtime validation by `express-openapi-validator` is
+ * the safety net.
  */
 export interface MeExportBundle {
   $schemaVersion: '1';
@@ -91,10 +92,11 @@ export interface MeExportBundle {
 
 export interface IExportRepo {
   /**
-   * Read the user + their characters, ships, npcs, and game sessions in
-   * the shape expected by the OpenAPI export schemas. NPCs are
-   * user-scoped (not session-scoped) in this codebase, so they are
-   * loaded as a separate top-level read.
+   * Load the minimal user envelope for the export bundle. Domain-resource
+   * data (characters / ships / npcs / gameSessions) is delegated to each
+   * bounded context's existing list handler via the QueryBus, so the
+   * exported shape matches the canonical API response shape one-to-one.
+   * Soft-deleted users return null.
    */
-  loadBundleFor(userId: string): Promise<MeExportBundle>;
+  loadUserFor(userId: string): Promise<MeExportUserDto | null>;
 }

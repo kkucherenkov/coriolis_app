@@ -1,69 +1,27 @@
 /**
  * WHY this file exists:
- * Infrastructure adapter — the Prisma-backed implementation of
- * IExportRepo. The only place in the users bounded context that
- * cross-reads Characters / Ships / Npcs / GameSessions. Every model
- * uses `ownerId` as the user FK (verified against
- * prisma/schema.prisma at design time). NPCs are user-owned and load
- * as a separate top-level read because they are not session-scoped at
- * the DB level.
+ * Infrastructure adapter for the User half of the export bundle. The
+ * domain-resource data (characters / ships / npcs / game sessions) is
+ * delegated to each context's list handler via the QueryBus — see
+ * ExportMeHandler. This file only loads the minimal user envelope.
  *
- * Reads execute in parallel via Promise.all — bundle assembly does not
- * depend on read ordering, and for v1 user scale (under 1 MB
- * bundles) the latency win is real. Revisit only if real-user
- * bundles cause connection-pool pressure.
+ * Mirrors UserRepo.findActiveById: filters out soft-deleted rows.
  */
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../../common/prisma/prisma.service';
-import { UserNotFoundError } from '../domain/user.errors';
 
-import type { IExportRepo, MeExportBundle, MeExportUserDto } from '../domain/user.ports';
+import type { IExportRepo, MeExportUserDto } from '../domain/user.ports';
 
 @Injectable()
 export class ExportRepo implements IExportRepo {
   constructor(private readonly prisma: PrismaService) {}
 
-  async loadBundleFor(userId: string): Promise<MeExportBundle> {
-    const [user, characters, ships, npcs, gameSessions] = await Promise.all([
-      this.prisma.user.findFirst({
-        where: { id: userId, deletedAt: null },
-        select: { id: true, displayName: true },
-      }),
-      this.prisma.character.findMany({
-        where: { ownerId: userId },
-        include: { items: true, talents: true },
-      }),
-      this.prisma.ship.findMany({
-        where: { ownerId: userId },
-        include: { modules: true, crew: true },
-      }),
-      this.prisma.npc.findMany({
-        where: { ownerId: userId },
-      }),
-      this.prisma.gameSession.findMany({
-        where: { ownerId: userId },
-        include: { encounters: { include: { combatants: true } } },
-      }),
-    ]);
-
-    if (!user) {
-      throw new UserNotFoundError(userId);
-    }
-
-    const userDto: MeExportUserDto = {
-      id: user.id,
-      displayName: user.displayName,
-    };
-
-    return {
-      $schemaVersion: '1',
-      exportedAt: new Date().toISOString(),
-      user: userDto,
-      characters,
-      ships,
-      npcs,
-      gameSessions,
-    };
+  async loadUserFor(userId: string): Promise<MeExportUserDto | null> {
+    const user = await this.prisma.user.findFirst({
+      where: { id: userId, deletedAt: null },
+      select: { id: true, displayName: true },
+    });
+    return user ? { id: user.id, displayName: user.displayName } : null;
   }
 }
