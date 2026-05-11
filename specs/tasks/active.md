@@ -1,0 +1,24 @@
+## T-2026-05-11-003 — Phase 7 entry-point: JSON export (`/api/v1/me/export`)
+
+- Created: 2026-05-11
+- Owner: claude
+- Spec: [docs/superpowers/specs/2026-05-11-me-export-design.md](../../docs/superpowers/specs/2026-05-11-me-export-design.md)
+- Plan: [docs/superpowers/plans/2026-05-11-me-export.md](../../docs/superpowers/plans/2026-05-11-me-export.md)
+- Goal: an authenticated user can download a versioned JSON bundle of every character, ship, and game session they own from the settings page.
+- Acceptance:
+  - `GET /api/v1/me/export` (bearer auth) returns `200 application/json` with a `$schemaVersion: "1"` envelope; `401` without auth.
+  - The bundle contains the user's own characters (with items / statusFlags / talents), ships (with modules / crew), and game sessions (with NPCs / encounters / combatants). No cross-user leakage.
+  - The web settings page has a "Data" section with a working "Download a copy of my data" button. en + ru copy ships; uk + el use the project's `[xx-todo]` placeholder.
+  - `pnpm spec:validate && pnpm spec:bundle && pnpm spec:codegen` clean. Codegen drift committed separately.
+  - `pnpm check:i18n` clean across en / ru / uk / el.
+- Spec diff: openapi.yaml — `GET /api/v1/me/export`, `MeExportBundle`, `MeExportUser`.
+- Codegen impact: yes — regenerate `api-client-ts` + `api-client-dart`.
+- Design impact: none (reuses `AppCard` + `AppButton`).
+- Tests: unit (`export-me.handler.spec.ts`) + Playwright smoke (settings → click → 200 + Content-Disposition).
+- Sub-steps:
+  - [ ] Block 1 — spec + codegen
+  - [ ] Block 2 — backend
+  - [ ] Block 3 — web
+  - [ ] Block 4 — Playwright + close-out
+- Status: in-progress
+- Blockers: —
