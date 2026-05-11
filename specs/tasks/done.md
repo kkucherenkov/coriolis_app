@@ -2,6 +2,40 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-11-003 — Phase 7 entry-point: JSON export (`/api/v1/me/export`)
+
+- Created: 2026-05-11
+- Completed: 2026-05-11
+- Owner: claude
+- Spec: [docs/superpowers/specs/2026-05-11-me-export-design.md](../../docs/superpowers/specs/2026-05-11-me-export-design.md)
+- Plan: [docs/superpowers/plans/2026-05-11-me-export.md](../../docs/superpowers/plans/2026-05-11-me-export.md)
+- Goal: an authenticated user can download a versioned JSON bundle of every character, ship, and game session they own from the settings page.
+- Result: PR pending — branch `feat/phase-7/me-export`, final tip `9d75410` (`fix(backend): T-2026-05-11-003 review-2 — delegate to ListQuery handlers`). 14 commits across spec, codegen, backend, web, and tests.
+- Acceptance — all met:
+  - `GET /api/v1/me/export` (bearer auth) returns `200 application/json` with `$schemaVersion: "1"`; `401` without auth (smoke-confirmed via curl).
+  - Bundle contains characters / ships / npcs / gameSessions for the authenticated user only, with canonical read-model shape (delegates to existing `List{Resource}Query` handlers via QueryBus so `express-openapi-validator` accepts the response).
+  - Web settings page has a working "Data" section. en + ru real copy; uk + el use `[xx-todo]` placeholders. All 4 locales pass `pnpm check:i18n`.
+  - `pnpm spec:validate && pnpm spec:bundle && pnpm spec:codegen` clean. Codegen drift committed separately per repo rule.
+- Commits:
+  - **Block 0 (T entry):** `61669c9` chore(tasks).
+  - **Block 1 (spec + codegen):** `4c90569` (initial spec), `a5c4627` (allOf wrappers + examples fix per spec-reviewer), `8f3a46b` (codegen), `d48a6c2` (npcs hoist to bundle top-level — NPCs are user-owned, not session-owned), `3e5a772` (re-codegen for npcs hoist), `60cbab5` (active.md tick).
+  - **Block 2 (backend):** `c4b2a81` (initial backend), `1ca91a2` (review fixes: drop `User.locale` from spec + types + adapter — `locale` doesn't exist on the User Prisma model; soft-delete-safe `findFirst` + `UserNotFoundError`; sanitize filename; derive date from bundle).
+  - **Block 3 (web):** `80d6a4c` (`useMeApi.exportMe()` + Settings Data section + 4-locale i18n + SCSS), `9defee8` (review polish: `parseFilename` handles unquoted form + WHY-comment on synchronous URL.revokeObjectURL), `1153331` chore(format) lint-fix drift catch-up in apps/web, `3de695e` chore(format) prettier-apply to the design + plan docs, `04fbb1d` (active.md tick).
+  - **Block 4 (smoke + critical fix):** `438274f` (Playwright smoke at `tests/e2e/settings-export.spec.ts`, auto-skip pattern), `9d75410` (final reviewer caught raw-Prisma vs canonical-readmodel shape mismatch — rewrote handler to delegate to ListQuery handlers via QueryBus; IExportRepo slimmed to user-only).
+- Architectural decisions encoded in the branch:
+  - **No `MeExportModule`.** `/me/export` is owned by the existing `UsersController` — extends `UsersModule` instead.
+  - **No HTTP e2e test.** Project has zero HTTP-level e2e; runtime contract enforcement comes from `express-openapi-validator` (dev/test) + codegen-drift CI + handler unit spec + Playwright smoke.
+  - **QueryBus delegation in the handler.** Avoids cross-module Prisma reads in `ExportRepo` and reuses each domain's canonical mapper. `IExportRepo` is now user-only.
+  - **NPCs at bundle top level.** NPCs are user-owned in Prisma (`ownerId` only — no `gameSessionId`), so the bundle exposes them flat rather than nested per session.
+  - **`User.locale` not exported.** Field doesn't exist on the User model; removed from spec + types.
+  - **Email omitted from `MeExportUser`.** The dump may be saved or shared; auth-side identifiers should not leak.
+- Follow-ups (filed in this entry, not blocking the PR):
+  - `@Delete('me')` on `users.controller.ts:70` registers `DELETE /api/v1/me/me` (the controller already has `path: 'me'`). Pre-existing bug — open a separate T-2026-05-11-NNN to audit and fix.
+  - Pagination of the export bundle: each `List{Resource}Query` is called with `limit: 1000`. Covers >99.9% of v1 users. If real-user data exceeds this, fold a cursor loop into the handler.
+  - Streaming delivery / compression: deferred per design (`Out of scope` list). Trigger only if real-user bundles exceed ~1 MB.
+  - Mobile (Flutter) export button: separate task, spec already wired.
+  - `GET /characters/:id/export`: PRD §9 lists it; not blocking 10.3. File as a follow-up if needed.
+
 ## T-2026-05-11-002 — Phase 6 mobile: read-along combat card (Flutter)
 
 - Created: 2026-05-11
