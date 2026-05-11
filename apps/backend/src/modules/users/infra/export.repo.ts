@@ -16,6 +16,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../../common/prisma/prisma.service';
+import { UserNotFoundError } from '../domain/user.errors';
 
 import type { IExportRepo, MeExportBundle, MeExportUserDto } from '../domain/user.ports';
 
@@ -25,9 +26,9 @@ export class ExportRepo implements IExportRepo {
 
   async loadBundleFor(userId: string): Promise<MeExportBundle> {
     const [user, characters, ships, npcs, gameSessions] = await Promise.all([
-      this.prisma.user.findUniqueOrThrow({
-        where: { id: userId },
-        select: { id: true, displayName: true, locale: true },
+      this.prisma.user.findFirst({
+        where: { id: userId, deletedAt: null },
+        select: { id: true, displayName: true },
       }),
       this.prisma.character.findMany({
         where: { ownerId: userId },
@@ -46,10 +47,13 @@ export class ExportRepo implements IExportRepo {
       }),
     ]);
 
+    if (!user) {
+      throw new UserNotFoundError(userId);
+    }
+
     const userDto: MeExportUserDto = {
       id: user.id,
       displayName: user.displayName,
-      locale: user.locale,
     };
 
     return {

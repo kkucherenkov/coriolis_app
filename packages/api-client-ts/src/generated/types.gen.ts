@@ -2161,10 +2161,6 @@ export type MeUpdate = {
 export type MeExportUser = {
     id: string;
     displayName: string | null;
-    /**
-     * BCP-47 locale tag (e.g. `en`, `ru`).
-     */
-    locale: string;
 };
 
 /**

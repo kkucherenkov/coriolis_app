@@ -2667,7 +2667,6 @@ paths:
                     user:
                       id: cuid_01j9zxk5e0000qw3h8m7n6p4r2
                       displayName: Kalim al-Rashid
-                      locale: ru
                     characters: []
                     ships: []
                     npcs: []
@@ -9341,16 +9340,13 @@ components:
         `email` — the dump may be saved to disk or shared, and auth-side
         identifiers should not leak into the file. The opaque `id` is
         retained so a future re-import path can disambiguate.
-      required: [id, displayName, locale]
+      required: [id, displayName]
       additionalProperties: false
       properties:
         id:
           type: string
         displayName:
           type: ["string", "null"]
-        locale:
-          type: string
-          description: BCP-47 locale tag (e.g. `en`, `ru`).
 
     MeExportEncounter:
       description: |

@@ -512,10 +512,10 @@ export interface paths {
      *     can branch on it deterministically.
      *
      *     Bundle scope:
-     *     - **Characters** with nested `inventory` (items) and `talents`.
+     *     - **Characters** with nested `items` and `talents`.
      *     - **Ships** with nested `modules` and `crew`.
-     *     - **Game sessions** with nested `npcs` (each with `weapons` / `armor`),
-     *       `encounters`, and each encounter's `combatants`.
+     *     - **NPCs** (user-owned in this codebase — listed at the bundle top level, not per session).
+     *     - **Game sessions** with nested `encounters` and per-encounter `combatants`.
      *
      *     Out of scope: rolls log, share-link tokens, push records, user
      *     settings. Those are tracked as deferred follow-ups in the design
@@ -3488,8 +3488,6 @@ export interface components {
     MeExportUser: {
       id: string;
       displayName: string | null;
-      /** @description BCP-47 locale tag (e.g. `en`, `ru`). */
-      locale: string;
     };
     /**
      * @description Export-only wrapper. Composes `Encounter` via `allOf` and adds
@@ -3501,17 +3499,24 @@ export interface components {
     };
     /**
      * @description Export-only wrapper. Composes `GameSession` via `allOf` and adds
-     *     the `npcs` + `encounters` arrays. Encounter list uses the wrapper
-     *     so the per-encounter combatants are inlined.
+     *     the `encounters` array (the encounter list uses the encounter
+     *     wrapper so per-encounter combatants are inlined).
+     *
+     *     NPCs are deliberately NOT nested here: in this codebase NPCs are
+     *     user-owned (not session-owned), so they appear once at the
+     *     bundle top level rather than duplicated per session.
      */
     MeExportGameSession: components['schemas']['GameSession'] & {
-      npcs: components['schemas']['Npc'][];
       encounters: components['schemas']['MeExportEncounter'][];
     };
     /**
      * @description Versioned envelope returned by `GET /api/v1/me/export`. `$schemaVersion`
      *     is a string literal so future shape changes can branch
      *     deterministically.
+     *
+     *     NPCs are flat at the bundle top level rather than nested under
+     *     sessions, because NPCs are user-owned in this codebase (not
+     *     session-owned).
      */
     MeExportBundle: {
       /** @constant */
@@ -3521,6 +3526,7 @@ export interface components {
       user: components['schemas']['MeExportUser'];
       characters: components['schemas']['Character'][];
       ships: components['schemas']['Ship'][];
+      npcs: components['schemas']['Npc'][];
       gameSessions: components['schemas']['MeExportGameSession'][];
     };
     /**

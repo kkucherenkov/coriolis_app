@@ -70,7 +70,6 @@ export const EXPORT_REPO = Symbol('EXPORT_REPO');
 export interface MeExportUserDto {
   id: string;
   displayName: string | null;
-  locale: string;
 }
 
 /**

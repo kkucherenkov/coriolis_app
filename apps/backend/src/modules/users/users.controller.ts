@@ -88,8 +88,9 @@ export class UsersController {
     const bundle = await this.queryBus.execute<ExportMeQuery, MeExportBundle>(
       new ExportMeQuery(req.userId),
     );
-    const today = new Date().toISOString().slice(0, 10);
-    const filename = `coriolis-export-${req.userId}-${today}.json`;
+    const today = bundle.exportedAt.slice(0, 10);
+    const safeUserId = req.userId.replaceAll(/[^a-z0-9._-]/gi, '_');
+    const filename = `coriolis-export-${safeUserId}-${today}.json`;
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     return bundle;
   }

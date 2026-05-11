@@ -13,7 +13,7 @@ function makeBundle(overrides: Partial<MeExportBundle> = {}): MeExportBundle {
   return {
     $schemaVersion: '1',
     exportedAt: '2026-05-11T12:00:00.000Z',
-    user: { id: 'user-1', displayName: 'Kalim', locale: 'ru' },
+    user: { id: 'user-1', displayName: 'Kalim' },
     characters: [],
     ships: [],
     npcs: [],
@@ -32,7 +32,7 @@ describe('ExportMeHandler', () => {
   });
 
   it('delegates to the repo and returns the bundle as-is', async () => {
-    const bundle = makeBundle({ user: { id: 'user-1', displayName: null, locale: 'en' } });
+    const bundle = makeBundle({ user: { id: 'user-1', displayName: null } });
     vi.mocked(repo.loadBundleFor).mockResolvedValue(bundle);
 
     const result = await handler.execute(new ExportMeQuery('user-1'));

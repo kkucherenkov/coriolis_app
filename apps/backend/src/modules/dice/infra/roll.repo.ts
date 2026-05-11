@@ -138,9 +138,9 @@ export class RollRepo implements IRollRepo {
         // RollBreakdown is a fixed-shape interface; Prisma's InputJsonValue
         // wants an index signature, so we cast through `unknown` to land in
         // the InputJsonValue lattice without weakening the domain type.
-        ...(data.breakdown !== null
-          ? { breakdown: data.breakdown as unknown as Prisma.InputJsonValue }
-          : {}),
+        ...(data.breakdown === null
+          ? {}
+          : { breakdown: data.breakdown as unknown as Prisma.InputJsonValue }),
       },
       select: ROLL_SELECT,
     });

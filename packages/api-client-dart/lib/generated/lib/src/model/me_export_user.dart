@@ -13,7 +13,6 @@ part 'me_export_user.g.dart';
 /// Properties:
 /// * [id] 
 /// * [displayName] 
-/// * [locale] - BCP-47 locale tag (e.g. `en`, `ru`).
 @BuiltValue()
 abstract class MeExportUser implements Built<MeExportUser, MeExportUserBuilder> {
   @BuiltValueField(wireName: r'id')
@@ -21,10 +20,6 @@ abstract class MeExportUser implements Built<MeExportUser, MeExportUserBuilder> 
 
   @BuiltValueField(wireName: r'displayName')
   String? get displayName;
-
-  /// BCP-47 locale tag (e.g. `en`, `ru`).
-  @BuiltValueField(wireName: r'locale')
-  String get locale;
 
   MeExportUser._();
 
@@ -58,11 +53,6 @@ class _$MeExportUserSerializer implements PrimitiveSerializer<MeExportUser> {
     yield object.displayName == null ? null : serializers.serialize(
       object.displayName,
       specifiedType: const FullType.nullable(String),
-    );
-    yield r'locale';
-    yield serializers.serialize(
-      object.locale,
-      specifiedType: const FullType(String),
     );
   }
 
@@ -101,13 +91,6 @@ class _$MeExportUserSerializer implements PrimitiveSerializer<MeExportUser> {
           ) as String?;
           if (valueDes == null) continue;
           result.displayName = valueDes;
-          break;
-        case r'locale':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.locale = valueDes;
           break;
         default:
           unhandled.add(key);
