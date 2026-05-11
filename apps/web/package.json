@@ -38,6 +38,7 @@
     "@app/tsconfig": "workspace:*",
     "@nuxt/test-utils": "^4.0.2",
     "@size-limit/file": "^12.1.0",
+    "@vite-pwa/nuxt": "^1.1.1",
     "@vue/test-utils": "^2.4.6",
     "happy-dom": "^20.9.0",
     "sass": "^1.83.0",
@@ -45,6 +46,7 @@
     "typescript": "^6.0.3",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.0",
-    "vue-tsc": "^3.2.0"
+    "vue-tsc": "^3.2.0",
+    "workbox-window": "^7.4.1"
   }
 }
