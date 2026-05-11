@@ -80,6 +80,50 @@ groups:
         labels:
           severity: warning
 
+      - uid: backend-p95-save-latency
+        # Tracks PRD §6: "Sheet edit auto-save round-trip ≤ 500 ms p95".
+        # Filter to write methods on the sheet-mutation paths so the
+        # signal isn't polluted by the slow JSON export, the GET-list
+        # endpoints, or the auth handshake. Pino's
+        # http_server_requests_seconds_bucket carries `method` + `route`
+        # labels populated by the express middleware.
+        title: "Auto-save P95 > 500 ms (PRD §6 ceiling)"
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            model:
+              expr: |
+                histogram_quantile(0.95,
+                  sum by(le) (rate(http_server_requests_seconds_bucket{
+                    method=~"PATCH|PUT|DELETE",
+                    route=~"/api/v1/(me|characters|ships|npcs|sessions|combat).*"
+                  }[5m])))
+              intervalMs: 60000
+              maxDataPoints: 43200
+          - refId: C
+            datasourceUid: "__expr__"
+            model:
+              conditions:
+                - evaluator:
+                    params: [0.5]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [A]
+                  reducer:
+                    type: last
+              expression: A
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: "Auto-save P95 above 500 ms for 5 minutes (PRD §6 NFR breach)"
+        labels:
+          severity: warning
+
       - uid: backend-down
         title: "Backend health check failing"
         condition: C

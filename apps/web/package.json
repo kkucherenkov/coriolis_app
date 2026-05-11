@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "typecheck": "nuxt typecheck",
     "size": "size-limit",
-    "size:why": "size-limit --why"
+    "size:why": "size-limit --why",
+    "lighthouse": "lhci autorun"
   },
   "dependencies": {
     "@app/api-client-ts": "workspace:*",
@@ -37,6 +38,7 @@
   "devDependencies": {
     "@app/eslint-config": "workspace:*",
     "@app/tsconfig": "workspace:*",
+    "@lhci/cli": "^0.15.1",
     "@nuxt/test-utils": "^4.0.2",
     "@size-limit/file": "^12.1.0",
     "@vite-pwa/nuxt": "^1.1.1",
