@@ -7,7 +7,12 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import type { Combatant, CombatantCreate, CombatantUpdateWritable, Problem } from '@app/api-client-ts';
+import type {
+  Combatant,
+  CombatantCreate,
+  CombatantUpdateWritable,
+  Problem,
+} from '@app/api-client-ts';
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 

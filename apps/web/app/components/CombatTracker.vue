@@ -55,7 +55,11 @@
      * (e.g. setup → active after rollInitiative). Parent (EncounterPanel)
      * should patch its local encounter list from this value.
      */
-    encounterStatusChanged: [encounterId: string, status: EncounterStatus, activeCombatantId: string | null];
+    encounterStatusChanged: [
+      encounterId: string,
+      status: EncounterStatus,
+      activeCombatantId: string | null,
+    ];
   }>();
 
   const { t } = useI18n({ useScope: 'local' });
@@ -91,8 +95,8 @@
       const result = await combatantsApi.list(props.encounterId);
       combatants.value = [...result.items];
       listState.value = 'loaded';
-    } catch (err) {
-      const problem = err as { detail?: string };
+    } catch (error) {
+      const problem = error as { detail?: string };
       listError.value = problem.detail ?? t('errorLoad');
       listState.value = 'error';
     }
@@ -140,8 +144,8 @@
     try {
       await combatantsApi.reorder(props.encounterId, orderedIds);
       // Realtime combat.updated will arrive and reconcile state wholesale.
-    } catch (err) {
-      const problem = err as { detail?: string };
+    } catch (error) {
+      const problem = error as { detail?: string };
       reorderError.value = problem.detail ?? t('errorReorder');
     }
   }
@@ -153,11 +157,16 @@
   watch(
     () => props.combatSnapshot,
     (snapshot) => {
-      if (!snapshot || snapshot.encounterId !== props.encounterId) return;
+      if (snapshot?.encounterId !== props.encounterId) return;
       combatants.value = [...snapshot.combatants];
       listState.value = 'loaded';
       // Bubble status change up so EncounterPanel can patch its encounter list.
-      emit('encounterStatusChanged', props.encounterId, snapshot.encounter.status, snapshot.encounter.activeCombatantId);
+      emit(
+        'encounterStatusChanged',
+        props.encounterId,
+        snapshot.encounter.status,
+        snapshot.encounter.activeCombatantId,
+      );
     },
   );
 
@@ -177,8 +186,8 @@
     try {
       await encountersApi.rollInitiative(props.encounterId);
       // Realtime combat.updated arrives → combatSnapshot watcher reconciles.
-    } catch (err) {
-      const problem = err as { detail?: string };
+    } catch (error) {
+      const problem = error as { detail?: string };
       initiativeError.value = problem.detail ?? t('errorRollInitiative');
     } finally {
       initiativeBusy.value = false;
@@ -195,8 +204,8 @@
     try {
       await encountersApi.advanceTurn(props.encounterId);
       // Realtime combat.updated arrives → combatSnapshot watcher reconciles.
-    } catch (err) {
-      const problem = err as { detail?: string };
+    } catch (error) {
+      const problem = error as { detail?: string };
       initiativeError.value = problem.detail ?? t('errorAdvanceTurn');
     } finally {
       initiativeBusy.value = false;
@@ -213,8 +222,8 @@
     try {
       await combatantsApi.remove(id);
       combatants.value = combatants.value.filter((c) => c.id !== id);
-    } catch (err) {
-      const problem = err as { detail?: string };
+    } catch (error) {
+      const problem = error as { detail?: string };
       removeError.value = problem.detail ?? t('errorRemove');
     } finally {
       removingId.value = null;
@@ -338,8 +347,8 @@
       const result = await charactersApi.list({ limit: 200 });
       allCharacters.value = [...result.items];
       pcPickerState.value = 'loaded';
-    } catch (err) {
-      const problem = err as { detail?: string };
+    } catch (error) {
+      const problem = error as { detail?: string };
       pcPickerError.value = problem.detail ?? t('errorLoadPcs');
       pcPickerState.value = 'error';
     }
@@ -351,8 +360,8 @@
       const result = await npcsApi.list({ limit: 200 });
       npcList.value = [...result.items];
       npcPickerState.value = 'loaded';
-    } catch (err) {
-      const problem = err as { detail?: string };
+    } catch (error) {
+      const problem = error as { detail?: string };
       npcPickerError.value = problem.detail ?? t('errorLoadNpcs');
       npcPickerState.value = 'error';
     }
@@ -377,8 +386,8 @@
         id: character.id,
       });
       combatants.value = [...combatants.value, added];
-    } catch (err) {
-      const problem = err as { detail?: string };
+    } catch (error) {
+      const problem = error as { detail?: string };
       listError.value = problem.detail ?? t('errorAdd');
     } finally {
       addingId.value = null;
@@ -393,8 +402,8 @@
         id: npc.id,
       });
       combatants.value = [...combatants.value, added];
-    } catch (err) {
-      const problem = err as { detail?: string };
+    } catch (error) {
+      const problem = error as { detail?: string };
       listError.value = problem.detail ?? t('errorAdd');
     } finally {
       addingId.value = null;
@@ -555,7 +564,9 @@
   <div class="combat-tracker" data-testid="combat-tracker">
     <!-- Header -->
     <header class="combat-tracker__header">
-      <h4 class="combat-tracker__title">{{ t('heading') }}</h4>
+      <h4 class="combat-tracker__title">
+        {{ t('heading') }}
+      </h4>
       <div class="combat-tracker__header-actions">
         <!-- Roll Initiative: GM only, enabled when status=setup and ≥1 combatant -->
         <AppButton
@@ -583,12 +594,7 @@
           {{ t('advanceTurnButton') }}
         </AppButton>
 
-        <AppButton
-          variant="ghost"
-          size="sm"
-          data-testid="btn-add-combatant"
-          @click="openPicker"
-        >
+        <AppButton variant="ghost" size="sm" data-testid="btn-add-combatant" @click="openPicker">
           {{ t('addButton') }}
         </AppButton>
       </div>
@@ -615,12 +621,7 @@
     >
       <AppBanner tone="danger">
         {{ listError }}
-        <AppButton
-          variant="ghost"
-          size="sm"
-          class="combat-tracker__retry"
-          @click="loadCombatants"
-        >
+        <AppButton variant="ghost" size="sm" class="combat-tracker__retry" @click="loadCombatants">
           {{ t('retryButton') }}
         </AppButton>
       </AppBanner>
@@ -635,8 +636,12 @@
       class="combat-tracker__empty"
       data-testid="combat-tracker-empty"
     >
-      <p class="combat-tracker__empty-heading">{{ t('emptyHeading') }}</p>
-      <p class="combat-tracker__empty-body">{{ t('emptyBody') }}</p>
+      <p class="combat-tracker__empty-heading">
+        {{ t('emptyHeading') }}
+      </p>
+      <p class="combat-tracker__empty-body">
+        {{ t('emptyBody') }}
+      </p>
     </div>
 
     <!-- Combatant list -->
@@ -732,10 +737,7 @@
             </template>
 
             <!-- Add-chip input -->
-            <form
-              class="combat-tracker__add-flag"
-              @submit.prevent="submitAddFlag(combatant)"
-            >
+            <form class="combat-tracker__add-flag" @submit.prevent="submitAddFlag(combatant)">
               <AppInput
                 :model-value="addFlagInput[combatant.id] ?? ''"
                 type="text"
@@ -745,7 +747,11 @@
                 :disabled="updatingFlagFor === combatant.id"
                 :aria-label="t('addFlagButton')"
                 :data-testid="`add-flag-input-${combatant.id}`"
-                @update:model-value="(v: string | number | null) => { addFlagInput[combatant.id] = String(v ?? '') }"
+                @update:model-value="
+                  (v: string | number | null) => {
+                    addFlagInput[combatant.id] = String(v ?? '');
+                  }
+                "
               />
             </form>
           </div>
@@ -812,7 +818,11 @@
         >
           {{ t('pcEmpty') }}
         </p>
-        <ul v-if="pcPickerState === 'loaded' && availablePcs.length > 0" class="combat-tracker__picker-list" role="list">
+        <ul
+          v-if="pcPickerState === 'loaded' && availablePcs.length > 0"
+          class="combat-tracker__picker-list"
+          role="list"
+        >
           <li
             v-for="character in availablePcs"
             :key="character.id"
@@ -847,7 +857,11 @@
         >
           {{ t('npcEmpty') }}
         </p>
-        <ul v-if="npcPickerState === 'loaded' && availableNpcs.length > 0" class="combat-tracker__picker-list" role="list">
+        <ul
+          v-if="npcPickerState === 'loaded' && availableNpcs.length > 0"
+          class="combat-tracker__picker-list"
+          role="list"
+        >
           <li
             v-for="npc in availableNpcs"
             :key="npc.id"
@@ -1070,7 +1084,9 @@
       font-size: var(--type-body-sm-font-size);
       color: var(--text-secondary);
       cursor: pointer;
-      transition: color 0.15s, border-color 0.15s;
+      transition:
+        color 0.15s,
+        border-color 0.15s;
 
       &--active {
         color: var(--brand-brass-light);

@@ -37,9 +37,7 @@ interface MockResult<T> {
 }
 
 async function callList(
-  mockFn: (opts: unknown) => Promise<
-    MockResult<{ items: Encounter[]; nextCursor: string | null }>
-  >,
+  mockFn: (opts: unknown) => Promise<MockResult<{ items: Encounter[]; nextCursor: string | null }>>,
   sessionId: string,
   opts?: { limit?: number; status?: EncounterStatus },
 ): Promise<{ items: readonly Encounter[]; nextCursor: string | null }> {
@@ -257,8 +255,8 @@ describe('useEncountersApi.create', () => {
     let caught: Problem | null = null;
     try {
       await callCreate(mockCreate, 'session-id-001', { name: '' });
-    } catch (err) {
-      caught = err as Problem;
+    } catch (error) {
+      caught = error as Problem;
     }
     expect(caught?.detail).toBe('ENCOUNTER_NAME_EMPTY');
   });
@@ -329,9 +327,10 @@ describe('useEncountersApi.update', () => {
     };
     const mockUpdate = vi.fn().mockResolvedValue({ data: undefined, error: problem });
 
-    await expect(
-      callUpdate(mockUpdate, 'enc-id-001', { status: 'active' }),
-    ).rejects.toMatchObject({ status: 422, detail: 'ENCOUNTER_NO_COMBATANTS' });
+    await expect(callUpdate(mockUpdate, 'enc-id-001', { status: 'active' })).rejects.toMatchObject({
+      status: 422,
+      detail: 'ENCOUNTER_NO_COMBATANTS',
+    });
   });
 
   it('throws Problem on 422 — invalid status transition', async () => {
@@ -343,9 +342,9 @@ describe('useEncountersApi.update', () => {
     };
     const mockUpdate = vi.fn().mockResolvedValue({ data: undefined, error: problem });
 
-    await expect(
-      callUpdate(mockUpdate, 'enc-id-001', { status: 'setup' }),
-    ).rejects.toMatchObject({ status: 422 });
+    await expect(callUpdate(mockUpdate, 'enc-id-001', { status: 'setup' })).rejects.toMatchObject({
+      status: 422,
+    });
   });
 });
 
@@ -476,11 +475,15 @@ describe('EncounterPanel.vue — structural wiring', () => {
   });
 
   it('has hintNoCombatants key in English', () => {
-    expect(src).toContain('"hintNoCombatants": "Add at least one combatant before rolling initiative."');
+    expect(src).toContain(
+      '"hintNoCombatants": "Add at least one combatant before rolling initiative."',
+    );
   });
 
   it('has hintNoCombatants key in Russian', () => {
-    expect(src).toContain('"hintNoCombatants": "Добавьте хотя бы одного участника перед броском инициативы."');
+    expect(src).toContain(
+      '"hintNoCombatants": "Добавьте хотя бы одного участника перед броском инициативы."',
+    );
   });
 
   it('has uk placeholder translations', () => {

@@ -275,7 +275,12 @@ describe('npc sheet — problems card surfaces 422 validation errors', () => {
   it('ignores non-422 errors', () => {
     const { validationProblems, recordValidationError } = makeProblemsStore();
 
-    const error500: Problem = { type: null, status: 500, title: 'Internal Server Error', detail: 'Oops' };
+    const error500: Problem = {
+      type: null,
+      status: 500,
+      title: 'Internal Server Error',
+      detail: 'Oops',
+    };
     recordValidationError(error500);
 
     expect(validationProblems.value).toHaveLength(0);
@@ -306,7 +311,12 @@ describe('npc sheet — problems card surfaces 422 validation errors', () => {
     const { validationProblems, recordValidationError, clearValidationProblems } =
       makeProblemsStore();
 
-    recordValidationError({ type: null, title: null, status: 422, detail: 'err' } satisfies Problem);
+    recordValidationError({
+      type: null,
+      title: null,
+      status: 422,
+      detail: 'err',
+    } satisfies Problem);
     expect(validationProblems.value).toHaveLength(1);
 
     clearValidationProblems();
@@ -317,7 +327,12 @@ describe('npc sheet — problems card surfaces 422 validation errors', () => {
     const { recordValidationError, hasProblems } = makeProblemsStore();
 
     expect(hasProblems.value).toBe(false);
-    recordValidationError({ type: null, title: null, status: 422, detail: 'bad' } satisfies Problem);
+    recordValidationError({
+      type: null,
+      title: null,
+      status: 422,
+      detail: 'bad',
+    } satisfies Problem);
     expect(hasProblems.value).toBe(true);
   });
 
@@ -326,7 +341,12 @@ describe('npc sheet — problems card surfaces 422 validation errors', () => {
 
     vi.useFakeTimers();
 
-    const error422: Problem = { type: null, title: null, status: 422, detail: 'name must be 1–120 chars' };
+    const error422: Problem = {
+      type: null,
+      title: null,
+      status: 422,
+      detail: 'name must be 1–120 chars',
+    };
     const updateMock = vi.fn().mockRejectedValue(error422);
 
     const { schedule, saveState } = useAutoSave(
@@ -356,10 +376,7 @@ describe('npc sheet — problems card surfaces 422 validation errors', () => {
 // ── 4. Delete confirmation flow ───────────────────────────────────────────────
 
 describe('npc sheet — delete confirmation flow', () => {
-  function makeDeleteFlow(
-    deleteFn: () => Promise<void>,
-    navigateFn: (path: string) => void,
-  ) {
+  function makeDeleteFlow(deleteFn: () => Promise<void>, navigateFn: (path: string) => void) {
     const deleteConfirmOpen = ref(false);
     const deleting = ref(false);
     const deleteError = ref('');
@@ -381,7 +398,7 @@ describe('npc sheet — delete confirmation flow', () => {
         navigateFn('/app/npcs');
       } catch (error) {
         const problem = error as Problem;
-        deleteError.value = problem.detail ?? 'Couldn\'t delete NPC.';
+        deleteError.value = problem.detail ?? "Couldn't delete NPC.";
         deleteConfirmOpen.value = false;
       } finally {
         deleting.value = false;
@@ -428,7 +445,12 @@ describe('npc sheet — delete confirmation flow', () => {
   });
 
   it('sets deleteError and closes modal when delete API throws', async () => {
-    const deleteFn = vi.fn().mockRejectedValue({ type: null, title: null, status: 403, detail: 'Not yours.' } satisfies Problem);
+    const deleteFn = vi.fn().mockRejectedValue({
+      type: null,
+      title: null,
+      status: 403,
+      detail: 'Not yours.',
+    } satisfies Problem);
     const navigateFn = vi.fn();
 
     const { openDeleteConfirm, confirmDelete, deleteError, deleteConfirmOpen } = makeDeleteFlow(

@@ -30,7 +30,6 @@ import {
 import type {
   Encounter,
   EncounterCreate,
-  EncounterList,
   EncounterStatus,
   EncounterUpdate,
   Combatant,

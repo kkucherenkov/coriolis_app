@@ -104,8 +104,8 @@
       panelState.value = 'loaded';
       // Fire-and-forget combatant counts — partial failures are swallowed
       void loadCombatantCounts(encounters.value);
-    } catch (err) {
-      const problem = err as { detail?: string };
+    } catch (error) {
+      const problem = error as { detail?: string };
       errorMsg.value = problem.detail ?? t('errorLoad');
       panelState.value = 'error';
     }
@@ -159,8 +159,8 @@
       });
       showCreateForm.value = false;
       await loadEncounters();
-    } catch (err) {
-      const problem = err as { detail?: string };
+    } catch (error) {
+      const problem = error as { detail?: string };
       createError.value = problem.detail ?? t('errorCreate');
     } finally {
       createBusy.value = false;
@@ -190,8 +190,8 @@
     try {
       await encountersApi.remove(id);
       await loadEncounters();
-    } catch (err) {
-      const problem = err as { detail?: string };
+    } catch (error) {
+      const problem = error as { detail?: string };
       errorMsg.value = problem.detail ?? t('errorDelete');
     } finally {
       deletingId.value = null;
@@ -338,9 +338,7 @@
     </AppBanner>
 
     <!-- Loading placeholder -->
-    <p v-if="panelState === 'loading'" class="encounter-panel__placeholder">
-      &hellip;
-    </p>
+    <p v-if="panelState === 'loading'" class="encounter-panel__placeholder">&hellip;</p>
 
     <!-- Inline create form -->
     <form
@@ -410,8 +408,12 @@
       class="encounter-panel__empty"
       data-testid="encounter-panel-empty"
     >
-      <p class="encounter-panel__empty-heading">{{ t('emptyHeading') }}</p>
-      <p class="encounter-panel__empty-body">{{ t('emptyBody') }}</p>
+      <p class="encounter-panel__empty-heading">
+        {{ t('emptyHeading') }}
+      </p>
+      <p class="encounter-panel__empty-body">
+        {{ t('emptyBody') }}
+      </p>
     </div>
 
     <!-- Encounter list -->
@@ -434,7 +436,13 @@
         </div>
 
         <p class="encounter-panel__card-meta">
-          {{ t('combatantsCount', { count: combatantCountFor(encounter.id) }, combatantCountFor(encounter.id)) }}
+          {{
+            t(
+              'combatantsCount',
+              { count: combatantCountFor(encounter.id) },
+              combatantCountFor(encounter.id),
+            )
+          }}
         </p>
 
         <!-- State-machine hint: setup with no combatants -->
