@@ -2,6 +2,46 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-11-010 — Phase 7: Lighthouse CI gate + backend p95 save-latency alert
+
+- Created: 2026-05-11
+- Completed: 2026-05-11
+- Owner: claude
+- Spec: PRD §6 (NFR performance) + PRD §11 (Phase 7 — "performance tuning"). Closes the two perf items deferred from T-006.
+- Result: [PR #18](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/18) on Forgejo — branch `feat/phase-7/perf-gates`, merged. Two commits: initial gate (`f04e9cb`) + Chrome `--no-sandbox` fix for the act_runner (`312e37c`). 7 files / +1126 / −12.
+- Acceptance — all met:
+  - `pnpm --filter @app/web lighthouse` runs `@lhci/cli autorun` against the static-generated SPA, asserts 4 budgets, exits non-zero on regression.
+  - `apps/web/.lighthouserc.json` — single URL `/`, mobile preset (PRD §6's "3G mobile"), 3 runs, lhci median.
+  - Assertions (today's baseline → ceiling):
+    - perf score: 0.89 → **≥ 0.85** (error)
+    - CLS: 0.0004 → **≤ 0.1** (error)
+    - LCP: 3186 ms → **≤ 3500 ms** (error)
+    - TBT: 0 ms → **≤ 300 ms** (warn)
+  - `.forgejo/workflows/ci.yml` `quality` job installs `google-chrome-stable` from Google's apt repo, runs `pnpm --filter @app/web generate`, then both `lighthouse` and `size` against the one build.
+  - Bundle-size step moved from `checks` → `quality` so one `nuxt generate` powers both gates.
+  - `docker/grafana/provisioning/alerting/app-alerts.yaml` gains `backend-p95-save-latency`: histogram_quantile(0.95, ...) filtered to PATCH/PUT/DELETE on `/api/v1/(me|characters|ships|npcs|sessions|combat).*`, threshold 500 ms (PRD §6), warning severity.
+- Spec diff: none
+- Codegen impact: no
+- Design impact: none
+- Tests: 445/445 web specs green; full quality-gate sweep clean; Lighthouse gate passes locally with the locked thresholds.
+- Notable decisions:
+  - **LCP threshold 3500 ms is intentionally LOOSER than PRD §6's 2500 ms.** Today's mobile baseline is 3.2 s; the gate is a regression-catcher, not a PRD-compliance assertion. Closing the 700 ms gap is its own follow-up (likely font preload + smaller initial JS chunk + route-level code splitting once Nuxt 4 stabilises chunk-naming).
+  - **`--no-sandbox` + `--disable-dev-shm-usage` chromeFlags.** Forgejo's act_runner runs the workflow as root; Chrome refuses to start its zygote there (crbug.com/638180). The `/dev/shm` flag is a defensive companion — containers often ship a tmpfs too small for Chrome's IPC.
+  - **Backend p95 = Grafana alert, not CI-fail.** PRD treats latency as a prod signal; matches courseShelf's "gate = alert, not synthetic-load assertion" stance. No k6/autocannon CI step.
+  - **Google Chrome over playwright's chromium.** The Playwright container ships `chrome-headless-shell` only; Lighthouse needs full Chrome for several perf insights.
+- Status: shipped
+- Blockers: —
+
+## Open follow-up (Phase 7 backlog after T-010)
+
+- **Flutter SQLite offline mirror + sync engine (mobile).** Last "🔴 not started" pillar.
+- **Close LCP 700 ms gap to PRD §6.** Font preload + smaller initial JS chunk + route-level code splitting.
+- First **beta tag push** (`v0.1.0-release`) — workflow is armed; needs operator to push.
+- Drop `.github/dependabot.yml` (dead config on Forgejo origin).
+- `AppPopover` `role` prop refactor.
+- Restore secret scanning (trufflehog binary à la trivy).
+- POST queueing + ETag/If-Match conflict resolution (deferred offline edges).
+
 ## T-2026-05-11-009b — Phase 7: release workflow on Forgejo (tag → GHCR + Release page)
 
 - Created: 2026-05-11
