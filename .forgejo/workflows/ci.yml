@@ -78,9 +78,9 @@ jobs:
         run: pnpm format:check
 
   # ── Quality (storybook a11y smoke + security audit) ──────────────────────
-  # One job that does the Storybook a11y smoke AND the dependency / secret /
-  # license audits. Runs in slot 2 in parallel with `checks` (slot 1) under
-  # the act_runner's concurrency=2 limit.
+  # One job that does the Storybook a11y smoke AND the dependency / license
+  # audits. Runs in slot 2 in parallel with `checks` (slot 1) under the
+  # act_runner's concurrency=2 limit.
   #
   # Runs inside mcr.microsoft.com/playwright:v1.59.1-jammy so Chromium and
   # every apt system dep Playwright needs are already in the image — no
@@ -90,6 +90,13 @@ jobs:
   # Security audits don't strictly need the Playwright image, but folding
   # them into the same job avoids a redundant pnpm install + checkout
   # + Node setup (~60 s saved on every run).
+  #
+  # Note: trufflehog is intentionally absent — code.forgejo.org doesn't
+  # mirror trufflesecurity/trufflehog, and pulling it from github.com via
+  # a full URL still requires the runner to have outbound github.com
+  # network access (which is not the homelab default). pnpm audit covers
+  # the dependency-vuln baseline; treat secret scanning as a follow-up
+  # if the runner gets github.com pull access.
   quality:
     name: Quality (storybook a11y · security audit)
     runs-on: ubuntu-latest
@@ -99,9 +106,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
-        with:
-          # trufflehog needs git history to diff base ↔ head.
-          fetch-depth: 0
 
       - uses: pnpm/action-setup@v6
 
@@ -126,16 +130,6 @@ jobs:
 
       - name: Dependency vulnerability scan
         run: pnpm audit --audit-level=critical
-
-      - name: Secret scanning
-        uses: trufflesecurity/trufflehog@main
-        with:
-          path: ./
-          # On PR: diff PR base → HEAD. On push: diff previous commit → HEAD.
-          # Avoid BASE==HEAD which trufflehog rejects with exit 1.
-          base: ${{ github.event.pull_request.base.sha || github.event.before }}
-          head: ${{ github.event.pull_request.head.sha || github.sha }}
-          extra_args: --only-verified
 
       - name: License compliance check
         run: pnpm dlx license-checker --excludePrivatePackages --onlyAllow 'MIT;ISC;Apache-2.0;BSD-2-Clause;BSD-3-Clause;0BSD;CC0-1.0;Unlicense;Python-2.0;CC-BY-3.0;CC-BY-4.0'

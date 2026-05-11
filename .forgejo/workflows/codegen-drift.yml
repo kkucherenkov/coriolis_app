@@ -43,7 +43,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
 
-      - uses: subosito/flutter-action@v2
+      # Full URL — code.forgejo.org doesn't mirror subosito/flutter-action.
+      # The act_runner falls back to the explicit https:// host instead of
+      # default-actions-url for refs that include a scheme.
+      - uses: https://github.com/subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
