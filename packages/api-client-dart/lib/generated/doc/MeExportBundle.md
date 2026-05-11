@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **user** | [**MeExportUser**](MeExportUser.md) |  | 
 **characters** | [**BuiltList&lt;Character&gt;**](Character.md) |  | 
 **ships** | [**BuiltList&lt;Ship&gt;**](Ship.md) |  | 
+**npcs** | [**BuiltList&lt;Npc&gt;**](Npc.md) |  | 
 **gameSessions** | [**BuiltList&lt;MeExportGameSession&gt;**](MeExportGameSession.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

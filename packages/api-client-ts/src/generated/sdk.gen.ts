@@ -608,10 +608,10 @@ export const updateMe = <ThrowOnError extends boolean = false>(options: Options<
  * can branch on it deterministically.
  *
  * Bundle scope:
- * - **Characters** with nested `inventory` (items) and `talents`.
+ * - **Characters** with nested `items` and `talents`.
  * - **Ships** with nested `modules` and `crew`.
- * - **Game sessions** with nested `npcs` (each with `weapons` / `armor`),
- * `encounters`, and each encounter's `combatants`.
+ * - **NPCs** (user-owned in this codebase — listed at the bundle top level, not per session).
+ * - **Game sessions** with nested `encounters` and per-encounter `combatants`.
  *
  * Out of scope: rolls log, share-link tokens, push records, user
  * settings. Those are tracked as deferred follow-ups in the design

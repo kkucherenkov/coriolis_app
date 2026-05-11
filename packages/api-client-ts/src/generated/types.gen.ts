@@ -2179,12 +2179,15 @@ export type MeExportEncounter = Encounter & {
 
 /**
  * Export-only wrapper. Composes `GameSession` via `allOf` and adds
- * the `npcs` + `encounters` arrays. Encounter list uses the wrapper
- * so the per-encounter combatants are inlined.
+ * the `encounters` array (the encounter list uses the encounter
+ * wrapper so per-encounter combatants are inlined).
+ *
+ * NPCs are deliberately NOT nested here: in this codebase NPCs are
+ * user-owned (not session-owned), so they appear once at the
+ * bundle top level rather than duplicated per session.
  *
  */
 export type MeExportGameSession = GameSession & {
-    npcs: Array<Npc>;
     encounters: Array<MeExportEncounter>;
 };
 
@@ -2193,6 +2196,10 @@ export type MeExportGameSession = GameSession & {
  * is a string literal so future shape changes can branch
  * deterministically.
  *
+ * NPCs are flat at the bundle top level rather than nested under
+ * sessions, because NPCs are user-owned in this codebase (not
+ * session-owned).
+ *
  */
 export type MeExportBundle = {
     $schemaVersion: '1';
@@ -2200,6 +2207,7 @@ export type MeExportBundle = {
     user: MeExportUser;
     characters: Array<Character>;
     ships: Array<Ship>;
+    npcs: Array<Npc>;
     gameSessions: Array<MeExportGameSession>;
 };
 
@@ -3428,12 +3436,15 @@ export type MeExportEncounterWritable = EncounterWritable & {
 
 /**
  * Export-only wrapper. Composes `GameSession` via `allOf` and adds
- * the `npcs` + `encounters` arrays. Encounter list uses the wrapper
- * so the per-encounter combatants are inlined.
+ * the `encounters` array (the encounter list uses the encounter
+ * wrapper so per-encounter combatants are inlined).
+ *
+ * NPCs are deliberately NOT nested here: in this codebase NPCs are
+ * user-owned (not session-owned), so they appear once at the
+ * bundle top level rather than duplicated per session.
  *
  */
 export type MeExportGameSessionWritable = GameSessionWritable & {
-    npcs: Array<NpcWritable>;
     encounters: Array<MeExportEncounterWritable>;
 };
 
@@ -3442,6 +3453,10 @@ export type MeExportGameSessionWritable = GameSessionWritable & {
  * is a string literal so future shape changes can branch
  * deterministically.
  *
+ * NPCs are flat at the bundle top level rather than nested under
+ * sessions, because NPCs are user-owned in this codebase (not
+ * session-owned).
+ *
  */
 export type MeExportBundleWritable = {
     $schemaVersion: '1';
@@ -3449,6 +3464,7 @@ export type MeExportBundleWritable = {
     user: MeExportUser;
     characters: Array<CharacterWritable>;
     ships: Array<ShipWritable>;
+    npcs: Array<NpcWritable>;
     gameSessions: Array<MeExportGameSessionWritable>;
 };
 

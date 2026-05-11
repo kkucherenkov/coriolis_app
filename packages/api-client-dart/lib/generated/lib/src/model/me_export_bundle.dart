@@ -8,12 +8,13 @@ import 'package:app_api_client/src/model/ship.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:app_api_client/src/model/me_export_game_session.dart';
 import 'package:app_api_client/src/model/character.dart';
+import 'package:app_api_client/src/model/npc.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'me_export_bundle.g.dart';
 
-/// Versioned envelope returned by `GET /api/v1/me/export`. `$schemaVersion` is a string literal so future shape changes can branch deterministically. 
+/// Versioned envelope returned by `GET /api/v1/me/export`. `$schemaVersion` is a string literal so future shape changes can branch deterministically.  NPCs are flat at the bundle top level rather than nested under sessions, because NPCs are user-owned in this codebase (not session-owned). 
 ///
 /// Properties:
 /// * [dollarSchemaVersion] 
@@ -21,6 +22,7 @@ part 'me_export_bundle.g.dart';
 /// * [user] 
 /// * [characters] 
 /// * [ships] 
+/// * [npcs] 
 /// * [gameSessions] 
 @BuiltValue()
 abstract class MeExportBundle implements Built<MeExportBundle, MeExportBundleBuilder> {
@@ -39,6 +41,9 @@ abstract class MeExportBundle implements Built<MeExportBundle, MeExportBundleBui
 
   @BuiltValueField(wireName: r'ships')
   BuiltList<Ship> get ships;
+
+  @BuiltValueField(wireName: r'npcs')
+  BuiltList<Npc> get npcs;
 
   @BuiltValueField(wireName: r'gameSessions')
   BuiltList<MeExportGameSession> get gameSessions;
@@ -90,6 +95,11 @@ class _$MeExportBundleSerializer implements PrimitiveSerializer<MeExportBundle> 
     yield serializers.serialize(
       object.ships,
       specifiedType: const FullType(BuiltList, [FullType(Ship)]),
+    );
+    yield r'npcs';
+    yield serializers.serialize(
+      object.npcs,
+      specifiedType: const FullType(BuiltList, [FullType(Npc)]),
     );
     yield r'gameSessions';
     yield serializers.serialize(
@@ -153,6 +163,13 @@ class _$MeExportBundleSerializer implements PrimitiveSerializer<MeExportBundle> 
             specifiedType: const FullType(BuiltList, [FullType(Ship)]),
           ) as BuiltList<Ship>;
           result.ships.replace(valueDes);
+          break;
+        case r'npcs':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(Npc)]),
+          ) as BuiltList<Npc>;
+          result.npcs.replace(valueDes);
           break;
         case r'gameSessions':
           final valueDes = serializers.deserialize(

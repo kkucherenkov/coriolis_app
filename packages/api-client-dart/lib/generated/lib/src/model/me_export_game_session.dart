@@ -6,14 +6,13 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:app_api_client/src/model/game_session.dart';
 import 'package:app_api_client/src/model/me_export_encounter.dart';
-import 'package:app_api_client/src/model/npc.dart';
 import 'package:app_api_client/src/model/game_session_status.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'me_export_game_session.g.dart';
 
-/// Export-only wrapper. Composes `GameSession` via `allOf` and adds the `npcs` + `encounters` arrays. Encounter list uses the wrapper so the per-encounter combatants are inlined. 
+/// Export-only wrapper. Composes `GameSession` via `allOf` and adds the `encounters` array (the encounter list uses the encounter wrapper so per-encounter combatants are inlined).  NPCs are deliberately NOT nested here: in this codebase NPCs are user-owned (not session-owned), so they appear once at the bundle top level rather than duplicated per session. 
 ///
 /// Properties:
 /// * [id] - Opaque session identifier (cuid2)
@@ -26,13 +25,9 @@ part 'me_export_game_session.g.dart';
 /// * [shipId] - Optional ship linked to the session (Epic 8)
 /// * [createdAt] 
 /// * [updatedAt] 
-/// * [npcs] 
 /// * [encounters] 
 @BuiltValue()
 abstract class MeExportGameSession implements GameSession, Built<MeExportGameSession, MeExportGameSessionBuilder> {
-  @BuiltValueField(wireName: r'npcs')
-  BuiltList<Npc> get npcs;
-
   @BuiltValueField(wireName: r'encounters')
   BuiltList<MeExportEncounter> get encounters;
 
@@ -59,11 +54,6 @@ class _$MeExportGameSessionSerializer implements PrimitiveSerializer<MeExportGam
     MeExportGameSession object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'npcs';
-    yield serializers.serialize(
-      object.npcs,
-      specifiedType: const FullType(BuiltList, [FullType(Npc)]),
-    );
     yield r'dpCount';
     yield serializers.serialize(
       object.dpCount,
@@ -146,13 +136,6 @@ class _$MeExportGameSessionSerializer implements PrimitiveSerializer<MeExportGam
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'npcs':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(Npc)]),
-          ) as BuiltList<Npc>;
-          result.npcs.replace(valueDes);
-          break;
         case r'dpCount':
           final valueDes = serializers.deserialize(
             value,
