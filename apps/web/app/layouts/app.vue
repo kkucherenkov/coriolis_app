@@ -1,8 +1,11 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue';
-  import { AppHeader, UserMenu } from '@app/ui';
+  import { AppBanner, AppHeader, UserMenu } from '@app/ui';
   import { useAuth } from '~/composables/useAuth';
   import { useMeApi } from '~/composables/useMeApi';
+  import { useOnline } from '~/composables/useOnline';
+
+  const { online } = useOnline();
 
   const { t, locale, locales, setLocale } = useI18n({ useScope: 'local' });
   const route = useRoute();
@@ -85,6 +88,10 @@
 {
   "en": {
     "skipToContent": "Skip to main content",
+    "offlineBanner": {
+      "title": "You're offline",
+      "body": "Reads come from the local cache. Changes won't save until your connection returns."
+    },
     "brand": {
       "name": "Coriolis · Companion",
       "homeAriaLabel": "Go to dashboard",
@@ -109,6 +116,10 @@
   },
   "ru": {
     "skipToContent": "Перейти к основному содержанию",
+    "offlineBanner": {
+      "title": "Вы офлайн",
+      "body": "Чтение идёт из локального кэша. Изменения не сохранятся до возврата сети."
+    },
     "brand": {
       "name": "Coriolis · Companion",
       "homeAriaLabel": "Перейти к панели",
@@ -133,6 +144,10 @@
   },
   "uk": {
     "skipToContent": "[uk-todo] Skip to main content",
+    "offlineBanner": {
+      "title": "[uk-todo] You're offline",
+      "body": "[uk-todo] Reads come from the local cache. Changes won't save until your connection returns."
+    },
     "brand": {
       "name": "Coriolis · Companion",
       "homeAriaLabel": "[uk-todo] Go to dashboard",
@@ -157,6 +172,10 @@
   },
   "el": {
     "skipToContent": "[el-todo] Skip to main content",
+    "offlineBanner": {
+      "title": "[el-todo] You're offline",
+      "body": "[el-todo] Reads come from the local cache. Changes won't save until your connection returns."
+    },
     "brand": {
       "name": "Coriolis · Companion",
       "homeAriaLabel": "[el-todo] Go to dashboard",
@@ -186,6 +205,17 @@
   <div class="layout-app">
     <!-- Skip-link: visible only when focused. -->
     <a class="layout-app__skip-link" href="#main-content">{{ t('skipToContent') }}</a>
+
+    <!-- Offline banner — shown above the header when navigator.onLine flips false. -->
+    <AppBanner
+      v-if="!online"
+      tone="warning"
+      role="status"
+      :title="t('offlineBanner.title')"
+      class="layout-app__offline-banner"
+    >
+      {{ t('offlineBanner.body') }}
+    </AppBanner>
 
     <AppHeader
       :brand="{

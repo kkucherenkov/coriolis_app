@@ -5,7 +5,50 @@ export default defineNuxtConfig({
   srcDir: 'app/',
   ssr: false,
   devtools: { enabled: true },
-  modules: ['@nuxt/ui', '@nuxtjs/i18n'],
+  modules: ['@nuxt/ui', '@nuxtjs/i18n', '@vite-pwa/nuxt'],
+
+  // ── Service worker (Phase 7 — read-only offline cache) ─────────────────────
+  // T-2026-05-11-007: precache app shell + Stale-While-Revalidate for
+  // /api/v1/me* GETs so a player at the table can read their characters /
+  // ships / NPCs / sessions when the network drops. Mutations are
+  // intentionally NOT cached — POST/PUT/PATCH/DELETE go straight to the
+  // network and fail loudly when offline (the explicit write-queue MVP is
+  // the next PR). `urlPattern` matches by `url.pathname` so it works for
+  // both the dev cross-origin layout (web :3001 → api :3010) and any
+  // production same-origin proxy.
+  pwa: {
+    registerType: 'autoUpdate',
+    injectRegister: 'auto',
+    workbox: {
+      navigateFallback: '/',
+      // Precache the SPA shell. Vite-PWA generates the manifest from the
+      // build output; we keep the glob conservative — fonts come from
+      // @nuxt/fonts already, no separate caching needed.
+      globPatterns: ['**/*.{js,css,html,svg,ico,woff2}'],
+      runtimeCaching: [
+        {
+          urlPattern: ({ url, request }) =>
+            request.method === 'GET' && url.pathname.startsWith('/api/v1/me'),
+          handler: 'StaleWhileRevalidate',
+          options: {
+            cacheName: 'api-me',
+            expiration: {
+              maxEntries: 100,
+              maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+            },
+            cacheableResponse: { statuses: [0, 200] },
+          },
+        },
+      ],
+    },
+    client: { installPrompt: false },
+    devOptions: {
+      // The SW is disabled in `nuxt dev` by default; flip this when smoke-
+      // testing offline behaviour locally without a production build.
+      enabled: false,
+      type: 'module',
+    },
+  },
 
   nitro: {
     // No explicit `preset: 'static'`. With `ssr: false` Nuxt infers the static
