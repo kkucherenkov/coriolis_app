@@ -593,7 +593,11 @@
       </h2>
 
       <!-- Error banner -->
-      <AppBanner v-if="errorMsg" tone="danger" class="item-editor__error">
+      <AppBanner
+        v-if="errorMsg"
+        tone="danger"
+        class="item-editor__error"
+      >
         {{ errorMsg }}
       </AppBanner>
 
@@ -605,14 +609,20 @@
           size="sm"
           :disabled="isEditMode"
         />
-        <p v-if="isEditMode" class="item-editor__type-hint">
+        <p
+          v-if="isEditMode"
+          class="item-editor__type-hint"
+        >
           {{ t('typeDisabledHint') }}
         </p>
       </div>
 
       <!-- Common: name -->
       <div class="item-editor__field">
-        <label class="item-editor__label" for="item-name">{{ t('fieldName') }}</label>
+        <label
+          class="item-editor__label"
+          for="item-name"
+        >{{ t('fieldName') }}</label>
         <AppInput
           id="item-name"
           v-model="fieldName"
@@ -626,7 +636,10 @@
       <template v-if="selectedType === 'WEAPON'">
         <div class="item-editor__row">
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-bonus">{{ t('fieldBonus') }}</label>
+            <label
+              class="item-editor__label"
+              for="item-bonus"
+            >{{ t('fieldBonus') }}</label>
             <AppInput
               id="item-bonus"
               v-model.number="fieldBonus"
@@ -637,7 +650,10 @@
             />
           </div>
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-damage">{{ t('fieldDamage') }}</label>
+            <label
+              class="item-editor__label"
+              for="item-damage"
+            >{{ t('fieldDamage') }}</label>
             <AppInput
               id="item-damage"
               v-model.number="fieldDamage"
@@ -648,7 +664,10 @@
             />
           </div>
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-crit">{{ t('fieldCrit') }}</label>
+            <label
+              class="item-editor__label"
+              for="item-crit"
+            >{{ t('fieldCrit') }}</label>
             <AppInput
               id="item-crit"
               v-model.number="fieldCrit"
@@ -661,11 +680,22 @@
         </div>
         <div class="item-editor__row">
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-range">{{ t('fieldRange') }}</label>
-            <AppSelect id="item-range" v-model="fieldRange" :options="RANGE_OPTIONS" size="md" />
+            <label
+              class="item-editor__label"
+              for="item-range"
+            >{{ t('fieldRange') }}</label>
+            <AppSelect
+              id="item-range"
+              v-model="fieldRange"
+              :options="RANGE_OPTIONS"
+              size="md"
+            />
           </div>
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-weight">{{ t('fieldWeight') }}</label>
+            <label
+              class="item-editor__label"
+              for="item-weight"
+            >{{ t('fieldWeight') }}</label>
             <AppInput
               id="item-weight"
               v-model.number="fieldWeight"
@@ -679,7 +709,11 @@
         </div>
         <div class="item-editor__field item-editor__field--check">
           <label class="item-editor__label item-editor__label--inline">
-            <input v-model="fieldEquipped" type="checkbox" class="item-editor__checkbox" />
+            <input
+              v-model="fieldEquipped"
+              type="checkbox"
+              class="item-editor__checkbox"
+            />
             {{ t('fieldEquipped') }}
           </label>
         </div>
@@ -689,7 +723,10 @@
       <template v-else-if="selectedType === 'ARMOR'">
         <div class="item-editor__row">
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-armor">{{ t('fieldArmorRating') }}</label>
+            <label
+              class="item-editor__label"
+              for="item-armor"
+            >{{ t('fieldArmorRating') }}</label>
             <AppInput
               id="item-armor"
               v-model.number="fieldArmorRating"
@@ -700,7 +737,10 @@
             />
           </div>
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-weight-armor">{{ t('fieldWeight') }}</label>
+            <label
+              class="item-editor__label"
+              for="item-weight-armor"
+            >{{ t('fieldWeight') }}</label>
             <AppInput
               id="item-weight-armor"
               v-model.number="fieldWeight"
@@ -714,7 +754,11 @@
         </div>
         <div class="item-editor__field item-editor__field--check">
           <label class="item-editor__label item-editor__label--inline">
-            <input v-model="fieldEquipped" type="checkbox" class="item-editor__checkbox" />
+            <input
+              v-model="fieldEquipped"
+              type="checkbox"
+              class="item-editor__checkbox"
+            />
             {{ t('fieldEquipped') }}
           </label>
         </div>
@@ -724,7 +768,10 @@
       <template v-else-if="selectedType === 'GEAR'">
         <div class="item-editor__row">
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-qty">{{ t('fieldQuantity') }}</label>
+            <label
+              class="item-editor__label"
+              for="item-qty"
+            >{{ t('fieldQuantity') }}</label>
             <AppInput
               id="item-qty"
               v-model.number="fieldQuantity"
@@ -734,7 +781,10 @@
             />
           </div>
           <div class="item-editor__field">
-            <label class="item-editor__label" for="item-weight-gear">{{ t('fieldWeight') }}</label>
+            <label
+              class="item-editor__label"
+              for="item-weight-gear"
+            >{{ t('fieldWeight') }}</label>
             <AppInput
               id="item-weight-gear"
               v-model.number="fieldWeight"
@@ -747,7 +797,10 @@
           </div>
         </div>
         <div class="item-editor__field">
-          <label class="item-editor__label" for="item-notes-gear">{{ t('fieldNotes') }}</label>
+          <label
+            class="item-editor__label"
+            for="item-notes-gear"
+          >{{ t('fieldNotes') }}</label>
           <AppTextarea
             id="item-notes-gear"
             v-model="fieldNotes"
@@ -760,7 +813,10 @@
       <!-- ── CYBERNETIC fields ─────────────────────────────────────────────── -->
       <template v-else-if="selectedType === 'CYBERNETIC'">
         <div class="item-editor__field">
-          <label class="item-editor__label" for="item-xpcost">{{ t('fieldXpCost') }}</label>
+          <label
+            class="item-editor__label"
+            for="item-xpcost"
+          >{{ t('fieldXpCost') }}</label>
           <AppInput
             id="item-xpcost"
             v-model.number="fieldXpCost"
@@ -771,7 +827,10 @@
           />
         </div>
         <div class="item-editor__field">
-          <label class="item-editor__label" for="item-effect-cyber">{{ t('fieldEffect') }}</label>
+          <label
+            class="item-editor__label"
+            for="item-effect-cyber"
+          >{{ t('fieldEffect') }}</label>
           <AppTextarea
             id="item-effect-cyber"
             v-model="fieldEffect"
@@ -784,11 +843,22 @@
       <!-- ── SHIP_MODULE fields ────────────────────────────────────────────── -->
       <template v-else-if="selectedType === 'SHIP_MODULE'">
         <div class="item-editor__field">
-          <label class="item-editor__label" for="item-slot">{{ t('fieldSlot') }}</label>
-          <AppSelect id="item-slot" v-model="fieldSlot" :options="SLOT_OPTIONS" size="md" />
+          <label
+            class="item-editor__label"
+            for="item-slot"
+          >{{ t('fieldSlot') }}</label>
+          <AppSelect
+            id="item-slot"
+            v-model="fieldSlot"
+            :options="SLOT_OPTIONS"
+            size="md"
+          />
         </div>
         <div class="item-editor__field">
-          <label class="item-editor__label" for="item-effect-ship">{{ t('fieldEffect') }}</label>
+          <label
+            class="item-editor__label"
+            for="item-effect-ship"
+          >{{ t('fieldEffect') }}</label>
           <AppTextarea
             id="item-effect-ship"
             v-model="fieldEffect"
@@ -801,7 +871,10 @@
       <!-- ── OTHER fields ──────────────────────────────────────────────────── -->
       <template v-else-if="selectedType === 'OTHER'">
         <div class="item-editor__field">
-          <label class="item-editor__label" for="item-weight-other">{{ t('fieldWeight') }}</label>
+          <label
+            class="item-editor__label"
+            for="item-weight-other"
+          >{{ t('fieldWeight') }}</label>
           <AppInput
             id="item-weight-other"
             v-model.number="fieldWeight"
@@ -813,7 +886,10 @@
           />
         </div>
         <div class="item-editor__field">
-          <label class="item-editor__label" for="item-notes-other">{{ t('fieldNotes') }}</label>
+          <label
+            class="item-editor__label"
+            for="item-notes-other"
+          >{{ t('fieldNotes') }}</label>
           <AppTextarea
             id="item-notes-other"
             v-model="fieldNotes"
@@ -836,10 +912,20 @@
         {{ t('deleteItem') }}
       </button>
       <div class="item-editor__footer-actions">
-        <AppButton variant="ghost" size="md" @click="cancel">
+        <AppButton
+          variant="ghost"
+          size="md"
+          @click="cancel"
+        >
           {{ t('cancel') }}
         </AppButton>
-        <AppButton variant="primary" size="md" :loading="saving" :disabled="!canSave" @click="save">
+        <AppButton
+          variant="primary"
+          size="md"
+          :loading="saving"
+          :disabled="!canSave"
+          @click="save"
+        >
           {{ t('save') }}
         </AppButton>
       </div>

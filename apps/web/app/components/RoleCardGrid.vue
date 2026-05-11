@@ -598,8 +598,15 @@
     >
       <span class="role-card-grid__card-name">{{ t(`role.${slug}.label`) }}</span>
       <span class="role-card-grid__card-flavour">{{ t(`role.${slug}.flavour`) }}</span>
-      <ul class="role-card-grid__card-skills" :aria-label="t('keySkillsLabel')">
-        <li v-for="key in keySkillsForRole(slug)" :key="key" class="role-card-grid__skill-chip">
+      <ul
+        class="role-card-grid__card-skills"
+        :aria-label="t('keySkillsLabel')"
+      >
+        <li
+          v-for="key in keySkillsForRole(slug)"
+          :key="key"
+          class="role-card-grid__skill-chip"
+        >
           {{ t(`skill.${key}`) }}
         </li>
       </ul>

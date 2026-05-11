@@ -210,32 +210,64 @@
 </i18n>
 
 <template>
-  <div class="roll-history" data-testid="sheet-roll-history">
+  <div
+    class="roll-history"
+    data-testid="sheet-roll-history"
+  >
     <h4 class="roll-history__header">
       {{ t('header') }}
     </h4>
 
-    <p v-if="loading" class="roll-history__placeholder">
+    <p
+      v-if="loading"
+      class="roll-history__placeholder"
+    >
       {{ t('loading') }}
     </p>
 
-    <p v-else-if="errorMsg" class="roll-history__error" role="alert">
+    <p
+      v-else-if="errorMsg"
+      class="roll-history__error"
+      role="alert"
+    >
       {{ errorMsg }}
     </p>
 
-    <p v-else-if="!hasRolls" class="roll-history__placeholder">
+    <p
+      v-else-if="!hasRolls"
+      class="roll-history__placeholder"
+    >
       {{ t('empty') }}
     </p>
 
-    <ul v-else class="roll-history__list" role="list">
-      <li v-for="roll in rolls" :key="roll.id" class="roll-history__row">
-        <button type="button" class="roll-history__row-btn" @click="openModal(roll)">
+    <ul
+      v-else
+      class="roll-history__list"
+      role="list"
+    >
+      <li
+        v-for="roll in rolls"
+        :key="roll.id"
+        class="roll-history__row"
+      >
+        <button
+          type="button"
+          class="roll-history__row-btn"
+          @click="openModal(roll)"
+        >
           <span class="roll-history__row-label">{{ roll.label }}</span>
           <span class="roll-history__row-meta">
-            <AppBadge variant="brass" size="sm">
+            <AppBadge
+              variant="brass"
+              size="sm"
+            >
               {{ t('hits', { n: roll.hits }) }}
             </AppBadge>
-            <AppBadge v-if="roll.pushed" variant="mystic" size="sm">
+            <AppBadge
+              v-if="roll.pushed"
+              variant="mystic"
+              size="sm"
+            >
               {{ t('pushed') }}
             </AppBadge>
             <span class="roll-history__row-time">
@@ -253,7 +285,10 @@
       data-testid="sheet-roll-history-modal"
       @update:open="(v: boolean) => !v && closeModal()"
     >
-      <div v-if="modalRoll" class="roll-history__modal">
+      <div
+        v-if="modalRoll"
+        class="roll-history__modal"
+      >
         <h2 class="roll-history__modal-title">
           {{ t('modalTitle') }}
         </h2>

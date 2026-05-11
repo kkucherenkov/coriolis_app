@@ -63,18 +63,30 @@
         <h1 class="wizard-shell__title">
           {{ title }}
         </h1>
-        <p v-if="blurb" class="wizard-shell__blurb">
+        <p
+          v-if="blurb"
+          class="wizard-shell__blurb"
+        >
           {{ blurb }}
         </p>
       </div>
 
-      <div class="wizard-shell__content" role="region" :aria-label="title">
+      <div
+        class="wizard-shell__content"
+        role="region"
+        :aria-label="title"
+      >
         <slot />
       </div>
     </main>
 
     <footer class="wizard-shell__footer">
-      <AppButton variant="ghost" size="md" type="button" @click="emit('saveExit')">
+      <AppButton
+        variant="ghost"
+        size="md"
+        type="button"
+        @click="emit('saveExit')"
+      >
         {{ saveExitLabel }}
       </AppButton>
 

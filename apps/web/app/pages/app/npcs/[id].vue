@@ -601,33 +601,67 @@
 </i18n>
 
 <template>
-  <section class="page-npc" data-testid="page-npc">
+  <section
+    class="page-npc"
+    data-testid="page-npc"
+  >
     <!-- ── Back nav ──────────────────────────────────────────────────────────── -->
-    <AppButton variant="ghost" size="sm" class="page-npc__back" @click="navigateTo('/app/npcs')">
+    <AppButton
+      variant="ghost"
+      size="sm"
+      class="page-npc__back"
+      @click="navigateTo('/app/npcs')"
+    >
       ← {{ t('backToList') }}
     </AppButton>
 
     <!-- ── Error banners ──────────────────────────────────────────────────────── -->
-    <AppBanner v-if="state === 'error'" tone="danger" role="alert" class="page-npc__banner">
+    <AppBanner
+      v-if="state === 'error'"
+      tone="danger"
+      role="alert"
+      class="page-npc__banner"
+    >
       {{ errorMsg }}
-      <AppButton variant="ghost" size="sm" @click="load">
+      <AppButton
+        variant="ghost"
+        size="sm"
+        @click="load"
+      >
         {{ t('retry') }}
       </AppButton>
     </AppBanner>
 
-    <AppBanner v-if="duplicateError" tone="danger" role="alert" class="page-npc__banner">
+    <AppBanner
+      v-if="duplicateError"
+      tone="danger"
+      role="alert"
+      class="page-npc__banner"
+    >
       {{ duplicateError }}
     </AppBanner>
 
-    <AppBanner v-if="deleteError" tone="danger" role="alert" class="page-npc__banner">
+    <AppBanner
+      v-if="deleteError"
+      tone="danger"
+      role="alert"
+      class="page-npc__banner"
+    >
       {{ deleteError }}
     </AppBanner>
 
     <!-- ── Loading skeleton ──────────────────────────────────────────────────── -->
-    <div v-if="state === 'loading'" class="page-npc__skeleton" aria-busy="true" />
+    <div
+      v-if="state === 'loading'"
+      class="page-npc__skeleton"
+      aria-busy="true"
+    />
 
     <!-- ── Not found ─────────────────────────────────────────────────────────── -->
-    <AppCard v-else-if="state === 'notfound'" class="page-npc__notfound">
+    <AppCard
+      v-else-if="state === 'notfound'"
+      class="page-npc__notfound"
+    >
       <h2 class="page-npc__notfound-title">
         {{ t('notfoundTitle') }}
       </h2>
@@ -641,7 +675,10 @@
       <!-- Header -->
       <header class="page-npc__header">
         <div class="page-npc__header-left">
-          <h1 class="page-npc__name" data-testid="npc-name">
+          <h1
+            class="page-npc__name"
+            data-testid="npc-name"
+          >
             {{ npc.name }}
           </h1>
         </div>
@@ -674,7 +711,10 @@
           <span class="page-npc__card-title">{{ t('identityCardTitle') }}</span>
         </template>
 
-        <AppField :label="t('fieldName')" required>
+        <AppField
+          :label="t('fieldName')"
+          required
+        >
           <template #default="attrs">
             <AppInput
               v-bind="attrs"
@@ -698,8 +738,15 @@
         <p class="page-npc__section-label">
           {{ t('sectionAttributes') }}
         </p>
-        <div class="page-npc__attr-grid" data-testid="attr-grid">
-          <div v-for="key in ATTR_KEYS" :key="key" class="page-npc__stat">
+        <div
+          class="page-npc__attr-grid"
+          data-testid="attr-grid"
+        >
+          <div
+            v-for="key in ATTR_KEYS"
+            :key="key"
+            class="page-npc__stat"
+          >
             <span class="page-npc__stat-label">{{
               t(`attr${key.charAt(0).toUpperCase()}${key.slice(1)}`)
             }}</span>
@@ -877,7 +924,11 @@
           {{ t('sectionSkillsGeneral') }}
         </p>
         <div class="page-npc__skill-grid">
-          <div v-for="key in GENERAL_SKILLS" :key="key" class="page-npc__stat">
+          <div
+            v-for="key in GENERAL_SKILLS"
+            :key="key"
+            class="page-npc__stat"
+          >
             <span class="page-npc__stat-label">{{
               t(`skill${key.charAt(0).toUpperCase()}${key.slice(1)}`)
             }}</span>
@@ -897,7 +948,11 @@
           {{ t('sectionSkillsAdvanced') }}
         </p>
         <div class="page-npc__skill-grid">
-          <div v-for="key in ADVANCED_SKILLS" :key="key" class="page-npc__stat">
+          <div
+            v-for="key in ADVANCED_SKILLS"
+            :key="key"
+            class="page-npc__stat"
+          >
             <span class="page-npc__stat-label">{{
               t(`skill${key.charAt(0).toUpperCase()}${key.slice(1)}`)
             }}</span>
@@ -922,13 +977,19 @@
         <div class="page-npc__equipment-row">
           <div class="page-npc__equipment-item">
             <span class="page-npc__stat-label">{{ t('armorLabel') }}</span>
-            <AppBadge variant="brass" size="sm">
+            <AppBadge
+              variant="brass"
+              size="sm"
+            >
               {{ armorCount > 0 ? armorCount : t('armorNone') }}
             </AppBadge>
           </div>
           <div class="page-npc__equipment-item">
             <span class="page-npc__stat-label">{{ t('weaponsLabel') }}</span>
-            <AppBadge variant="crimson" size="sm">
+            <AppBadge
+              variant="crimson"
+              size="sm"
+            >
               {{ weaponsCount > 0 ? weaponsCount : t('weaponsNone') }}
             </AppBadge>
           </div>
@@ -942,7 +1003,11 @@
         </template>
 
         <!-- Chip preview -->
-        <div v-if="displayTags.length > 0" class="page-npc__tags-chips" data-testid="tags-chips">
+        <div
+          v-if="displayTags.length > 0"
+          class="page-npc__tags-chips"
+          data-testid="tags-chips"
+        >
           <AppBadge
             v-for="tag in displayTags"
             :key="tag"
@@ -954,7 +1019,10 @@
           </AppBadge>
         </div>
 
-        <AppField :label="t('tagsLabel')" :help-text="t('tagsHelp')">
+        <AppField
+          :label="t('tagsLabel')"
+          :help-text="t('tagsHelp')"
+        >
           <template #default="attrs">
             <AppInput
               v-bind="attrs"
@@ -999,7 +1067,10 @@
         <p class="page-npc__problems-intro">
           {{ t('problemsIntro') }}
         </p>
-        <ul class="page-npc__problems-list" role="list">
+        <ul
+          class="page-npc__problems-list"
+          role="list"
+        >
           <li
             v-for="(problem, idx) in validationProblems"
             :key="idx"
@@ -1042,10 +1113,20 @@
           {{ t('deleteConfirmBody') }}
         </p>
         <div class="page-npc__delete-modal-actions">
-          <AppButton variant="ghost" size="md" :disabled="deleting" @click="closeDeleteConfirm">
+          <AppButton
+            variant="ghost"
+            size="md"
+            :disabled="deleting"
+            @click="closeDeleteConfirm"
+          >
             {{ t('deleteConfirmNo') }}
           </AppButton>
-          <AppButton variant="danger" size="md" :loading="deleting" @click="confirmDelete">
+          <AppButton
+            variant="danger"
+            size="md"
+            :loading="deleting"
+            @click="confirmDelete"
+          >
             {{ t('deleteConfirmYes') }}
           </AppButton>
         </div>

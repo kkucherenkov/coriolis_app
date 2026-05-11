@@ -125,16 +125,32 @@
       aria-busy="true"
       :aria-label="t('loadingLabel')"
     >
-      <div class="shared-character-page__skeleton-hero" aria-hidden="true" />
-      <div class="shared-character-page__skeleton-body" aria-hidden="true" />
+      <div
+        class="shared-character-page__skeleton-hero"
+        aria-hidden="true"
+      />
+      <div
+        class="shared-character-page__skeleton-body"
+        aria-hidden="true"
+      />
     </div>
 
     <!-- ── Not found ─────────────────────────────────────────────────────────── -->
-    <div v-else-if="state === 'not-found'" class="shared-character-page__state-wrap">
-      <AppBanner tone="warning" :title="t('notFoundHeading')">
+    <div
+      v-else-if="state === 'not-found'"
+      class="shared-character-page__state-wrap"
+    >
+      <AppBanner
+        tone="warning"
+        :title="t('notFoundHeading')"
+      >
         {{ t('notFoundBody') }}
         <template #actions>
-          <AppButton variant="ghost" size="sm" @click="navigateTo('/')">
+          <AppButton
+            variant="ghost"
+            size="sm"
+            @click="navigateTo('/')"
+          >
             {{ t('notFoundBack') }}
           </AppButton>
         </template>
@@ -142,11 +158,21 @@
     </div>
 
     <!-- ── Revoked (410) ──────────────────────────────────────────────────────── -->
-    <div v-else-if="state === 'revoked'" class="shared-character-page__state-wrap">
-      <AppBanner tone="danger" :title="t('revokedHeading')">
+    <div
+      v-else-if="state === 'revoked'"
+      class="shared-character-page__state-wrap"
+    >
+      <AppBanner
+        tone="danger"
+        :title="t('revokedHeading')"
+      >
         {{ t('revokedBody') }}
         <template #actions>
-          <AppButton variant="ghost" size="sm" @click="navigateTo('/')">
+          <AppButton
+            variant="ghost"
+            size="sm"
+            @click="navigateTo('/')"
+          >
             {{ t('revokedBack') }}
           </AppButton>
         </template>
@@ -154,14 +180,24 @@
     </div>
 
     <!-- ── Error ─────────────────────────────────────────────────────────────── -->
-    <div v-else-if="state === 'error'" class="shared-character-page__state-wrap" role="alert">
-      <AppBanner tone="danger" :title="t('errorHeading')">
+    <div
+      v-else-if="state === 'error'"
+      class="shared-character-page__state-wrap"
+      role="alert"
+    >
+      <AppBanner
+        tone="danger"
+        :title="t('errorHeading')"
+      >
         {{ errorMsg }}
       </AppBanner>
     </div>
 
     <!-- ── Loaded ─────────────────────────────────────────────────────────────── -->
-    <AppShareViewer v-else-if="state === 'loaded' && character" :character="character" />
+    <AppShareViewer
+      v-else-if="state === 'loaded' && character"
+      :character="character"
+    />
   </main>
 </template>
 

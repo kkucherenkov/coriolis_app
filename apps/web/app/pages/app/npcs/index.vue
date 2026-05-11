@@ -286,24 +286,47 @@
 </i18n>
 
 <template>
-  <section class="page-npcs" data-testid="page-npcs">
+  <section
+    class="page-npcs"
+    data-testid="page-npcs"
+  >
     <header class="page-npcs__header">
       <h1 class="page-npcs__title">
         {{ t('pageTitle') }}
       </h1>
-      <AppButton v-if="!formOpen" variant="primary" size="md" @click="openForm">
+      <AppButton
+        v-if="!formOpen"
+        variant="primary"
+        size="md"
+        @click="openForm"
+      >
         + {{ t('newNpc') }}
       </AppButton>
     </header>
 
     <!-- Create form card -->
-    <AppCard v-if="formOpen" class="page-npcs__form-card">
-      <form novalidate class="page-npcs__form" @submit.prevent="onCreate">
-        <AppBanner v-if="formError" tone="danger" role="alert">
+    <AppCard
+      v-if="formOpen"
+      class="page-npcs__form-card"
+    >
+      <form
+        novalidate
+        class="page-npcs__form"
+        @submit.prevent="onCreate"
+      >
+        <AppBanner
+          v-if="formError"
+          tone="danger"
+          role="alert"
+        >
           {{ formError }}
         </AppBanner>
 
-        <AppField :label="t('formNameLabel')" :help="t('formNameHint')" required>
+        <AppField
+          :label="t('formNameLabel')"
+          :help="t('formNameHint')"
+          required
+        >
           <template #default="slotAttrs">
             <AppInput
               v-bind="slotAttrs"
@@ -315,7 +338,10 @@
           </template>
         </AppField>
 
-        <AppField :label="t('formDescriptionLabel')" :help="t('formDescriptionHint')">
+        <AppField
+          :label="t('formDescriptionLabel')"
+          :help="t('formDescriptionHint')"
+        >
           <template #default="slotAttrs">
             <AppInput
               v-bind="slotAttrs"
@@ -351,20 +377,40 @@
     </AppCard>
 
     <!-- Error banner -->
-    <AppBanner v-if="errorMsg && state === 'error'" tone="danger" role="alert">
+    <AppBanner
+      v-if="errorMsg && state === 'error'"
+      tone="danger"
+      role="alert"
+    >
       {{ errorMsg }}
-      <AppButton variant="ghost" size="sm" @click="load">
+      <AppButton
+        variant="ghost"
+        size="sm"
+        @click="load"
+      >
         {{ t('retry') }}
       </AppButton>
     </AppBanner>
 
     <!-- Loading skeleton -->
-    <div v-else-if="state === 'loading'" class="page-npcs__grid" aria-busy="true">
-      <div v-for="n in 4" :key="n" class="page-npcs__skeleton" aria-hidden="true" />
+    <div
+      v-else-if="state === 'loading'"
+      class="page-npcs__grid"
+      aria-busy="true"
+    >
+      <div
+        v-for="n in 4"
+        :key="n"
+        class="page-npcs__skeleton"
+        aria-hidden="true"
+      />
     </div>
 
     <!-- Empty state -->
-    <div v-else-if="npcs.length === 0" class="page-npcs__empty">
+    <div
+      v-else-if="npcs.length === 0"
+      class="page-npcs__empty"
+    >
       <h2 class="page-npcs__empty-heading">
         {{ t('emptyHeading') }}
       </h2>
@@ -374,8 +420,15 @@
     </div>
 
     <!-- NPCs grid -->
-    <ul v-else class="page-npcs__grid" role="list">
-      <li v-for="npc in npcs" :key="npc.id">
+    <ul
+      v-else
+      class="page-npcs__grid"
+      role="list"
+    >
+      <li
+        v-for="npc in npcs"
+        :key="npc.id"
+      >
         <AppCard class="page-npcs__card">
           <div class="page-npcs__card-head">
             <h3 class="page-npcs__card-title">
@@ -383,7 +436,10 @@
             </h3>
           </div>
 
-          <div v-if="npc.description" class="page-npcs__card-description">
+          <div
+            v-if="npc.description"
+            class="page-npcs__card-description"
+          >
             {{ npc.description }}
           </div>
 
@@ -398,20 +454,40 @@
             </span>
           </div>
 
-          <div v-if="npc.tags.length > 0" class="page-npcs__card-badges">
-            <AppBadge v-for="tag in npc.tags" :key="tag" variant="darkness" size="sm">
+          <div
+            v-if="npc.tags.length > 0"
+            class="page-npcs__card-badges"
+          >
+            <AppBadge
+              v-for="tag in npc.tags"
+              :key="tag"
+              variant="darkness"
+              size="sm"
+            >
               {{ tag }}
             </AppBadge>
           </div>
 
           <div class="page-npcs__card-actions">
-            <AppButton variant="primary" size="sm" @click="navigateTo(`/app/npcs/${npc.id}`)">
+            <AppButton
+              variant="primary"
+              size="sm"
+              @click="navigateTo(`/app/npcs/${npc.id}`)"
+            >
               {{ t('open') }}
             </AppButton>
-            <AppButton variant="ghost" size="sm" @click="onDuplicate(npc)">
+            <AppButton
+              variant="ghost"
+              size="sm"
+              @click="onDuplicate(npc)"
+            >
               {{ t('duplicate') }}
             </AppButton>
-            <AppButton variant="ghost" size="sm" @click="openDeleteConfirm(npc)">
+            <AppButton
+              variant="ghost"
+              size="sm"
+              @click="openDeleteConfirm(npc)"
+            >
               {{ t('delete') }}
             </AppButton>
           </div>
@@ -451,10 +527,20 @@
           {{ t('deleteConfirmBody') }}
         </p>
         <div class="page-npcs__delete-modal-actions">
-          <AppButton variant="ghost" size="md" :disabled="deleting" @click="closeDeleteConfirm">
+          <AppButton
+            variant="ghost"
+            size="md"
+            :disabled="deleting"
+            @click="closeDeleteConfirm"
+          >
             {{ t('deleteConfirmNo') }}
           </AppButton>
-          <AppButton variant="danger" size="md" :loading="deleting" @click="confirmDelete">
+          <AppButton
+            variant="danger"
+            size="md"
+            :loading="deleting"
+            @click="confirmDelete"
+          >
             {{ t('deleteConfirmYes') }}
           </AppButton>
         </div>

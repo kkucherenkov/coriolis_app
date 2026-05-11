@@ -160,7 +160,11 @@
       {{ t('choosePrompt') }}
     </p>
 
-    <div class="step-icon__grid" role="radiogroup" :aria-label="t('ariaGrid')">
+    <div
+      class="step-icon__grid"
+      role="radiogroup"
+      :aria-label="t('ariaGrid')"
+    >
       <div
         v-for="icon in NINE_ICONS"
         :key="icon"
@@ -172,7 +176,10 @@
         @click="select(icon)"
         @keydown="onKeydown($event, icon)"
       >
-        <div class="step-icon__aura" aria-hidden="true" />
+        <div
+          class="step-icon__aura"
+          aria-hidden="true"
+        />
 
         <AppIconCoriolis
           :name="icon as IconCoriolisName"
@@ -185,7 +192,11 @@
         <span class="step-icon__name">{{ t(`iconName.${icon}`) }}</span>
         <span class="step-icon__domain">{{ t(`iconDomain.${icon}`) }}</span>
 
-        <span v-if="iconId === icon" class="step-icon__badge" aria-hidden="true">
+        <span
+          v-if="iconId === icon"
+          class="step-icon__badge"
+          aria-hidden="true"
+        >
           {{ t('selected') }}
         </span>
       </div>
