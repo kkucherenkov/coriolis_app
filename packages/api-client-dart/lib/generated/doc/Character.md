@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **name** | **String** | Character name (1–80 characters) | 
 **concept** | [**Concept**](Concept.md) |  | 
 **role** | [**Role**](Role.md) |  | [optional] 
+**roleUnmigrated** | **bool** | Server-side flag, true on rows backfilled by the canon-alignment migration that introduced `Character.role` (T-2026-05-10-010 Block E). The migration assigned each existing character the first canonical role of their amplua and set this flag so the web sheet can prompt the user to confirm or pick a different one. Cleared automatically by the server the first time the user PATCHes `role` to a non-null value (the explicit confirmation path). Always false on characters created after the migration ran. Read-only — clients do not set this; the server owns the lifecycle.  | [optional] [default to false]
 **iconId** | [**IconId**](IconId.md) |  | 
 **upbringing** | [**Upbringing**](Upbringing.md) | Social stratum the character was raised in. Set at creation and **immutable** — drives the starting attribute / skill point budgets and the initial values of `reputation` and `startingWealth`.  | 
 **origin** | **String** | Free-text narrative description of where the character is from (home station, planet, or region). Has no mechanical effect.  | 

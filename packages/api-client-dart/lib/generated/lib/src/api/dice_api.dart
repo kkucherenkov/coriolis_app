@@ -21,7 +21,7 @@ class DiceApi {
   const DiceApi(this._dio, this._serializers);
 
   /// Roll dice for a character
-  /// Rolls &#x60;pool&#x60; d6 server-side using a cryptographically secure RNG. Hits are counted as the number of 6s. The caller provides a human-readable &#x60;label&#x60; (e.g. \&quot;Pilot · Evade\&quot;) and an optional &#x60;gameSessionId&#x60; (reserved for Feature 7.2 — pass null until GameSession lands).  Pool is clamped by the server from the submitted value. Condition penalties must be pre-applied by the caller before sending &#x60;pool&#x60;; the server does not re-apply them from character state. 
+  /// Rolls &#x60;pool&#x60; d6 server-side using a cryptographically secure RNG. Hits are counted as the number of 6s. The caller provides a human-readable &#x60;label&#x60; (e.g. \&quot;Pilot · Evade\&quot;) and an optional &#x60;gameSessionId&#x60; (reserved for Feature 7.2 — pass null until GameSession lands).  Pool is clamped by the server from the submitted value. Condition penalties must be pre-applied by the caller before sending &#x60;pool&#x60;; the server does not re-apply them from character state.  When an optional &#x60;breakdown&#x60; object is supplied alongside &#x60;pool&#x60;, the server validates that &#x60;attribute + skill + gear + modifier + helpers &#x3D;&#x3D;&#x3D; pool&#x60;; a mismatch is rejected with HTTP 400 &#x60;ROLL_BREAKDOWN_MISMATCH&#x60;. Programmatic callers (internal command handlers, dice engine) can omit &#x60;breakdown&#x60; entirely. 
   ///
   /// Parameters:
   /// * [id] - Character identifier (cuid2)
@@ -222,7 +222,7 @@ class DiceApi {
   }
 
   /// Push (reroll) a roll
-  /// Rerolls all non-6 dice exactly once. After a push the roll cannot be pushed again (&#x60;pushed&#x60; becomes &#x60;true&#x60;). Returns 422 with code &#x60;ROLL_NOT_PUSHABLE&#x60; if: - The roll has already been pushed. - The owning character has the Exhausted condition (PRD §10). 
+  /// Rerolls all non-6 dice exactly once. After a push the roll cannot be pushed again (&#x60;pushed&#x60; becomes &#x60;true&#x60;). Returns 400 with code &#x60;PUSH_NOT_ALLOWED_ON_NON_SKILL_ROLL&#x60; if the roll&#39;s &#x60;kind&#x60; is not &#x60;skill&#x60; (ST3001 ГЛАВА 3 §«Вознесение молитв»). Returns 422 with code &#x60;ROLL_NOT_PUSHABLE&#x60; if: - The roll has already been pushed. - The owning character has the Exhausted condition (PRD §10). 
   ///
   /// Parameters:
   /// * [id] - Roll identifier (cuid2)

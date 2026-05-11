@@ -58,3 +58,45 @@ export interface IUserRepo {
    */
   softDelete(id: string, deletedAt: Date): Promise<Date | null>;
 }
+
+// ── Export port ───────────────────────────────────────────────────────────
+
+export const EXPORT_REPO = Symbol('EXPORT_REPO');
+
+/**
+ * Minimal user envelope used inside the export bundle. Mirrors the
+ * MeExportUser OpenAPI schema. Excludes email by design.
+ */
+export interface MeExportUserDto {
+  id: string;
+  displayName: string | null;
+}
+
+/**
+ * The bundle shape returned by ExportMeHandler. Nested array types use
+ * `unknown[]` because they are owned by other bounded contexts
+ * (Characters, Ships, Npcs, GameSessions) and produced by each
+ * context's canonical list handler via QueryBus. The OpenAPI schema is
+ * the contract — runtime validation by `express-openapi-validator` is
+ * the safety net.
+ */
+export interface MeExportBundle {
+  $schemaVersion: '1';
+  exportedAt: string; // ISO-8601 UTC
+  user: MeExportUserDto;
+  characters: unknown[];
+  ships: unknown[];
+  npcs: unknown[];
+  gameSessions: unknown[];
+}
+
+export interface IExportRepo {
+  /**
+   * Load the minimal user envelope for the export bundle. Domain-resource
+   * data (characters / ships / npcs / gameSessions) is delegated to each
+   * bounded context's existing list handler via the QueryBus, so the
+   * exported shape matches the canonical API response shape one-to-one.
+   * Soft-deleted users return null.
+   */
+  loadUserFor(userId: string): Promise<MeExportUserDto | null>;
+}

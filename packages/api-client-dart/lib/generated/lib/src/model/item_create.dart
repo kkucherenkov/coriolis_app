@@ -30,7 +30,9 @@ part 'item_create.g.dart';
 /// * [weight] - Encumbrance weight in slots
 /// * [features] - Feature tags (e.g. \"Vacuum Sealed\", \"Exo-Skeleton\")
 /// * [equipped] 
+/// * [initiative] - Per-weapon initiative modifier (ST3001 ГЛАВА 6 «Инициатива» column). Canonical printed values 0..+2; accepts −5..+5 for GM flex. Defaults to 0 — most weapons don't carry an initiative bonus. 
 /// * [armorRating] - Armor rating — reduces incoming damage
+/// * [extraSlotCount] - Extra encumbrance slots this armor grants its wearer when equipped (ST3001 ТАБЛИЦА 6.14 «Дополнительные свойства» column). Omit to default to 0. 
 /// * [quantity] - Number of units
 /// * [notes] - Optional free-text notes
 /// * [xpCost] - XP spent to acquire this implant (canonical cost 5 XP per ГЛАВА 4; accepts 0..15 for GM concessions and high-rank exotics). Birr price is carried in the item's `cost` field. 

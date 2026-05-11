@@ -700,7 +700,9 @@
         </p>
         <div class="page-npc__attr-grid" data-testid="attr-grid">
           <div v-for="key in ATTR_KEYS" :key="key" class="page-npc__stat">
-            <span class="page-npc__stat-label">{{ t(`attr${key.charAt(0).toUpperCase()}${key.slice(1)}`) }}</span>
+            <span class="page-npc__stat-label">{{
+              t(`attr${key.charAt(0).toUpperCase()}${key.slice(1)}`)
+            }}</span>
             <div class="page-npc__stat-stepper">
               <AppButton
                 variant="ghost"
@@ -876,7 +878,9 @@
         </p>
         <div class="page-npc__skill-grid">
           <div v-for="key in GENERAL_SKILLS" :key="key" class="page-npc__stat">
-            <span class="page-npc__stat-label">{{ t(`skill${key.charAt(0).toUpperCase()}${key.slice(1)}`) }}</span>
+            <span class="page-npc__stat-label">{{
+              t(`skill${key.charAt(0).toUpperCase()}${key.slice(1)}`)
+            }}</span>
             <AppInput
               v-model="localSkills[key]"
               type="number"
@@ -894,7 +898,9 @@
         </p>
         <div class="page-npc__skill-grid">
           <div v-for="key in ADVANCED_SKILLS" :key="key" class="page-npc__stat">
-            <span class="page-npc__stat-label">{{ t(`skill${key.charAt(0).toUpperCase()}${key.slice(1)}`) }}</span>
+            <span class="page-npc__stat-label">{{
+              t(`skill${key.charAt(0).toUpperCase()}${key.slice(1)}`)
+            }}</span>
             <AppInput
               v-model="localSkills[key]"
               type="number"

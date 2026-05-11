@@ -21,6 +21,8 @@
   import { useEncountersApi } from '~/composables/useEncountersApi';
   import CombatTracker from '~/components/CombatTracker.vue';
   import type { Encounter } from '~/composables/useEncountersApi';
+  import type { CombatUpdatedPayload } from '~/composables/useSessionRealtime';
+  import type { EncounterStatus } from '@app/api-client-ts';
 
   const props = defineProps<{
     sessionId: string;
@@ -32,7 +34,7 @@
      * Latest combat.updated snapshot from useSessionRealtime. When non-null and
      * matching an open encounter, CombatTracker replaces its local state wholesale.
      */
-    combatSnapshot: import('~/composables/useSessionRealtime').CombatUpdatedPayload | null;
+    combatSnapshot: CombatUpdatedPayload | null;
   }>();
 
   const { t } = useI18n({ useScope: 'local' });
@@ -104,8 +106,8 @@
       panelState.value = 'loaded';
       // Fire-and-forget combatant counts — partial failures are swallowed
       void loadCombatantCounts(encounters.value);
-    } catch (err) {
-      const problem = err as { detail?: string };
+    } catch (error) {
+      const problem = error as { detail?: string };
       errorMsg.value = problem.detail ?? t('errorLoad');
       panelState.value = 'error';
     }
@@ -159,8 +161,8 @@
       });
       showCreateForm.value = false;
       await loadEncounters();
-    } catch (err) {
-      const problem = err as { detail?: string };
+    } catch (error) {
+      const problem = error as { detail?: string };
       createError.value = problem.detail ?? t('errorCreate');
     } finally {
       createBusy.value = false;
@@ -174,7 +176,7 @@
   // without a full panel refetch.
   function onEncounterStatusChanged(
     encounterId: string,
-    status: import('@app/api-client-ts').EncounterStatus,
+    status: EncounterStatus,
     activeCombatantId: string | null,
   ): void {
     const idx = encounters.value.findIndex((e) => e.id === encounterId);
@@ -190,8 +192,8 @@
     try {
       await encountersApi.remove(id);
       await loadEncounters();
-    } catch (err) {
-      const problem = err as { detail?: string };
+    } catch (error) {
+      const problem = error as { detail?: string };
       errorMsg.value = problem.detail ?? t('errorDelete');
     } finally {
       deletingId.value = null;
@@ -305,11 +307,17 @@
 </i18n>
 
 <template>
-  <AppCard class="encounter-panel" data-testid="encounter-panel">
+  <AppCard
+    class="encounter-panel"
+    data-testid="encounter-panel"
+  >
     <header class="encounter-panel__header">
       <h3 class="encounter-panel__title">
         {{ t('heading') }}
-        <span v-if="panelState === 'loaded'" class="encounter-panel__count">
+        <span
+          v-if="panelState === 'loaded'"
+          class="encounter-panel__count"
+        >
           ({{ encounterCount }})
         </span>
       </h3>
@@ -332,13 +340,21 @@
       data-testid="encounter-panel-error"
     >
       {{ errorMsg }}
-      <AppButton variant="ghost" size="sm" class="encounter-panel__retry" @click="loadEncounters">
+      <AppButton
+        variant="ghost"
+        size="sm"
+        class="encounter-panel__retry"
+        @click="loadEncounters"
+      >
         {{ t('retryButton') }}
       </AppButton>
     </AppBanner>
 
     <!-- Loading placeholder -->
-    <p v-if="panelState === 'loading'" class="encounter-panel__placeholder">
+    <p
+      v-if="panelState === 'loading'"
+      class="encounter-panel__placeholder"
+    >
       &hellip;
     </p>
 
@@ -350,11 +366,19 @@
       novalidate
       @submit.prevent="submitCreate"
     >
-      <AppBanner v-if="createError" tone="danger" role="alert" data-testid="encounter-create-error">
+      <AppBanner
+        v-if="createError"
+        tone="danger"
+        role="alert"
+        data-testid="encounter-create-error"
+      >
         {{ createError }}
       </AppBanner>
 
-      <AppField :label="t('nameLabel')" required>
+      <AppField
+        :label="t('nameLabel')"
+        required
+      >
         <template #default="slotAttrs">
           <AppInput
             v-bind="slotAttrs"
@@ -410,8 +434,12 @@
       class="encounter-panel__empty"
       data-testid="encounter-panel-empty"
     >
-      <p class="encounter-panel__empty-heading">{{ t('emptyHeading') }}</p>
-      <p class="encounter-panel__empty-body">{{ t('emptyBody') }}</p>
+      <p class="encounter-panel__empty-heading">
+        {{ t('emptyHeading') }}
+      </p>
+      <p class="encounter-panel__empty-body">
+        {{ t('emptyBody') }}
+      </p>
     </div>
 
     <!-- Encounter list -->
@@ -428,13 +456,22 @@
       >
         <div class="encounter-panel__card-top">
           <span class="encounter-panel__card-name">{{ encounter.name }}</span>
-          <AppBadge :variant="stateBadgeVariant(encounter.status)" size="sm">
+          <AppBadge
+            :variant="stateBadgeVariant(encounter.status)"
+            size="sm"
+          >
             {{ stateLabel(encounter.status) }}
           </AppBadge>
         </div>
 
         <p class="encounter-panel__card-meta">
-          {{ t('combatantsCount', { count: combatantCountFor(encounter.id) }, combatantCountFor(encounter.id)) }}
+          {{
+            t(
+              'combatantsCount',
+              { count: combatantCountFor(encounter.id) },
+              combatantCountFor(encounter.id),
+            )
+          }}
         </p>
 
         <!-- State-machine hint: setup with no combatants -->

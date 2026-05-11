@@ -41,7 +41,7 @@ function makeCombatant(overrides: Partial<Combatant> = {}): Combatant {
 // ── sortedCombatants logic ────────────────────────────────────────────────────
 
 function sortedCombatants(items: Combatant[]): Combatant[] {
-  return [...items].sort((a, b) => {
+  return items.toSorted((a, b) => {
     if (a.turnOrder === null && b.turnOrder === null)
       return a.displayName.localeCompare(b.displayName);
     if (a.turnOrder === null) return 1;
@@ -141,9 +141,7 @@ describe('CombatTracker — canonical chip logic', () => {
 // ── toggleFlag logic ──────────────────────────────────────────────────────────
 
 function buildNextFlags(current: string[], flag: string): string[] {
-  return current.includes(flag)
-    ? current.filter((f) => f !== flag)
-    : [...current, flag];
+  return current.includes(flag) ? current.filter((f) => f !== flag) : [...current, flag];
 }
 
 describe('CombatTracker — toggleFlag()', () => {
@@ -229,15 +227,10 @@ function buildAvailablePcs(
   existingSourceIds: Set<string>,
 ): MinimalCharacter[] {
   const sessionIdSet = new Set(sessionCharacterIds);
-  return allCharacters.filter(
-    (c) => sessionIdSet.has(c.id) && !existingSourceIds.has(c.id),
-  );
+  return allCharacters.filter((c) => sessionIdSet.has(c.id) && !existingSourceIds.has(c.id));
 }
 
-function buildAvailableNpcs(
-  allNpcs: MinimalNpc[],
-  existingSourceIds: Set<string>,
-): MinimalNpc[] {
+function buildAvailableNpcs(allNpcs: MinimalNpc[], existingSourceIds: Set<string>): MinimalNpc[] {
   return allNpcs.filter((n) => !existingSourceIds.has(n.id));
 }
 
@@ -452,17 +445,14 @@ describe('CombatTracker — combatSnapshot replace-wholesale', () => {
   it('null snapshot leaves local state unchanged', () => {
     const localCombatants: Combatant[] = [makeCombatant({ id: 'stable' })];
     const snapshot = null;
-    const result = snapshot ? [...(snapshot as { combatants: Combatant[] }).combatants] : localCombatants;
+    const result = snapshot
+      ? [...(snapshot as { combatants: Combatant[] }).combatants]
+      : localCombatants;
     expect(result[0]!.id).toBe('stable');
   });
 });
 
 // ── Block 5: rollInitiative / advanceTurn API mock ────────────────────────────
-
-interface MockResult<T> {
-  data: T | undefined;
-  error: import('@app/api-client-ts').Problem | undefined;
-}
 
 async function rollInitiativeViaApi(
   mockFn: (opts: unknown) => Promise<MockResult<{ combatants: Combatant[]; round: number }>>,
@@ -474,7 +464,9 @@ async function rollInitiativeViaApi(
 }
 
 async function advanceTurnViaApi(
-  mockFn: (opts: unknown) => Promise<MockResult<{ activeCombatantId: string; round: number; isNewRound: boolean }>>,
+  mockFn: (
+    opts: unknown,
+  ) => Promise<MockResult<{ activeCombatantId: string; round: number; isNewRound: boolean }>>,
   encounterId: string,
 ): Promise<{ activeCombatantId: string; round: number; isNewRound: boolean }> {
   const res = await mockFn({ path: { id: encounterId } });
@@ -589,10 +581,7 @@ describe('CombatTracker — removes combatant via SDK', () => {
   });
 
   it('removes from local list after success', () => {
-    const list = [
-      makeCombatant({ id: 'cbt-001' }),
-      makeCombatant({ id: 'cbt-002' }),
-    ];
+    const list = [makeCombatant({ id: 'cbt-001' }), makeCombatant({ id: 'cbt-002' })];
     const after = list.filter((c) => c.id !== 'cbt-001');
     expect(after).toHaveLength(1);
     expect(after[0]!.id).toBe('cbt-002');

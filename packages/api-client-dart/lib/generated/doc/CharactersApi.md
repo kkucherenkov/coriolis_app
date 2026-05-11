@@ -41,7 +41,7 @@ import 'package:app_api_client/api.dart';
 
 final api = AppApiClient().getCharactersApi();
 final String id = id_example; // String | Character identifier (cuid2)
-final ItemCreate itemCreate = {"type":"WEAPON","name":"Vulcan Carbine","damage":2,"range":"medium","bonus":2,"crit":2,"weight":0.8,"features":[],"equipped":true}; // ItemCreate | 
+final ItemCreate itemCreate = {"type":"WEAPON","name":"Vulcan Carbine","damage":2,"range":"medium","bonus":2,"crit":2,"weight":0.8,"features":[],"equipped":true,"initiative":0}; // ItemCreate | 
 
 try {
     final response = api.addCharacterItem(id, itemCreate);

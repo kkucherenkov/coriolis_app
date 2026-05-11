@@ -24,6 +24,7 @@ part 'item_weapon.g.dart';
 /// * [weight] - Encumbrance weight in slots (0.5 increments)
 /// * [features] - Feature tags (e.g. \"Burst\", \"Explosive\")
 /// * [equipped] - Whether the item is currently equipped
+/// * [initiative] - Per-weapon initiative modifier added to the d6 initiative roll when the wielder uses this weapon (ST3001 ГЛАВА 6 «Инициатива» column on each weapon table; ГЛАВА 5 §«Раунды, ходы и инициатива» — «Некоторые виды оружия могут временно повысить значение твоей инициативы. Воспользовавшись этим преимуществом, ты обязан атаковать оружием, которое его обеспечивает»). Canonical printed values in ГЛАВА 6 are 0..+2; the broader −5..+5 envelope leaves room for GM-defined exotics and house-rule penalties without needing a spec bump. Defaults to 0 — most weapons don't carry an initiative bonus. 
 @BuiltValue()
 abstract class ItemWeapon implements ItemBase, Built<ItemWeapon, ItemWeaponBuilder> {
   /// Base damage dice
@@ -33,6 +34,10 @@ abstract class ItemWeapon implements ItemBase, Built<ItemWeapon, ItemWeaponBuild
   /// Feature tags (e.g. \"Burst\", \"Explosive\")
   @BuiltValueField(wireName: r'features')
   BuiltList<String> get features;
+
+  /// Per-weapon initiative modifier added to the d6 initiative roll when the wielder uses this weapon (ST3001 ГЛАВА 6 «Инициатива» column on each weapon table; ГЛАВА 5 §«Раунды, ходы и инициатива» — «Некоторые виды оружия могут временно повысить значение твоей инициативы. Воспользовавшись этим преимуществом, ты обязан атаковать оружием, которое его обеспечивает»). Canonical printed values in ГЛАВА 6 are 0..+2; the broader −5..+5 envelope leaves room for GM-defined exotics and house-rule penalties without needing a spec bump. Defaults to 0 — most weapons don't carry an initiative bonus. 
+  @BuiltValueField(wireName: r'initiative')
+  int? get initiative;
 
   /// Critical threshold (roll this many successes to crit)
   @BuiltValueField(wireName: r'crit')
@@ -59,7 +64,8 @@ abstract class ItemWeapon implements ItemBase, Built<ItemWeapon, ItemWeaponBuild
   factory ItemWeapon([void updates(ItemWeaponBuilder b)]) = _$ItemWeapon;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(ItemWeaponBuilder b) => b;
+  static void _defaults(ItemWeaponBuilder b) => b
+      ..initiative = 0;
 
   @BuiltValueSerializer(custom: true)
   static Serializer<ItemWeapon> get serializer => _$ItemWeaponSerializer();
@@ -87,6 +93,13 @@ class _$ItemWeaponSerializer implements PrimitiveSerializer<ItemWeapon> {
       object.features,
       specifiedType: const FullType(BuiltList, [FullType(String)]),
     );
+    if (object.initiative != null) {
+      yield r'initiative';
+      yield serializers.serialize(
+        object.initiative,
+        specifiedType: const FullType(int),
+      );
+    }
     yield r'crit';
     yield serializers.serialize(
       object.crit,
@@ -163,6 +176,13 @@ class _$ItemWeaponSerializer implements PrimitiveSerializer<ItemWeapon> {
             specifiedType: const FullType(BuiltList, [FullType(String)]),
           ) as BuiltList<String>;
           result.features.replace(valueDes);
+          break;
+        case r'initiative':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.initiative = valueDes;
           break;
         case r'crit':
           final valueDes = serializers.deserialize(

@@ -30,7 +30,9 @@ part 'item_update.g.dart';
 /// * [weight] 
 /// * [features] 
 /// * [equipped] 
+/// * [initiative] - Per-weapon initiative modifier (ST3001 ГЛАВА 6 «Инициатива» column). Accepts −5..+5. Omit to leave unchanged. 
 /// * [armorRating] 
+/// * [extraSlotCount] - Extra encumbrance slots this armor grants its wearer when equipped (ST3001 ТАБЛИЦА 6.14 «Дополнительные свойства» column). Omit to leave unchanged. 
 /// * [quantity] 
 /// * [notes] 
 /// * [xpCost] 

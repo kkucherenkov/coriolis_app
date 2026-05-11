@@ -24,6 +24,14 @@ export interface RollPushed {
   rollId: string;
   characterId: string;
   gameSessionId?: string;
+  /**
+   * Roll kind discriminator mirroring the OpenAPI `RollKind` enum
+   * (added in T-2026-05-10-015). Always `skill` for push events
+   * because only skill rolls can be pushed per ST3001 ГЛАВА 3
+   * §«Вознесение молитв»; included for client completeness.
+   *
+   */
+  kind: 'skill' | 'save' | 'trauma' | 'initiative' | 'darkness';
   hits: number;
   at?: string;
 }
@@ -80,8 +88,11 @@ export interface CombatUpdated {
     referenceId?: string;
     name: string;
     /**
-     * d6 initiative result (1–6 per ST3001 ГЛАВА 5). Null until
-     * the encounter's initiative is rolled.
+     * Combat initiative value — d6 base roll (1..6) plus
+     * per-weapon modifiers (ГЛАВА 6 «Инициатива» column) and
+     * situational bonuses (ГЛАВА 5 §«Повышение инициативы»).
+     * Range 1..10 mirrors OpenAPI `Combatant.initiative`.
+     * Null until the encounter's initiative is rolled.
      *
      */
     initiative: number;

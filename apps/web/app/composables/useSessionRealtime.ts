@@ -164,7 +164,11 @@ export function useSessionRealtime(gameSessionId: string): SessionRealtimeHandle
           lastRollPushed.value = data as unknown as RollPushedPayload;
           return;
         }
-        if ('encounterId' in data && typeof data.encounterId === 'string' && Array.isArray(data.combatants)) {
+        if (
+          'encounterId' in data &&
+          typeof data.encounterId === 'string' &&
+          Array.isArray(data.combatants)
+        ) {
           lastCombatUpdated.value = data as unknown as CombatUpdatedPayload;
         }
       });

@@ -31,7 +31,6 @@ import {
 import type {
   Combatant,
   CombatantCreate,
-  CombatantUpdate,
   CombatantUpdateWritable,
   Problem,
 } from '@app/api-client-ts';
@@ -104,8 +103,4 @@ export function useCombatantsApi(): CombatantsApiClient {
   };
 }
 
-export type {
-  CombatantCreate,
-  CombatantUpdate,
-  CombatantUpdateWritable,
-} from '@app/api-client-ts';
+export type { CombatantCreate, CombatantUpdate, CombatantUpdateWritable } from '@app/api-client-ts';

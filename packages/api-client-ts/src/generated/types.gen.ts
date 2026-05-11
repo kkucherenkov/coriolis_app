@@ -2152,6 +2152,62 @@ export type MeUpdate = {
 };
 
 /**
+ * Minimal user envelope for the JSON export. Intentionally excludes
+ * `email` — the dump may be saved to disk or shared, and auth-side
+ * identifiers should not leak into the file. The opaque `id` is
+ * retained so a future re-import path can disambiguate.
+ *
+ */
+export type MeExportUser = {
+    id: string;
+    displayName: string | null;
+};
+
+/**
+ * Export-only wrapper. Composes `Encounter` via `allOf` and adds
+ * the `combatants` array that the base schema deliberately omits
+ * (combatants live on a separate sub-resource in normal API usage).
+ *
+ */
+export type MeExportEncounter = Encounter & {
+    combatants: Array<Combatant>;
+};
+
+/**
+ * Export-only wrapper. Composes `GameSession` via `allOf` and adds
+ * the `encounters` array (the encounter list uses the encounter
+ * wrapper so per-encounter combatants are inlined).
+ *
+ * NPCs are deliberately NOT nested here: in this codebase NPCs are
+ * user-owned (not session-owned), so they appear once at the
+ * bundle top level rather than duplicated per session.
+ *
+ */
+export type MeExportGameSession = GameSession & {
+    encounters: Array<MeExportEncounter>;
+};
+
+/**
+ * Versioned envelope returned by `GET /api/v1/me/export`. `$schemaVersion`
+ * is a string literal so future shape changes can branch
+ * deterministically.
+ *
+ * NPCs are flat at the bundle top level rather than nested under
+ * sessions, because NPCs are user-owned in this codebase (not
+ * session-owned).
+ *
+ */
+export type MeExportBundle = {
+    $schemaVersion: '1';
+    exportedAt: string;
+    user: MeExportUser;
+    characters: Array<Character>;
+    ships: Array<Ship>;
+    npcs: Array<Npc>;
+    gameSessions: Array<MeExportGameSession>;
+};
+
+/**
  * Lifecycle state of a game session.
  * - `active` — session is in progress or available.
  * - `archived` — session is closed; hidden from the default list.
@@ -3362,6 +3418,50 @@ export type ShipListWritable = {
      * Opaque cursor for the next page; null when this is the last page
      */
     nextCursor: string | null;
+};
+
+/**
+ * Export-only wrapper. Composes `Encounter` via `allOf` and adds
+ * the `combatants` array that the base schema deliberately omits
+ * (combatants live on a separate sub-resource in normal API usage).
+ *
+ */
+export type MeExportEncounterWritable = EncounterWritable & {
+    combatants: Array<CombatantWritable>;
+};
+
+/**
+ * Export-only wrapper. Composes `GameSession` via `allOf` and adds
+ * the `encounters` array (the encounter list uses the encounter
+ * wrapper so per-encounter combatants are inlined).
+ *
+ * NPCs are deliberately NOT nested here: in this codebase NPCs are
+ * user-owned (not session-owned), so they appear once at the
+ * bundle top level rather than duplicated per session.
+ *
+ */
+export type MeExportGameSessionWritable = GameSessionWritable & {
+    encounters: Array<MeExportEncounterWritable>;
+};
+
+/**
+ * Versioned envelope returned by `GET /api/v1/me/export`. `$schemaVersion`
+ * is a string literal so future shape changes can branch
+ * deterministically.
+ *
+ * NPCs are flat at the bundle top level rather than nested under
+ * sessions, because NPCs are user-owned in this codebase (not
+ * session-owned).
+ *
+ */
+export type MeExportBundleWritable = {
+    $schemaVersion: '1';
+    exportedAt: string;
+    user: MeExportUser;
+    characters: Array<CharacterWritable>;
+    ships: Array<ShipWritable>;
+    npcs: Array<NpcWritable>;
+    gameSessions: Array<MeExportGameSessionWritable>;
 };
 
 /**
@@ -4848,6 +4948,31 @@ export type UpdateMeResponses = {
 };
 
 export type UpdateMeResponse = UpdateMeResponses[keyof UpdateMeResponses];
+
+export type ExportMeData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/me/export';
+};
+
+export type ExportMeErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+};
+
+export type ExportMeError = ExportMeErrors[keyof ExportMeErrors];
+
+export type ExportMeResponses = {
+    /**
+     * The user's data bundle.
+     */
+    200: MeExportBundle;
+};
+
+export type ExportMeResponse = ExportMeResponses[keyof ExportMeResponses];
 
 export type ListNpcsData = {
     body?: never;

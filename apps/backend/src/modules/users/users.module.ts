@@ -13,10 +13,12 @@ import { CqrsModule } from '@nestjs/cqrs';
 
 import { DeleteMeHandler } from './commands/delete-me.handler';
 import { UpdateMeHandler } from './commands/update-me.handler';
-import { USER_REPO } from './domain/user.ports';
+import { EXPORT_REPO, USER_REPO } from './domain/user.ports';
 import { UserDeletedHandler } from './events/user-deleted.handler';
+import { ExportRepo } from './infra/export.repo';
 import { UserRepo } from './infra/user.repo';
 import { CascadeDeletedUsersJob } from './jobs/cascade-deleted-users.job';
+import { ExportMeHandler } from './queries/export-me.handler';
 import { GetMeHandler } from './queries/get-me.handler';
 import { UsersController } from './users.controller';
 
@@ -26,6 +28,7 @@ import { UsersController } from './users.controller';
   providers: [
     // Query handlers
     GetMeHandler,
+    ExportMeHandler,
     // Command handlers
     UpdateMeHandler,
     DeleteMeHandler,
@@ -35,6 +38,7 @@ import { UsersController } from './users.controller';
     CascadeDeletedUsersJob,
     // Infra adapters
     { provide: USER_REPO, useClass: UserRepo },
+    { provide: EXPORT_REPO, useClass: ExportRepo },
   ],
 })
 export class UsersModule {}

@@ -19,7 +19,7 @@ Method | HTTP request | Description
 
 Roll dice for a character
 
-Rolls `pool` d6 server-side using a cryptographically secure RNG. Hits are counted as the number of 6s. The caller provides a human-readable `label` (e.g. \"Pilot · Evade\") and an optional `gameSessionId` (reserved for Feature 7.2 — pass null until GameSession lands).  Pool is clamped by the server from the submitted value. Condition penalties must be pre-applied by the caller before sending `pool`; the server does not re-apply them from character state. 
+Rolls `pool` d6 server-side using a cryptographically secure RNG. Hits are counted as the number of 6s. The caller provides a human-readable `label` (e.g. \"Pilot · Evade\") and an optional `gameSessionId` (reserved for Feature 7.2 — pass null until GameSession lands).  Pool is clamped by the server from the submitted value. Condition penalties must be pre-applied by the caller before sending `pool`; the server does not re-apply them from character state.  When an optional `breakdown` object is supplied alongside `pool`, the server validates that `attribute + skill + gear + modifier + helpers === pool`; a mismatch is rejected with HTTP 400 `ROLL_BREAKDOWN_MISMATCH`. Programmatic callers (internal command handlers, dice engine) can omit `breakdown` entirely. 
 
 ### Example
 ```dart
@@ -117,7 +117,7 @@ Name | Type | Description  | Notes
 
 Push (reroll) a roll
 
-Rerolls all non-6 dice exactly once. After a push the roll cannot be pushed again (`pushed` becomes `true`). Returns 422 with code `ROLL_NOT_PUSHABLE` if: - The roll has already been pushed. - The owning character has the Exhausted condition (PRD §10). 
+Rerolls all non-6 dice exactly once. After a push the roll cannot be pushed again (`pushed` becomes `true`). Returns 400 with code `PUSH_NOT_ALLOWED_ON_NON_SKILL_ROLL` if the roll's `kind` is not `skill` (ST3001 ГЛАВА 3 §«Вознесение молитв»). Returns 422 with code `ROLL_NOT_PUSHABLE` if: - The roll has already been pushed. - The owning character has the Exhausted condition (PRD §10). 
 
 ### Example
 ```dart
