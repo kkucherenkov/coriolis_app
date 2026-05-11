@@ -1,0 +1,25 @@
+{
+  "ci": {
+    "collect": {
+      "_comment": "Audits the SPA root (`/`) only — every Nuxt route serves the same client shell, so a single audit is representative. Mobile preset (default) matches PRD §6's '3G mobile' target. 3 runs; lhci takes the median.",
+      "staticDistDir": ".output/public",
+      "url": ["http://localhost/"],
+      "numberOfRuns": 3,
+      "settings": {
+        "onlyCategories": ["performance"],
+        "skipAudits": ["uses-http2"],
+        "_chromeFlagsComment": "Forgejo's act_runner executes the workflow as root inside the container, and Chrome refuses to run as root without --no-sandbox (crbug.com/638180). --disable-dev-shm-usage avoids /dev/shm exhaustion in containers with small tmpfs sizes.",
+        "chromeFlags": "--no-sandbox --disable-dev-shm-usage"
+      }
+    },
+    "assert": {
+      "_comment": "Locks today's measurements with ~10% headroom. LCP ceiling (3500 ms) is intentionally LOOSER than PRD §6's 2500 ms target — the current shell measures ~3.2 s on the mobile preset, so the PRD target is an aspiration and the gate's job is to prevent regressions while we close that gap. Tighten LCP toward 2500 once the LCP-improvement work lands.",
+      "assertions": {
+        "categories:performance": ["error", { "minScore": 0.85 }],
+        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }],
+        "largest-contentful-paint": ["error", { "maxNumericValue": 3500 }],
+        "total-blocking-time": ["warn", { "maxNumericValue": 300 }]
+      }
+    }
+  }
+}

@@ -77,16 +77,9 @@ jobs:
       - name: Prettier check
         run: pnpm format:check
 
-      # Bundle-size budgets — gates on apps/web .output/public/_nuxt/* sizes.
-      # Builds the web app once (production mode) then runs size-limit's
-      # numeric assertions against the brotli'd chunks. Budgets live in
-      # apps/web/.size-limit.json — bump them in the same PR that grows
-      # the bundle.
-      - name: Build web (for size budgets)
-        run: pnpm --filter @app/web build
-
-      - name: Web bundle-size budgets
-        run: pnpm --filter @app/web size
+      # Bundle-size + Lighthouse budgets are deferred to the `quality`
+      # job — both consume the same `nuxt generate` output, so they
+      # share one build there instead of duplicating it here.
 
   # ── Quality (storybook a11y smoke + security audit) ──────────────────────
   # One job that does the Storybook a11y smoke AND the dependency / license
@@ -138,6 +131,33 @@ jobs:
 
       - name: Run a11y smoke against built Storybook
         run: pnpm --filter @app/ui test:storybook:ci
+
+      # Lighthouse perf gate — generates the static SPA, lhci spins up its
+      # own static server, runs Chrome 3× per URL, asserts the budgets
+      # locked in apps/web/.lighthouserc.json. The Playwright container
+      # ships chrome-headless-shell only; Lighthouse needs full Chrome
+      # for some perf insights, so install google-chrome-stable from the
+      # official Google apt repo before lhci runs.
+      - name: Install Google Chrome (Lighthouse runtime)
+        run: |
+          set -euo pipefail
+          install -d -m 0755 /etc/apt/keyrings
+          curl -fsSL https://dl.google.com/linux/linux_signing_key.pub \
+            | gpg --dearmor -o /etc/apt/keyrings/google.gpg
+          echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google.gpg] http://dl.google.com/linux/chrome/deb/ stable main" \
+            | tee /etc/apt/sources.list.d/google-chrome.list
+          apt-get update
+          apt-get install -y --no-install-recommends google-chrome-stable
+          google-chrome --version
+
+      - name: Generate static SPA (for Lighthouse + size budgets)
+        run: pnpm --filter @app/web generate
+
+      - name: Lighthouse perf budgets
+        run: pnpm --filter @app/web lighthouse
+
+      - name: Web bundle-size budgets
+        run: pnpm --filter @app/web size
 
       - name: Dependency vulnerability scan
         run: pnpm audit --audit-level=critical

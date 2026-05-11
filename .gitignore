@@ -89,6 +89,7 @@ packages/ui/components.d.ts
 # test artifacts
 playwright-report
 test-results
+.lighthouseci
 
 # boilerplate-specific ignores
 specs/local-dev.md
