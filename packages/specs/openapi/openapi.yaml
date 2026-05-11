@@ -2632,10 +2632,10 @@ paths:
         can branch on it deterministically.
 
         Bundle scope:
-        - **Characters** with nested `inventory` (items) and `talents`.
+        - **Characters** with nested `items` and `talents`.
         - **Ships** with nested `modules` and `crew`.
-        - **Game sessions** with nested `npcs` (each with `weapons` / `armor`),
-          `encounters`, and each encounter's `combatants`.
+        - **NPCs** (user-owned in this codebase — listed at the bundle top level, not per session).
+        - **Game sessions** with nested `encounters` and per-encounter `combatants`.
 
         Out of scope: rolls log, share-link tokens, push records, user
         settings. Those are tracked as deferred follow-ups in the design
@@ -2670,6 +2670,7 @@ paths:
                       locale: ru
                     characters: []
                     ships: []
+                    npcs: []
                     gameSessions: []
         "401":
           description: No active session
@@ -9369,17 +9370,17 @@ components:
     MeExportGameSession:
       description: |
         Export-only wrapper. Composes `GameSession` via `allOf` and adds
-        the `npcs` + `encounters` arrays. Encounter list uses the wrapper
-        so the per-encounter combatants are inlined.
+        the `encounters` array (the encounter list uses the encounter
+        wrapper so per-encounter combatants are inlined).
+
+        NPCs are deliberately NOT nested here: in this codebase NPCs are
+        user-owned (not session-owned), so they appear once at the
+        bundle top level rather than duplicated per session.
       allOf:
         - $ref: "#/components/schemas/GameSession"
         - type: object
-          required: [npcs, encounters]
+          required: [encounters]
           properties:
-            npcs:
-              type: array
-              items:
-                $ref: "#/components/schemas/Npc"
             encounters:
               type: array
               items:
@@ -9391,7 +9392,11 @@ components:
         Versioned envelope returned by `GET /api/v1/me/export`. `$schemaVersion`
         is a string literal so future shape changes can branch
         deterministically.
-      required: [$schemaVersion, exportedAt, user, characters, ships, gameSessions]
+
+        NPCs are flat at the bundle top level rather than nested under
+        sessions, because NPCs are user-owned in this codebase (not
+        session-owned).
+      required: [$schemaVersion, exportedAt, user, characters, ships, npcs, gameSessions]
       additionalProperties: false
       properties:
         $schemaVersion:
@@ -9410,6 +9415,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Ship"
+        npcs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Npc"
         gameSessions:
           type: array
           items:
