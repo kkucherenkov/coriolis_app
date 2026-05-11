@@ -2659,14 +2659,15 @@ paths:
               schema:
                 $ref: "#/components/schemas/MeExportBundle"
               examples:
-                ok:
+                emptyAccount:
+                  summary: A brand-new account with no data yet
                   value:
                     $schemaVersion: "1"
                     exportedAt: "2026-05-11T13:42:00Z"
                     user:
                       id: cuid_01j9zxk5e0000qw3h8m7n6p4r2
                       displayName: Kalim al-Rashid
-                      locale: en
+                      locale: ru
                     characters: []
                     ships: []
                     gameSessions: []
@@ -9351,96 +9352,38 @@ components:
           description: BCP-47 locale tag (e.g. `en`, `ru`).
 
     MeExportEncounter:
-      type: object
       description: |
-        Export-only wrapper for an `Encounter` that inlines the combatant
-        list. The base `Encounter` schema deliberately omits combatants
-        (they are a sub-resource in the REST surface); this schema adds
-        the `combatants` array so the export bundle is self-contained.
-      required: [id, gameSessionId, name, status, round, activeCombatantId, notes, createdAt, updatedAt, combatants]
-      additionalProperties: false
-      properties:
-        id:
-          type: string
-          readOnly: true
-        gameSessionId:
-          type: string
-          readOnly: true
-        name:
-          type: string
-        status:
-          $ref: "#/components/schemas/EncounterStatus"
-        round:
-          type: integer
-          minimum: 0
-        activeCombatantId:
-          type: ["string", "null"]
-        notes:
-          type: ["string", "null"]
-        createdAt:
-          type: string
-          format: date-time
-          readOnly: true
-        updatedAt:
-          type: string
-          format: date-time
-          readOnly: true
-        combatants:
-          type: array
-          items:
-            $ref: "#/components/schemas/Combatant"
+        Export-only wrapper. Composes `Encounter` via `allOf` and adds
+        the `combatants` array that the base schema deliberately omits
+        (combatants live on a separate sub-resource in normal API usage).
+      allOf:
+        - $ref: "#/components/schemas/Encounter"
+        - type: object
+          required: [combatants]
+          properties:
+            combatants:
+              type: array
+              items:
+                $ref: "#/components/schemas/Combatant"
 
     MeExportGameSession:
-      type: object
       description: |
-        Export-only wrapper for a `GameSession` that inlines the NPC and
-        encounter lists (with combatants). The base `GameSession` schema
-        omits these sub-resources; this schema adds them so the export
-        bundle is self-contained.
-      required: [id, ownerId, name, status, dpCount, characterIds, createdAt, updatedAt, npcs, encounters]
-      additionalProperties: false
-      properties:
-        id:
-          type: string
-          readOnly: true
-        ownerId:
-          type: string
-          readOnly: true
-        name:
-          type: string
-        description:
-          type: ["string", "null"]
-        status:
-          $ref: "#/components/schemas/GameSessionStatus"
-        dpCount:
-          type: integer
-          minimum: 0
-          readOnly: true
-        characterIds:
-          type: array
-          items:
-            type: string
-          readOnly: true
-        shipId:
-          type: ["string", "null"]
-        createdAt:
-          type: string
-          format: date-time
-          readOnly: true
-        updatedAt:
-          type: string
-          format: date-time
-          readOnly: true
-        npcs:
-          type: array
-          description: All NPCs owned by the GM and used in this session.
-          items:
-            $ref: "#/components/schemas/Npc"
-        encounters:
-          type: array
-          description: All encounters in this session, each with its combatants inlined.
-          items:
-            $ref: "#/components/schemas/MeExportEncounter"
+        Export-only wrapper. Composes `GameSession` via `allOf` and adds
+        the `npcs` + `encounters` arrays. Encounter list uses the wrapper
+        so the per-encounter combatants are inlined.
+      allOf:
+        - $ref: "#/components/schemas/GameSession"
+        - type: object
+          required: [npcs, encounters]
+          properties:
+            npcs:
+              type: array
+              items:
+                $ref: "#/components/schemas/Npc"
+            encounters:
+              type: array
+              items:
+                $ref: "#/components/schemas/MeExportEncounter"
 
     MeExportBundle:
       type: object
