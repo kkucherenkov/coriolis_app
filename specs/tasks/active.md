@@ -16,7 +16,7 @@
 - Design impact: none (reuses `AppCard` + `AppButton`).
 - Tests: unit (`export-me.handler.spec.ts`) + Playwright smoke (settings → click → 200 + Content-Disposition).
 - Sub-steps:
-  - [ ] Block 1 — spec + codegen
+  - [x] Block 1 — spec + codegen (a5c4627 spec + 8f3a46b codegen; codegen also flushed pre-existing drift for RollKind/RollBreakdown/Character/Combatant/Encounter)
   - [ ] Block 2 — backend
   - [ ] Block 3 — web
   - [ ] Block 4 — Playwright + close-out
