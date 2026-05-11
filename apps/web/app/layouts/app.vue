@@ -4,8 +4,45 @@
   import { useAuth } from '~/composables/useAuth';
   import { useMeApi } from '~/composables/useMeApi';
   import { useOnline } from '~/composables/useOnline';
+  import { useOfflineQueue } from '~/composables/useOfflineQueue';
 
   const { online } = useOnline();
+  const { pending: queuePending, status: queueStatus } = useOfflineQueue();
+
+  // Banner visibility:
+  //   offline AND/OR a drain pass is in flight / just finished / errored.
+  //   When fully online + idle + queue empty, the banner is gone.
+  const offlineBannerVisible = computed(() => !online.value || queueStatus.value !== 'idle');
+
+  const offlineBannerTone = computed(() => {
+    if (!online.value) return 'warning';
+    if (queueStatus.value === 'error') return 'danger';
+    if (queueStatus.value === 'synced') return 'success';
+    return 'info';
+  });
+
+  const offlineBannerTitle = computed(() => {
+    if (!online.value) return t('offlineBanner.title');
+    if (queueStatus.value === 'syncing') return t('offlineBanner.syncingTitle');
+    if (queueStatus.value === 'synced') return t('offlineBanner.syncedTitle');
+    if (queueStatus.value === 'error') return t('offlineBanner.errorTitle');
+    return '';
+  });
+
+  const offlineBannerBody = computed(() => {
+    if (!online.value) {
+      return queuePending.value > 0
+        ? t('offlineBanner.bodyWithPending', { n: queuePending.value })
+        : t('offlineBanner.body');
+    }
+    if (queueStatus.value === 'syncing') {
+      return t('offlineBanner.syncingBody', { n: queuePending.value });
+    }
+    if (queueStatus.value === 'error') {
+      return t('offlineBanner.errorBody');
+    }
+    return ''; // 'synced' → title-only pulse, 'idle' → banner hidden
+  });
 
   const { t, locale, locales, setLocale } = useI18n({ useScope: 'local' });
   const route = useRoute();
@@ -90,7 +127,13 @@
     "skipToContent": "Skip to main content",
     "offlineBanner": {
       "title": "You're offline",
-      "body": "Reads come from the local cache. Changes won't save until your connection returns."
+      "body": "Reads come from the local cache. Changes won't save until your connection returns.",
+      "bodyWithPending": "Reads come from the local cache. {n} change(s) will save when you reconnect.",
+      "syncingTitle": "Reconnecting…",
+      "syncingBody": "Syncing {n} pending change(s).",
+      "syncedTitle": "All changes saved",
+      "errorTitle": "Some changes couldn't sync",
+      "errorBody": "We'll retry automatically when the network is steady. Refresh if you want to force it."
     },
     "brand": {
       "name": "Coriolis · Companion",
@@ -118,7 +161,13 @@
     "skipToContent": "Перейти к основному содержанию",
     "offlineBanner": {
       "title": "Вы офлайн",
-      "body": "Чтение идёт из локального кэша. Изменения не сохранятся до возврата сети."
+      "body": "Чтение идёт из локального кэша. Изменения не сохранятся до возврата сети.",
+      "bodyWithPending": "Чтение идёт из локального кэша. {n} изменение(й) сохранится при восстановлении сети.",
+      "syncingTitle": "Восстанавливаем связь…",
+      "syncingBody": "Синхронизирую {n} ожидающее(их) изменение(й).",
+      "syncedTitle": "Все изменения сохранены",
+      "errorTitle": "Часть изменений не синхронизировалась",
+      "errorBody": "Попробуем ещё раз при стабильной сети. Обнови страницу, чтобы повторить сейчас."
     },
     "brand": {
       "name": "Coriolis · Companion",
@@ -146,7 +195,13 @@
     "skipToContent": "[uk-todo] Skip to main content",
     "offlineBanner": {
       "title": "[uk-todo] You're offline",
-      "body": "[uk-todo] Reads come from the local cache. Changes won't save until your connection returns."
+      "body": "[uk-todo] Reads come from the local cache. Changes won't save until your connection returns.",
+      "bodyWithPending": "[uk-todo] Reads come from the local cache. {n} change(s) will save when you reconnect.",
+      "syncingTitle": "[uk-todo] Reconnecting…",
+      "syncingBody": "[uk-todo] Syncing {n} pending change(s).",
+      "syncedTitle": "[uk-todo] All changes saved",
+      "errorTitle": "[uk-todo] Some changes couldn't sync",
+      "errorBody": "[uk-todo] We'll retry automatically when the network is steady. Refresh if you want to force it."
     },
     "brand": {
       "name": "Coriolis · Companion",
@@ -174,7 +229,13 @@
     "skipToContent": "[el-todo] Skip to main content",
     "offlineBanner": {
       "title": "[el-todo] You're offline",
-      "body": "[el-todo] Reads come from the local cache. Changes won't save until your connection returns."
+      "body": "[el-todo] Reads come from the local cache. Changes won't save until your connection returns.",
+      "bodyWithPending": "[el-todo] Reads come from the local cache. {n} change(s) will save when you reconnect.",
+      "syncingTitle": "[el-todo] Reconnecting…",
+      "syncingBody": "[el-todo] Syncing {n} pending change(s).",
+      "syncedTitle": "[el-todo] All changes saved",
+      "errorTitle": "[el-todo] Some changes couldn't sync",
+      "errorBody": "[el-todo] We'll retry automatically when the network is steady. Refresh if you want to force it."
     },
     "brand": {
       "name": "Coriolis · Companion",
@@ -206,15 +267,21 @@
     <!-- Skip-link: visible only when focused. -->
     <a class="layout-app__skip-link" href="#main-content">{{ t('skipToContent') }}</a>
 
-    <!-- Offline banner — shown above the header when navigator.onLine flips false. -->
+    <!--
+      Offline / sync banner. Shows when:
+        - navigator.onLine === false (with pending-count line if queue > 0), OR
+        - the queue is draining / has just drained / errored.
+      Tone + copy track the queue status so a player gets feedback on
+      reconnect (syncing → success pulse → fade).
+    -->
     <AppBanner
-      v-if="!online"
-      tone="warning"
+      v-if="offlineBannerVisible"
+      :tone="offlineBannerTone"
       role="status"
-      :title="t('offlineBanner.title')"
+      :title="offlineBannerTitle"
       class="layout-app__offline-banner"
     >
-      {{ t('offlineBanner.body') }}
+      {{ offlineBannerBody }}
     </AppBanner>
 
     <AppHeader
