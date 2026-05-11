@@ -128,7 +128,10 @@
 </i18n>
 
 <template>
-  <div class="page-login" data-testid="page-login">
+  <div
+    class="page-login"
+    data-testid="page-login"
+  >
     <div class="page-login__shell">
       <h1 class="page-login__wordmark">
         {{ t('wordmark') }}
@@ -144,12 +147,24 @@
           </p>
         </div>
 
-        <p v-if="errorMsg" role="alert" class="page-login__error">
+        <p
+          v-if="errorMsg"
+          role="alert"
+          class="page-login__error"
+        >
           {{ errorMsg }}
         </p>
 
-        <form class="page-login__form" novalidate @submit.prevent="onSignIn">
-          <AppField :label="t('emailLabel')" :help="t('emailHint')" required>
+        <form
+          class="page-login__form"
+          novalidate
+          @submit.prevent="onSignIn"
+        >
+          <AppField
+            :label="t('emailLabel')"
+            :help="t('emailHint')"
+            required
+          >
             <template #default="slotAttrs">
               <AppInput
                 v-bind="slotAttrs"
@@ -162,7 +177,11 @@
             </template>
           </AppField>
 
-          <AppField :label="t('passwordLabel')" :help="t('passwordHint')" required>
+          <AppField
+            :label="t('passwordLabel')"
+            :help="t('passwordHint')"
+            required
+          >
             <template #default="slotAttrs">
               <AppInput
                 v-bind="slotAttrs"
@@ -185,14 +204,20 @@
         </form>
 
         <p class="page-login__footnote-link page-login__footnote-link--forgot">
-          <NuxtLink to="/forgot-password" class="page-login__link">
+          <NuxtLink
+            to="/forgot-password"
+            class="page-login__link"
+          >
             {{ t('forgotLink') }}
           </NuxtLink>
         </p>
 
         <p class="page-login__footnote-link">
           {{ t('noAccount') }}
-          <NuxtLink to="/signup" class="page-login__link">
+          <NuxtLink
+            to="/signup"
+            class="page-login__link"
+          >
             {{ t('signUpLink') }}
           </NuxtLink>
         </p>

@@ -1254,13 +1254,26 @@
 <template>
   <section class="page-sheet">
     <!-- ── Loading ───────────────────────────────────────────────────────────── -->
-    <div v-if="state === 'loading'" class="page-sheet__loading" aria-busy="true">
-      <div class="page-sheet__skeleton-hero" aria-hidden="true" />
-      <div class="page-sheet__skeleton-body" aria-hidden="true" />
+    <div
+      v-if="state === 'loading'"
+      class="page-sheet__loading"
+      aria-busy="true"
+    >
+      <div
+        class="page-sheet__skeleton-hero"
+        aria-hidden="true"
+      />
+      <div
+        class="page-sheet__skeleton-body"
+        aria-hidden="true"
+      />
     </div>
 
     <!-- ── Not found ─────────────────────────────────────────────────────────── -->
-    <div v-else-if="state === 'not-found'" class="page-sheet__not-found">
+    <div
+      v-else-if="state === 'not-found'"
+      class="page-sheet__not-found"
+    >
       <AppCard>
         <div class="page-sheet__not-found-inner">
           <p class="page-sheet__not-found-heading">
@@ -1269,7 +1282,11 @@
           <p class="page-sheet__not-found-body">
             {{ t('notFoundBody') }}
           </p>
-          <AppButton variant="ghost" size="md" @click="navigateTo('/app/characters')">
+          <AppButton
+            variant="ghost"
+            size="md"
+            @click="navigateTo('/app/characters')"
+          >
             {{ t('notFoundBack') }}
           </AppButton>
         </div>
@@ -1277,7 +1294,11 @@
     </div>
 
     <!-- ── Error ─────────────────────────────────────────────────────────────── -->
-    <div v-else-if="state === 'error'" class="page-sheet__error" role="alert">
+    <div
+      v-else-if="state === 'error'"
+      class="page-sheet__error"
+      role="alert"
+    >
       <p class="page-sheet__error-text">
         {{ errorMsg }}
       </p>
@@ -1288,7 +1309,10 @@
       <!-- ── Hero plate ──────────────────────────────────────────────────────── -->
       <div class="page-sheet__hero">
         <!-- Portrait avatar -->
-        <div class="page-sheet__portrait" aria-hidden="true">
+        <div
+          class="page-sheet__portrait"
+          aria-hidden="true"
+        >
           {{ initials(nameValue || character.name) }}
         </div>
 
@@ -1306,15 +1330,17 @@
             class="page-sheet__name-input"
           />
           <!-- Feature 5.5 — AppSavePulse indicator -->
-          <div class="page-sheet__save-status" aria-live="polite" aria-atomic="true">
+          <div
+            class="page-sheet__save-status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             <AppSavePulse :state="saveState" />
             <!-- sr-only accessible label for screen readers -->
             <span class="sr-only">
               <template v-if="saveState === 'saving'">{{ t('statusSaving') }}</template>
               <template v-else-if="saveState === 'saved'">{{ t('statusSaved') }}</template>
-              <template v-else-if="saveState === 'error'"
-                >{{ t('statusError') }}: {{ saveError }}</template
-              >
+              <template v-else-if="saveState === 'error'">{{ t('statusError') }}: {{ saveError }}</template>
             </span>
           </div>
         </div>
@@ -1399,16 +1425,34 @@
       />
 
       <!-- ── Encumbrance warning banner ─────────────────────────────────────── -->
-      <AppBanner v-if="isEncumbered" tone="danger" class="page-sheet__enc-warning" role="status">
+      <AppBanner
+        v-if="isEncumbered"
+        tone="danger"
+        class="page-sheet__enc-warning"
+        role="status"
+      >
         {{ t('encWarning') }}
       </AppBanner>
 
       <!-- ── Tab bar ──────────────────────────────────────────────────────────── -->
-      <div class="page-sheet__tabs" role="tablist">
-        <AppTab :active="activeTab === 'stats'" size="md" tone="brass" @click="activeTab = 'stats'">
+      <div
+        class="page-sheet__tabs"
+        role="tablist"
+      >
+        <AppTab
+          :active="activeTab === 'stats'"
+          size="md"
+          tone="brass"
+          @click="activeTab = 'stats'"
+        >
           {{ t('tabStats') }}
         </AppTab>
-        <AppTab :active="activeTab === 'gear'" size="md" tone="brass" @click="activeTab = 'gear'">
+        <AppTab
+          :active="activeTab === 'gear'"
+          size="md"
+          tone="brass"
+          @click="activeTab = 'gear'"
+        >
           {{ t('tabGear') }}
         </AppTab>
         <AppTab
@@ -1419,16 +1463,29 @@
         >
           {{ t('tabTalents') }}
         </AppTab>
-        <AppTab :active="activeTab === 'notes'" size="md" tone="brass" @click="activeTab = 'notes'">
+        <AppTab
+          :active="activeTab === 'notes'"
+          size="md"
+          tone="brass"
+          @click="activeTab = 'notes'"
+        >
           {{ t('tabNotes') }}
         </AppTab>
-        <AppTab :active="activeTab === 'share'" size="md" tone="brass" @click="activeTab = 'share'">
+        <AppTab
+          :active="activeTab === 'share'"
+          size="md"
+          tone="brass"
+          @click="activeTab = 'share'"
+        >
           {{ t('tabShare') }}
         </AppTab>
       </div>
 
       <!-- ── Three-column body (Stats tab) ─────────────────────────────────────── -->
-      <div v-show="activeTab === 'stats'" class="page-sheet__columns">
+      <div
+        v-show="activeTab === 'stats'"
+        class="page-sheet__columns"
+      >
         <!-- LEFT column: Identity + Conditions + Critical Injuries -->
         <div class="page-sheet__col page-sheet__col--left">
           <!-- Identity card -->
@@ -1465,23 +1522,41 @@
             </div>
 
             <!-- Conditions error banner -->
-            <AppBanner v-if="conditionsError" tone="danger" class="page-sheet__conditions-error">
+            <AppBanner
+              v-if="conditionsError"
+              tone="danger"
+              class="page-sheet__conditions-error"
+            >
               {{ conditionsError }}
             </AppBanner>
 
             <!-- Critical injuries sub-section -->
-            <AppDivider tone="brass-deep" class="page-sheet__injuries-divider" />
+            <AppDivider
+              tone="brass-deep"
+              class="page-sheet__injuries-divider"
+            />
             <div class="page-sheet__injuries-header">
               <span class="page-sheet__injuries-title">{{ t('panelCriticalInjuries') }}</span>
             </div>
 
-            <AppBanner v-if="injuriesError" tone="danger" class="page-sheet__conditions-error">
+            <AppBanner
+              v-if="injuriesError"
+              tone="danger"
+              class="page-sheet__conditions-error"
+            >
               {{ injuriesError }}
             </AppBanner>
 
             <!-- Injuries list -->
-            <ul v-if="localInjuries.length > 0" class="page-sheet__injuries-list">
-              <li v-for="injury in localInjuries" :key="injury.id" class="page-sheet__injury-row">
+            <ul
+              v-if="localInjuries.length > 0"
+              class="page-sheet__injuries-list"
+            >
+              <li
+                v-for="injury in localInjuries"
+                :key="injury.id"
+                class="page-sheet__injury-row"
+              >
                 <span class="page-sheet__injury-name">{{ injury.name }}</span>
                 <button
                   class="page-sheet__injury-remove"
@@ -1492,12 +1567,18 @@
                 </button>
               </li>
             </ul>
-            <p v-else class="page-sheet__injuries-empty">
+            <p
+              v-else
+              class="page-sheet__injuries-empty"
+            >
               {{ t('noInjuries') }}
             </p>
 
             <!-- Inline add injury -->
-            <div v-if="addInjuryActive" class="page-sheet__injury-add-form">
+            <div
+              v-if="addInjuryActive"
+              class="page-sheet__injury-add-form"
+            >
               <AppInput
                 v-model="newInjuryName"
                 size="sm"
@@ -1508,7 +1589,11 @@
                 @keydown.esc.prevent="cancelAddInjury"
               />
               <div class="page-sheet__injury-add-actions">
-                <AppButton variant="ghost" size="sm" @click="cancelAddInjury">
+                <AppButton
+                  variant="ghost"
+                  size="sm"
+                  @click="cancelAddInjury"
+                >
                   {{ t('injuryAddCancel') }}
                 </AppButton>
                 <AppButton
@@ -1597,10 +1682,18 @@
                     :label="attrLabel(key)"
                   />
                   <div class="page-sheet__stepper-actions">
-                    <AppButton variant="ghost" size="sm" @click="closeAttrPopover">
+                    <AppButton
+                      variant="ghost"
+                      size="sm"
+                      @click="closeAttrPopover"
+                    >
                       {{ t('popoverClose') }}
                     </AppButton>
-                    <AppButton variant="primary" size="sm" @click="commitAttr(key, stepperValue)">
+                    <AppButton
+                      variant="primary"
+                      size="sm"
+                      @click="commitAttr(key, stepperValue)"
+                    >
                       {{ t('statusSaved') }}
                     </AppButton>
                   </div>
@@ -1637,7 +1730,10 @@
                   {{ t('skillsGeneral') }}
                 </div>
                 <AppDivider tone="brass-deep" />
-                <template v-for="sk in GENERAL_SKILLS" :key="sk">
+                <template
+                  v-for="sk in GENERAL_SKILLS"
+                  :key="sk"
+                >
                   <AppPopover
                     :open="skillPopoverOpen(sk)"
                     placement="bottom"
@@ -1695,7 +1791,11 @@
                         :label="skillLabel(sk)"
                       />
                       <div class="page-sheet__stepper-actions">
-                        <AppButton variant="ghost" size="sm" @click="closeSkillPopover">
+                        <AppButton
+                          variant="ghost"
+                          size="sm"
+                          @click="closeSkillPopover"
+                        >
                           {{ t('popoverClose') }}
                         </AppButton>
                         <AppButton
@@ -1723,7 +1823,10 @@
                   }}</span>
                 </div>
                 <AppDivider tone="brass" />
-                <template v-for="sk in ADVANCED_SKILLS" :key="sk">
+                <template
+                  v-for="sk in ADVANCED_SKILLS"
+                  :key="sk"
+                >
                   <AppPopover
                     :open="skillPopoverOpen(sk)"
                     placement="bottom"
@@ -1792,7 +1895,11 @@
                         :label="skillLabel(sk)"
                       />
                       <div class="page-sheet__stepper-actions">
-                        <AppButton variant="ghost" size="sm" @click="closeSkillPopover">
+                        <AppButton
+                          variant="ghost"
+                          size="sm"
+                          @click="closeSkillPopover"
+                        >
                           {{ t('popoverClose') }}
                         </AppButton>
                         <AppButton
@@ -1818,13 +1925,23 @@
             <template #header>
               <span class="page-sheet__panel-title">{{ t('panelEquipped') }}</span>
             </template>
-            <ul v-if="equippedItems.length > 0" class="page-sheet__equipped-list">
-              <li v-for="item in equippedItems" :key="item.id" class="page-sheet__equipped-row">
+            <ul
+              v-if="equippedItems.length > 0"
+              class="page-sheet__equipped-list"
+            >
+              <li
+                v-for="item in equippedItems"
+                :key="item.id"
+                class="page-sheet__equipped-row"
+              >
                 <span class="page-sheet__equipped-name">{{ item.name }}</span>
                 <span class="page-sheet__equipped-summary">{{ itemSummary(item) }}</span>
               </li>
             </ul>
-            <p v-else class="page-sheet__placeholder-text">
+            <p
+              v-else
+              class="page-sheet__placeholder-text"
+            >
               {{ t('equippedNone') }}
             </p>
           </AppCard>
@@ -1845,15 +1962,31 @@
             </AppBanner>
 
             <!-- Talent list -->
-            <ul v-if="localTalents.length > 0" class="page-sheet__talents-list">
-              <li v-for="talent in localTalents" :key="talent.id" class="page-sheet__talent-row">
-                <button class="page-sheet__talent-btn" @click="openEditTalent(talent)">
+            <ul
+              v-if="localTalents.length > 0"
+              class="page-sheet__talents-list"
+            >
+              <li
+                v-for="talent in localTalents"
+                :key="talent.id"
+                class="page-sheet__talent-row"
+              >
+                <button
+                  class="page-sheet__talent-btn"
+                  @click="openEditTalent(talent)"
+                >
                   <span class="page-sheet__talent-name">{{ displayTalentName(talent) }}</span>
-                  <span class="page-sheet__talent-chevron" aria-hidden="true">›</span>
+                  <span
+                    class="page-sheet__talent-chevron"
+                    aria-hidden="true"
+                  >›</span>
                 </button>
               </li>
             </ul>
-            <p v-else class="page-sheet__placeholder-text">
+            <p
+              v-else
+              class="page-sheet__placeholder-text"
+            >
               {{ t('noTalents') }}
             </p>
 
@@ -1877,32 +2010,52 @@
               @roll-created="onRollCreated"
               @roll-pushed="onRollPushed"
             />
-            <SheetRollHistory ref="rollHistoryRef" :character-id="characterId" />
+            <SheetRollHistory
+              ref="rollHistoryRef"
+              :character-id="characterId"
+            />
           </AppCard>
         </div>
       </div>
 
       <!-- ── Gear tab ────────────────────────────────────────────────────────── -->
-      <div v-show="activeTab === 'gear'" class="page-sheet__gear-tab">
+      <div
+        v-show="activeTab === 'gear'"
+        class="page-sheet__gear-tab"
+      >
         <!-- Top action row -->
         <div class="page-sheet__gear-header">
-          <AppButton variant="primary" size="sm" @click="openCreateItem">
+          <AppButton
+            variant="primary"
+            size="sm"
+            @click="openCreateItem"
+          >
             + {{ t('gearAddButton') }}
           </AppButton>
           <!-- Encumbrance summary -->
-          <div class="page-sheet__gear-enc" :class="{ 'page-sheet__gear-enc--warn': isEncumbered }">
+          <div
+            class="page-sheet__gear-enc"
+            :class="{ 'page-sheet__gear-enc--warn': isEncumbered }"
+          >
             <span class="page-sheet__gear-enc-label">{{ t('labelEnc') }}</span>
             <span class="page-sheet__gear-enc-value">
               {{ character.encumbrance.current }} / {{ character.encumbrance.max }}
             </span>
-            <AppBadge v-if="isEncumbered" variant="crimson" size="sm">
+            <AppBadge
+              v-if="isEncumbered"
+              variant="crimson"
+              size="sm"
+            >
               {{ t('encWarning') }}
             </AppBadge>
           </div>
         </div>
 
         <!-- Inventory table -->
-        <div v-if="localInventory.length > 0" class="page-sheet__gear-table-wrap">
+        <div
+          v-if="localInventory.length > 0"
+          class="page-sheet__gear-table-wrap"
+        >
           <table class="page-sheet__gear-table">
             <thead>
               <tr>
@@ -1921,9 +2074,16 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in localInventory" :key="item.id" class="page-sheet__gear-row">
+              <tr
+                v-for="item in localInventory"
+                :key="item.id"
+                class="page-sheet__gear-row"
+              >
                 <td class="page-sheet__gear-td">
-                  <AppBadge :variant="itemTypeBadgeVariant(item.type)" size="sm">
+                  <AppBadge
+                    :variant="itemTypeBadgeVariant(item.type)"
+                    size="sm"
+                  >
                     {{ itemTypeBadgeLabel(item.type) }}
                   </AppBadge>
                 </td>
@@ -1934,7 +2094,11 @@
                   {{ itemSummary(item) }}
                 </td>
                 <td class="page-sheet__gear-td page-sheet__gear-td--actions">
-                  <AppButton variant="ghost" size="sm" @click="openEditItem(item)">
+                  <AppButton
+                    variant="ghost"
+                    size="sm"
+                    @click="openEditItem(item)"
+                  >
                     {{ t('itemEditBtn') }}
                   </AppButton>
                 </td>
@@ -1944,28 +2108,44 @@
         </div>
 
         <!-- Empty state -->
-        <AppCard v-else class="page-sheet__gear-empty">
+        <AppCard
+          v-else
+          class="page-sheet__gear-empty"
+        >
           <p class="page-sheet__gear-empty-text">
             {{ t('gearEmpty') }}
           </p>
-          <AppButton variant="primary" size="sm" @click="openCreateItem">
+          <AppButton
+            variant="primary"
+            size="sm"
+            @click="openCreateItem"
+          >
             + {{ t('gearAddButton') }}
           </AppButton>
         </AppCard>
       </div>
 
       <!-- ── Other placeholder tabs ──────────────────────────────────────────── -->
-      <div v-show="activeTab === 'talents'" class="page-sheet__tab-placeholder">
+      <div
+        v-show="activeTab === 'talents'"
+        class="page-sheet__tab-placeholder"
+      >
         <p class="page-sheet__placeholder-text">
           {{ t('tabComingSoon') }}
         </p>
       </div>
-      <div v-show="activeTab === 'notes'" class="page-sheet__tab-placeholder">
+      <div
+        v-show="activeTab === 'notes'"
+        class="page-sheet__tab-placeholder"
+      >
         <p class="page-sheet__placeholder-text">
           {{ t('tabComingSoon') }}
         </p>
       </div>
-      <div v-show="activeTab === 'share'" class="page-sheet__tab-placeholder">
+      <div
+        v-show="activeTab === 'share'"
+        class="page-sheet__tab-placeholder"
+      >
         <p class="page-sheet__placeholder-text">
           {{ t('tabComingSoon') }}
         </p>
@@ -1973,7 +2153,11 @@
 
       <!-- ── Danger zone ─────────────────────────────────────────────────────── -->
       <div class="page-sheet__danger-zone">
-        <AppButton variant="danger" size="sm" @click="openDeleteDialog">
+        <AppButton
+          variant="danger"
+          size="sm"
+          @click="openDeleteDialog"
+        >
           {{ t('deleteButton') }}
         </AppButton>
       </div>
@@ -1994,10 +2178,20 @@
           {{ t('deleteConfirmBody') }}
         </p>
         <div class="page-sheet__dialog-actions">
-          <AppButton variant="ghost" size="md" :disabled="deleteLoading" @click="closeDeleteDialog">
+          <AppButton
+            variant="ghost"
+            size="md"
+            :disabled="deleteLoading"
+            @click="closeDeleteDialog"
+          >
             {{ t('deleteConfirmNo') }}
           </AppButton>
-          <AppButton variant="danger" size="md" :loading="deleteLoading" @click="confirmDelete">
+          <AppButton
+            variant="danger"
+            size="md"
+            :loading="deleteLoading"
+            @click="confirmDelete"
+          >
             {{ t('deleteConfirmYes') }}
           </AppButton>
         </div>
@@ -2020,13 +2214,20 @@
           {{ talentEditorIsEdit ? t('talentEditTitle') : t('talentCreateTitle') }}
         </p>
 
-        <AppBanner v-if="talentEditorError" tone="danger" class="page-sheet__talent-editor-error">
+        <AppBanner
+          v-if="talentEditorError"
+          tone="danger"
+          class="page-sheet__talent-editor-error"
+        >
           {{ talentEditorError }}
         </AppBanner>
 
         <div class="page-sheet__talent-fields">
           <div class="page-sheet__talent-field">
-            <label class="page-sheet__talent-label" :for="'talent-name'">
+            <label
+              class="page-sheet__talent-label"
+              :for="'talent-name'"
+            >
               {{ t('talentNameLabel') }}
             </label>
             <AppInput
@@ -2039,7 +2240,10 @@
             />
           </div>
           <div class="page-sheet__talent-field">
-            <label class="page-sheet__talent-label" :for="'talent-desc'">
+            <label
+              class="page-sheet__talent-label"
+              :for="'talent-desc'"
+            >
               {{ t('talentDescriptionLabel') }}
             </label>
             <AppTextarea
@@ -2062,7 +2266,11 @@
           {{ t('talentDelete') }}
         </button>
         <div class="page-sheet__dialog-actions-right">
-          <AppButton variant="ghost" size="md" @click="closeTalentEditor">
+          <AppButton
+            variant="ghost"
+            size="md"
+            @click="closeTalentEditor"
+          >
             {{ t('talentCancel') }}
           </AppButton>
           <AppButton

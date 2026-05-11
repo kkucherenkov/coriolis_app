@@ -455,8 +455,16 @@
       </template>
     </AppField>
 
-    <AppField :label="t('conceptLabel')" :help-text="t('conceptHelp')" required>
-      <div class="step-concept__grid" role="radiogroup" :aria-label="t('conceptLabel')">
+    <AppField
+      :label="t('conceptLabel')"
+      :help-text="t('conceptHelp')"
+      required
+    >
+      <div
+        class="step-concept__grid"
+        role="radiogroup"
+        :aria-label="t('conceptLabel')"
+      >
         <button
           v-for="c in CONCEPT_ORDER"
           :key="c"
@@ -472,7 +480,10 @@
       </div>
     </AppField>
 
-    <div v-if="selectedInfo" class="step-concept__hint">
+    <div
+      v-if="selectedInfo"
+      class="step-concept__hint"
+    >
       <dl class="step-concept__hint-grid">
         <div class="step-concept__hint-row">
           <dt>{{ t('hint.keyAttribute') }}</dt>
@@ -485,18 +496,28 @@
         <div class="step-concept__hint-row step-concept__hint-row--wide">
           <dt>{{ t('hint.keySkills') }}</dt>
           <dd>
-            <span v-for="s in selectedInfo.keySkills" :key="s" class="step-concept__skill-pill">
+            <span
+              v-for="s in selectedInfo.keySkills"
+              :key="s"
+              class="step-concept__skill-pill"
+            >
               {{ t(`skill.${s}`) }}
             </span>
           </dd>
         </div>
       </dl>
     </div>
-    <p v-else class="step-concept__select-prompt">
+    <p
+      v-else
+      class="step-concept__select-prompt"
+    >
       {{ t('selectPrompt') }}
     </p>
 
-    <AppField :label="t('mutant.label')" :help-text="t('mutant.help')">
+    <AppField
+      :label="t('mutant.label')"
+      :help-text="t('mutant.help')"
+    >
       <button
         type="button"
         role="switch"

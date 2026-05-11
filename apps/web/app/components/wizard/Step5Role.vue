@@ -41,12 +41,21 @@
 </i18n>
 
 <template>
-  <section class="step-role" :aria-labelledby="`role-label-${id}`">
-    <h2 :id="`role-label-${id}`" class="step-role__heading">
+  <section
+    class="step-role"
+    :aria-labelledby="`role-label-${id}`"
+  >
+    <h2
+      :id="`role-label-${id}`"
+      class="step-role__heading"
+    >
       {{ t('headline') }}
     </h2>
 
-    <p v-if="!concept" class="step-role__placeholder">
+    <p
+      v-if="!concept"
+      class="step-role__placeholder"
+    >
       {{ t('placeholderNoConcept') }}
     </p>
 
