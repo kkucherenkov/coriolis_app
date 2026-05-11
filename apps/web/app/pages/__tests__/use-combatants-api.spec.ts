@@ -299,7 +299,7 @@ describe('CombatTracker — status flag helpers', () => {
 // ── Combatant sort logic ──────────────────────────────────────────────────────
 
 function sortCombatants(items: Combatant[]): Combatant[] {
-  return [...items].sort((a, b) => {
+  return items.toSorted((a, b) => {
     if (a.turnOrder === null && b.turnOrder === null) {
       return a.displayName.localeCompare(b.displayName);
     }

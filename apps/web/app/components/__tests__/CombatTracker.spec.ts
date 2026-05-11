@@ -41,7 +41,7 @@ function makeCombatant(overrides: Partial<Combatant> = {}): Combatant {
 // ── sortedCombatants logic ────────────────────────────────────────────────────
 
 function sortedCombatants(items: Combatant[]): Combatant[] {
-  return [...items].sort((a, b) => {
+  return items.toSorted((a, b) => {
     if (a.turnOrder === null && b.turnOrder === null)
       return a.displayName.localeCompare(b.displayName);
     if (a.turnOrder === null) return 1;
@@ -453,11 +453,6 @@ describe('CombatTracker — combatSnapshot replace-wholesale', () => {
 });
 
 // ── Block 5: rollInitiative / advanceTurn API mock ────────────────────────────
-
-interface MockResult<T> {
-  data: T | undefined;
-  error: import('@app/api-client-ts').Problem | undefined;
-}
 
 async function rollInitiativeViaApi(
   mockFn: (opts: unknown) => Promise<MockResult<{ combatants: Combatant[]; round: number }>>,

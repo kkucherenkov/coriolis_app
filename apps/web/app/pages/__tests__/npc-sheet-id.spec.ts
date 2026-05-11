@@ -66,50 +66,50 @@ async function tick(): Promise<void> {
 
 // ── 1. Smoke: sheet renders — syncLocals binds data correctly ─────────────────
 
-describe('npc sheet — data sync (syncLocals)', () => {
-  function makeSyncLocals() {
-    const localName = ref('');
-    const localDescription = ref<string | null>(null);
-    const localHpCurrent = ref(0);
-    const localHpMax = ref(0);
-    const localMpCurrent = ref(0);
-    const localMpMax = ref(0);
-    const localSignature = ref(0);
-    const localKeySkillModifier = ref(0);
-    const localTagsInput = ref('');
-    const armorCount = ref(0);
-    const weaponsCount = ref(0);
+function makeSyncLocals() {
+  const localName = ref('');
+  const localDescription = ref<string | null>(null);
+  const localHpCurrent = ref(0);
+  const localHpMax = ref(0);
+  const localMpCurrent = ref(0);
+  const localMpMax = ref(0);
+  const localSignature = ref(0);
+  const localKeySkillModifier = ref(0);
+  const localTagsInput = ref('');
+  const armorCount = ref(0);
+  const weaponsCount = ref(0);
 
-    function syncLocals(n: Npc): void {
-      localName.value = n.name;
-      localDescription.value = n.description ?? null;
-      localHpCurrent.value = n.hp.current;
-      localHpMax.value = n.hp.max;
-      localMpCurrent.value = n.mp.current;
-      localMpMax.value = n.mp.max;
-      localSignature.value = n.signature;
-      localKeySkillModifier.value = n.keySkillModifier ?? 0;
-      localTagsInput.value = n.tags.join(', ');
-      armorCount.value = n.armor.length;
-      weaponsCount.value = n.weapons.length;
-    }
-
-    return {
-      localName,
-      localDescription,
-      localHpCurrent,
-      localHpMax,
-      localMpCurrent,
-      localMpMax,
-      localSignature,
-      localKeySkillModifier,
-      localTagsInput,
-      armorCount,
-      weaponsCount,
-      syncLocals,
-    };
+  function syncLocals(n: Npc): void {
+    localName.value = n.name;
+    localDescription.value = n.description ?? null;
+    localHpCurrent.value = n.hp.current;
+    localHpMax.value = n.hp.max;
+    localMpCurrent.value = n.mp.current;
+    localMpMax.value = n.mp.max;
+    localSignature.value = n.signature;
+    localKeySkillModifier.value = n.keySkillModifier ?? 0;
+    localTagsInput.value = n.tags.join(', ');
+    armorCount.value = n.armor.length;
+    weaponsCount.value = n.weapons.length;
   }
 
+  return {
+    localName,
+    localDescription,
+    localHpCurrent,
+    localHpMax,
+    localMpCurrent,
+    localMpMax,
+    localSignature,
+    localKeySkillModifier,
+    localTagsInput,
+    armorCount,
+    weaponsCount,
+    syncLocals,
+  };
+}
+
+describe('npc sheet — data sync (syncLocals)', () => {
   it('binds name and hp values from the fetched NPC', () => {
     const { localName, localHpCurrent, localHpMax, syncLocals } = makeSyncLocals();
     const npc = makeNpc();
@@ -235,27 +235,27 @@ describe('npc sheet — auto-save fires on blur via useAutoSave', () => {
 
 // ── 3. Problems card — 422 surfaces validation errors ─────────────────────────
 
-describe('npc sheet — problems card surfaces 422 validation errors', () => {
-  function makeProblemsStore() {
-    const validationProblems = ref<string[]>([]);
+function makeProblemsStore() {
+  const validationProblems = ref<string[]>([]);
 
-    function recordValidationError(error: unknown): void {
-      const problem = error as Problem;
-      if (problem.status === 422) {
-        const detail = problem.detail ?? 'The server rejected the last update (unspecified error).';
-        validationProblems.value = [...new Set([...validationProblems.value, detail])];
-      }
+  function recordValidationError(error: unknown): void {
+    const problem = error as Problem;
+    if (problem.status === 422) {
+      const detail = problem.detail ?? 'The server rejected the last update (unspecified error).';
+      validationProblems.value = [...new Set([...validationProblems.value, detail])];
     }
-
-    function clearValidationProblems(): void {
-      validationProblems.value = [];
-    }
-
-    const hasProblems = computed(() => validationProblems.value.length > 0);
-
-    return { validationProblems, recordValidationError, clearValidationProblems, hasProblems };
   }
 
+  function clearValidationProblems(): void {
+    validationProblems.value = [];
+  }
+
+  const hasProblems = computed(() => validationProblems.value.length > 0);
+
+  return { validationProblems, recordValidationError, clearValidationProblems, hasProblems };
+}
+
+describe('npc sheet — problems card surfaces 422 validation errors', () => {
   it('appends a 422 problem detail to the list', () => {
     const { validationProblems, recordValidationError } = makeProblemsStore();
 
@@ -375,46 +375,46 @@ describe('npc sheet — problems card surfaces 422 validation errors', () => {
 
 // ── 4. Delete confirmation flow ───────────────────────────────────────────────
 
-describe('npc sheet — delete confirmation flow', () => {
-  function makeDeleteFlow(deleteFn: () => Promise<void>, navigateFn: (path: string) => void) {
-    const deleteConfirmOpen = ref(false);
-    const deleting = ref(false);
-    const deleteError = ref('');
+function makeDeleteFlow(deleteFn: () => Promise<void>, navigateFn: (path: string) => void) {
+  const deleteConfirmOpen = ref(false);
+  const deleting = ref(false);
+  const deleteError = ref('');
 
-    function openDeleteConfirm(): void {
-      deleteConfirmOpen.value = true;
-    }
-
-    function closeDeleteConfirm(): void {
-      deleteConfirmOpen.value = false;
-    }
-
-    async function confirmDelete(): Promise<void> {
-      deleting.value = true;
-      deleteError.value = '';
-      try {
-        await deleteFn();
-        deleteConfirmOpen.value = false;
-        navigateFn('/app/npcs');
-      } catch (error) {
-        const problem = error as Problem;
-        deleteError.value = problem.detail ?? "Couldn't delete NPC.";
-        deleteConfirmOpen.value = false;
-      } finally {
-        deleting.value = false;
-      }
-    }
-
-    return {
-      deleteConfirmOpen,
-      deleting,
-      deleteError,
-      openDeleteConfirm,
-      closeDeleteConfirm,
-      confirmDelete,
-    };
+  function openDeleteConfirm(): void {
+    deleteConfirmOpen.value = true;
   }
 
+  function closeDeleteConfirm(): void {
+    deleteConfirmOpen.value = false;
+  }
+
+  async function confirmDelete(): Promise<void> {
+    deleting.value = true;
+    deleteError.value = '';
+    try {
+      await deleteFn();
+      deleteConfirmOpen.value = false;
+      navigateFn('/app/npcs');
+    } catch (error) {
+      const problem = error as Problem;
+      deleteError.value = problem.detail ?? "Couldn't delete NPC.";
+      deleteConfirmOpen.value = false;
+    } finally {
+      deleting.value = false;
+    }
+  }
+
+  return {
+    deleteConfirmOpen,
+    deleting,
+    deleteError,
+    openDeleteConfirm,
+    closeDeleteConfirm,
+    confirmDelete,
+  };
+}
+
+describe('npc sheet — delete confirmation flow', () => {
   it('modal opens when openDeleteConfirm is called', () => {
     const { deleteConfirmOpen, openDeleteConfirm } = makeDeleteFlow(
       vi.fn().mockResolvedValue(undefined),
