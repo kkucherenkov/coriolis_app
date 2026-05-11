@@ -7,7 +7,9 @@
       "numberOfRuns": 3,
       "settings": {
         "onlyCategories": ["performance"],
-        "skipAudits": ["uses-http2"]
+        "skipAudits": ["uses-http2"],
+        "_chromeFlagsComment": "Forgejo's act_runner executes the workflow as root inside the container, and Chrome refuses to run as root without --no-sandbox (crbug.com/638180). --disable-dev-shm-usage avoids /dev/shm exhaustion in containers with small tmpfs sizes.",
+        "chromeFlags": "--no-sandbox --disable-dev-shm-usage"
       }
     },
     "assert": {
