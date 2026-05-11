@@ -49,7 +49,7 @@ shape.
   "user": {
     "id": "ckv9q…",
     "displayName": "Kirill",
-    "locale": "ru"
+    "locale": "ru",
     // email intentionally omitted — see "Open decisions resolved"
   },
   "characters": [
@@ -60,7 +60,7 @@ shape.
   ],
   "gameSessions": [
     /* GameSession + npcs[(weapons,armor)] + encounters[combatants] */
-  ]
+  ],
 }
 ```
 
@@ -142,6 +142,7 @@ Wiring:
   Verified against `apps/backend/prisma/schema.prisma`: `Character`,
   `Ship`, and `GameSession` all use `ownerId` as the user foreign
   key. No renaming needed at the plan stage.
+
 - Also reads `prisma.user.findUniqueOrThrow({ where: { id }, select: { id: true, displayName: true, locale: true } })` for the `user` block.
 - Returns the assembled `MeExportBundle` POJO.
 
@@ -258,7 +259,7 @@ the existing `&__theme` cluster.
   pressure, the follow-up work is a streamed variant (open question:
   do we keep the same path or version it `v2`?).
 - **PII / accidental sharing.** Email is omitted from `MeExportUser`
-  for this reason. If the file *is* shared, it still contains the
+  for this reason. If the file _is_ shared, it still contains the
   user's display name and character / NPC content, but no
   authentication-side identifier beyond an opaque `id`. Worth a line
   in the settings-page copy ("Keep it somewhere safe") — already
@@ -269,14 +270,14 @@ the existing `&__theme` cluster.
 
 ## Open decisions — resolved
 
-| Question | Resolution |
-| --- | --- |
-| Bundle scope | PRD-literal: characters + ships + game sessions (with cascade children). |
-| Delivery | Buffered JSON in a single response. Streaming deferred. |
-| Envelope shape | Versioned wrapper with `$schemaVersion: "1"`. |
-| Mobile parity | Web-only for this task; mobile follow-up filed separately if needed. |
+| Question                | Resolution                                                                        |
+| ----------------------- | --------------------------------------------------------------------------------- |
+| Bundle scope            | PRD-literal: characters + ships + game sessions (with cascade children).          |
+| Delivery                | Buffered JSON in a single response. Streaming deferred.                           |
+| Envelope shape          | Versioned wrapper with `$schemaVersion: "1"`.                                     |
+| Mobile parity           | Web-only for this task; mobile follow-up filed separately if needed.              |
 | Email in `MeExportUser` | **Omitted.** File is portable + potentially shareable; keep auth identifiers out. |
-| Settings copy tone | Warmer — "Download a copy of your data" rather than the terse "Export my data". |
+| Settings copy tone      | Warmer — "Download a copy of your data" rather than the terse "Export my data".   |
 
 ## Out of scope — explicit list
 
