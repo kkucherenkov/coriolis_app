@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **weight** | **num** | Encumbrance weight in slots | 
 **features** | **BuiltList&lt;String&gt;** | Feature tags (e.g. \"Vacuum Sealed\", \"Exo-Skeleton\") | 
 **equipped** | **bool** |  | [default to false]
+**extraSlotCount** | **int** | Extra encumbrance slots this armor grants its wearer when equipped (ST3001 ТАБЛИЦА 6.14 «Дополнительные свойства» column). Omit to default to 0.  | [optional] [default to 0]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

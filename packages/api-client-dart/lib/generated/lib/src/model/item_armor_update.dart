@@ -18,6 +18,7 @@ part 'item_armor_update.g.dart';
 /// * [weight] 
 /// * [features] 
 /// * [equipped] 
+/// * [extraSlotCount] - Extra encumbrance slots this armor grants its wearer when equipped (ST3001 ТАБЛИЦА 6.14 «Дополнительные свойства» column). Omit to leave unchanged. 
 @BuiltValue()
 abstract class ItemArmorUpdate implements Built<ItemArmorUpdate, ItemArmorUpdateBuilder> {
   @BuiltValueField(wireName: r'type')
@@ -38,6 +39,10 @@ abstract class ItemArmorUpdate implements Built<ItemArmorUpdate, ItemArmorUpdate
 
   @BuiltValueField(wireName: r'equipped')
   bool? get equipped;
+
+  /// Extra encumbrance slots this armor grants its wearer when equipped (ST3001 ТАБЛИЦА 6.14 «Дополнительные свойства» column). Omit to leave unchanged. 
+  @BuiltValueField(wireName: r'extraSlotCount')
+  int? get extraSlotCount;
 
   ItemArmorUpdate._();
 
@@ -104,6 +109,13 @@ class _$ItemArmorUpdateSerializer implements PrimitiveSerializer<ItemArmorUpdate
         specifiedType: const FullType(bool),
       );
     }
+    if (object.extraSlotCount != null) {
+      yield r'extraSlotCount';
+      yield serializers.serialize(
+        object.extraSlotCount,
+        specifiedType: const FullType(int),
+      );
+    }
   }
 
   @override
@@ -168,6 +180,13 @@ class _$ItemArmorUpdateSerializer implements PrimitiveSerializer<ItemArmorUpdate
             specifiedType: const FullType(bool),
           ) as bool;
           result.equipped = valueDes;
+          break;
+        case r'extraSlotCount':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.extraSlotCount = valueDes;
           break;
         default:
           unhandled.add(key);

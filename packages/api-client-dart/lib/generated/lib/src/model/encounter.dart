@@ -21,8 +21,8 @@ part 'encounter.g.dart';
 /// * [notes] - Optional GM notes for the encounter in Markdown format (max 4096 characters). May be edited at any status. 
 /// * [createdAt] 
 /// * [updatedAt] 
-@BuiltValue()
-abstract class Encounter implements Built<Encounter, EncounterBuilder> {
+@BuiltValue(instantiable: false)
+abstract class Encounter  {
   /// Opaque encounter identifier (cuid2)
   @BuiltValueField(wireName: r'id')
   String get id;
@@ -57,21 +57,13 @@ abstract class Encounter implements Built<Encounter, EncounterBuilder> {
   @BuiltValueField(wireName: r'updatedAt')
   DateTime get updatedAt;
 
-  Encounter._();
-
-  factory Encounter([void updates(EncounterBuilder b)]) = _$Encounter;
-
-  @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(EncounterBuilder b) => b
-      ..round = 0;
-
   @BuiltValueSerializer(custom: true)
   static Serializer<Encounter> get serializer => _$EncounterSerializer();
 }
 
 class _$EncounterSerializer implements PrimitiveSerializer<Encounter> {
   @override
-  final Iterable<Type> types = const [Encounter, _$Encounter];
+  final Iterable<Type> types = const [Encounter];
 
   @override
   final String wireName = r'Encounter';
@@ -135,6 +127,46 @@ class _$EncounterSerializer implements PrimitiveSerializer<Encounter> {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+  }
+
+  @override
+  Encounter deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return serializers.deserialize(serialized, specifiedType: FullType($Encounter)) as $Encounter;
+  }
+}
+
+/// a concrete implementation of [Encounter], since [Encounter] is not instantiable
+@BuiltValue(instantiable: true)
+abstract class $Encounter implements Encounter, Built<$Encounter, $EncounterBuilder> {
+  $Encounter._();
+
+  factory $Encounter([void Function($EncounterBuilder)? updates]) = _$$Encounter;
+
+  @BuiltValueHook(initializeBuilder: true)
+  static void _defaults($EncounterBuilder b) => b;
+
+  @BuiltValueSerializer(custom: true)
+  static Serializer<$Encounter> get serializer => _$$EncounterSerializer();
+}
+
+class _$$EncounterSerializer implements PrimitiveSerializer<$Encounter> {
+  @override
+  final Iterable<Type> types = const [$Encounter, _$$Encounter];
+
+  @override
+  final String wireName = r'$Encounter';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    $Encounter object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return serializers.serialize(object, specifiedType: FullType(Encounter))!;
   }
 
   void _deserializeProperties(
@@ -223,12 +255,12 @@ class _$EncounterSerializer implements PrimitiveSerializer<Encounter> {
   }
 
   @override
-  Encounter deserialize(
+  $Encounter deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = EncounterBuilder();
+    final result = $EncounterBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

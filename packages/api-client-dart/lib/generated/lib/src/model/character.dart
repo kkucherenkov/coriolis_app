@@ -33,6 +33,7 @@ part 'character.g.dart';
 /// * [name] - Character name (1–80 characters)
 /// * [concept] 
 /// * [role] 
+/// * [roleUnmigrated] - Server-side flag, true on rows backfilled by the canon-alignment migration that introduced `Character.role` (T-2026-05-10-010 Block E). The migration assigned each existing character the first canonical role of their amplua and set this flag so the web sheet can prompt the user to confirm or pick a different one. Cleared automatically by the server the first time the user PATCHes `role` to a non-null value (the explicit confirmation path). Always false on characters created after the migration ran. Read-only — clients do not set this; the server owns the lifecycle. 
 /// * [iconId] 
 /// * [upbringing] - Social stratum the character was raised in. Set at creation and **immutable** — drives the starting attribute / skill point budgets and the initial values of `reputation` and `startingWealth`. 
 /// * [origin] - Free-text narrative description of where the character is from (home station, planet, or region). Has no mechanical effect. 
@@ -77,6 +78,10 @@ abstract class Character implements Built<Character, CharacterBuilder> {
   @BuiltValueField(wireName: r'role')
   Role? get role;
   // enum roleEnum {  companion,  musician,  poet,  analyst,  correspondent,  network-djinn,  criminal,  mystic,  revolutionary,  agitator,  diplomat,  dealer,  assassin,  guard,  spy,  ace,  driver,  trucker,  colonist,  prospector,  scout,  ascetic,  missionary,  prophet,  archaeologist,  medicurg,  technologist,  ship-engineer,  labourer,  loader,  legionnaire,  mercenary,  officer,  };
+
+  /// Server-side flag, true on rows backfilled by the canon-alignment migration that introduced `Character.role` (T-2026-05-10-010 Block E). The migration assigned each existing character the first canonical role of their amplua and set this flag so the web sheet can prompt the user to confirm or pick a different one. Cleared automatically by the server the first time the user PATCHes `role` to a non-null value (the explicit confirmation path). Always false on characters created after the migration ran. Read-only — clients do not set this; the server owns the lifecycle. 
+  @BuiltValueField(wireName: r'roleUnmigrated')
+  bool? get roleUnmigrated;
 
   @BuiltValueField(wireName: r'iconId')
   IconId? get iconId;
@@ -166,6 +171,7 @@ abstract class Character implements Built<Character, CharacterBuilder> {
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CharacterBuilder b) => b
+      ..roleUnmigrated = false
       ..mutant = false;
 
   @BuiltValueSerializer(custom: true)
@@ -209,6 +215,13 @@ class _$CharacterSerializer implements PrimitiveSerializer<Character> {
       yield serializers.serialize(
         object.role,
         specifiedType: const FullType.nullable(Role),
+      );
+    }
+    if (object.roleUnmigrated != null) {
+      yield r'roleUnmigrated';
+      yield serializers.serialize(
+        object.roleUnmigrated,
+        specifiedType: const FullType(bool),
       );
     }
     yield r'iconId';
@@ -385,6 +398,13 @@ class _$CharacterSerializer implements PrimitiveSerializer<Character> {
           ) as Role?;
           if (valueDes == null) continue;
           result.role = valueDes;
+          break;
+        case r'roleUnmigrated':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
+          result.roleUnmigrated = valueDes;
           break;
         case r'iconId':
           final valueDes = serializers.deserialize(

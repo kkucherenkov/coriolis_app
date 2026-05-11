@@ -8,6 +8,7 @@ import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:app_api_client/src/model/me.dart';
+import 'package:app_api_client/src/model/me_export_bundle.dart';
 import 'package:app_api_client/src/model/me_update.dart';
 
 class UsersApi {
@@ -72,6 +73,90 @@ class UsersApi {
     );
 
     return _response;
+  }
+
+  /// Download a JSON bundle of the user&#39;s data.
+  /// Returns every character, ship, and game session owned by the authenticated user as a single versioned JSON envelope. Intended for GDPR-style data portability per PRD §6.  The response is served with &#x60;Content-Disposition: attachment&#x60; and a filename of the form &#x60;coriolis-export-&lt;userId&gt;-&lt;YYYY-MM-DD&gt;.json&#x60;, so a browser fetch triggers a file download rather than a render.  The envelope&#39;s &#x60;$schemaVersion&#x60; is a string literal &#x60;\&quot;1\&quot;&#x60; — future shape changes ship as &#x60;\&quot;2\&quot;&#x60; etc., so a downstream re-import path can branch on it deterministically.  Bundle scope: - **Characters** with nested &#x60;inventory&#x60; (items) and &#x60;talents&#x60;. - **Ships** with nested &#x60;modules&#x60; and &#x60;crew&#x60;. - **Game sessions** with nested &#x60;npcs&#x60; (each with &#x60;weapons&#x60; / &#x60;armor&#x60;),   &#x60;encounters&#x60;, and each encounter&#39;s &#x60;combatants&#x60;.  Out of scope: rolls log, share-link tokens, push records, user settings. Those are tracked as deferred follow-ups in the design doc. 
+  ///
+  /// Parameters:
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [MeExportBundle] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<MeExportBundle>> exportMe({ 
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/v1/me/export';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'apiKey',
+            'name': 'cookieAuth',
+            'keyName': 'better-auth.session_token',
+            'where': '',
+          },{
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    MeExportBundle? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MeExportBundle),
+      ) as MeExportBundle;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<MeExportBundle>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
   }
 
   /// Get the authenticated user&#39;s profile.

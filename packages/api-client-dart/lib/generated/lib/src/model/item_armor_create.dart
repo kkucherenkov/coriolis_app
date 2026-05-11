@@ -18,6 +18,7 @@ part 'item_armor_create.g.dart';
 /// * [weight] - Encumbrance weight in slots
 /// * [features] - Feature tags (e.g. \"Vacuum Sealed\", \"Exo-Skeleton\")
 /// * [equipped] 
+/// * [extraSlotCount] - Extra encumbrance slots this armor grants its wearer when equipped (ST3001 ТАБЛИЦА 6.14 «Дополнительные свойства» column). Omit to default to 0. 
 @BuiltValue()
 abstract class ItemArmorCreate implements Built<ItemArmorCreate, ItemArmorCreateBuilder> {
   @BuiltValueField(wireName: r'type')
@@ -42,13 +43,18 @@ abstract class ItemArmorCreate implements Built<ItemArmorCreate, ItemArmorCreate
   @BuiltValueField(wireName: r'equipped')
   bool get equipped;
 
+  /// Extra encumbrance slots this armor grants its wearer when equipped (ST3001 ТАБЛИЦА 6.14 «Дополнительные свойства» column). Omit to default to 0. 
+  @BuiltValueField(wireName: r'extraSlotCount')
+  int? get extraSlotCount;
+
   ItemArmorCreate._();
 
   factory ItemArmorCreate([void updates(ItemArmorCreateBuilder b)]) = _$ItemArmorCreate;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ItemArmorCreateBuilder b) => b
-      ..equipped = false;
+      ..equipped = false
+      ..extraSlotCount = 0;
 
   @BuiltValueSerializer(custom: true)
   static Serializer<ItemArmorCreate> get serializer => _$ItemArmorCreateSerializer();
@@ -96,6 +102,13 @@ class _$ItemArmorCreateSerializer implements PrimitiveSerializer<ItemArmorCreate
       object.equipped,
       specifiedType: const FullType(bool),
     );
+    if (object.extraSlotCount != null) {
+      yield r'extraSlotCount';
+      yield serializers.serialize(
+        object.extraSlotCount,
+        specifiedType: const FullType(int),
+      );
+    }
   }
 
   @override
@@ -160,6 +173,13 @@ class _$ItemArmorCreateSerializer implements PrimitiveSerializer<ItemArmorCreate
             specifiedType: const FullType(bool),
           ) as bool;
           result.equipped = valueDes;
+          break;
+        case r'extraSlotCount':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.extraSlotCount = valueDes;
           break;
         default:
           unhandled.add(key);

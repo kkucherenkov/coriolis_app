@@ -81,6 +81,10 @@ import 'package:app_api_client/src/model/item_weapon.dart';
 import 'package:app_api_client/src/model/item_weapon_create.dart';
 import 'package:app_api_client/src/model/item_weapon_update.dart';
 import 'package:app_api_client/src/model/me.dart';
+import 'package:app_api_client/src/model/me_export_bundle.dart';
+import 'package:app_api_client/src/model/me_export_encounter.dart';
+import 'package:app_api_client/src/model/me_export_game_session.dart';
+import 'package:app_api_client/src/model/me_export_user.dart';
 import 'package:app_api_client/src/model/me_update.dart';
 import 'package:app_api_client/src/model/mutant_lineage.dart';
 import 'package:app_api_client/src/model/npc.dart';
@@ -98,7 +102,9 @@ import 'package:app_api_client/src/model/relationship.dart';
 import 'package:app_api_client/src/model/relationship_kind.dart';
 import 'package:app_api_client/src/model/role.dart';
 import 'package:app_api_client/src/model/roll.dart';
+import 'package:app_api_client/src/model/roll_breakdown.dart';
 import 'package:app_api_client/src/model/roll_create.dart';
+import 'package:app_api_client/src/model/roll_kind.dart';
 import 'package:app_api_client/src/model/roll_list.dart';
 import 'package:app_api_client/src/model/share_link.dart';
 import 'package:app_api_client/src/model/share_link_create.dart';
@@ -173,12 +179,12 @@ part 'serializers.g.dart';
   DpEvent,
   DpEventList,
   DpSource,
-  Encounter,
+  Encounter,$Encounter,
   EncounterCreate,
   EncounterList,
   EncounterStatus,
   EncounterUpdate,
-  GameSession,
+  GameSession,$GameSession,
   GameSessionCreate,
   GameSessionList,
   GameSessionStatus,
@@ -212,6 +218,10 @@ part 'serializers.g.dart';
   ItemWeaponCreate,
   ItemWeaponUpdate,
   Me,
+  MeExportBundle,
+  MeExportEncounter,
+  MeExportGameSession,
+  MeExportUser,
   MeUpdate,
   MutantLineage,
   Npc,
@@ -229,7 +239,9 @@ part 'serializers.g.dart';
   RelationshipKind,
   Role,
   Roll,
+  RollBreakdown,
   RollCreate,
+  RollKind,
   RollList,
   ShareLink,
   ShareLinkCreate,
@@ -274,6 +286,8 @@ part 'serializers.g.dart';
   Upbringing,
 ])
 Serializers serializers = (_$serializers.toBuilder()
+      ..add(Encounter.serializer)
+      ..add(GameSession.serializer)
       ..add(ItemBase.serializer)
       ..add(ShipModuleBase.serializer)
       ..add(const OneOfSerializer())

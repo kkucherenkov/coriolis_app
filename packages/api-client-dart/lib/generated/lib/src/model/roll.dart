@@ -4,6 +4,8 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
+import 'package:app_api_client/src/model/roll_kind.dart';
+import 'package:app_api_client/src/model/roll_breakdown.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -15,11 +17,13 @@ part 'roll.g.dart';
 /// * [id] - Opaque roll identifier (cuid2)
 /// * [characterId] - Identifier of the character who made the roll
 /// * [gameSessionId] - Game session this roll belongs to. Null until Feature 7.2 (GameSession resource) ships. Clients should tolerate null. 
+/// * [kind] - What kind of roll this represents (see RollKind for the full taxonomy). Set at create-time and immutable. Drives the push-eligibility gate — only `skill` rolls accept POST `/rolls/{id}/push`.  The server always emits `kind`; clients SHOULD treat absence as `skill` for backward compatibility with ≤ 1.2 servers. 
 /// * [label] - Human-readable roll label, e.g. \"Pilot · Evade\"
 /// * [pool] - Number of d6 rolled (after condition penalties applied by caller). `0` triggers the «Ноль кубиков» rule (ГЛАВА 3 line 161): the engine still rolls 2d6, but the proverka counts as a success only when both dice come up 6. PRD override — Coriolis ST3001 does not name a hard upper bound. We cap at 20 to keep DB rows and wire payloads bounded; realistic attribute + skill + gear + helpers stacks max out around 12–14. 
 /// * [dice] - Current face values of all dice. After a push, rerolled non-6 values are updated in place. Length normally equals `pool`; for the zero- dice case (`pool === 0`) the array always has 2 elements regardless. 
 /// * [hits] - Number of 6s in the current dice array
 /// * [pushed] - Whether this roll has been pushed. Once true, further pushes are rejected.
+/// * [breakdown] 
 /// * [createdAt] 
 @BuiltValue()
 abstract class Roll implements Built<Roll, RollBuilder> {
@@ -34,6 +38,11 @@ abstract class Roll implements Built<Roll, RollBuilder> {
   /// Game session this roll belongs to. Null until Feature 7.2 (GameSession resource) ships. Clients should tolerate null. 
   @BuiltValueField(wireName: r'gameSessionId')
   String? get gameSessionId;
+
+  /// What kind of roll this represents (see RollKind for the full taxonomy). Set at create-time and immutable. Drives the push-eligibility gate — only `skill` rolls accept POST `/rolls/{id}/push`.  The server always emits `kind`; clients SHOULD treat absence as `skill` for backward compatibility with ≤ 1.2 servers. 
+  @BuiltValueField(wireName: r'kind')
+  RollKind get kind;
+  // enum kindEnum {  skill,  save,  trauma,  initiative,  darkness,  };
 
   /// Human-readable roll label, e.g. \"Pilot · Evade\"
   @BuiltValueField(wireName: r'label')
@@ -54,6 +63,9 @@ abstract class Roll implements Built<Roll, RollBuilder> {
   /// Whether this roll has been pushed. Once true, further pushes are rejected.
   @BuiltValueField(wireName: r'pushed')
   bool get pushed;
+
+  @BuiltValueField(wireName: r'breakdown')
+  RollBreakdown? get breakdown;
 
   @BuiltValueField(wireName: r'createdAt')
   DateTime get createdAt;
@@ -98,6 +110,11 @@ class _$RollSerializer implements PrimitiveSerializer<Roll> {
         specifiedType: const FullType.nullable(String),
       );
     }
+    yield r'kind';
+    yield serializers.serialize(
+      object.kind,
+      specifiedType: const FullType(RollKind),
+    );
     yield r'label';
     yield serializers.serialize(
       object.label,
@@ -123,6 +140,13 @@ class _$RollSerializer implements PrimitiveSerializer<Roll> {
       object.pushed,
       specifiedType: const FullType(bool),
     );
+    if (object.breakdown != null) {
+      yield r'breakdown';
+      yield serializers.serialize(
+        object.breakdown,
+        specifiedType: const FullType.nullable(RollBreakdown),
+      );
+    }
     yield r'createdAt';
     yield serializers.serialize(
       object.createdAt,
@@ -173,6 +197,13 @@ class _$RollSerializer implements PrimitiveSerializer<Roll> {
           if (valueDes == null) continue;
           result.gameSessionId = valueDes;
           break;
+        case r'kind':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(RollKind),
+          ) as RollKind;
+          result.kind = valueDes;
+          break;
         case r'label':
           final valueDes = serializers.deserialize(
             value,
@@ -207,6 +238,14 @@ class _$RollSerializer implements PrimitiveSerializer<Roll> {
             specifiedType: const FullType(bool),
           ) as bool;
           result.pushed = valueDes;
+          break;
+        case r'breakdown':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(RollBreakdown),
+          ) as RollBreakdown?;
+          if (valueDes == null) continue;
+          result.breakdown.replace(valueDes);
           break;
         case r'createdAt':
           final valueDes = serializers.deserialize(

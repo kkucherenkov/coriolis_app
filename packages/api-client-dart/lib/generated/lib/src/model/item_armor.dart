@@ -20,6 +20,7 @@ part 'item_armor.g.dart';
 /// * [weight] - Encumbrance weight in slots
 /// * [features] - Feature tags (e.g. \"Vacuum Sealed\", \"Exo-Skeleton\")
 /// * [equipped] 
+/// * [extraSlotCount] - Extra encumbrance slots this armor grants its wearer when equipped (ST3001 ТАБЛИЦА 6.14 «Дополнительные свойства» column). The wearer's encumbrance limit becomes `STR × 2 + sum(equipped armor extraSlotCount)` per the rules-engine. Canonical values from the printed table: most armors 0; Тяжёлый экзоскафандр / Лёгкая броня / Тяжёлая броня 1; Экзодоспех 2; Тяжёлый экзодоспех 5. The 0..6 envelope leaves one point of headroom for GM-defined exotics. Stacks across multiple equipped pieces (e.g. armour + tactical shield), but only when each piece carries the property — most shields are 0. 
 @BuiltValue()
 abstract class ItemArmor implements ItemBase, Built<ItemArmor, ItemArmorBuilder> {
   /// Feature tags (e.g. \"Vacuum Sealed\", \"Exo-Skeleton\")
@@ -37,12 +38,17 @@ abstract class ItemArmor implements ItemBase, Built<ItemArmor, ItemArmorBuilder>
   @BuiltValueField(wireName: r'armorRating')
   int get armorRating;
 
+  /// Extra encumbrance slots this armor grants its wearer when equipped (ST3001 ТАБЛИЦА 6.14 «Дополнительные свойства» column). The wearer's encumbrance limit becomes `STR × 2 + sum(equipped armor extraSlotCount)` per the rules-engine. Canonical values from the printed table: most armors 0; Тяжёлый экзоскафандр / Лёгкая броня / Тяжёлая броня 1; Экзодоспех 2; Тяжёлый экзодоспех 5. The 0..6 envelope leaves one point of headroom for GM-defined exotics. Stacks across multiple equipped pieces (e.g. armour + tactical shield), but only when each piece carries the property — most shields are 0. 
+  @BuiltValueField(wireName: r'extraSlotCount')
+  int? get extraSlotCount;
+
   ItemArmor._();
 
   factory ItemArmor([void updates(ItemArmorBuilder b)]) = _$ItemArmor;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(ItemArmorBuilder b) => b;
+  static void _defaults(ItemArmorBuilder b) => b
+      ..extraSlotCount = 0;
 
   @BuiltValueSerializer(custom: true)
   static Serializer<ItemArmor> get serializer => _$ItemArmorSerializer();
@@ -95,6 +101,13 @@ class _$ItemArmorSerializer implements PrimitiveSerializer<ItemArmor> {
       object.armorRating,
       specifiedType: const FullType(int),
     );
+    if (object.extraSlotCount != null) {
+      yield r'extraSlotCount';
+      yield serializers.serialize(
+        object.extraSlotCount,
+        specifiedType: const FullType(int),
+      );
+    }
   }
 
   @override
@@ -166,6 +179,13 @@ class _$ItemArmorSerializer implements PrimitiveSerializer<ItemArmor> {
             specifiedType: const FullType(int),
           ) as int;
           result.armorRating = valueDes;
+          break;
+        case r'extraSlotCount':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.extraSlotCount = valueDes;
           break;
         default:
           unhandled.add(key);

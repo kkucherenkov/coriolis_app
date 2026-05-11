@@ -2152,6 +2152,58 @@ export type MeUpdate = {
 };
 
 /**
+ * Minimal user envelope for the JSON export. Intentionally excludes
+ * `email` — the dump may be saved to disk or shared, and auth-side
+ * identifiers should not leak into the file. The opaque `id` is
+ * retained so a future re-import path can disambiguate.
+ *
+ */
+export type MeExportUser = {
+    id: string;
+    displayName: string | null;
+    /**
+     * BCP-47 locale tag (e.g. `en`, `ru`).
+     */
+    locale: string;
+};
+
+/**
+ * Export-only wrapper. Composes `Encounter` via `allOf` and adds
+ * the `combatants` array that the base schema deliberately omits
+ * (combatants live on a separate sub-resource in normal API usage).
+ *
+ */
+export type MeExportEncounter = Encounter & {
+    combatants: Array<Combatant>;
+};
+
+/**
+ * Export-only wrapper. Composes `GameSession` via `allOf` and adds
+ * the `npcs` + `encounters` arrays. Encounter list uses the wrapper
+ * so the per-encounter combatants are inlined.
+ *
+ */
+export type MeExportGameSession = GameSession & {
+    npcs: Array<Npc>;
+    encounters: Array<MeExportEncounter>;
+};
+
+/**
+ * Versioned envelope returned by `GET /api/v1/me/export`. `$schemaVersion`
+ * is a string literal so future shape changes can branch
+ * deterministically.
+ *
+ */
+export type MeExportBundle = {
+    $schemaVersion: '1';
+    exportedAt: string;
+    user: MeExportUser;
+    characters: Array<Character>;
+    ships: Array<Ship>;
+    gameSessions: Array<MeExportGameSession>;
+};
+
+/**
  * Lifecycle state of a game session.
  * - `active` — session is in progress or available.
  * - `archived` — session is closed; hidden from the default list.
@@ -3362,6 +3414,42 @@ export type ShipListWritable = {
      * Opaque cursor for the next page; null when this is the last page
      */
     nextCursor: string | null;
+};
+
+/**
+ * Export-only wrapper. Composes `Encounter` via `allOf` and adds
+ * the `combatants` array that the base schema deliberately omits
+ * (combatants live on a separate sub-resource in normal API usage).
+ *
+ */
+export type MeExportEncounterWritable = EncounterWritable & {
+    combatants: Array<CombatantWritable>;
+};
+
+/**
+ * Export-only wrapper. Composes `GameSession` via `allOf` and adds
+ * the `npcs` + `encounters` arrays. Encounter list uses the wrapper
+ * so the per-encounter combatants are inlined.
+ *
+ */
+export type MeExportGameSessionWritable = GameSessionWritable & {
+    npcs: Array<NpcWritable>;
+    encounters: Array<MeExportEncounterWritable>;
+};
+
+/**
+ * Versioned envelope returned by `GET /api/v1/me/export`. `$schemaVersion`
+ * is a string literal so future shape changes can branch
+ * deterministically.
+ *
+ */
+export type MeExportBundleWritable = {
+    $schemaVersion: '1';
+    exportedAt: string;
+    user: MeExportUser;
+    characters: Array<CharacterWritable>;
+    ships: Array<ShipWritable>;
+    gameSessions: Array<MeExportGameSessionWritable>;
 };
 
 /**
@@ -4848,6 +4936,31 @@ export type UpdateMeResponses = {
 };
 
 export type UpdateMeResponse = UpdateMeResponses[keyof UpdateMeResponses];
+
+export type ExportMeData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/me/export';
+};
+
+export type ExportMeErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+};
+
+export type ExportMeError = ExportMeErrors[keyof ExportMeErrors];
+
+export type ExportMeResponses = {
+    /**
+     * The user's data bundle.
+     */
+    200: MeExportBundle;
+};
+
+export type ExportMeResponse = ExportMeResponses[keyof ExportMeResponses];
 
 export type ListNpcsData = {
     body?: never;

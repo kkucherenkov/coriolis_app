@@ -490,6 +490,46 @@ export interface paths {
     patch: operations['updateMe'];
     trace?: never;
   };
+  '/api/v1/me/export': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Download a JSON bundle of the user's data.
+     * @description Returns every character, ship, and game session owned by the
+     *     authenticated user as a single versioned JSON envelope. Intended
+     *     for GDPR-style data portability per PRD §6.
+     *
+     *     The response is served with `Content-Disposition: attachment` and a
+     *     filename of the form `coriolis-export-<userId>-<YYYY-MM-DD>.json`,
+     *     so a browser fetch triggers a file download rather than a render.
+     *
+     *     The envelope's `$schemaVersion` is a string literal `"1"` — future
+     *     shape changes ship as `"2"` etc., so a downstream re-import path
+     *     can branch on it deterministically.
+     *
+     *     Bundle scope:
+     *     - **Characters** with nested `inventory` (items) and `talents`.
+     *     - **Ships** with nested `modules` and `crew`.
+     *     - **Game sessions** with nested `npcs` (each with `weapons` / `armor`),
+     *       `encounters`, and each encounter's `combatants`.
+     *
+     *     Out of scope: rolls log, share-link tokens, push records, user
+     *     settings. Those are tracked as deferred follow-ups in the design
+     *     doc.
+     */
+    get: operations['exportMe'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/npcs': {
     parameters: {
       query?: never;
@@ -3440,6 +3480,50 @@ export interface components {
       theme?: 'dark' | 'high-contrast';
     };
     /**
+     * @description Minimal user envelope for the JSON export. Intentionally excludes
+     *     `email` — the dump may be saved to disk or shared, and auth-side
+     *     identifiers should not leak into the file. The opaque `id` is
+     *     retained so a future re-import path can disambiguate.
+     */
+    MeExportUser: {
+      id: string;
+      displayName: string | null;
+      /** @description BCP-47 locale tag (e.g. `en`, `ru`). */
+      locale: string;
+    };
+    /**
+     * @description Export-only wrapper. Composes `Encounter` via `allOf` and adds
+     *     the `combatants` array that the base schema deliberately omits
+     *     (combatants live on a separate sub-resource in normal API usage).
+     */
+    MeExportEncounter: components['schemas']['Encounter'] & {
+      combatants: components['schemas']['Combatant'][];
+    };
+    /**
+     * @description Export-only wrapper. Composes `GameSession` via `allOf` and adds
+     *     the `npcs` + `encounters` arrays. Encounter list uses the wrapper
+     *     so the per-encounter combatants are inlined.
+     */
+    MeExportGameSession: components['schemas']['GameSession'] & {
+      npcs: components['schemas']['Npc'][];
+      encounters: components['schemas']['MeExportEncounter'][];
+    };
+    /**
+     * @description Versioned envelope returned by `GET /api/v1/me/export`. `$schemaVersion`
+     *     is a string literal so future shape changes can branch
+     *     deterministically.
+     */
+    MeExportBundle: {
+      /** @constant */
+      $schemaVersion: '1';
+      /** Format: date-time */
+      exportedAt: string;
+      user: components['schemas']['MeExportUser'];
+      characters: components['schemas']['Character'][];
+      ships: components['schemas']['Ship'][];
+      gameSessions: components['schemas']['MeExportGameSession'][];
+    };
+    /**
      * @description Lifecycle state of a game session.
      *     - `active` — session is in progress or available.
      *     - `archived` — session is closed; hidden from the default list.
@@ -5598,6 +5682,40 @@ export interface operations {
         };
         content: {
           'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  exportMe: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The user's data bundle. */
+      200: {
+        headers: {
+          /**
+           * @description Always `attachment; filename="coriolis-export-<userId>-<date>.json"`.
+           *     Clients should parse the filename when triggering downloads.
+           */
+          'Content-Disposition'?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['MeExportBundle'];
         };
       };
       /** @description No active session */

@@ -10,6 +10,7 @@ All URIs are relative to *http://localhost:3010*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**deleteMe**](UsersApi.md#deleteme) | **DELETE** /api/v1/me | Soft-delete the authenticated user&#39;s account.
+[**exportMe**](UsersApi.md#exportme) | **GET** /api/v1/me/export | Download a JSON bundle of the user&#39;s data.
 [**getMe**](UsersApi.md#getme) | **GET** /api/v1/me | Get the authenticated user&#39;s profile.
 [**updateMe**](UsersApi.md#updateme) | **PATCH** /api/v1/me | Update the authenticated user&#39;s mutable profile fields.
 
@@ -53,6 +54,49 @@ void (empty response body)
 
  - **Content-Type**: Not defined
  - **Accept**: application/problem+json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **exportMe**
+> MeExportBundle exportMe()
+
+Download a JSON bundle of the user's data.
+
+Returns every character, ship, and game session owned by the authenticated user as a single versioned JSON envelope. Intended for GDPR-style data portability per PRD §6.  The response is served with `Content-Disposition: attachment` and a filename of the form `coriolis-export-<userId>-<YYYY-MM-DD>.json`, so a browser fetch triggers a file download rather than a render.  The envelope's `$schemaVersion` is a string literal `\"1\"` — future shape changes ship as `\"2\"` etc., so a downstream re-import path can branch on it deterministically.  Bundle scope: - **Characters** with nested `inventory` (items) and `talents`. - **Ships** with nested `modules` and `crew`. - **Game sessions** with nested `npcs` (each with `weapons` / `armor`),   `encounters`, and each encounter's `combatants`.  Out of scope: rolls log, share-link tokens, push records, user settings. Those are tracked as deferred follow-ups in the design doc. 
+
+### Example
+```dart
+import 'package:app_api_client/api.dart';
+// TODO Configure API key authorization: cookieAuth
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKeyPrefix = 'Bearer';
+
+final api = AppApiClient().getUsersApi();
+
+try {
+    final response = api.exportMe();
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling UsersApi->exportMe: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**MeExportBundle**](MeExportBundle.md)
+
+### Authorization
+
+[cookieAuth](../README.md#cookieAuth), [bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json, application/problem+json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

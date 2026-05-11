@@ -22,6 +22,7 @@ part 'item_weapon_create.g.dart';
 /// * [weight] - Encumbrance weight in slots (0.5 increments)
 /// * [features] - Feature tags (e.g. \"Burst\", \"Explosive\")
 /// * [equipped] 
+/// * [initiative] - Per-weapon initiative modifier (ST3001 ГЛАВА 6 «Инициатива» column). Canonical printed values 0..+2; accepts −5..+5 for GM flex. Defaults to 0 — most weapons don't carry an initiative bonus. 
 @BuiltValue()
 abstract class ItemWeaponCreate implements Built<ItemWeaponCreate, ItemWeaponCreateBuilder> {
   @BuiltValueField(wireName: r'type')
@@ -58,13 +59,18 @@ abstract class ItemWeaponCreate implements Built<ItemWeaponCreate, ItemWeaponCre
   @BuiltValueField(wireName: r'equipped')
   bool get equipped;
 
+  /// Per-weapon initiative modifier (ST3001 ГЛАВА 6 «Инициатива» column). Canonical printed values 0..+2; accepts −5..+5 for GM flex. Defaults to 0 — most weapons don't carry an initiative bonus. 
+  @BuiltValueField(wireName: r'initiative')
+  int? get initiative;
+
   ItemWeaponCreate._();
 
   factory ItemWeaponCreate([void updates(ItemWeaponCreateBuilder b)]) = _$ItemWeaponCreate;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ItemWeaponCreateBuilder b) => b
-      ..equipped = false;
+      ..equipped = false
+      ..initiative = 0;
 
   @BuiltValueSerializer(custom: true)
   static Serializer<ItemWeaponCreate> get serializer => _$ItemWeaponCreateSerializer();
@@ -127,6 +133,13 @@ class _$ItemWeaponCreateSerializer implements PrimitiveSerializer<ItemWeaponCrea
       object.equipped,
       specifiedType: const FullType(bool),
     );
+    if (object.initiative != null) {
+      yield r'initiative';
+      yield serializers.serialize(
+        object.initiative,
+        specifiedType: const FullType(int),
+      );
+    }
   }
 
   @override
@@ -212,6 +225,13 @@ class _$ItemWeaponCreateSerializer implements PrimitiveSerializer<ItemWeaponCrea
             specifiedType: const FullType(bool),
           ) as bool;
           result.equipped = valueDes;
+          break;
+        case r'initiative':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.initiative = valueDes;
           break;
         default:
           unhandled.add(key);

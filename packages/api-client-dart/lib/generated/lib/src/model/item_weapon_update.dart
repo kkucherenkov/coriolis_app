@@ -22,6 +22,7 @@ part 'item_weapon_update.g.dart';
 /// * [weight] 
 /// * [features] 
 /// * [equipped] 
+/// * [initiative] - Per-weapon initiative modifier (ST3001 ГЛАВА 6 «Инициатива» column). Accepts −5..+5. Omit to leave unchanged. 
 @BuiltValue()
 abstract class ItemWeaponUpdate implements Built<ItemWeaponUpdate, ItemWeaponUpdateBuilder> {
   @BuiltValueField(wireName: r'type')
@@ -52,6 +53,10 @@ abstract class ItemWeaponUpdate implements Built<ItemWeaponUpdate, ItemWeaponUpd
 
   @BuiltValueField(wireName: r'equipped')
   bool? get equipped;
+
+  /// Per-weapon initiative modifier (ST3001 ГЛАВА 6 «Инициатива» column). Accepts −5..+5. Omit to leave unchanged. 
+  @BuiltValueField(wireName: r'initiative')
+  int? get initiative;
 
   ItemWeaponUpdate._();
 
@@ -139,6 +144,13 @@ class _$ItemWeaponUpdateSerializer implements PrimitiveSerializer<ItemWeaponUpda
         specifiedType: const FullType(bool),
       );
     }
+    if (object.initiative != null) {
+      yield r'initiative';
+      yield serializers.serialize(
+        object.initiative,
+        specifiedType: const FullType(int),
+      );
+    }
   }
 
   @override
@@ -224,6 +236,13 @@ class _$ItemWeaponUpdateSerializer implements PrimitiveSerializer<ItemWeaponUpda
             specifiedType: const FullType(bool),
           ) as bool;
           result.equipped = valueDes;
+          break;
+        case r'initiative':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.initiative = valueDes;
           break;
         default:
           unhandled.add(key);

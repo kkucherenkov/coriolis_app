@@ -23,8 +23,8 @@ part 'game_session.g.dart';
 /// * [shipId] - Optional ship linked to the session (Epic 8)
 /// * [createdAt] 
 /// * [updatedAt] 
-@BuiltValue()
-abstract class GameSession implements Built<GameSession, GameSessionBuilder> {
+@BuiltValue(instantiable: false)
+abstract class GameSession  {
   /// Opaque session identifier (cuid2)
   @BuiltValueField(wireName: r'id')
   String get id;
@@ -63,20 +63,13 @@ abstract class GameSession implements Built<GameSession, GameSessionBuilder> {
   @BuiltValueField(wireName: r'updatedAt')
   DateTime get updatedAt;
 
-  GameSession._();
-
-  factory GameSession([void updates(GameSessionBuilder b)]) = _$GameSession;
-
-  @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(GameSessionBuilder b) => b;
-
   @BuiltValueSerializer(custom: true)
   static Serializer<GameSession> get serializer => _$GameSessionSerializer();
 }
 
 class _$GameSessionSerializer implements PrimitiveSerializer<GameSession> {
   @override
-  final Iterable<Type> types = const [GameSession, _$GameSession];
+  final Iterable<Type> types = const [GameSession];
 
   @override
   final String wireName = r'GameSession';
@@ -149,6 +142,46 @@ class _$GameSessionSerializer implements PrimitiveSerializer<GameSession> {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+  }
+
+  @override
+  GameSession deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return serializers.deserialize(serialized, specifiedType: FullType($GameSession)) as $GameSession;
+  }
+}
+
+/// a concrete implementation of [GameSession], since [GameSession] is not instantiable
+@BuiltValue(instantiable: true)
+abstract class $GameSession implements GameSession, Built<$GameSession, $GameSessionBuilder> {
+  $GameSession._();
+
+  factory $GameSession([void Function($GameSessionBuilder)? updates]) = _$$GameSession;
+
+  @BuiltValueHook(initializeBuilder: true)
+  static void _defaults($GameSessionBuilder b) => b;
+
+  @BuiltValueSerializer(custom: true)
+  static Serializer<$GameSession> get serializer => _$$GameSessionSerializer();
+}
+
+class _$$GameSessionSerializer implements PrimitiveSerializer<$GameSession> {
+  @override
+  final Iterable<Type> types = const [$GameSession, _$$GameSession];
+
+  @override
+  final String wireName = r'$GameSession';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    $GameSession object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return serializers.serialize(object, specifiedType: FullType(GameSession))!;
   }
 
   void _deserializeProperties(
@@ -244,12 +277,12 @@ class _$GameSessionSerializer implements PrimitiveSerializer<GameSession> {
   }
 
   @override
-  GameSession deserialize(
+  $GameSession deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = GameSessionBuilder();
+    final result = $GameSessionBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

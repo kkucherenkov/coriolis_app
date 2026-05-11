@@ -17,7 +17,9 @@ Name | Type | Description | Notes
 **weight** | **num** | Encumbrance weight in slots | 
 **features** | **BuiltList&lt;String&gt;** | Feature tags (e.g. \"Vacuum Sealed\", \"Exo-Skeleton\") | 
 **equipped** | **bool** |  | [default to false]
+**initiative** | **int** | Per-weapon initiative modifier (ST3001 ГЛАВА 6 «Инициатива» column). Canonical printed values 0..+2; accepts −5..+5 for GM flex. Defaults to 0 — most weapons don't carry an initiative bonus.  | [optional] [default to 0]
 **armorRating** | **int** | Armor rating — reduces incoming damage | 
+**extraSlotCount** | **int** | Extra encumbrance slots this armor grants its wearer when equipped (ST3001 ТАБЛИЦА 6.14 «Дополнительные свойства» column). Omit to default to 0.  | [optional] [default to 0]
 **quantity** | **int** | Number of units | 
 **notes** | **String** | Optional free-text notes | [optional] 
 **xpCost** | **int** | XP spent to acquire this implant (canonical cost 5 XP per ГЛАВА 4; accepts 0..15 for GM concessions and high-rank exotics). Birr price is carried in the item's `cost` field.  | 
