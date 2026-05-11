@@ -2,6 +2,45 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-11-008 — Phase 7: web offline write-queue (PATCH/PUT/DELETE)
+
+- Created: 2026-05-11
+- Completed: 2026-05-11
+- Owner: claude
+- Spec: PRD §11 (Phase 7 — Hardening · "Offline support"); follow-up to T-2026-05-11-007.
+- Goal: PATCH / PUT / DELETE attempted while disconnected (or that fail with a network error mid-flight) get persisted to an IDB queue and replayed sequentially on reconnect, so a player editing their character on the train doesn't lose work when the tunnel ends.
+- Result: [PR #15](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/15) on Forgejo — branch `feat/phase-7/web-offline-writequeue`, merged as `a25b63a`. 8 files / +588 / −39.
+- Acceptance — all met:
+  - PATCH / PUT / DELETE while offline → enqueued to IDB via `idb-keyval`, fetch returns synthetic `200 {}`, caller spread-merge is a no-op against already-optimistically-updated local state.
+  - POST + GET intentionally NOT queued (creates need server ids; GETs use the SW read-cache from T-007).
+  - On `online` event, FIFO drain via direct `fetch`; successful entries delete, failures stay and surface `status: 'error'`.
+  - Banner across 4 states: offline (with / without pending count), syncing, synced (~2 s success pulse), error. en + ru populated; uk + el `[*-todo]`.
+  - Queue survives reload (IDB).
+  - Total JS: 387 → **389 kB** (+2 kB for `idb-keyval`); under the 410 kB ceiling from T-006.
+- Spec diff: none
+- Codegen impact: no
+- Design impact: no new components.
+- Tests: `tests/unit/offlineQueue.spec.ts` (7 cases via `fake-indexeddb/auto`). 445/445 web specs green.
+- Notable decisions:
+  - **Intercept at the SDK fetch override**, not at every API composable. One choke point, works for every generated endpoint uniformly.
+  - **Synthetic 200 `{}`**, not a custom `OfflineQueuedError`. Callers already spread-merge optimistic local state; an empty echo doesn't disturb anything. Avoids changing every page's error-handling path.
+  - **`Authorization` stripped on persist.** The bearer at replay time is current, not the (possibly expired) one from when the request was queued.
+  - **Pending-count over input-blocking.** The original brainstorm option B mentioned "блокирует input"; in practice that hurts the single-player offline session. Users keep typing, edits queue, banner counts.
+- Status: shipped
+- Blockers: —
+
+## Open follow-up (Phase 7 backlog)
+
+- **Flutter SQLite offline mirror + sync engine** (mobile). Heaviest item left in the phase; needs a feature spec.
+- Lighthouse CI gate (LCP / CLS / TBT) — deferred from T-006.
+- Backend p95 targets per PRD §6 — deferred from T-006.
+- **Beta release workflow** — coming next (port courseShelf's `release.yml` to Forgejo + adapt for our two images).
+- Drop `.github/dependabot.yml` (dead config).
+- `AppPopover` `role` prop refactor.
+- Restore secret scanning (trufflehog binary or runner outbound github.com).
+- ETag / If-Match conflict resolution (deferred 3rd offline PR).
+- POST queueing (deferred — id reconciliation problem).
+
 ## T-2026-05-11-007 — Phase 7: web offline (read-only cache + SW shell)
 
 - Created: 2026-05-11
