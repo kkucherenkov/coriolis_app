@@ -2,6 +2,33 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-11-009a — Phase 7: release packaging (Dockerfiles + compose.release + nginx)
+
+- Created: 2026-05-11
+- Completed: 2026-05-11
+- Owner: claude
+- Spec: PRD §11 (Phase 7 — Hardening · "beta release"). Half-1 of the courseShelf release-flow port; T-009b adds the actual `release.yml` workflow on top.
+- Result: [PR #16](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/16) on Forgejo — branch `feat/phase-7/release-packaging`, merged as `365c8d5`. 13 files / +835 / −4.
+- Acceptance — all met:
+  - `docker build -f apps/backend/Dockerfile -t coriolis/backend:test .` succeeds locally (~3 min cold).
+  - `docker build -f apps/web/Dockerfile -t coriolis/web:test .` succeeds locally (~5 min cold).
+  - `docker compose -f docker/compose.release.yml config` exits clean against placeholder env.
+  - Web image smoke: `docker run -e APP_API_BASE_URL=… -e APP_AUTH_BASE_URL=… coriolis/web:test` serves `/_app-config.js` with the templated URLs and `GET /` returns 200.
+  - Reverse proxy folds `/api/`, `/centrifugo/`, `/` onto a single host.
+  - `cliff.toml` config + `.env.release.example` operator guide in place.
+- Spec diff: none
+- Codegen impact: no
+- Design impact: none (infra only)
+- Tests: 445/445 web specs green; size-limit clean; lint / typecheck / format clean.
+- Notable decisions:
+  - **Moved `prisma` from devDeps to deps** in `apps/backend/package.json`. `pnpm deploy --prod` strips devDeps and the runtime container needs the CLI for `migrate deploy`. CourseShelf's setup is the same.
+  - **Skipped `pnpm --filter @app/api-client-ts build`** in both Dockerfiles. Coriolis's api-client-ts has no build step (it exports `./src/index.ts` directly via `main`), so it's consumed by Nest / Nuxt as-is.
+  - **Renamed `centrifugoUrl` → `realtimeWsUrl`** in the runtime-config plugin to match coriolis's convention (`nuxt.config.ts:runtimeConfig.public.realtimeWsUrl`).
+  - **No release-bundle README in this PR.** The release workflow (T-009b) will write it; baking it into the source tree would lie about whether it's been materialised yet.
+  - **No streaming endpoint in the proxy** (no `/api/v1/stream/`). Coriolis serves no media.
+- Status: shipped
+- Blockers: —
+
 ## T-2026-05-11-008 — Phase 7: web offline write-queue (PATCH/PUT/DELETE)
 
 - Created: 2026-05-11
