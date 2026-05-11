@@ -137,6 +137,9 @@
       document.body.append(anchor);
       anchor.click();
       anchor.remove();
+      // Synchronous revoke is safe: the browser captures the blob reference
+      // during click activation per spec. Adding `await` between click and
+      // revoke would risk breaking the download in non-spec-compliant envs.
       URL.revokeObjectURL(url);
       exportState.value = 'idle';
     } catch (error) {

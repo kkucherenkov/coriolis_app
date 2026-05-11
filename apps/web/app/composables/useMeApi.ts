@@ -28,8 +28,11 @@ const DEFAULT_EXPORT_FILENAME = 'coriolis-export.json';
 
 function parseFilename(header: string | undefined): string {
   if (!header) return DEFAULT_EXPORT_FILENAME;
-  const match = /filename="([^"]+)"/.exec(header);
-  return match?.[1] ?? DEFAULT_EXPORT_FILENAME;
+  // Backend currently sends `filename="..."` (RFC 6266 quoted form). Match the
+  // unquoted form too so a future proxy or middleware rewrite doesn't silently
+  // collapse us to the default.
+  const match = /filename="([^"]+)"|filename=([^;\s]+)/.exec(header);
+  return match?.[1] ?? match?.[2] ?? DEFAULT_EXPORT_FILENAME;
 }
 
 export function useMeApi(): MeApiClient {
