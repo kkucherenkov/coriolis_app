@@ -2,6 +2,33 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-11-007 — Phase 7: web offline (read-only cache + SW shell)
+
+- Created: 2026-05-11
+- Completed: 2026-05-11
+- Owner: claude
+- Spec: PRD §11 (Phase 7 — Hardening · "Offline support (web SW + Flutter SQLite)")
+- Goal: a player who loses connectivity at the table can still navigate to characters / ships / NPCs / sessions and read everything they had loaded once. Mutations stay best-effort (network error → toast); explicit write-queue + replay engine deferred to next PR.
+- Result: [PR #14](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/14) on Forgejo — branch `feat/phase-7/web-offline-readcache`, merged as `2d1b69f`. 7 files / +721 / −13.
+- Acceptance — all met:
+  - SW (`@vite-pwa/nuxt` + `workbox-window`) registers with `registerType: 'autoUpdate'`. Build emits `/sw.js` + `/workbox-<hash>.js`.
+  - App shell precached: `**/*.{js,css,html,svg,ico,woff2}` from the Workbox build manifest.
+  - `GET /api/v1/me*` → `StaleWhileRevalidate`, cap 100 entries / 7 days. `urlPattern` matches by `url.pathname` so it works for both the dev cross-origin layout and any prod proxy.
+  - Mutations + `/auth/*`, `/realtime/*`, `/public/*` go straight to network — no caching.
+  - Site-wide `<AppBanner tone="warning">` driven by `useOnline()`; en + ru populated, uk + el `[*-todo]` placeholders.
+  - Total JS: 384 → **387 kB** (+3 kB workbox-window shim). Within the 410 kB ceiling locked in T-006.
+- Spec diff: none
+- Codegen impact: no
+- Design impact: no new `@app/ui` component (inline `<AppBanner>` composition, no Flutter parity question — Flutter handles connectivity differently).
+- Tests: 438/438 web specs green (+5 from `tests/unit/useOnline.spec.ts`: default-true, mount-mirrors-false, online ← event, offline ← event, listener cleanup).
+- Notable decisions:
+  - **Path-based `urlPattern`, not full URL.** Dev runs web on :3001 + API on :3010 (cross-origin); production probably proxies. Matching `url.pathname.startsWith('/api/v1/me')` works in both.
+  - **No `OfflineBanner` component.** The whole banner is one inline `<AppBanner>` in the layout — wrapping it would have been over-abstraction. Flutter has no reason to mirror it (different connectivity idioms).
+  - **`globalThis.addEventListener`, not `window.*`.** Project ESLint config (unicorn/prefer-global-this) requires it; consistent with other composables.
+  - **Default `online: true` on mount.** Avoids a one-frame banner flash before `navigator.onLine` is read.
+- Status: shipped
+- Blockers: —
+
 ## T-2026-05-11-006 — Phase 7: web bundle-size budgets
 
 - Created: 2026-05-11
