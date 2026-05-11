@@ -18,7 +18,7 @@
 - Sub-steps:
   - [x] Block 1 — spec + codegen (a5c4627 spec + 8f3a46b codegen + d48a6c2 npcs-hoist fix + 3e5a772 re-codegen; pre-existing drift for RollKind/RollBreakdown/Character/Combatant/Encounter also flushed; NPCs hoisted to bundle top level — they're user-owned in Prisma, not session-owned)
   - [x] Block 2 — backend (c4b2a81 + review-fixes commit); follow-up: `@Delete('me')` on line 70 of `users.controller.ts` registers `DELETE /api/v1/me/me` instead of `DELETE /api/v1/me` — pre-existing, not in Block 2 diff; open a separate T-2026-05-11-NNN task to audit and fix the route decorator.
-  - [ ] Block 3 — web
+  - [x] Block 3 — web (80d6a4c useMeApi.exportMe + settings Data section; 9defee8 review-polish for parseFilename + revoke comment; 1153331 chore(format) lint-fix drift catch-up; 3de695e chore(format) docs prettier-apply)
   - [ ] Block 4 — Playwright + close-out
 - Status: in-progress
 - Blockers: —
