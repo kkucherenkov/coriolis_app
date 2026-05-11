@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "24"
+
+jobs:
+  # ── Checks (consolidated lint · typecheck · test · specs · ui audit) ──────
+  # One job sharing one pnpm install + one design:build + one prisma generate.
+  # turbo handles parallelism across packages within the job.
+  #
+  # Per-package pnpm filter commands instead of `turbo run …` to avoid
+  # turbo's transitive `^build` → `@app/specs#codegen` chain (codegen
+  # needs Java + Flutter; the codegen-drift workflow handles that on its own
+  # path-filtered runner). Coverage matches the pre-consolidation CI exactly:
+  # backend + web for lint/typecheck/test, ui for audit; plus the three
+  # quality gates we fix manually today (stylelint, design:audit, format).
+  checks:
+    name: Checks (lint · typecheck · test · specs · ui audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prisma generate
+        run: pnpm --filter @app/backend prisma:generate
+
+      - name: Build design tokens
+        run: pnpm design:build
+
+      - name: Validate + bundle specs
+        run: pnpm spec:validate && pnpm spec:bundle
+
+      - name: Lint
+        run: |
+          pnpm --filter @app/backend run lint
+          pnpm --filter @app/web run lint
+
+      - name: Typecheck
+        run: |
+          pnpm --filter @app/backend run typecheck
+          pnpm --filter @app/web run typecheck
+
+      - name: Test
+        run: |
+          pnpm --filter @app/backend run test:coverage
+          pnpm --filter @app/web run test
+
+      - name: UI components audit
+        run: pnpm --filter @app/ui audit:components
+
+      - name: Design inventory audit
+        run: pnpm design:audit
+
+      - name: Stylelint
+        run: pnpm stylelint
+
+      - name: Prettier check
+        run: pnpm format:check
+
+  # ── Quality (storybook a11y smoke + security audit) ──────────────────────
+  # One job that does the Storybook a11y smoke AND the dependency / license
+  # audits. Runs in slot 2 in parallel with `checks` (slot 1) under the
+  # act_runner's concurrency=2 limit.
+  #
+  # Runs inside mcr.microsoft.com/playwright:v1.59.1-jammy so Chromium and
+  # every apt system dep Playwright needs are already in the image — no
+  # `playwright install --with-deps` step required. Image tag must match
+  # the `playwright` version pinned in packages/ui/package.json.
+  #
+  # Security audits don't strictly need the Playwright image, but folding
+  # them into the same job avoids a redundant pnpm install + checkout
+  # + Node setup (~60 s saved on every run).
+  #
+  # Note: trufflehog is intentionally absent — code.forgejo.org doesn't
+  # mirror trufflesecurity/trufflehog, and pulling it from github.com via
+  # a full URL still requires the runner to have outbound github.com
+  # network access (which is not the homelab default). pnpm audit covers
+  # the dependency-vuln baseline; treat secret scanning as a follow-up
+  # if the runner gets github.com pull access.
+  quality:
+    name: Quality (storybook a11y · security audit)
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-jammy
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build design tokens
+        run: pnpm design:build
+
+      - name: Build Storybook static
+        env:
+          STORYBOOK_A11Y_LEVEL: todo
+        run: pnpm --filter @app/ui storybook:build
+
+      - name: Run a11y smoke against built Storybook
+        run: pnpm --filter @app/ui test:storybook:ci
+
+      - name: Dependency vulnerability scan
+        run: pnpm audit --audit-level=critical
+
+      - name: License compliance check
+        run: pnpm dlx license-checker --excludePrivatePackages --onlyAllow 'MIT;ISC;Apache-2.0;BSD-2-Clause;BSD-3-Clause;0BSD;CC0-1.0;Unlicense;Python-2.0;CC-BY-3.0;CC-BY-4.0'

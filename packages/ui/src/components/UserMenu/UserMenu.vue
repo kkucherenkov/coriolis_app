@@ -166,7 +166,17 @@
 
 <template>
   <div class="app-user-menu">
-    <AppPopover :open="open" placement="bottom" @update:open="emit('update:open', $event)">
+    <!--
+      AppPopover renders the panel as role="dialog" aria-modal="true" — axe's
+      `aria-dialog-name` rule requires that dialog to have an accessible name,
+      so reuse the trigger label (it already describes the popover surface).
+    -->
+    <AppPopover
+      :open="open"
+      placement="bottom"
+      :aria-label="labels.triggerAriaLabel"
+      @update:open="emit('update:open', $event)"
+    >
       <!-- Trigger: avatar + name button -->
       <template #trigger>
         <button
