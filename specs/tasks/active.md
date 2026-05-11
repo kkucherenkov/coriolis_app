@@ -1,0 +1,33 @@
+## T-2026-05-11-006 — Phase 7: web bundle-size budgets
+
+- Created: 2026-05-11
+- Owner: claude
+- Spec: PRD §11 (Phase 7 — Hardening · "performance tuning"); PRD §6 (NFR — performance budgets)
+- Goal: lock today's `apps/web` JS / CSS sizes behind a CI gate so the upcoming Phase-7 work (offline service worker + IndexedDB cache) can't silently inflate the wire payload that the SW will end up caching.
+- Acceptance:
+  - `pnpm --filter @app/web build:budget` (or equivalent) runs `size-limit` and exits non-zero when a tracked bucket exceeds its budget.
+  - Buckets cover at minimum: (a) Nuxt entry chunk + initial vendor chunk, (b) one largest route chunk (TBD after baseline), (c) per-page CSS bundle.
+  - Budgets are written next to the build (in `apps/web/package.json` or `apps/web/.size-limit.json`) so the value, the matched glob, and the rationale comment all live in one diff.
+  - The check is wired into `.forgejo/workflows/ci.yml` `checks` job so a regression fails CI (red gate, not warning).
+  - Baseline values picked from a fresh local build; rounded up to the nearest 5 % so legitimate code adds don't oscillate the gate.
+- Spec diff: none
+- Codegen impact: no
+- Design impact: none
+- Tests:
+  - `size-limit` itself is the test (numeric assertion).
+  - Manual: shrink one budget by 1 KB and confirm CI fails locally.
+- Sub-steps:
+  - [x] Push task entry.
+  - [x] Build `apps/web` and inspect `.output/public/_nuxt/` — JS chunks are hash-only (no human prefix) so per-chunk budgets aren't stable; CSS chunks ARE named (`entry.*.css`, `_id_.*.css`, `new.*.css`, `app.*.css`).
+  - [x] Add `size-limit` + `@size-limit/file` as devDeps in `apps/web`.
+  - [x] Write `.size-limit.json` covering Total JS, Total CSS, Entry CSS, dynamic-route `_id_` CSS.
+  - [x] Add `size` + `size:why` scripts; wire `build` + `size` into `.forgejo/workflows/ci.yml` `checks` job.
+  - [x] Snapshot baselines (brotli):
+        - Total JS 384 kB → budget **410 kB** (~7 % headroom).
+        - Total CSS 54 kB → **60 kB** (~12 %).
+        - Entry CSS 23 kB → **25 kB** (~9 %).
+        - `_id_` route CSS 8 kB → **10 kB** (~21 %, small numbers need more wiggle).
+  - [x] Verify locally: lowering Total-JS limit to 300 kB makes `size-limit` exit 1 (gate fires); restored to 410 kB → exit 0.
+  - [ ] PR.
+- Status: ready-to-PR
+- Blockers: —

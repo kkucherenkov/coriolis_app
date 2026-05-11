@@ -77,6 +77,17 @@ jobs:
       - name: Prettier check
         run: pnpm format:check
 
+      # Bundle-size budgets — gates on apps/web .output/public/_nuxt/* sizes.
+      # Builds the web app once (production mode) then runs size-limit's
+      # numeric assertions against the brotli'd chunks. Budgets live in
+      # apps/web/.size-limit.json — bump them in the same PR that grows
+      # the bundle.
+      - name: Build web (for size budgets)
+        run: pnpm --filter @app/web build
+
+      - name: Web bundle-size budgets
+        run: pnpm --filter @app/web size
+
   # ── Quality (storybook a11y smoke + security audit) ──────────────────────
   # One job that does the Storybook a11y smoke AND the dependency / license
   # audits. Runs in slot 2 in parallel with `checks` (slot 1) under the
