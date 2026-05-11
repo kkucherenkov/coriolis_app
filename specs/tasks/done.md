@@ -2,6 +2,33 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-11-004 — Stylelint + design:audit drift cleanup
+
+- Created: 2026-05-11
+- Completed: 2026-05-11
+- Owner: claude
+- Spec: none (maintenance)
+- Goal: `pnpm stylelint` and `pnpm design:audit` exit clean on `main`.
+- Result: [PR #11](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/11) on Forgejo — branch `chore/stylelint-audit-drift`, merged as `e161606`. 41 files / +584 / −2039.
+- Acceptance — all met:
+  - `pnpm stylelint` — 0 errors / 0 warnings (was 30 errors).
+  - `pnpm design:audit` — clean Vue + Flutter + inventory (phantom `AppWidgets` row gone).
+- Spec diff: none
+- Codegen impact: no
+- Design impact:
+  - `specs/design/README.md`: 4 inventory rows added — `AppHeader`, `AppMobileDrawer`, `AppSavePulse` (Flutter ✓), `UserMenu`. Category column widened to fit `Composition`.
+  - `packages/design-tokens/scripts/audit-inventory.ts`: `flutterDir` corrected to `lib/src/widgets/` (was `lib/src/`, which only saw the two top-level subfolders and surfaced a phantom `AppWidgets`). The audit now actually checks per-widget parity.
+- Tests: lint + audit gates only. UserMenu unit suite stayed green (33 files / 778 cases) after the `.user-menu` → `.app-user-menu` rename.
+- Sub-steps:
+  - [x] AppMobileDrawer: 36px → `$close-button-size`; reduce-motion `0ms` → `transition: none`; transition `150ms` fallbacks dropped.
+  - [x] AppHeader: `#15193f` hex fallback dropped; 40px → `var(--space-8)`; all `150ms` transition fallbacks dropped.
+  - [x] UserMenu: rename `.user-menu` → `.app-user-menu` in template / SCSS / spec; literal `min-width: 200px` → `$panel-min-width`; `font-size: 10px` → `$section-label-font-size`.
+  - [x] apps/web: skip-link `top: -40px` → `calc(-1 * var(--space-8))`, `z-index: 1000` → `var(--z-max)`, `transition: top 200ms` → tokens; CombatTracker `0.15s` → `var(--motion-duration-fast)`; six page files: literal `max-width` / `min-width` / `width` → named SCSS vars or `var(--space-12)`.
+  - [x] Inventory rows + audit-script path fix.
+  - [x] Carry-over: prettier multi-attribute reformat across remaining `apps/web/**/*.vue` (same drift class as PR #10) — bundled in the same commit.
+- Status: shipped
+- Blockers: —
+
 ## T-2026-05-11-003 — Phase 7 entry-point: JSON export (`/api/v1/me/export`)
 
 - Created: 2026-05-11
