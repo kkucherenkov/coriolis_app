@@ -2,6 +2,40 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-11-005 — CI consolidation: port courseShelf 2-job structure to Forgejo
+
+- Created: 2026-05-11
+- Completed: 2026-05-11
+- Owner: claude
+- Spec: none (infra)
+- Goal: shrink the per-PR CI cost on Forgejo by collapsing the 7 separate jobs in `.github/workflows/ci.yml` into 2 fat jobs (`checks` + `quality`), mirroring the optimisation already shipped in `../courseShelf/.forgejo/workflows/`.
+- Result: [PR #12](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/12) on Forgejo — branch `chore/ci-forgejo-consolidation`. Three commits: initial port (`fe449eb`), homelab adaptation (`17ff768`: drop trufflehog action, full-URL flutter-action, fast-uri/fast-xml-builder vuln bumps via pnpm overrides), runtime fixes (`68d5c12`: AppPopover aria-label via UserMenu, JRE install for codegen-drift). Final tip merged green.
+- Acceptance — all met:
+  - `.forgejo/workflows/ci.yml` runs two jobs (`checks` + `quality`); each does one `pnpm install`. Both green on the homelab act_runner.
+  - `.forgejo/workflows/codegen-drift.yml` is path-filtered to `packages/specs/**` and `packages/api-client-*`; only fires when wire contracts change.
+  - `.forgejo/workflows/e2e.yml` runs in `mcr.microsoft.com/playwright:v1.59.1-jammy` — no `playwright install --with-deps` step.
+  - `.forgejo/workflows/trivy.yml` (fs + config scans) replaces CodeQL on Forgejo. `.github/workflows/codeql.yml` deleted.
+  - `.github/workflows/{ci.yml, e2e.yml}` deleted — origin is Forgejo, no GitHub mirror, and the act_runner scans both dirs by default.
+  - Coverage: backend lint/typecheck/test:coverage, web lint/typecheck/test, specs validate+bundle, UI components audit, plus the three quality gates we manually fix today (`pnpm stylelint`, `pnpm design:audit`, `pnpm format:check`).
+- Spec diff: none
+- Codegen impact: no
+- Design impact: none (CI-only)
+- Side-effects baked into PR #12:
+  - **trufflehog dropped.** code.forgejo.org doesn't mirror `trufflesecurity/trufflehog`, and using a full GitHub URL still requires the runner to have outbound `github.com`. courseShelf made the same call. Secret scanning is a deferred follow-up — install via the official binary script (same pattern as trivy) when we want it back.
+  - **flutter-action via full URL.** `https://github.com/subosito/flutter-action@v2` resolves through the runner's host fallback instead of the missing `code.forgejo.org/subosito/flutter-action` mirror.
+  - **JRE install in codegen-drift.** `openapi-generator-cli` shells out to `java -jar`; `catthehacker/ubuntu:act-22.04` ships without one. `apt-get install default-jre-headless` runs as root in the container.
+  - **Vuln bumps via pnpm.overrides.** `fast-uri ^3.1.2` (CVE-2026-6321, CVE-2026-6322 via ajv) and `fast-xml-builder ^1.1.7` (CVE-2026-44665 via @nodable/entities). Trivy fs back to clean.
+  - **`aria-dialog-name` fix on UserMenu.** Pre-existing axe violation surfaced by the new quality job — `<AppPopover>`'s `role="dialog" aria-modal="true"` needs an accessible name. Reused `labels.triggerAriaLabel` ("Open user menu" / "Открыть меню пользователя") instead of adding a new label slot.
+- Tests: 33 storybook test suites / 318 a11y assertions green locally; both Forgejo jobs green on the merged commit; codegen-drift skipped on this PR (no `packages/specs/**` touched).
+- Status: shipped
+- Blockers: —
+
+## Open follow-up (out of scope, for next PR)
+
+- `.github/dependabot.yml` is still dead config on a Forgejo-only origin (Dependabot is a GitHub service). Leave in place; remove together with any other GitHub-only metadata next time we touch `.github/`.
+- AppPopover currently hard-codes `role="dialog" aria-modal="true"`. For menu / listbox / tooltip consumers the dialog role is semantically wrong. Add a `role` prop (or split the component) when the next consumer hits the same axe rule.
+- Restore secret scanning once a path is decided — either give the runner outbound github.com access (so `https://github.com/trufflesecurity/trufflehog@main` resolves), or install the trufflehog binary via the official install script (mirrors how trivy is bootstrapped).
+
 ## T-2026-05-11-004 — Stylelint + design:audit drift cleanup
 
 - Created: 2026-05-11
