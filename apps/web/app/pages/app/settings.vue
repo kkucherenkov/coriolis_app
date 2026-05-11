@@ -119,6 +119,37 @@
     void toggleHighContrast(value);
   }
 
+  // ── Export state ──────────────────────────────────────────────────────────
+
+  type ExportState = 'idle' | 'pending' | 'error';
+  const exportState = ref<ExportState>('idle');
+  const exportError = ref('');
+
+  async function triggerExport(): Promise<void> {
+    exportState.value = 'pending';
+    exportError.value = '';
+    try {
+      const { blob, filename } = await api.exportMe();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      exportState.value = 'idle';
+    } catch (error) {
+      const problem = error as Problem;
+      exportError.value = problem.detail ?? t('exportError');
+      exportState.value = 'error';
+    }
+  }
+
+  function onTriggerExport(): void {
+    void triggerExport();
+  }
+
   // ── Load ──────────────────────────────────────────────────────────────────
 
   async function load(): Promise<void> {
@@ -282,6 +313,11 @@
     "highContrastLabel": "High contrast",
     "highContrastHelp": "Increases contrast for improved readability. Synced across all your devices.",
     "errorThemeSave": "Could not save theme preference.",
+    "sectionData": "Data",
+    "exportDescription": "Download a copy of your data — every character, ship, and game session you own, as a single JSON file. Keep it somewhere safe.",
+    "exportButton": "Download a copy of my data",
+    "exportInProgress": "Preparing your file…",
+    "exportError": "Could not prepare the export. Please try again.",
     "sectionAccount": "Account",
     "deleteAccountButton": "Delete account…",
     "deleteAccountHelp": "Your sessions revoke immediately. Characters, ships, and share links stay accessible for 30 days, then they're cascade-deleted. There's no undo.",
@@ -317,6 +353,11 @@
     "highContrastLabel": "Высокий контраст",
     "highContrastHelp": "Повышает контрастность для удобства чтения. Синхронизируется на всех устройствах.",
     "errorThemeSave": "Не удалось сохранить настройку темы.",
+    "sectionData": "Данные",
+    "exportDescription": "Скачайте копию своих данных — все ваши персонажи, корабли и игровые сессии в одном JSON-файле. Храните его в надёжном месте.",
+    "exportButton": "Скачать копию моих данных",
+    "exportInProgress": "Готовим файл…",
+    "exportError": "Не удалось подготовить экспорт. Попробуйте ещё раз.",
     "sectionAccount": "Аккаунт",
     "deleteAccountButton": "Удалить аккаунт…",
     "deleteAccountHelp": "Сессии отзываются немедленно. Персонажи, корабли и ссылки на шаринг остаются доступными 30 дней, после чего удаляются каскадно. Это необратимо.",
@@ -352,6 +393,11 @@
     "highContrastLabel": "[uk-todo] High contrast",
     "highContrastHelp": "[uk-todo] High contrast help text",
     "errorThemeSave": "[uk-todo] Could not save theme preference.",
+    "sectionData": "[uk-todo] Data",
+    "exportDescription": "[uk-todo] Download a copy of your data.",
+    "exportButton": "[uk-todo] Download a copy of my data",
+    "exportInProgress": "[uk-todo] Preparing your file…",
+    "exportError": "[uk-todo] Could not prepare the export.",
     "sectionAccount": "[uk-todo] Account",
     "deleteAccountButton": "[uk-todo] Delete account…",
     "deleteAccountHelp": "[uk-todo] Sessions revoke immediately. Data kept 30 days.",
@@ -387,6 +433,11 @@
     "highContrastLabel": "[el-todo] High contrast",
     "highContrastHelp": "[el-todo] High contrast help text",
     "errorThemeSave": "[el-todo] Could not save theme preference.",
+    "sectionData": "[el-todo] Data",
+    "exportDescription": "[el-todo] Download a copy of your data.",
+    "exportButton": "[el-todo] Download a copy of my data",
+    "exportInProgress": "[el-todo] Preparing your file…",
+    "exportError": "[el-todo] Could not prepare the export.",
     "sectionAccount": "[el-todo] Account",
     "deleteAccountButton": "[el-todo] Delete account…",
     "deleteAccountHelp": "[el-todo] Sessions revoke immediately. Data kept 30 days.",
@@ -543,6 +594,35 @@
             role="alert"
           >
             {{ themeSaveError }}
+          </p>
+        </div>
+      </AppCard>
+
+      <!-- Section: Data (export) -->
+      <AppCard>
+        <template #header>
+          <AppLabel tone="eyebrow" :text="t('sectionData')" />
+        </template>
+
+        <div class="page-settings__export">
+          <p class="page-settings__export-help">
+            {{ t('exportDescription') }}
+          </p>
+          <AppButton
+            variant="primary"
+            size="md"
+            :loading="exportState === 'pending'"
+            :disabled="exportState === 'pending'"
+            @click="onTriggerExport"
+          >
+            {{ exportState === 'pending' ? t('exportInProgress') : t('exportButton') }}
+          </AppButton>
+          <p
+            v-if="exportError && exportState === 'error'"
+            class="page-settings__export-error"
+            role="alert"
+          >
+            {{ exportError }}
           </p>
         </div>
       </AppCard>
@@ -773,6 +853,29 @@
     }
 
     &__theme-error {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--state-crimson-bright);
+    }
+
+    // ── Export section ─────────────────────────────────────────────────────
+
+    &__export {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      align-items: flex-start;
+    }
+
+    &__export-help {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--text-secondary);
+    }
+
+    &__export-error {
       margin: 0;
       font-family: var(--font-body);
       font-size: var(--type-body-sm-font-size);
