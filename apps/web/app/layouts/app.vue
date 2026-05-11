@@ -185,10 +185,7 @@
 <template>
   <div class="layout-app">
     <!-- Skip-link: visible only when focused. -->
-    <a
-      class="layout-app__skip-link"
-      href="#main-content"
-    >{{ t('skipToContent') }}</a>
+    <a class="layout-app__skip-link" href="#main-content">{{ t('skipToContent') }}</a>
 
     <AppHeader
       :brand="{
@@ -224,10 +221,7 @@
       </template>
 
       <template #mobile-drawer-content>
-        <nav
-          :aria-label="t('brand.navAriaLabel')"
-          class="layout-app__mobile-nav"
-        >
+        <nav :aria-label="t('brand.navAriaLabel')" class="layout-app__mobile-nav">
           <NuxtLink
             v-for="item in navItems"
             :key="item.key"
@@ -261,10 +255,7 @@
       </template>
     </AppHeader>
 
-    <main
-      id="main-content"
-      class="layout-app__main"
-    >
+    <main id="main-content" class="layout-app__main">
       <slot />
     </main>
   </div>
@@ -284,15 +275,16 @@
     &__skip-link {
       position: absolute;
       left: var(--space-3);
-      top: -40px;
+      // Hidden off-screen by default — slides into view on focus.
+      top: calc(-1 * var(--space-8));
       background: var(--brand-brass);
       color: var(--surface-void);
       padding: var(--space-2) var(--space-4);
       border-radius: var(--radius-sm);
       font-family: var(--font-body);
       font-size: var(--type-body-sm-font-size);
-      z-index: 1000;
-      transition: top 200ms ease;
+      z-index: var(--z-max);
+      transition: top var(--motion-duration) var(--motion-ease-standard);
       text-decoration: none;
 
       &:focus {

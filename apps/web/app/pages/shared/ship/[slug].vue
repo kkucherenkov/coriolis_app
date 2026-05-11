@@ -40,17 +40,10 @@
 <template>
   <main class="shared-ship-page">
     <div class="shared-ship-page__wrap">
-      <AppBanner
-        tone="info"
-        :title="t('comingSoonTitle')"
-      >
+      <AppBanner tone="info" :title="t('comingSoonTitle')">
         {{ t('comingSoonBody') }}
         <template #actions>
-          <AppButton
-            variant="ghost"
-            size="sm"
-            @click="navigateTo('/')"
-          >
+          <AppButton variant="ghost" size="sm" @click="navigateTo('/')">
             {{ t('backToHome') }}
           </AppButton>
         </template>

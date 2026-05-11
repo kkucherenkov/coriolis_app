@@ -189,6 +189,9 @@
   // Panel width: fits a phone, never fills the whole screen.
   $panel-width: clamp(280px, 80vw, 360px);
 
+  // Close button — 36px is the icon-button hit target (between space-7=32 and space-8=40).
+  $close-button-size: 36px;
+
   // Animation duration token — components use the standard motion duration.
   $anim-duration: 200ms;
 
@@ -241,8 +244,8 @@
       align-items: center;
       justify-content: center;
       align-self: flex-end;
-      width: 36px;
-      height: 36px;
+      width: $close-button-size;
+      height: $close-button-size;
       padding: var(--space-1);
       flex-shrink: 0;
       background: transparent;
@@ -251,8 +254,8 @@
       color: var(--text-secondary);
       cursor: pointer;
       transition:
-        color var(--motion-duration-fast, 150ms) var(--motion-ease-standard, ease),
-        background-color var(--motion-duration-fast, 150ms) var(--motion-ease-standard, ease);
+        color var(--motion-duration-fast) var(--motion-ease-standard),
+        background-color var(--motion-duration-fast) var(--motion-ease-standard);
 
       &:hover {
         color: var(--brand-brass-light);
@@ -321,10 +324,10 @@
   @media (prefers-reduced-motion: reduce) {
     .app-mobile-drawer-enter-active,
     .app-mobile-drawer-leave-active {
-      transition-duration: 0ms;
+      transition: none;
 
       .app-mobile-drawer__panel {
-        transition-duration: 0ms;
+        transition: none;
       }
     }
   }

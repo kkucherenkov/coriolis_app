@@ -201,29 +201,13 @@
 </i18n>
 
 <template>
-  <div
-    class="dice-roller"
-    data-testid="sheet-dice-roller"
-  >
-    <AppBanner
-      v-if="errorMsg"
-      tone="danger"
-      role="alert"
-      class="dice-roller__error"
-    >
+  <div class="dice-roller" data-testid="sheet-dice-roller">
+    <AppBanner v-if="errorMsg" tone="danger" role="alert" class="dice-roller__error">
       {{ errorMsg }}
     </AppBanner>
 
-    <form
-      class="dice-roller__form"
-      novalidate
-      @submit.prevent="onRoll"
-    >
-      <AppField
-        :label="t('labelLabel')"
-        :help="t('labelHint')"
-        required
-      >
+    <form class="dice-roller__form" novalidate @submit.prevent="onRoll">
+      <AppField :label="t('labelLabel')" :help="t('labelHint')" required>
         <template #default="slotAttrs">
           <AppInput
             v-bind="slotAttrs"
@@ -236,10 +220,7 @@
       </AppField>
 
       <div class="dice-roller__pool-row">
-        <span
-          id="dice-roller-pool-label"
-          class="dice-roller__pool-label"
-        >
+        <span id="dice-roller-pool-label" class="dice-roller__pool-label">
           {{ t('poolLabel') }}
         </span>
         <div
@@ -257,10 +238,7 @@
           >
             −
           </AppButton>
-          <span
-            class="dice-roller__pool-value"
-            aria-live="polite"
-          >
+          <span class="dice-roller__pool-value" aria-live="polite">
             {{ pool }}
           </span>
           <AppButton
@@ -286,17 +264,10 @@
       </div>
     </form>
 
-    <div
-      v-if="lastRoll"
-      class="dice-roller__result"
-      data-testid="sheet-dice-roller-last"
-    >
+    <div v-if="lastRoll" class="dice-roller__result" data-testid="sheet-dice-roller-last">
       <div class="dice-roller__result-head">
         <span class="dice-roller__result-label">{{ lastRoll.label }}</span>
-        <span
-          v-if="lastRoll.pushed"
-          class="dice-roller__pushed-badge"
-        >
+        <span v-if="lastRoll.pushed" class="dice-roller__pushed-badge">
           {{ t('pushedBadge') }}
         </span>
       </div>
@@ -317,18 +288,12 @@
         >
           {{ t('pushButton') }}
         </AppButton>
-        <span
-          v-if="exhausted && !lastRoll.pushed"
-          class="dice-roller__push-hint"
-        >
+        <span v-if="exhausted && !lastRoll.pushed" class="dice-roller__push-hint">
           {{ t('exhaustedHint') }}
         </span>
       </div>
     </div>
-    <p
-      v-else
-      class="dice-roller__placeholder"
-    >
+    <p v-else class="dice-roller__placeholder">
       {{ t('noRollYet') }}
     </p>
   </div>
