@@ -31,7 +31,7 @@ LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05
   - [ ] **T-WIZARD-GEAR-UI** — once backend impl ships, add Step 8 Gear on web + mobile (per-amplua picker + Bazaar shop). `TOTAL_STEPS` flips from 7 → 8.
   - [ ] **T-MOBILE-SHIP-SHEET** — implement `apps/mobile/lib/features/ships/`.
   - [ ] **T-MOBILE-COMBAT-TRACKER** — expand combat to full initiative tracker + DP pool + sticky toolbar.
-  - [ ] **T-LANDING-FRAMING** — arabesque corners, locale-toggle nav, 3-feature grid, starfield bg, fan-project footer.
+  - [x] **T-LANDING-FRAMING** — `apps/web/app/pages/index.vue` rebuilt: 4 `AppArabesqueCorner`s (brass-deep), top-nav locale switcher (EN/RU/UK/EL pills sourced from Nuxt i18n config), `AppWordmark` hero (size 88), 3-feature grid (Sheet · Share · Run) with EN/RU copy + UK/EL stubs, two-layer radial-gradient starfield (suppressed under `prefers-reduced-motion`), fan-project + IP-attribution footer. _Block 6, 2026-05-14._
 - Status: in-progress (spec landed; code reorder + Gear backend queued).
 - Blockers: T-WIZARD-GEAR-UI is blocked by T-WIZARD-GEAR-BACKEND. Other sub-steps are independent.
 

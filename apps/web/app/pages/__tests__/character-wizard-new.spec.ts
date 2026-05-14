@@ -69,6 +69,7 @@ function makeDraft(overrides: Partial<Character> = {}): Character {
     origin: null,
     reputation: 4,
     startingWealth: 1000,
+    birr: 1000,
     crewConcept: null,
     mutant: false,
     mutantLineage: null,
