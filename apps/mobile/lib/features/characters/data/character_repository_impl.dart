@@ -34,7 +34,7 @@ import 'package:app_api_client/app_api_client.dart'
         ItemOtherUpdate,
         ItemOtherUpdateTypeEnum,
         ItemRangeEnum,
-        ItemSlotType,
+        ShipModuleSlot,
         Attributes,
         Skills,
         ConditionFlags,
@@ -201,11 +201,13 @@ class CharacterRepositoryImpl implements CharacterRepository {
       );
     }
     if (raw is ItemCybernetic) {
+      // `bodyPoints` was retired in the ItemCybernetic spec (now tracked
+      // via `xpCost`); the domain field stays null until a future mapper
+      // surfaces XP cost as a separate first-class column.
       return DomainItem(
         id: raw.id,
         type: ItemType.cybernetic,
         name: raw.name,
-        bodyPoints: raw.bodyPoints,
         effect: raw.effect,
       );
     }
@@ -541,10 +543,13 @@ class CharacterRepositoryImpl implements CharacterRepository {
             value: raw,
           ));
       case ItemType.cybernetic:
+        // Spec dropped `bodyPoints`; cyberware is XP-priced now. Default
+        // to the canonical 5 XP cost (ГЛАВА 4) when the editor hasn't
+        // surfaced XP cost yet — accepted range is 0..15.
         final raw = ItemCyberneticCreate((b) => b
           ..type = ItemCyberneticCreateTypeEnum.CYBERNETIC
           ..name = item.name
-          ..bodyPoints = item.bodyPoints ?? 0
+          ..xpCost = 5
           ..effect = item.effect ?? '');
         return ItemCreate((b) => b
           ..oneOf = OneOfDynamic(
@@ -553,10 +558,15 @@ class CharacterRepositoryImpl implements CharacterRepository {
             value: raw,
           ));
       case ItemType.shipModule:
+        // Spec renamed the slot enum (`ItemSlotType` → `ShipModuleSlot`)
+        // and collapsed values. The character-inventory ItemShipModule
+        // doesn't carry a slot in the domain layer, so default to HOLD
+        // — the closest semantic match for "ship cargo / generic" slot
+        // until a richer mapper lands.
         final raw = ItemShipModuleCreate((b) => b
           ..type = ItemShipModuleCreateTypeEnum.SHIP_MODULE
           ..name = item.name
-          ..slot = ItemSlotType.hull
+          ..slot = ShipModuleSlot.HOLD
           ..effect = item.effect ?? '');
         return ItemCreate((b) => b
           ..oneOf = OneOfDynamic(
@@ -628,10 +638,12 @@ class CharacterRepositoryImpl implements CharacterRepository {
             value: raw,
           ));
       case ItemType.cybernetic:
+        // bodyPoints retired; xpCost is optional on update so we don't
+        // touch it from the mapper. The domain model has no xpCost field
+        // yet, so xpCost mutations live with the future Cyberware editor.
         final raw = ItemCyberneticUpdate((b) => b
           ..type = ItemCyberneticUpdateTypeEnum.CYBERNETIC
           ..name = item.name
-          ..bodyPoints = item.bodyPoints
           ..effect = item.effect);
         return ItemUpdate((b) => b
           ..oneOf = OneOfDynamic(
@@ -665,18 +677,33 @@ class CharacterRepositoryImpl implements CharacterRepository {
     }
   }
 
+  /// Maps a wire range string to [ItemRangeEnum].
+  ///
+  /// The personal-scale range ladder was collapsed from 5 → 4 bands in
+  /// the ST3001-faithful migration (`ItemRangeEnum`):
+  ///   - `arm` / `near` / `close`     → close   (Ближняя, up to 2 m)
+  ///   - `short` / `medium`           → medium  (Средняя, up to 20 m)
+  ///   - `long`                       → long    (Дальняя, up to 100 m)
+  ///   - `distant` / `extreme`        → extreme (Предельная, up to 1000 m)
+  ///
+  /// Legacy values surface in old persisted weapon records — translate
+  /// them rather than dropping data on the floor.
   static ItemRangeEnum _parseRange(String? range) {
     switch (range) {
+      case 'close':
+      case 'arm':
       case 'near':
-        return ItemRangeEnum.near;
+        return ItemRangeEnum.close;
+      case 'medium':
       case 'short':
-        return ItemRangeEnum.short;
+        return ItemRangeEnum.medium;
       case 'long':
         return ItemRangeEnum.long;
+      case 'extreme':
       case 'distant':
-        return ItemRangeEnum.distant;
+        return ItemRangeEnum.extreme;
       default:
-        return ItemRangeEnum.arm;
+        return ItemRangeEnum.close;
     }
   }
 }
