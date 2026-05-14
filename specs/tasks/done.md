@@ -2,6 +2,22 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-14-002 — Reconcile typography token schema
+
+- Created: 2026-05-14
+- Completed: 2026-05-14
+- Owner: claude
+- Spec: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md) §1.2
+- Decision: [`docs/adr/0004-typography-token-schema.md`](../../docs/adr/0004-typography-token-schema.md)
+- Outcome:
+  - Adopted handoff atom-refs schema: composite roles consume `{font.size.N}`, `{font.line-height.X}`, `{font.tracking.X}` via DTCG ref syntax. Top-level role bucket renamed `type` → `typography`. Project role-name vocabulary retained (`display-{xl,lg,md,sm}` / `body-{lg,md,sm}` / `mono-stat-{xl,md}`) — handoff vocabulary deferred to avoid 50-file rename + visible visual diff in a schema-only PR.
+  - Pipeline (`packages/design-tokens/src/{parse,types,emit-*,emit-typescript}.ts`) gained `resolveRef()` + `resolveTypographyValue()`: family/weight refs return the bucket key (preserves `var(--font-X)` / `var(--fw-X)` emit), size/line-height/tracking refs return literal `$value`. Unknown refs throw at build.
+  - Two referenced-but-undefined roles added — `body-xs` (12px Inter regular, ratio 1.4) and `label-sm` (12px Inter medium uppercase, tracking 0.06em) — back ~26 silently broken `--type-body-xs-*` / `--type-label-sm-*` consumer references.
+  - Zero CSS drift on the 9 pre-existing roles. Dart artefact diff is purely additive (`bodyXs`, `labelSm` new TextStyles). Web + UI typecheck green. Design audit clean. Lint baseline improved 26 → 19 errors (autofix touched pre-existing code; my code is lint-clean).
+- Follow-ups staged in active.md: `T-FOLLOWUP-FONT-VAR-DRIFT`, `T-FOLLOWUP-BARE-TYPE-VARS`, `T-FOLLOWUP-DESIGN-TOKENS-LINT`.
+- Unblocks: T-2026-05-14-003 (atom layer needed for v1 atoms).
+- PR: pending
+
 ## T-2026-05-14-001 — Design/UI audit vs handoff bundle (v1 scope)
 
 - Created: 2026-05-14
