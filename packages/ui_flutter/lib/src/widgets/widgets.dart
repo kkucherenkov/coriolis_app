@@ -17,6 +17,7 @@ export 'app_panel_title/app_panel_title.dart';
 export 'app_progress/app_progress.dart';
 export 'app_seg_control/app_seg_control.dart';
 export 'app_select/app_select.dart';
+export 'app_skill_row/app_skill_row.dart';
 export 'app_swash/app_swash.dart';
 export 'app_switch/app_switch.dart';
 export 'app_tab/app_tab.dart';

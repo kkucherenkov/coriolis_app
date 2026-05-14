@@ -107,7 +107,7 @@ LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05
 - Sub-steps:
   - [x] `/component-new AppPanelTitle` (+ `AppSwash` paired sibling) — landed 2026-05-14 (Vue + Flutter + stories + specs)
   - [x] `/component-new AppWordmark` — landed 2026-05-14 (Vue + Flutter + stories + specs; auto-scales eyebrow + swash from `size`)
-  - [ ] `/component-new AppSkillRow`
+  - [x] `/component-new AppSkillRow` — landed 2026-05-14 (Vue + Flutter + 9 stories + 16 Vue specs + 13 Flutter widget tests; brass / mystic tones, `name` slot/builder override for the key-chip case, rank clamp 0…rankMax)
   - [ ] extend `AppButton` with `secondary` + `mystic` variants (not /component-new — variant extension)
   - [ ] `/component-new AppIconMedallion`
   - [ ] decide Portrait strategy (extend `AppAvatar` vs ship `AppPortrait`) → implement

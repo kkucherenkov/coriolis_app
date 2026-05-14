@@ -29,6 +29,7 @@ export { AppSegControl } from './components/AppSegControl';
 export { AppSelect } from './components/AppSelect';
 export type { AppSelectOption } from './components/AppSelect/AppSelect.vue';
 export { AppSavePulse } from './components/AppSavePulse';
+export { AppSkillRow } from './components/AppSkillRow';
 export { AppStarOrnament } from './components/AppStarOrnament';
 export { AppStatBlock } from './components/AppStatBlock';
 export { AppSwash } from './components/AppSwash';

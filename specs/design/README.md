@@ -203,6 +203,7 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 | Coriolis    | `AppSavePulse`       | ✓               | ✓                  |
 | Primitive   | `AppSegControl`      | ✓               | —                  |
 | Primitive   | `AppSelect`          | ✓               | —                  |
+| Coriolis    | `AppSkillRow`        | ✓               | ✓                  |
 | Coriolis    | `AppStarOrnament`    | ✓               | —                  |
 | Coriolis    | `AppSwash`           | ✓               | ✓                  |
 | Primitive   | `AppSwitch`          | ✓               | —                  |
