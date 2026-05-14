@@ -23,3 +23,11 @@ export type {
   PersonalTalentCatalogEntry,
   StigmaTalentCatalogEntry,
 } from './talents.js';
+export { STARTER_KIT_CATALOG, findStarterKit, pickStarterKitItemName } from './starter-kits.js';
+export type {
+  StarterKit,
+  StarterKitChoice,
+  StarterKitItem,
+  StarterKitItemKind,
+  StarterKitItemTemplate,
+} from './starter-kits.js';

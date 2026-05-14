@@ -183,11 +183,21 @@ Notes on canonical decisions:
     - After activation, `birr` is the canonical debit/credit field for
       Bazaar purchases (items API) and session payouts
       (`PATCH /characters/{id}` with `{ birr }`).
-- **Starting-kit derivation:** still TODO — per ST3001 amplua tables
-  the player picks one item per row from per-role tables. To be
-  designed under `T-WIZARD-GEAR-BACKEND-DERIVE` (separate sub-block);
-  options are (a) backend computes a starter pack on activation, or
-  (b) client renders the per-amplua picker reading a static catalogue.
+- **Starting-kit derivation:** **decided — option (b), client-side
+  catalogue.** The catalogue lives in
+  [`packages/specs/src/starter-kits.ts`](../../packages/specs/src/starter-kits.ts)
+  and is exported from `@app/specs` as `STARTER_KIT_CATALOG` +
+  `findStarterKit(concept, role)`. Both web and mobile wizards consume
+  it locally; the wizard renders the per-amplua / per-role picker and
+  POSTs one `Item.create` request per chosen item to the existing
+  `/api/v1/characters/{id}/items` endpoint at activation. The backend
+  stays unaware of "starter kits" as a concept — items land like any
+  other Bazaar purchase, except `birr` debits are waived during the
+  draft window (already enforced via `BIRR_DRAFT_IMMUTABLE`).
+  Rationale + trade-offs documented in the catalogue file's header.
+  Catalogue is currently a stub (Pilot/Ace) to exercise the schema;
+  full population from ST3001 ch.4 amplua tables is tracked as
+  follow-up `T-WIZARD-GEAR-CATALOGUE-FILL`.
 
 ---
 
