@@ -50,8 +50,8 @@ class Step2Concept extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               WizardStepHeader(
-                title: t.wizardStep2Title,
-                blurb: t.wizardStep2Blurb,
+                title: t.wizard.step.concept.title,
+                blurb: t.wizard.step.concept.blurb,
               ),
               const SizedBox(height: AppSpacing.s6),
               GridView.builder(

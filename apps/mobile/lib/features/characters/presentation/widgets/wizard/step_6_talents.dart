@@ -32,8 +32,8 @@ class Step6Talents extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               WizardStepHeader(
-                title: t.wizardStep6Title,
-                blurb: t.wizardStep6Blurb,
+                title: t.wizard.step.talents.title,
+                blurb: t.wizard.step.talents.blurb,
               ),
               const SizedBox(height: AppSpacing.s4),
               // Talent count indicator

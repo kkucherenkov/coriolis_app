@@ -109,16 +109,46 @@
   "wizardSaveExit": "Save & exit",
   "wizardForge": "Forge character",
 
-  "wizardStep1Label": "Biography",
-  "wizardStep2Label": "Concept",
-  "wizardStep3Label": "Role",
-  "wizardStep4Label": "Attributes",
-  "wizardStep5Label": "Skills",
-  "wizardStep6Label": "Talents",
-  "wizardStep7Label": "Icon",
+  "wizard": {
+    "step": {
+      "biography": {
+        "label": "Biography",
+        "title": "Tell your story",
+        "blurb": "Who are you, when the Madara takes you under her wings? Upbringing decides your starting attribute / skill budgets, reputation and wealth — the rest paints the picture."
+      },
+      "concept": {
+        "label": "Concept",
+        "title": "Choose your amplua",
+        "blurb": "Eleven archetypes (амплуа) walk the dark between stars. Pick one — it sets your key attribute, key skills, and reputation modifier."
+      },
+      "role": {
+        "label": "Role",
+        "title": "Choose your role",
+        "blurb": "Each amplua has three roles. Your role narrows your key skills to the four that fit your specific calling."
+      },
+      "attributes": {
+        "label": "Attributes",
+        "title": "Distribute your attributes",
+        "blurb": "13 points. Minimum 2, maximum 5 in each attribute."
+      },
+      "skills": {
+        "label": "Skills",
+        "title": "Train your skills",
+        "blurb": "Skill points depend on upbringing — Plebeian 8, Stationary 10, Aristocrat 12. Key skills cap at 3, others at 1."
+      },
+      "talents": {
+        "label": "Talents",
+        "title": "Choose your talents",
+        "blurb": "Talents are habits forged in the dark between worlds. Pick up to three to start with."
+      },
+      "icon": {
+        "label": "Icon",
+        "title": "Choose your Icon",
+        "blurb": "The Icons watch from beyond the dark water. One walks beside you. Choose, and they will hear your prayers."
+      }
+    }
+  },
 
-  "wizardStep1Title": "Tell your story",
-  "wizardStep1Blurb": "Who are you, when the Madara takes you under her wings? Upbringing decides your starting attribute / skill budgets, reputation and wealth — the rest paints the picture.",
   "wizardNameLabel": "Name",
   "wizardNameHint": "Character name (max 80 characters)",
   "wizardOriginLabel": "Origin",
@@ -136,8 +166,6 @@
   "crewAgents": "Agents",
   "crewPilgrim": "Pilgrims",
 
-  "wizardStep2Title": "Choose your amplua",
-  "wizardStep2Blurb": "Eleven archetypes (амплуа) walk the dark between stars. Pick one — it sets your key attribute, key skills, and reputation modifier.",
   "conceptArtist": "Artist",
   "conceptNetworker": "Networker",
   "conceptFugitive": "Fugitive",
@@ -150,8 +178,6 @@
   "conceptSailor": "Sailor",
   "conceptSoldier": "Soldier",
 
-  "wizardStep3Title": "Choose your role",
-  "wizardStep3Blurb": "Each amplua has three roles. Your role narrows your key skills to the four that fit your specific calling.",
   "wizardRolePlaceholderNoConcept": "Pick an amplua on Step 2 first.",
   "roleCompanion": "Companion",
   "roleMusician": "Musician",
@@ -187,23 +213,15 @@
   "roleMercenary": "Mercenary",
   "roleOfficer": "Officer",
 
-  "wizardStep4Title": "Distribute your attributes",
-  "wizardStep4Blurb": "13 points. Minimum 2, maximum 5 in each attribute.",
   "wizardAttrPointsRemaining": "Points remaining",
 
-  "wizardStep5Title": "Train your skills",
-  "wizardStep5Blurb": "Skill points depend on upbringing — Plebeian 8, Stationary 10, Aristocrat 12. Key skills cap at 3, others at 1.",
   "wizardSkillPointsRemaining": "Points left",
 
-  "wizardStep6Title": "Choose your talents",
-  "wizardStep6Blurb": "Talents are habits forged in the dark between worlds. Pick up to three to start with.",
   "wizardTalentsChosen": "Talents chosen",
   "wizardAddTalent": "＋ Add talent",
   "wizardTalentAffinityLabel": "Icon affinity (optional)",
   "wizardTalentAffinityHint": "e.g. The Traveler",
 
-  "wizardStep7Title": "Choose your Icon",
-  "wizardStep7Blurb": "The Icons watch from beyond the dark water. One walks beside you. Choose, and they will hear your prayers.",
   "iconNameLadyOfTears": "The Lady of Tears",
   "iconNameTraveler": "The Traveler",
   "iconNameMessenger": "The Messenger",

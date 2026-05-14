@@ -87,8 +87,8 @@ class Step5Skills extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               WizardStepHeader(
-                title: t.wizardStep5Title,
-                blurb: t.wizardStep5Blurb,
+                title: t.wizard.step.skills.title,
+                blurb: t.wizard.step.skills.blurb,
               ),
               const SizedBox(height: AppSpacing.s4),
               _SkillSection(

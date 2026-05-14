@@ -46,8 +46,8 @@ class Step4Attributes extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               WizardStepHeader(
-                title: t.wizardStep4Title,
-                blurb: t.wizardStep4Blurb,
+                title: t.wizard.step.attributes.title,
+                blurb: t.wizard.step.attributes.blurb,
               ),
               const SizedBox(height: AppSpacing.s4),
               // ── Point pool banner ──────────────────────────────────────

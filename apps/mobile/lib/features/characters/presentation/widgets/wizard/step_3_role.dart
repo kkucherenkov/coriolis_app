@@ -55,8 +55,8 @@ class Step3Role extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               WizardStepHeader(
-                title: t.wizardStep3Title,
-                blurb: t.wizardStep3Blurb,
+                title: t.wizard.step.role.title,
+                blurb: t.wizard.step.role.blurb,
               ),
               const SizedBox(height: AppSpacing.s6),
               if (concept == null)

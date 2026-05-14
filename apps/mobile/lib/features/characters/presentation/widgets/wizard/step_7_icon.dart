@@ -46,8 +46,8 @@ class Step7Icon extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               WizardStepHeader(
-                title: t.wizardStep7Title,
-                blurb: t.wizardStep7Blurb,
+                title: t.wizard.step.icon.title,
+                blurb: t.wizard.step.icon.blurb,
               ),
               const SizedBox(height: AppSpacing.s6),
               GridView.builder(

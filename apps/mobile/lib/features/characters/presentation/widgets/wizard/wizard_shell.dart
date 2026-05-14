@@ -150,13 +150,13 @@ class _StepLabels extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.t.characters;
     final labels = [
-      t.wizardStep1Label,
-      t.wizardStep2Label,
-      t.wizardStep3Label,
-      t.wizardStep4Label,
-      t.wizardStep5Label,
-      t.wizardStep6Label,
-      t.wizardStep7Label,
+      t.wizard.step.biography.label,
+      t.wizard.step.concept.label,
+      t.wizard.step.role.label,
+      t.wizard.step.attributes.label,
+      t.wizard.step.skills.label,
+      t.wizard.step.talents.label,
+      t.wizard.step.icon.label,
     ];
 
     return Row(

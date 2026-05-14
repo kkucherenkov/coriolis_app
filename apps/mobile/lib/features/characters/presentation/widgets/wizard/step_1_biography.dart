@@ -89,8 +89,8 @@ class _Step1BiographyState extends State<Step1Biography> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 WizardStepHeader(
-                  title: t.wizardStep1Title,
-                  blurb: t.wizardStep1Blurb,
+                  title: t.wizard.step.biography.title,
+                  blurb: t.wizard.step.biography.blurb,
                 ),
                 const SizedBox(height: AppSpacing.s6),
                 // ── Name ───────────────────────────────────────────────────

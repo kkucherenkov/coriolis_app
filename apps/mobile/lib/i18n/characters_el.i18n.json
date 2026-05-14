@@ -109,16 +109,46 @@
   "wizardSaveExit": "[el-todo] Save & exit",
   "wizardForge": "[el-todo] Forge character",
 
-  "wizardStep1Label": "[el-todo] Biography",
-  "wizardStep2Label": "[el-todo] Concept",
-  "wizardStep3Label": "[el-todo] Role",
-  "wizardStep4Label": "[el-todo] Attributes",
-  "wizardStep5Label": "[el-todo] Skills",
-  "wizardStep6Label": "[el-todo] Talents",
-  "wizardStep7Label": "[el-todo] Icon",
+  "wizard": {
+    "step": {
+      "biography": {
+        "label": "[el-todo] Biography",
+        "title": "[el-todo] Tell your story",
+        "blurb": "[el-todo] Who are you, when the Madara takes you under her wings?"
+      },
+      "concept": {
+        "label": "[el-todo] Concept",
+        "title": "[el-todo] Choose your amplua",
+        "blurb": "[el-todo] Eleven archetypes walk the dark between stars. Pick one."
+      },
+      "role": {
+        "label": "[el-todo] Role",
+        "title": "[el-todo] Choose your role",
+        "blurb": "[el-todo] Each amplua has three roles."
+      },
+      "attributes": {
+        "label": "[el-todo] Attributes",
+        "title": "[el-todo] Distribute your attributes",
+        "blurb": "[el-todo] 13 points. Min 2, max 5 each."
+      },
+      "skills": {
+        "label": "[el-todo] Skills",
+        "title": "[el-todo] Train your skills",
+        "blurb": "[el-todo] Skill points depend on upbringing."
+      },
+      "talents": {
+        "label": "[el-todo] Talents",
+        "title": "[el-todo] Choose your talents",
+        "blurb": "[el-todo] Pick up to three starting talents."
+      },
+      "icon": {
+        "label": "[el-todo] Icon",
+        "title": "[el-todo] Choose your Icon",
+        "blurb": "[el-todo] The Icons watch from beyond the dark water."
+      }
+    }
+  },
 
-  "wizardStep1Title": "[el-todo] Tell your story",
-  "wizardStep1Blurb": "[el-todo] Who are you, when the Madara takes you under her wings?",
   "wizardNameLabel": "[el-todo] Name",
   "wizardNameHint": "[el-todo] Character name (max 80 characters)",
   "wizardOriginLabel": "[el-todo] Origin",
@@ -136,8 +166,6 @@
   "crewAgents": "[el-todo] Agents",
   "crewPilgrim": "[el-todo] Pilgrims",
 
-  "wizardStep2Title": "[el-todo] Choose your amplua",
-  "wizardStep2Blurb": "[el-todo] Eleven archetypes walk the dark between stars.",
   "conceptArtist": "[el-todo] Artist",
   "conceptNetworker": "[el-todo] Networker",
   "conceptFugitive": "[el-todo] Fugitive",
@@ -150,8 +178,6 @@
   "conceptSailor": "[el-todo] Sailor",
   "conceptSoldier": "[el-todo] Soldier",
 
-  "wizardStep3Title": "[el-todo] Choose your role",
-  "wizardStep3Blurb": "[el-todo] Each amplua has three roles.",
   "wizardRolePlaceholderNoConcept": "[el-todo] Pick an amplua on Step 2 first.",
   "roleCompanion": "[el-todo] Companion",
   "roleMusician": "[el-todo] Musician",
@@ -187,23 +213,15 @@
   "roleMercenary": "[el-todo] Mercenary",
   "roleOfficer": "[el-todo] Officer",
 
-  "wizardStep4Title": "[el-todo] Distribute your attributes",
-  "wizardStep4Blurb": "[el-todo] 13 points. Minimum 2, maximum 5 in each attribute.",
   "wizardAttrPointsRemaining": "[el-todo] Points remaining",
 
-  "wizardStep5Title": "[el-todo] Train your skills",
-  "wizardStep5Blurb": "[el-todo] Skill points depend on upbringing — Plebeian 8, Stationary 10, Aristocrat 12. Key skills cap at 3, others at 1.",
   "wizardSkillPointsRemaining": "[el-todo] Points left",
 
-  "wizardStep6Title": "[el-todo] Choose your talents",
-  "wizardStep6Blurb": "[el-todo] Pick up to three talents to start with.",
   "wizardTalentsChosen": "[el-todo] Talents chosen",
   "wizardAddTalent": "[el-todo] ＋ Add talent",
   "wizardTalentAffinityLabel": "[el-todo] Icon affinity (optional)",
   "wizardTalentAffinityHint": "[el-todo] e.g. The Traveler",
 
-  "wizardStep7Title": "[el-todo] Choose your Icon",
-  "wizardStep7Blurb": "[el-todo] The Icons watch from beyond the dark water.",
   "iconNameLadyOfTears": "[el-todo] The Lady of Tears",
   "iconNameTraveler": "[el-todo] The Traveler",
   "iconNameMessenger": "[el-todo] The Messenger",
