@@ -15,9 +15,13 @@ import 'package:app_api_client/app_api_client.dart' as api_client
         EncountersApi,
         Encounter,
         Combatant,
+        CombatantCreate,
+        CombatantType,
+        CombatantUpdate,
         EncounterStatus,
         EncounterUpdate,
         EncounterUpdateBuilder;
+import 'package:built_collection/built_collection.dart';
 
 import 'package:coriolis_companion/features/combat/domain/combat_repository.dart';
 import 'package:coriolis_companion/features/combat/domain/combatant.dart';
@@ -112,6 +116,48 @@ class CombatRepositoryImpl implements CombatRepository {
       round: result.round,
       isNewRound: result.isNewRound,
     );
+  }
+
+  @override
+  Future<Combatant> addPcCombatant({
+    required String encounterId,
+    required String characterId,
+  }) async {
+    final body = api_client.CombatantCreate((b) => b
+      ..combatantType = api_client.CombatantType.pc
+      ..sourceId = characterId);
+    final res = await _api.addCombatant(
+      id: encounterId,
+      combatantCreate: body,
+    );
+    final created = res.data;
+    if (created == null) {
+      throw StateError('addCombatant returned empty body');
+    }
+    return _combatantToDomain(created);
+  }
+
+  @override
+  Future<void> deleteCombatant(String combatantId) async {
+    await _api.deleteCombatant(id: combatantId);
+  }
+
+  @override
+  Future<Combatant> setStatusFlags({
+    required String combatantId,
+    required List<String> flags,
+  }) async {
+    final body = api_client.CombatantUpdate((b) => b
+      ..statusFlags = ListBuilder<String>(flags));
+    final res = await _api.updateCombatant(
+      id: combatantId,
+      combatantUpdate: body,
+    );
+    final updated = res.data;
+    if (updated == null) {
+      throw StateError('updateCombatant returned empty body');
+    }
+    return _combatantToDomain(updated);
   }
 
   @override

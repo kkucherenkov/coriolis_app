@@ -408,4 +408,128 @@ void main() {
       verifyNever(() => repo.rollInitiative(any<String>()));
     },
   );
+
+  // ── addPcCombatant ────────────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'addPcCombatant dispatches and reloads',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.addPcCombatant(
+            encounterId: any(named: 'encounterId'),
+            characterId: any(named: 'characterId'),
+          )).thenAnswer((_) async => _combatants.first);
+      await cubit.load(_sessionId);
+      await cubit.addPcCombatant('char-99');
+    },
+    verify: (_) {
+      verify(() => repo.addPcCombatant(
+            encounterId: _activeEncounter.id,
+            characterId: 'char-99',
+          )).called(1);
+      verify(() => repo.listEncounters(_sessionId)).called(2);
+    },
+  );
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'addPcCombatant failure keeps Ready and surfaces actionError',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.addPcCombatant(
+            encounterId: any(named: 'encounterId'),
+            characterId: any(named: 'characterId'),
+          )).thenThrow(StateError('409 already in encounter'));
+      await cubit.load(_sessionId);
+      await cubit.addPcCombatant('char-99');
+    },
+    verify: (cubit) {
+      final s = cubit.state as ActiveCombatReady;
+      expect(s.actionError, contains('409 already in encounter'));
+      expect(s.actionInFlight, isFalse);
+    },
+  );
+
+  // ── removeCombatant ───────────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'removeCombatant dispatches and reloads',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.deleteCombatant(any<String>()))
+          .thenAnswer((_) async {});
+      await cubit.load(_sessionId);
+      await cubit.removeCombatant('cbt-1');
+    },
+    verify: (_) {
+      verify(() => repo.deleteCombatant('cbt-1')).called(1);
+    },
+  );
+
+  // ── toggleCanonicalFlag ───────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'toggleCanonicalFlag adds the flag when absent',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.setStatusFlags(
+            combatantId: any(named: 'combatantId'),
+            flags: any(named: 'flags'),
+          )).thenAnswer((_) async => _combatants.first);
+      await cubit.load(_sessionId);
+      // cbt-1 has no statusFlags; toggling 'prone' should add it.
+      await cubit.toggleCanonicalFlag(
+        combatantId: 'cbt-1',
+        flag: 'prone',
+      );
+    },
+    verify: (_) {
+      verify(() => repo.setStatusFlags(
+            combatantId: 'cbt-1',
+            flags: ['prone'],
+          )).called(1);
+    },
+  );
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'toggleCanonicalFlag removes the flag when present',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.setStatusFlags(
+            combatantId: any(named: 'combatantId'),
+            flags: any(named: 'flags'),
+          )).thenAnswer((_) async => _combatants[1]);
+      await cubit.load(_sessionId);
+      // cbt-2 starts with ['prone']; toggling 'prone' should remove it.
+      await cubit.toggleCanonicalFlag(
+        combatantId: 'cbt-2',
+        flag: 'prone',
+      );
+    },
+    verify: (_) {
+      verify(() => repo.setStatusFlags(
+            combatantId: 'cbt-2',
+            flags: <String>[],
+          )).called(1);
+    },
+  );
 }

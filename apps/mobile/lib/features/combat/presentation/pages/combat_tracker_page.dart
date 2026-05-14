@@ -2,7 +2,10 @@ import 'package:app_ui/app_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:coriolis_companion/features/characters/domain/character_repository.dart';
+import 'package:coriolis_companion/features/characters/domain/character_summary.dart';
 import 'package:coriolis_companion/features/combat/domain/combatant.dart';
+import 'package:coriolis_companion/shared/di/injector.dart';
 import 'package:coriolis_companion/features/combat/domain/encounter.dart';
 import 'package:coriolis_companion/features/combat/presentation/blocs/active_combat/active_combat_cubit.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
@@ -33,6 +36,7 @@ class CombatTrackerPage extends StatelessWidget {
     required this.sessionId,
     required this.isGm,
     required this.dpCount,
+    this.sessionCharacterIds = const [],
     this.cubitFactory,
     this.cubitOverride,
   });
@@ -48,6 +52,10 @@ class CombatTrackerPage extends StatelessWidget {
   /// on the session detail page.
   final int dpCount;
 
+  /// Character ids assigned to the parent session. The Add-Combatant picker
+  /// filters the user's character list by this set.
+  final List<String> sessionCharacterIds;
+
   /// Factory used in production to obtain a fresh cubit and trigger the
   /// initial load. `routes.dart` passes one that calls into `getIt`.
   final ActiveCombatCubit Function()? cubitFactory;
@@ -62,6 +70,7 @@ class CombatTrackerPage extends StatelessWidget {
       sessionId: sessionId,
       isGm: isGm,
       dpCount: dpCount,
+      sessionCharacterIds: sessionCharacterIds,
     );
     if (cubitOverride != null) {
       return BlocProvider<ActiveCombatCubit>.value(
@@ -87,11 +96,13 @@ class _CombatTrackerView extends StatelessWidget {
     required this.sessionId,
     required this.isGm,
     required this.dpCount,
+    required this.sessionCharacterIds,
   });
 
   final String sessionId;
   final bool isGm;
   final int dpCount;
+  final List<String> sessionCharacterIds;
 
   @override
   Widget build(BuildContext context) {
@@ -140,9 +151,27 @@ class _CombatTrackerView extends StatelessWidget {
                   ),
                 ),
               ),
+              // Add Combatant action — GM-gated; hidden once the encounter
+              // has ended (it would 422). Live for both setup and active
+              // statuses since the server allows roster mutations through
+              // both before initiative is rolled and during play.
+              if (isGm &&
+                  encounter != null &&
+                  encounter.state != 'ended')
+                IconButton(
+                  key: const Key('tracker-add-combatant'),
+                  icon: const Icon(Icons.person_add_alt_1_outlined,
+                      color: AppColors.brandBrassLight),
+                  tooltip: t.addCombatantTooltip,
+                  onPressed: () => _openAddCombatant(context),
+                ),
             ],
           ),
-          body: _Body(state: state, sessionId: sessionId),
+          body: _Body(
+            state: state,
+            sessionId: sessionId,
+            isGm: isGm,
+          ),
           bottomNavigationBar: encounter == null
               ? null
               : _StickyToolbar(
@@ -156,15 +185,40 @@ class _CombatTrackerView extends StatelessWidget {
       },
     );
   }
+
+  Future<void> _openAddCombatant(BuildContext context) async {
+    final cubit = context.read<ActiveCombatCubit>();
+    final state = cubit.state;
+    if (state is! ActiveCombatReady) return;
+    final existingSourceIds = {
+      for (final c in state.snapshot.combatants) c.sourceId,
+    };
+    final pick = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: AppColors.surfaceNight,
+      isScrollControlled: true,
+      builder: (_) => _AddCombatantSheet(
+        sessionCharacterIds: sessionCharacterIds,
+        existingSourceIds: existingSourceIds,
+      ),
+    );
+    if (pick == null || !context.mounted) return;
+    await cubit.addPcCombatant(pick);
+  }
 }
 
 // ── Body ─────────────────────────────────────────────────────────────────────
 
 class _Body extends StatelessWidget {
-  const _Body({required this.state, required this.sessionId});
+  const _Body({
+    required this.state,
+    required this.sessionId,
+    required this.isGm,
+  });
 
   final ActiveCombatState state;
   final String sessionId;
+  final bool isGm;
 
   @override
   Widget build(BuildContext context) {
@@ -245,6 +299,7 @@ class _Body extends StatelessWidget {
           encounter: ready.snapshot.encounter,
           combatants: ready.snapshot.combatants,
           actionError: ready.actionError,
+          isGm: isGm,
         ),
     };
   }
@@ -255,11 +310,13 @@ class _ReadyBody extends StatelessWidget {
     required this.encounter,
     required this.combatants,
     required this.actionError,
+    required this.isGm,
   });
 
   final Encounter encounter;
   final List<Combatant> combatants;
   final String? actionError;
+  final bool isGm;
 
   @override
   Widget build(BuildContext context) {
@@ -310,6 +367,8 @@ class _ReadyBody extends StatelessWidget {
                   _CombatantRow(
                     combatant: combatant,
                     isActive: combatant.id == encounter.activeCombatantId,
+                    isGm: isGm,
+                    encounterEnded: encounter.state == 'ended',
                   ),
                   if (combatant != sorted.last)
                     const Divider(
@@ -329,10 +388,19 @@ class _ReadyBody extends StatelessWidget {
 // ── Combatant row ───────────────────────────────────────────────────────────
 
 class _CombatantRow extends StatelessWidget {
-  const _CombatantRow({required this.combatant, required this.isActive});
+  const _CombatantRow({
+    required this.combatant,
+    required this.isActive,
+    required this.isGm,
+    required this.encounterEnded,
+  });
 
   final Combatant combatant;
   final bool isActive;
+  final bool isGm;
+  final bool encounterEnded;
+
+  static const _canonicalFlags = <String>['incapacitated', 'prone', 'covered'];
 
   @override
   Widget build(BuildContext context) {
@@ -357,6 +425,9 @@ class _CombatantRow extends StatelessWidget {
               color: AppColors.textSecondary,
             ),
           );
+
+    final canEditFlags = isGm && !encounterEnded;
+    final canRemove = isGm && !encounterEnded;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.s2),
@@ -415,19 +486,47 @@ class _CombatantRow extends StatelessWidget {
                     ],
                   ],
                 ),
-                if (combatant.statusFlags.isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.s1),
-                  Wrap(
-                    spacing: AppSpacing.s1,
-                    runSpacing: 2,
-                    children: combatant.statusFlags
-                        .map((f) => _StatusFlag(flag: f))
-                        .toList(growable: false),
-                  ),
-                ],
+                const SizedBox(height: AppSpacing.s1),
+                Wrap(
+                  spacing: AppSpacing.s1,
+                  runSpacing: 2,
+                  children: [
+                    // Canonical toggleable chips (GM only). Players see the
+                    // current set in the same chips but they're inert.
+                    for (final flag in _canonicalFlags)
+                      _StatusFlag(
+                        key: Key(
+                            'tracker-combatant-${combatant.id}-flag-$flag'),
+                        flag: flag,
+                        active: combatant.statusFlags.contains(flag),
+                        onTap: canEditFlags
+                            ? () => context
+                                .read<ActiveCombatCubit>()
+                                .toggleCanonicalFlag(
+                                  combatantId: combatant.id,
+                                  flag: flag,
+                                )
+                            : null,
+                      ),
+                    // Free-form server-side flags surface as inert chips.
+                    for (final freeform in combatant.statusFlags
+                        .where((f) => !_canonicalFlags.contains(f)))
+                      _StatusFlag(flag: freeform, active: true),
+                  ],
+                ),
               ],
             ),
           ),
+          if (canRemove)
+            IconButton(
+              key: Key('tracker-combatant-${combatant.id}-remove'),
+              icon: const Icon(Icons.delete_outline,
+                  color: AppColors.stateCrimsonBright, size: 18),
+              tooltip: t.removeCombatantTooltip,
+              onPressed: () => context
+                  .read<ActiveCombatCubit>()
+                  .removeCombatant(combatant.id),
+            ),
         ],
       ),
     );
@@ -479,9 +578,23 @@ class _StatLabel extends StatelessWidget {
 }
 
 class _StatusFlag extends StatelessWidget {
-  const _StatusFlag({required this.flag});
+  const _StatusFlag({
+    super.key,
+    required this.flag,
+    this.active = true,
+    this.onTap,
+  });
 
   final String flag;
+
+  /// When false the chip renders muted to indicate the flag is not set
+  /// on the current combatant — used for the canonical-flag toggle chips
+  /// that always appear in the row, even when inactive.
+  final bool active;
+
+  /// Tap callback. When null the chip is inert (player viewer, or a
+  /// free-form chip that doesn't toggle).
+  final VoidCallback? onTap;
 
   static const _canonicalIcons = <String, IconData>{
     'incapacitated': Icons.personal_injury_outlined,
@@ -501,42 +614,53 @@ class _StatusFlag extends StatelessWidget {
       _ => flag,
     };
 
+    final color = active
+        ? AppColors.stateCrimsonBright
+        : AppColors.brandBrassDeep;
+    final bg = active
+        ? AppColors.stateCrimson.withValues(alpha: 0.12)
+        : AppColors.surfaceNight.withValues(alpha: 0.4);
+    final borderColor = active
+        ? AppColors.stateCrimson
+        : AppColors.brandBrassDeep;
+
+    final chip = Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.s2,
+        vertical: 2,
+      ),
+      decoration: BoxDecoration(
+        color: bg,
+        border: Border.all(color: borderColor),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 11, color: color),
+            const SizedBox(width: 3),
+          ],
+          Text(
+            label,
+            style: AppTypography.bodySm.copyWith(
+              fontSize: 11,
+              color: color,
+              fontWeight: AppFontWeight.medium,
+              height: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+
     return Semantics(
       label: t.semanticsStatusPrefix(flag: label),
       excludeSemantics: true,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.s2,
-          vertical: 2,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.stateCrimson.withValues(alpha: 0.12),
-          border: Border.all(color: AppColors.stateCrimson),
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(
-                icon,
-                size: 11,
-                color: AppColors.stateCrimsonBright,
-              ),
-              const SizedBox(width: 3),
-            ],
-            Text(
-              label,
-              style: AppTypography.bodySm.copyWith(
-                fontSize: 11,
-                color: AppColors.stateCrimsonBright,
-                fontWeight: AppFontWeight.medium,
-                height: 1,
-              ),
-            ),
-          ],
-        ),
-      ),
+      button: onTap != null,
+      child: onTap == null
+          ? chip
+          : GestureDetector(onTap: onTap, child: chip),
     );
   }
 }
@@ -666,3 +790,131 @@ class _StickyToolbar extends StatelessWidget {
     }
   }
 }
+
+// ── Add Combatant sheet ────────────────────────────────────────────────────
+
+class _AddCombatantSheet extends StatefulWidget {
+  const _AddCombatantSheet({
+    required this.sessionCharacterIds,
+    required this.existingSourceIds,
+  });
+
+  /// Character ids assigned to the session; the picker only surfaces these.
+  /// Empty list means "show all of the user's characters" — useful when
+  /// the tracker was opened without session context.
+  final List<String> sessionCharacterIds;
+
+  /// `sourceId`s already attached to the encounter; filtered out so each
+  /// character can only be added once.
+  final Set<String> existingSourceIds;
+
+  @override
+  State<_AddCombatantSheet> createState() => _AddCombatantSheetState();
+}
+
+class _AddCombatantSheetState extends State<_AddCombatantSheet> {
+  late final Future<List<CharacterSummary>> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    // Reach into DI directly — see the matching pattern in
+    // `ShipSheetPage._CrewPickerSheet`. Keeps the page-level test
+    // harness off the broken `character_repository_impl` graph.
+    _future = _loadCharacters();
+  }
+
+  Future<List<CharacterSummary>> _loadCharacters() async {
+    return getIt<CharacterRepository>().list(limit: 200);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t.combat;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.s4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              t.addCombatantTitle,
+              style: AppTypography.bodyLg
+                  .copyWith(color: AppColors.brandBrassLight),
+            ),
+            const SizedBox(height: AppSpacing.s3),
+            FutureBuilder<List<CharacterSummary>>(
+              future: _future,
+              builder: (context, snap) {
+                if (!snap.hasData &&
+                    snap.connectionState != ConnectionState.done) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(AppSpacing.s4),
+                      child: CircularProgressIndicator(
+                          color: AppColors.brandBrass),
+                    ),
+                  );
+                }
+                if (snap.hasError) {
+                  return Text(
+                    snap.error.toString(),
+                    style: AppTypography.bodySm.copyWith(
+                      color: AppColors.stateCrimsonBright,
+                    ),
+                  );
+                }
+                final chars = snap.data ?? const <CharacterSummary>[];
+                final sessionFilter = widget.sessionCharacterIds.toSet();
+                final pickable = chars
+                    .where((c) =>
+                        sessionFilter.isEmpty ||
+                        sessionFilter.contains(c.id))
+                    .where((c) => !widget.existingSourceIds.contains(c.id))
+                    .toList();
+                if (pickable.isEmpty) {
+                  return Text(
+                    t.addCombatantEmpty,
+                    style: AppTypography.bodySm
+                        .copyWith(color: AppColors.textSecondary),
+                  );
+                }
+                return ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 480),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: pickable.length,
+                    itemBuilder: (ctx, i) {
+                      final c = pickable[i];
+                      return ListTile(
+                        key: Key('tracker-add-pick-${c.id}'),
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          c.name,
+                          style: AppTypography.bodyMd
+                              .copyWith(color: AppColors.textPrimary),
+                        ),
+                        onTap: () => Navigator.of(context).pop(c.id),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: AppSpacing.s3),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(t.addCombatantCancel),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

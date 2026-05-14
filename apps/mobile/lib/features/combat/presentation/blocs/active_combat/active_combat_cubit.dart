@@ -101,6 +101,73 @@ class ActiveCombatCubit extends Cubit<ActiveCombatState> {
     }
   }
 
+  /// Adds a PC combatant to the active encounter and reloads.
+  Future<void> addPcCombatant(String characterId) async {
+    final current = state;
+    if (current is! ActiveCombatReady) return;
+    emit(current.copyWith(actionInFlight: true, actionError: null));
+    try {
+      await _repository.addPcCombatant(
+        encounterId: current.snapshot.encounter.id,
+        characterId: characterId,
+      );
+      if (_sessionId != null) {
+        await load(_sessionId!);
+      }
+    } on Object catch (e) {
+      emit(current.copyWith(actionInFlight: false, actionError: e.toString()));
+    }
+  }
+
+  /// Removes [combatantId] from the active encounter and reloads.
+  Future<void> removeCombatant(String combatantId) async {
+    final current = state;
+    if (current is! ActiveCombatReady) return;
+    emit(current.copyWith(actionInFlight: true, actionError: null));
+    try {
+      await _repository.deleteCombatant(combatantId);
+      if (_sessionId != null) {
+        await load(_sessionId!);
+      }
+    } on Object catch (e) {
+      emit(current.copyWith(actionInFlight: false, actionError: e.toString()));
+    }
+  }
+
+  /// Toggles [flag] on the named combatant. Reads the current flag set from
+  /// [snapshot] so the caller doesn't have to thread it through; the server
+  /// receives the full replaced list per the spec.
+  Future<void> toggleCanonicalFlag({
+    required String combatantId,
+    required String flag,
+  }) async {
+    final current = state;
+    if (current is! ActiveCombatReady) return;
+    final target = current.snapshot.combatants
+        .where((c) => c.id == combatantId)
+        .firstOrNull;
+    if (target == null) return;
+    final present = target.statusFlags.contains(flag);
+    final next = present
+        ? [
+            for (final f in target.statusFlags)
+              if (f != flag) f,
+          ]
+        : [...target.statusFlags, flag];
+    emit(current.copyWith(actionInFlight: true, actionError: null));
+    try {
+      await _repository.setStatusFlags(
+        combatantId: combatantId,
+        flags: next,
+      );
+      if (_sessionId != null) {
+        await load(_sessionId!);
+      }
+    } on Object catch (e) {
+      emit(current.copyWith(actionInFlight: false, actionError: e.toString()));
+    }
+  }
+
   /// Closes the encounter (`status → ended`). Once successful the tracker
   /// reloads and lands on [ActiveCombatEmpty] since the previously-active
   /// encounter is no longer in `active` status.

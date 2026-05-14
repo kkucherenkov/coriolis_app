@@ -57,11 +57,17 @@ class CombatTrackerArgs {
     required this.sessionId,
     required this.isGm,
     required this.dpCount,
+    this.sessionCharacterIds = const [],
   });
 
   final String sessionId;
   final bool isGm;
   final int dpCount;
+
+  /// Character ids assigned to the parent session. The Add-Combatant picker
+  /// filters the user's character list by this set so the GM only sees PCs
+  /// that actually belong in this session. Empty list disables the filter.
+  final List<String> sessionCharacterIds;
 }
 
 /// Route factory — maps route names to screen widgets.
@@ -176,6 +182,7 @@ Route<dynamic>? onGenerateRoute(RouteSettings settings) {
         sessionId: args.sessionId,
         isGm: args.isGm,
         dpCount: args.dpCount,
+        sessionCharacterIds: args.sessionCharacterIds,
         cubitFactory: () => getIt<ActiveCombatCubit>(),
       ),
       settings: settings,

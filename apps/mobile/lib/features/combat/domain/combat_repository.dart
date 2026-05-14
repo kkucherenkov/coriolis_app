@@ -37,6 +37,23 @@ abstract class CombatRepository {
 
   /// Closes the encounter (`status → ended`). Returns the updated encounter.
   Future<Encounter> endEncounter(String encounterId);
+
+  /// Adds a player-character combatant to [encounterId] from
+  /// [characterId] (must be one of the caller's own characters).
+  Future<Combatant> addPcCombatant({
+    required String encounterId,
+    required String characterId,
+  });
+
+  /// Removes [combatantId] from its encounter.
+  Future<void> deleteCombatant(String combatantId);
+
+  /// Replaces the full status-flag set on [combatantId]. Empty list clears
+  /// all flags.
+  Future<Combatant> setStatusFlags({
+    required String combatantId,
+    required List<String> flags,
+  });
 }
 
 /// Domain projection of `InitiativeRollResult`. Keeps the presentation layer

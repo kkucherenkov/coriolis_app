@@ -230,6 +230,7 @@ class _DetailContentState extends State<_DetailContent> {
           sessionId: s.id,
           isGm: widget.isGm,
           dpCount: s.dpCount,
+          sessionCharacterIds: s.characterIds,
         ),
         const SizedBox(height: 12),
         _CharactersCard(characterIds: s.characterIds),
@@ -479,11 +480,13 @@ class _OpenTrackerButton extends StatelessWidget {
     required this.sessionId,
     required this.isGm,
     required this.dpCount,
+    required this.sessionCharacterIds,
   });
 
   final String sessionId;
   final bool isGm;
   final int dpCount;
+  final List<String> sessionCharacterIds;
 
   @override
   Widget build(BuildContext context) {
@@ -498,6 +501,7 @@ class _OpenTrackerButton extends StatelessWidget {
             sessionId: sessionId,
             isGm: isGm,
             dpCount: dpCount,
+            sessionCharacterIds: sessionCharacterIds,
           ),
         ),
         icon: const Icon(Icons.open_in_full),
