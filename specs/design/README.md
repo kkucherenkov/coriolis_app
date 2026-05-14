@@ -57,7 +57,16 @@ CSS custom properties: `--<group>-<name>` (e.g. `--surface-void`,
 ### Typography (`typography.json`)
 
 Three families: **Forum** (display), **Inter** (body), **JetBrains Mono**
-(numeric). See DESIGN §3.
+(numeric). See DESIGN §3. Schema rationale:
+[`docs/adr/0004-typography-token-schema.md`](../../docs/adr/0004-typography-token-schema.md).
+
+Composite roles reference an **atom layer** under `font.{size,line-height,tracking}`
+via DTCG `{font.size.16}` syntax — adding a new role no longer requires
+hand-copying literals. Atoms:
+
+- `font.size.{9,10,11,12,13,14,15,16,18,20,24,28,32,36,40,44,48,56,64}` — px scale
+- `font.line-height.{tight,snug,normal,relaxed,loose}` — ratios 1.1 / 1.25 / 1.4 / 1.5 / 1.6
+- `font.tracking.{tight,normal,04,06,08,10,12,14,16,18,20,30}` — em scale
 
 Composite type roles emit decomposed CSS custom properties under
 `--type-<role>-{font-family,font-size,line-height,font-weight,letter-spacing}`
@@ -72,8 +81,17 @@ Composite type roles emit decomposed CSS custom properties under
 | `body-lg`      | Inter          | 18 / 28     | 400    | normal           |
 | `body-md`      | Inter          | 16 / 24     | 400    | normal           |
 | `body-sm`      | Inter          | 14 / 20     | 500    | normal           |
+| `body-xs`      | Inter          | 12 / 1.4    | 400    | normal           |
+| `label-sm`     | Inter          | 12 / 1.4    | 500    | 0.06em uppercase |
 | `mono-stat-xl` | JetBrains Mono | 32 / 32     | 700    | normal           |
 | `mono-stat-md` | JetBrains Mono | 20 / 24     | 500    | normal           |
+
+#### Handoff vocabulary (deferred)
+
+The handoff bundle uses `display-{hero,title,section}` / `body-{default,small}` /
+`eyebrow` / `label` / `numeric-stat`. We kept project-canonical role names to
+avoid a 50-file rename + visible visual diff alongside a schema change. See
+ADR-0004 §_Alternatives considered_ for the rationale and gap log.
 
 ### Spacing (`spacing.json`)
 
@@ -180,11 +198,13 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 | Primitive   | `AppKbd`             | ✓               | —                  |
 | Primitive   | `AppLabel`           | ✓               | —                  |
 | Composition | `AppMobileDrawer`    | ✓               | —                  |
+| Coriolis    | `AppPanelTitle`      | ✓               | ✓                  |
 | Primitive   | `AppProgress`        | ✓               | —                  |
 | Coriolis    | `AppSavePulse`       | ✓               | ✓                  |
 | Primitive   | `AppSegControl`      | ✓               | —                  |
 | Primitive   | `AppSelect`          | ✓               | —                  |
 | Coriolis    | `AppStarOrnament`    | ✓               | —                  |
+| Coriolis    | `AppSwash`           | ✓               | ✓                  |
 | Primitive   | `AppSwitch`          | ✓               | —                  |
 | Primitive   | `AppTab`             | ✓               | —                  |
 | Primitive   | `AppTextarea`        | ✓               | —                  |
