@@ -26,7 +26,7 @@ LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05
   - [x] author `specs/design/CONTENT.md` — landed 2026-05-14 (block 2)
   - [x] backfill `FOUNDATIONS.md` — landed 2026-05-14 (block 3)
   - [x] extract canonical `A11Y.md` — landed 2026-05-14 (block 4)
-  - [ ] add I18N design layer + resolve Forum-Cyrillic conflict
+  - [x] add I18N design layer + resolve Forum-Cyrillic conflict — landed 2026-05-14 (block 5)
   - [ ] update `specs/design/README.md` reading order + gap log
 - Status: in_progress
 - Blockers: —
