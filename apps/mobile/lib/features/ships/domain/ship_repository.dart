@@ -12,6 +12,21 @@ abstract class ShipRepository {
   /// Fetches the full ship DTO for [id].
   Future<Ship> get(String id);
 
+  /// Creates a new ship for the current user.
+  ///
+  /// Only `name` and `shipClass` are required by the server; `model` and
+  /// `registry` are optional flavour fields. Hull / energy / armor / etc.
+  /// default to the class baseline on the server side.
+  ///
+  /// [shipClass] must be a wire-form `ShipClass` enum value (kebab-case),
+  /// e.g. `light-freighter`, `fighter`, `gunboat`.
+  Future<Ship> create({
+    required String name,
+    required String shipClass,
+    String? model,
+    String? registry,
+  });
+
   /// Partially updates the ship identified by [id]. All fields optional;
   /// only the supplied keys are sent in the PATCH body.
   Future<Ship> update(

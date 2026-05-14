@@ -29,6 +29,15 @@ class ShipsListPage extends StatelessWidget {
 class _ShipsListView extends StatelessWidget {
   const _ShipsListView();
 
+  Future<void> _openCreate(BuildContext context) async {
+    final cubit = context.read<ShipsListCubit>();
+    await Navigator.of(context).pushNamed(AppRoutes.shipsNew);
+    // We come back here through Navigator.pop after either user-cancel or
+    // the ship sheet's own back gesture — refresh either way so a freshly
+    // created ship lands in the list immediately.
+    await cubit.refresh();
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = context.t.ships;
@@ -40,6 +49,14 @@ class _ShipsListView extends StatelessWidget {
           t.title,
           style: AppTypography.displaySm.copyWith(color: AppColors.brandBrass),
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        key: const Key('ships-list-fab-new'),
+        backgroundColor: AppColors.brandBrass,
+        foregroundColor: AppColors.surfaceVoid,
+        onPressed: () => _openCreate(context),
+        icon: const Icon(Icons.add),
+        label: Text(t.fabNew),
       ),
       body: BlocBuilder<ShipsListCubit, ShipsListState>(
         builder: (context, state) {
@@ -56,7 +73,7 @@ class _ShipsListView extends StatelessWidget {
             );
           }
           if (state.isEmpty) {
-            return const _EmptyView();
+            return _EmptyView(onCreate: () => _openCreate(context));
           }
           return RefreshIndicator(
             color: AppColors.brandBrass,
@@ -153,7 +170,9 @@ String _humaniseClass(String cls) => cls
     .join(' ');
 
 class _EmptyView extends StatelessWidget {
-  const _EmptyView();
+  const _EmptyView({required this.onCreate});
+
+  final VoidCallback onCreate;
 
   @override
   Widget build(BuildContext context) {
@@ -183,6 +202,13 @@ class _EmptyView extends StatelessWidget {
                 style: AppTypography.bodySm
                     .copyWith(color: AppColors.textSecondary),
                 textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.s4),
+              AppButton(
+                key: const Key('ships-list-empty-cta'),
+                label: t.emptyCta,
+                onPressed: onCreate,
+                variant: AppButtonVariant.primary,
               ),
             ],
           ),

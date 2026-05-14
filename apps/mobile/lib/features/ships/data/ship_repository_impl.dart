@@ -1,6 +1,8 @@
 import 'package:app_api_client/app_api_client.dart'
     show
         ShipsApi,
+        ShipClass,
+        ShipCreate,
         ShipUpdate,
         ShipUpdateHull,
         ShipModule,
@@ -139,6 +141,24 @@ class ShipRepositoryImpl implements ShipRepository {
     final response = await _api.getShip(id: id);
     final body = response.data;
     if (body == null) throw StateError('Empty response for ship $id');
+    return _toDomain(body);
+  }
+
+  @override
+  Future<Ship> create({
+    required String name,
+    required String shipClass,
+    String? model,
+    String? registry,
+  }) async {
+    final payload = ShipCreate((b) => b
+      ..name = name
+      ..class_ = ShipClass.valueOf(shipClass)
+      ..model = model
+      ..registry = registry);
+    final response = await _api.createShip(shipCreate: payload);
+    final body = response.data;
+    if (body == null) throw StateError('Empty response after create');
     return _toDomain(body);
   }
 

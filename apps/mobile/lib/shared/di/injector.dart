@@ -31,6 +31,7 @@ import 'package:coriolis_companion/features/sessions/presentation/blocs/session_
 import 'package:coriolis_companion/features/sessions/presentation/blocs/sessions_list/sessions_list_cubit.dart';
 import 'package:coriolis_companion/features/ships/data/ship_repository_impl.dart';
 import 'package:coriolis_companion/features/ships/domain/ship_repository.dart';
+import 'package:coriolis_companion/features/ships/presentation/blocs/ship_create/ship_create_cubit.dart';
 import 'package:coriolis_companion/features/ships/presentation/blocs/ship_sheet/ship_sheet_cubit.dart';
 import 'package:coriolis_companion/features/ships/presentation/blocs/ships_list/ships_list_cubit.dart';
 import 'package:coriolis_companion/shared/auth/token_storage.dart';
@@ -128,6 +129,9 @@ void configureDependencies() {
     )
     ..registerFactory<ShipSheetCubit>(
       () => ShipSheetCubit(repository: getIt<ShipRepository>()),
+    )
+    ..registerFactory<ShipCreateCubit>(
+      () => ShipCreateCubit(repository: getIt<ShipRepository>()),
     );
 
   // ── Cubit factories ─────────────────────────────────────────────────────

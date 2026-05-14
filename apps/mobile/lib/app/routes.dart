@@ -12,6 +12,8 @@ import 'package:coriolis_companion/features/sessions/presentation/pages/session_
 import 'package:coriolis_companion/shared/di/injector.dart';
 import 'package:coriolis_companion/features/sessions/presentation/pages/sessions_list_page.dart';
 import 'package:coriolis_companion/features/settings/presentation/settings_screen.dart';
+import 'package:coriolis_companion/features/ships/presentation/blocs/ship_create/ship_create_cubit.dart';
+import 'package:coriolis_companion/features/ships/presentation/pages/ship_create_page.dart';
 import 'package:coriolis_companion/features/ships/presentation/pages/ship_sheet_page.dart';
 import 'package:coriolis_companion/features/ships/presentation/pages/ships_list_page.dart';
 
@@ -37,6 +39,9 @@ abstract class AppRoutes {
 
   // Ships feature.
   static const ships = '/app/ships';
+
+  /// Create flow — pushed from the ships-list FAB.
+  static const shipsNew = '/app/ships/new';
 
   /// Detail route: pass the ship id as a [RouteSettings.arguments] String.
   static const shipDetail = '/app/ships/detail';
@@ -141,6 +146,15 @@ Route<dynamic>? onGenerateRoute(RouteSettings settings) {
   if (name == AppRoutes.ships) {
     return MaterialPageRoute<void>(
       builder: (_) => const ShipsListPage(),
+      settings: settings,
+    );
+  }
+
+  if (name == AppRoutes.shipsNew) {
+    return MaterialPageRoute<void>(
+      builder: (_) => ShipCreatePage(
+        cubitFactory: () => getIt<ShipCreateCubit>(),
+      ),
       settings: settings,
     );
   }
