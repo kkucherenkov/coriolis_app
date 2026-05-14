@@ -9,9 +9,9 @@ import 'package:coriolis_companion/i18n/strings.g.dart';
 /// Persistent chrome for the character creation wizard.
 ///
 /// Renders:
-/// - A brass progress bar underneath the AppBar showing step N/6.
+/// - A brass progress bar underneath the AppBar showing step N/7.
 /// - A [PageView] body hosting the step widget supplied by the parent.
-/// - A bottom navigation row: Back | Save & exit | Next (or Forge on step 6).
+/// - A bottom navigation row: Back | Save & exit | Next (or Forge on step 7).
 ///
 /// Navigation logic (next/back) is delegated to [CharacterWizardCubit].
 /// The [onSaveAndExit] callback lets the parent navigate to the dashboard
@@ -62,7 +62,7 @@ class WizardShell extends StatelessWidget {
             // ── Progress bar ──────────────────────────────────────────────
             AppProgress(
               value: state.step.toDouble(),
-              max: 6.0,
+              max: 7.0,
               size: AppProgressSize.sm,
               semanticLabel: t.wizardProgressLabel,
             ),
@@ -91,7 +91,7 @@ class WizardShell extends StatelessWidget {
                   ? () => context.read<CharacterWizardCubit>().back()
                   : null,
               onSaveAndExit: onSaveAndExit,
-              onNext: state.step < 6
+              onNext: state.step < 7
                   ? () async {
                       final ok =
                           await context.read<CharacterWizardCubit>().next();
@@ -100,7 +100,7 @@ class WizardShell extends StatelessWidget {
                       }
                     }
                   : null,
-              onForge: state.step == 6
+              onForge: state.step == 7
                   ? () async {
                       final character =
                           await context.read<CharacterWizardCubit>().forge();
@@ -156,6 +156,7 @@ class _StepLabels extends StatelessWidget {
       t.wizardStep4Label,
       t.wizardStep5Label,
       t.wizardStep6Label,
+      t.wizardStep7Label,
     ];
 
     return Row(

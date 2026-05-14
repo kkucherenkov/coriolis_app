@@ -4,7 +4,17 @@ import 'package:coriolis_companion/features/characters/domain/character.dart';
 import 'package:coriolis_companion/features/characters/domain/character_repository.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
 
-/// Manages the six-step character creation wizard.
+/// Manages the seven-step character creation wizard.
+///
+/// Canonical step order (per
+/// [`specs/design/CHARACTER_WIZARD.md`](../../../../../../specs/design/CHARACTER_WIZARD.md)):
+///   1. Biography (name · origin · upbringing · crewConcept · age)
+///   2. Concept (амплуа)
+///   3. Role
+///   4. Attributes
+///   5. Skills
+///   6. Talents
+///   7. Icon
 ///
 /// ## Draft persistence contract
 ///
@@ -14,7 +24,7 @@ import 'package:coriolis_companion/features/characters/presentation/blocs/charac
 ///   should replace the route to `/characters/new?id=<id>` so refreshing
 ///   resumes. The default `plebeian` upbringing satisfies the server's
 ///   `CharacterCreate` contract (`upbringing` is required) and is mutable
-///   while the character is in `draft` state — Step 2 lets the user pick
+///   while the character is in `draft` state — Step 1 lets the user pick
 ///   a different value.
 ///
 /// - `start({id: <existing>})` — loads the character; if it is not a draft
@@ -92,7 +102,7 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
   ///
   /// Returns `true` on success; `false` on save failure (stays on current step).
   Future<bool> next() async {
-    if (state.step >= 6) return false;
+    if (state.step >= 7) return false;
     final saved = await _persistCurrentStep();
     if (!saved) return false;
     emit(state.copyWith(step: state.step + 1, saveStatus: WizardSaveStatus.idle));
@@ -320,8 +330,11 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
       Character updated = await _repository.update(
         id,
         name: d.name?.trim().isEmpty == true ? 'Untitled' : d.name,
-        concept: d.concept,
-        role: d.role,
+        // Empty-string sentinels in draft are how `updateRole` and
+        // `updateConcept` mark "cleared"; the repository layer routes
+        // typed enums through `valueOf` so we must not forward those.
+        concept: (d.concept?.isNotEmpty ?? false) ? d.concept : null,
+        role: (d.role?.isNotEmpty ?? false) ? d.role : null,
         iconId: d.iconId,
         upbringing: d.upbringing,
         origin: d.origin,
@@ -396,27 +409,25 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
       final d = state.draft;
       switch (state.step) {
         case 1:
-          // Biography: name only. The free-text "concept phrase" from the
-          // pre-DOMAIN-ALIGN UI no longer round-trips — the canonical
-          // `concept` field is the amplua enum, which the reorder block
-          // adds via a dedicated picker step.
+          // Biography — name + canonical upbringing + free-text origin +
+          // optional crewConcept. Age stays local (no canonical field on
+          // the API contract).
           await _repository.update(
             id,
             name: d.name?.trim().isEmpty == true ? 'Untitled' : d.name,
-          );
-        case 2:
-          // People & Background — canonical `upbringing` enum + free-text
-          // `origin`. Age stays local (no canonical field on the API
-          // contract).
-          await _repository.update(
-            id,
             upbringing: d.upbringing,
             origin: d.origin,
+            crewConcept: d.crewConcept,
           );
+        case 2:
+          // Concept (амплуа).
+          if (d.concept != null && d.concept!.isNotEmpty) {
+            await _repository.update(id, concept: d.concept);
+          }
         case 3:
-          // Icon — canonical IconId.
-          if (d.iconId != null) {
-            await _repository.update(id, iconId: d.iconId);
+          // Role within the chosen amplua.
+          if (d.role != null && d.role!.isNotEmpty) {
+            await _repository.update(id, role: d.role);
           }
         case 4:
           await _repository.update(
@@ -453,6 +464,11 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
         case 6:
           // Talents are committed on forge(); nothing to PATCH mid-step.
           break;
+        case 7:
+          // Icon — canonical IconId.
+          if (d.iconId != null) {
+            await _repository.update(id, iconId: d.iconId);
+          }
         default:
           break;
       }

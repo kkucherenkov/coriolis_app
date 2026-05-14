@@ -8,10 +8,12 @@ import 'package:coriolis_companion/features/characters/domain/character.dart';
 import 'package:coriolis_companion/features/characters/domain/character_repository.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
-import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_1_concept.dart';
-import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_3_icon.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_1_biography.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_2_concept.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_3_role.dart';
 import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_4_attributes.dart';
 import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_6_talents.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_7_icon.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
@@ -87,53 +89,61 @@ Widget _wrapStep(CharacterWizardState state, Widget stepWidget) {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 void main() {
-  group('CharacterCreatePage — wizard steps', () {
-    // ── Step 1 — renders name + concept fields ─────────────────────────────
+  group('CharacterCreatePage — wizard steps (7-step canonical order)', () {
+    // ── Step 1 Biography — name field surfaces ─────────────────────────────
 
-    testWidgets('Step1Concept shows the name field', (tester) async {
+    testWidgets('Step1Biography shows the name field', (tester) async {
       final state = CharacterWizardState(
         step: 1,
         draft: const WizardDraft(name: 'Kira Sol'),
         character: _makeCharacter(),
       );
-      await tester.pumpWidget(_wrapStep(state, const Step1Concept()));
+      await tester.pumpWidget(_wrapStep(state, const Step1Biography()));
       await tester.pump();
-
-      // The AppInput uses TextField internally; locate by value.
       expect(find.text('Kira Sol'), findsAtLeastNWidgets(1));
     });
 
-    // ── Step 3 — Icon grid renders all 9 canonical icons ──────────────────
+    // ── Step 2 Concept — amplua picker renders all 11 cards ────────────────
 
-    testWidgets('Step3Icon renders all nine canonical icon cards',
+    testWidgets('Step2Concept renders all eleven amplua cards',
+        (tester) async {
+      final state = CharacterWizardState(
+        step: 2,
+        character: _makeCharacter(),
+      );
+      await tester.pumpWidget(_wrapStep(state, const Step2Concept()));
+      await tester.pump();
+      // Spot-check two of the eleven amplua labels.
+      expect(find.textContaining('Pilot'), findsOneWidget);
+      expect(find.textContaining('Soldier'), findsOneWidget);
+    });
+
+    // ── Step 3 Role — placeholder when no concept; cards when picked ───────
+
+    testWidgets('Step3Role renders placeholder when concept is null',
         (tester) async {
       final state = CharacterWizardState(
         step: 3,
         character: _makeCharacter(),
       );
-      await tester.pumpWidget(_wrapStep(state, const Step3Icon()));
+      await tester.pumpWidget(_wrapStep(state, const Step3Role()));
       await tester.pump();
-
-      // Check that two of the canonical nine are present.
-      expect(find.textContaining('Traveler'), findsOneWidget);
-      expect(find.textContaining('Faceless'), findsOneWidget);
+      expect(find.textContaining('Pick an amplua'), findsOneWidget);
     });
 
-    testWidgets('Step3Icon highlights selected icon', (tester) async {
+    testWidgets('Step3Role renders the three roles of the chosen amplua',
+        (tester) async {
       final state = CharacterWizardState(
         step: 3,
-        draft: const WizardDraft(iconId: 'traveler'),
+        draft: const WizardDraft(concept: 'pilot'),
         character: _makeCharacter(),
       );
-      await tester.pumpWidget(_wrapStep(state, const Step3Icon()));
+      await tester.pumpWidget(_wrapStep(state, const Step3Role()));
       await tester.pump();
-
-      // The selected card is an AppCard.featured; verify at least one exists.
-      expect(
-        find.byWidgetPredicate((w) =>
-            w is AppCard && w.variant == AppCardVariant.featured),
-        findsAtLeastNWidgets(1),
-      );
+      // pilot amplua → Ace · Driver · Trucker.
+      expect(find.text('Ace'), findsOneWidget);
+      expect(find.text('Driver'), findsOneWidget);
+      expect(find.text('Trucker'), findsOneWidget);
     });
 
     // ── Step 4 — attribute stepper rows ───────────────────────────────────
@@ -148,8 +158,6 @@ void main() {
       );
       await tester.pumpWidget(_wrapStep(state, const Step4Attributes()));
       await tester.pump();
-
-      // Each attribute has a full label visible.
       expect(find.text('Strength'), findsOneWidget);
       expect(find.text('Agility'), findsOneWidget);
       expect(find.text('Wits'), findsOneWidget);
@@ -173,8 +181,36 @@ void main() {
       await tester.pump();
 
       expect(find.text('Nine lives'), findsOneWidget);
-      // "Add talent" button should be visible (< 3 talents).
       expect(find.textContaining('Add talent'), findsOneWidget);
+    });
+
+    // ── Step 7 Icon — canonical 9-card grid ───────────────────────────────
+
+    testWidgets('Step7Icon renders all nine canonical icon cards',
+        (tester) async {
+      final state = CharacterWizardState(
+        step: 7,
+        character: _makeCharacter(),
+      );
+      await tester.pumpWidget(_wrapStep(state, const Step7Icon()));
+      await tester.pump();
+      expect(find.textContaining('Traveler'), findsOneWidget);
+      expect(find.textContaining('Faceless'), findsOneWidget);
+    });
+
+    testWidgets('Step7Icon highlights selected icon', (tester) async {
+      final state = CharacterWizardState(
+        step: 7,
+        draft: const WizardDraft(iconId: 'traveler'),
+        character: _makeCharacter(),
+      );
+      await tester.pumpWidget(_wrapStep(state, const Step7Icon()));
+      await tester.pump();
+      expect(
+        find.byWidgetPredicate((w) =>
+            w is AppCard && w.variant == AppCardVariant.featured),
+        findsAtLeastNWidgets(1),
+      );
     });
   });
 }

@@ -5,7 +5,8 @@ import 'package:app_ui/app_ui.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
-import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_1_concept.dart' show WizardStepHeader;
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_1_biography.dart'
+    show WizardStepHeader;
 
 /// Canonical Icon ids (Dart-side EnumClass names).
 ///
@@ -30,8 +31,8 @@ const List<String> kCanonicalIconIds = <String>[
 /// aura via an [AnimationController] scale + opacity tween.
 ///
 /// [MediaQuery.disableAnimations] → no animation, static teal border only.
-class Step3Icon extends StatelessWidget {
-  const Step3Icon({super.key});
+class Step7Icon extends StatelessWidget {
+  const Step7Icon({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -45,8 +46,8 @@ class Step3Icon extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               WizardStepHeader(
-                title: t.wizardStep3Title,
-                blurb: t.wizardStep3Blurb,
+                title: t.wizardStep7Title,
+                blurb: t.wizardStep7Blurb,
               ),
               const SizedBox(height: AppSpacing.s6),
               GridView.builder(

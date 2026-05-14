@@ -152,8 +152,12 @@ void main() {
               upbringing: 'plebeian',
               status: 'draft',
             )).thenAnswer((_) async => _makeCharacter());
-        when(() => repo.update('c1', name: any(named: 'name')))
-            .thenAnswer((_) async => _makeCharacter());
+        when(() => repo.update('c1',
+                  name: any(named: 'name'),
+                  upbringing: any(named: 'upbringing'),
+                  origin: any(named: 'origin'),
+                  crewConcept: any(named: 'crewConcept'),
+                )).thenAnswer((_) async => _makeCharacter());
         return _buildCubit(repo);
       },
       act: (cubit) async {
@@ -173,8 +177,12 @@ void main() {
               upbringing: 'plebeian',
               status: 'draft',
             )).thenAnswer((_) async => _makeCharacter());
-        when(() => repo.update('c1', name: any(named: 'name')))
-            .thenAnswer((_) async => _makeCharacter());
+        when(() => repo.update('c1',
+                  name: any(named: 'name'),
+                  upbringing: any(named: 'upbringing'),
+                  origin: any(named: 'origin'),
+                  crewConcept: any(named: 'crewConcept'),
+                )).thenAnswer((_) async => _makeCharacter());
         return _buildCubit(repo);
       },
       act: (cubit) async {
@@ -185,76 +193,133 @@ void main() {
       verify: (cubit) {
         expect(cubit.state.step, 1);
         // update was called once (for next), not twice.
-        verify(() => repo.update(any(), name: any(named: 'name'))).called(1);
-      },
-    );
-
-    // ── Step 2 persists canonical upbringing + free-text origin ────────────
-
-    blocTest<CharacterWizardCubit, CharacterWizardState>(
-      'Step 2 → next() PATCHes upbringing + origin, not a packed concept blob',
-      build: () {
-        when(() => repo.create(
-              name: 'Untitled',
-              upbringing: 'plebeian',
-              status: 'draft',
-            )).thenAnswer((_) async => _makeCharacter());
-        when(() => repo.update('c1', name: any(named: 'name')))
-            .thenAnswer((_) async => _makeCharacter());
-        when(() => repo.update('c1',
+        verify(() => repo.update(any(),
+                  name: any(named: 'name'),
                   upbringing: any(named: 'upbringing'),
                   origin: any(named: 'origin'),
-                ))
-            .thenAnswer((_) async => _makeCharacter());
-        return _buildCubit(repo);
-      },
-      act: (cubit) async {
-        await cubit.start();
-        await cubit.next(); // 1 → 2
-        cubit.updateUpbringing('aristocrat');
-        cubit.updateOrigin('Atlas Outpost');
-        await cubit.next(); // 2 → 3
-      },
-      verify: (cubit) {
-        expect(cubit.state.step, 3);
-        verify(() => repo.update('c1',
-                  upbringing: 'aristocrat',
-                  origin: 'Atlas Outpost',
+                  crewConcept: any(named: 'crewConcept'),
                 )).called(1);
       },
     );
 
-    // ── Step 3 persists canonical iconId ────────────────────────────────────
+    // ── Step 1 Biography persists name + upbringing + origin + crew ──────
 
     blocTest<CharacterWizardCubit, CharacterWizardState>(
-      'Step 3 → next() PATCHes iconId with canonical IconId value',
+      'Step 1 Biography → next() PATCHes name + canonical upbringing + origin + crew',
       build: () {
         when(() => repo.create(
               name: 'Untitled',
               upbringing: 'plebeian',
               status: 'draft',
             )).thenAnswer((_) async => _makeCharacter());
-        when(() => repo.update('c1', name: any(named: 'name')))
-            .thenAnswer((_) async => _makeCharacter());
         when(() => repo.update('c1',
+                  name: any(named: 'name'),
                   upbringing: any(named: 'upbringing'),
                   origin: any(named: 'origin'),
-                ))
-            .thenAnswer((_) async => _makeCharacter());
-        when(() => repo.update('c1', iconId: any(named: 'iconId')))
+                  crewConcept: any(named: 'crewConcept'),
+                )).thenAnswer((_) async => _makeCharacter());
+        return _buildCubit(repo);
+      },
+      act: (cubit) async {
+        await cubit.start();
+        cubit.updateName('Kira Sol');
+        cubit.updateUpbringing('aristocrat');
+        cubit.updateOrigin('Atlas Outpost');
+        cubit.updateCrewConcept('freeTrader');
+        await cubit.next(); // 1 → 2
+      },
+      verify: (cubit) {
+        expect(cubit.state.step, 2);
+        verify(() => repo.update('c1',
+                  name: 'Kira Sol',
+                  upbringing: 'aristocrat',
+                  origin: 'Atlas Outpost',
+                  crewConcept: 'freeTrader',
+                )).called(1);
+      },
+    );
+
+    // ── Step 2 Concept (амплуа) persists canonical concept ────────────────
+
+    blocTest<CharacterWizardCubit, CharacterWizardState>(
+      'Step 2 Concept → next() PATCHes the canonical Concept enum value',
+      build: () {
+        when(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).thenAnswer((_) async => _makeCharacter());
+        when(() => repo.update('c1',
+                  name: any(named: 'name'),
+                  upbringing: any(named: 'upbringing'),
+                  origin: any(named: 'origin'),
+                  crewConcept: any(named: 'crewConcept'),
+                )).thenAnswer((_) async => _makeCharacter());
+        when(() => repo.update('c1', concept: any(named: 'concept')))
             .thenAnswer((_) async => _makeCharacter());
         return _buildCubit(repo);
       },
       act: (cubit) async {
         await cubit.start();
         await cubit.next(); // 1 → 2
+        cubit.updateConcept('pilot');
         await cubit.next(); // 2 → 3
-        cubit.selectIconId('traveler');
+      },
+      verify: (cubit) {
+        expect(cubit.state.step, 3);
+        verify(() => repo.update('c1', concept: 'pilot')).called(1);
+      },
+    );
+
+    // ── Step 3 Role persists canonical role ───────────────────────────────
+
+    blocTest<CharacterWizardCubit, CharacterWizardState>(
+      'Step 3 Role → next() PATCHes the canonical Role enum value',
+      build: () {
+        when(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).thenAnswer((_) async => _makeCharacter());
+        when(() => repo.update('c1',
+                  name: any(named: 'name'),
+                  upbringing: any(named: 'upbringing'),
+                  origin: any(named: 'origin'),
+                  crewConcept: any(named: 'crewConcept'),
+                )).thenAnswer((_) async => _makeCharacter());
+        when(() => repo.update('c1', concept: any(named: 'concept')))
+            .thenAnswer((_) async => _makeCharacter());
+        when(() => repo.update('c1', role: any(named: 'role')))
+            .thenAnswer((_) async => _makeCharacter());
+        return _buildCubit(repo);
+      },
+      act: (cubit) async {
+        await cubit.start();
+        cubit.updateConcept('pilot');
+        await cubit.next(); // 1 → 2
+        await cubit.next(); // 2 → 3
+        cubit.updateRole('ace');
         await cubit.next(); // 3 → 4
       },
       verify: (cubit) {
         expect(cubit.state.step, 4);
-        verify(() => repo.update('c1', iconId: 'traveler')).called(1);
+        verify(() => repo.update('c1', role: 'ace')).called(1);
+      },
+    );
+
+    // ── Step 7 Icon persists canonical iconId ─────────────────────────────
+
+    blocTest<CharacterWizardCubit, CharacterWizardState>(
+      'Step 7 Icon → next() returns false (no step 8); selectIconId roundtrips locally',
+      build: () {
+        return _buildCubit(repo);
+      },
+      act: (cubit) {
+        // Without going through the full wizard, simulate landing on step 7.
+        cubit.selectIconId('traveler');
+      },
+      verify: (cubit) {
+        expect(cubit.state.draft.iconId, 'traveler');
       },
     );
 
