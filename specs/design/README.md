@@ -215,4 +215,5 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 | Coriolis    | `AppStatBlock`       | ✓               | —                  |
 | Primitive   | `AppModal`           | ✓               | —                  |
 | Primitive   | `AppPopover`         | ✓               | —                  |
+| Coriolis    | `AppPortrait`        | ✓               | ✓                  |
 | Composition | `UserMenu`           | ✓               | —                  |

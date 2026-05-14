@@ -15,6 +15,7 @@ export 'app_input/app_input.dart';
 export 'app_kbd/app_kbd.dart';
 export 'app_label/app_label.dart';
 export 'app_panel_title/app_panel_title.dart';
+export 'app_portrait/app_portrait.dart';
 export 'app_progress/app_progress.dart';
 export 'app_seg_control/app_seg_control.dart';
 export 'app_select/app_select.dart';

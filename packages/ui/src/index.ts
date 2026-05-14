@@ -25,6 +25,7 @@ export { AppMobileDrawer } from './components/AppMobileDrawer';
 export type { DrawerLabels, AppMobileDrawerProps } from './components/AppMobileDrawer';
 export { AppPanelTitle } from './components/AppPanelTitle';
 export { AppPopover } from './components/AppPopover';
+export { AppPortrait } from './components/AppPortrait';
 export { AppProgress } from './components/AppProgress';
 export { AppSegControl } from './components/AppSegControl';
 export { AppSelect } from './components/AppSelect';
