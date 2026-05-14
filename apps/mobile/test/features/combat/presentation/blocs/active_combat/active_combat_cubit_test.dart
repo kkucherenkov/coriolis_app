@@ -409,6 +409,89 @@ void main() {
     },
   );
 
+  // ── advanceRound ──────────────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'advanceRound dispatches and reloads with incremented round',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.advanceRound(_activeEncounter.id))
+          .thenAnswer((_) async => const TurnAdvanceOutcome(
+                activeCombatantId: 'cbt-10',
+                round: 3,
+                isNewRound: true,
+              ));
+      await cubit.load(_sessionId);
+      await cubit.advanceRound();
+    },
+    expect: () => [
+      const ActiveCombatLoading(),
+      isA<ActiveCombatReady>(),
+      isA<ActiveCombatReady>().having(
+        (s) => s.actionInFlight,
+        'actionInFlight',
+        isTrue,
+      ),
+      const ActiveCombatLoading(),
+      isA<ActiveCombatReady>().having(
+        (s) => s.actionInFlight,
+        'actionInFlight',
+        isFalse,
+      ),
+    ],
+    verify: (_) {
+      verify(() => repo.advanceRound(_activeEncounter.id)).called(1);
+      verify(() => repo.listEncounters(_sessionId)).called(2);
+    },
+  );
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'advanceRound failure keeps Ready and surfaces actionError',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.advanceRound(_activeEncounter.id))
+          .thenThrow(StateError('422 round already ended'));
+      await cubit.load(_sessionId);
+      await cubit.advanceRound();
+    },
+    expect: () => [
+      const ActiveCombatLoading(),
+      isA<ActiveCombatReady>(),
+      isA<ActiveCombatReady>().having(
+        (s) => s.actionInFlight,
+        'actionInFlight',
+        isTrue,
+      ),
+      isA<ActiveCombatReady>()
+          .having((s) => s.actionInFlight, 'actionInFlight', isFalse)
+          .having(
+            (s) => s.actionError,
+            'actionError',
+            contains('422 round already ended'),
+          ),
+    ],
+  );
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'advanceRound is a no-op when not in Ready state',
+    build: makeCubit,
+    act: (cubit) async {
+      await cubit.advanceRound();
+    },
+    expect: () => const <ActiveCombatState>[],
+    verify: (_) {
+      verifyNever(() => repo.advanceRound(any<String>()));
+    },
+  );
+
   // ── addPcCombatant ────────────────────────────────────────────────────────
 
   blocTest<ActiveCombatCubit, ActiveCombatState>(

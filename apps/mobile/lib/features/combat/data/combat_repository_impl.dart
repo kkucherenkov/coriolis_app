@@ -119,6 +119,20 @@ class CombatRepositoryImpl implements CombatRepository {
   }
 
   @override
+  Future<TurnAdvanceOutcome> advanceRound(String encounterId) async {
+    final res = await _api.advanceRound(id: encounterId);
+    final result = res.data;
+    if (result == null) {
+      throw StateError('advanceRound returned empty body');
+    }
+    return TurnAdvanceOutcome(
+      activeCombatantId: result.activeCombatantId,
+      round: result.round,
+      isNewRound: result.isNewRound,
+    );
+  }
+
+  @override
   Future<Combatant> addPcCombatant({
     required String encounterId,
     required String characterId,

@@ -836,6 +836,17 @@ class _StickyToolbar extends StatelessWidget {
                 const SizedBox(width: AppSpacing.s2),
                 Expanded(
                   child: AppButton(
+                    key: const Key('tracker-end-round'),
+                    label: t.endRoundButton,
+                    onPressed: actionInFlight
+                        ? null
+                        : () => _confirmEndRound(context, cubit, encounter),
+                    variant: AppButtonVariant.secondary,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.s2),
+                Expanded(
+                  child: AppButton(
                     key: const Key('tracker-end-encounter'),
                     label: t.endEncounterButton,
                     onPressed: actionInFlight
@@ -850,6 +861,50 @@ class _StickyToolbar extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmEndRound(
+    BuildContext context,
+    ActiveCombatCubit cubit,
+    Encounter encounter,
+  ) async {
+    final t = context.t.combat;
+    final nextRound = encounter.round + 1;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceNight,
+        title: Text(
+          t.endRoundConfirmTitle,
+          style: AppTypography.bodyMd.copyWith(color: AppColors.textPrimary),
+        ),
+        content: Text(
+          t.endRoundConfirmBody(next: nextRound),
+          style: AppTypography.bodySm.copyWith(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              t.endRoundConfirmCancel,
+              style: AppTypography.bodySm
+                  .copyWith(color: AppColors.brandBrassLight),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              t.endRoundConfirm,
+              style: AppTypography.bodySm
+                  .copyWith(color: AppColors.stateCrimsonBright),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await cubit.advanceRound();
+    }
   }
 
   Future<void> _confirmEndEncounter(

@@ -101,6 +101,22 @@ class ActiveCombatCubit extends Cubit<ActiveCombatState> {
     }
   }
 
+  /// Advances to the start of the next round, resetting the active combatant
+  /// to the top of the initiative order.
+  Future<void> advanceRound() async {
+    final current = state;
+    if (current is! ActiveCombatReady) return;
+    emit(current.copyWith(actionInFlight: true, actionError: null));
+    try {
+      await _repository.advanceRound(current.snapshot.encounter.id);
+      if (_sessionId != null) {
+        await load(_sessionId!);
+      }
+    } on Object catch (e) {
+      emit(current.copyWith(actionInFlight: false, actionError: e.toString()));
+    }
+  }
+
   /// Adds a PC combatant to the active encounter and reloads.
   Future<void> addPcCombatant(String characterId) async {
     final current = state;

@@ -142,7 +142,7 @@ void main() {
     });
 
     testWidgets(
-        'GM in active state sees Next Turn + End Encounter, no Roll button',
+        'GM in active state sees Next Turn + End Round + End Encounter, no Roll button',
         (tester) async {
       await tester.pumpWidget(_wrap(
         state: ActiveCombatReady(ActiveCombatSnapshot(
@@ -154,7 +154,45 @@ void main() {
 
       expect(find.byKey(const Key('tracker-roll-initiative')), findsNothing);
       expect(find.byKey(const Key('tracker-next-turn')), findsOneWidget);
+      expect(find.byKey(const Key('tracker-end-round')), findsOneWidget);
       expect(find.byKey(const Key('tracker-end-encounter')), findsOneWidget);
+    });
+
+    testWidgets('End-Round button is absent in setup state', (tester) async {
+      await tester.pumpWidget(_wrap(
+        state: ActiveCombatReady(ActiveCombatSnapshot(
+          encounter: _setupEncounter,
+          combatants: const [_combatantA, _combatantB],
+        )),
+        isGm: true,
+      ));
+
+      expect(find.byKey(const Key('tracker-end-round')), findsNothing);
+    });
+
+    testWidgets('End-Round button is absent in ended state', (tester) async {
+      await tester.pumpWidget(_wrap(
+        state: ActiveCombatReady(ActiveCombatSnapshot(
+          encounter: _endedEncounter,
+          combatants: const [_combatantA, _combatantB],
+        )),
+        isGm: true,
+      ));
+
+      expect(find.byKey(const Key('tracker-end-round')), findsNothing);
+    });
+
+    testWidgets('non-GM does not see the End-Round button in active state',
+        (tester) async {
+      await tester.pumpWidget(_wrap(
+        state: ActiveCombatReady(ActiveCombatSnapshot(
+          encounter: _activeEncounter,
+          combatants: const [_combatantA, _combatantB],
+        )),
+        isGm: false,
+      ));
+
+      expect(find.byKey(const Key('tracker-end-round')), findsNothing);
     });
 
     testWidgets('non-GM never sees toolbar buttons', (tester) async {

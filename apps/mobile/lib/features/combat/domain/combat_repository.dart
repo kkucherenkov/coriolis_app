@@ -35,6 +35,13 @@ abstract class CombatRepository {
   /// Allowed only while `status` is `active`. 422 errors surface as throws.
   Future<TurnAdvanceOutcome> advanceTurn(String encounterId);
 
+  /// Closes the current round and advances all combatants to the start of the
+  /// next round. Returns the updated turn state (`isNewRound` is always `true`
+  /// on success).
+  ///
+  /// Allowed only while `status` is `active`. 422 errors surface as throws.
+  Future<TurnAdvanceOutcome> advanceRound(String encounterId);
+
   /// Closes the encounter (`status → ended`). Returns the updated encounter.
   Future<Encounter> endEncounter(String encounterId);
 
