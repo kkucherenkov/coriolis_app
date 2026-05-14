@@ -11,6 +11,10 @@ import 'package:coriolis_companion/features/combat/presentation/blocs/tracker_dp
 import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
 import 'package:coriolis_companion/shared/di/injector.dart';
+import 'package:coriolis_companion/shared/realtime/session_realtime.dart';
+import 'package:app_api_client/app_api_client.dart' as api_client show RealtimeApi;
+import 'package:coriolis_companion/shared/config/app_config.dart';
+import 'dart:async';
 
 /// Combat tracker page — parity with web `CombatTracker.vue`.
 ///
@@ -42,6 +46,8 @@ class CombatTrackerPage extends StatelessWidget {
     this.cubitFactory,
     this.cubitOverride,
     this.dpCubitOverride,
+    this.realtimeFactory,
+    this.disableRealtime = false,
   });
 
   /// Game session that owns the encounter.
@@ -71,12 +77,25 @@ class CombatTrackerPage extends StatelessWidget {
   /// session repository via [getIt] and seeds the cubit with [dpCount].
   final TrackerDpCubit? dpCubitOverride;
 
+  /// Optional factory for the realtime adapter used by the tracker. When
+  /// null the page resolves `RealtimeApi` + `AppConfig` via [getIt] and
+  /// builds a fresh [SessionRealtime]. Widget tests pass a stub here or
+  /// set [disableRealtime] to skip the binding entirely.
+  final SessionRealtime Function()? realtimeFactory;
+
+  /// When true the page skips the realtime binding entirely. Used by
+  /// widget tests where no Centrifugo client is available.
+  final bool disableRealtime;
+
   @override
   Widget build(BuildContext context) {
     final view = _CombatTrackerView(
       sessionId: sessionId,
       isGm: isGm,
       sessionCharacterIds: sessionCharacterIds,
+      realtimeFactory: disableRealtime
+          ? null
+          : (realtimeFactory ?? _defaultRealtimeFactory),
     );
     final dp = dpCubitOverride ?? _defaultDpCubit();
     if (cubitOverride != null) {
@@ -112,18 +131,90 @@ class CombatTrackerPage extends StatelessWidget {
         sessionId: sessionId,
         initialCount: dpCount,
       );
+
+  /// Production realtime factory — pulls `RealtimeApi` + `AppConfig` from
+  /// the injector. Each call mints a fresh [SessionRealtime] so the
+  /// tracker owns its own subscription independently of the session
+  /// detail page (which keeps its own subscription alive in the back stack).
+  static SessionRealtime _defaultRealtimeFactory() => SessionRealtime(
+        realtimeApi: getIt<api_client.RealtimeApi>(),
+        config: getIt<AppConfig>(),
+      );
 }
 
-class _CombatTrackerView extends StatelessWidget {
+class _CombatTrackerView extends StatefulWidget {
   const _CombatTrackerView({
     required this.sessionId,
     required this.isGm,
     required this.sessionCharacterIds,
+    required this.realtimeFactory,
   });
 
   final String sessionId;
   final bool isGm;
   final List<String> sessionCharacterIds;
+
+  /// Builds the realtime adapter; null disables the binding (widget tests).
+  final SessionRealtime Function()? realtimeFactory;
+
+  @override
+  State<_CombatTrackerView> createState() => _CombatTrackerViewState();
+}
+
+class _CombatTrackerViewState extends State<_CombatTrackerView> {
+  SessionRealtime? _realtime;
+  StreamSubscription<CombatUpdatedPayload>? _combatSub;
+  StreamSubscription<DpChangedPayload>? _dpSub;
+
+  @override
+  void initState() {
+    super.initState();
+    final factory = widget.realtimeFactory;
+    if (factory == null) return;
+    // Bind realtime in a post-frame callback so the cubits are mounted by
+    // the time the first publication arrives.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final realtime = factory();
+      _realtime = realtime;
+      _combatSub = realtime.combatUpdated.listen(_onCombatUpdated);
+      _dpSub = realtime.dpChanged.listen(_onDpChanged);
+      try {
+        await realtime.start(widget.sessionId);
+      } on Object {
+        // Live updates being unavailable shouldn't sink the page; the
+        // initial load already populated the snapshot. Errors during the
+        // session lifetime surface via the existing error banners.
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _combatSub?.cancel();
+    _dpSub?.cancel();
+    // The realtime client owns the websocket — close it explicitly so the
+    // session detail's own subscription remains the canonical one once
+    // the tracker is popped.
+    unawaited(_realtime?.dispose());
+    super.dispose();
+  }
+
+  void _onCombatUpdated(CombatUpdatedPayload payload) {
+    if (!mounted || payload.snapshot.encounter.sessionId != widget.sessionId) {
+      return;
+    }
+    context.read<ActiveCombatCubit>().replaceSnapshot(payload.snapshot);
+  }
+
+  void _onDpChanged(DpChangedPayload payload) {
+    if (!mounted || payload.gameSessionId != widget.sessionId) return;
+    context.read<TrackerDpCubit>().applyDpChanged(payload.dpCount);
+  }
+
+  String get sessionId => widget.sessionId;
+  bool get isGm => widget.isGm;
+  List<String> get sessionCharacterIds => widget.sessionCharacterIds;
 
   @override
   Widget build(BuildContext context) {

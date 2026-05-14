@@ -52,6 +52,15 @@ class TrackerDpCubit extends Cubit<TrackerDpState> {
   final SessionRepository _repository;
   final String sessionId;
 
+  /// Patches [count] from a realtime `dp.changed` payload — no round-trip.
+  /// The Centrifugo subscription calls this whenever DP changes for the
+  /// session (mutations from another device, roll-pushes that bump DP, GM
+  /// edits on the session detail page).
+  void applyDpChanged(int newCount) {
+    if (state.count == newCount) return;
+    emit(state.copyWith(count: newCount));
+  }
+
   /// Posts a DP adjustment. Returns `true` on success.
   ///
   /// Server enforces `DP_BELOW_ZERO` for under-flowing deltas; on failure

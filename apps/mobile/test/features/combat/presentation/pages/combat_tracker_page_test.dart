@@ -115,6 +115,7 @@ Widget _wrap({
           dpCount: dpCount,
           cubitOverride: cubit,
           dpCubitOverride: dp,
+          disableRealtime: true,
         ),
       ),
     ),

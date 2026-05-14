@@ -85,6 +85,25 @@ void main() {
   );
 
   blocTest<TrackerDpCubit, TrackerDpState>(
+    'applyDpChanged patches count without a round-trip',
+    build: makeCubit,
+    act: (c) => c.applyDpChanged(9),
+    expect: () => [
+      isA<TrackerDpState>().having((s) => s.count, 'count', 9),
+    ],
+    verify: (_) {
+      verifyNever(() => repo.adjustDp(any(), delta: any(named: 'delta')));
+    },
+  );
+
+  blocTest<TrackerDpCubit, TrackerDpState>(
+    'applyDpChanged is a no-op when the count is unchanged',
+    build: makeCubit,
+    act: (c) => c.applyDpChanged(3),
+    expect: () => const <TrackerDpState>[],
+  );
+
+  blocTest<TrackerDpCubit, TrackerDpState>(
     'adjustDp is a no-op while busy',
     build: () {
       when(() => repo.adjustDp(any(), delta: any(named: 'delta')))
