@@ -6,13 +6,13 @@
   const auth = useAuth();
 
   // Already-authenticated visitors should never see the public landing —
-  // bounce them straight to the characters home. The app is SPA-only
+  // bounce them straight to the Bridge dashboard. The app is SPA-only
   // (nuxt.config.ts ssr: false), so this only runs in the browser.
   try {
     const result = await auth.getSession();
     const data = result.data as { user?: { id?: string } } | null;
     if (data?.user?.id) {
-      await navigateTo('/app/characters', { replace: true });
+      await navigateTo('/app/dashboard', { replace: true });
     }
   } catch {
     // Network/session failure — leave the visitor on the landing.

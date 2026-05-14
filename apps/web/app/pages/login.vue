@@ -37,10 +37,11 @@
         return;
       }
       // Honour `?redirect=` set by auth-required middleware; fall back to the
-      // authenticated home (characters list). Plain `/` would land on the
-      // public landing page and look like sign-in failed.
+      // Bridge dashboard (the authenticated home as of T-2026-05-14-004).
+      // Plain `/` would land on the public landing page and look like
+      // sign-in failed.
       const raw = route.query.redirect;
-      const target = typeof raw === 'string' && raw.startsWith('/') ? raw : '/app/characters';
+      const target = typeof raw === 'string' && raw.startsWith('/') ? raw : '/app/dashboard';
       globalThis.location.href = target;
     } catch {
       errorMsg.value = t('errorGeneric');

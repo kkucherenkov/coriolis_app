@@ -54,9 +54,9 @@
         return;
       }
       // Better Auth `autoSignIn: true` (auth.service.ts) starts a session as
-      // part of signUp; jump straight into the authenticated home rather than
+      // part of signUp; jump straight into the Bridge dashboard rather than
       // the public landing.
-      globalThis.location.href = '/app/characters';
+      globalThis.location.href = '/app/dashboard';
     } catch {
       errorMsg.value = t('errorGeneric');
     } finally {

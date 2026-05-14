@@ -47,18 +47,15 @@ LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05
   - `apps/web/app/pages/app/dashboard.vue` implements the Bridge (3-card layout).
   - Greeting eyebrow, cycle-time stat, sync indicator visible on first paint.
   - Footer aphorism rendered.
-  - Auth redirect target switched from `/app/characters` to `/app/dashboard` (currently `apps/web/app/pages/index.vue:11`).
+  - Auth redirect target switched from `/app/characters` to `/app/dashboard`.
   - i18n keys for RU + EN; passes a11y gate (focus order, landmarks, contrast).
-- Spec diff: none (surface only — data sources already exist)
-- Codegen impact: no
-- Design impact: consumes `AppPanelTitle`, `AppWordmark`, `AppArabesqueCorner` from T-2026-05-14-003
-- Tests: Vitest page spec + Playwright smoke
 - Sub-steps:
-  - [ ] create `pages/app/dashboard.vue` with 3-card grid
-  - [ ] greeting eyebrow + cycle-time stat + sync indicator cards
-  - [ ] footer aphorism block
-  - [ ] flip auth redirect to `/app/dashboard`
-  - [ ] i18n keys (RU + EN)
-  - [ ] a11y pass + Playwright smoke
-- Status: queued
-- Blockers: T-2026-05-14-003 landed — ready to start any time.
+  - [x] `pages/app/dashboard.vue` with 3-card grid (cycle / sync / roster) + AppArabesqueCorner pair + AppWordmark hero + AppPanelTitle per card. _Block 7, 2026-05-14._
+  - [x] greeting eyebrow (`useAuth().getSession()` → name/email) + cycle clock (`Intl.DateTimeFormat` ticking every minute) + sync indicator (`navigator.onLine` + relative-time-formatted last-sync) + roster card (live count via `useCharactersApi.list`, with empty / error / browse states). _Block 7._
+  - [x] footer aphorism — three Coriolis lines, deterministic day-of-year pick. _Block 7._
+  - [x] flip auth redirect: `apps/web/app/pages/index.vue`, `pages/login.vue`, `pages/signup.vue` now point at `/app/dashboard`. _Block 7._
+  - [x] i18n keys (EN + RU complete; UK + EL — see follow-up below).
+  - [ ] **Follow-up:** UK + EL stubs for `wizard.label`, `greeting.*`, `card.*`, `sync.*`, `aphorism.*` on the Bridge page (currently EN-only fallback via Nuxt i18n) — track separately as `T-BRIDGE-I18N-STUBS`.
+  - [ ] **Follow-up:** Vitest page spec + Playwright smoke for `/app/dashboard` — track as `T-BRIDGE-TESTS`. Sync card timer + RelativeTimeFormat formatting are the easy unit-spec wins.
+- Status: shipped on web (block 7); two thin follow-ups noted above.
+- Blockers: — (T-2026-05-14-003 atom layer landed 2026-05-14)
