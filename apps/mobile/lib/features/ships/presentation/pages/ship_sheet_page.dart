@@ -1,7 +1,9 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:coriolis_companion/app/routes.dart';
 import 'package:coriolis_companion/features/ships/domain/ship.dart';
 import 'package:coriolis_companion/features/ships/presentation/blocs/ship_sheet/ship_sheet_cubit.dart';
 import 'package:coriolis_companion/features/ships/presentation/blocs/ship_sheet/ship_sheet_state.dart';
@@ -115,6 +117,24 @@ class _ShipSheetView extends StatelessWidget {
                 ),
               ),
               IconButton(
+                key: const Key('ship-sheet-duplicate'),
+                icon: const Icon(Icons.copy_outlined,
+                    color: AppColors.brandBrassLight),
+                tooltip: t.sheetDuplicateTooltip,
+                onPressed: state.saveStatus == ShipSheetSaveStatus.saving
+                    ? null
+                    : () => _onDuplicate(context, t),
+              ),
+              IconButton(
+                key: const Key('ship-sheet-export'),
+                icon: const Icon(Icons.share_outlined,
+                    color: AppColors.brandBrassLight),
+                tooltip: t.sheetExportTooltip,
+                onPressed: state.saveStatus == ShipSheetSaveStatus.saving
+                    ? null
+                    : () => _onExport(context, t),
+              ),
+              IconButton(
                 icon: const Icon(Icons.delete_outline,
                     color: AppColors.stateCrimsonBright),
                 tooltip: t.sheetDeleteTooltip,
@@ -204,6 +224,50 @@ class _ShipSheetView extends StatelessWidget {
       await cubit.deleteShip();
       if (context.mounted) Navigator.of(context).pop();
     }
+  }
+
+  Future<void> _onDuplicate(
+      BuildContext context, TranslationsShipsEn t) async {
+    final cubit = context.read<ShipSheetCubit>();
+    final newId = await cubit.duplicate();
+    if (!context.mounted) return;
+    if (newId == null) {
+      // Cubit emitted an error state; the AppBanner inside the sheet body
+      // already shows the message. Surface a transient SnackBar too so the
+      // failure is hard to miss when the user is at the header.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.sheetDuplicateError)),
+      );
+      return;
+    }
+    await Navigator.of(context).pushReplacementNamed(
+      AppRoutes.shipDetail,
+      arguments: newId,
+    );
+  }
+
+  Future<void> _onExport(
+      BuildContext context, TranslationsShipsEn t) async {
+    final cubit = context.read<ShipSheetCubit>();
+    final snapshot = await cubit.exportSnapshot();
+    if (!context.mounted) return;
+    if (snapshot == null) {
+      // Backend currently returns 501 (experimental); mirror the web's
+      // "preview" framing — the SnackBar gives the user a hint without
+      // making it look fatal.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.sheetExportError)),
+      );
+      return;
+    }
+    // Copy the ship's wire identity to the clipboard as a v1 "share"
+    // affordance — the full JSON shape needs a richer share-sheet that
+    // we'll layer on once the backend lands a stable export payload.
+    await Clipboard.setData(ClipboardData(text: snapshot.id));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(t.sheetExportDone)),
+    );
   }
 }
 

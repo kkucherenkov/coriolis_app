@@ -213,6 +213,55 @@ class ShipSheetCubit extends Cubit<ShipSheetState> {
     }
   }
 
+  // ── Duplicate ────────────────────────────────────────────────────────────
+
+  /// Deep-copies the current ship and returns the new id on success;
+  /// `null` on failure (error surfaced via [ShipSheetState.saveErrorMessage]).
+  ///
+  /// The page reads the returned id and navigates via
+  /// `pushReplacementNamed` so the back gesture still returns to the list.
+  Future<String?> duplicate() async {
+    final id = state.ship?.id;
+    if (id == null) return null;
+    emit(state.copyWith(saveStatus: ShipSheetSaveStatus.saving));
+    try {
+      final copy = await _repository.duplicate(id);
+      emit(state.copyWith(saveStatus: ShipSheetSaveStatus.saved));
+      _startSavedResetTimer();
+      return copy.id;
+    } on Object catch (e) {
+      emit(state.copyWith(
+        saveStatus: ShipSheetSaveStatus.error,
+        saveErrorMessage: e.toString(),
+      ));
+      return null;
+    }
+  }
+
+  // ── Export ───────────────────────────────────────────────────────────────
+
+  /// Requests an export snapshot for the current ship. Returns the export
+  /// `Ship` payload on success, `null` on failure. The page can render the
+  /// payload (e.g. share-sheet, clipboard) — currently it just confirms
+  /// via SnackBar since the backend is still on the experimental 501 path.
+  Future<Ship?> exportSnapshot() async {
+    final id = state.ship?.id;
+    if (id == null) return null;
+    emit(state.copyWith(saveStatus: ShipSheetSaveStatus.saving));
+    try {
+      final snapshot = await _repository.exportSnapshot(id);
+      emit(state.copyWith(saveStatus: ShipSheetSaveStatus.saved));
+      _startSavedResetTimer();
+      return snapshot;
+    } on Object catch (e) {
+      emit(state.copyWith(
+        saveStatus: ShipSheetSaveStatus.error,
+        saveErrorMessage: e.toString(),
+      ));
+      return null;
+    }
+  }
+
   // ── Internal ─────────────────────────────────────────────────────────────
 
   void _scheduleDebounce(String id) {

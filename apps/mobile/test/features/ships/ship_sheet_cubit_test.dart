@@ -318,5 +318,126 @@ void main() {
         },
       );
     });
+
+    group('duplicate', () {
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns new ship id and emits saved status',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.duplicate('s1')).thenAnswer((_) async {
+            return Ship(
+              id: 's2-copy',
+              ownerId: 'u1',
+              name: 'Tannhauser Gate (Copy)',
+              shipClass: 'light-freighter',
+              model: 'Helebian Class III',
+              registry: null,
+              hull: const ShipPoints(current: 8, max: 8),
+              energy: const ShipPoints(current: 6, max: 6),
+              armor: 4,
+              maneuverability: 0,
+              signature: -1,
+              speed: 4,
+              cargoCapacity: 50,
+              modules: const [],
+              crew: const [],
+              problems: const [],
+              history: null,
+              notes: null,
+              createdAt: _now,
+              updatedAt: _now,
+            );
+          });
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final newId = await cubit.duplicate();
+          expect(newId, 's2-copy');
+        },
+        verify: (cubit) {
+          // Saved status either still saved or already reset to idle (timer);
+          // it must NOT be in an error state.
+          expect(cubit.state.saveStatus, isNot(ShipSheetSaveStatus.error));
+        },
+      );
+
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns null and records saveErrorMessage on failure',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.duplicate('s1'))
+              .thenThrow(StateError('422 cannot duplicate'));
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final newId = await cubit.duplicate();
+          expect(newId, isNull);
+        },
+        verify: (cubit) {
+          expect(cubit.state.saveStatus, ShipSheetSaveStatus.error);
+          expect(
+            cubit.state.saveErrorMessage,
+            contains('422 cannot duplicate'),
+          );
+        },
+      );
+
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'is a no-op when no ship is loaded yet',
+        build: () => _buildCubit(repo),
+        act: (cubit) async {
+          final newId = await cubit.duplicate();
+          expect(newId, isNull);
+        },
+        verify: (_) {
+          verifyNever(() => repo.duplicate(any<String>()));
+        },
+      );
+    });
+
+    group('exportSnapshot', () {
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns the export Ship on success',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.exportSnapshot('s1'))
+              .thenAnswer((_) async => _shipFixture());
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final snapshot = await cubit.exportSnapshot();
+          expect(snapshot, isNotNull);
+          expect(snapshot!.id, 's1');
+        },
+        verify: (cubit) {
+          expect(cubit.state.saveStatus, isNot(ShipSheetSaveStatus.error));
+        },
+      );
+
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns null and records 501 errors gracefully',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.exportSnapshot('s1'))
+              .thenThrow(StateError('501 not implemented'));
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final snapshot = await cubit.exportSnapshot();
+          expect(snapshot, isNull);
+        },
+        verify: (cubit) {
+          expect(cubit.state.saveStatus, ShipSheetSaveStatus.error);
+          expect(
+            cubit.state.saveErrorMessage,
+            contains('501 not implemented'),
+          );
+        },
+      );
+    });
   });
 }

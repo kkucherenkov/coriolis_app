@@ -26,6 +26,11 @@
   "sheetDeleteConfirmBody": "This will permanently delete the ship, its modules, and clear the crew roster. This cannot be undone.",
   "sheetDeleteConfirm": "Delete",
   "sheetDeleteCancel": "Cancel",
+  "sheetDuplicateTooltip": "Duplicate ship",
+  "sheetDuplicateError": "Couldn't duplicate the ship.",
+  "sheetExportTooltip": "Export ship",
+  "sheetExportDone": "Export ready — ship id copied to clipboard.",
+  "sheetExportError": "Export isn't ready yet — try again later.",
 
   "sectionIdentity": "Identity",
   "fieldName": "Name",

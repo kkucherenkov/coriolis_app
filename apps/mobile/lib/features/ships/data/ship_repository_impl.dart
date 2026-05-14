@@ -212,4 +212,20 @@ class ShipRepositoryImpl implements ShipRepository {
   Future<void> delete(String id) async {
     await _api.deleteShip(id: id);
   }
+
+  @override
+  Future<Ship> duplicate(String id) async {
+    final response = await _api.duplicateShip(id: id);
+    final body = response.data;
+    if (body == null) throw StateError('Empty response after duplicate');
+    return _toDomain(body);
+  }
+
+  @override
+  Future<Ship> exportSnapshot(String id) async {
+    final response = await _api.exportShip(id: id);
+    final body = response.data;
+    if (body == null) throw StateError('Empty response after export');
+    return _toDomain(body);
+  }
 }

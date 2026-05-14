@@ -47,4 +47,13 @@ abstract class ShipRepository {
 
   /// Permanently deletes the ship identified by [id].
   Future<void> delete(String id);
+
+  /// Deep-copies the ship (including modules and problems) under a new
+  /// id; the new ship is assigned to the same owner. Returns the copy.
+  Future<Ship> duplicate(String id);
+
+  /// Returns the export snapshot for [id] — same `Ship` shape, intended
+  /// for the GM to save / share. The backend currently returns 501
+  /// (experimental); callers should surface the error gracefully.
+  Future<Ship> exportSnapshot(String id);
 }
