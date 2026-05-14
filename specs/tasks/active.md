@@ -22,14 +22,17 @@ LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05
 - Design impact: docs only
 - Tests: none (doc PRs reviewed via the spec-reviewer agent)
 - Sub-steps:
-  - [ ] author `specs/design/PATTERNS.md`
+  - [x] author `specs/design/PATTERNS.md` — landed 2026-05-14 (block 1)
   - [ ] author `specs/design/CONTENT.md`
   - [ ] backfill `FOUNDATIONS.md` (motif density, shadow/opacity semantics, hard rules)
   - [ ] extract canonical `A11Y.md`
   - [ ] add I18N design layer + resolve Forum-Cyrillic conflict
   - [ ] update `specs/design/README.md` reading order + gap log
-- Status: queued
+- Status: in_progress
 - Blockers: —
+- Block notes:
+  - Block 1 (2026-05-14): `specs/design/PATTERNS.md` authored — 13 sections (layout, hero, empty states, banners, modals, forms, buttons, chips/badges, iconography, motion, persistence, view-only, realtime). Used project-canonical component names + tokens; mapped handoff vocabulary inline. Flagged one **code drift**: `AppModal.closeOnBackdrop` defaults to `true` (`packages/ui/src/components/AppModal/AppModal.vue:25`), contradicting the documented contract — needs a follow-up to flip default + audit call sites. Cross-refs in PATTERNS.md `See also` softened to "forthcoming" for the four sibling docs not yet authored.
+  - Next session — block 2: author `specs/design/CONTENT.md` (voice, in-product taxonomy Bridge/Library/Push/Icon/Mystic, number formatting `/` HP separator, ✶ U+2736 successes, `b` birr, dice flavor template, copy do/don't list). Source: `/tmp/coriolis-handoff/coriolis-app/project/specs/design/CONTENT.md`.
 
 ---
 
