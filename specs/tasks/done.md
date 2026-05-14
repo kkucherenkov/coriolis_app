@@ -2,6 +2,25 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-14-003 — Scaffold critical v1 design atoms
+
+- Created: 2026-05-14
+- Completed: 2026-05-14
+- Owner: claude
+- Spec: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md) §3.1, §3.2 + handoff `COMPONENTS.md` + handoff `primitives.jsx`
+- Outcome:
+  - Block 1 — `AppPanelTitle` + `AppSwash` (paired sibling). Forum heading + brass calligraphic flourish; sm / md / lg sizes; auto-paired swash width. Vue + Flutter + Storybook + Vitest + Flutter widget tests.
+  - Block 2 — `AppWordmark`. Forum "Coriolis" uppercase + brass swash + Inter "Companion" eyebrow lockup. Eyebrow auto-scales at `size × 0.18` (floored at 10), swash at `size × 2.4`. Single `role="img"` with combined accessible name for the lockup. Used by landing hero, dashboard hero, session-join card.
+  - Block 3 — `AppSkillRow`. Dense skill row (`name + attr eyebrow + dot meter + monospace rank`) on a `1fr-auto-auto-auto` grid. `name` slot / `nameBuilder` covers the handoff's "name may be a React node" case for the key-skill chip. Brass + mystic tones for general / advanced. Rank clamped to `[0, rankMax]`.
+  - Block 4 — `AppButton` variants `secondary` + `mystic`. `secondary` mirrors handoff `.cor-btn--secondary` (transparent + brass border, Cancel / Skip / Reroll). `mystic` mirrors `.cor-btn--mystic` (mystic-teal fill, "Push the Roll" CTA). Existing `primary` / `ghost` / `danger` untouched; no consumer regressions.
+  - Block 5 — `AppIconMedallion`. Radial-gradient brass disc + 16 astrolabe ticks + Forum monogram letter + optional mystic-teal halo on `glow`. `useId()`-based gradient ids so multiple medallions on the same surface don't collide. Distinct from `AppIconCoriolis` (sprite-based); ships alongside without refactor.
+  - Block 6 — `AppPortrait`. Standalone atom for the character portrait medallion (Forum initials over indigo + brass ring + 24 astrolabe ticks). Cyrillic-safe initials derivation via code-point iteration; explicit `initials` + a11y `label` overrides; falls back to `"NA"`. **Strategy decision recorded:** shipped as standalone atom rather than extending `AppAvatar` with an `astrolabe` shape — handoff Portrait has no image-bearing path, so overloading `AppAvatar.shape` would conflict with its `src` semantics. Used by sheet hero, combat tracker, GM crew list, member lists, chat bubbles.
+  - Block 7 — Published [`specs/design/HANDOFF_NAME_MAP.md`](../design/HANDOFF_NAME_MAP.md): handoff ⇄ project mapping for the atom layer, `cor-*` CSS-class layer, composition layer, and project-only extras. Per-row status (`aligned` / `aligned-rename` / `drift-documented` / `project-only` / `handoff-only`) + one-line rationale + source citation. Linked from `specs/design/README.md`.
+  - Test totals across blocks: 39 Vitest test files (872 specs) + 214 Flutter widget tests, all green at HEAD. `pnpm design:audit` clean.
+  - Cosmetic drift items called out in the audit (AppStarOrnament filled vs outlined, AppArabesqueCorner default colour, AppDie API mapping, AppChip / AppConditionPill split) stay deferred as explicit follow-ups in HANDOFF_NAME_MAP.md.
+- Unblocks: T-2026-05-14-004 (Bridge dashboard), T-2026-05-14-005 (wizard / mobile parity), T-2026-05-14-006 (design doc backfill).
+- PR: pending
+
 ## T-2026-05-14-002 — Reconcile typography token schema
 
 - Created: 2026-05-14

@@ -1,6 +1,6 @@
 # Active tasks
 
-LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md). All entries below are the follow-up tickets staged from that audit, consolidated into 5 parent tasks. Typography schema (T-2026-05-14-002) landed; T-2026-05-14-003 (v1 design atoms) is `in-progress`, the rest stay `queued` until their predecessor lands.
+LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md). All entries below are the follow-up tickets staged from that audit, consolidated into 5 parent tasks. Typography schema (T-2026-05-14-002) and the v1 atom layer (T-2026-05-14-003) have both landed; the remaining surface-layer tasks (T-2026-05-14-004 Bridge, T-2026-05-14-005 wizard/mobile parity, T-2026-05-14-006 design doc backfill) are all unblocked.
 
 ---
 
@@ -54,7 +54,7 @@ LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05
   - [ ] **T-MOBILE-COMBAT-TRACKER** — expand combat to full initiative tracker + DP pool + sticky toolbar
   - [ ] **T-LANDING-FRAMING** — arabesque corners, locale-toggle nav, 3-feature grid, starfield bg, fan-project footer
 - Status: queued
-- Blockers: T-2026-05-14-003 (atom layer must land first)
+- Blockers: — (T-2026-05-14-003 atom layer landed 2026-05-14)
 
 ---
 
@@ -82,35 +82,4 @@ LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05
   - [ ] i18n keys (RU + EN)
   - [ ] a11y pass + Playwright smoke
 - Status: queued
-- Blockers: T-2026-05-14-003 (AppPanelTitle + AppWordmark required)
-
----
-
-## T-2026-05-14-003 — Scaffold critical v1 design atoms
-
-- Created: 2026-05-14
-- Owner: claude
-- Spec: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md) §3.1, §3.2 + handoff `COMPONENTS.md` + handoff `primitives.jsx`
-- Goal: ship the v1 atom layer that unblocks sheets, wizard, dashboard, dice-roller.
-- Acceptance:
-  - `AppPanelTitle` + `AppSwash` exist in `packages/ui` with Storybook stories, colocated specs, and Flutter mirrors.
-  - `AppWordmark` (Forum uppercase + swash + Inter eyebrow lockup) — Storybook + Flutter mirror. Used by landing, dashboard hero, session-join card.
-  - `AppSkillRow` — Storybook + Flutter mirror. Used by character sheet (desktop + mobile) and wizard step 6.
-  - `AppButton` gains `secondary` and `mystic` variants. `mystic` = "Push the Roll" CTA in the dice roller.
-  - `AppIconMedallion` (brass disc + Forum monogram + astrolabe ticks + `glow` prop) — Storybook + Flutter mirror. Used by wizard step 5. NB: do **not** refactor existing `AppIconCoriolis` — add as a new atom.
-  - Portrait strategy decided + shipped: either extend `AppAvatar` with an `astrolabe` shape prop **or** ship `AppPortrait` wrapping `AppAvatar`. Used across sheet hero, combat tracker, GM crew.
-  - Cosmetic drift accepted as out-of-scope for this task but documented: `AppStarOrnament` variant, `AppArabesqueCorner` default colour, `AppDie` visual style, `AppChip`/`AppConditionPill` name mapping (see audit §3.2).
-- Spec diff: none
-- Codegen impact: no
-- Design impact: 6 new/extended `@app/ui` components + Flutter mirrors
-- Tests: Storybook stories + colocated Vitest specs + Flutter widget tests; visual diff in Storybook
-- Sub-steps:
-  - [x] `/component-new AppPanelTitle` (+ `AppSwash` paired sibling) — landed 2026-05-14 (Vue + Flutter + stories + specs)
-  - [x] `/component-new AppWordmark` — landed 2026-05-14 (Vue + Flutter + stories + specs; auto-scales eyebrow + swash from `size`)
-  - [x] `/component-new AppSkillRow` — landed 2026-05-14 (Vue + Flutter + 9 stories + 16 Vue specs + 13 Flutter widget tests; brass / mystic tones, `name` slot/builder override for the key-chip case, rank clamp 0…rankMax)
-  - [x] extend `AppButton` with `secondary` + `mystic` variants — landed 2026-05-14 (Vue + Flutter + stories + specs). Mirrors handoff `.cor-btn--secondary` (transparent fill + brass border, Cancel/Skip/Reroll) and `.cor-btn--mystic` (mystic-teal fill, "Push the Roll" CTA). Existing consumers unaffected (`primary` / `ghost` / `danger` untouched).
-  - [x] `/component-new AppIconMedallion` — landed 2026-05-14 (Vue + Flutter + 7 stories + 13 Vue specs + 8 Flutter widget tests). Brass radial-gradient disc + 16 astrolabe ticks + Forum monogram + optional mystic-teal halo on `glow`. Distinct from `AppIconCoriolis` (sprite-based); no refactor of the existing atom, per audit §3.1.
-  - [x] decide Portrait strategy + implement — landed 2026-05-14. **Decision:** ship `AppPortrait` as a standalone atom rather than extending `AppAvatar` with an `astrolabe` shape. Rationale: handoff Portrait has no image-bearing path (always Forum initials over indigo + brass ring + 24 astrolabe ticks), so overloading `AppAvatar.shape` would conflict with its existing `src` prop semantics and bundle two visually unrelated treatments under one component. Vue + Flutter + 7 stories + 17 Vue specs + 12 Flutter widget tests. Cyrillic-safe initials derivation via code-point iteration; explicit `initials` and a11y `label` overrides; falls back to `"NA"`. Used by sheet hero, combat tracker, GM crew list, member lists, chat bubbles.
-  - [ ] publish handoff→project component name map (see audit §3.3)
-- Status: in-progress
-- Blockers: —  (T-2026-05-14-002 landed)
+- Blockers: T-2026-05-14-003 landed — ready to start any time.

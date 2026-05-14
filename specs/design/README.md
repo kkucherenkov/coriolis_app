@@ -176,6 +176,12 @@ Populated as components ship. `pnpm design:audit` compares the rows below
 against the actual folders under `packages/ui/src/components/` (Vue) and
 `packages/ui_flutter/lib/src/` (Flutter), and fails CI on drift.
 
+For the **handoff ⇄ project name map** (which `AppFoo` corresponds to
+which handoff `Foo`, plus the rationale for every documented drift) see
+[`HANDOFF_NAME_MAP.md`](HANDOFF_NAME_MAP.md). The map is the canonical
+reference for review questions like "why is `cor-chip--cond` shipped as
+its own `AppConditionPill` atom instead of an `AppChip` variant?".
+
 | Category    | Component            | Vue (`@app/ui`) | Flutter (`app_ui`) |
 | ----------- | -------------------- | --------------- | ------------------ |
 | Coriolis    | `AppArabesqueCorner` | ✓               | —                  |
