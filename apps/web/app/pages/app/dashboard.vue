@@ -4,6 +4,13 @@
   import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
   import { AppArabesqueCorner, AppPanelTitle, AppWordmark } from '@app/ui';
   import { useCharactersApi } from '~/composables/useCharactersApi';
+  import {
+    APHORISM_KEYS,
+    formatCycleClock,
+    formatCycleDate,
+    formatSyncLabel,
+    pickAphorism,
+  } from '~/utils/bridge';
 
   const { t, locale } = useI18n({ useScope: 'local' });
   const auth = useAuth();
@@ -63,15 +70,10 @@
 
   // ── Aphorism (footer) ───────────────────────────────────────────────────────
 
-  // The Bridge always closes with a Coriolis aphorism. The list is small
-  // and curated; we pick deterministically off the day-of-year so the
-  // user gets a stable line per session without sticky-state plumbing.
-  const APHORISM_KEYS = ['aphorism.wheel', 'aphorism.icons', 'aphorism.dark'] as const;
-  const aphorismKey = computed<(typeof APHORISM_KEYS)[number]>(() => {
-    const day = Math.floor(now.value.getTime() / 86_400_000);
-    const ix = ((day % APHORISM_KEYS.length) + APHORISM_KEYS.length) % APHORISM_KEYS.length;
-    return APHORISM_KEYS[ix as 0 | 1 | 2];
-  });
+  // The Bridge always closes with a Coriolis aphorism. Keys + the
+  // deterministic day-of-year picker live in `~/utils/bridge.ts` so
+  // the rule is unit-testable without mounting Nuxt.
+  const aphorismKey = computed(() => pickAphorism(now.value, APHORISM_KEYS));
 
   // ── Lifecycle ───────────────────────────────────────────────────────────────
 
@@ -105,34 +107,23 @@
 
   // ── Display formatters ──────────────────────────────────────────────────────
 
-  const cycleClock = computed<string>(() => {
-    const fmt = new Intl.DateTimeFormat(locale.value, {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
-    return fmt.format(now.value);
-  });
+  // All formatters delegate to pure helpers in `~/utils/bridge.ts` —
+  // see that file for contract docs and the Vitest spec that locks
+  // their behaviour.
 
-  const cycleDate = computed<string>(() => {
-    const fmt = new Intl.DateTimeFormat(locale.value, {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-    });
-    return fmt.format(now.value);
-  });
+  const cycleClock = computed<string>(() => formatCycleClock(now.value, locale.value));
 
-  const syncLabel = computed<string>(() => {
-    if (!online.value) return t('sync.offline');
-    if (!lastSyncAt.value) return t('sync.pending');
-    const fmt = new Intl.RelativeTimeFormat(locale.value, { numeric: 'auto' });
-    const seconds = Math.round((lastSyncAt.value.getTime() - now.value.getTime()) / 1000);
-    if (Math.abs(seconds) < 60) return fmt.format(seconds, 'second');
-    const minutes = Math.round(seconds / 60);
-    if (Math.abs(minutes) < 60) return fmt.format(minutes, 'minute');
-    return fmt.format(Math.round(minutes / 60), 'hour');
-  });
+  const cycleDate = computed<string>(() => formatCycleDate(now.value, locale.value));
+
+  const syncLabel = computed<string>(() =>
+    formatSyncLabel({
+      online: online.value,
+      now: now.value,
+      lastSyncAt: lastSyncAt.value,
+      locale: locale.value,
+      t,
+    }),
+  );
 </script>
 
 <i18n lang="json">
@@ -209,6 +200,80 @@
       "wheel": "Колесо Горизонта вращается. Иконы идут рядом.",
       "icons": "Девять Икон смотрят из-за тёмных вод; одна стоит рядом с тобой.",
       "dark": "Пушь лишь то, что должен. Тьма считает остальное."
+    }
+  },
+  "uk": {
+    "wizardLabel": "[uk-todo] Bridge",
+    "greeting": {
+      "withName": "[uk-todo] Welcome back, {name}.",
+      "anonymous": "[uk-todo] Welcome back."
+    },
+    "card": {
+      "cycle": {
+        "title": "[uk-todo] Cycle",
+        "kicker": "[uk-todo] Local clock"
+      },
+      "sync": {
+        "title": "[uk-todo] Sync",
+        "kicker": "[uk-todo] State of the line",
+        "online": "[uk-todo] Online",
+        "offline": "[uk-todo] Offline"
+      },
+      "characters": {
+        "title": "[uk-todo] Roster",
+        "kicker": "[uk-todo] Active characters",
+        "empty": "[uk-todo] No characters yet.",
+        "createCta": "[uk-todo] Create character",
+        "browseCta": "[uk-todo] Open roster",
+        "errorLoad": "[uk-todo] Could not load your roster."
+      }
+    },
+    "sync": {
+      "online": "[uk-todo] Online",
+      "offline": "[uk-todo] Offline — changes will sync when the line returns.",
+      "pending": "[uk-todo] Awaiting first sync…"
+    },
+    "aphorism": {
+      "wheel": "[uk-todo] The Wheel turns.",
+      "icons": "[uk-todo] Nine Icons watch from beyond the dark water.",
+      "dark": "[uk-todo] Push only what you must."
+    }
+  },
+  "el": {
+    "wizardLabel": "[el-todo] Bridge",
+    "greeting": {
+      "withName": "[el-todo] Welcome back, {name}.",
+      "anonymous": "[el-todo] Welcome back."
+    },
+    "card": {
+      "cycle": {
+        "title": "[el-todo] Cycle",
+        "kicker": "[el-todo] Local clock"
+      },
+      "sync": {
+        "title": "[el-todo] Sync",
+        "kicker": "[el-todo] State of the line",
+        "online": "[el-todo] Online",
+        "offline": "[el-todo] Offline"
+      },
+      "characters": {
+        "title": "[el-todo] Roster",
+        "kicker": "[el-todo] Active characters",
+        "empty": "[el-todo] No characters yet.",
+        "createCta": "[el-todo] Create character",
+        "browseCta": "[el-todo] Open roster",
+        "errorLoad": "[el-todo] Could not load your roster."
+      }
+    },
+    "sync": {
+      "online": "[el-todo] Online",
+      "offline": "[el-todo] Offline — changes will sync when the line returns.",
+      "pending": "[el-todo] Awaiting first sync…"
+    },
+    "aphorism": {
+      "wheel": "[el-todo] The Wheel turns.",
+      "icons": "[el-todo] Nine Icons watch from beyond the dark water.",
+      "dark": "[el-todo] Push only what you must."
     }
   }
 }

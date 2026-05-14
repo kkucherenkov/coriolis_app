@@ -55,7 +55,8 @@ LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05
   - [x] footer aphorism — three Coriolis lines, deterministic day-of-year pick. _Block 7._
   - [x] flip auth redirect: `apps/web/app/pages/index.vue`, `pages/login.vue`, `pages/signup.vue` now point at `/app/dashboard`. _Block 7._
   - [x] i18n keys (EN + RU complete; UK + EL — see follow-up below).
-  - [ ] **Follow-up:** UK + EL stubs for `wizard.label`, `greeting.*`, `card.*`, `sync.*`, `aphorism.*` on the Bridge page (currently EN-only fallback via Nuxt i18n) — track separately as `T-BRIDGE-I18N-STUBS`.
-  - [ ] **Follow-up:** Vitest page spec + Playwright smoke for `/app/dashboard` — track as `T-BRIDGE-TESTS`. Sync card timer + RelativeTimeFormat formatting are the easy unit-spec wins.
-- Status: shipped on web (block 7); two thin follow-ups noted above.
+  - [x] **T-BRIDGE-I18N-STUBS** — UK + EL stubs landed for every `wizardLabel` / `greeting.*` / `card.*` / `sync.*` / `aphorism.*` key on the dashboard. _Block 8, 2026-05-14._
+  - [x] **T-BRIDGE-TESTS (unit)** — pure helpers extracted to `apps/web/app/utils/bridge.ts` (`pickAphorism`, `formatCycleClock`, `formatCycleDate`, `formatSyncLabel`); locked by `app/utils/__tests__/bridge.spec.ts` (16 assertions: deterministic day-of-epoch picker, 24h clock shape, locale-respecting long-form date, offline / pending / seconds / minutes / hours branches of the sync label, plus a no-`t`-call invariant on the relative-time branch). _Block 8, 2026-05-14._
+  - [ ] **Follow-up:** Playwright smoke for `/app/dashboard` (mounted page integration). Wait until the Bridge gets a real-time channel binding so the smoke covers the live state, not just the first paint.
+- Status: shipped on web (block 7) + helpers extracted, unit-tested, EN/RU/UK/EL i18n complete (block 8); Playwright smoke remains the only follow-up.
 - Blockers: — (T-2026-05-14-003 atom layer landed 2026-05-14)
