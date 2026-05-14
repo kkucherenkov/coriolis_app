@@ -81,6 +81,24 @@ console.warn('[codegen] post: inject missing ShipModuleSlot import into oneOf su
   }
 }
 
+// built_value relies on `.g.dart` parts that are produced by a separate
+// build_runner pass, not the openapi-generator template. Skipping this
+// step means newly-introduced built_value types (e.g. ShipUpdate) compile
+// at the SDK level but fail the moment any consumer references them —
+// the failure window opens once the SDK ships a type whose `.g.dart` is
+// not committed yet, which is exactly what happened with ShipUpdate /
+// ShipModuleTorpedoBuilder when the ships block landed. Run build_runner
+// against the generated package so the `.g.dart` outputs are always in
+// sync with the regenerated `.dart` files.
+//
+// We do not pass `--delete-conflicting-outputs`: that flag was removed
+// upstream in newer build_runner releases and the previous run leaves
+// the generated tree in a consistent state. If a future regeneration
+// hits the "Asset already exists" path, the dart-side `dart pub get`
+// step a few lines above is the natural place to clear caches.
+console.warn('[codegen] post: dart run build_runner build (generate .g.dart parts)');
+run('dart run build_runner build', dartOut);
+
 console.warn('[codegen] post: prettier on openapi-types.ts (stable diff across versions)');
 run(`pnpm exec prettier --write "${openapiTypesOut}"`, packagesRoot);
 
