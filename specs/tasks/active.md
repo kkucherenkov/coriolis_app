@@ -23,7 +23,7 @@ LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05
 - Tests: none (doc PRs reviewed via the spec-reviewer agent)
 - Sub-steps:
   - [x] author `specs/design/PATTERNS.md` — landed 2026-05-14 (block 1)
-  - [ ] author `specs/design/CONTENT.md`
+  - [x] author `specs/design/CONTENT.md` — landed 2026-05-14 (block 2)
   - [ ] backfill `FOUNDATIONS.md` (motif density, shadow/opacity semantics, hard rules)
   - [ ] extract canonical `A11Y.md`
   - [ ] add I18N design layer + resolve Forum-Cyrillic conflict
