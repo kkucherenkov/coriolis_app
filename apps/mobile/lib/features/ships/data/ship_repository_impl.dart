@@ -6,15 +6,21 @@ import 'package:app_api_client/app_api_client.dart'
         ShipUpdate,
         ShipUpdateHull,
         ShipModule,
+        ShipModuleCreate,
+        ShipModuleUpdate,
         ShipModuleHold,
         ShipModuleSensor,
         ShipModuleTorpedo,
         ShipModuleWeapon,
         ShipModuleOther,
+        ShipModuleOtherCreate,
+        ShipModuleOtherUpdate,
+        ShipModuleSlot,
         AssignCrewRequest,
         CrewPosition,
         CrewSlot,
         ShipWeaponRange;
+import 'package:one_of/one_of.dart';
 import 'package:app_api_client/app_api_client.dart' as api_client show Ship;
 import 'package:built_collection/built_collection.dart';
 
@@ -249,5 +255,75 @@ class ShipRepositoryImpl implements ShipRepository {
     required String characterId,
   }) async {
     await _api.unassignCrew(id: shipId, characterId: characterId);
+  }
+
+  /// `oneOf` discriminator subtype lists for ShipModule mutations. v1 only
+  /// produces the `Other` variant; the other types are included so the
+  /// `OneOfDynamic.types` list matches the SDK's expected shape.
+  static final _moduleCreateTypes = <Type>[
+    ShipModuleOtherCreate,
+  ];
+  static final _moduleUpdateTypes = <Type>[
+    ShipModuleOtherUpdate,
+  ];
+
+  @override
+  Future<DomainShipModule> addOtherModule({
+    required String shipId,
+    required String slot,
+    required String name,
+    int energyUse = 0,
+    String? notes,
+  }) async {
+    final inner = ShipModuleOtherCreate((b) => b
+      ..slot = ShipModuleSlot.valueOf(slot)
+      ..name = name
+      ..energyUse = energyUse
+      ..notes = notes);
+    final payload = ShipModuleCreate((b) => b
+      ..oneOf = OneOfDynamic(
+        typeIndex: _moduleCreateTypes.indexOf(ShipModuleOtherCreate),
+        types: _moduleCreateTypes,
+        value: inner,
+      ));
+    final response = await _api.addShipModule(
+      id: shipId,
+      shipModuleCreate: payload,
+    );
+    final body = response.data;
+    if (body == null) throw StateError('Empty response after addShipModule');
+    return _moduleToDomain(body);
+  }
+
+  @override
+  Future<DomainShipModule> updateOtherModule({
+    required String moduleId,
+    String? name,
+    int? energyUse,
+    String? notes,
+  }) async {
+    final inner = ShipModuleOtherUpdate((b) {
+      if (name != null) b.name = name;
+      if (energyUse != null) b.energyUse = energyUse;
+      if (notes != null) b.notes = notes;
+    });
+    final payload = ShipModuleUpdate((b) => b
+      ..oneOf = OneOfDynamic(
+        typeIndex: _moduleUpdateTypes.indexOf(ShipModuleOtherUpdate),
+        types: _moduleUpdateTypes,
+        value: inner,
+      ));
+    final response = await _api.updateShipModule(
+      id: moduleId,
+      shipModuleUpdate: payload,
+    );
+    final body = response.data;
+    if (body == null) throw StateError('Empty response after updateShipModule');
+    return _moduleToDomain(body);
+  }
+
+  @override
+  Future<void> deleteModule(String moduleId) async {
+    await _api.deleteShipModule(id: moduleId);
   }
 }

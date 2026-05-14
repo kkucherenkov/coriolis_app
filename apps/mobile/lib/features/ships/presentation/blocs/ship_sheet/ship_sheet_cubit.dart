@@ -238,6 +238,103 @@ class ShipSheetCubit extends Cubit<ShipSheetState> {
     }
   }
 
+  // ── Modules ──────────────────────────────────────────────────────────────
+
+  /// Adds a generic "other-slot" module to the current ship and refetches
+  /// the ship so the Modules card reflects the new install. Returns the
+  /// created module on success, `null` on failure (error in
+  /// `saveErrorMessage`).
+  Future<DomainShipModule?> addOtherModule({
+    required String slot,
+    required String name,
+    int energyUse = 0,
+    String? notes,
+  }) async {
+    final id = state.ship?.id;
+    if (id == null) return null;
+    emit(state.copyWith(saveStatus: ShipSheetSaveStatus.saving));
+    try {
+      final created = await _repository.addOtherModule(
+        shipId: id,
+        slot: slot,
+        name: name,
+        energyUse: energyUse,
+        notes: notes,
+      );
+      final refreshed = await _repository.get(id);
+      emit(state.copyWith(
+        ship: refreshed,
+        saveStatus: ShipSheetSaveStatus.saved,
+      ));
+      _startSavedResetTimer();
+      return created;
+    } on Object catch (e) {
+      emit(state.copyWith(
+        saveStatus: ShipSheetSaveStatus.error,
+        saveErrorMessage: e.toString(),
+      ));
+      return null;
+    }
+  }
+
+  /// Patches the editable fields of an existing module.
+  Future<bool> updateOtherModule({
+    required String moduleId,
+    String? name,
+    int? energyUse,
+    String? notes,
+  }) async {
+    final id = state.ship?.id;
+    if (id == null) return false;
+    emit(state.copyWith(saveStatus: ShipSheetSaveStatus.saving));
+    try {
+      await _repository.updateOtherModule(
+        moduleId: moduleId,
+        name: name,
+        energyUse: energyUse,
+        notes: notes,
+      );
+      final refreshed = await _repository.get(id);
+      emit(state.copyWith(
+        ship: refreshed,
+        saveStatus: ShipSheetSaveStatus.saved,
+      ));
+      _startSavedResetTimer();
+      return true;
+    } on Object catch (e) {
+      emit(state.copyWith(
+        saveStatus: ShipSheetSaveStatus.error,
+        saveErrorMessage: e.toString(),
+      ));
+      return false;
+    }
+  }
+
+  /// Deletes a module. Server rejects mandatory slots (422
+  /// `SHIP_MODULE_MANDATORY`); the page should hide the delete affordance
+  /// on those rows to avoid surfacing the error.
+  Future<bool> deleteModule(String moduleId) async {
+    final id = state.ship?.id;
+    if (id == null) return false;
+    emit(state.copyWith(saveStatus: ShipSheetSaveStatus.saving));
+    try {
+      await _repository.deleteModule(moduleId);
+      final refreshed = await _repository.get(id);
+      emit(state.copyWith(
+        ship: refreshed,
+        saveStatus: ShipSheetSaveStatus.saved,
+      ));
+      _startSavedResetTimer();
+      return true;
+    } on Object catch (e) {
+      emit(state.copyWith(
+        saveStatus: ShipSheetSaveStatus.error,
+        saveErrorMessage: e.toString(),
+      ));
+      return false;
+    }
+  }
+
   // ── Crew ─────────────────────────────────────────────────────────────────
 
   /// Assigns [characterId] to crew [position] on the current ship and

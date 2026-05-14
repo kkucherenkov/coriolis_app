@@ -74,4 +74,32 @@ abstract class ShipRepository {
     required String shipId,
     required String characterId,
   });
+
+  /// Adds a generic "other-slot" module to [shipId]. Mobile v1 restricts
+  /// the picker to slots that map to `ShipModuleOtherCreate` (i.e.
+  /// COMMS / HANGAR / QUARTERS / etc.); the four variant slots
+  /// (HOLD / WEAPON / TORPEDO / SENSOR) and their type-specific fields
+  /// are deferred to a follow-up that ports the web variant forms.
+  ///
+  /// [slot] is the wire-form `ShipModuleSlot` value.
+  Future<DomainShipModule> addOtherModule({
+    required String shipId,
+    required String slot,
+    required String name,
+    int energyUse = 0,
+    String? notes,
+  });
+
+  /// Patches the editable fields of an existing module. `slot` is immutable
+  /// after installation per the spec.
+  Future<DomainShipModule> updateOtherModule({
+    required String moduleId,
+    String? name,
+    int? energyUse,
+    String? notes,
+  });
+
+  /// Deletes a module. Server rejects (`SHIP_MODULE_MANDATORY` / 422) for
+  /// the seeded `BRIDGE` / `REACTOR` / `DRIVE` slots.
+  Future<void> deleteModule(String moduleId);
 }

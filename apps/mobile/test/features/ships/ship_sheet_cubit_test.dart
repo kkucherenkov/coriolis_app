@@ -397,6 +397,150 @@ void main() {
       );
     });
 
+    group('addOtherModule', () {
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns created module and refetches ship on success',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.addOtherModule(
+                shipId: any(named: 'shipId'),
+                slot: any(named: 'slot'),
+                name: any(named: 'name'),
+                energyUse: any(named: 'energyUse'),
+                notes: any(named: 'notes'),
+              )).thenAnswer((_) async => const DomainShipModule(
+                id: 'mod-7',
+                slot: 'COMMS',
+                name: 'Standard comms',
+                energyUse: 1,
+              ));
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final created = await cubit.addOtherModule(
+            slot: 'COMMS',
+            name: 'Standard comms',
+            energyUse: 1,
+          );
+          expect(created, isNotNull);
+          expect(created!.id, 'mod-7');
+        },
+        verify: (cubit) {
+          verify(() => repo.get('s1')).called(2);
+          expect(cubit.state.saveStatus, isNot(ShipSheetSaveStatus.error));
+        },
+      );
+
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns null and surfaces saveErrorMessage on failure',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.addOtherModule(
+                shipId: any(named: 'shipId'),
+                slot: any(named: 'slot'),
+                name: any(named: 'name'),
+                energyUse: any(named: 'energyUse'),
+                notes: any(named: 'notes'),
+              )).thenThrow(StateError('422 invalid slot'));
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final created = await cubit.addOtherModule(
+            slot: 'COMMS',
+            name: 'Std',
+          );
+          expect(created, isNull);
+        },
+        verify: (cubit) {
+          expect(cubit.state.saveStatus, ShipSheetSaveStatus.error);
+          expect(
+            cubit.state.saveErrorMessage,
+            contains('422 invalid slot'),
+          );
+        },
+      );
+    });
+
+    group('updateOtherModule', () {
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns true and refetches ship on success',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.updateOtherModule(
+                moduleId: any(named: 'moduleId'),
+                name: any(named: 'name'),
+                energyUse: any(named: 'energyUse'),
+                notes: any(named: 'notes'),
+              )).thenAnswer((_) async => const DomainShipModule(
+                id: 'mod-7',
+                slot: 'COMMS',
+                name: 'Std comms v2',
+                energyUse: 1,
+              ));
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final ok = await cubit.updateOtherModule(
+            moduleId: 'mod-7',
+            name: 'Std comms v2',
+          );
+          expect(ok, isTrue);
+        },
+        verify: (_) {
+          verify(() => repo.updateOtherModule(
+                moduleId: 'mod-7',
+                name: 'Std comms v2',
+                energyUse: null,
+                notes: null,
+              )).called(1);
+        },
+      );
+    });
+
+    group('deleteModule', () {
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns true and refetches ship on success',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.deleteModule(any())).thenAnswer((_) async {});
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final ok = await cubit.deleteModule('mod-7');
+          expect(ok, isTrue);
+        },
+        verify: (_) {
+          verify(() => repo.deleteModule('mod-7')).called(1);
+        },
+      );
+
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'records the SHIP_MODULE_MANDATORY error gracefully',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.deleteModule('mod-bridge'))
+              .thenThrow(StateError('422 SHIP_MODULE_MANDATORY'));
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final ok = await cubit.deleteModule('mod-bridge');
+          expect(ok, isFalse);
+        },
+        verify: (cubit) {
+          expect(cubit.state.saveStatus, ShipSheetSaveStatus.error);
+          expect(
+            cubit.state.saveErrorMessage,
+            contains('SHIP_MODULE_MANDATORY'),
+          );
+        },
+      );
+    });
+
     group('assignCrew', () {
       blocTest<ShipSheetCubit, ShipSheetState>(
         'returns true and refetches ship on success',

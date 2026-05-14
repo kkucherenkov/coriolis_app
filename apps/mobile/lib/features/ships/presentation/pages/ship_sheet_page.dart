@@ -643,6 +643,128 @@ class _ModulesCard extends StatelessWidget {
 
   static const _mandatorySlots = {'BRIDGE', 'REACTOR', 'DRIVE'};
 
+  /// Slot wires available to the "Add module" picker. Mandatory three are
+  /// seeded server-side; the four variant slots (HOLD / WEAPON / TORPEDO /
+  /// SENSOR) need richer editors and are deferred to a follow-up.
+  static const _addableOtherSlots = <String>[
+    'COMMS',
+    'HANGAR',
+    'QUARTERS',
+    'MEDICAL',
+    'WORKSHOP',
+    'CHAPEL',
+    'ESCAPE-PODS',
+    'CRYO',
+    'DOCKING',
+    'MINING',
+    'REPAIR',
+    'CONCEALED-HOLD',
+    'PROXY-DECK',
+    'OTHER',
+  ];
+
+  Future<void> _openCreate(BuildContext context) async {
+    final cubit = context.read<ShipSheetCubit>();
+    final t = context.t.ships;
+    final draft = await showModalBottomSheet<_ModuleDraft>(
+      context: context,
+      backgroundColor: AppColors.surfaceNight,
+      isScrollControlled: true,
+      builder: (_) => const _ModuleEditorSheet(
+        mode: _ModuleEditorMode.create,
+        initial: null,
+      ),
+    );
+    if (draft == null || !context.mounted) return;
+    final created = await cubit.addOtherModule(
+      slot: draft.slot,
+      name: draft.name,
+      energyUse: draft.energyUse,
+      notes: draft.notes,
+    );
+    if (created == null && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.moduleErrorAdd)),
+      );
+    }
+  }
+
+  Future<void> _openEdit(BuildContext context, DomainShipModule mod) async {
+    final cubit = context.read<ShipSheetCubit>();
+    final t = context.t.ships;
+    final draft = await showModalBottomSheet<_ModuleDraft>(
+      context: context,
+      backgroundColor: AppColors.surfaceNight,
+      isScrollControlled: true,
+      builder: (_) => _ModuleEditorSheet(
+        mode: _ModuleEditorMode.edit,
+        initial: _ModuleDraft(
+          slot: mod.slot,
+          name: mod.name,
+          energyUse: mod.energyUse,
+          notes: mod.notes,
+        ),
+      ),
+    );
+    if (draft == null || !context.mounted) return;
+    final ok = await cubit.updateOtherModule(
+      moduleId: mod.id,
+      name: draft.name,
+      energyUse: draft.energyUse,
+      notes: draft.notes,
+    );
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.moduleErrorUpdate)),
+      );
+    }
+  }
+
+  Future<void> _confirmDelete(
+      BuildContext context, DomainShipModule mod) async {
+    final cubit = context.read<ShipSheetCubit>();
+    final t = context.t.ships;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceNight,
+        title: Text(
+          t.moduleDeleteConfirmTitle,
+          style: AppTypography.bodyMd.copyWith(color: AppColors.textPrimary),
+        ),
+        content: Text(
+          t.moduleDeleteConfirmBody(name: mod.name),
+          style: AppTypography.bodySm.copyWith(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              t.moduleDeleteCancel,
+              style: AppTypography.bodySm
+                  .copyWith(color: AppColors.brandBrassLight),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              t.moduleDeleteConfirm,
+              style: AppTypography.bodySm
+                  .copyWith(color: AppColors.stateCrimsonBright),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    final ok = await cubit.deleteModule(mod.id);
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.moduleErrorDelete)),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = context.t.ships;
@@ -653,8 +775,11 @@ class _ModulesCard extends StatelessWidget {
     ];
     return AppCard(
       header: _CardTitle(text: t.sectionModules),
-      child: sorted.isEmpty
-          ? Padding(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (sorted.isEmpty)
+            Padding(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.s2),
               child: Text(
                 t.modulesEmpty,
@@ -662,20 +787,58 @@ class _ModulesCard extends StatelessWidget {
                     .copyWith(color: AppColors.textSecondary),
               ),
             )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (final mod in sorted) _ModuleRow(module: mod),
-              ],
+          else
+            for (final mod in sorted)
+              _ModuleRow(
+                module: mod,
+                isMandatory: _mandatorySlots.contains(mod.slot),
+                isEditable: !_isVariantSlot(mod.slot),
+                onEdit: () => _openEdit(context, mod),
+                onDelete: () => _confirmDelete(context, mod),
+              ),
+          const SizedBox(height: AppSpacing.s2),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              key: const Key('ship-module-add'),
+              icon: const Icon(Icons.add_box_outlined, size: 18),
+              label: Text(t.moduleAddAction),
+              onPressed: () => _openCreate(context),
             ),
+          ),
+        ],
+      ),
     );
   }
+
+  /// True for the four variant slots whose editors need richer fields
+  /// (HOLD / WEAPON / TORPEDO / SENSOR). v1 keeps those rows read-only.
+  static bool _isVariantSlot(String slot) =>
+      slot == 'HOLD' ||
+      slot == 'WEAPON' ||
+      slot == 'TORPEDO' ||
+      slot == 'SENSOR';
 }
 
 class _ModuleRow extends StatelessWidget {
-  const _ModuleRow({required this.module});
+  const _ModuleRow({
+    required this.module,
+    required this.isMandatory,
+    required this.isEditable,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   final DomainShipModule module;
+  final bool isMandatory;
+
+  /// True when this row supports the v1 generic editor. False for the four
+  /// variant slots that haven't been ported yet — they keep the existing
+  /// read-only presentation.
+  final bool isEditable;
+
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -708,7 +871,187 @@ class _ModuleRow extends StatelessWidget {
               tone: AppBadgeTone.mystic,
               size: AppBadgeSize.sm,
             ),
+          if (isEditable) ...[
+            IconButton(
+              key: Key('ship-module-edit-${module.id}'),
+              icon: const Icon(Icons.edit_outlined, size: 18),
+              tooltip: t.moduleEditTooltip,
+              onPressed: onEdit,
+            ),
+            if (!isMandatory)
+              IconButton(
+                key: Key('ship-module-delete-${module.id}'),
+                icon: const Icon(Icons.delete_outline,
+                    size: 18, color: AppColors.stateCrimsonBright),
+                tooltip: t.moduleDeleteTooltip,
+                onPressed: onDelete,
+              ),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+// ── Module editor sheet ────────────────────────────────────────────────────
+
+enum _ModuleEditorMode { create, edit }
+
+class _ModuleDraft {
+  const _ModuleDraft({
+    required this.slot,
+    required this.name,
+    required this.energyUse,
+    this.notes,
+  });
+  final String slot;
+  final String name;
+  final int energyUse;
+  final String? notes;
+}
+
+class _ModuleEditorSheet extends StatefulWidget {
+  const _ModuleEditorSheet({required this.mode, required this.initial});
+
+  final _ModuleEditorMode mode;
+  final _ModuleDraft? initial;
+
+  @override
+  State<_ModuleEditorSheet> createState() => _ModuleEditorSheetState();
+}
+
+class _ModuleEditorSheetState extends State<_ModuleEditorSheet> {
+  late String _slot;
+  late TextEditingController _name;
+  late TextEditingController _energy;
+  late TextEditingController _notes;
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initial;
+    _slot = initial?.slot ?? _ModulesCard._addableOtherSlots.first;
+    _name = TextEditingController(text: initial?.name ?? '');
+    _energy = TextEditingController(text: (initial?.energyUse ?? 0).toString());
+    _notes = TextEditingController(text: initial?.notes ?? '');
+  }
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _energy.dispose();
+    _notes.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final trimmed = _name.text.trim();
+    if (trimmed.isEmpty) return;
+    Navigator.of(context).pop(_ModuleDraft(
+      slot: _slot,
+      name: trimmed,
+      energyUse: int.tryParse(_energy.text.trim()) ?? 0,
+      notes: _notes.text.trim().isEmpty ? null : _notes.text.trim(),
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t.ships;
+    final isCreate = widget.mode == _ModuleEditorMode.create;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: AppSpacing.s4,
+          right: AppSpacing.s4,
+          top: AppSpacing.s4,
+          bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.s4,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              isCreate ? t.moduleAddTitle : t.moduleEditTitle,
+              style: AppTypography.bodyLg
+                  .copyWith(color: AppColors.brandBrassLight),
+            ),
+            const SizedBox(height: AppSpacing.s3),
+            // Slot picker — disabled in edit mode (slot is immutable
+            // after install per the OpenAPI spec).
+            DropdownButtonFormField<String>(
+              key: const Key('ship-module-form-slot'),
+              initialValue: _slot,
+              decoration: InputDecoration(
+                labelText: t.moduleFormSlotLabel,
+                border: const OutlineInputBorder(),
+              ),
+              items: [
+                for (final s in _ModulesCard._addableOtherSlots)
+                  DropdownMenuItem<String>(value: s, child: Text(s)),
+                if (!isCreate &&
+                    !_ModulesCard._addableOtherSlots.contains(_slot))
+                  DropdownMenuItem<String>(value: _slot, child: Text(_slot)),
+              ],
+              onChanged: isCreate
+                  ? (v) {
+                      if (v != null) setState(() => _slot = v);
+                    }
+                  : null,
+            ),
+            const SizedBox(height: AppSpacing.s3),
+            TextField(
+              key: const Key('ship-module-form-name'),
+              controller: _name,
+              decoration: InputDecoration(
+                labelText: t.moduleFormNameLabel,
+                border: const OutlineInputBorder(),
+              ),
+              maxLength: 80,
+            ),
+            const SizedBox(height: AppSpacing.s3),
+            TextField(
+              key: const Key('ship-module-form-energy'),
+              controller: _energy,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: t.moduleFormEnergyLabel,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s3),
+            TextField(
+              key: const Key('ship-module-form-notes'),
+              controller: _notes,
+              decoration: InputDecoration(
+                labelText: t.moduleFormNotesLabel,
+                border: const OutlineInputBorder(),
+              ),
+              maxLines: 3,
+              maxLength: 4096,
+            ),
+            const SizedBox(height: AppSpacing.s4),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(t.moduleFormCancel),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.s3),
+                Expanded(
+                  child: AppButton(
+                    key: const Key('ship-module-form-submit'),
+                    label: isCreate ? t.moduleFormCreate : t.moduleFormSave,
+                    onPressed: _submit,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
