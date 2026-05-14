@@ -18,6 +18,7 @@ Name | Type | Description | Notes
 **mutant** | **bool** | Allowed only while `status` is `draft`. Toggling on/off while drafting also clears any incompatible stigma talents picked previously. Once the character is `active`, this field is immutable and any attempt to change it is rejected with `MUTANT_IMMUTABLE`.  | [optional] 
 **mutantLineage** | [**MutantLineage**](MutantLineage.md) |  | [optional] 
 **reputation** | **int** | Update the character's current reputation (e.g. after a roleplay event). Initial value is set from `upbringing` at creation time; while the character is a `draft`, changing `upbringing` resets `reputation` to the new upbringing's baseline.  | [optional] 
+**birr** | **int** | Update the current birr balance (Bazaar purchases, session payouts). Allowed only while `status` is `active`. PATCHes to `birr` on a draft are rejected with `BIRR_DRAFT_IMMUTABLE` — the wizard re-seeds birr from `startingWealth` on the forge transition.  | [optional] 
 **attributes** | [**Attributes**](Attributes.md) |  | [optional] 
 **skills** | [**Skills**](Skills.md) |  | [optional] 
 **hp** | [**CharacterCreateHp**](CharacterCreateHp.md) |  | [optional] 

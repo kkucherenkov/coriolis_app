@@ -33,6 +33,7 @@ part 'character_update.g.dart';
 /// * [mutant] - Allowed only while `status` is `draft`. Toggling on/off while drafting also clears any incompatible stigma talents picked previously. Once the character is `active`, this field is immutable and any attempt to change it is rejected with `MUTANT_IMMUTABLE`. 
 /// * [mutantLineage] 
 /// * [reputation] - Update the character's current reputation (e.g. after a roleplay event). Initial value is set from `upbringing` at creation time; while the character is a `draft`, changing `upbringing` resets `reputation` to the new upbringing's baseline. 
+/// * [birr] - Update the current birr balance (Bazaar purchases, session payouts). Allowed only while `status` is `active`. PATCHes to `birr` on a draft are rejected with `BIRR_DRAFT_IMMUTABLE` — the wizard re-seeds birr from `startingWealth` on the forge transition. 
 /// * [attributes] 
 /// * [skills] 
 /// * [hp] 
@@ -82,6 +83,10 @@ abstract class CharacterUpdate implements Built<CharacterUpdate, CharacterUpdate
   /// Update the character's current reputation (e.g. after a roleplay event). Initial value is set from `upbringing` at creation time; while the character is a `draft`, changing `upbringing` resets `reputation` to the new upbringing's baseline. 
   @BuiltValueField(wireName: r'reputation')
   int? get reputation;
+
+  /// Update the current birr balance (Bazaar purchases, session payouts). Allowed only while `status` is `active`. PATCHes to `birr` on a draft are rejected with `BIRR_DRAFT_IMMUTABLE` — the wizard re-seeds birr from `startingWealth` on the forge transition. 
+  @BuiltValueField(wireName: r'birr')
+  int? get birr;
 
   @BuiltValueField(wireName: r'attributes')
   Attributes? get attributes;
@@ -203,6 +208,13 @@ class _$CharacterUpdateSerializer implements PrimitiveSerializer<CharacterUpdate
       yield r'reputation';
       yield serializers.serialize(
         object.reputation,
+        specifiedType: const FullType(int),
+      );
+    }
+    if (object.birr != null) {
+      yield r'birr';
+      yield serializers.serialize(
+        object.birr,
         specifiedType: const FullType(int),
       );
     }
@@ -367,6 +379,13 @@ class _$CharacterUpdateSerializer implements PrimitiveSerializer<CharacterUpdate
             specifiedType: const FullType(int),
           ) as int;
           result.reputation = valueDes;
+          break;
+        case r'birr':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.birr = valueDes;
           break;
         case r'attributes':
           final valueDes = serializers.deserialize(

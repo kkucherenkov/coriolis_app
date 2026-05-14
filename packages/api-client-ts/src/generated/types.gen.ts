@@ -1139,6 +1139,19 @@ export type Character = {
      */
     readonly startingWealth: number;
     /**
+     * Current spendable birr balance (the character's wallet).
+     * Seeded from `startingWealth` when the wizard transitions
+     * `status: draft → active` (the forge step). Mutable any time
+     * after activation — debited on Bazaar purchases via the items
+     * API and credited from session payouts via PATCH. While the
+     * character is still a `draft`, the server keeps `birr` in
+     * lock-step with `startingWealth` so changing `upbringing`
+     * does not strand a stale balance; explicit PATCHes to `birr`
+     * on a draft are rejected with `BIRR_DRAFT_IMMUTABLE`.
+     *
+     */
+    birr?: number;
+    /**
      * The crew (амплуа команды) this character belongs to.
      * Mutable while `status: draft` (the wizard is still in
      * progress); immutable once the character is `active`.
@@ -1393,6 +1406,15 @@ export type CharacterUpdate = {
      *
      */
     reputation?: number;
+    /**
+     * Update the current birr balance (Bazaar purchases, session
+     * payouts). Allowed only while `status` is `active`. PATCHes
+     * to `birr` on a draft are rejected with
+     * `BIRR_DRAFT_IMMUTABLE` — the wizard re-seeds birr from
+     * `startingWealth` on the forge transition.
+     *
+     */
+    birr?: number;
     attributes?: Attributes;
     skills?: Skills;
     hp?: {
@@ -3135,6 +3157,19 @@ export type CharacterWritable = {
      *
      */
     reputation: number;
+    /**
+     * Current spendable birr balance (the character's wallet).
+     * Seeded from `startingWealth` when the wizard transitions
+     * `status: draft → active` (the forge step). Mutable any time
+     * after activation — debited on Bazaar purchases via the items
+     * API and credited from session payouts via PATCH. While the
+     * character is still a `draft`, the server keeps `birr` in
+     * lock-step with `startingWealth` so changing `upbringing`
+     * does not strand a stale balance; explicit PATCHes to `birr`
+     * on a draft are rejected with `BIRR_DRAFT_IMMUTABLE`.
+     *
+     */
+    birr?: number;
     /**
      * The crew (амплуа команды) this character belongs to.
      * Mutable while `status: draft` (the wizard is still in

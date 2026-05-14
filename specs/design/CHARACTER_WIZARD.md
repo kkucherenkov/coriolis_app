@@ -164,12 +164,28 @@ Notes on canonical decisions:
 
 ### 3.8 Gear (#8) — deferred
 
-- **Status:** not implemented. Tracked as
+- **Status:** not implemented in the wizard surface. Tracked as
   [§7 follow-up T-WIZARD-GEAR](#7-follow-up-tickets).
-- **Blocked by:** backend wallet (`birr` balance on Character) +
-  starting-kit derivation rule per (amplua, role, upbringing). See
-  `apps/backend/src/modules/characters/items/` — items API exists but
-  no currency or starting-kit semantics.
+- **Wallet contract** _(spec landed in `packages/specs/openapi/openapi.yaml`,
+  block 4 — backend impl still pending under `T-WIZARD-GEAR-BACKEND-IMPL`)_:
+  - `Character.startingWealth` — _read-only_ historical record (birrs the
+    character was created with). Derived from `upbringing` (plebeian=500,
+    stationary=1000, aristocrat=5000); immutable once written.
+  - `Character.birr` — current spendable balance. Optional in the spec
+    until the backend Prisma column ships; once it does, becomes
+    required and the field promotes to `required:` in OpenAPI.
+  - **Lifecycle:** seeded as `birr = startingWealth` on the wizard's
+    `status: draft → active` (forge) transition. While `status: draft`,
+    explicit PATCHes to `birr` are rejected (`BIRR_DRAFT_IMMUTABLE`) —
+    the upbringing field is still mutable, so any draft-time wallet
+    write would be stranded. After activation, `birr` is the canonical
+    debit/credit field for Bazaar purchases (items API) and
+    session payouts (`PATCH /characters/{id}` with `{ birr }`).
+- **Starting-kit derivation:** still TODO — per ST3001 amplua tables
+  the player picks one item per row from per-role tables. To be
+  designed under `T-WIZARD-GEAR-BACKEND-DERIVE` (separate sub-block);
+  options are (a) backend computes a starter pack on activation, or
+  (b) client renders the per-amplua picker reading a static catalogue.
 
 ---
 
