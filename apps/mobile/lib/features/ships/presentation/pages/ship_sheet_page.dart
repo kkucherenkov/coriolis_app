@@ -644,9 +644,13 @@ class _ModulesCard extends StatelessWidget {
   static const _mandatorySlots = {'BRIDGE', 'REACTOR', 'DRIVE'};
 
   /// Slot wires available to the "Add module" picker. Mandatory three are
-  /// seeded server-side; the four variant slots (HOLD / WEAPON / TORPEDO /
-  /// SENSOR) need richer editors and are deferred to a follow-up.
+  /// seeded server-side. Variant slots (WEAPON / HOLD / TORPEDO / SENSOR) are
+  /// listed first; each has its own typed editor sub-form.
   static const _addableOtherSlots = <String>[
+    'WEAPON',
+    'HOLD',
+    'TORPEDO',
+    'SENSOR',
     'COMMS',
     'HANGAR',
     'QUARTERS',
@@ -676,12 +680,49 @@ class _ModulesCard extends StatelessWidget {
       ),
     );
     if (draft == null || !context.mounted) return;
-    final created = await cubit.addOtherModule(
-      slot: draft.slot,
-      name: draft.name,
-      energyUse: draft.energyUse,
-      notes: draft.notes,
-    );
+    final DomainShipModule? created;
+    switch (draft.slot) {
+      case 'WEAPON':
+        created = await cubit.addWeaponModule(
+          name: draft.name,
+          energyUse: draft.energyUse,
+          weaponBonus: draft.weaponBonus,
+          weaponRange: draft.weaponRange,
+          weaponDamage: draft.weaponDamage,
+          weaponCritThreshold: draft.weaponCritThreshold,
+          notes: draft.notes,
+        );
+      case 'HOLD':
+        created = await cubit.addHoldModule(
+          name: draft.name,
+          energyUse: draft.energyUse,
+          cargoTons: draft.cargoTons,
+          concealed: draft.concealed,
+          notes: draft.notes,
+        );
+      case 'TORPEDO':
+        created = await cubit.addTorpedoModule(
+          name: draft.name,
+          energyUse: draft.energyUse,
+          torpedoCount: draft.torpedoCount,
+          mineCount: draft.mineCount,
+          notes: draft.notes,
+        );
+      case 'SENSOR':
+        created = await cubit.addSensorModule(
+          name: draft.name,
+          energyUse: draft.energyUse,
+          detectionBonus: draft.detectionBonus,
+          notes: draft.notes,
+        );
+      default:
+        created = await cubit.addOtherModule(
+          slot: draft.slot,
+          name: draft.name,
+          energyUse: draft.energyUse,
+          notes: draft.notes,
+        );
+    }
     if (created == null && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(t.moduleErrorAdd)),
@@ -703,16 +744,66 @@ class _ModulesCard extends StatelessWidget {
           name: mod.name,
           energyUse: mod.energyUse,
           notes: mod.notes,
+          weaponBonus: mod.weaponBonus ?? 0,
+          weaponRange: mod.weaponRange ?? 'close',
+          weaponDamage: mod.weaponDamage ?? 0,
+          weaponCritThreshold: mod.weaponCritThreshold ?? 1,
+          cargoTons: mod.cargoTons ?? 0,
+          concealed: mod.concealed ?? false,
+          torpedoCount: mod.torpedoCount ?? 0,
+          mineCount: mod.mineCount ?? 0,
+          detectionBonus: mod.detectionBonus ?? 1,
         ),
       ),
     );
     if (draft == null || !context.mounted) return;
-    final ok = await cubit.updateOtherModule(
-      moduleId: mod.id,
-      name: draft.name,
-      energyUse: draft.energyUse,
-      notes: draft.notes,
-    );
+    final bool ok;
+    switch (mod.slot) {
+      case 'WEAPON':
+        ok = await cubit.updateWeaponModule(
+          moduleId: mod.id,
+          name: draft.name,
+          energyUse: draft.energyUse,
+          weaponBonus: draft.weaponBonus,
+          weaponRange: draft.weaponRange,
+          weaponDamage: draft.weaponDamage,
+          weaponCritThreshold: draft.weaponCritThreshold,
+          notes: draft.notes,
+        );
+      case 'HOLD':
+        ok = await cubit.updateHoldModule(
+          moduleId: mod.id,
+          name: draft.name,
+          energyUse: draft.energyUse,
+          cargoTons: draft.cargoTons,
+          concealed: draft.concealed,
+          notes: draft.notes,
+        );
+      case 'TORPEDO':
+        ok = await cubit.updateTorpedoModule(
+          moduleId: mod.id,
+          name: draft.name,
+          energyUse: draft.energyUse,
+          torpedoCount: draft.torpedoCount,
+          mineCount: draft.mineCount,
+          notes: draft.notes,
+        );
+      case 'SENSOR':
+        ok = await cubit.updateSensorModule(
+          moduleId: mod.id,
+          name: draft.name,
+          energyUse: draft.energyUse,
+          detectionBonus: draft.detectionBonus,
+          notes: draft.notes,
+        );
+      default:
+        ok = await cubit.updateOtherModule(
+          moduleId: mod.id,
+          name: draft.name,
+          energyUse: draft.energyUse,
+          notes: draft.notes,
+        );
+    }
     if (!ok && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(t.moduleErrorUpdate)),
@@ -792,7 +883,7 @@ class _ModulesCard extends StatelessWidget {
               _ModuleRow(
                 module: mod,
                 isMandatory: _mandatorySlots.contains(mod.slot),
-                isEditable: !_isVariantSlot(mod.slot),
+                isEditable: !_mandatorySlots.contains(mod.slot),
                 onEdit: () => _openEdit(context, mod),
                 onDelete: () => _confirmDelete(context, mod),
               ),
@@ -811,13 +902,6 @@ class _ModulesCard extends StatelessWidget {
     );
   }
 
-  /// True for the four variant slots whose editors need richer fields
-  /// (HOLD / WEAPON / TORPEDO / SENSOR). v1 keeps those rows read-only.
-  static bool _isVariantSlot(String slot) =>
-      slot == 'HOLD' ||
-      slot == 'WEAPON' ||
-      slot == 'TORPEDO' ||
-      slot == 'SENSOR';
 }
 
 class _ModuleRow extends StatelessWidget {
@@ -832,9 +916,9 @@ class _ModuleRow extends StatelessWidget {
   final DomainShipModule module;
   final bool isMandatory;
 
-  /// True when this row supports the v1 generic editor. False for the four
-  /// variant slots that haven't been ported yet — they keep the existing
-  /// read-only presentation.
+  /// True for all non-mandatory slots — both generic (OTHER / COMMS / etc.)
+  /// and the four variant slots (WEAPON / HOLD / TORPEDO / SENSOR).
+  /// Mandatory slots (BRIDGE / REACTOR / DRIVE) are read-only.
   final bool isEditable;
 
   final VoidCallback onEdit;
@@ -903,11 +987,37 @@ class _ModuleDraft {
     required this.name,
     required this.energyUse,
     this.notes,
+    // WEAPON variant fields
+    this.weaponBonus = 0,
+    this.weaponRange = 'close',
+    this.weaponDamage = 0,
+    this.weaponCritThreshold = 1,
+    // HOLD variant fields
+    this.cargoTons = 0,
+    this.concealed = false,
+    // TORPEDO variant fields
+    this.torpedoCount = 0,
+    this.mineCount = 0,
+    // SENSOR variant fields
+    this.detectionBonus = 1,
   });
   final String slot;
   final String name;
   final int energyUse;
   final String? notes;
+  // WEAPON
+  final int weaponBonus;
+  final String weaponRange;
+  final int weaponDamage;
+  final int weaponCritThreshold;
+  // HOLD
+  final int cargoTons;
+  final bool concealed;
+  // TORPEDO
+  final int torpedoCount;
+  final int mineCount;
+  // SENSOR
+  final int detectionBonus;
 }
 
 class _ModuleEditorSheet extends StatefulWidget {
@@ -926,6 +1036,25 @@ class _ModuleEditorSheetState extends State<_ModuleEditorSheet> {
   late TextEditingController _energy;
   late TextEditingController _notes;
 
+  // WEAPON variant state
+  late TextEditingController _weaponBonus;
+  late String _weaponRange;
+  late TextEditingController _weaponDamage;
+  late TextEditingController _weaponCrit;
+
+  // HOLD variant state
+  late TextEditingController _cargoTons;
+  late bool _concealed;
+
+  // TORPEDO variant state
+  late TextEditingController _torpedoCount;
+  late TextEditingController _mineCount;
+
+  // SENSOR variant state
+  late TextEditingController _detectionBonus;
+
+  static const _variantSlots = {'WEAPON', 'HOLD', 'TORPEDO', 'SENSOR'};
+
   @override
   void initState() {
     super.initState();
@@ -934,6 +1063,29 @@ class _ModuleEditorSheetState extends State<_ModuleEditorSheet> {
     _name = TextEditingController(text: initial?.name ?? '');
     _energy = TextEditingController(text: (initial?.energyUse ?? 0).toString());
     _notes = TextEditingController(text: initial?.notes ?? '');
+    _initVariantControllers(initial);
+  }
+
+  void _initVariantControllers(_ModuleDraft? d) {
+    _weaponBonus = TextEditingController(text: (d?.weaponBonus ?? 0).toString());
+    _weaponRange = d?.weaponRange ?? 'close';
+    _weaponDamage = TextEditingController(text: (d?.weaponDamage ?? 0).toString());
+    _weaponCrit = TextEditingController(text: (d?.weaponCritThreshold ?? 1).toString());
+    _cargoTons = TextEditingController(text: (d?.cargoTons ?? 0).toString());
+    _concealed = d?.concealed ?? false;
+    _torpedoCount = TextEditingController(text: (d?.torpedoCount ?? 0).toString());
+    _mineCount = TextEditingController(text: (d?.mineCount ?? 0).toString());
+    _detectionBonus = TextEditingController(text: (d?.detectionBonus ?? 1).toString());
+  }
+
+  void _disposeVariantControllers() {
+    _weaponBonus.dispose();
+    _weaponDamage.dispose();
+    _weaponCrit.dispose();
+    _cargoTons.dispose();
+    _torpedoCount.dispose();
+    _mineCount.dispose();
+    _detectionBonus.dispose();
   }
 
   @override
@@ -941,7 +1093,22 @@ class _ModuleEditorSheetState extends State<_ModuleEditorSheet> {
     _name.dispose();
     _energy.dispose();
     _notes.dispose();
+    _disposeVariantControllers();
     super.dispose();
+  }
+
+  /// Resets variant field controllers to defaults when the user switches slot
+  /// in create mode, so stale values from a different variant don't leak.
+  void _resetVariantDefaults() {
+    _weaponBonus.text = '0';
+    _weaponRange = 'close';
+    _weaponDamage.text = '0';
+    _weaponCrit.text = '1';
+    _cargoTons.text = '0';
+    _concealed = false;
+    _torpedoCount.text = '0';
+    _mineCount.text = '0';
+    _detectionBonus.text = '1';
   }
 
   void _submit() {
@@ -952,7 +1119,142 @@ class _ModuleEditorSheetState extends State<_ModuleEditorSheet> {
       name: trimmed,
       energyUse: int.tryParse(_energy.text.trim()) ?? 0,
       notes: _notes.text.trim().isEmpty ? null : _notes.text.trim(),
+      weaponBonus: int.tryParse(_weaponBonus.text.trim()) ?? 0,
+      weaponRange: _weaponRange,
+      weaponDamage: int.tryParse(_weaponDamage.text.trim()) ?? 0,
+      weaponCritThreshold: int.tryParse(_weaponCrit.text.trim()) ?? 1,
+      cargoTons: int.tryParse(_cargoTons.text.trim()) ?? 0,
+      concealed: _concealed,
+      torpedoCount: int.tryParse(_torpedoCount.text.trim()) ?? 0,
+      mineCount: int.tryParse(_mineCount.text.trim()) ?? 0,
+      detectionBonus: int.tryParse(_detectionBonus.text.trim()) ?? 1,
     ));
+  }
+
+  String _rangeLabel(BuildContext context, String range) {
+    final t = context.t.ships;
+    return switch (range) {
+      'zero'    => t.moduleFormRangeZero,
+      'close'   => t.moduleFormRangeClose,
+      'medium'  => t.moduleFormRangeMedium,
+      'long'    => t.moduleFormRangeLong,
+      'extreme' => t.moduleFormRangeExtreme,
+      _         => range,
+    };
+  }
+
+  List<Widget> _variantFields(BuildContext context) {
+    final t = context.t.ships;
+    return switch (_slot) {
+      'WEAPON' => [
+          const SizedBox(height: AppSpacing.s3),
+          TextField(
+            key: const Key('ship-module-form-weapon-bonus'),
+            controller: _weaponBonus,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: t.moduleFormWeaponBonusLabel,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.s3),
+          DropdownButtonFormField<String>(
+            key: Key('ship-module-form-weapon-range-$_weaponRange'),
+            initialValue: _weaponRange,
+            decoration: InputDecoration(
+              labelText: t.moduleFormWeaponRangeLabel,
+              border: const OutlineInputBorder(),
+            ),
+            items: const ['zero', 'close', 'medium', 'long', 'extreme']
+                .map((r) => DropdownMenuItem<String>(
+                      value: r,
+                      child: Builder(builder: (ctx) => Text(_rangeLabel(ctx, r))),
+                    ))
+                .toList(),
+            onChanged: (v) {
+              if (v != null) setState(() => _weaponRange = v);
+            },
+          ),
+          const SizedBox(height: AppSpacing.s3),
+          TextField(
+            key: const Key('ship-module-form-weapon-damage'),
+            controller: _weaponDamage,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: t.moduleFormWeaponDamageLabel,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.s3),
+          TextField(
+            key: const Key('ship-module-form-weapon-crit'),
+            controller: _weaponCrit,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: t.moduleFormWeaponCritLabel,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+        ],
+      'HOLD' => [
+          const SizedBox(height: AppSpacing.s3),
+          TextField(
+            key: const Key('ship-module-form-cargo-tons'),
+            controller: _cargoTons,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: t.moduleFormCargoTonsLabel,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.s3),
+          SwitchListTile(
+            key: const Key('ship-module-form-concealed'),
+            title: Text(
+              t.moduleFormConcealedLabel,
+              style: AppTypography.bodyMd.copyWith(color: AppColors.textPrimary),
+            ),
+            value: _concealed,
+            onChanged: (v) => setState(() => _concealed = v),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ],
+      'TORPEDO' => [
+          const SizedBox(height: AppSpacing.s3),
+          TextField(
+            key: const Key('ship-module-form-torpedo-count'),
+            controller: _torpedoCount,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: t.moduleFormTorpedoCountLabel,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.s3),
+          TextField(
+            key: const Key('ship-module-form-mine-count'),
+            controller: _mineCount,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: t.moduleFormMineCountLabel,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+        ],
+      'SENSOR' => [
+          const SizedBox(height: AppSpacing.s3),
+          TextField(
+            key: const Key('ship-module-form-detection-bonus'),
+            controller: _detectionBonus,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: t.moduleFormDetectionBonusLabel,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+        ],
+      _ => const [],
+    };
   }
 
   @override
@@ -961,7 +1263,7 @@ class _ModuleEditorSheetState extends State<_ModuleEditorSheet> {
     final isCreate = widget.mode == _ModuleEditorMode.create;
     return SafeArea(
       top: false,
-      child: Padding(
+      child: SingleChildScrollView(
         padding: EdgeInsets.only(
           left: AppSpacing.s4,
           right: AppSpacing.s4,
@@ -996,7 +1298,17 @@ class _ModuleEditorSheetState extends State<_ModuleEditorSheet> {
               ],
               onChanged: isCreate
                   ? (v) {
-                      if (v != null) setState(() => _slot = v);
+                      if (v != null) {
+                        final wasVariant = _variantSlots.contains(_slot);
+                        final isVariant = _variantSlots.contains(v);
+                        setState(() {
+                          _slot = v;
+                          // Reset variant defaults when switching between
+                          // unrelated slot kinds so stale field values don't
+                          // leak into the new sub-form.
+                          if (wasVariant || isVariant) _resetVariantDefaults();
+                        });
+                      }
                     }
                   : null,
             ),
@@ -1020,6 +1332,8 @@ class _ModuleEditorSheetState extends State<_ModuleEditorSheet> {
                 border: const OutlineInputBorder(),
               ),
             ),
+            // Variant-specific fields, keyed by _slot.
+            ..._variantFields(context),
             const SizedBox(height: AppSpacing.s3),
             TextField(
               key: const Key('ship-module-form-notes'),

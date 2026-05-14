@@ -15,6 +15,18 @@ import 'package:app_api_client/app_api_client.dart'
         ShipModuleOther,
         ShipModuleOtherCreate,
         ShipModuleOtherUpdate,
+        ShipModuleHoldCreate,
+        ShipModuleHoldUpdate,
+        ShipModuleHoldCreateSlotEnum,
+        ShipModuleTorpedoCreate,
+        ShipModuleTorpedoUpdate,
+        ShipModuleTorpedoCreateSlotEnum,
+        ShipModuleSensorCreate,
+        ShipModuleSensorUpdate,
+        ShipModuleSensorCreateSlotEnum,
+        ShipModuleWeaponCreate,
+        ShipModuleWeaponUpdate,
+        ShipModuleWeaponCreateSlotEnum,
         ShipModuleSlot,
         AssignCrewRequest,
         CrewPosition,
@@ -257,14 +269,59 @@ class ShipRepositoryImpl implements ShipRepository {
     await _api.unassignCrew(id: shipId, characterId: characterId);
   }
 
-  /// `oneOf` discriminator subtype lists for ShipModule mutations. v1 only
-  /// produces the `Other` variant; the other types are included so the
-  /// `OneOfDynamic.types` list matches the SDK's expected shape.
+  /// `oneOf` discriminator subtype lists for ShipModule mutations.
+  ///
+  /// The ordering mirrors the SDK's generated `oneOfTypes` list so that
+  /// `OneOfDynamic.typeIndex` (= `indexOf(type)`) resolves correctly.
+  /// Canonical slot order (from the generated deserialiser):
+  ///   BRIDGE CHAPEL COMMS CONCEALED-HOLD CRYO DOCKING DRIVE ESCAPE-PODS
+  ///   HANGAR HOLD MEDICAL MINING OTHER PROXY-DECK QUARTERS REACTOR REPAIR
+  ///   SENSOR TORPEDO WEAPON WORKSHOP
   static final _moduleCreateTypes = <Type>[
-    ShipModuleOtherCreate,
+    ShipModuleOtherCreate,  // BRIDGE   [0]
+    ShipModuleOtherCreate,  // CHAPEL   [1]
+    ShipModuleOtherCreate,  // COMMS    [2]
+    ShipModuleOtherCreate,  // CONCEALED-HOLD [3]
+    ShipModuleOtherCreate,  // CRYO     [4]
+    ShipModuleOtherCreate,  // DOCKING  [5]
+    ShipModuleOtherCreate,  // DRIVE    [6]
+    ShipModuleOtherCreate,  // ESCAPE-PODS [7]
+    ShipModuleOtherCreate,  // HANGAR   [8]
+    ShipModuleHoldCreate,   // HOLD     [9]
+    ShipModuleOtherCreate,  // MEDICAL  [10]
+    ShipModuleOtherCreate,  // MINING   [11]
+    ShipModuleOtherCreate,  // OTHER    [12]
+    ShipModuleOtherCreate,  // PROXY-DECK [13]
+    ShipModuleOtherCreate,  // QUARTERS [14]
+    ShipModuleOtherCreate,  // REACTOR  [15]
+    ShipModuleOtherCreate,  // REPAIR   [16]
+    ShipModuleSensorCreate, // SENSOR   [17]
+    ShipModuleTorpedoCreate,// TORPEDO  [18]
+    ShipModuleWeaponCreate, // WEAPON   [19]
+    ShipModuleOtherCreate,  // WORKSHOP [20]
   ];
   static final _moduleUpdateTypes = <Type>[
-    ShipModuleOtherUpdate,
+    ShipModuleOtherUpdate,  // BRIDGE   [0]
+    ShipModuleOtherUpdate,  // CHAPEL   [1]
+    ShipModuleOtherUpdate,  // COMMS    [2]
+    ShipModuleOtherUpdate,  // CONCEALED-HOLD [3]
+    ShipModuleOtherUpdate,  // CRYO     [4]
+    ShipModuleOtherUpdate,  // DOCKING  [5]
+    ShipModuleOtherUpdate,  // DRIVE    [6]
+    ShipModuleOtherUpdate,  // ESCAPE-PODS [7]
+    ShipModuleOtherUpdate,  // HANGAR   [8]
+    ShipModuleHoldUpdate,   // HOLD     [9]
+    ShipModuleOtherUpdate,  // MEDICAL  [10]
+    ShipModuleOtherUpdate,  // MINING   [11]
+    ShipModuleOtherUpdate,  // OTHER    [12]
+    ShipModuleOtherUpdate,  // PROXY-DECK [13]
+    ShipModuleOtherUpdate,  // QUARTERS [14]
+    ShipModuleOtherUpdate,  // REACTOR  [15]
+    ShipModuleOtherUpdate,  // REPAIR   [16]
+    ShipModuleSensorUpdate, // SENSOR   [17]
+    ShipModuleTorpedoUpdate,// TORPEDO  [18]
+    ShipModuleWeaponUpdate, // WEAPON   [19]
+    ShipModuleOtherUpdate,  // WORKSHOP [20]
   ];
 
   @override
@@ -296,6 +353,132 @@ class ShipRepositoryImpl implements ShipRepository {
   }
 
   @override
+  Future<DomainShipModule> addWeaponModule({
+    required String shipId,
+    required String name,
+    int energyUse = 0,
+    int weaponBonus = 0,
+    String weaponRange = 'close',
+    int weaponDamage = 0,
+    int weaponCritThreshold = 1,
+    String? notes,
+  }) async {
+    final inner = ShipModuleWeaponCreate((b) => b
+      ..slot = ShipModuleWeaponCreateSlotEnum.WEAPON
+      ..name = name
+      ..energyUse = energyUse
+      ..weaponBonus = weaponBonus
+      ..weaponRange = ShipWeaponRange.valueOf(weaponRange)
+      ..weaponDamage = weaponDamage
+      ..weaponCritThreshold = weaponCritThreshold
+      ..notes = notes);
+    final payload = ShipModuleCreate((b) => b
+      ..oneOf = OneOfDynamic(
+        typeIndex: _moduleCreateTypes.indexOf(ShipModuleWeaponCreate),
+        types: _moduleCreateTypes,
+        value: inner,
+      ));
+    final response = await _api.addShipModule(
+      id: shipId,
+      shipModuleCreate: payload,
+    );
+    final body = response.data;
+    if (body == null) throw StateError('Empty response after addShipModule (WEAPON)');
+    return _moduleToDomain(body);
+  }
+
+  @override
+  Future<DomainShipModule> addHoldModule({
+    required String shipId,
+    required String name,
+    int energyUse = 0,
+    int? cargoTons,
+    bool? concealed,
+    String? notes,
+  }) async {
+    final inner = ShipModuleHoldCreate((b) => b
+      ..slot = ShipModuleHoldCreateSlotEnum.HOLD
+      ..name = name
+      ..energyUse = energyUse
+      ..cargoTons = cargoTons
+      ..concealed = concealed
+      ..notes = notes);
+    final payload = ShipModuleCreate((b) => b
+      ..oneOf = OneOfDynamic(
+        typeIndex: _moduleCreateTypes.indexOf(ShipModuleHoldCreate),
+        types: _moduleCreateTypes,
+        value: inner,
+      ));
+    final response = await _api.addShipModule(
+      id: shipId,
+      shipModuleCreate: payload,
+    );
+    final body = response.data;
+    if (body == null) throw StateError('Empty response after addShipModule (HOLD)');
+    return _moduleToDomain(body);
+  }
+
+  @override
+  Future<DomainShipModule> addTorpedoModule({
+    required String shipId,
+    required String name,
+    int energyUse = 0,
+    int? torpedoCount,
+    int? mineCount,
+    String? notes,
+  }) async {
+    final inner = ShipModuleTorpedoCreate((b) => b
+      ..slot = ShipModuleTorpedoCreateSlotEnum.TORPEDO
+      ..name = name
+      ..energyUse = energyUse
+      ..torpedoCount = torpedoCount
+      ..mineCount = mineCount
+      ..notes = notes);
+    final payload = ShipModuleCreate((b) => b
+      ..oneOf = OneOfDynamic(
+        typeIndex: _moduleCreateTypes.indexOf(ShipModuleTorpedoCreate),
+        types: _moduleCreateTypes,
+        value: inner,
+      ));
+    final response = await _api.addShipModule(
+      id: shipId,
+      shipModuleCreate: payload,
+    );
+    final body = response.data;
+    if (body == null) throw StateError('Empty response after addShipModule (TORPEDO)');
+    return _moduleToDomain(body);
+  }
+
+  @override
+  Future<DomainShipModule> addSensorModule({
+    required String shipId,
+    required String name,
+    int energyUse = 0,
+    int? detectionBonus,
+    String? notes,
+  }) async {
+    final inner = ShipModuleSensorCreate((b) => b
+      ..slot = ShipModuleSensorCreateSlotEnum.SENSOR
+      ..name = name
+      ..energyUse = energyUse
+      ..detectionBonus = detectionBonus
+      ..notes = notes);
+    final payload = ShipModuleCreate((b) => b
+      ..oneOf = OneOfDynamic(
+        typeIndex: _moduleCreateTypes.indexOf(ShipModuleSensorCreate),
+        types: _moduleCreateTypes,
+        value: inner,
+      ));
+    final response = await _api.addShipModule(
+      id: shipId,
+      shipModuleCreate: payload,
+    );
+    final body = response.data;
+    if (body == null) throw StateError('Empty response after addShipModule (SENSOR)');
+    return _moduleToDomain(body);
+  }
+
+  @override
   Future<DomainShipModule> updateOtherModule({
     required String moduleId,
     String? name,
@@ -319,6 +502,132 @@ class ShipRepositoryImpl implements ShipRepository {
     );
     final body = response.data;
     if (body == null) throw StateError('Empty response after updateShipModule');
+    return _moduleToDomain(body);
+  }
+
+  @override
+  Future<DomainShipModule> updateWeaponModule({
+    required String moduleId,
+    String? name,
+    int? energyUse,
+    int? weaponBonus,
+    String? weaponRange,
+    int? weaponDamage,
+    int? weaponCritThreshold,
+    String? notes,
+  }) async {
+    final inner = ShipModuleWeaponUpdate((b) {
+      if (name != null) b.name = name;
+      if (energyUse != null) b.energyUse = energyUse;
+      if (weaponBonus != null) b.weaponBonus = weaponBonus;
+      if (weaponRange != null) b.weaponRange = ShipWeaponRange.valueOf(weaponRange);
+      if (weaponDamage != null) b.weaponDamage = weaponDamage;
+      if (weaponCritThreshold != null) b.weaponCritThreshold = weaponCritThreshold;
+      if (notes != null) b.notes = notes;
+    });
+    final payload = ShipModuleUpdate((b) => b
+      ..oneOf = OneOfDynamic(
+        typeIndex: _moduleUpdateTypes.indexOf(ShipModuleWeaponUpdate),
+        types: _moduleUpdateTypes,
+        value: inner,
+      ));
+    final response = await _api.updateShipModule(
+      id: moduleId,
+      shipModuleUpdate: payload,
+    );
+    final body = response.data;
+    if (body == null) throw StateError('Empty response after updateShipModule (WEAPON)');
+    return _moduleToDomain(body);
+  }
+
+  @override
+  Future<DomainShipModule> updateHoldModule({
+    required String moduleId,
+    String? name,
+    int? energyUse,
+    int? cargoTons,
+    bool? concealed,
+    String? notes,
+  }) async {
+    final inner = ShipModuleHoldUpdate((b) {
+      if (name != null) b.name = name;
+      if (energyUse != null) b.energyUse = energyUse;
+      if (cargoTons != null) b.cargoTons = cargoTons;
+      if (concealed != null) b.concealed = concealed;
+      if (notes != null) b.notes = notes;
+    });
+    final payload = ShipModuleUpdate((b) => b
+      ..oneOf = OneOfDynamic(
+        typeIndex: _moduleUpdateTypes.indexOf(ShipModuleHoldUpdate),
+        types: _moduleUpdateTypes,
+        value: inner,
+      ));
+    final response = await _api.updateShipModule(
+      id: moduleId,
+      shipModuleUpdate: payload,
+    );
+    final body = response.data;
+    if (body == null) throw StateError('Empty response after updateShipModule (HOLD)');
+    return _moduleToDomain(body);
+  }
+
+  @override
+  Future<DomainShipModule> updateTorpedoModule({
+    required String moduleId,
+    String? name,
+    int? energyUse,
+    int? torpedoCount,
+    int? mineCount,
+    String? notes,
+  }) async {
+    final inner = ShipModuleTorpedoUpdate((b) {
+      if (name != null) b.name = name;
+      if (energyUse != null) b.energyUse = energyUse;
+      if (torpedoCount != null) b.torpedoCount = torpedoCount;
+      if (mineCount != null) b.mineCount = mineCount;
+      if (notes != null) b.notes = notes;
+    });
+    final payload = ShipModuleUpdate((b) => b
+      ..oneOf = OneOfDynamic(
+        typeIndex: _moduleUpdateTypes.indexOf(ShipModuleTorpedoUpdate),
+        types: _moduleUpdateTypes,
+        value: inner,
+      ));
+    final response = await _api.updateShipModule(
+      id: moduleId,
+      shipModuleUpdate: payload,
+    );
+    final body = response.data;
+    if (body == null) throw StateError('Empty response after updateShipModule (TORPEDO)');
+    return _moduleToDomain(body);
+  }
+
+  @override
+  Future<DomainShipModule> updateSensorModule({
+    required String moduleId,
+    String? name,
+    int? energyUse,
+    int? detectionBonus,
+    String? notes,
+  }) async {
+    final inner = ShipModuleSensorUpdate((b) {
+      if (name != null) b.name = name;
+      if (energyUse != null) b.energyUse = energyUse;
+      if (detectionBonus != null) b.detectionBonus = detectionBonus;
+      if (notes != null) b.notes = notes;
+    });
+    final payload = ShipModuleUpdate((b) => b
+      ..oneOf = OneOfDynamic(
+        typeIndex: _moduleUpdateTypes.indexOf(ShipModuleSensorUpdate),
+        types: _moduleUpdateTypes,
+        value: inner,
+      ));
+    final response = await _api.updateShipModule(
+      id: moduleId,
+      shipModuleUpdate: payload,
+    );
+    final body = response.data;
+    if (body == null) throw StateError('Empty response after updateShipModule (SENSOR)');
     return _moduleToDomain(body);
   }
 

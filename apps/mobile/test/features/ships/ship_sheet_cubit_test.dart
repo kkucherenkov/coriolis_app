@@ -642,6 +642,285 @@ void main() {
       );
     });
 
+    group('addWeaponModule', () {
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns created module, refetches ship, emits saved on success',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.addWeaponModule(
+                shipId: any(named: 'shipId'),
+                name: any(named: 'name'),
+                energyUse: any(named: 'energyUse'),
+                weaponBonus: any(named: 'weaponBonus'),
+                weaponRange: any(named: 'weaponRange'),
+                weaponDamage: any(named: 'weaponDamage'),
+                weaponCritThreshold: any(named: 'weaponCritThreshold'),
+                notes: any(named: 'notes'),
+              )).thenAnswer((_) async => const DomainShipModule(
+                id: 'mod-w1',
+                slot: 'WEAPON',
+                name: 'Forward gun',
+                energyUse: 2,
+                weaponBonus: 1,
+                weaponRange: 'long',
+                weaponDamage: 3,
+                weaponCritThreshold: 2,
+              ));
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final created = await cubit.addWeaponModule(
+            name: 'Forward gun',
+            energyUse: 2,
+            weaponBonus: 1,
+            weaponRange: 'long',
+            weaponDamage: 3,
+            weaponCritThreshold: 2,
+          );
+          expect(created, isNotNull);
+          expect(created!.id, 'mod-w1');
+          expect(created.weaponRange, 'long');
+        },
+        verify: (cubit) {
+          verify(() => repo.get('s1')).called(2);
+          expect(cubit.state.saveStatus, isNot(ShipSheetSaveStatus.error));
+        },
+      );
+
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns null and surfaces saveErrorMessage on failure',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.addWeaponModule(
+                shipId: any(named: 'shipId'),
+                name: any(named: 'name'),
+                energyUse: any(named: 'energyUse'),
+                weaponBonus: any(named: 'weaponBonus'),
+                weaponRange: any(named: 'weaponRange'),
+                weaponDamage: any(named: 'weaponDamage'),
+                weaponCritThreshold: any(named: 'weaponCritThreshold'),
+                notes: any(named: 'notes'),
+              )).thenThrow(StateError('422 bad weapon'));
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final created = await cubit.addWeaponModule(name: 'Gun');
+          expect(created, isNull);
+        },
+        verify: (cubit) {
+          expect(cubit.state.saveStatus, ShipSheetSaveStatus.error);
+          expect(cubit.state.saveErrorMessage, contains('422 bad weapon'));
+        },
+      );
+    });
+
+    group('addHoldModule', () {
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns created module and refetches ship on success',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.addHoldModule(
+                shipId: any(named: 'shipId'),
+                name: any(named: 'name'),
+                energyUse: any(named: 'energyUse'),
+                cargoTons: any(named: 'cargoTons'),
+                concealed: any(named: 'concealed'),
+                notes: any(named: 'notes'),
+              )).thenAnswer((_) async => const DomainShipModule(
+                id: 'mod-h1',
+                slot: 'HOLD',
+                name: 'Main hold',
+                energyUse: 0,
+                cargoTons: 20,
+                concealed: false,
+              ));
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final created = await cubit.addHoldModule(
+            name: 'Main hold',
+            cargoTons: 20,
+          );
+          expect(created, isNotNull);
+          expect(created!.slot, 'HOLD');
+          expect(created.cargoTons, 20);
+        },
+        verify: (cubit) {
+          verify(() => repo.get('s1')).called(2);
+          expect(cubit.state.saveStatus, isNot(ShipSheetSaveStatus.error));
+        },
+      );
+    });
+
+    group('addTorpedoModule', () {
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns created module and refetches ship on success',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.addTorpedoModule(
+                shipId: any(named: 'shipId'),
+                name: any(named: 'name'),
+                energyUse: any(named: 'energyUse'),
+                torpedoCount: any(named: 'torpedoCount'),
+                mineCount: any(named: 'mineCount'),
+                notes: any(named: 'notes'),
+              )).thenAnswer((_) async => const DomainShipModule(
+                id: 'mod-t1',
+                slot: 'TORPEDO',
+                name: 'Torpedo bay',
+                energyUse: 1,
+                torpedoCount: 4,
+                mineCount: 0,
+              ));
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final created = await cubit.addTorpedoModule(
+            name: 'Torpedo bay',
+            energyUse: 1,
+            torpedoCount: 4,
+          );
+          expect(created, isNotNull);
+          expect(created!.torpedoCount, 4);
+        },
+        verify: (cubit) {
+          verify(() => repo.get('s1')).called(2);
+          expect(cubit.state.saveStatus, isNot(ShipSheetSaveStatus.error));
+        },
+      );
+    });
+
+    group('addSensorModule', () {
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns created module and refetches ship on success',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.addSensorModule(
+                shipId: any(named: 'shipId'),
+                name: any(named: 'name'),
+                energyUse: any(named: 'energyUse'),
+                detectionBonus: any(named: 'detectionBonus'),
+                notes: any(named: 'notes'),
+              )).thenAnswer((_) async => const DomainShipModule(
+                id: 'mod-s1',
+                slot: 'SENSOR',
+                name: 'Long-range sensor',
+                energyUse: 1,
+                detectionBonus: 2,
+              ));
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final created = await cubit.addSensorModule(
+            name: 'Long-range sensor',
+            energyUse: 1,
+            detectionBonus: 2,
+          );
+          expect(created, isNotNull);
+          expect(created!.detectionBonus, 2);
+        },
+        verify: (cubit) {
+          verify(() => repo.get('s1')).called(2);
+          expect(cubit.state.saveStatus, isNot(ShipSheetSaveStatus.error));
+        },
+      );
+    });
+
+    group('updateWeaponModule', () {
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns true and refetches ship on success (slot not forwarded)',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.updateWeaponModule(
+                moduleId: any(named: 'moduleId'),
+                name: any(named: 'name'),
+                energyUse: any(named: 'energyUse'),
+                weaponBonus: any(named: 'weaponBonus'),
+                weaponRange: any(named: 'weaponRange'),
+                weaponDamage: any(named: 'weaponDamage'),
+                weaponCritThreshold: any(named: 'weaponCritThreshold'),
+                notes: any(named: 'notes'),
+              )).thenAnswer((_) async => const DomainShipModule(
+                id: 'mod-w1',
+                slot: 'WEAPON',
+                name: 'Upgraded gun',
+                energyUse: 2,
+                weaponBonus: 2,
+                weaponRange: 'extreme',
+                weaponDamage: 5,
+                weaponCritThreshold: 2,
+              ));
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final ok = await cubit.updateWeaponModule(
+            moduleId: 'mod-w1',
+            name: 'Upgraded gun',
+            weaponBonus: 2,
+            weaponRange: 'extreme',
+            weaponDamage: 5,
+          );
+          expect(ok, isTrue);
+        },
+        verify: (_) {
+          verify(() => repo.updateWeaponModule(
+                moduleId: 'mod-w1',
+                name: 'Upgraded gun',
+                energyUse: null,
+                weaponBonus: 2,
+                weaponRange: 'extreme',
+                weaponDamage: 5,
+                weaponCritThreshold: null,
+                notes: null,
+              )).called(1);
+        },
+      );
+    });
+
+    group('updateHoldModule', () {
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns true and refetches ship on success',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.updateHoldModule(
+                moduleId: any(named: 'moduleId'),
+                name: any(named: 'name'),
+                energyUse: any(named: 'energyUse'),
+                cargoTons: any(named: 'cargoTons'),
+                concealed: any(named: 'concealed'),
+                notes: any(named: 'notes'),
+              )).thenAnswer((_) async => const DomainShipModule(
+                id: 'mod-h1',
+                slot: 'HOLD',
+                name: 'Expanded hold',
+                energyUse: 0,
+                cargoTons: 40,
+                concealed: true,
+              ));
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final ok = await cubit.updateHoldModule(
+            moduleId: 'mod-h1',
+            name: 'Expanded hold',
+            cargoTons: 40,
+            concealed: true,
+          );
+          expect(ok, isTrue);
+        },
+        verify: (cubit) {
+          expect(cubit.state.saveStatus, isNot(ShipSheetSaveStatus.error));
+        },
+      );
+    });
+
     group('exportSnapshot', () {
       blocTest<ShipSheetCubit, ShipSheetState>(
         'returns the export Ship on success',

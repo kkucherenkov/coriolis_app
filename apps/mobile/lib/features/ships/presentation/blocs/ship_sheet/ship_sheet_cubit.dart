@@ -277,6 +277,141 @@ class ShipSheetCubit extends Cubit<ShipSheetState> {
     }
   }
 
+  /// Adds a WEAPON module to the current ship. Returns the created module on
+  /// success, `null` on failure (error in `saveErrorMessage`).
+  Future<DomainShipModule?> addWeaponModule({
+    required String name,
+    int energyUse = 0,
+    int weaponBonus = 0,
+    String weaponRange = 'close',
+    int weaponDamage = 0,
+    int weaponCritThreshold = 1,
+    String? notes,
+  }) async {
+    final id = state.ship?.id;
+    if (id == null) return null;
+    emit(state.copyWith(saveStatus: ShipSheetSaveStatus.saving));
+    try {
+      final created = await _repository.addWeaponModule(
+        shipId: id,
+        name: name,
+        energyUse: energyUse,
+        weaponBonus: weaponBonus,
+        weaponRange: weaponRange,
+        weaponDamage: weaponDamage,
+        weaponCritThreshold: weaponCritThreshold,
+        notes: notes,
+      );
+      final refreshed = await _repository.get(id);
+      emit(state.copyWith(ship: refreshed, saveStatus: ShipSheetSaveStatus.saved));
+      _startSavedResetTimer();
+      return created;
+    } on Object catch (e) {
+      emit(state.copyWith(
+        saveStatus: ShipSheetSaveStatus.error,
+        saveErrorMessage: e.toString(),
+      ));
+      return null;
+    }
+  }
+
+  /// Adds a HOLD module to the current ship.
+  Future<DomainShipModule?> addHoldModule({
+    required String name,
+    int energyUse = 0,
+    int? cargoTons,
+    bool? concealed,
+    String? notes,
+  }) async {
+    final id = state.ship?.id;
+    if (id == null) return null;
+    emit(state.copyWith(saveStatus: ShipSheetSaveStatus.saving));
+    try {
+      final created = await _repository.addHoldModule(
+        shipId: id,
+        name: name,
+        energyUse: energyUse,
+        cargoTons: cargoTons,
+        concealed: concealed,
+        notes: notes,
+      );
+      final refreshed = await _repository.get(id);
+      emit(state.copyWith(ship: refreshed, saveStatus: ShipSheetSaveStatus.saved));
+      _startSavedResetTimer();
+      return created;
+    } on Object catch (e) {
+      emit(state.copyWith(
+        saveStatus: ShipSheetSaveStatus.error,
+        saveErrorMessage: e.toString(),
+      ));
+      return null;
+    }
+  }
+
+  /// Adds a TORPEDO module to the current ship.
+  Future<DomainShipModule?> addTorpedoModule({
+    required String name,
+    int energyUse = 0,
+    int? torpedoCount,
+    int? mineCount,
+    String? notes,
+  }) async {
+    final id = state.ship?.id;
+    if (id == null) return null;
+    emit(state.copyWith(saveStatus: ShipSheetSaveStatus.saving));
+    try {
+      final created = await _repository.addTorpedoModule(
+        shipId: id,
+        name: name,
+        energyUse: energyUse,
+        torpedoCount: torpedoCount,
+        mineCount: mineCount,
+        notes: notes,
+      );
+      final refreshed = await _repository.get(id);
+      emit(state.copyWith(ship: refreshed, saveStatus: ShipSheetSaveStatus.saved));
+      _startSavedResetTimer();
+      return created;
+    } on Object catch (e) {
+      emit(state.copyWith(
+        saveStatus: ShipSheetSaveStatus.error,
+        saveErrorMessage: e.toString(),
+      ));
+      return null;
+    }
+  }
+
+  /// Adds a SENSOR module to the current ship.
+  Future<DomainShipModule?> addSensorModule({
+    required String name,
+    int energyUse = 0,
+    int? detectionBonus,
+    String? notes,
+  }) async {
+    final id = state.ship?.id;
+    if (id == null) return null;
+    emit(state.copyWith(saveStatus: ShipSheetSaveStatus.saving));
+    try {
+      final created = await _repository.addSensorModule(
+        shipId: id,
+        name: name,
+        energyUse: energyUse,
+        detectionBonus: detectionBonus,
+        notes: notes,
+      );
+      final refreshed = await _repository.get(id);
+      emit(state.copyWith(ship: refreshed, saveStatus: ShipSheetSaveStatus.saved));
+      _startSavedResetTimer();
+      return created;
+    } on Object catch (e) {
+      emit(state.copyWith(
+        saveStatus: ShipSheetSaveStatus.error,
+        saveErrorMessage: e.toString(),
+      ));
+      return null;
+    }
+  }
+
   /// Patches the editable fields of an existing module.
   Future<bool> updateOtherModule({
     required String moduleId,
@@ -299,6 +434,144 @@ class ShipSheetCubit extends Cubit<ShipSheetState> {
         ship: refreshed,
         saveStatus: ShipSheetSaveStatus.saved,
       ));
+      _startSavedResetTimer();
+      return true;
+    } on Object catch (e) {
+      emit(state.copyWith(
+        saveStatus: ShipSheetSaveStatus.error,
+        saveErrorMessage: e.toString(),
+      ));
+      return false;
+    }
+  }
+
+  /// Patches the editable fields of an existing WEAPON module.
+  Future<bool> updateWeaponModule({
+    required String moduleId,
+    String? name,
+    int? energyUse,
+    int? weaponBonus,
+    String? weaponRange,
+    int? weaponDamage,
+    int? weaponCritThreshold,
+    String? notes,
+  }) async {
+    final id = state.ship?.id;
+    if (id == null) return false;
+    emit(state.copyWith(saveStatus: ShipSheetSaveStatus.saving));
+    try {
+      await _repository.updateWeaponModule(
+        moduleId: moduleId,
+        name: name,
+        energyUse: energyUse,
+        weaponBonus: weaponBonus,
+        weaponRange: weaponRange,
+        weaponDamage: weaponDamage,
+        weaponCritThreshold: weaponCritThreshold,
+        notes: notes,
+      );
+      final refreshed = await _repository.get(id);
+      emit(state.copyWith(ship: refreshed, saveStatus: ShipSheetSaveStatus.saved));
+      _startSavedResetTimer();
+      return true;
+    } on Object catch (e) {
+      emit(state.copyWith(
+        saveStatus: ShipSheetSaveStatus.error,
+        saveErrorMessage: e.toString(),
+      ));
+      return false;
+    }
+  }
+
+  /// Patches the editable fields of an existing HOLD module.
+  Future<bool> updateHoldModule({
+    required String moduleId,
+    String? name,
+    int? energyUse,
+    int? cargoTons,
+    bool? concealed,
+    String? notes,
+  }) async {
+    final id = state.ship?.id;
+    if (id == null) return false;
+    emit(state.copyWith(saveStatus: ShipSheetSaveStatus.saving));
+    try {
+      await _repository.updateHoldModule(
+        moduleId: moduleId,
+        name: name,
+        energyUse: energyUse,
+        cargoTons: cargoTons,
+        concealed: concealed,
+        notes: notes,
+      );
+      final refreshed = await _repository.get(id);
+      emit(state.copyWith(ship: refreshed, saveStatus: ShipSheetSaveStatus.saved));
+      _startSavedResetTimer();
+      return true;
+    } on Object catch (e) {
+      emit(state.copyWith(
+        saveStatus: ShipSheetSaveStatus.error,
+        saveErrorMessage: e.toString(),
+      ));
+      return false;
+    }
+  }
+
+  /// Patches the editable fields of an existing TORPEDO module.
+  Future<bool> updateTorpedoModule({
+    required String moduleId,
+    String? name,
+    int? energyUse,
+    int? torpedoCount,
+    int? mineCount,
+    String? notes,
+  }) async {
+    final id = state.ship?.id;
+    if (id == null) return false;
+    emit(state.copyWith(saveStatus: ShipSheetSaveStatus.saving));
+    try {
+      await _repository.updateTorpedoModule(
+        moduleId: moduleId,
+        name: name,
+        energyUse: energyUse,
+        torpedoCount: torpedoCount,
+        mineCount: mineCount,
+        notes: notes,
+      );
+      final refreshed = await _repository.get(id);
+      emit(state.copyWith(ship: refreshed, saveStatus: ShipSheetSaveStatus.saved));
+      _startSavedResetTimer();
+      return true;
+    } on Object catch (e) {
+      emit(state.copyWith(
+        saveStatus: ShipSheetSaveStatus.error,
+        saveErrorMessage: e.toString(),
+      ));
+      return false;
+    }
+  }
+
+  /// Patches the editable fields of an existing SENSOR module.
+  Future<bool> updateSensorModule({
+    required String moduleId,
+    String? name,
+    int? energyUse,
+    int? detectionBonus,
+    String? notes,
+  }) async {
+    final id = state.ship?.id;
+    if (id == null) return false;
+    emit(state.copyWith(saveStatus: ShipSheetSaveStatus.saving));
+    try {
+      await _repository.updateSensorModule(
+        moduleId: moduleId,
+        name: name,
+        energyUse: energyUse,
+        detectionBonus: detectionBonus,
+        notes: notes,
+      );
+      final refreshed = await _repository.get(id);
+      emit(state.copyWith(ship: refreshed, saveStatus: ShipSheetSaveStatus.saved));
       _startSavedResetTimer();
       return true;
     } on Object catch (e) {

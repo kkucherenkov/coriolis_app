@@ -75,11 +75,10 @@ abstract class ShipRepository {
     required String characterId,
   });
 
-  /// Adds a generic "other-slot" module to [shipId]. Mobile v1 restricts
-  /// the picker to slots that map to `ShipModuleOtherCreate` (i.e.
-  /// COMMS / HANGAR / QUARTERS / etc.); the four variant slots
-  /// (HOLD / WEAPON / TORPEDO / SENSOR) and their type-specific fields
-  /// are deferred to a follow-up that ports the web variant forms.
+  /// Adds a generic "other-slot" module to [shipId]. Covers slots that map to
+  /// `ShipModuleOtherCreate` (e.g. COMMS / HANGAR / QUARTERS / etc.). The four
+  /// variant slots (WEAPON / HOLD / TORPEDO / SENSOR) have dedicated methods
+  /// below.
   ///
   /// [slot] is the wire-form `ShipModuleSlot` value.
   Future<DomainShipModule> addOtherModule({
@@ -90,12 +89,94 @@ abstract class ShipRepository {
     String? notes,
   });
 
-  /// Patches the editable fields of an existing module. `slot` is immutable
-  /// after installation per the spec.
+  /// Adds a WEAPON module to [shipId].
+  Future<DomainShipModule> addWeaponModule({
+    required String shipId,
+    required String name,
+    int energyUse = 0,
+    int weaponBonus = 0,
+    String weaponRange = 'close',
+    int weaponDamage = 0,
+    int weaponCritThreshold = 1,
+    String? notes,
+  });
+
+  /// Adds a HOLD module to [shipId].
+  Future<DomainShipModule> addHoldModule({
+    required String shipId,
+    required String name,
+    int energyUse = 0,
+    int? cargoTons,
+    bool? concealed,
+    String? notes,
+  });
+
+  /// Adds a TORPEDO module to [shipId].
+  Future<DomainShipModule> addTorpedoModule({
+    required String shipId,
+    required String name,
+    int energyUse = 0,
+    int? torpedoCount,
+    int? mineCount,
+    String? notes,
+  });
+
+  /// Adds a SENSOR module to [shipId].
+  Future<DomainShipModule> addSensorModule({
+    required String shipId,
+    required String name,
+    int energyUse = 0,
+    int? detectionBonus,
+    String? notes,
+  });
+
+  /// Patches the editable fields of an existing other-slot module. `slot` is
+  /// immutable after installation per the spec.
   Future<DomainShipModule> updateOtherModule({
     required String moduleId,
     String? name,
     int? energyUse,
+    String? notes,
+  });
+
+  /// Patches the editable fields of an existing WEAPON module.
+  Future<DomainShipModule> updateWeaponModule({
+    required String moduleId,
+    String? name,
+    int? energyUse,
+    int? weaponBonus,
+    String? weaponRange,
+    int? weaponDamage,
+    int? weaponCritThreshold,
+    String? notes,
+  });
+
+  /// Patches the editable fields of an existing HOLD module.
+  Future<DomainShipModule> updateHoldModule({
+    required String moduleId,
+    String? name,
+    int? energyUse,
+    int? cargoTons,
+    bool? concealed,
+    String? notes,
+  });
+
+  /// Patches the editable fields of an existing TORPEDO module.
+  Future<DomainShipModule> updateTorpedoModule({
+    required String moduleId,
+    String? name,
+    int? energyUse,
+    int? torpedoCount,
+    int? mineCount,
+    String? notes,
+  });
+
+  /// Patches the editable fields of an existing SENSOR module.
+  Future<DomainShipModule> updateSensorModule({
+    required String moduleId,
+    String? name,
+    int? energyUse,
+    int? detectionBonus,
     String? notes,
   });
 
