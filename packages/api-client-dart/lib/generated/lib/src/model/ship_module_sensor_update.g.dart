@@ -10,8 +10,7 @@ const ShipModuleSensorUpdateSlotEnum _$shipModuleSensorUpdateSlotEnum_SENSOR =
     const ShipModuleSensorUpdateSlotEnum._('SENSOR');
 
 ShipModuleSensorUpdateSlotEnum _$shipModuleSensorUpdateSlotEnumValueOf(
-  String name,
-) {
+    String name) {
   switch (name) {
     case 'SENSOR':
       return _$shipModuleSensorUpdateSlotEnum_SENSOR;
@@ -21,15 +20,13 @@ ShipModuleSensorUpdateSlotEnum _$shipModuleSensorUpdateSlotEnumValueOf(
 }
 
 final BuiltSet<ShipModuleSensorUpdateSlotEnum>
-_$shipModuleSensorUpdateSlotEnumValues =
-    BuiltSet<ShipModuleSensorUpdateSlotEnum>(
-      const <ShipModuleSensorUpdateSlotEnum>[
-        _$shipModuleSensorUpdateSlotEnum_SENSOR,
-      ],
-    );
+    _$shipModuleSensorUpdateSlotEnumValues = BuiltSet<
+        ShipModuleSensorUpdateSlotEnum>(const <ShipModuleSensorUpdateSlotEnum>[
+  _$shipModuleSensorUpdateSlotEnum_SENSOR,
+]);
 
 Serializer<ShipModuleSensorUpdateSlotEnum>
-_$shipModuleSensorUpdateSlotEnumSerializer =
+    _$shipModuleSensorUpdateSlotEnumSerializer =
     _$ShipModuleSensorUpdateSlotEnumSerializer();
 
 class _$ShipModuleSensorUpdateSlotEnumSerializer
@@ -48,19 +45,16 @@ class _$ShipModuleSensorUpdateSlotEnumSerializer
 
   @override
   Object serialize(
-    Serializers serializers,
-    ShipModuleSensorUpdateSlotEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+          Serializers serializers, ShipModuleSensorUpdateSlotEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
   ShipModuleSensorUpdateSlotEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => ShipModuleSensorUpdateSlotEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ShipModuleSensorUpdateSlotEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 class _$ShipModuleSensorUpdate extends ShipModuleSensorUpdate {
@@ -75,21 +69,17 @@ class _$ShipModuleSensorUpdate extends ShipModuleSensorUpdate {
   @override
   final String? notes;
 
-  factory _$ShipModuleSensorUpdate([
-    void Function(ShipModuleSensorUpdateBuilder)? updates,
-  ]) => (ShipModuleSensorUpdateBuilder()..update(updates))._build();
+  factory _$ShipModuleSensorUpdate(
+          [void Function(ShipModuleSensorUpdateBuilder)? updates]) =>
+      (ShipModuleSensorUpdateBuilder()..update(updates))._build();
 
-  _$ShipModuleSensorUpdate._({
-    this.slot,
-    this.name,
-    this.energyUse,
-    this.detectionBonus,
-    this.notes,
-  }) : super._();
+  _$ShipModuleSensorUpdate._(
+      {this.slot, this.name, this.energyUse, this.detectionBonus, this.notes})
+      : super._();
   @override
   ShipModuleSensorUpdate rebuild(
-    void Function(ShipModuleSensorUpdateBuilder) updates,
-  ) => (toBuilder()..update(updates)).build();
+          void Function(ShipModuleSensorUpdateBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
 
   @override
   ShipModuleSensorUpdateBuilder toBuilder() =>
@@ -186,8 +176,7 @@ class ShipModuleSensorUpdateBuilder
   ShipModuleSensorUpdate build() => _build();
 
   _$ShipModuleSensorUpdate _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$ShipModuleSensorUpdate._(
           slot: slot,
           name: name,

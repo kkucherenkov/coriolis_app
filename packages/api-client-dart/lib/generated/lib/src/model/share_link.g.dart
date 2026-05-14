@@ -33,19 +33,19 @@ class _$ShareLink extends ShareLink {
   factory _$ShareLink([void Function(ShareLinkBuilder)? updates]) =>
       (ShareLinkBuilder()..update(updates))._build();
 
-  _$ShareLink._({
-    required this.id,
-    required this.slug,
-    required this.characterId,
-    required this.includeGmNotes,
-    this.label,
-    this.expiresAt,
-    this.revokedAt,
-    this.lastViewedAt,
-    required this.viewCount,
-    required this.createdAt,
-    required this.updatedAt,
-  }) : super._();
+  _$ShareLink._(
+      {required this.id,
+      required this.slug,
+      required this.characterId,
+      required this.includeGmNotes,
+      this.label,
+      this.expiresAt,
+      this.revokedAt,
+      this.lastViewedAt,
+      required this.viewCount,
+      required this.createdAt,
+      required this.updatedAt})
+      : super._();
   @override
   ShareLink rebuild(void Function(ShareLinkBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -192,44 +192,25 @@ class ShareLinkBuilder implements Builder<ShareLink, ShareLinkBuilder> {
   ShareLink build() => _build();
 
   _$ShareLink _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$ShareLink._(
           id: BuiltValueNullFieldError.checkNotNull(id, r'ShareLink', 'id'),
-          slug: BuiltValueNullFieldError.checkNotNull(
-            slug,
-            r'ShareLink',
-            'slug',
-          ),
+          slug:
+              BuiltValueNullFieldError.checkNotNull(slug, r'ShareLink', 'slug'),
           characterId: BuiltValueNullFieldError.checkNotNull(
-            characterId,
-            r'ShareLink',
-            'characterId',
-          ),
+              characterId, r'ShareLink', 'characterId'),
           includeGmNotes: BuiltValueNullFieldError.checkNotNull(
-            includeGmNotes,
-            r'ShareLink',
-            'includeGmNotes',
-          ),
+              includeGmNotes, r'ShareLink', 'includeGmNotes'),
           label: label,
           expiresAt: expiresAt,
           revokedAt: revokedAt,
           lastViewedAt: lastViewedAt,
           viewCount: BuiltValueNullFieldError.checkNotNull(
-            viewCount,
-            r'ShareLink',
-            'viewCount',
-          ),
+              viewCount, r'ShareLink', 'viewCount'),
           createdAt: BuiltValueNullFieldError.checkNotNull(
-            createdAt,
-            r'ShareLink',
-            'createdAt',
-          ),
+              createdAt, r'ShareLink', 'createdAt'),
           updatedAt: BuiltValueNullFieldError.checkNotNull(
-            updatedAt,
-            r'ShareLink',
-            'updatedAt',
-          ),
+              updatedAt, r'ShareLink', 'updatedAt'),
         );
     replace(_$result);
     return _$result;

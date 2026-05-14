@@ -6,9 +6,8 @@ part of 'me_update.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const MeUpdateThemeEnum _$meUpdateThemeEnum_dark = const MeUpdateThemeEnum._(
-  'dark',
-);
+const MeUpdateThemeEnum _$meUpdateThemeEnum_dark =
+    const MeUpdateThemeEnum._('dark');
 const MeUpdateThemeEnum _$meUpdateThemeEnum_highContrast =
     const MeUpdateThemeEnum._('highContrast');
 
@@ -25,9 +24,9 @@ MeUpdateThemeEnum _$meUpdateThemeEnumValueOf(String name) {
 
 final BuiltSet<MeUpdateThemeEnum> _$meUpdateThemeEnumValues =
     BuiltSet<MeUpdateThemeEnum>(const <MeUpdateThemeEnum>[
-      _$meUpdateThemeEnum_dark,
-      _$meUpdateThemeEnum_highContrast,
-    ]);
+  _$meUpdateThemeEnum_dark,
+  _$meUpdateThemeEnum_highContrast,
+]);
 
 Serializer<MeUpdateThemeEnum> _$meUpdateThemeEnumSerializer =
     _$MeUpdateThemeEnumSerializer();
@@ -49,20 +48,15 @@ class _$MeUpdateThemeEnumSerializer
   final String wireName = 'MeUpdateThemeEnum';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    MeUpdateThemeEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, MeUpdateThemeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  MeUpdateThemeEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => MeUpdateThemeEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  MeUpdateThemeEnum deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      MeUpdateThemeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 class _$MeUpdate extends MeUpdate {
@@ -147,8 +141,11 @@ class MeUpdateBuilder implements Builder<MeUpdate, MeUpdateBuilder> {
   MeUpdate build() => _build();
 
   _$MeUpdate _build() {
-    final _$result =
-        _$v ?? _$MeUpdate._(displayName: displayName, theme: theme);
+    final _$result = _$v ??
+        _$MeUpdate._(
+          displayName: displayName,
+          theme: theme,
+        );
     replace(_$result);
     return _$result;
   }

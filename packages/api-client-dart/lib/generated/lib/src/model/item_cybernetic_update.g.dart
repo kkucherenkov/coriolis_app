@@ -10,8 +10,7 @@ const ItemCyberneticUpdateTypeEnum _$itemCyberneticUpdateTypeEnum_CYBERNETIC =
     const ItemCyberneticUpdateTypeEnum._('CYBERNETIC');
 
 ItemCyberneticUpdateTypeEnum _$itemCyberneticUpdateTypeEnumValueOf(
-  String name,
-) {
+    String name) {
   switch (name) {
     case 'CYBERNETIC':
       return _$itemCyberneticUpdateTypeEnum_CYBERNETIC;
@@ -21,14 +20,13 @@ ItemCyberneticUpdateTypeEnum _$itemCyberneticUpdateTypeEnumValueOf(
 }
 
 final BuiltSet<ItemCyberneticUpdateTypeEnum>
-_$itemCyberneticUpdateTypeEnumValues = BuiltSet<ItemCyberneticUpdateTypeEnum>(
-  const <ItemCyberneticUpdateTypeEnum>[
-    _$itemCyberneticUpdateTypeEnum_CYBERNETIC,
-  ],
-);
+    _$itemCyberneticUpdateTypeEnumValues =
+    BuiltSet<ItemCyberneticUpdateTypeEnum>(const <ItemCyberneticUpdateTypeEnum>[
+  _$itemCyberneticUpdateTypeEnum_CYBERNETIC,
+]);
 
 Serializer<ItemCyberneticUpdateTypeEnum>
-_$itemCyberneticUpdateTypeEnumSerializer =
+    _$itemCyberneticUpdateTypeEnumSerializer =
     _$ItemCyberneticUpdateTypeEnumSerializer();
 
 class _$ItemCyberneticUpdateTypeEnumSerializer
@@ -46,20 +44,16 @@ class _$ItemCyberneticUpdateTypeEnumSerializer
   final String wireName = 'ItemCyberneticUpdateTypeEnum';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    ItemCyberneticUpdateTypeEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, ItemCyberneticUpdateTypeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
   ItemCyberneticUpdateTypeEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => ItemCyberneticUpdateTypeEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ItemCyberneticUpdateTypeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 class _$ItemCyberneticUpdate extends ItemCyberneticUpdate {
@@ -68,20 +62,20 @@ class _$ItemCyberneticUpdate extends ItemCyberneticUpdate {
   @override
   final String? name;
   @override
-  final int? bodyPoints;
+  final int? xpCost;
   @override
   final String? effect;
 
-  factory _$ItemCyberneticUpdate([
-    void Function(ItemCyberneticUpdateBuilder)? updates,
-  ]) => (ItemCyberneticUpdateBuilder()..update(updates))._build();
+  factory _$ItemCyberneticUpdate(
+          [void Function(ItemCyberneticUpdateBuilder)? updates]) =>
+      (ItemCyberneticUpdateBuilder()..update(updates))._build();
 
-  _$ItemCyberneticUpdate._({this.type, this.name, this.bodyPoints, this.effect})
-    : super._();
+  _$ItemCyberneticUpdate._({this.type, this.name, this.xpCost, this.effect})
+      : super._();
   @override
   ItemCyberneticUpdate rebuild(
-    void Function(ItemCyberneticUpdateBuilder) updates,
-  ) => (toBuilder()..update(updates)).build();
+          void Function(ItemCyberneticUpdateBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
 
   @override
   ItemCyberneticUpdateBuilder toBuilder() =>
@@ -93,7 +87,7 @@ class _$ItemCyberneticUpdate extends ItemCyberneticUpdate {
     return other is ItemCyberneticUpdate &&
         type == other.type &&
         name == other.name &&
-        bodyPoints == other.bodyPoints &&
+        xpCost == other.xpCost &&
         effect == other.effect;
   }
 
@@ -102,7 +96,7 @@ class _$ItemCyberneticUpdate extends ItemCyberneticUpdate {
     var _$hash = 0;
     _$hash = $jc(_$hash, type.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
-    _$hash = $jc(_$hash, bodyPoints.hashCode);
+    _$hash = $jc(_$hash, xpCost.hashCode);
     _$hash = $jc(_$hash, effect.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -113,7 +107,7 @@ class _$ItemCyberneticUpdate extends ItemCyberneticUpdate {
     return (newBuiltValueToStringHelper(r'ItemCyberneticUpdate')
           ..add('type', type)
           ..add('name', name)
-          ..add('bodyPoints', bodyPoints)
+          ..add('xpCost', xpCost)
           ..add('effect', effect))
         .toString();
   }
@@ -131,9 +125,9 @@ class ItemCyberneticUpdateBuilder
   String? get name => _$this._name;
   set name(String? name) => _$this._name = name;
 
-  int? _bodyPoints;
-  int? get bodyPoints => _$this._bodyPoints;
-  set bodyPoints(int? bodyPoints) => _$this._bodyPoints = bodyPoints;
+  int? _xpCost;
+  int? get xpCost => _$this._xpCost;
+  set xpCost(int? xpCost) => _$this._xpCost = xpCost;
 
   String? _effect;
   String? get effect => _$this._effect;
@@ -148,7 +142,7 @@ class ItemCyberneticUpdateBuilder
     if ($v != null) {
       _type = $v.type;
       _name = $v.name;
-      _bodyPoints = $v.bodyPoints;
+      _xpCost = $v.xpCost;
       _effect = $v.effect;
       _$v = null;
     }
@@ -169,12 +163,11 @@ class ItemCyberneticUpdateBuilder
   ItemCyberneticUpdate build() => _build();
 
   _$ItemCyberneticUpdate _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$ItemCyberneticUpdate._(
           type: type,
           name: name,
-          bodyPoints: bodyPoints,
+          xpCost: xpCost,
           effect: effect,
         );
     replace(_$result);

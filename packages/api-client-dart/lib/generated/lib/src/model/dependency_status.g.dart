@@ -23,9 +23,12 @@ DependencyStatus _$valueOf(String name) {
   }
 }
 
-final BuiltSet<DependencyStatus> _$values = BuiltSet<DependencyStatus>(
-  const <DependencyStatus>[_$ok, _$degraded, _$down],
-);
+final BuiltSet<DependencyStatus> _$values =
+    BuiltSet<DependencyStatus>(const <DependencyStatus>[
+  _$ok,
+  _$degraded,
+  _$down,
+]);
 
 class _$DependencyStatusMeta {
   const _$DependencyStatusMeta();
@@ -36,7 +39,7 @@ class _$DependencyStatusMeta {
   BuiltSet<DependencyStatus> get values => _$values;
 }
 
-mixin _$DependencyStatusMixin {
+abstract class _$DependencyStatusMixin {
   // ignore: non_constant_identifier_names
   _$DependencyStatusMeta get DependencyStatus => const _$DependencyStatusMeta();
 }
@@ -63,20 +66,15 @@ class _$DependencyStatusSerializer
   final String wireName = 'DependencyStatus';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    DependencyStatus object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, DependencyStatus object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  DependencyStatus deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => DependencyStatus.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  DependencyStatus deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      DependencyStatus.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

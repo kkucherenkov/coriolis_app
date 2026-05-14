@@ -9,8 +9,6 @@ import 'package:app_api_client/src/model/item_cybernetic_update.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:app_api_client/src/model/item_gear_update.dart';
 import 'package:app_api_client/src/model/item_armor_update.dart';
-import 'package:app_api_client/src/model/item_range_enum.dart';
-import 'package:app_api_client/src/model/ship_module_slot.dart';
 import 'package:app_api_client/src/model/item_weapon_update.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';

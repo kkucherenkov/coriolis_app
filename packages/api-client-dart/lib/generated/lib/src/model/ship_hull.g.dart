@@ -86,14 +86,10 @@ class ShipHullBuilder implements Builder<ShipHull, ShipHullBuilder> {
   ShipHull build() => _build();
 
   _$ShipHull _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$ShipHull._(
           current: BuiltValueNullFieldError.checkNotNull(
-            current,
-            r'ShipHull',
-            'current',
-          ),
+              current, r'ShipHull', 'current'),
           max: BuiltValueNullFieldError.checkNotNull(max, r'ShipHull', 'max'),
         );
     replace(_$result);

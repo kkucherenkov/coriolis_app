@@ -86,14 +86,10 @@ class NpcMpBuilder implements Builder<NpcMp, NpcMpBuilder> {
   NpcMp build() => _build();
 
   _$NpcMp _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$NpcMp._(
           current: BuiltValueNullFieldError.checkNotNull(
-            current,
-            r'NpcMp',
-            'current',
-          ),
+              current, r'NpcMp', 'current'),
           max: BuiltValueNullFieldError.checkNotNull(max, r'NpcMp', 'max'),
         );
     replace(_$result);

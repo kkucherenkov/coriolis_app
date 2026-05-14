@@ -86,19 +86,12 @@ class CharacterHpBuilder implements Builder<CharacterHp, CharacterHpBuilder> {
   CharacterHp build() => _build();
 
   _$CharacterHp _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$CharacterHp._(
           current: BuiltValueNullFieldError.checkNotNull(
-            current,
-            r'CharacterHp',
-            'current',
-          ),
-          max: BuiltValueNullFieldError.checkNotNull(
-            max,
-            r'CharacterHp',
-            'max',
-          ),
+              current, r'CharacterHp', 'current'),
+          max:
+              BuiltValueNullFieldError.checkNotNull(max, r'CharacterHp', 'max'),
         );
     replace(_$result);
     return _$result;

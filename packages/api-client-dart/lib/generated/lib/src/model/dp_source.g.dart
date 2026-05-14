@@ -38,7 +38,7 @@ class _$DpSourceMeta {
   BuiltSet<DpSource> get values => _$values;
 }
 
-mixin _$DpSourceMixin {
+abstract class _$DpSourceMixin {
   // ignore: non_constant_identifier_names
   _$DpSourceMeta get DpSource => const _$DpSourceMeta();
 }
@@ -63,20 +63,15 @@ class _$DpSourceSerializer implements PrimitiveSerializer<DpSource> {
   final String wireName = 'DpSource';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    DpSource object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, DpSource object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  DpSource deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => DpSource.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  DpSource deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      DpSource.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

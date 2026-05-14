@@ -8,7 +8,7 @@ part of 'combatant_list.dart';
 
 class _$CombatantList extends CombatantList {
   @override
-  final BuiltList<dynamic> items;
+  final BuiltList<Combatant> items;
 
   factory _$CombatantList([void Function(CombatantListBuilder)? updates]) =>
       (CombatantListBuilder()..update(updates))._build();
@@ -37,9 +37,8 @@ class _$CombatantList extends CombatantList {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-      r'CombatantList',
-    )..add('items', items)).toString();
+    return (newBuiltValueToStringHelper(r'CombatantList')..add('items', items))
+        .toString();
   }
 }
 
@@ -47,9 +46,10 @@ class CombatantListBuilder
     implements Builder<CombatantList, CombatantListBuilder> {
   _$CombatantList? _$v;
 
-  ListBuilder<dynamic>? _items;
-  ListBuilder<dynamic> get items => _$this._items ??= ListBuilder<dynamic>();
-  set items(ListBuilder<dynamic>? items) => _$this._items = items;
+  ListBuilder<Combatant>? _items;
+  ListBuilder<Combatant> get items =>
+      _$this._items ??= ListBuilder<Combatant>();
+  set items(ListBuilder<Combatant>? items) => _$this._items = items;
 
   CombatantListBuilder() {
     CombatantList._defaults(this);
@@ -80,7 +80,10 @@ class CombatantListBuilder
   _$CombatantList _build() {
     _$CombatantList _$result;
     try {
-      _$result = _$v ?? _$CombatantList._(items: items.build());
+      _$result = _$v ??
+          _$CombatantList._(
+            items: items.build(),
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -88,10 +91,7 @@ class CombatantListBuilder
         items.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'CombatantList',
-          _$failedField,
-          e.toString(),
-        );
+            r'CombatantList', _$failedField, e.toString());
       }
       rethrow;
     }

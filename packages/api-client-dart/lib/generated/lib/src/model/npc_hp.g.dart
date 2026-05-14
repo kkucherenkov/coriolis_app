@@ -86,14 +86,10 @@ class NpcHpBuilder implements Builder<NpcHp, NpcHpBuilder> {
   NpcHp build() => _build();
 
   _$NpcHp _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$NpcHp._(
           current: BuiltValueNullFieldError.checkNotNull(
-            current,
-            r'NpcHp',
-            'current',
-          ),
+              current, r'NpcHp', 'current'),
           max: BuiltValueNullFieldError.checkNotNull(max, r'NpcHp', 'max'),
         );
     replace(_$result);

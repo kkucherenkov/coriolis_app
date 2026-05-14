@@ -20,8 +20,8 @@ ItemOtherUpdateTypeEnum _$itemOtherUpdateTypeEnumValueOf(String name) {
 
 final BuiltSet<ItemOtherUpdateTypeEnum> _$itemOtherUpdateTypeEnumValues =
     BuiltSet<ItemOtherUpdateTypeEnum>(const <ItemOtherUpdateTypeEnum>[
-      _$itemOtherUpdateTypeEnum_OTHER,
-    ]);
+  _$itemOtherUpdateTypeEnum_OTHER,
+]);
 
 Serializer<ItemOtherUpdateTypeEnum> _$itemOtherUpdateTypeEnumSerializer =
     _$ItemOtherUpdateTypeEnumSerializer();
@@ -41,20 +41,16 @@ class _$ItemOtherUpdateTypeEnumSerializer
   final String wireName = 'ItemOtherUpdateTypeEnum';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    ItemOtherUpdateTypeEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, ItemOtherUpdateTypeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
   ItemOtherUpdateTypeEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => ItemOtherUpdateTypeEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ItemOtherUpdateTypeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 class _$ItemOtherUpdate extends ItemOtherUpdate {
@@ -71,7 +67,7 @@ class _$ItemOtherUpdate extends ItemOtherUpdate {
       (ItemOtherUpdateBuilder()..update(updates))._build();
 
   _$ItemOtherUpdate._({this.type, this.name, this.weight, this.notes})
-    : super._();
+      : super._();
   @override
   ItemOtherUpdate rebuild(void Function(ItemOtherUpdateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -161,8 +157,7 @@ class ItemOtherUpdateBuilder
   ItemOtherUpdate build() => _build();
 
   _$ItemOtherUpdate _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$ItemOtherUpdate._(
           type: type,
           name: name,

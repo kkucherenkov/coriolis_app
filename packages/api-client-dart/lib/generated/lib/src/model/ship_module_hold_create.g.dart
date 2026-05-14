@@ -10,8 +10,7 @@ const ShipModuleHoldCreateSlotEnum _$shipModuleHoldCreateSlotEnum_HOLD =
     const ShipModuleHoldCreateSlotEnum._('HOLD');
 
 ShipModuleHoldCreateSlotEnum _$shipModuleHoldCreateSlotEnumValueOf(
-  String name,
-) {
+    String name) {
   switch (name) {
     case 'HOLD':
       return _$shipModuleHoldCreateSlotEnum_HOLD;
@@ -21,12 +20,13 @@ ShipModuleHoldCreateSlotEnum _$shipModuleHoldCreateSlotEnumValueOf(
 }
 
 final BuiltSet<ShipModuleHoldCreateSlotEnum>
-_$shipModuleHoldCreateSlotEnumValues = BuiltSet<ShipModuleHoldCreateSlotEnum>(
-  const <ShipModuleHoldCreateSlotEnum>[_$shipModuleHoldCreateSlotEnum_HOLD],
-);
+    _$shipModuleHoldCreateSlotEnumValues =
+    BuiltSet<ShipModuleHoldCreateSlotEnum>(const <ShipModuleHoldCreateSlotEnum>[
+  _$shipModuleHoldCreateSlotEnum_HOLD,
+]);
 
 Serializer<ShipModuleHoldCreateSlotEnum>
-_$shipModuleHoldCreateSlotEnumSerializer =
+    _$shipModuleHoldCreateSlotEnumSerializer =
     _$ShipModuleHoldCreateSlotEnumSerializer();
 
 class _$ShipModuleHoldCreateSlotEnumSerializer
@@ -44,20 +44,16 @@ class _$ShipModuleHoldCreateSlotEnumSerializer
   final String wireName = 'ShipModuleHoldCreateSlotEnum';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    ShipModuleHoldCreateSlotEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, ShipModuleHoldCreateSlotEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
   ShipModuleHoldCreateSlotEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => ShipModuleHoldCreateSlotEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ShipModuleHoldCreateSlotEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 class _$ShipModuleHoldCreate extends ShipModuleHoldCreate {
@@ -74,22 +70,22 @@ class _$ShipModuleHoldCreate extends ShipModuleHoldCreate {
   @override
   final String? notes;
 
-  factory _$ShipModuleHoldCreate([
-    void Function(ShipModuleHoldCreateBuilder)? updates,
-  ]) => (ShipModuleHoldCreateBuilder()..update(updates))._build();
+  factory _$ShipModuleHoldCreate(
+          [void Function(ShipModuleHoldCreateBuilder)? updates]) =>
+      (ShipModuleHoldCreateBuilder()..update(updates))._build();
 
-  _$ShipModuleHoldCreate._({
-    required this.slot,
-    required this.name,
-    required this.energyUse,
-    this.cargoTons,
-    this.concealed,
-    this.notes,
-  }) : super._();
+  _$ShipModuleHoldCreate._(
+      {required this.slot,
+      required this.name,
+      required this.energyUse,
+      this.cargoTons,
+      this.concealed,
+      this.notes})
+      : super._();
   @override
   ShipModuleHoldCreate rebuild(
-    void Function(ShipModuleHoldCreateBuilder) updates,
-  ) => (toBuilder()..update(updates)).build();
+          void Function(ShipModuleHoldCreateBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
 
   @override
   ShipModuleHoldCreateBuilder toBuilder() =>
@@ -193,24 +189,14 @@ class ShipModuleHoldCreateBuilder
   ShipModuleHoldCreate build() => _build();
 
   _$ShipModuleHoldCreate _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$ShipModuleHoldCreate._(
           slot: BuiltValueNullFieldError.checkNotNull(
-            slot,
-            r'ShipModuleHoldCreate',
-            'slot',
-          ),
+              slot, r'ShipModuleHoldCreate', 'slot'),
           name: BuiltValueNullFieldError.checkNotNull(
-            name,
-            r'ShipModuleHoldCreate',
-            'name',
-          ),
+              name, r'ShipModuleHoldCreate', 'name'),
           energyUse: BuiltValueNullFieldError.checkNotNull(
-            energyUse,
-            r'ShipModuleHoldCreate',
-            'energyUse',
-          ),
+              energyUse, r'ShipModuleHoldCreate', 'energyUse'),
           cargoTons: cargoTons,
           concealed: concealed,
           notes: notes,

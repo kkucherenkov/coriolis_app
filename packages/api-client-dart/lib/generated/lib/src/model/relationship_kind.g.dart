@@ -32,16 +32,15 @@ RelationshipKind _$valueOf(String name) {
   }
 }
 
-final BuiltSet<RelationshipKind> _$values = BuiltSet<RelationshipKind>(
-  const <RelationshipKind>[
-    _$ally,
-    _$rival,
-    _$family,
-    _$mentor,
-    _$debtor,
-    _$creditor,
-  ],
-);
+final BuiltSet<RelationshipKind> _$values =
+    BuiltSet<RelationshipKind>(const <RelationshipKind>[
+  _$ally,
+  _$rival,
+  _$family,
+  _$mentor,
+  _$debtor,
+  _$creditor,
+]);
 
 class _$RelationshipKindMeta {
   const _$RelationshipKindMeta();
@@ -55,7 +54,7 @@ class _$RelationshipKindMeta {
   BuiltSet<RelationshipKind> get values => _$values;
 }
 
-mixin _$RelationshipKindMixin {
+abstract class _$RelationshipKindMixin {
   // ignore: non_constant_identifier_names
   _$RelationshipKindMeta get RelationshipKind => const _$RelationshipKindMeta();
 }
@@ -88,20 +87,15 @@ class _$RelationshipKindSerializer
   final String wireName = 'RelationshipKind';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    RelationshipKind object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, RelationshipKind object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  RelationshipKind deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => RelationshipKind.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  RelationshipKind deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      RelationshipKind.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

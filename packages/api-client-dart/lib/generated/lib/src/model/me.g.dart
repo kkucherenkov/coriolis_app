@@ -7,9 +7,8 @@ part of 'me.dart';
 // **************************************************************************
 
 const MeThemeEnum _$meThemeEnum_dark = const MeThemeEnum._('dark');
-const MeThemeEnum _$meThemeEnum_highContrast = const MeThemeEnum._(
-  'highContrast',
-);
+const MeThemeEnum _$meThemeEnum_highContrast =
+    const MeThemeEnum._('highContrast');
 
 MeThemeEnum _$meThemeEnumValueOf(String name) {
   switch (name) {
@@ -22,9 +21,11 @@ MeThemeEnum _$meThemeEnumValueOf(String name) {
   }
 }
 
-final BuiltSet<MeThemeEnum> _$meThemeEnumValues = BuiltSet<MeThemeEnum>(
-  const <MeThemeEnum>[_$meThemeEnum_dark, _$meThemeEnum_highContrast],
-);
+final BuiltSet<MeThemeEnum> _$meThemeEnumValues =
+    BuiltSet<MeThemeEnum>(const <MeThemeEnum>[
+  _$meThemeEnum_dark,
+  _$meThemeEnum_highContrast,
+]);
 
 Serializer<MeThemeEnum> _$meThemeEnumSerializer = _$MeThemeEnumSerializer();
 
@@ -44,20 +45,15 @@ class _$MeThemeEnumSerializer implements PrimitiveSerializer<MeThemeEnum> {
   final String wireName = 'MeThemeEnum';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    MeThemeEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, MeThemeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  MeThemeEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => MeThemeEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  MeThemeEnum deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      MeThemeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 class _$Me extends Me {
@@ -75,13 +71,13 @@ class _$Me extends Me {
   factory _$Me([void Function(MeBuilder)? updates]) =>
       (MeBuilder()..update(updates))._build();
 
-  _$Me._({
-    required this.id,
-    required this.email,
-    this.displayName,
-    this.createdAt,
-    this.theme,
-  }) : super._();
+  _$Me._(
+      {required this.id,
+      required this.email,
+      this.displayName,
+      this.createdAt,
+      this.theme})
+      : super._();
   @override
   Me rebuild(void Function(MeBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -178,8 +174,7 @@ class MeBuilder implements Builder<Me, MeBuilder> {
   Me build() => _build();
 
   _$Me _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$Me._(
           id: BuiltValueNullFieldError.checkNotNull(id, r'Me', 'id'),
           email: BuiltValueNullFieldError.checkNotNull(email, r'Me', 'email'),

@@ -8,7 +8,7 @@ part of 'game_session_list.dart';
 
 class _$GameSessionList extends GameSessionList {
   @override
-  final BuiltList<dynamic> items;
+  final BuiltList<GameSession> items;
   @override
   final String? nextCursor;
 
@@ -53,9 +53,10 @@ class GameSessionListBuilder
     implements Builder<GameSessionList, GameSessionListBuilder> {
   _$GameSessionList? _$v;
 
-  ListBuilder<dynamic>? _items;
-  ListBuilder<dynamic> get items => _$this._items ??= ListBuilder<dynamic>();
-  set items(ListBuilder<dynamic>? items) => _$this._items = items;
+  ListBuilder<GameSession>? _items;
+  ListBuilder<GameSession> get items =>
+      _$this._items ??= ListBuilder<GameSession>();
+  set items(ListBuilder<GameSession>? items) => _$this._items = items;
 
   String? _nextCursor;
   String? get nextCursor => _$this._nextCursor;
@@ -91,9 +92,11 @@ class GameSessionListBuilder
   _$GameSessionList _build() {
     _$GameSessionList _$result;
     try {
-      _$result =
-          _$v ??
-          _$GameSessionList._(items: items.build(), nextCursor: nextCursor);
+      _$result = _$v ??
+          _$GameSessionList._(
+            items: items.build(),
+            nextCursor: nextCursor,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -101,10 +104,7 @@ class GameSessionListBuilder
         items.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'GameSessionList',
-          _$failedField,
-          e.toString(),
-        );
+            r'GameSessionList', _$failedField, e.toString());
       }
       rethrow;
     }

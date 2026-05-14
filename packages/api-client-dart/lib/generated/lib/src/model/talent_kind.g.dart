@@ -43,7 +43,7 @@ class _$TalentKindMeta {
   BuiltSet<TalentKind> get values => _$values;
 }
 
-mixin _$TalentKindMixin {
+abstract class _$TalentKindMixin {
   // ignore: non_constant_identifier_names
   _$TalentKindMeta get TalentKind => const _$TalentKindMeta();
 }
@@ -70,20 +70,15 @@ class _$TalentKindSerializer implements PrimitiveSerializer<TalentKind> {
   final String wireName = 'TalentKind';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    TalentKind object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, TalentKind object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  TalentKind deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => TalentKind.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  TalentKind deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      TalentKind.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

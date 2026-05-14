@@ -89,14 +89,10 @@ class DpAdjustmentBuilder
   DpAdjustment build() => _build();
 
   _$DpAdjustment _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$DpAdjustment._(
           delta: BuiltValueNullFieldError.checkNotNull(
-            delta,
-            r'DpAdjustment',
-            'delta',
-          ),
+              delta, r'DpAdjustment', 'delta'),
           reason: reason,
         );
     replace(_$result);

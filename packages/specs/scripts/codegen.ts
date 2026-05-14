@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process';
-import { existsSync, mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -51,6 +51,35 @@ run(
 console.warn('[codegen] post: dart fix --apply (strip generator-induced unused imports)');
 run('dart pub get', dartOut);
 run('dart fix --apply', dartOut);
+
+// The mirror of the same upstream bug — the openapi-generator dart-dio
+// template emits `ShipModuleSlot` references in the four oneOf'd module
+// discriminator subclasses (`ship_module_{hold,sensor,torpedo,weapon}.dart`)
+// but never imports the type. The previous workaround (commit 013764d)
+// was a hand patch which got blown away by the next codegen sweep. Inject
+// the missing import here so the band-aid survives regeneration. Long-term
+// fix is to migrate the dart client to the same `@hey-api/openapi-ts` style
+// generator the TS client uses; tracked as a Phase-7 hardening item.
+console.warn('[codegen] post: inject missing ShipModuleSlot import into oneOf subclasses');
+{
+  const targets = [
+    'ship_module_hold.dart',
+    'ship_module_sensor.dart',
+    'ship_module_torpedo.dart',
+    'ship_module_weapon.dart',
+  ];
+  const importLine = "import 'package:app_api_client/src/model/ship_module_slot.dart';";
+  const anchor = "import 'package:app_api_client/src/model/ship_module_base.dart';";
+  for (const file of targets) {
+    const p = path.join(dartOut, 'lib/src/model', file);
+    const src = readFileSync(p, 'utf8');
+    if (src.includes(importLine)) continue;
+    if (!src.includes(anchor)) {
+      throw new Error(`[codegen] anchor import missing in ${file}; cannot inject ShipModuleSlot`);
+    }
+    writeFileSync(p, src.replace(anchor, `${anchor}\n${importLine}`), 'utf8');
+  }
+}
 
 console.warn('[codegen] post: prettier on openapi-types.ts (stable diff across versions)');
 run(`pnpm exec prettier --write "${openapiTypesOut}"`, packagesRoot);

@@ -43,24 +43,24 @@ class _$Skills extends Skills {
   factory _$Skills([void Function(SkillsBuilder)? updates]) =>
       (SkillsBuilder()..update(updates))._build();
 
-  _$Skills._({
-    required this.dexterity,
-    required this.force,
-    required this.infiltration,
-    required this.manipulation,
-    required this.meleeCombat,
-    required this.observation,
-    required this.rangedCombat,
-    required this.survival,
-    required this.command,
-    required this.culture,
-    required this.dataDjinn,
-    required this.medicurgy,
-    required this.mysticPowers,
-    required this.pilot,
-    required this.science,
-    required this.technology,
-  }) : super._();
+  _$Skills._(
+      {required this.dexterity,
+      required this.force,
+      required this.infiltration,
+      required this.manipulation,
+      required this.meleeCombat,
+      required this.observation,
+      required this.rangedCombat,
+      required this.survival,
+      required this.command,
+      required this.culture,
+      required this.dataDjinn,
+      required this.medicurgy,
+      required this.mysticPowers,
+      required this.pilot,
+      required this.science,
+      required this.technology})
+      : super._();
   @override
   Skills rebuild(void Function(SkillsBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -245,89 +245,40 @@ class SkillsBuilder implements Builder<Skills, SkillsBuilder> {
   Skills build() => _build();
 
   _$Skills _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$Skills._(
           dexterity: BuiltValueNullFieldError.checkNotNull(
-            dexterity,
-            r'Skills',
-            'dexterity',
-          ),
-          force: BuiltValueNullFieldError.checkNotNull(
-            force,
-            r'Skills',
-            'force',
-          ),
+              dexterity, r'Skills', 'dexterity'),
+          force:
+              BuiltValueNullFieldError.checkNotNull(force, r'Skills', 'force'),
           infiltration: BuiltValueNullFieldError.checkNotNull(
-            infiltration,
-            r'Skills',
-            'infiltration',
-          ),
+              infiltration, r'Skills', 'infiltration'),
           manipulation: BuiltValueNullFieldError.checkNotNull(
-            manipulation,
-            r'Skills',
-            'manipulation',
-          ),
+              manipulation, r'Skills', 'manipulation'),
           meleeCombat: BuiltValueNullFieldError.checkNotNull(
-            meleeCombat,
-            r'Skills',
-            'meleeCombat',
-          ),
+              meleeCombat, r'Skills', 'meleeCombat'),
           observation: BuiltValueNullFieldError.checkNotNull(
-            observation,
-            r'Skills',
-            'observation',
-          ),
+              observation, r'Skills', 'observation'),
           rangedCombat: BuiltValueNullFieldError.checkNotNull(
-            rangedCombat,
-            r'Skills',
-            'rangedCombat',
-          ),
+              rangedCombat, r'Skills', 'rangedCombat'),
           survival: BuiltValueNullFieldError.checkNotNull(
-            survival,
-            r'Skills',
-            'survival',
-          ),
+              survival, r'Skills', 'survival'),
           command: BuiltValueNullFieldError.checkNotNull(
-            command,
-            r'Skills',
-            'command',
-          ),
+              command, r'Skills', 'command'),
           culture: BuiltValueNullFieldError.checkNotNull(
-            culture,
-            r'Skills',
-            'culture',
-          ),
+              culture, r'Skills', 'culture'),
           dataDjinn: BuiltValueNullFieldError.checkNotNull(
-            dataDjinn,
-            r'Skills',
-            'dataDjinn',
-          ),
+              dataDjinn, r'Skills', 'dataDjinn'),
           medicurgy: BuiltValueNullFieldError.checkNotNull(
-            medicurgy,
-            r'Skills',
-            'medicurgy',
-          ),
+              medicurgy, r'Skills', 'medicurgy'),
           mysticPowers: BuiltValueNullFieldError.checkNotNull(
-            mysticPowers,
-            r'Skills',
-            'mysticPowers',
-          ),
-          pilot: BuiltValueNullFieldError.checkNotNull(
-            pilot,
-            r'Skills',
-            'pilot',
-          ),
+              mysticPowers, r'Skills', 'mysticPowers'),
+          pilot:
+              BuiltValueNullFieldError.checkNotNull(pilot, r'Skills', 'pilot'),
           science: BuiltValueNullFieldError.checkNotNull(
-            science,
-            r'Skills',
-            'science',
-          ),
+              science, r'Skills', 'science'),
           technology: BuiltValueNullFieldError.checkNotNull(
-            technology,
-            r'Skills',
-            'technology',
-          ),
+              technology, r'Skills', 'technology'),
         );
     replace(_$result);
     return _$result;

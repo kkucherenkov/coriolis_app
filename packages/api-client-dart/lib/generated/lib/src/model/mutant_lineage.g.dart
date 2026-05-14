@@ -23,9 +23,12 @@ MutantLineage _$valueOf(String name) {
   }
 }
 
-final BuiltSet<MutantLineage> _$values = BuiltSet<MutantLineage>(
-  const <MutantLineage>[_$zirba, _$shingura, _$nerida],
-);
+final BuiltSet<MutantLineage> _$values =
+    BuiltSet<MutantLineage>(const <MutantLineage>[
+  _$zirba,
+  _$shingura,
+  _$nerida,
+]);
 
 class _$MutantLineageMeta {
   const _$MutantLineageMeta();
@@ -36,7 +39,7 @@ class _$MutantLineageMeta {
   BuiltSet<MutantLineage> get values => _$values;
 }
 
-mixin _$MutantLineageMixin {
+abstract class _$MutantLineageMixin {
   // ignore: non_constant_identifier_names
   _$MutantLineageMeta get MutantLineage => const _$MutantLineageMeta();
 }
@@ -62,20 +65,15 @@ class _$MutantLineageSerializer implements PrimitiveSerializer<MutantLineage> {
   final String wireName = 'MutantLineage';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    MutantLineage object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, MutantLineage object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  MutantLineage deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => MutantLineage.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  MutantLineage deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      MutantLineage.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

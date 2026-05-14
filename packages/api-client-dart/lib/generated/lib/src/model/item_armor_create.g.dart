@@ -20,8 +20,8 @@ ItemArmorCreateTypeEnum _$itemArmorCreateTypeEnumValueOf(String name) {
 
 final BuiltSet<ItemArmorCreateTypeEnum> _$itemArmorCreateTypeEnumValues =
     BuiltSet<ItemArmorCreateTypeEnum>(const <ItemArmorCreateTypeEnum>[
-      _$itemArmorCreateTypeEnum_ARMOR,
-    ]);
+  _$itemArmorCreateTypeEnum_ARMOR,
+]);
 
 Serializer<ItemArmorCreateTypeEnum> _$itemArmorCreateTypeEnumSerializer =
     _$ItemArmorCreateTypeEnumSerializer();
@@ -41,20 +41,16 @@ class _$ItemArmorCreateTypeEnumSerializer
   final String wireName = 'ItemArmorCreateTypeEnum';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    ItemArmorCreateTypeEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, ItemArmorCreateTypeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
   ItemArmorCreateTypeEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => ItemArmorCreateTypeEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ItemArmorCreateTypeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 class _$ItemArmorCreate extends ItemArmorCreate {
@@ -70,18 +66,21 @@ class _$ItemArmorCreate extends ItemArmorCreate {
   final BuiltList<String> features;
   @override
   final bool equipped;
+  @override
+  final int? extraSlotCount;
 
   factory _$ItemArmorCreate([void Function(ItemArmorCreateBuilder)? updates]) =>
       (ItemArmorCreateBuilder()..update(updates))._build();
 
-  _$ItemArmorCreate._({
-    required this.type,
-    required this.name,
-    required this.armorRating,
-    required this.weight,
-    required this.features,
-    required this.equipped,
-  }) : super._();
+  _$ItemArmorCreate._(
+      {required this.type,
+      required this.name,
+      required this.armorRating,
+      required this.weight,
+      required this.features,
+      required this.equipped,
+      this.extraSlotCount})
+      : super._();
   @override
   ItemArmorCreate rebuild(void Function(ItemArmorCreateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -98,7 +97,8 @@ class _$ItemArmorCreate extends ItemArmorCreate {
         armorRating == other.armorRating &&
         weight == other.weight &&
         features == other.features &&
-        equipped == other.equipped;
+        equipped == other.equipped &&
+        extraSlotCount == other.extraSlotCount;
   }
 
   @override
@@ -110,6 +110,7 @@ class _$ItemArmorCreate extends ItemArmorCreate {
     _$hash = $jc(_$hash, weight.hashCode);
     _$hash = $jc(_$hash, features.hashCode);
     _$hash = $jc(_$hash, equipped.hashCode);
+    _$hash = $jc(_$hash, extraSlotCount.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -122,7 +123,8 @@ class _$ItemArmorCreate extends ItemArmorCreate {
           ..add('armorRating', armorRating)
           ..add('weight', weight)
           ..add('features', features)
-          ..add('equipped', equipped))
+          ..add('equipped', equipped)
+          ..add('extraSlotCount', extraSlotCount))
         .toString();
   }
 }
@@ -156,6 +158,11 @@ class ItemArmorCreateBuilder
   bool? get equipped => _$this._equipped;
   set equipped(bool? equipped) => _$this._equipped = equipped;
 
+  int? _extraSlotCount;
+  int? get extraSlotCount => _$this._extraSlotCount;
+  set extraSlotCount(int? extraSlotCount) =>
+      _$this._extraSlotCount = extraSlotCount;
+
   ItemArmorCreateBuilder() {
     ItemArmorCreate._defaults(this);
   }
@@ -169,6 +176,7 @@ class ItemArmorCreateBuilder
       _weight = $v.weight;
       _features = $v.features.toBuilder();
       _equipped = $v.equipped;
+      _extraSlotCount = $v.extraSlotCount;
       _$v = null;
     }
     return this;
@@ -190,35 +198,20 @@ class ItemArmorCreateBuilder
   _$ItemArmorCreate _build() {
     _$ItemArmorCreate _$result;
     try {
-      _$result =
-          _$v ??
+      _$result = _$v ??
           _$ItemArmorCreate._(
             type: BuiltValueNullFieldError.checkNotNull(
-              type,
-              r'ItemArmorCreate',
-              'type',
-            ),
+                type, r'ItemArmorCreate', 'type'),
             name: BuiltValueNullFieldError.checkNotNull(
-              name,
-              r'ItemArmorCreate',
-              'name',
-            ),
+                name, r'ItemArmorCreate', 'name'),
             armorRating: BuiltValueNullFieldError.checkNotNull(
-              armorRating,
-              r'ItemArmorCreate',
-              'armorRating',
-            ),
+                armorRating, r'ItemArmorCreate', 'armorRating'),
             weight: BuiltValueNullFieldError.checkNotNull(
-              weight,
-              r'ItemArmorCreate',
-              'weight',
-            ),
+                weight, r'ItemArmorCreate', 'weight'),
             features: features.build(),
             equipped: BuiltValueNullFieldError.checkNotNull(
-              equipped,
-              r'ItemArmorCreate',
-              'equipped',
-            ),
+                equipped, r'ItemArmorCreate', 'equipped'),
+            extraSlotCount: extraSlotCount,
           );
     } catch (_) {
       late String _$failedField;
@@ -227,10 +220,7 @@ class ItemArmorCreateBuilder
         features.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'ItemArmorCreate',
-          _$failedField,
-          e.toString(),
-        );
+            r'ItemArmorCreate', _$failedField, e.toString());
       }
       rethrow;
     }

@@ -89,7 +89,11 @@ class ShipUpdateHullBuilder
   ShipUpdateHull build() => _build();
 
   _$ShipUpdateHull _build() {
-    final _$result = _$v ?? _$ShipUpdateHull._(current: current, max: max);
+    final _$result = _$v ??
+        _$ShipUpdateHull._(
+          current: current,
+          max: max,
+        );
     replace(_$result);
     return _$result;
   }

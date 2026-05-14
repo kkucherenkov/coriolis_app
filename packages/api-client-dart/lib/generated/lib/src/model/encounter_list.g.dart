@@ -8,7 +8,7 @@ part of 'encounter_list.dart';
 
 class _$EncounterList extends EncounterList {
   @override
-  final BuiltList<dynamic> items;
+  final BuiltList<Encounter> items;
   @override
   final String? nextCursor;
 
@@ -53,9 +53,10 @@ class EncounterListBuilder
     implements Builder<EncounterList, EncounterListBuilder> {
   _$EncounterList? _$v;
 
-  ListBuilder<dynamic>? _items;
-  ListBuilder<dynamic> get items => _$this._items ??= ListBuilder<dynamic>();
-  set items(ListBuilder<dynamic>? items) => _$this._items = items;
+  ListBuilder<Encounter>? _items;
+  ListBuilder<Encounter> get items =>
+      _$this._items ??= ListBuilder<Encounter>();
+  set items(ListBuilder<Encounter>? items) => _$this._items = items;
 
   String? _nextCursor;
   String? get nextCursor => _$this._nextCursor;
@@ -91,9 +92,11 @@ class EncounterListBuilder
   _$EncounterList _build() {
     _$EncounterList _$result;
     try {
-      _$result =
-          _$v ??
-          _$EncounterList._(items: items.build(), nextCursor: nextCursor);
+      _$result = _$v ??
+          _$EncounterList._(
+            items: items.build(),
+            nextCursor: nextCursor,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -101,10 +104,7 @@ class EncounterListBuilder
         items.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'EncounterList',
-          _$failedField,
-          e.toString(),
-        );
+            r'EncounterList', _$failedField, e.toString());
       }
       rethrow;
     }

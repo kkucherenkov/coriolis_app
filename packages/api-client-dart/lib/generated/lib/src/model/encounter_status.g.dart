@@ -23,9 +23,12 @@ EncounterStatus _$valueOf(String name) {
   }
 }
 
-final BuiltSet<EncounterStatus> _$values = BuiltSet<EncounterStatus>(
-  const <EncounterStatus>[_$setup, _$active, _$ended],
-);
+final BuiltSet<EncounterStatus> _$values =
+    BuiltSet<EncounterStatus>(const <EncounterStatus>[
+  _$setup,
+  _$active,
+  _$ended,
+]);
 
 class _$EncounterStatusMeta {
   const _$EncounterStatusMeta();
@@ -36,7 +39,7 @@ class _$EncounterStatusMeta {
   BuiltSet<EncounterStatus> get values => _$values;
 }
 
-mixin _$EncounterStatusMixin {
+abstract class _$EncounterStatusMixin {
   // ignore: non_constant_identifier_names
   _$EncounterStatusMeta get EncounterStatus => const _$EncounterStatusMeta();
 }
@@ -63,20 +66,15 @@ class _$EncounterStatusSerializer
   final String wireName = 'EncounterStatus';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    EncounterStatus object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, EncounterStatus object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  EncounterStatus deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => EncounterStatus.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  EncounterStatus deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      EncounterStatus.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

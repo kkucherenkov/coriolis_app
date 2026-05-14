@@ -8,7 +8,7 @@ part of 'npc_list.dart';
 
 class _$NpcList extends NpcList {
   @override
-  final BuiltList<dynamic> items;
+  final BuiltList<Npc> items;
   @override
   final String? nextCursor;
 
@@ -52,9 +52,9 @@ class _$NpcList extends NpcList {
 class NpcListBuilder implements Builder<NpcList, NpcListBuilder> {
   _$NpcList? _$v;
 
-  ListBuilder<dynamic>? _items;
-  ListBuilder<dynamic> get items => _$this._items ??= ListBuilder<dynamic>();
-  set items(ListBuilder<dynamic>? items) => _$this._items = items;
+  ListBuilder<Npc>? _items;
+  ListBuilder<Npc> get items => _$this._items ??= ListBuilder<Npc>();
+  set items(ListBuilder<Npc>? items) => _$this._items = items;
 
   String? _nextCursor;
   String? get nextCursor => _$this._nextCursor;
@@ -90,8 +90,11 @@ class NpcListBuilder implements Builder<NpcList, NpcListBuilder> {
   _$NpcList _build() {
     _$NpcList _$result;
     try {
-      _$result =
-          _$v ?? _$NpcList._(items: items.build(), nextCursor: nextCursor);
+      _$result = _$v ??
+          _$NpcList._(
+            items: items.build(),
+            nextCursor: nextCursor,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -99,10 +102,7 @@ class NpcListBuilder implements Builder<NpcList, NpcListBuilder> {
         items.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'NpcList',
-          _$failedField,
-          e.toString(),
-        );
+            r'NpcList', _$failedField, e.toString());
       }
       rethrow;
     }

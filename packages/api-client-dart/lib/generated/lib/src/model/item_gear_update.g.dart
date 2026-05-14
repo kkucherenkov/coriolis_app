@@ -20,8 +20,8 @@ ItemGearUpdateTypeEnum _$itemGearUpdateTypeEnumValueOf(String name) {
 
 final BuiltSet<ItemGearUpdateTypeEnum> _$itemGearUpdateTypeEnumValues =
     BuiltSet<ItemGearUpdateTypeEnum>(const <ItemGearUpdateTypeEnum>[
-      _$itemGearUpdateTypeEnum_GEAR,
-    ]);
+  _$itemGearUpdateTypeEnum_GEAR,
+]);
 
 Serializer<ItemGearUpdateTypeEnum> _$itemGearUpdateTypeEnumSerializer =
     _$ItemGearUpdateTypeEnumSerializer();
@@ -41,20 +41,15 @@ class _$ItemGearUpdateTypeEnumSerializer
   final String wireName = 'ItemGearUpdateTypeEnum';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    ItemGearUpdateTypeEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, ItemGearUpdateTypeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  ItemGearUpdateTypeEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => ItemGearUpdateTypeEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  ItemGearUpdateTypeEnum deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ItemGearUpdateTypeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 class _$ItemGearUpdate extends ItemGearUpdate {
@@ -72,13 +67,9 @@ class _$ItemGearUpdate extends ItemGearUpdate {
   factory _$ItemGearUpdate([void Function(ItemGearUpdateBuilder)? updates]) =>
       (ItemGearUpdateBuilder()..update(updates))._build();
 
-  _$ItemGearUpdate._({
-    this.type,
-    this.name,
-    this.weight,
-    this.quantity,
-    this.notes,
-  }) : super._();
+  _$ItemGearUpdate._(
+      {this.type, this.name, this.weight, this.quantity, this.notes})
+      : super._();
   @override
   ItemGearUpdate rebuild(void Function(ItemGearUpdateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -176,8 +167,7 @@ class ItemGearUpdateBuilder
   ItemGearUpdate build() => _build();
 
   _$ItemGearUpdate _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$ItemGearUpdate._(
           type: type,
           name: name,

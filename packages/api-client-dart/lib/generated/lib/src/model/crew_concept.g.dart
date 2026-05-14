@@ -29,15 +29,14 @@ CrewConcept _$valueOf(String name) {
   }
 }
 
-final BuiltSet<CrewConcept> _$values = BuiltSet<CrewConcept>(
-  const <CrewConcept>[
-    _$freeTrader,
-    _$mercenary,
-    _$explorer,
-    _$agents,
-    _$pilgrim,
-  ],
-);
+final BuiltSet<CrewConcept> _$values =
+    BuiltSet<CrewConcept>(const <CrewConcept>[
+  _$freeTrader,
+  _$mercenary,
+  _$explorer,
+  _$agents,
+  _$pilgrim,
+]);
 
 class _$CrewConceptMeta {
   const _$CrewConceptMeta();
@@ -50,7 +49,7 @@ class _$CrewConceptMeta {
   BuiltSet<CrewConcept> get values => _$values;
 }
 
-mixin _$CrewConceptMixin {
+abstract class _$CrewConceptMixin {
   // ignore: non_constant_identifier_names
   _$CrewConceptMeta get CrewConcept => const _$CrewConceptMeta();
 }
@@ -79,20 +78,15 @@ class _$CrewConceptSerializer implements PrimitiveSerializer<CrewConcept> {
   final String wireName = 'CrewConcept';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    CrewConcept object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, CrewConcept object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  CrewConcept deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => CrewConcept.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  CrewConcept deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      CrewConcept.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

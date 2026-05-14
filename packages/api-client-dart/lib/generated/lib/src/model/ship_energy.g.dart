@@ -86,14 +86,10 @@ class ShipEnergyBuilder implements Builder<ShipEnergy, ShipEnergyBuilder> {
   ShipEnergy build() => _build();
 
   _$ShipEnergy _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$ShipEnergy._(
           current: BuiltValueNullFieldError.checkNotNull(
-            current,
-            r'ShipEnergy',
-            'current',
-          ),
+              current, r'ShipEnergy', 'current'),
           max: BuiltValueNullFieldError.checkNotNull(max, r'ShipEnergy', 'max'),
         );
     replace(_$result);

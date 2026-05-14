@@ -6,7 +6,7 @@ part of 'item_base.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-abstract mixin class ItemBaseBuilder {
+abstract class ItemBaseBuilder {
   void replace(ItemBase other);
   void update(void Function(ItemBaseBuilder) updates);
   String? get id;
@@ -31,7 +31,7 @@ class _$$ItemBase extends $ItemBase {
       ($ItemBaseBuilder()..update(updates))._build();
 
   _$$ItemBase._({required this.id, required this.type, required this.name})
-    : super._();
+      : super._();
   @override
   $ItemBase rebuild(void Function($ItemBaseBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -113,20 +113,13 @@ class $ItemBaseBuilder
   $ItemBase build() => _build();
 
   _$$ItemBase _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$$ItemBase._(
           id: BuiltValueNullFieldError.checkNotNull(id, r'$ItemBase', 'id'),
-          type: BuiltValueNullFieldError.checkNotNull(
-            type,
-            r'$ItemBase',
-            'type',
-          ),
-          name: BuiltValueNullFieldError.checkNotNull(
-            name,
-            r'$ItemBase',
-            'name',
-          ),
+          type:
+              BuiltValueNullFieldError.checkNotNull(type, r'$ItemBase', 'type'),
+          name:
+              BuiltValueNullFieldError.checkNotNull(name, r'$ItemBase', 'name'),
         );
     replace(_$result);
     return _$result;

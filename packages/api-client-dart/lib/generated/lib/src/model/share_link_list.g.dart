@@ -8,7 +8,7 @@ part of 'share_link_list.dart';
 
 class _$ShareLinkList extends ShareLinkList {
   @override
-  final BuiltList<dynamic> items;
+  final BuiltList<ShareLink> items;
 
   factory _$ShareLinkList([void Function(ShareLinkListBuilder)? updates]) =>
       (ShareLinkListBuilder()..update(updates))._build();
@@ -37,9 +37,8 @@ class _$ShareLinkList extends ShareLinkList {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-      r'ShareLinkList',
-    )..add('items', items)).toString();
+    return (newBuiltValueToStringHelper(r'ShareLinkList')..add('items', items))
+        .toString();
   }
 }
 
@@ -47,9 +46,10 @@ class ShareLinkListBuilder
     implements Builder<ShareLinkList, ShareLinkListBuilder> {
   _$ShareLinkList? _$v;
 
-  ListBuilder<dynamic>? _items;
-  ListBuilder<dynamic> get items => _$this._items ??= ListBuilder<dynamic>();
-  set items(ListBuilder<dynamic>? items) => _$this._items = items;
+  ListBuilder<ShareLink>? _items;
+  ListBuilder<ShareLink> get items =>
+      _$this._items ??= ListBuilder<ShareLink>();
+  set items(ListBuilder<ShareLink>? items) => _$this._items = items;
 
   ShareLinkListBuilder() {
     ShareLinkList._defaults(this);
@@ -80,7 +80,10 @@ class ShareLinkListBuilder
   _$ShareLinkList _build() {
     _$ShareLinkList _$result;
     try {
-      _$result = _$v ?? _$ShareLinkList._(items: items.build());
+      _$result = _$v ??
+          _$ShareLinkList._(
+            items: items.build(),
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -88,10 +91,7 @@ class ShareLinkListBuilder
         items.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'ShareLinkList',
-          _$failedField,
-          e.toString(),
-        );
+            r'ShareLinkList', _$failedField, e.toString());
       }
       rethrow;
     }

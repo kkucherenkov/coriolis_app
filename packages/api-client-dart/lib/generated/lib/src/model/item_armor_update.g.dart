@@ -20,8 +20,8 @@ ItemArmorUpdateTypeEnum _$itemArmorUpdateTypeEnumValueOf(String name) {
 
 final BuiltSet<ItemArmorUpdateTypeEnum> _$itemArmorUpdateTypeEnumValues =
     BuiltSet<ItemArmorUpdateTypeEnum>(const <ItemArmorUpdateTypeEnum>[
-      _$itemArmorUpdateTypeEnum_ARMOR,
-    ]);
+  _$itemArmorUpdateTypeEnum_ARMOR,
+]);
 
 Serializer<ItemArmorUpdateTypeEnum> _$itemArmorUpdateTypeEnumSerializer =
     _$ItemArmorUpdateTypeEnumSerializer();
@@ -41,20 +41,16 @@ class _$ItemArmorUpdateTypeEnumSerializer
   final String wireName = 'ItemArmorUpdateTypeEnum';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    ItemArmorUpdateTypeEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, ItemArmorUpdateTypeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
   ItemArmorUpdateTypeEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => ItemArmorUpdateTypeEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ItemArmorUpdateTypeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 class _$ItemArmorUpdate extends ItemArmorUpdate {
@@ -70,18 +66,21 @@ class _$ItemArmorUpdate extends ItemArmorUpdate {
   final BuiltList<String>? features;
   @override
   final bool? equipped;
+  @override
+  final int? extraSlotCount;
 
   factory _$ItemArmorUpdate([void Function(ItemArmorUpdateBuilder)? updates]) =>
       (ItemArmorUpdateBuilder()..update(updates))._build();
 
-  _$ItemArmorUpdate._({
-    this.type,
-    this.name,
-    this.armorRating,
-    this.weight,
-    this.features,
-    this.equipped,
-  }) : super._();
+  _$ItemArmorUpdate._(
+      {this.type,
+      this.name,
+      this.armorRating,
+      this.weight,
+      this.features,
+      this.equipped,
+      this.extraSlotCount})
+      : super._();
   @override
   ItemArmorUpdate rebuild(void Function(ItemArmorUpdateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -98,7 +97,8 @@ class _$ItemArmorUpdate extends ItemArmorUpdate {
         armorRating == other.armorRating &&
         weight == other.weight &&
         features == other.features &&
-        equipped == other.equipped;
+        equipped == other.equipped &&
+        extraSlotCount == other.extraSlotCount;
   }
 
   @override
@@ -110,6 +110,7 @@ class _$ItemArmorUpdate extends ItemArmorUpdate {
     _$hash = $jc(_$hash, weight.hashCode);
     _$hash = $jc(_$hash, features.hashCode);
     _$hash = $jc(_$hash, equipped.hashCode);
+    _$hash = $jc(_$hash, extraSlotCount.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -122,7 +123,8 @@ class _$ItemArmorUpdate extends ItemArmorUpdate {
           ..add('armorRating', armorRating)
           ..add('weight', weight)
           ..add('features', features)
-          ..add('equipped', equipped))
+          ..add('equipped', equipped)
+          ..add('extraSlotCount', extraSlotCount))
         .toString();
   }
 }
@@ -156,6 +158,11 @@ class ItemArmorUpdateBuilder
   bool? get equipped => _$this._equipped;
   set equipped(bool? equipped) => _$this._equipped = equipped;
 
+  int? _extraSlotCount;
+  int? get extraSlotCount => _$this._extraSlotCount;
+  set extraSlotCount(int? extraSlotCount) =>
+      _$this._extraSlotCount = extraSlotCount;
+
   ItemArmorUpdateBuilder() {
     ItemArmorUpdate._defaults(this);
   }
@@ -169,6 +176,7 @@ class ItemArmorUpdateBuilder
       _weight = $v.weight;
       _features = $v.features?.toBuilder();
       _equipped = $v.equipped;
+      _extraSlotCount = $v.extraSlotCount;
       _$v = null;
     }
     return this;
@@ -190,8 +198,7 @@ class ItemArmorUpdateBuilder
   _$ItemArmorUpdate _build() {
     _$ItemArmorUpdate _$result;
     try {
-      _$result =
-          _$v ??
+      _$result = _$v ??
           _$ItemArmorUpdate._(
             type: type,
             name: name,
@@ -199,6 +206,7 @@ class ItemArmorUpdateBuilder
             weight: weight,
             features: _features?.build(),
             equipped: equipped,
+            extraSlotCount: extraSlotCount,
           );
     } catch (_) {
       late String _$failedField;
@@ -207,10 +215,7 @@ class ItemArmorUpdateBuilder
         _features?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'ItemArmorUpdate',
-          _$failedField,
-          e.toString(),
-        );
+            r'ItemArmorUpdate', _$failedField, e.toString());
       }
       rethrow;
     }

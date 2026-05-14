@@ -12,16 +12,16 @@ class _$CharacterEncumbrance extends CharacterEncumbrance {
   @override
   final int max;
 
-  factory _$CharacterEncumbrance([
-    void Function(CharacterEncumbranceBuilder)? updates,
-  ]) => (CharacterEncumbranceBuilder()..update(updates))._build();
+  factory _$CharacterEncumbrance(
+          [void Function(CharacterEncumbranceBuilder)? updates]) =>
+      (CharacterEncumbranceBuilder()..update(updates))._build();
 
   _$CharacterEncumbrance._({required this.current, required this.max})
-    : super._();
+      : super._();
   @override
   CharacterEncumbrance rebuild(
-    void Function(CharacterEncumbranceBuilder) updates,
-  ) => (toBuilder()..update(updates)).build();
+          void Function(CharacterEncumbranceBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
 
   @override
   CharacterEncumbranceBuilder toBuilder() =>
@@ -93,19 +93,12 @@ class CharacterEncumbranceBuilder
   CharacterEncumbrance build() => _build();
 
   _$CharacterEncumbrance _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$CharacterEncumbrance._(
           current: BuiltValueNullFieldError.checkNotNull(
-            current,
-            r'CharacterEncumbrance',
-            'current',
-          ),
+              current, r'CharacterEncumbrance', 'current'),
           max: BuiltValueNullFieldError.checkNotNull(
-            max,
-            r'CharacterEncumbrance',
-            'max',
-          ),
+              max, r'CharacterEncumbrance', 'max'),
         );
     replace(_$result);
     return _$result;

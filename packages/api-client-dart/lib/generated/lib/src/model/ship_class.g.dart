@@ -123,7 +123,7 @@ class _$ShipClassMeta {
   BuiltSet<ShipClass> get values => _$values;
 }
 
-mixin _$ShipClassMixin {
+abstract class _$ShipClassMixin {
   // ignore: non_constant_identifier_names
   _$ShipClassMeta get ShipClass => const _$ShipClassMeta();
 }
@@ -182,20 +182,15 @@ class _$ShipClassSerializer implements PrimitiveSerializer<ShipClass> {
   final String wireName = 'ShipClass';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    ShipClass object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, ShipClass object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  ShipClass deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => ShipClass.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  ShipClass deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ShipClass.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

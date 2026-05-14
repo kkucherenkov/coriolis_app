@@ -18,7 +18,7 @@ class _$ShareLinkCreate extends ShareLinkCreate {
       (ShareLinkCreateBuilder()..update(updates))._build();
 
   _$ShareLinkCreate._({this.includeGmNotes, this.expiresAt, this.label})
-    : super._();
+      : super._();
   @override
   ShareLinkCreate rebuild(void Function(ShareLinkCreateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -101,8 +101,7 @@ class ShareLinkCreateBuilder
   ShareLinkCreate build() => _build();
 
   _$ShareLinkCreate _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$ShareLinkCreate._(
           includeGmNotes: includeGmNotes,
           expiresAt: expiresAt,

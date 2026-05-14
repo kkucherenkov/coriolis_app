@@ -89,14 +89,10 @@ class EncounterCreateBuilder
   EncounterCreate build() => _build();
 
   _$EncounterCreate _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$EncounterCreate._(
           name: BuiltValueNullFieldError.checkNotNull(
-            name,
-            r'EncounterCreate',
-            'name',
-          ),
+              name, r'EncounterCreate', 'name'),
           notes: notes,
         );
     replace(_$result);

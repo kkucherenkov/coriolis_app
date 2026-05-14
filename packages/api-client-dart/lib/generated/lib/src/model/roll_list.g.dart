@@ -8,7 +8,7 @@ part of 'roll_list.dart';
 
 class _$RollList extends RollList {
   @override
-  final BuiltList<dynamic> items;
+  final BuiltList<Roll> items;
 
   factory _$RollList([void Function(RollListBuilder)? updates]) =>
       (RollListBuilder()..update(updates))._build();
@@ -37,18 +37,17 @@ class _$RollList extends RollList {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-      r'RollList',
-    )..add('items', items)).toString();
+    return (newBuiltValueToStringHelper(r'RollList')..add('items', items))
+        .toString();
   }
 }
 
 class RollListBuilder implements Builder<RollList, RollListBuilder> {
   _$RollList? _$v;
 
-  ListBuilder<dynamic>? _items;
-  ListBuilder<dynamic> get items => _$this._items ??= ListBuilder<dynamic>();
-  set items(ListBuilder<dynamic>? items) => _$this._items = items;
+  ListBuilder<Roll>? _items;
+  ListBuilder<Roll> get items => _$this._items ??= ListBuilder<Roll>();
+  set items(ListBuilder<Roll>? items) => _$this._items = items;
 
   RollListBuilder() {
     RollList._defaults(this);
@@ -79,7 +78,10 @@ class RollListBuilder implements Builder<RollList, RollListBuilder> {
   _$RollList _build() {
     _$RollList _$result;
     try {
-      _$result = _$v ?? _$RollList._(items: items.build());
+      _$result = _$v ??
+          _$RollList._(
+            items: items.build(),
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -87,10 +89,7 @@ class RollListBuilder implements Builder<RollList, RollListBuilder> {
         items.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'RollList',
-          _$failedField,
-          e.toString(),
-        );
+            r'RollList', _$failedField, e.toString());
       }
       rethrow;
     }

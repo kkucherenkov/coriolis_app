@@ -14,6 +14,8 @@ class _$Roll extends Roll {
   @override
   final String? gameSessionId;
   @override
+  final RollKind kind;
+  @override
   final String label;
   @override
   final int pool;
@@ -24,22 +26,26 @@ class _$Roll extends Roll {
   @override
   final bool pushed;
   @override
+  final RollBreakdown? breakdown;
+  @override
   final DateTime createdAt;
 
   factory _$Roll([void Function(RollBuilder)? updates]) =>
       (RollBuilder()..update(updates))._build();
 
-  _$Roll._({
-    required this.id,
-    required this.characterId,
-    this.gameSessionId,
-    required this.label,
-    required this.pool,
-    required this.dice,
-    required this.hits,
-    required this.pushed,
-    required this.createdAt,
-  }) : super._();
+  _$Roll._(
+      {required this.id,
+      required this.characterId,
+      this.gameSessionId,
+      required this.kind,
+      required this.label,
+      required this.pool,
+      required this.dice,
+      required this.hits,
+      required this.pushed,
+      this.breakdown,
+      required this.createdAt})
+      : super._();
   @override
   Roll rebuild(void Function(RollBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -54,11 +60,13 @@ class _$Roll extends Roll {
         id == other.id &&
         characterId == other.characterId &&
         gameSessionId == other.gameSessionId &&
+        kind == other.kind &&
         label == other.label &&
         pool == other.pool &&
         dice == other.dice &&
         hits == other.hits &&
         pushed == other.pushed &&
+        breakdown == other.breakdown &&
         createdAt == other.createdAt;
   }
 
@@ -68,11 +76,13 @@ class _$Roll extends Roll {
     _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, characterId.hashCode);
     _$hash = $jc(_$hash, gameSessionId.hashCode);
+    _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, label.hashCode);
     _$hash = $jc(_$hash, pool.hashCode);
     _$hash = $jc(_$hash, dice.hashCode);
     _$hash = $jc(_$hash, hits.hashCode);
     _$hash = $jc(_$hash, pushed.hashCode);
+    _$hash = $jc(_$hash, breakdown.hashCode);
     _$hash = $jc(_$hash, createdAt.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -84,11 +94,13 @@ class _$Roll extends Roll {
           ..add('id', id)
           ..add('characterId', characterId)
           ..add('gameSessionId', gameSessionId)
+          ..add('kind', kind)
           ..add('label', label)
           ..add('pool', pool)
           ..add('dice', dice)
           ..add('hits', hits)
           ..add('pushed', pushed)
+          ..add('breakdown', breakdown)
           ..add('createdAt', createdAt))
         .toString();
   }
@@ -110,6 +122,10 @@ class RollBuilder implements Builder<Roll, RollBuilder> {
   set gameSessionId(String? gameSessionId) =>
       _$this._gameSessionId = gameSessionId;
 
+  RollKind? _kind;
+  RollKind? get kind => _$this._kind;
+  set kind(RollKind? kind) => _$this._kind = kind;
+
   String? _label;
   String? get label => _$this._label;
   set label(String? label) => _$this._label = label;
@@ -130,6 +146,12 @@ class RollBuilder implements Builder<Roll, RollBuilder> {
   bool? get pushed => _$this._pushed;
   set pushed(bool? pushed) => _$this._pushed = pushed;
 
+  RollBreakdownBuilder? _breakdown;
+  RollBreakdownBuilder get breakdown =>
+      _$this._breakdown ??= RollBreakdownBuilder();
+  set breakdown(RollBreakdownBuilder? breakdown) =>
+      _$this._breakdown = breakdown;
+
   DateTime? _createdAt;
   DateTime? get createdAt => _$this._createdAt;
   set createdAt(DateTime? createdAt) => _$this._createdAt = createdAt;
@@ -144,11 +166,13 @@ class RollBuilder implements Builder<Roll, RollBuilder> {
       _id = $v.id;
       _characterId = $v.characterId;
       _gameSessionId = $v.gameSessionId;
+      _kind = $v.kind;
       _label = $v.label;
       _pool = $v.pool;
       _dice = $v.dice.toBuilder();
       _hits = $v.hits;
       _pushed = $v.pushed;
+      _breakdown = $v.breakdown?.toBuilder();
       _createdAt = $v.createdAt;
       _$v = null;
     }
@@ -171,40 +195,32 @@ class RollBuilder implements Builder<Roll, RollBuilder> {
   _$Roll _build() {
     _$Roll _$result;
     try {
-      _$result =
-          _$v ??
+      _$result = _$v ??
           _$Roll._(
             id: BuiltValueNullFieldError.checkNotNull(id, r'Roll', 'id'),
             characterId: BuiltValueNullFieldError.checkNotNull(
-              characterId,
-              r'Roll',
-              'characterId',
-            ),
+                characterId, r'Roll', 'characterId'),
             gameSessionId: gameSessionId,
-            label: BuiltValueNullFieldError.checkNotNull(
-              label,
-              r'Roll',
-              'label',
-            ),
+            kind: BuiltValueNullFieldError.checkNotNull(kind, r'Roll', 'kind'),
+            label:
+                BuiltValueNullFieldError.checkNotNull(label, r'Roll', 'label'),
             pool: BuiltValueNullFieldError.checkNotNull(pool, r'Roll', 'pool'),
             dice: dice.build(),
             hits: BuiltValueNullFieldError.checkNotNull(hits, r'Roll', 'hits'),
             pushed: BuiltValueNullFieldError.checkNotNull(
-              pushed,
-              r'Roll',
-              'pushed',
-            ),
+                pushed, r'Roll', 'pushed'),
+            breakdown: _breakdown?.build(),
             createdAt: BuiltValueNullFieldError.checkNotNull(
-              createdAt,
-              r'Roll',
-              'createdAt',
-            ),
+                createdAt, r'Roll', 'createdAt'),
           );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'dice';
         dice.build();
+
+        _$failedField = 'breakdown';
+        _breakdown?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(r'Roll', _$failedField, e.toString());
       }

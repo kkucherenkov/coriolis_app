@@ -6,45 +6,45 @@ part of 'item_range_enum.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const ItemRangeEnum _$arm = const ItemRangeEnum._('arm');
-const ItemRangeEnum _$near = const ItemRangeEnum._('near');
-const ItemRangeEnum _$short = const ItemRangeEnum._('short');
+const ItemRangeEnum _$close = const ItemRangeEnum._('close');
+const ItemRangeEnum _$medium = const ItemRangeEnum._('medium');
 const ItemRangeEnum _$long = const ItemRangeEnum._('long');
-const ItemRangeEnum _$distant = const ItemRangeEnum._('distant');
+const ItemRangeEnum _$extreme = const ItemRangeEnum._('extreme');
 
 ItemRangeEnum _$valueOf(String name) {
   switch (name) {
-    case 'arm':
-      return _$arm;
-    case 'near':
-      return _$near;
-    case 'short':
-      return _$short;
+    case 'close':
+      return _$close;
+    case 'medium':
+      return _$medium;
     case 'long':
       return _$long;
-    case 'distant':
-      return _$distant;
+    case 'extreme':
+      return _$extreme;
     default:
       throw ArgumentError(name);
   }
 }
 
-final BuiltSet<ItemRangeEnum> _$values = BuiltSet<ItemRangeEnum>(
-  const <ItemRangeEnum>[_$arm, _$near, _$short, _$long, _$distant],
-);
+final BuiltSet<ItemRangeEnum> _$values =
+    BuiltSet<ItemRangeEnum>(const <ItemRangeEnum>[
+  _$close,
+  _$medium,
+  _$long,
+  _$extreme,
+]);
 
 class _$ItemRangeEnumMeta {
   const _$ItemRangeEnumMeta();
-  ItemRangeEnum get arm => _$arm;
-  ItemRangeEnum get near => _$near;
-  ItemRangeEnum get short => _$short;
+  ItemRangeEnum get close => _$close;
+  ItemRangeEnum get medium => _$medium;
   ItemRangeEnum get long => _$long;
-  ItemRangeEnum get distant => _$distant;
+  ItemRangeEnum get extreme => _$extreme;
   ItemRangeEnum valueOf(String name) => _$valueOf(name);
   BuiltSet<ItemRangeEnum> get values => _$values;
 }
 
-mixin _$ItemRangeEnumMixin {
+abstract class _$ItemRangeEnumMixin {
   // ignore: non_constant_identifier_names
   _$ItemRangeEnumMeta get ItemRangeEnum => const _$ItemRangeEnumMeta();
 }
@@ -54,18 +54,16 @@ Serializer<ItemRangeEnum> _$itemRangeEnumSerializer =
 
 class _$ItemRangeEnumSerializer implements PrimitiveSerializer<ItemRangeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'arm': 'arm',
-    'near': 'near',
-    'short': 'short',
+    'close': 'close',
+    'medium': 'medium',
     'long': 'long',
-    'distant': 'distant',
+    'extreme': 'extreme',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'arm': 'arm',
-    'near': 'near',
-    'short': 'short',
+    'close': 'close',
+    'medium': 'medium',
     'long': 'long',
-    'distant': 'distant',
+    'extreme': 'extreme',
   };
 
   @override
@@ -74,20 +72,15 @@ class _$ItemRangeEnumSerializer implements PrimitiveSerializer<ItemRangeEnum> {
   final String wireName = 'ItemRangeEnum';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    ItemRangeEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, ItemRangeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  ItemRangeEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => ItemRangeEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  ItemRangeEnum deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ItemRangeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

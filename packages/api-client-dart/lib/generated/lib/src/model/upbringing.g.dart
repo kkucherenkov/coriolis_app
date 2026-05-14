@@ -38,7 +38,7 @@ class _$UpbringingMeta {
   BuiltSet<Upbringing> get values => _$values;
 }
 
-mixin _$UpbringingMixin {
+abstract class _$UpbringingMixin {
   // ignore: non_constant_identifier_names
   _$UpbringingMeta get Upbringing => const _$UpbringingMeta();
 }
@@ -63,20 +63,15 @@ class _$UpbringingSerializer implements PrimitiveSerializer<Upbringing> {
   final String wireName = 'Upbringing';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    Upbringing object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, Upbringing object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  Upbringing deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => Upbringing.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  Upbringing deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      Upbringing.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

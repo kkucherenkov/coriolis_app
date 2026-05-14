@@ -19,12 +19,12 @@ class _$ConditionFlags extends ConditionFlags {
   factory _$ConditionFlags([void Function(ConditionFlagsBuilder)? updates]) =>
       (ConditionFlagsBuilder()..update(updates))._build();
 
-  _$ConditionFlags._({
-    required this.exhausted,
-    required this.sleepless,
-    required this.thirsty,
-    required this.hungry,
-  }) : super._();
+  _$ConditionFlags._(
+      {required this.exhausted,
+      required this.sleepless,
+      required this.thirsty,
+      required this.hungry})
+      : super._();
   @override
   ConditionFlags rebuild(void Function(ConditionFlagsBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -114,29 +114,16 @@ class ConditionFlagsBuilder
   ConditionFlags build() => _build();
 
   _$ConditionFlags _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$ConditionFlags._(
           exhausted: BuiltValueNullFieldError.checkNotNull(
-            exhausted,
-            r'ConditionFlags',
-            'exhausted',
-          ),
+              exhausted, r'ConditionFlags', 'exhausted'),
           sleepless: BuiltValueNullFieldError.checkNotNull(
-            sleepless,
-            r'ConditionFlags',
-            'sleepless',
-          ),
+              sleepless, r'ConditionFlags', 'sleepless'),
           thirsty: BuiltValueNullFieldError.checkNotNull(
-            thirsty,
-            r'ConditionFlags',
-            'thirsty',
-          ),
+              thirsty, r'ConditionFlags', 'thirsty'),
           hungry: BuiltValueNullFieldError.checkNotNull(
-            hungry,
-            r'ConditionFlags',
-            'hungry',
-          ),
+              hungry, r'ConditionFlags', 'hungry'),
         );
     replace(_$result);
     return _$result;

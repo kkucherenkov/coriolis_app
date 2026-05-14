@@ -8,7 +8,7 @@ part of 'ship_list.dart';
 
 class _$ShipList extends ShipList {
   @override
-  final BuiltList<dynamic> items;
+  final BuiltList<Ship> items;
   @override
   final String? nextCursor;
 
@@ -52,9 +52,9 @@ class _$ShipList extends ShipList {
 class ShipListBuilder implements Builder<ShipList, ShipListBuilder> {
   _$ShipList? _$v;
 
-  ListBuilder<dynamic>? _items;
-  ListBuilder<dynamic> get items => _$this._items ??= ListBuilder<dynamic>();
-  set items(ListBuilder<dynamic>? items) => _$this._items = items;
+  ListBuilder<Ship>? _items;
+  ListBuilder<Ship> get items => _$this._items ??= ListBuilder<Ship>();
+  set items(ListBuilder<Ship>? items) => _$this._items = items;
 
   String? _nextCursor;
   String? get nextCursor => _$this._nextCursor;
@@ -90,8 +90,11 @@ class ShipListBuilder implements Builder<ShipList, ShipListBuilder> {
   _$ShipList _build() {
     _$ShipList _$result;
     try {
-      _$result =
-          _$v ?? _$ShipList._(items: items.build(), nextCursor: nextCursor);
+      _$result = _$v ??
+          _$ShipList._(
+            items: items.build(),
+            nextCursor: nextCursor,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -99,10 +102,7 @@ class ShipListBuilder implements Builder<ShipList, ShipListBuilder> {
         items.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'ShipList',
-          _$failedField,
-          e.toString(),
-        );
+            r'ShipList', _$failedField, e.toString());
       }
       rethrow;
     }
