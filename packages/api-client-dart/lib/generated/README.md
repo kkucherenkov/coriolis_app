@@ -99,6 +99,7 @@ Class | Method | HTTP request | Description
 [*DiceApi*](doc/DiceApi.md) | [**listRolls**](doc/DiceApi.md#listrolls) | **GET** /api/v1/characters/{id}/rolls | List roll history for a character
 [*DiceApi*](doc/DiceApi.md) | [**pushRoll**](doc/DiceApi.md#pushroll) | **PATCH** /api/v1/rolls/{id}/push | Push (reroll) a roll
 [*EncountersApi*](doc/EncountersApi.md) | [**addCombatant**](doc/EncountersApi.md#addcombatant) | **POST** /api/v1/encounters/{id}/combatants | Add a combatant to an encounter
+[*EncountersApi*](doc/EncountersApi.md) | [**advanceRound**](doc/EncountersApi.md#advanceround) | **POST** /api/v1/encounters/{id}/round/advance | Advance the encounter to the start of the next round
 [*EncountersApi*](doc/EncountersApi.md) | [**advanceTurn**](doc/EncountersApi.md#advanceturn) | **POST** /api/v1/encounters/{id}/turn/advance | Advance to the next combatant&#39;s turn
 [*EncountersApi*](doc/EncountersApi.md) | [**createEncounter**](doc/EncountersApi.md#createencounter) | **POST** /api/v1/game-sessions/{sessionId}/encounters | Create an encounter in a game session
 [*EncountersApi*](doc/EncountersApi.md) | [**deleteCombatant**](doc/EncountersApi.md#deletecombatant) | **DELETE** /api/v1/combatants/{id} | Remove a combatant from an encounter

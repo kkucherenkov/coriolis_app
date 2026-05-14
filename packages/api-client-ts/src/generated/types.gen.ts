@@ -6230,6 +6230,48 @@ export type AdvanceTurnResponses = {
 
 export type AdvanceTurnResponse = AdvanceTurnResponses[keyof AdvanceTurnResponses];
 
+export type AdvanceRoundData = {
+    body?: never;
+    path: {
+        /**
+         * Encounter identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/encounters/{id}/round/advance';
+};
+
+export type AdvanceRoundErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own the encounter
+     */
+    403: Problem;
+    /**
+     * Encounter not found
+     */
+    404: Problem;
+    /**
+     * Business rule violation. `code` identifies the specific error.
+     */
+    422: Problem;
+};
+
+export type AdvanceRoundError = AdvanceRoundErrors[keyof AdvanceRoundErrors];
+
+export type AdvanceRoundResponses = {
+    /**
+     * Round advanced; returns the new active combatant and updated round number
+     */
+    200: TurnAdvanceResult;
+};
+
+export type AdvanceRoundResponse = AdvanceRoundResponses[keyof AdvanceRoundResponses];
+
 export type CreateShareLinkData = {
     body: ShareLinkCreate;
     path: {

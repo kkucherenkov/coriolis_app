@@ -5508,6 +5508,112 @@ paths:
                     instance: /api/v1/encounters/cuid_enc01/turn/advance
                     code: ENCOUNTER_INITIATIVE_NOT_ROLLED
 
+  /api/v1/encounters/{id}/round/advance:
+    post:
+      operationId: advanceRound
+      summary: Advance the encounter to the start of the next round
+      description: |
+        Atomically advances the encounter to the start of the next round.
+
+        **Effects:**
+        - `encounter.round` is incremented by 1.
+        - `encounter.activeCombatantId` is reset to the first combatant in
+          `turnOrder` (the lowest `turnOrder` index).
+        - One `combat.updated` realtime event is emitted on the encounter's
+          session channel.
+
+        **Allowed only while `status` is `active`.** Returns 422
+        `ENCOUNTER_INVALID_STATUS` otherwise.
+
+        **Defensive guard:** returns 422 `ENCOUNTER_INITIATIVE_NOT_ROLLED`
+        when `activeCombatantId` is null (initiative was never set).
+
+        The response `TurnAdvanceResult.isNewRound` is always `true` on
+        success — this endpoint always crosses a round boundary by definition.
+        Use `POST /api/v1/encounters/{id}/turn/advance` for within-round
+        progression.
+      tags: [encounters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EncounterId"
+      responses:
+        "200":
+          description: Round advanced; returns the new active combatant and updated round number
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TurnAdvanceResult"
+              examples:
+                roundEnded:
+                  summary: Round wraps to the next
+                  value:
+                    activeCombatantId: cuid_comb01
+                    round: 2
+                    isNewRound: true
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the encounter
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own the game session for this encounter
+                    instance: /api/v1/encounters/cuid_enc01/round/advance
+                    code: ENCOUNTER_NOT_OWNED
+        "404":
+          description: Encounter not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Encounter cuid_enc01 does not exist
+                    instance: /api/v1/encounters/cuid_enc01/round/advance
+                    code: ENCOUNTER_NOT_FOUND
+        "422":
+          description: Business rule violation. `code` identifies the specific error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                invalidStatus:
+                  summary: Encounter is not active
+                  value:
+                    type: https://coriolis.example.com/problems/unprocessable
+                    title: Invalid encounter status
+                    status: 422
+                    detail: "Round advance is only allowed during active combat. Current status: setup."
+                    instance: /api/v1/encounters/cuid_enc01/round/advance
+                    code: ENCOUNTER_INVALID_STATUS
+                initiativeNotRolled:
+                  summary: Initiative not set (defensive guard)
+                  value:
+                    type: https://coriolis.example.com/problems/unprocessable
+                    title: Initiative not rolled
+                    status: 422
+                    detail: activeCombatantId is null — roll initiative before advancing rounds.
+                    instance: /api/v1/encounters/cuid_enc01/round/advance
+                    code: ENCOUNTER_INITIATIVE_NOT_ROLLED
+
   # ---------------------------------------------------------------------------
   # Share links (Epic 6 Feature 6.1)
   # ---------------------------------------------------------------------------

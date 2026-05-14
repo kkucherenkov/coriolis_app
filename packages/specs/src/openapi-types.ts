@@ -1126,6 +1126,44 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/encounters/{id}/round/advance': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Advance the encounter to the start of the next round
+     * @description Atomically advances the encounter to the start of the next round.
+     *
+     *     **Effects:**
+     *     - `encounter.round` is incremented by 1.
+     *     - `encounter.activeCombatantId` is reset to the first combatant in
+     *       `turnOrder` (the lowest `turnOrder` index).
+     *     - One `combat.updated` realtime event is emitted on the encounter's
+     *       session channel.
+     *
+     *     **Allowed only while `status` is `active`.** Returns 422
+     *     `ENCOUNTER_INVALID_STATUS` otherwise.
+     *
+     *     **Defensive guard:** returns 422 `ENCOUNTER_INITIATIVE_NOT_ROLLED`
+     *     when `activeCombatantId` is null (initiative was never set).
+     *
+     *     The response `TurnAdvanceResult.isNewRound` is always `true` on
+     *     success — this endpoint always crosses a round boundary by definition.
+     *     Use `POST /api/v1/encounters/{id}/turn/advance` for within-round
+     *     progression.
+     */
+    post: operations['advanceRound'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/characters/{id}/share': {
     parameters: {
       query?: never;
@@ -7349,6 +7387,65 @@ export interface operations {
     requestBody?: never;
     responses: {
       /** @description Turn advanced; returns the new active combatant and round info */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['TurnAdvanceResult'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own the encounter */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Encounter not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Business rule violation. `code` identifies the specific error. */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  advanceRound: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Encounter identifier (cuid2) */
+        id: components['parameters']['EncounterId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Round advanced; returns the new active combatant and updated round number */
       200: {
         headers: {
           [name: string]: unknown;
