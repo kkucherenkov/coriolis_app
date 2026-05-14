@@ -1,7 +1,8 @@
 <script setup lang="ts">
-  import { AppIconCoriolis } from '@app/ui';
+  import { AppButton, AppIconCoriolis } from '@app/ui';
   import type { IconCoriolisName } from '@app/ui';
   import type { IconId } from '@app/api-client-ts';
+  import { NINE_ICONS, rollIconD66 } from '~/utils/iconRoll';
 
   interface Props {
     iconId: IconId | null;
@@ -15,22 +16,16 @@
 
   const { t } = useI18n({ useScope: 'local' });
 
-  // IconId and IconCoriolisName are identical union types (both sourced from the same
-  // spec enum). We cast directly — if the enum ever diverges codegen CI catches it.
-  const NINE_ICONS: IconId[] = [
-    'lady-of-tears',
-    'traveler',
-    'messenger',
-    'merchant',
-    'dancer',
-    'gambler',
-    'judge',
-    'faceless-one',
-    'deckhand',
-  ];
-
   function select(icon: IconId): void {
     emit('update:iconId', icon);
+  }
+
+  // ST3001 ch.2 step 15 — «Случайным образом определи Лика-покровителя».
+  // Backed by the deterministic d66 → IconId table in `~/utils/iconRoll.ts`
+  // (each Icon gets 4 of 36 outcomes). Players keep manual selection as
+  // the default surface; this is the "let the rulebook pick for me" CTA.
+  function rollAndSelect(): void {
+    select(rollIconD66());
   }
 
   function onKeydown(event: KeyboardEvent, icon: IconId): void {
@@ -45,6 +40,8 @@
 {
   "en": {
     "choosePrompt": "Select the Icon who walks beside you.",
+    "rollLabel": "Roll d66 for me",
+    "rollHint": "Let the rulebook decide — equivalent to ST3001 step 15.",
     "iconName": {
       "lady-of-tears": "Lady of Tears",
       "traveler": "The Traveler",
@@ -72,6 +69,8 @@
   },
   "ru": {
     "choosePrompt": "Выберите Икону, что идёт рядом с вами.",
+    "rollLabel": "Кинуть d66",
+    "rollHint": "Доверьте выбор правилам — соответствует шагу 15 ST3001.",
     "iconName": {
       "lady-of-tears": "Дама слёз",
       "traveler": "Странник",
@@ -99,6 +98,8 @@
   },
   "uk": {
     "choosePrompt": "[uk-todo] Select the Icon who walks beside you.",
+    "rollLabel": "[uk-todo] Roll d66 for me",
+    "rollHint": "[uk-todo] Let the rulebook decide.",
     "iconName": {
       "lady-of-tears": "[uk-todo] Lady of Tears",
       "traveler": "[uk-todo] The Traveler",
@@ -126,6 +127,8 @@
   },
   "el": {
     "choosePrompt": "[el-todo] Select the Icon who walks beside you.",
+    "rollLabel": "[el-todo] Roll d66 for me",
+    "rollHint": "[el-todo] Let the rulebook decide.",
     "iconName": {
       "lady-of-tears": "[el-todo] Lady of Tears",
       "traveler": "[el-todo] The Traveler",
@@ -159,6 +162,21 @@
     <p class="step-icon__prompt">
       {{ t('choosePrompt') }}
     </p>
+
+    <div class="step-icon__roll">
+      <AppButton
+        type="button"
+        variant="mystic"
+        size="md"
+        :aria-describedby="`step-icon-roll-hint`"
+        @click="rollAndSelect"
+      >
+        {{ t('rollLabel') }}
+      </AppButton>
+      <p id="step-icon-roll-hint" class="step-icon__roll-hint">
+        {{ t('rollHint') }}
+      </p>
+    </div>
 
     <div class="step-icon__grid" role="radiogroup" :aria-label="t('ariaGrid')">
       <div
@@ -222,9 +240,25 @@
   .step-icon {
     &__prompt {
       text-align: center;
-      margin: 0 0 var(--space-8);
+      margin: 0 0 var(--space-4);
       font-family: var(--font-body);
       font-size: var(--type-body-md-font-size);
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    &__roll {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      margin: 0 0 var(--space-8);
+    }
+
+    &__roll-hint {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: var(--type-body-xs-font-size);
       color: var(--text-secondary);
       font-style: italic;
     }
