@@ -397,6 +397,107 @@ void main() {
       );
     });
 
+    group('assignCrew', () {
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns true and refetches ship on success',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.assignCrew(
+                shipId: any(named: 'shipId'),
+                position: any(named: 'position'),
+                characterId: any(named: 'characterId'),
+              )).thenAnswer((_) async {});
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final ok = await cubit.assignCrew(
+            position: 'captain',
+            characterId: 'char-7',
+          );
+          expect(ok, isTrue);
+        },
+        verify: (cubit) {
+          verify(() => repo.assignCrew(
+                shipId: 's1',
+                position: 'captain',
+                characterId: 'char-7',
+              )).called(1);
+          // get called twice — once on load, once on the refetch.
+          verify(() => repo.get('s1')).called(2);
+          expect(cubit.state.saveStatus, isNot(ShipSheetSaveStatus.error));
+        },
+      );
+
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns false and surfaces saveErrorMessage on failure',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.assignCrew(
+                shipId: any(named: 'shipId'),
+                position: any(named: 'position'),
+                characterId: any(named: 'characterId'),
+              )).thenThrow(StateError('409 already assigned'));
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final ok = await cubit.assignCrew(
+            position: 'pilot',
+            characterId: 'char-99',
+          );
+          expect(ok, isFalse);
+        },
+        verify: (cubit) {
+          expect(cubit.state.saveStatus, ShipSheetSaveStatus.error);
+          expect(
+            cubit.state.saveErrorMessage,
+            contains('409 already assigned'),
+          );
+        },
+      );
+    });
+
+    group('unassignCrew', () {
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'returns true and refetches ship on success',
+        build: () {
+          when(() => repo.get('s1')).thenAnswer((_) async => _shipFixture());
+          when(() => repo.unassignCrew(
+                shipId: any(named: 'shipId'),
+                characterId: any(named: 'characterId'),
+              )).thenAnswer((_) async {});
+          return _buildCubit(repo);
+        },
+        act: (cubit) async {
+          await cubit.load('s1');
+          final ok = await cubit.unassignCrew(characterId: 'char-7');
+          expect(ok, isTrue);
+        },
+        verify: (_) {
+          verify(() => repo.unassignCrew(
+                shipId: 's1',
+                characterId: 'char-7',
+              )).called(1);
+        },
+      );
+
+      blocTest<ShipSheetCubit, ShipSheetState>(
+        'no-op when no ship is loaded',
+        build: () => _buildCubit(repo),
+        act: (cubit) async {
+          final ok = await cubit.unassignCrew(characterId: 'char-7');
+          expect(ok, isFalse);
+        },
+        verify: (_) {
+          verifyNever(() => repo.unassignCrew(
+                shipId: any(named: 'shipId'),
+                characterId: any(named: 'characterId'),
+              ));
+        },
+      );
+    });
+
     group('exportSnapshot', () {
       blocTest<ShipSheetCubit, ShipSheetState>(
         'returns the export Ship on success',

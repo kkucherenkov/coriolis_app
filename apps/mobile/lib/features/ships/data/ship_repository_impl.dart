@@ -11,6 +11,8 @@ import 'package:app_api_client/app_api_client.dart'
         ShipModuleTorpedo,
         ShipModuleWeapon,
         ShipModuleOther,
+        AssignCrewRequest,
+        CrewPosition,
         CrewSlot,
         ShipWeaponRange;
 import 'package:app_api_client/app_api_client.dart' as api_client show Ship;
@@ -227,5 +229,25 @@ class ShipRepositoryImpl implements ShipRepository {
     final body = response.data;
     if (body == null) throw StateError('Empty response after export');
     return _toDomain(body);
+  }
+
+  @override
+  Future<void> assignCrew({
+    required String shipId,
+    required String position,
+    required String characterId,
+  }) async {
+    final payload = AssignCrewRequest((b) => b
+      ..position = CrewPosition.valueOf(position)
+      ..characterId = characterId);
+    await _api.assignCrew(id: shipId, assignCrewRequest: payload);
+  }
+
+  @override
+  Future<void> unassignCrew({
+    required String shipId,
+    required String characterId,
+  }) async {
+    await _api.unassignCrew(id: shipId, characterId: characterId);
   }
 }

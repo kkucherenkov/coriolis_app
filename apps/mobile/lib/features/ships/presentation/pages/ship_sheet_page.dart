@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:coriolis_companion/app/routes.dart';
+import 'package:coriolis_companion/features/characters/domain/character_repository.dart';
+import 'package:coriolis_companion/features/characters/domain/character_summary.dart';
 import 'package:coriolis_companion/features/ships/domain/ship.dart';
 import 'package:coriolis_companion/features/ships/presentation/blocs/ship_sheet/ship_sheet_cubit.dart';
 import 'package:coriolis_companion/features/ships/presentation/blocs/ship_sheet/ship_sheet_state.dart';
@@ -728,7 +730,7 @@ class _CrewCard extends StatelessWidget {
     'serviceCrew',
   ];
 
-  String _positionLabel(BuildContext context, String pos) {
+  static String _positionLabel(BuildContext context, String pos) {
     final t = context.t.ships;
     return switch (pos) {
       'captain' => t.crewCaptain,
@@ -739,6 +741,45 @@ class _CrewCard extends StatelessWidget {
       'serviceCrew' => t.crewServiceCrew,
       _ => pos,
     };
+  }
+
+  Future<void> _openPicker(BuildContext context, String position) async {
+    final cubit = context.read<ShipSheetCubit>();
+    final ship = cubit.state.ship;
+    if (ship == null) return;
+    final t = context.t.ships;
+
+    final result = await showModalBottomSheet<_CrewPickerResult>(
+      context: context,
+      backgroundColor: AppColors.surfaceNight,
+      isScrollControlled: true,
+      builder: (_) => _CrewPickerSheet(
+        position: position,
+        ship: ship,
+      ),
+    );
+    if (result == null || !context.mounted) return;
+
+    final ok = await cubit.assignCrew(
+      position: position,
+      characterId: result.characterId,
+    );
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.crewErrorAssign)),
+      );
+    }
+  }
+
+  Future<void> _onUnassign(BuildContext context, String characterId) async {
+    final cubit = context.read<ShipSheetCubit>();
+    final t = context.t.ships;
+    final ok = await cubit.unassignCrew(characterId: characterId);
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.crewErrorUnassign)),
+      );
+    }
   }
 
   @override
@@ -753,35 +794,228 @@ class _CrewCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (final pos in _orderedPositions)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.s2),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      _positionLabel(context, pos),
-                      style: AppTypography.bodyMd
-                          .copyWith(color: AppColors.textSecondary),
-                    ),
-                  ),
-                  Text(
-                    slotMap[pos] == null || slotMap[pos]!.isEmpty
-                        ? t.crewVacant
-                        : '#${slotMap[pos]!.substring(0, slotMap[pos]!.length.clamp(0, 8))}',
-                    style: AppTypography.bodyMd.copyWith(
-                      color: slotMap[pos] == null
-                          ? AppColors.textSecondary
-                          : AppColors.textPrimary,
-                      fontStyle: slotMap[pos] == null
-                          ? FontStyle.italic
-                          : FontStyle.normal,
-                    ),
-                  ),
-                ],
-              ),
+            _CrewSlotRow(
+              key: Key('ship-crew-row-$pos'),
+              position: pos,
+              positionLabel: _positionLabel(context, pos),
+              assignedCharacterId: slotMap[pos],
+              onAssign: () => _openPicker(context, pos),
+              onUnassign: (charId) => _onUnassign(context, charId),
             ),
         ],
       ),
+    );
+  }
+}
+
+class _CrewSlotRow extends StatelessWidget {
+  const _CrewSlotRow({
+    super.key,
+    required this.position,
+    required this.positionLabel,
+    required this.assignedCharacterId,
+    required this.onAssign,
+    required this.onUnassign,
+  });
+
+  final String position;
+  final String positionLabel;
+  final String? assignedCharacterId;
+  final VoidCallback onAssign;
+  final void Function(String characterId) onUnassign;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t.ships;
+    final isVacant = assignedCharacterId == null || assignedCharacterId!.isEmpty;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.s2),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              positionLabel,
+              style: AppTypography.bodyMd
+                  .copyWith(color: AppColors.textSecondary),
+            ),
+          ),
+          if (isVacant)
+            TextButton.icon(
+              key: Key('ship-crew-assign-$position'),
+              onPressed: onAssign,
+              icon: const Icon(Icons.person_add_alt_1_outlined, size: 18),
+              label: Text(t.crewAssignAction),
+            )
+          else ...[
+            Text(
+              '#${assignedCharacterId!.substring(0, assignedCharacterId!.length.clamp(0, 8))}',
+              style: AppTypography.bodyMd
+                  .copyWith(color: AppColors.textPrimary),
+            ),
+            IconButton(
+              key: Key('ship-crew-unassign-$position'),
+              icon: const Icon(Icons.person_remove_outlined, size: 18),
+              tooltip: t.crewUnassignAction,
+              onPressed: () => onUnassign(assignedCharacterId!),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Result of the bottom-sheet picker — only `characterId`; the assigning
+/// position is owned by the caller.
+class _CrewPickerResult {
+  const _CrewPickerResult({required this.characterId});
+  final String characterId;
+}
+
+class _CrewPickerSheet extends StatefulWidget {
+  const _CrewPickerSheet({required this.position, required this.ship});
+
+  final String position;
+  final Ship ship;
+
+  @override
+  State<_CrewPickerSheet> createState() => _CrewPickerSheetState();
+}
+
+class _CrewPickerSheetState extends State<_CrewPickerSheet> {
+  late final Future<List<CharacterSummary>> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    // The picker reaches into DI directly — this is the simplest way to
+    // avoid wiring CharacterRepository through ShipSheetCubit just for
+    // this sheet. The parent page's tests bypass the picker via the
+    // SnackBar-less unassign path; picker behaviour gets its own widget
+    // test with the repository mocked.
+    _future = getIt<CharacterRepository>().list(limit: 100);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t.ships;
+    final onShip = <String>{
+      for (final cs in widget.ship.crew)
+        if (cs.assignedCharacterId != null) cs.assignedCharacterId!,
+    };
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.s4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              t.crewPickerTitle,
+              style: AppTypography.bodyLg
+                  .copyWith(color: AppColors.brandBrassLight),
+            ),
+            const SizedBox(height: AppSpacing.s3),
+            FutureBuilder<List<CharacterSummary>>(
+              future: _future,
+              builder: (context, snap) {
+                if (!snap.hasData && snap.connectionState != ConnectionState.done) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(AppSpacing.s4),
+                      child:
+                          CircularProgressIndicator(color: AppColors.brandBrass),
+                    ),
+                  );
+                }
+                if (snap.hasError) {
+                  return Text(
+                    snap.error.toString(),
+                    style: AppTypography.bodySm.copyWith(
+                      color: AppColors.stateCrimsonBright,
+                    ),
+                  );
+                }
+                final chars = snap.data ?? const <CharacterSummary>[];
+                if (chars.isEmpty) {
+                  return Text(
+                    t.crewPickerEmpty,
+                    style: AppTypography.bodySm
+                        .copyWith(color: AppColors.textSecondary),
+                  );
+                }
+                final free = chars.where((c) => !onShip.contains(c.id)).toList();
+                final moving = chars.where((c) => onShip.contains(c.id)).toList();
+                return ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 480),
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      if (free.isNotEmpty) ...[
+                        _PickerGroupHeader(label: t.crewPickerGroupFree),
+                        for (final c in free) _PickerRow(character: c),
+                      ],
+                      if (moving.isNotEmpty) ...[
+                        const SizedBox(height: AppSpacing.s3),
+                        _PickerGroupHeader(label: t.crewPickerGroupOnShip),
+                        for (final c in moving) _PickerRow(character: c),
+                      ],
+                    ],
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: AppSpacing.s3),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(t.crewPickerCancel),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PickerGroupHeader extends StatelessWidget {
+  const _PickerGroupHeader({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.s2),
+      child: Text(
+        label.toUpperCase(),
+        style: AppTypography.bodySm.copyWith(
+          color: AppColors.brandBrassDeep,
+          fontWeight: AppFontWeight.medium,
+          letterSpacing: 0.08 * 12,
+        ),
+      ),
+    );
+  }
+}
+
+class _PickerRow extends StatelessWidget {
+  const _PickerRow({required this.character});
+  final CharacterSummary character;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      key: Key('ship-crew-pick-${character.id}'),
+      contentPadding: EdgeInsets.zero,
+      title: Text(
+        character.name,
+        style: AppTypography.bodyMd.copyWith(color: AppColors.textPrimary),
+      ),
+      onTap: () => Navigator.of(context)
+          .pop(_CrewPickerResult(characterId: character.id)),
     );
   }
 }

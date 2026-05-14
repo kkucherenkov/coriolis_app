@@ -56,4 +56,22 @@ abstract class ShipRepository {
   /// for the GM to save / share. The backend currently returns 501
   /// (experimental); callers should surface the error gracefully.
   Future<Ship> exportSnapshot(String id);
+
+  /// Assigns [characterId] (must be owned by the caller) to crew [position]
+  /// on ship [shipId]. The server validates ownership and applies move
+  /// semantics if the character was already on the ship in another slot.
+  ///
+  /// [position] is the wire-form `CrewPosition` value
+  /// (`captain` | `pilot` | `sensorOp` | `gunner` | `engineer` | `serviceCrew`).
+  Future<void> assignCrew({
+    required String shipId,
+    required String position,
+    required String characterId,
+  });
+
+  /// Removes [characterId] from any crew slot on [shipId].
+  Future<void> unassignCrew({
+    required String shipId,
+    required String characterId,
+  });
 }

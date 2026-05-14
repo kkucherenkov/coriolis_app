@@ -238,6 +238,68 @@ class ShipSheetCubit extends Cubit<ShipSheetState> {
     }
   }
 
+  // ── Crew ─────────────────────────────────────────────────────────────────
+
+  /// Assigns [characterId] to crew [position] on the current ship and
+  /// refetches the ship so the Crew card reflects the new state. Returns
+  /// `true` on success, `false` on failure (error in `saveErrorMessage`).
+  Future<bool> assignCrew({
+    required String position,
+    required String characterId,
+  }) async {
+    final id = state.ship?.id;
+    if (id == null) return false;
+    emit(state.copyWith(saveStatus: ShipSheetSaveStatus.saving));
+    try {
+      await _repository.assignCrew(
+        shipId: id,
+        position: position,
+        characterId: characterId,
+      );
+      // Server may have moved the character out of another slot. Refetch
+      // the canonical snapshot so the Crew card stays consistent.
+      final refreshed = await _repository.get(id);
+      emit(state.copyWith(
+        ship: refreshed,
+        saveStatus: ShipSheetSaveStatus.saved,
+      ));
+      _startSavedResetTimer();
+      return true;
+    } on Object catch (e) {
+      emit(state.copyWith(
+        saveStatus: ShipSheetSaveStatus.error,
+        saveErrorMessage: e.toString(),
+      ));
+      return false;
+    }
+  }
+
+  /// Removes [characterId] from any crew slot on the current ship.
+  Future<bool> unassignCrew({required String characterId}) async {
+    final id = state.ship?.id;
+    if (id == null) return false;
+    emit(state.copyWith(saveStatus: ShipSheetSaveStatus.saving));
+    try {
+      await _repository.unassignCrew(
+        shipId: id,
+        characterId: characterId,
+      );
+      final refreshed = await _repository.get(id);
+      emit(state.copyWith(
+        ship: refreshed,
+        saveStatus: ShipSheetSaveStatus.saved,
+      ));
+      _startSavedResetTimer();
+      return true;
+    } on Object catch (e) {
+      emit(state.copyWith(
+        saveStatus: ShipSheetSaveStatus.error,
+        saveErrorMessage: e.toString(),
+      ));
+      return false;
+    }
+  }
+
   // ── Export ───────────────────────────────────────────────────────────────
 
   /// Requests an export snapshot for the current ship. Returns the export
