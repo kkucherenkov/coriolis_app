@@ -2422,7 +2422,7 @@ export interface components {
        *     does not strand a stale balance; explicit PATCHes to `birr`
        *     on a draft are rejected with `BIRR_DRAFT_IMMUTABLE`.
        */
-      birr?: number;
+      birr: number;
       /**
        * @description The crew (амплуа команды) this character belongs to.
        *     Mutable while `status: draft` (the wizard is still in

@@ -68,6 +68,7 @@ const CHARACTER_FULL_SELECT = {
   origin: true,
   reputation: true,
   startingWealth: true,
+  birr: true,
   crewConcept: true,
   mutant: true,
   mutantLineage: true,
@@ -127,6 +128,7 @@ interface PrismaCharacterFull {
   origin: string | null;
   reputation: number;
   startingWealth: number;
+  birr: number;
   crewConcept: string | null;
   mutant: boolean;
   mutantLineage: string | null;
@@ -226,6 +228,7 @@ function mapCharacter(row: PrismaCharacterFull): CharacterReadModel {
     origin: row.origin,
     reputation: row.reputation,
     startingWealth: row.startingWealth,
+    birr: row.birr,
     crewConcept: row.crewConcept ? (row.crewConcept.replaceAll('_', '-') as CrewConcept) : null,
     mutant: row.mutant,
     mutantLineage: row.mutantLineage as MutantLineage | null,

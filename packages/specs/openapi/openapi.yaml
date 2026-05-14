@@ -7725,11 +7725,7 @@ components:
         - relationships
         - inventory
         - notes
-        # `birr` is intentionally NOT in `required` until
-        # T-WIZARD-GEAR-BACKEND-IMPL ships the Prisma column + handler
-        # change. The field is documented (mutable wallet) so client code
-        # can branch on `character.birr ?? character.startingWealth` in the
-        # interim. Promote to required once the backend always emits it.
+        - birr
         - status
         - createdAt
         - updatedAt

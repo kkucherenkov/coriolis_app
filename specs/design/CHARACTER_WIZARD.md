@@ -166,21 +166,23 @@ Notes on canonical decisions:
 
 - **Status:** not implemented in the wizard surface. Tracked as
   [§7 follow-up T-WIZARD-GEAR](#7-follow-up-tickets).
-- **Wallet contract** _(spec landed in `packages/specs/openapi/openapi.yaml`,
-  block 4 — backend impl still pending under `T-WIZARD-GEAR-BACKEND-IMPL`)_:
+- **Wallet contract** _(spec + backend impl landed in block 5)_:
   - `Character.startingWealth` — _read-only_ historical record (birrs the
     character was created with). Derived from `upbringing` (plebeian=500,
     stationary=1000, aristocrat=5000); immutable once written.
-  - `Character.birr` — current spendable balance. Optional in the spec
-    until the backend Prisma column ships; once it does, becomes
-    required and the field promotes to `required:` in OpenAPI.
-  - **Lifecycle:** seeded as `birr = startingWealth` on the wizard's
-    `status: draft → active` (forge) transition. While `status: draft`,
-    explicit PATCHes to `birr` are rejected (`BIRR_DRAFT_IMMUTABLE`) —
-    the upbringing field is still mutable, so any draft-time wallet
-    write would be stranded. After activation, `birr` is the canonical
-    debit/credit field for Bazaar purchases (items API) and
-    session payouts (`PATCH /characters/{id}` with `{ birr }`).
+  - `Character.birr` — current spendable balance (required field).
+  - **Lifecycle:**
+    - Seeded as `birr = startingWealth` on character create
+      (`create-character.handler.ts`).
+    - While `status: draft`, the handler keeps `birr` in lockstep with
+      `startingWealth` — every `upbringing` change re-derives both. Any
+      explicit PATCH to `birr` on a draft is rejected with
+      `BIRR_DRAFT_IMMUTABLE`.
+    - On the `status: draft → active` (forge) transition, no special
+      seed step is needed — `birr` already mirrors `startingWealth`.
+    - After activation, `birr` is the canonical debit/credit field for
+      Bazaar purchases (items API) and session payouts
+      (`PATCH /characters/{id}` with `{ birr }`).
 - **Starting-kit derivation:** still TODO — per ST3001 amplua tables
   the player picks one item per row from per-role tables. To be
   designed under `T-WIZARD-GEAR-BACKEND-DERIVE` (separate sub-block);

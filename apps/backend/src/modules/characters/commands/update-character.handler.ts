@@ -5,6 +5,7 @@ import { CONCEPT_BY_ROLE, CONCEPT_KEYS, UPBRINGING_BUDGETS } from '../../rules-e
 import type { Role } from '../../rules-engine';
 import {
   AttributeOutOfRangeError,
+  BirrDraftImmutableError,
   CharacterNameEmptyError,
   CharacterNameTooLongError,
   CharacterNotFoundError,
@@ -90,6 +91,12 @@ export class UpdateCharacterHandler implements ICommandHandler<
       throw new ReadOnlyFieldError('encumbrance.current');
     // startingWealth is derived from upbringing and frozen at creation.
     if ('startingWealth' in rawDto) throw new ReadOnlyFieldError('startingWealth');
+
+    // Negative birr is meaningless (and the spec sets `minimum: 0`); reject
+    // before we touch the repo so the error surface is consistent.
+    if (dto.birr !== undefined && dto.birr < 0) {
+      throw new AttributeOutOfRangeError('birr', dto.birr);
+    }
 
     const existing = await this.repo.findActiveById(characterId);
     if (!existing) throw new CharacterNotFoundError(characterId);
@@ -182,6 +189,22 @@ export class UpdateCharacterHandler implements ICommandHandler<
       derivedReputation = Math.max(0, baseline + modifier);
     }
 
+    // Wallet (`birr`) policy:
+    //   - DRAFT: explicit PATCHes to `birr` are rejected; the wallet is
+    //     re-derived from `startingWealth` whenever `upbringing` changes
+    //     so the draft's wallet always tracks the (still mutable) seed.
+    //   - DRAFT → ACTIVE (forge): birr stays at the seeded startingWealth
+    //     (no special seed step needed — create-character pre-seeded it).
+    //   - ACTIVE: explicit `birr` PATCHes are accepted (Bazaar debit /
+    //     session-payout credit).
+    let derivedBirr: number | undefined;
+    if (existing.status === 'draft') {
+      if (dto.birr !== undefined) throw new BirrDraftImmutableError();
+      if (dto.upbringing !== undefined && dto.upbringing !== existing.upbringing) {
+        derivedBirr = UPBRINGING_BUDGETS[dto.upbringing].startingWealth;
+      }
+    }
+
     const criticalInjuries = dto.criticalInjuries?.map((inj) => ({
       name: inj.name,
       severity: inj.severity,
@@ -213,6 +236,11 @@ export class UpdateCharacterHandler implements ICommandHandler<
           ? {}
           : { reputation: dto.reputation }
         : { reputation: derivedReputation }),
+      ...(derivedBirr === undefined
+        ? dto.birr === undefined
+          ? {}
+          : { birr: dto.birr }
+        : { birr: derivedBirr }),
       ...(dto.attributes ? { attributes: dto.attributes } : {}),
       ...(dto.skills ? { skills: dto.skills } : {}),
       ...(dto.hp?.current === undefined ? {} : { hpCurrent: dto.hp.current }),

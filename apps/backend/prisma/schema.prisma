@@ -221,6 +221,14 @@ model Character {
   /// Birrs the character started with. Derived from upbringing and frozen
   /// at creation (plebeian=500, stationary=1000, aristocrat=5000).
   startingWealth      Int              @default(500)
+  /// Current spendable birr balance (the character's wallet). Seeded as
+  /// `birr = startingWealth` on the wizard's draft -> active forge
+  /// transition; while `status: DRAFT` the handler keeps `birr` in
+  /// lockstep with `startingWealth` so changing `upbringing` does not
+  /// strand a stale balance. After activation, mutable via PATCH and
+  /// debited by the items API on Bazaar purchases.
+  /// Default mirrors `startingWealth` for fresh draft rows.
+  birr                Int              @default(500)
   /// Optional crew amplua (амплуа команды). Mutable while draft, frozen
   /// once active. Drives the crew-talent picker on the wizard.
   crewConcept         CrewConcept?

@@ -107,7 +107,7 @@ abstract class Character implements Built<Character, CharacterBuilder> {
 
   /// Current spendable birr balance (the character's wallet). Seeded from `startingWealth` when the wizard transitions `status: draft → active` (the forge step). Mutable any time after activation — debited on Bazaar purchases via the items API and credited from session payouts via PATCH. While the character is still a `draft`, the server keeps `birr` in lock-step with `startingWealth` so changing `upbringing` does not strand a stale balance; explicit PATCHes to `birr` on a draft are rejected with `BIRR_DRAFT_IMMUTABLE`. 
   @BuiltValueField(wireName: r'birr')
-  int? get birr;
+  int get birr;
 
   @BuiltValueField(wireName: r'crewConcept')
   CrewConcept? get crewConcept;
@@ -254,13 +254,11 @@ class _$CharacterSerializer implements PrimitiveSerializer<Character> {
       object.startingWealth,
       specifiedType: const FullType(int),
     );
-    if (object.birr != null) {
-      yield r'birr';
-      yield serializers.serialize(
-        object.birr,
-        specifiedType: const FullType(int),
-      );
-    }
+    yield r'birr';
+    yield serializers.serialize(
+      object.birr,
+      specifiedType: const FullType(int),
+    );
     yield r'crewConcept';
     yield object.crewConcept == null ? null : serializers.serialize(
       object.crewConcept,

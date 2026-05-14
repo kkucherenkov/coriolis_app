@@ -129,6 +129,16 @@ export class UpdateCharacterDto {
   @Min(0)
   reputation?: number;
 
+  /**
+   * Current spendable birr balance. Mutable only while `status === 'active'`
+   * (Bazaar purchases / session payouts). Draft PATCHes are rejected at the
+   * handler layer with `BIRR_DRAFT_IMMUTABLE`.
+   */
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  birr?: number;
+
   @IsOptional()
   @IsObject()
   @ValidateNested()

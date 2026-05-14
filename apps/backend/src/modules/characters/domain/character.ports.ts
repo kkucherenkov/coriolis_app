@@ -179,6 +179,15 @@ export interface CharacterReadModel {
   origin: string | null;
   reputation: number;
   startingWealth: number;
+  /**
+   * Current spendable birr balance (the character's wallet). Seeded as
+   * `birr = startingWealth` on the wizard's draft → active forge
+   * transition; while `status: 'draft'` the handler keeps `birr` in
+   * lockstep with `startingWealth` so changing `upbringing` does not
+   * strand a stale balance. Mutable via PATCH only after activation —
+   * draft writes are rejected with `BIRR_DRAFT_IMMUTABLE`.
+   */
+  birr: number;
   crewConcept: CrewConcept | null;
   mutant: boolean;
   mutantLineage: MutantLineage | null;
@@ -271,6 +280,8 @@ export interface ICharacterRepo {
     origin?: string | null;
     reputation: number;
     startingWealth: number;
+    /** Current wallet balance. The handler seeds this from `startingWealth`. */
+    birr: number;
     crewConcept?: CrewConcept | null;
     mutant?: boolean;
     mutantLineage?: MutantLineage | null;
@@ -300,6 +311,8 @@ export interface ICharacterRepo {
       upbringing: Upbringing;
       origin: string | null;
       reputation: number;
+      /** Current wallet balance — only writable while status is 'active'. */
+      birr: number;
       crewConcept: CrewConcept | null;
       mutant: boolean;
       mutantLineage: MutantLineage | null;

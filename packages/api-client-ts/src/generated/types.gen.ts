@@ -1150,7 +1150,7 @@ export type Character = {
      * on a draft are rejected with `BIRR_DRAFT_IMMUTABLE`.
      *
      */
-    birr?: number;
+    birr: number;
     /**
      * The crew (амплуа команды) this character belongs to.
      * Mutable while `status: draft` (the wizard is still in
@@ -3169,7 +3169,7 @@ export type CharacterWritable = {
      * on a draft are rejected with `BIRR_DRAFT_IMMUTABLE`.
      *
      */
-    birr?: number;
+    birr: number;
     /**
      * The crew (амплуа команды) this character belongs to.
      * Mutable while `status: draft` (the wizard is still in

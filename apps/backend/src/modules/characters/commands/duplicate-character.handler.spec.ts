@@ -35,6 +35,7 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     origin: 'Coriolis Station',
     reputation: 4,
     startingWealth: 1000,
+    birr: 1000,
     crewConcept: null,
     mutant: false,
     mutantLineage: null,

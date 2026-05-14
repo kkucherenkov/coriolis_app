@@ -47,6 +47,11 @@ export class DuplicateCharacterHandler implements ICommandHandler<
       origin: source.origin,
       reputation: source.reputation,
       startingWealth: source.startingWealth,
+      // Wallet starts in lockstep with the historical record on the new
+      // copy too — duplicating a character resets the wallet to its
+      // canonical starting balance rather than carrying over the source
+      // character's spent / earned birrs.
+      birr: source.startingWealth,
       crewConcept: source.crewConcept,
       mutant: source.mutant,
       mutantLineage: source.mutantLineage,

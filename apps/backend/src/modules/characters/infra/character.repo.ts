@@ -66,6 +66,7 @@ const CHARACTER_FULL_SELECT = {
   origin: true,
   reputation: true,
   startingWealth: true,
+  birr: true,
   crewConcept: true,
   mutant: true,
   mutantLineage: true,
@@ -126,6 +127,7 @@ interface PrismaCharacterFull {
   origin: string | null;
   reputation: number;
   startingWealth: number;
+  birr: number;
   crewConcept: string | null;
   mutant: boolean;
   mutantLineage: string | null;
@@ -232,6 +234,7 @@ function toReadModel(row: PrismaCharacterFull): CharacterReadModel {
     origin: row.origin,
     reputation: row.reputation,
     startingWealth: row.startingWealth,
+    birr: row.birr,
     crewConcept: fromCrewConceptEnum(row.crewConcept),
     mutant: row.mutant,
     mutantLineage: row.mutantLineage as MutantLineage | null,
@@ -346,6 +349,7 @@ export class CharacterRepo implements ICharacterRepo {
     origin?: string | null;
     reputation: number;
     startingWealth: number;
+    birr: number;
     crewConcept?: CrewConcept | null;
     mutant?: boolean;
     mutantLineage?: MutantLineage | null;
@@ -374,6 +378,7 @@ export class CharacterRepo implements ICharacterRepo {
         origin: data.origin ?? null,
         reputation: data.reputation,
         startingWealth: data.startingWealth,
+        birr: data.birr,
         crewConcept: this.toCrewConceptEnum(data.crewConcept ?? null),
         mutant: data.mutant ?? false,
         mutantLineage: data.mutantLineage ?? null,
@@ -419,6 +424,7 @@ export class CharacterRepo implements ICharacterRepo {
       upbringing: Upbringing;
       origin: string | null;
       reputation: number;
+      birr: number;
       crewConcept: CrewConcept | null;
       mutant: boolean;
       mutantLineage: MutantLineage | null;
