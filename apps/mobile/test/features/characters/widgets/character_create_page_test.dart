@@ -69,9 +69,15 @@ Widget _wrapStep(CharacterWizardState state, Widget stepWidget) {
     child: Builder(
       builder: (ctx) => MaterialApp(
         locale: TranslationProvider.of(ctx).flutterLocale,
-        home: BlocProvider<CharacterWizardCubit>.value(
-          value: cubit,
-          child: Scaffold(body: stepWidget),
+        // Force-disable animations in widget tests so the infinite-pulse
+        // ticker on Step 3's selected icon does not run a paint loop until
+        // the binding stack overflows.
+        home: MediaQuery(
+          data: const MediaQueryData(disableAnimations: true),
+          child: BlocProvider<CharacterWizardCubit>.value(
+            value: cubit,
+            child: Scaffold(body: stepWidget),
+          ),
         ),
       ),
     ),
@@ -84,10 +90,10 @@ void main() {
   group('CharacterCreatePage — wizard steps', () {
     // ── Step 1 — renders name + concept fields ─────────────────────────────
 
-    testWidgets('Step1Concept shows name and concept fields', (tester) async {
+    testWidgets('Step1Concept shows the name field', (tester) async {
       final state = CharacterWizardState(
         step: 1,
-        draft: const WizardDraft(name: 'Kira Sol', concept: 'Fringe pilot'),
+        draft: const WizardDraft(name: 'Kira Sol'),
         character: _makeCharacter(),
       );
       await tester.pumpWidget(_wrapStep(state, const Step1Concept()));
@@ -97,9 +103,10 @@ void main() {
       expect(find.text('Kira Sol'), findsAtLeastNWidgets(1));
     });
 
-    // ── Step 3 — Icon grid renders all 9 icons ─────────────────────────────
+    // ── Step 3 — Icon grid renders all 9 canonical icons ──────────────────
 
-    testWidgets('Step3Icon renders all nine icon cards', (tester) async {
+    testWidgets('Step3Icon renders all nine canonical icon cards',
+        (tester) async {
       final state = CharacterWizardState(
         step: 3,
         character: _makeCharacter(),
@@ -107,8 +114,7 @@ void main() {
       await tester.pumpWidget(_wrapStep(state, const Step3Icon()));
       await tester.pump();
 
-      // We should find 9 GestureDetectors corresponding to the 9 icon cards.
-      // Check that at least the Traveler and Faceless names are present.
+      // Check that two of the canonical nine are present.
       expect(find.textContaining('Traveler'), findsOneWidget);
       expect(find.textContaining('Faceless'), findsOneWidget);
     });
@@ -116,7 +122,7 @@ void main() {
     testWidgets('Step3Icon highlights selected icon', (tester) async {
       final state = CharacterWizardState(
         step: 3,
-        draft: const WizardDraft(selectedIcon: CoriolisIcon.theTraveler),
+        draft: const WizardDraft(iconId: 'traveler'),
         character: _makeCharacter(),
       );
       await tester.pumpWidget(_wrapStep(state, const Step3Icon()));

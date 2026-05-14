@@ -41,6 +41,11 @@ import 'package:app_api_client/app_api_client.dart'
         CharacterCreateHp,
         CriticalInjury,
         CriticalInjurySeverity,
+        CrewConcept,
+        IconId,
+        MutantLineage,
+        Role,
+        Upbringing,
         Item,
         ItemArmor,
         ItemWeapon,
@@ -73,11 +78,23 @@ class CharacterRepositoryImpl implements CharacterRepository {
         id: src.id,
         ownerId: src.ownerId,
         name: src.name,
-        // The regenerated SDK ships `Concept` as an EnumClass; the mobile
-        // domain still carries the wire string for now (matches the web's
-        // `Concept` string-literal type). Promote to a typed enum on the
-        // domain side in a follow-up.
+        // Enum-shaped fields are stored as the Dart-side `EnumClass.name`
+        // form (camelCase). The wire form uses kebab-case where applicable
+        // (`lady-of-tears`, `network-djinn`) — the EnumClass handles the
+        // wire serialisation; the domain only sees the Dart name.
         concept: src.concept?.name,
+        role: src.role?.name,
+        roleUnmigrated: src.roleUnmigrated ?? false,
+        iconId: src.iconId?.name,
+        upbringing: src.upbringing.name,
+        origin: src.origin,
+        reputation: src.reputation,
+        startingWealth: src.startingWealth,
+        birr: src.birr,
+        crewConcept: src.crewConcept?.name,
+        mutant: src.mutant,
+        mutantLineage: src.mutantLineage?.name,
+        status: src.status.name,
         attributes: CharacterAttributes(
           strength: src.attributes.strength,
           agility: src.attributes.agility,
@@ -281,9 +298,14 @@ class CharacterRepositoryImpl implements CharacterRepository {
   }
 
   @override
-  Future<Character> create({required String name, String? status}) async {
+  Future<Character> create({
+    required String name,
+    required String upbringing,
+    String? status,
+  }) async {
     final payload = CharacterCreate((b) {
       b.name = name;
+      b.upbringing = Upbringing.valueOf(upbringing);
       if (status != null) {
         b.status = CharacterCreateStatusEnum.valueOf(status);
       }
@@ -299,6 +321,15 @@ class CharacterRepositoryImpl implements CharacterRepository {
     String id, {
     String? name,
     String? concept,
+    String? role,
+    String? iconId,
+    String? upbringing,
+    String? origin,
+    String? crewConcept,
+    bool? mutant,
+    String? mutantLineage,
+    int? reputation,
+    int? birr,
     CharacterAttributes? attributes,
     CharacterSkills? skills,
     CharacterHp? hp,
@@ -311,9 +342,23 @@ class CharacterRepositoryImpl implements CharacterRepository {
   }) async {
     final payload = CharacterUpdate((b) {
       if (name != null) b.name = name;
-      // Domain concept is still a wire string; the SDK now expects the
-      // typed `Concept` enum, so route through `Concept.valueOf`.
+      // Domain stores enum-shaped fields as the Dart-side `EnumClass.name`
+      // (camelCase). Route every enum field through its `valueOf` to get
+      // the typed SDK value.
       if (concept != null) b.concept = api_client.Concept.valueOf(concept);
+      if (role != null) b.role = Role.valueOf(role);
+      if (iconId != null) b.iconId = IconId.valueOf(iconId);
+      if (upbringing != null) b.upbringing = Upbringing.valueOf(upbringing);
+      if (origin != null) b.origin = origin;
+      if (crewConcept != null) {
+        b.crewConcept = CrewConcept.valueOf(crewConcept);
+      }
+      if (mutant != null) b.mutant = mutant;
+      if (mutantLineage != null) {
+        b.mutantLineage = MutantLineage.valueOf(mutantLineage);
+      }
+      if (reputation != null) b.reputation = reputation;
+      if (birr != null) b.birr = birr;
       if (experience != null) b.experience = experience;
       if (notes != null) b.notes = notes;
       if (status != null) {

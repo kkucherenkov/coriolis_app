@@ -9,9 +9,15 @@ import 'package:coriolis_companion/features/characters/presentation/widgets/wiza
 
 /// Wizard step 2 — People & Background.
 ///
-/// - Origin (AppSegControl — 4 options matching rulebook p.32–37).
-/// - Upbringing (AppSegControl — 2 options).
-/// - Age (numeric AppInput).
+/// Aligned to the canonical Coriolis ST3001 domain:
+///
+/// - **Origin** — free-text narrative (max 200 chars per the OpenAPI
+///   contract). No mechanical effect.
+/// - **Upbringing** — segmented control over the three canonical strata
+///   `plebeian | stationary | aristocrat` (drives attribute / skill point
+///   budgets, starting reputation and `startingWealth`).
+/// - **Age** — local-only numeric input; the canonical biography step
+///   (T-WIZARD-MOBILE-REORDER) will own this once the reorder lands.
 class Step2Background extends StatefulWidget {
   const Step2Background({super.key});
 
@@ -21,6 +27,7 @@ class Step2Background extends StatefulWidget {
 
 class _Step2BackgroundState extends State<Step2Background> {
   late final TextEditingController _ageCtrl;
+  late final TextEditingController _originCtrl;
 
   @override
   void initState() {
@@ -29,11 +36,13 @@ class _Step2BackgroundState extends State<Step2Background> {
     _ageCtrl = TextEditingController(
       text: draft.age != null ? draft.age.toString() : '',
     );
+    _originCtrl = TextEditingController(text: draft.origin ?? '');
   }
 
   @override
   void dispose() {
     _ageCtrl.dispose();
+    _originCtrl.dispose();
     super.dispose();
   }
 
@@ -41,16 +50,10 @@ class _Step2BackgroundState extends State<Step2Background> {
   Widget build(BuildContext context) {
     final t = context.t.characters;
 
-    final originOptions = [
-      AppSegOption(value: 'stationary', label: t.wizardOriginStationary),
-      AppSegOption(value: 'zenithian', label: t.wizardOriginZenithian),
-      AppSegOption(value: 'firstcome', label: t.wizardOriginFirstcome),
-      AppSegOption(value: 'nomad', label: t.wizardOriginNomad),
-    ];
-
     final upbringingOptions = [
       AppSegOption(value: 'plebeian', label: t.wizardUpbringingPlebeian),
-      AppSegOption(value: 'statesman', label: t.wizardUpbringingStatesman),
+      AppSegOption(value: 'stationary', label: t.wizardUpbringingStationary),
+      AppSegOption(value: 'aristocrat', label: t.wizardUpbringingAristocrat),
     ];
 
     return BlocBuilder<CharacterWizardCubit, CharacterWizardState>(
@@ -68,29 +71,35 @@ class _Step2BackgroundState extends State<Step2Background> {
                 blurb: t.wizardStep2Blurb,
               ),
               const SizedBox(height: AppSpacing.s6),
-              // ── Origin ──────────────────────────────────────────────────
+              // ── Origin (free text) ─────────────────────────────────────
               AppField(
                 label: t.wizardOriginLabel,
-                child: _OriginPicker(
-                  selected: state.draft.origin,
-                  options: originOptions,
-                  onChanged: (v) =>
-                      context.read<CharacterWizardCubit>().updateOrigin(v),
+                child: AppInput(
+                  controller: _originCtrl,
+                  hintText: t.wizardOriginHint,
+                  onChanged: (v) {
+                    if (v.length <= 200) {
+                      context
+                          .read<CharacterWizardCubit>()
+                          .updateOrigin(v);
+                    }
+                  },
                 ),
               ),
               const SizedBox(height: AppSpacing.s4),
-              // ── Upbringing ───────────────────────────────────────────────
+              // ── Upbringing (3 canonical options) ───────────────────────
               AppField(
                 label: t.wizardUpbringingLabel,
                 child: AppSegControl<String>(
                   value: state.draft.upbringing ?? 'plebeian',
                   options: upbringingOptions,
-                  onChanged: (v) =>
-                      context.read<CharacterWizardCubit>().updateUpbringing(v),
+                  onChanged: (v) => context
+                      .read<CharacterWizardCubit>()
+                      .updateUpbringing(v),
                 ),
               ),
               const SizedBox(height: AppSpacing.s4),
-              // ── Age ─────────────────────────────────────────────────────
+              // ── Age (local-only) ───────────────────────────────────────
               AppField(
                 label: t.wizardAgeLabel,
                 child: AppInput(
@@ -109,88 +118,6 @@ class _Step2BackgroundState extends State<Step2Background> {
           ),
         );
       },
-    );
-  }
-}
-
-/// 2×2 grid of origin cards (too wide for AppSegControl's 4-option constraint
-/// on narrow screens). Each card shows the origin name and a short summary.
-class _OriginPicker extends StatelessWidget {
-  const _OriginPicker({
-    required this.selected,
-    required this.options,
-    required this.onChanged,
-  });
-
-  final String? selected;
-  final List<AppSegOption<String>> options;
-  final ValueChanged<String> onChanged;
-
-  static const _originBlurbs = {
-    'stationary':
-        'Born on a station or planet. Shaped by the Consortium.',
-    'zenithian':
-        'Descended from colonists through the second portal on the Zenith.',
-    'firstcome':
-        'Bloodline of the first wave. Old families, ancestral debts.',
-    'nomad':
-        'Of the Nomad Federation — wanderers between the stars.',
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: AppSpacing.s2,
-      crossAxisSpacing: AppSpacing.s2,
-      childAspectRatio: 2.2,
-      children: options.map((o) {
-        final isSelected = o.value == selected;
-        return Semantics(
-          button: true,
-          selected: isSelected,
-          label: o.label,
-          child: GestureDetector(
-            onTap: () => onChanged(o.value),
-            child: AppCard(
-              variant: isSelected
-                  ? AppCardVariant.featured
-                  : AppCardVariant.defaultVariant,
-              padding: const EdgeInsets.all(AppSpacing.s3),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    o.label,
-                    style: AppTypography.bodySm.copyWith(
-                      color: isSelected
-                          ? AppColors.brandBrassLight
-                          : AppColors.textSecondary,
-                      fontWeight: isSelected
-                          ? AppFontWeight.semibold
-                          : AppFontWeight.regular,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    _originBlurbs[o.value] ?? '',
-                    style: AppTypography.bodySm.copyWith(
-                      fontSize: 10,
-                      color: AppColors.textSecondary,
-                      height: 1.3,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 }

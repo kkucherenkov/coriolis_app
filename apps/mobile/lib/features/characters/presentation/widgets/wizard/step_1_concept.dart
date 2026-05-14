@@ -6,10 +6,12 @@ import 'package:coriolis_companion/features/characters/presentation/blocs/charac
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
 
-/// Wizard step 1 — Concept.
+/// Wizard step 1 — Biography (name).
 ///
-/// - Name field (required, max 80 characters).
-/// - Concept phrase textarea (max 120 characters).
+/// Pre-DOMAIN-ALIGN this step also collected a free-text "concept phrase"
+/// that the cubit erroneously PATCHed into the canonical `Character.concept`
+/// enum field. The phrase is dropped here — the canonical concept (амплуа)
+/// is owned by its own picker step once T-WIZARD-MOBILE-REORDER lands.
 class Step1Concept extends StatefulWidget {
   const Step1Concept({super.key});
 
@@ -19,7 +21,6 @@ class Step1Concept extends StatefulWidget {
 
 class _Step1ConceptState extends State<Step1Concept> {
   late final TextEditingController _nameCtrl;
-  late final TextEditingController _conceptCtrl;
   late final FocusNode _nameFocus;
 
   @override
@@ -27,14 +28,12 @@ class _Step1ConceptState extends State<Step1Concept> {
     super.initState();
     final draft = context.read<CharacterWizardCubit>().state.draft;
     _nameCtrl = TextEditingController(text: draft.name ?? '');
-    _conceptCtrl = TextEditingController(text: draft.concept ?? '');
     _nameFocus = FocusNode();
   }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _conceptCtrl.dispose();
     _nameFocus.dispose();
     super.dispose();
   }
@@ -79,19 +78,6 @@ class _Step1ConceptState extends State<Step1Concept> {
                     context.read<CharacterWizardCubit>().updateName(v);
                   }
                 },
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s4),
-            // ── Concept phrase ─────────────────────────────────────────────
-            AppField(
-              label: t.wizardConceptLabel,
-              child: AppTextarea(
-                controller: _conceptCtrl,
-                placeholder: t.wizardConceptHint,
-                rows: 3,
-                maxLength: 120,
-                onChanged: (v) =>
-                    context.read<CharacterWizardCubit>().updateConcept(v),
               ),
             ),
           ],
