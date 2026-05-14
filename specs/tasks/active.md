@@ -27,12 +27,12 @@ LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05
   - [x] backfill `FOUNDATIONS.md` — landed 2026-05-14 (block 3)
   - [x] extract canonical `A11Y.md` — landed 2026-05-14 (block 4)
   - [x] add I18N design layer + resolve Forum-Cyrillic conflict — landed 2026-05-14 (block 5)
-  - [ ] update `specs/design/README.md` reading order + gap log
-- Status: in_progress
+  - [x] update `specs/design/README.md` reading order + gap log — landed 2026-05-14 (block 6)
+- Status: done — to be moved to `done.md` on session close
 - Blockers: —
-- Block notes:
-  - Block 1 (2026-05-14): `specs/design/PATTERNS.md` authored — 13 sections (layout, hero, empty states, banners, modals, forms, buttons, chips/badges, iconography, motion, persistence, view-only, realtime). Used project-canonical component names + tokens; mapped handoff vocabulary inline. Flagged one **code drift**: `AppModal.closeOnBackdrop` defaults to `true` (`packages/ui/src/components/AppModal/AppModal.vue:25`), contradicting the documented contract — needs a follow-up to flip default + audit call sites. Cross-refs in PATTERNS.md `See also` softened to "forthcoming" for the four sibling docs not yet authored.
-  - Next session — block 2: author `specs/design/CONTENT.md` (voice, in-product taxonomy Bridge/Library/Push/Icon/Mystic, number formatting `/` HP separator, ✶ U+2736 successes, `b` birr, dice flavor template, copy do/don't list). Source: `/tmp/coriolis-handoff/coriolis-app/project/specs/design/CONTENT.md`.
+- Follow-ups raised:
+  - Flip `AppModal.closeOnBackdrop` default to `false` and audit every call site so the documented modal contract in `PATTERNS.md §5` is the actual code default. Currently `true` in `packages/ui/src/components/AppModal/AppModal.vue:25`.
+  - Author `SURFACES.md` and `COMPONENTS.md` if the next design audit raises surface-level gaps that the README's component inventory + colocated Storybook stories do not already cover. Not blocking for v1.
 
 ---
 
