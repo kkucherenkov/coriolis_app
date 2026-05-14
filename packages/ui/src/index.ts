@@ -16,6 +16,7 @@ export { AppDots } from './components/AppDots';
 export { AppField } from './components/AppField';
 export { AppIconCoriolis } from './components/AppIconCoriolis';
 export type { IconCoriolisName } from './components/AppIconCoriolis';
+export { AppIconMedallion } from './components/AppIconMedallion';
 export { AppInput } from './components/AppInput';
 export { AppKbd } from './components/AppKbd';
 export { AppLabel } from './components/AppLabel';

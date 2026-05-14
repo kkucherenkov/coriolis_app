@@ -10,6 +10,7 @@ export 'app_divider/app_divider.dart';
 export 'app_dots/app_dots.dart';
 export 'app_field/app_field.dart';
 export 'app_icon/app_icon.dart';
+export 'app_icon_medallion/app_icon_medallion.dart';
 export 'app_input/app_input.dart';
 export 'app_kbd/app_kbd.dart';
 export 'app_label/app_label.dart';

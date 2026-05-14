@@ -193,6 +193,7 @@ against the actual folders under `packages/ui/src/components/` (Vue) and
 | Primitive   | `AppField`           | ✓               | —                  |
 | Composition | `AppHeader`          | ✓               | —                  |
 | Coriolis    | `AppIconCoriolis`    | ✓               | —                  |
+| Coriolis    | `AppIconMedallion`   | ✓               | ✓                  |
 | Primitive   | `AppIcon`            | ✓               | —                  |
 | Primitive   | `AppInput`           | ✓               | —                  |
 | Primitive   | `AppKbd`             | ✓               | —                  |
