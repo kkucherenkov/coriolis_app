@@ -1,0 +1,60 @@
+# Dependencies
+node_modules/
+.pnp.*
+.yarn/
+.pnpm-store/
+
+# Build output — never read these into context
+dist/
+build/
+.output/
+.nuxt/
+.nitro/
+.turbo/
+*.tsbuildinfo
+coverage/
+
+# Generated code — single source of truth is packages/specs/, never edit/read clients
+packages/api-client-ts/src/generated/
+packages/api-client-dart/lib/generated/
+**/*.generated.*
+**/tokens.g.dart
+
+# Flutter / Dart
+.dart_tool/
+ios/Pods/
+android/.gradle/
+android/app/build/
+**/Pods/
+**/Flutter/Generated.xcconfig
+**/Flutter/flutter_export_environment.sh
+
+# Lock files — huge, low signal
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+**/Podfile.lock
+**/pubspec.lock
+
+# Storybook / static
+.storybook-static/
+storybook-static/
+
+# Repowise index — re-derivable from source
+.repowise/
+
+# Logs / temp / OS
+*.log
+logs/
+.DS_Store
+*.tmp
+.cache/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Specs build artefacts (bundled output is regenerable)
+packages/specs/dist/
+packages/specs/build/

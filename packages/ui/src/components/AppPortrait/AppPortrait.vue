@@ -122,13 +122,7 @@
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      <circle
-        class="app-portrait__ring-circle"
-        cx="50"
-        cy="50"
-        r="46"
-        fill="none"
-      />
+      <circle class="app-portrait__ring-circle" cx="50" cy="50" r="46" fill="none" />
       <line
         v-for="(t, i) in tickMarks"
         :key="i"
@@ -139,10 +133,7 @@
         :y2="t.y2"
       />
     </svg>
-    <span
-      class="app-portrait__initials"
-      aria-hidden="true"
-    >{{ computedInitials }}</span>
+    <span class="app-portrait__initials" aria-hidden="true">{{ computedInitials }}</span>
   </span>
 </template>
 
