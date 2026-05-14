@@ -37,6 +37,7 @@ import {
   ReorderInitiativeDto,
 } from './commands/reorder-initiative.command';
 import { AdvanceTurnCommand } from './commands/advance-turn.command';
+import { AdvanceRoundCommand } from './commands/advance-round.command';
 
 import type { AuthenticatedRequest } from '../../common/auth/auth.guard';
 import type { EncounterReadModel } from './domain/encounter.ports';
@@ -106,5 +107,15 @@ export class EncountersController {
     @Param('id') id: string,
   ): Promise<TurnAdvanceResult> {
     return this.commandBus.execute(new AdvanceTurnCommand(id, req.userId));
+  }
+
+  /** POST /api/v1/encounters/:id/round/advance */
+  @Post(':id/round/advance')
+  @HttpCode(HttpStatus.OK)
+  async advanceRound(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ): Promise<TurnAdvanceResult> {
+    return this.commandBus.execute(new AdvanceRoundCommand(id, req.userId));
   }
 }
