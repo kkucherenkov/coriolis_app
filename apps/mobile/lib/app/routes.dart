@@ -9,6 +9,8 @@ import 'package:coriolis_companion/features/characters/presentation/pages/charac
 import 'package:coriolis_companion/features/sessions/presentation/pages/session_detail_page.dart';
 import 'package:coriolis_companion/features/sessions/presentation/pages/sessions_list_page.dart';
 import 'package:coriolis_companion/features/settings/presentation/settings_screen.dart';
+import 'package:coriolis_companion/features/ships/presentation/pages/ship_sheet_page.dart';
+import 'package:coriolis_companion/features/ships/presentation/pages/ships_list_page.dart';
 
 /// Named route constants.
 abstract class AppRoutes {
@@ -29,6 +31,12 @@ abstract class AppRoutes {
 
   /// Pass the session id as a [RouteSettings.arguments] String.
   static const sessionDetail = '/app/sessions/detail';
+
+  // Ships feature.
+  static const ships = '/app/ships';
+
+  /// Detail route: pass the ship id as a [RouteSettings.arguments] String.
+  static const shipDetail = '/app/ships/detail';
 }
 
 /// Route factory — maps route names to screen widgets.
@@ -104,6 +112,23 @@ Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     final id = settings.arguments as String;
     return MaterialPageRoute<void>(
       builder: (_) => SessionDetailPage(sessionId: id),
+      settings: settings,
+    );
+  }
+
+  // ── Ships feature ──────────────────────────────────────────────────────
+
+  if (name == AppRoutes.ships) {
+    return MaterialPageRoute<void>(
+      builder: (_) => const ShipsListPage(),
+      settings: settings,
+    );
+  }
+
+  if (name == AppRoutes.shipDetail) {
+    final id = settings.arguments as String;
+    return MaterialPageRoute<void>(
+      builder: (_) => ShipSheetPage(shipId: id),
       settings: settings,
     );
   }
