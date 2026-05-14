@@ -19,6 +19,8 @@
   "flagCovered": "[uk-todo] Covered",
   "roundLabel": "[uk-todo] Round",
   "dpChipLabel": "[uk-todo] DP",
+  "dpIncrementTooltip": "[uk-todo] Spend +1 DP",
+  "dpDecrementTooltip": "[uk-todo] Refund -1 DP",
   "addCombatantTooltip": "[uk-todo] Add combatant",
   "addCombatantTitle": "[uk-todo] Add a combatant",
   "addCombatantEmpty": "[uk-todo] No available session characters.",

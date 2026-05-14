@@ -7,12 +7,17 @@ import 'package:coriolis_companion/features/combat/domain/combat_repository.dart
 import 'package:coriolis_companion/features/combat/domain/combatant.dart';
 import 'package:coriolis_companion/features/combat/domain/encounter.dart';
 import 'package:coriolis_companion/features/combat/presentation/blocs/active_combat/active_combat_cubit.dart';
+import 'package:coriolis_companion/features/combat/presentation/blocs/tracker_dp/tracker_dp_cubit.dart';
 import 'package:coriolis_companion/features/combat/presentation/pages/combat_tracker_page.dart';
+import 'package:coriolis_companion/features/sessions/domain/game_session.dart';
+import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
 class _MockCombatRepository extends Mock implements CombatRepository {}
+
+class _MockSessionRepository extends Mock implements SessionRepository {}
 
 /// Cubit whose initial state is injected; bypasses [load].
 class _SeededCubit extends ActiveCombatCubit {
@@ -95,6 +100,11 @@ Widget _wrap({
 }) {
   LocaleSettings.setLocaleRaw('en');
   final cubit = _SeededCubit(state, _MockCombatRepository());
+  final dp = TrackerDpCubit(
+    repository: _MockSessionRepository(),
+    sessionId: _sessionId,
+    initialCount: dpCount,
+  );
   return TranslationProvider(
     child: Builder(
       builder: (ctx) => MaterialApp(
@@ -104,6 +114,7 @@ Widget _wrap({
           isGm: isGm,
           dpCount: dpCount,
           cubitOverride: cubit,
+          dpCubitOverride: dp,
         ),
       ),
     ),

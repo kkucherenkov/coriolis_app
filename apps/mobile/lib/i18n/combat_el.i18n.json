@@ -19,6 +19,8 @@
   "flagCovered": "[el-todo] Covered",
   "roundLabel": "[el-todo] Round",
   "dpChipLabel": "[el-todo] DP",
+  "dpIncrementTooltip": "[el-todo] Spend +1 DP",
+  "dpDecrementTooltip": "[el-todo] Refund -1 DP",
   "addCombatantTooltip": "[el-todo] Add combatant",
   "addCombatantTitle": "[el-todo] Add a combatant",
   "addCombatantEmpty": "[el-todo] No available session characters.",

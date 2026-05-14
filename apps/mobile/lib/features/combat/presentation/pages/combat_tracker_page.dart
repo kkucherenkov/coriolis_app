@@ -5,10 +5,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:coriolis_companion/features/characters/domain/character_repository.dart';
 import 'package:coriolis_companion/features/characters/domain/character_summary.dart';
 import 'package:coriolis_companion/features/combat/domain/combatant.dart';
-import 'package:coriolis_companion/shared/di/injector.dart';
 import 'package:coriolis_companion/features/combat/domain/encounter.dart';
 import 'package:coriolis_companion/features/combat/presentation/blocs/active_combat/active_combat_cubit.dart';
+import 'package:coriolis_companion/features/combat/presentation/blocs/tracker_dp/tracker_dp_cubit.dart';
+import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
+import 'package:coriolis_companion/shared/di/injector.dart';
 
 /// Combat tracker page — parity with web `CombatTracker.vue`.
 ///
@@ -39,6 +41,7 @@ class CombatTrackerPage extends StatelessWidget {
     this.sessionCharacterIds = const [],
     this.cubitFactory,
     this.cubitOverride,
+    this.dpCubitOverride,
   });
 
   /// Game session that owns the encounter.
@@ -64,17 +67,24 @@ class CombatTrackerPage extends StatelessWidget {
   /// passed cubit via `BlocProvider.value` and bypasses [cubitFactory].
   final ActiveCombatCubit? cubitOverride;
 
+  /// Optional override for the DP cubit. When null the page resolves the
+  /// session repository via [getIt] and seeds the cubit with [dpCount].
+  final TrackerDpCubit? dpCubitOverride;
+
   @override
   Widget build(BuildContext context) {
     final view = _CombatTrackerView(
       sessionId: sessionId,
       isGm: isGm,
-      dpCount: dpCount,
       sessionCharacterIds: sessionCharacterIds,
     );
+    final dp = dpCubitOverride ?? _defaultDpCubit();
     if (cubitOverride != null) {
-      return BlocProvider<ActiveCombatCubit>.value(
-        value: cubitOverride!,
+      return MultiBlocProvider(
+        providers: [
+          BlocProvider<ActiveCombatCubit>.value(value: cubitOverride!),
+          BlocProvider<TrackerDpCubit>.value(value: dp),
+        ],
         child: view,
       );
     }
@@ -84,24 +94,35 @@ class CombatTrackerPage extends StatelessWidget {
         'CombatTrackerPage requires either cubitFactory or cubitOverride',
       );
     }
-    return BlocProvider<ActiveCombatCubit>(
-      create: (_) => factory()..load(sessionId),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<ActiveCombatCubit>(
+          create: (_) => factory()..load(sessionId),
+        ),
+        BlocProvider<TrackerDpCubit>.value(value: dp),
+      ],
       child: view,
     );
   }
+
+  /// Production DP cubit — uses `getIt` to resolve `SessionRepository`.
+  /// Widget tests inject [dpCubitOverride] instead.
+  TrackerDpCubit _defaultDpCubit() => TrackerDpCubit(
+        repository: getIt<SessionRepository>(),
+        sessionId: sessionId,
+        initialCount: dpCount,
+      );
 }
 
 class _CombatTrackerView extends StatelessWidget {
   const _CombatTrackerView({
     required this.sessionId,
     required this.isGm,
-    required this.dpCount,
     required this.sessionCharacterIds,
   });
 
   final String sessionId;
   final bool isGm;
-  final int dpCount;
   final List<String> sessionCharacterIds;
 
   @override
@@ -138,17 +159,9 @@ class _CombatTrackerView extends StatelessWidget {
                   ),
                 ),
               Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.s3),
+                padding: const EdgeInsets.only(right: AppSpacing.s2),
                 child: Center(
-                  child: Semantics(
-                    label: t.semanticsDpChip(value: dpCount),
-                    excludeSemantics: true,
-                    child: AppBadge(
-                      label: '${t.dpChipLabel} $dpCount',
-                      tone: AppBadgeTone.darkness,
-                      size: AppBadgeSize.sm,
-                    ),
-                  ),
+                  child: _DpControls(isGm: isGm),
                 ),
               ),
               // Add Combatant action — GM-gated; hidden once the encounter
@@ -788,6 +801,74 @@ class _StickyToolbar extends StatelessWidget {
     if (confirmed == true) {
       await cubit.endEncounter();
     }
+  }
+}
+
+// ── DP +/- controls ────────────────────────────────────────────────────────
+
+class _DpControls extends StatelessWidget {
+  const _DpControls({required this.isGm});
+
+  /// Player viewer surfaces just the read-only chip. GM gets the
+  /// `-1` / `+1` IconButtons flanking it.
+  final bool isGm;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t.combat;
+    return BlocConsumer<TrackerDpCubit, TrackerDpState>(
+      listenWhen: (prev, next) => prev.errorMessage != next.errorMessage,
+      listener: (context, state) {
+        final err = state.errorMessage;
+        if (err != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(err)),
+          );
+        }
+      },
+      builder: (context, state) {
+        final cubit = context.read<TrackerDpCubit>();
+        final chip = Semantics(
+          label: t.semanticsDpChip(value: state.count),
+          excludeSemantics: true,
+          child: AppBadge(
+            label: '${t.dpChipLabel} ${state.count}',
+            tone: AppBadgeTone.darkness,
+            size: AppBadgeSize.sm,
+          ),
+        );
+        if (!isGm) return chip;
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              key: const Key('tracker-dp-minus'),
+              icon: const Icon(Icons.remove,
+                  size: 18, color: AppColors.brandBrassLight),
+              tooltip: t.dpDecrementTooltip,
+              onPressed:
+                  state.busy || state.count <= 0
+                      ? null
+                      : () => cubit.adjustDp(-1),
+              constraints:
+                  const BoxConstraints(minWidth: 32, minHeight: 32),
+              padding: EdgeInsets.zero,
+            ),
+            chip,
+            IconButton(
+              key: const Key('tracker-dp-plus'),
+              icon: const Icon(Icons.add,
+                  size: 18, color: AppColors.brandBrassLight),
+              tooltip: t.dpIncrementTooltip,
+              onPressed: state.busy ? null : () => cubit.adjustDp(1),
+              constraints:
+                  const BoxConstraints(minWidth: 32, minHeight: 32),
+              padding: EdgeInsets.zero,
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 

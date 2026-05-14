@@ -19,6 +19,8 @@
   "flagCovered": "Covered",
   "roundLabel": "Round",
   "dpChipLabel": "DP",
+  "dpIncrementTooltip": "Spend +1 DP",
+  "dpDecrementTooltip": "Refund -1 DP",
   "addCombatantTooltip": "Add combatant",
   "addCombatantTitle": "Add a combatant",
   "addCombatantEmpty": "No available session characters.",

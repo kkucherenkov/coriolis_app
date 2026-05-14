@@ -19,6 +19,8 @@
   "flagCovered": "В укрытии",
   "roundLabel": "Раунд",
   "dpChipLabel": "ОТ",
+  "dpIncrementTooltip": "Потратить +1 ОТ",
+  "dpDecrementTooltip": "Вернуть -1 ОТ",
   "addCombatantTooltip": "Добавить участника",
   "addCombatantTitle": "Добавить участника",
   "addCombatantEmpty": "Нет доступных персонажей сессии.",
