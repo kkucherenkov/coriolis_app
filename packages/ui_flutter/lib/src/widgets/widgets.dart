@@ -22,3 +22,4 @@ export 'app_switch/app_switch.dart';
 export 'app_tab/app_tab.dart';
 export 'app_textarea/app_textarea.dart';
 export 'app_tooltip/app_tooltip.dart';
+export 'app_wordmark/app_wordmark.dart';
