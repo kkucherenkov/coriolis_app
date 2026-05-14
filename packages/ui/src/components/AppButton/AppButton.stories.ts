@@ -15,7 +15,10 @@ const meta: Meta<typeof AppButton> = {
   tags: ['autodocs'],
   args: {},
   argTypes: {
-    variant: { control: 'select', options: ['primary', 'ghost', 'danger'] },
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary', 'ghost', 'danger', 'mystic'],
+    },
     size: { control: 'select', options: ['sm', 'md', 'lg'] },
     disabled: { control: 'boolean' },
     loading: { control: 'boolean' },
@@ -56,6 +59,36 @@ export const PrimaryLg: Story = {
     components: { AppButton },
     setup: () => ({ args }),
     template: `<AppButton v-bind="args">Submit</AppButton>`,
+  }),
+};
+
+export const SecondarySm: Story = {
+  name: 'Secondary / sm — Cancel / Skip',
+  args: { variant: 'secondary', size: 'sm' },
+  render: (args) => ({
+    components: { AppButton },
+    setup: () => ({ args }),
+    template: `<AppButton v-bind="args">Cancel</AppButton>`,
+  }),
+};
+
+export const SecondaryMd: Story = {
+  name: 'Secondary / md — Cancel / Skip',
+  args: { variant: 'secondary', size: 'md' },
+  render: (args) => ({
+    components: { AppButton },
+    setup: () => ({ args }),
+    template: `<AppButton v-bind="args">Cancel</AppButton>`,
+  }),
+};
+
+export const SecondaryLg: Story = {
+  name: 'Secondary / lg — Cancel / Skip',
+  args: { variant: 'secondary', size: 'lg' },
+  render: (args) => ({
+    components: { AppButton },
+    setup: () => ({ args }),
+    template: `<AppButton v-bind="args">Cancel</AppButton>`,
   }),
 };
 
@@ -116,6 +149,41 @@ export const DangerLg: Story = {
     components: { AppButton },
     setup: () => ({ args }),
     template: `<AppButton v-bind="args">Delete</AppButton>`,
+  }),
+};
+
+// ── Variant: mystic (ritual CTAs) ────────────────────────────────────────────
+
+export const MysticPushTheRoll: Story = {
+  name: 'Mystic — Push the Roll',
+  args: { variant: 'mystic', size: 'md' },
+  render: (args) => ({
+    components: { AppButton },
+    setup: () => ({ args }),
+    template: `<AppButton v-bind="args">Push the Roll · 1 DP</AppButton>`,
+  }),
+};
+
+export const MysticLg: Story = {
+  name: 'Mystic / lg — ritual hero CTA',
+  args: { variant: 'mystic', size: 'lg' },
+  render: (args) => ({
+    components: { AppButton },
+    setup: () => ({ args }),
+    template: `<AppButton v-bind="args">Pray for guidance</AppButton>`,
+  }),
+};
+
+// ── Reduced motion (mystic loading) ──────────────────────────────────────────
+
+export const MysticLoadingReducedMotion: Story = {
+  name: 'Mystic loading — reduced motion',
+  args: { variant: 'mystic', size: 'md', loading: true },
+  parameters: { pseudo: { reducedMotion: 'reduce' } },
+  render: (args) => ({
+    components: { AppButton },
+    setup: () => ({ args }),
+    template: `<AppButton v-bind="args">Pushing…</AppButton>`,
   }),
 };
 
@@ -206,6 +274,11 @@ export const AllVariants: Story = {
           <AppButton variant="primary" size="lg">Primary lg</AppButton>
         </div>
         <div style="display:flex; gap:var(--space-3); align-items:center;">
+          <AppButton variant="secondary" size="sm">Secondary sm</AppButton>
+          <AppButton variant="secondary" size="md">Secondary md</AppButton>
+          <AppButton variant="secondary" size="lg">Secondary lg</AppButton>
+        </div>
+        <div style="display:flex; gap:var(--space-3); align-items:center;">
           <AppButton variant="ghost" size="sm">Ghost sm</AppButton>
           <AppButton variant="ghost" size="md">Ghost md</AppButton>
           <AppButton variant="ghost" size="lg">Ghost lg</AppButton>
@@ -216,9 +289,16 @@ export const AllVariants: Story = {
           <AppButton variant="danger" size="lg">Danger lg</AppButton>
         </div>
         <div style="display:flex; gap:var(--space-3); align-items:center;">
+          <AppButton variant="mystic" size="sm">Mystic sm</AppButton>
+          <AppButton variant="mystic" size="md">Push the Roll</AppButton>
+          <AppButton variant="mystic" size="lg">Pray</AppButton>
+        </div>
+        <div style="display:flex; gap:var(--space-3); align-items:center;">
           <AppButton variant="primary" size="md" disabled>Disabled</AppButton>
+          <AppButton variant="secondary" size="md" disabled>Disabled</AppButton>
           <AppButton variant="ghost" size="md" disabled>Disabled</AppButton>
           <AppButton variant="danger" size="md" disabled>Disabled</AppButton>
+          <AppButton variant="mystic" size="md" disabled>Disabled</AppButton>
         </div>
       </div>
     `,

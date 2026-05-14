@@ -45,13 +45,33 @@ describe('AppButton', () => {
 
   // ── BEM class application ─────────────────────────────────────────────────
 
-  it.each(['primary', 'ghost', 'danger'] as const)(
+  it.each(['primary', 'secondary', 'ghost', 'danger', 'mystic'] as const)(
     'applies variant modifier class for variant=%s',
     (variant) => {
       const wrapper = mount(AppButton, { props: { variant }, slots: { default: 'X' } });
       expect(wrapper.find(`.app-button--${variant}`).exists()).toBe(true);
     },
   );
+
+  it('exposes the secondary variant as transparent + brass-bordered', () => {
+    // Handoff `.cor-btn--secondary` — `Cancel` / `Skip` / `Reroll` affordance.
+    // We assert only the modifier class lands; computed-style assertions are
+    // covered by Storybook + visual regression so jsdom shortcomings don't
+    // bleed into unit tests.
+    const wrapper = mount(AppButton, {
+      props: { variant: 'secondary' },
+      slots: { default: 'Cancel' },
+    });
+    expect(wrapper.find('.app-button--secondary').exists()).toBe(true);
+  });
+
+  it('exposes the mystic variant for ritual CTAs (Push the Roll)', () => {
+    const wrapper = mount(AppButton, {
+      props: { variant: 'mystic' },
+      slots: { default: 'Push the Roll · 1 DP' },
+    });
+    expect(wrapper.find('.app-button--mystic').exists()).toBe(true);
+  });
 
   it.each(['sm', 'md', 'lg'] as const)('applies size modifier class for size=%s', (size) => {
     const wrapper = mount(AppButton, { props: { size }, slots: { default: 'X' } });

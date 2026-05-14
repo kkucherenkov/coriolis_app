@@ -2,7 +2,13 @@ import 'package:flutter/widgets.dart';
 import '../../theme/tokens.g.dart';
 
 /// Variants matching the Vue AppButton.
-enum AppButtonVariant { primary, ghost, danger }
+///
+/// - `primary` — brass-fill hero CTA.
+/// - `secondary` — transparent + brass-bordered Cancel / Skip / Reroll.
+/// - `ghost` — borderless tertiary affordance.
+/// - `danger` — crimson-fill destructive action.
+/// - `mystic` — mystic-teal ritual CTA (Push the Roll, Pray).
+enum AppButtonVariant { primary, secondary, ghost, danger, mystic }
 
 /// Visual size — tap target is always ≥ 44×44 regardless of size.
 enum AppButtonSize { sm, md, lg }
@@ -34,39 +40,51 @@ class AppButton extends StatelessWidget {
   // ── Size geometry ────────────────────────────────────────────────────────
 
   EdgeInsets get _padding => switch (size) {
-        AppButtonSize.sm =>
-          const EdgeInsets.symmetric(horizontal: AppSpacing.s3, vertical: AppSpacing.s1),
-        AppButtonSize.md =>
-          const EdgeInsets.symmetric(horizontal: AppSpacing.s4, vertical: AppSpacing.s2),
-        AppButtonSize.lg =>
-          const EdgeInsets.symmetric(horizontal: AppSpacing.s5, vertical: AppSpacing.s3),
-      };
+    AppButtonSize.sm => const EdgeInsets.symmetric(
+      horizontal: AppSpacing.s3,
+      vertical: AppSpacing.s1,
+    ),
+    AppButtonSize.md => const EdgeInsets.symmetric(
+      horizontal: AppSpacing.s4,
+      vertical: AppSpacing.s2,
+    ),
+    AppButtonSize.lg => const EdgeInsets.symmetric(
+      horizontal: AppSpacing.s5,
+      vertical: AppSpacing.s3,
+    ),
+  };
 
   TextStyle get _textStyle => switch (size) {
-        AppButtonSize.sm => AppTypography.bodySm,
-        AppButtonSize.md => AppTypography.bodyMd,
-        AppButtonSize.lg => AppTypography.bodyLg,
-      };
+    AppButtonSize.sm => AppTypography.bodySm,
+    AppButtonSize.md => AppTypography.bodyMd,
+    AppButtonSize.lg => AppTypography.bodyLg,
+  };
 
   // ── Colors per variant ───────────────────────────────────────────────────
 
   Color get _backgroundColor => switch (variant) {
-        AppButtonVariant.primary => AppColors.brandBrass,
-        AppButtonVariant.ghost => const Color(0x00000000),
-        AppButtonVariant.danger => AppColors.stateCrimson,
-      };
+    AppButtonVariant.primary => AppColors.brandBrass,
+    AppButtonVariant.secondary => const Color(0x00000000),
+    AppButtonVariant.ghost => const Color(0x00000000),
+    AppButtonVariant.danger => AppColors.stateCrimson,
+    AppButtonVariant.mystic => AppColors.stateMysticTeal,
+  };
 
   Color get _textColor => switch (variant) {
-        AppButtonVariant.primary => AppColors.textOnBrass,
-        AppButtonVariant.ghost => AppColors.brandBrassLight,
-        AppButtonVariant.danger => AppColors.textPrimary,
-      };
+    AppButtonVariant.primary => AppColors.textOnBrass,
+    AppButtonVariant.secondary => AppColors.brandBrass,
+    AppButtonVariant.ghost => AppColors.brandBrassLight,
+    AppButtonVariant.danger => AppColors.textPrimary,
+    AppButtonVariant.mystic => AppColors.textOnBrass,
+  };
 
   Color get _borderColor => switch (variant) {
-        AppButtonVariant.primary => const Color(0x00000000),
-        AppButtonVariant.ghost => AppColors.brandBrassDeep,
-        AppButtonVariant.danger => const Color(0x00000000),
-      };
+    AppButtonVariant.primary => const Color(0x00000000),
+    AppButtonVariant.secondary => AppColors.brandBrass,
+    AppButtonVariant.ghost => AppColors.brandBrassDeep,
+    AppButtonVariant.danger => const Color(0x00000000),
+    AppButtonVariant.mystic => AppColors.stateMysticTeal,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -132,8 +150,10 @@ class _SpinnerPainterState extends State<_SpinnerPainter>
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 650))
-      ..repeat();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    )..repeat();
   }
 
   @override
