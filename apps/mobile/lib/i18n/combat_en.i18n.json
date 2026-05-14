@@ -1,5 +1,8 @@
 {
   "cardTitle": "Active Combat",
+  "trackerTitle": "Combat Tracker",
+  "trackerNoCombatants": "No combatants in this encounter yet.",
+  "openTrackerButton": "Open tracker",
   "emptyHeading": "No active encounter",
   "emptyBody": "Combat begins when the GM starts an encounter.",
   "errorHeading": "Failed to load combat",
@@ -10,12 +13,23 @@
   "stateUnknown": "Unknown",
   "hp": "HP",
   "mp": "MP",
+  "initiative": "Init",
   "flagIncapacitated": "Incapacitated",
   "flagProne": "Prone",
   "flagCovered": "Covered",
   "roundLabel": "Round",
+  "dpChipLabel": "DP",
+  "rollInitiativeButton": "Roll Initiative",
+  "nextTurnButton": "Next Turn",
+  "endEncounterButton": "End Encounter",
+  "endEncounterConfirmTitle": "End this encounter?",
+  "endEncounterConfirmBody": "The initiative tracker will close and the encounter becomes read-only history.",
+  "endEncounterCancel": "Cancel",
+  "endEncounterConfirm": "End",
   "semanticsCurrentTurn": "{name}, current turn",
   "semanticsStatusPrefix": "Status: {flag}",
   "semanticsHp": "Hit points: {current} of {max}",
-  "semanticsMp": "Mystic Darkness Points: {value}"
+  "semanticsMp": "Mystic Darkness Points: {value}",
+  "semanticsInitiative": "Initiative {value}",
+  "semanticsDpChip": "Session Darkness Points: {value}"
 }

@@ -42,13 +42,43 @@ final class ActiveCombatEmpty extends ActiveCombatState {
 }
 
 /// Active encounter found and combatants loaded.
+///
+/// [actionInFlight] is true while a tracker write (rollInitiative,
+/// advanceTurn, endEncounter) is being awaited. The toolbar disables itself
+/// during this window.
+///
+/// [actionError] carries the most recent action failure message — when
+/// non-null, the tracker shows a dismissible banner. Reset to null on the
+/// next successful action.
 final class ActiveCombatReady extends ActiveCombatState {
-  const ActiveCombatReady(this.snapshot);
+  const ActiveCombatReady(
+    this.snapshot, {
+    this.actionInFlight = false,
+    this.actionError,
+  });
 
   final ActiveCombatSnapshot snapshot;
+  final bool actionInFlight;
+  final String? actionError;
+
+  ActiveCombatReady copyWith({
+    ActiveCombatSnapshot? snapshot,
+    bool? actionInFlight,
+    Object? actionError = _sentinel,
+  }) {
+    return ActiveCombatReady(
+      snapshot ?? this.snapshot,
+      actionInFlight: actionInFlight ?? this.actionInFlight,
+      actionError: identical(actionError, _sentinel)
+          ? this.actionError
+          : actionError as String?,
+    );
+  }
+
+  static const Object _sentinel = Object();
 
   @override
-  List<Object?> get props => [snapshot];
+  List<Object?> get props => [snapshot, actionInFlight, actionError];
 }
 
 /// Repository threw; [message] is the stringified exception.

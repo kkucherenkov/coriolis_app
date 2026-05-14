@@ -1,5 +1,8 @@
 {
   "cardTitle": "[uk-todo] Active Combat",
+  "trackerTitle": "[uk-todo] Combat Tracker",
+  "trackerNoCombatants": "[uk-todo] No combatants in this encounter yet.",
+  "openTrackerButton": "[uk-todo] Open tracker",
   "emptyHeading": "[uk-todo] No active encounter",
   "emptyBody": "[uk-todo] Combat begins when the GM starts an encounter.",
   "errorHeading": "[uk-todo] Failed to load combat",
@@ -10,12 +13,23 @@
   "stateUnknown": "[uk-todo] Unknown",
   "hp": "[uk-todo] HP",
   "mp": "[uk-todo] MP",
+  "initiative": "[uk-todo] Init",
   "flagIncapacitated": "[uk-todo] Incapacitated",
   "flagProne": "[uk-todo] Prone",
   "flagCovered": "[uk-todo] Covered",
   "roundLabel": "[uk-todo] Round",
+  "dpChipLabel": "[uk-todo] DP",
+  "rollInitiativeButton": "[uk-todo] Roll Initiative",
+  "nextTurnButton": "[uk-todo] Next Turn",
+  "endEncounterButton": "[uk-todo] End Encounter",
+  "endEncounterConfirmTitle": "[uk-todo] End this encounter?",
+  "endEncounterConfirmBody": "[uk-todo] The initiative tracker will close and the encounter becomes read-only history.",
+  "endEncounterCancel": "[uk-todo] Cancel",
+  "endEncounterConfirm": "[uk-todo] End",
   "semanticsCurrentTurn": "[uk-todo] {name}, current turn",
   "semanticsStatusPrefix": "[uk-todo] Status: {flag}",
   "semanticsHp": "[uk-todo] Hit points: {current} of {max}",
-  "semanticsMp": "[uk-todo] Mystic Darkness Points: {value}"
+  "semanticsMp": "[uk-todo] Mystic Darkness Points: {value}",
+  "semanticsInitiative": "[uk-todo] Initiative {value}",
+  "semanticsDpChip": "[uk-todo] Session Darkness Points: {value}"
 }

@@ -1,5 +1,8 @@
 {
   "cardTitle": "Активный бой",
+  "trackerTitle": "Трекер боя",
+  "trackerNoCombatants": "В этой схватке пока нет участников.",
+  "openTrackerButton": "Открыть трекер",
   "emptyHeading": "Нет активной схватки",
   "emptyBody": "Бой начнётся, когда Мастер запустит схватку.",
   "errorHeading": "Не удалось загрузить бой",
@@ -10,12 +13,23 @@
   "stateUnknown": "Неизвестно",
   "hp": "ОЗ",
   "mp": "ОД",
+  "initiative": "Иниц",
   "flagIncapacitated": "Нетрудоспособен",
   "flagProne": "Лёжа",
   "flagCovered": "В укрытии",
   "roundLabel": "Раунд",
+  "dpChipLabel": "ОТ",
+  "rollInitiativeButton": "Бросить инициативу",
+  "nextTurnButton": "Следующий ход",
+  "endEncounterButton": "Завершить",
+  "endEncounterConfirmTitle": "Завершить схватку?",
+  "endEncounterConfirmBody": "Трекер закроется, схватка станет неизменяемой записью истории.",
+  "endEncounterCancel": "Отмена",
+  "endEncounterConfirm": "Завершить",
   "semanticsCurrentTurn": "{name}, текущий ход",
   "semanticsStatusPrefix": "Статус: {flag}",
   "semanticsHp": "Очки здоровья: {current} из {max}",
-  "semanticsMp": "Очки Мистической Тьмы: {value}"
+  "semanticsMp": "Очки Мистической Тьмы: {value}",
+  "semanticsInitiative": "Инициатива {value}",
+  "semanticsDpChip": "Очки Тьмы сессии: {value}"
 }

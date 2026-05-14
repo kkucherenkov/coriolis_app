@@ -4,10 +4,12 @@ import 'package:intl/intl.dart';
 
 import 'dart:async';
 
+import 'package:coriolis_companion/app/routes.dart';
 import 'package:coriolis_companion/features/auth/domain/auth_repository.dart';
 import 'package:coriolis_companion/features/combat/presentation/blocs/active_combat/active_combat_cubit.dart';
 import 'package:coriolis_companion/features/combat/presentation/widgets/active_combat_card.dart';
 import 'package:coriolis_companion/features/sessions/domain/game_session.dart';
+import 'package:coriolis_companion/i18n/strings.g.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/session_detail/session_detail_cubit.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/session_detail/session_detail_state.dart';
 import 'package:coriolis_companion/shared/di/injector.dart';
@@ -223,6 +225,12 @@ class _DetailContentState extends State<_DetailContent> {
         ),
         const SizedBox(height: 12),
         ActiveCombatCard(sessionId: widget.session.id),
+        const SizedBox(height: 8),
+        _OpenTrackerButton(
+          sessionId: s.id,
+          isGm: widget.isGm,
+          dpCount: s.dpCount,
+        ),
         const SizedBox(height: 12),
         _CharactersCard(characterIds: s.characterIds),
         if (widget.isGm) ...[
@@ -463,5 +471,38 @@ class _AuditCard extends StatelessWidget {
       default:
         return source;
     }
+  }
+}
+
+class _OpenTrackerButton extends StatelessWidget {
+  const _OpenTrackerButton({
+    required this.sessionId,
+    required this.isGm,
+    required this.dpCount,
+  });
+
+  final String sessionId;
+  final bool isGm;
+  final int dpCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t.combat;
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton.icon(
+        key: const Key('session-open-combat-tracker'),
+        onPressed: () => Navigator.of(context).pushNamed(
+          AppRoutes.combatTracker,
+          arguments: CombatTrackerArgs(
+            sessionId: sessionId,
+            isGm: isGm,
+            dpCount: dpCount,
+          ),
+        ),
+        icon: const Icon(Icons.open_in_full),
+        label: Text(t.openTrackerButton),
+      ),
+    );
   }
 }

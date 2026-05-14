@@ -11,7 +11,13 @@
 // ────────────────────────────────────────────────────────────────────────────
 
 import 'package:app_api_client/app_api_client.dart' as api_client
-    show EncountersApi, Encounter, Combatant;
+    show
+        EncountersApi,
+        Encounter,
+        Combatant,
+        EncounterStatus,
+        EncounterUpdate,
+        EncounterUpdateBuilder;
 
 import 'package:coriolis_companion/features/combat/domain/combat_repository.dart';
 import 'package:coriolis_companion/features/combat/domain/combatant.dart';
@@ -78,5 +84,50 @@ class CombatRepositoryImpl implements CombatRepository {
     final list = res.data;
     if (list == null) return const [];
     return list.items.map(_combatantToDomain).toList(growable: false);
+  }
+
+  @override
+  Future<InitiativeRollOutcome> rollInitiative(String encounterId) async {
+    final res = await _api.rollInitiative(id: encounterId);
+    final result = res.data;
+    if (result == null) {
+      throw StateError('rollInitiative returned empty body');
+    }
+    return InitiativeRollOutcome(
+      combatants:
+          result.combatants.map(_combatantToDomain).toList(growable: false),
+      round: result.round,
+    );
+  }
+
+  @override
+  Future<TurnAdvanceOutcome> advanceTurn(String encounterId) async {
+    final res = await _api.advanceTurn(id: encounterId);
+    final result = res.data;
+    if (result == null) {
+      throw StateError('advanceTurn returned empty body');
+    }
+    return TurnAdvanceOutcome(
+      activeCombatantId: result.activeCombatantId,
+      round: result.round,
+      isNewRound: result.isNewRound,
+    );
+  }
+
+  @override
+  Future<Encounter> endEncounter(String encounterId) async {
+    final body = api_client.EncounterUpdate(
+      (api_client.EncounterUpdateBuilder b) => b
+        ..status = api_client.EncounterStatus.ended,
+    );
+    final res = await _api.updateEncounter(
+      id: encounterId,
+      encounterUpdate: body,
+    );
+    final encounter = res.data;
+    if (encounter == null) {
+      throw StateError('updateEncounter returned empty body');
+    }
+    return _encounterToDomain(encounter);
   }
 }

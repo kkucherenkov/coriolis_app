@@ -3,8 +3,9 @@ import 'package:coriolis_companion/features/combat/domain/encounter.dart';
 
 /// Repository contract for combat encounters (Phase 6).
 ///
-/// Mobile leans GM-first for Block 1: read operations only. Write paths
-/// (add/remove combatants, roll initiative, advance turn) are Block 3+.
+/// Read paths landed in Block 1 (`listEncounters`, `listCombatants`).
+/// Write paths landed in T-MOBILE-COMBAT-TRACKER Block 1
+/// (`rollInitiative`, `advanceTurn`, `endEncounter`).
 ///
 /// The server is the authoritative permission boundary; callers must own the
 /// parent game session.
@@ -18,4 +19,47 @@ abstract class CombatRepository {
   /// Returns all combatants for [encounterId], sorted by `turnOrder` ascending
   /// once initiative is rolled; otherwise in insertion order.
   Future<List<Combatant>> listCombatants(String encounterId);
+
+  /// Rolls initiative for every combatant; transitions encounter
+  /// `setup → active`. Returns the post-roll combatants (server-ordered by
+  /// `turnOrder` ascending) and the starting round (always `1`).
+  ///
+  /// Server-side errors (422 `ENCOUNTER_INVALID_STATUS`,
+  /// `ENCOUNTER_NO_COMBATANTS`, etc.) surface as a thrown `Object` whose
+  /// `toString()` is the RFC 9457 detail.
+  Future<InitiativeRollOutcome> rollInitiative(String encounterId);
+
+  /// Advances to the next combatant. Returns the new `activeCombatantId`,
+  /// the post-advance round, and whether a new round just started.
+  ///
+  /// Allowed only while `status` is `active`. 422 errors surface as throws.
+  Future<TurnAdvanceOutcome> advanceTurn(String encounterId);
+
+  /// Closes the encounter (`status → ended`). Returns the updated encounter.
+  Future<Encounter> endEncounter(String encounterId);
+}
+
+/// Domain projection of `InitiativeRollResult`. Keeps the presentation layer
+/// free of the generated SDK type.
+class InitiativeRollOutcome {
+  const InitiativeRollOutcome({
+    required this.combatants,
+    required this.round,
+  });
+
+  final List<Combatant> combatants;
+  final int round;
+}
+
+/// Domain projection of `TurnAdvanceResult`.
+class TurnAdvanceOutcome {
+  const TurnAdvanceOutcome({
+    required this.activeCombatantId,
+    required this.round,
+    required this.isNewRound,
+  });
+
+  final String? activeCombatantId;
+  final int round;
+  final bool isNewRound;
 }

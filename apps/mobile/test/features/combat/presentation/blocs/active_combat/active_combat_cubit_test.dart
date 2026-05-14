@@ -241,4 +241,171 @@ void main() {
       verifyNever(() => repo.listCombatants(_activeEncounter.id));
     },
   );
+
+  // ── rollInitiative ────────────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'rollInitiative: setup → active reloads snapshot',
+    build: makeCubit,
+    act: (cubit) async {
+      // First load: setup encounter is "active" enough for the cubit.
+      when(() => repo.listEncounters(_sessionId)).thenAnswer(
+        (_) async => [_setupEncounter.copyWith(state: 'active')],
+      );
+      when(() => repo.listCombatants(_setupEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.rollInitiative(_setupEncounter.id))
+          .thenAnswer((_) async => InitiativeRollOutcome(
+                combatants: _combatants,
+                round: 1,
+              ));
+      await cubit.load(_sessionId);
+      await cubit.rollInitiative();
+    },
+    expect: () => [
+      const ActiveCombatLoading(),
+      // post-load Ready
+      isA<ActiveCombatReady>(),
+      // action begins → actionInFlight = true
+      isA<ActiveCombatReady>().having(
+        (s) => s.actionInFlight,
+        'actionInFlight',
+        isTrue,
+      ),
+      // post-action reload Loading
+      const ActiveCombatLoading(),
+      // reload Ready (actionInFlight resets to false on the new state)
+      isA<ActiveCombatReady>().having(
+        (s) => s.actionInFlight,
+        'actionInFlight',
+        isFalse,
+      ),
+    ],
+    verify: (_) {
+      verify(() => repo.rollInitiative(_setupEncounter.id)).called(1);
+      // The cached _sessionId triggers a reload of the encounter list.
+      verify(() => repo.listEncounters(_sessionId)).called(2);
+    },
+  );
+
+  // ── advanceTurn ───────────────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'advanceTurn dispatches and reloads',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.advanceTurn(_activeEncounter.id))
+          .thenAnswer((_) async => const TurnAdvanceOutcome(
+                activeCombatantId: 'cbt-2',
+                round: 2,
+                isNewRound: false,
+              ));
+      await cubit.load(_sessionId);
+      await cubit.advanceTurn();
+    },
+    expect: () => [
+      const ActiveCombatLoading(),
+      isA<ActiveCombatReady>(),
+      isA<ActiveCombatReady>().having(
+        (s) => s.actionInFlight,
+        'actionInFlight',
+        isTrue,
+      ),
+      const ActiveCombatLoading(),
+      isA<ActiveCombatReady>(),
+    ],
+    verify: (_) {
+      verify(() => repo.advanceTurn(_activeEncounter.id)).called(1);
+    },
+  );
+
+  // ── endEncounter ──────────────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'endEncounter lands on Empty after reload (no more active encounters)',
+    build: makeCubit,
+    act: (cubit) async {
+      var listCallCount = 0;
+      when(() => repo.listEncounters(_sessionId)).thenAnswer((_) async {
+        listCallCount += 1;
+        // First call returns the active encounter; second call (after
+        // endEncounter mutates state) returns it as `ended`.
+        return listCallCount == 1
+            ? [_activeEncounter]
+            : [_activeEncounter.copyWith(state: 'ended')];
+      });
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.endEncounter(_activeEncounter.id)).thenAnswer(
+        (_) async => _activeEncounter.copyWith(state: 'ended'),
+      );
+      await cubit.load(_sessionId);
+      await cubit.endEncounter();
+    },
+    expect: () => [
+      const ActiveCombatLoading(),
+      isA<ActiveCombatReady>(),
+      isA<ActiveCombatReady>().having(
+        (s) => s.actionInFlight,
+        'actionInFlight',
+        isTrue,
+      ),
+      const ActiveCombatLoading(),
+      const ActiveCombatEmpty(),
+    ],
+    verify: (_) {
+      verify(() => repo.endEncounter(_activeEncounter.id)).called(1);
+    },
+  );
+
+  // ── action failure path ───────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'rollInitiative failure keeps Ready and surfaces actionError',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.rollInitiative(_activeEncounter.id))
+          .thenThrow(StateError('422 invalid status'));
+      await cubit.load(_sessionId);
+      await cubit.rollInitiative();
+    },
+    expect: () => [
+      const ActiveCombatLoading(),
+      isA<ActiveCombatReady>(),
+      isA<ActiveCombatReady>().having(
+        (s) => s.actionInFlight,
+        'actionInFlight',
+        isTrue,
+      ),
+      isA<ActiveCombatReady>()
+          .having((s) => s.actionInFlight, 'actionInFlight', isFalse)
+          .having(
+            (s) => s.actionError,
+            'actionError',
+            contains('422 invalid status'),
+          ),
+    ],
+  );
+
+  // ── action no-op outside Ready ────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'rollInitiative is a no-op when not in Ready state',
+    build: makeCubit,
+    act: (cubit) async {
+      await cubit.rollInitiative();
+    },
+    expect: () => const <ActiveCombatState>[],
+    verify: (_) {
+      verifyNever(() => repo.rollInitiative(any<String>()));
+    },
+  );
 }

@@ -19,16 +19,24 @@ export 'active_combat_state.dart';
 /// [replaceSnapshot] is a synchronous setter for Block 4 realtime wiring —
 /// the Centrifugo subscription calls it with an updated snapshot and it
 /// emits a new [ActiveCombatReady] without triggering a network fetch.
+///
+/// Write actions ([rollInitiative], [advanceTurn], [endEncounter]) are
+/// idempotent re-load wrappers: they call the repository, then refresh the
+/// snapshot via [load]. `actionInFlight` is flipped while the round-trip
+/// is in flight; on failure `actionError` is set and the previous snapshot
+/// is retained so the GM can retry.
 class ActiveCombatCubit extends Cubit<ActiveCombatState> {
   ActiveCombatCubit({required CombatRepository repository})
       : _repository = repository,
         super(const ActiveCombatLoading());
 
   final CombatRepository _repository;
+  String? _sessionId;
 
   /// Fetches encounters for [sessionId], picks the most-recent active one,
   /// loads its combatants, and emits the appropriate state.
   Future<void> load(String sessionId) async {
+    _sessionId = sessionId;
     emit(const ActiveCombatLoading());
     try {
       final encounters = await _repository.listEncounters(sessionId);
@@ -58,5 +66,55 @@ class ActiveCombatCubit extends Cubit<ActiveCombatState> {
   /// [ActiveCombatLoading] is in flight.
   void replaceSnapshot(ActiveCombatSnapshot snapshot) {
     emit(ActiveCombatReady(snapshot));
+  }
+
+  /// Rolls initiative for the current encounter (`setup → active`).
+  ///
+  /// No-op if the current state is not [ActiveCombatReady]. Mirrors the web
+  /// pattern: dispatch, then reload to consume the post-transition state.
+  Future<void> rollInitiative() async {
+    final current = state;
+    if (current is! ActiveCombatReady) return;
+    emit(current.copyWith(actionInFlight: true, actionError: null));
+    try {
+      await _repository.rollInitiative(current.snapshot.encounter.id);
+      if (_sessionId != null) {
+        await load(_sessionId!);
+      }
+    } on Object catch (e) {
+      emit(current.copyWith(actionInFlight: false, actionError: e.toString()));
+    }
+  }
+
+  /// Advances the active turn to the next combatant.
+  Future<void> advanceTurn() async {
+    final current = state;
+    if (current is! ActiveCombatReady) return;
+    emit(current.copyWith(actionInFlight: true, actionError: null));
+    try {
+      await _repository.advanceTurn(current.snapshot.encounter.id);
+      if (_sessionId != null) {
+        await load(_sessionId!);
+      }
+    } on Object catch (e) {
+      emit(current.copyWith(actionInFlight: false, actionError: e.toString()));
+    }
+  }
+
+  /// Closes the encounter (`status → ended`). Once successful the tracker
+  /// reloads and lands on [ActiveCombatEmpty] since the previously-active
+  /// encounter is no longer in `active` status.
+  Future<void> endEncounter() async {
+    final current = state;
+    if (current is! ActiveCombatReady) return;
+    emit(current.copyWith(actionInFlight: true, actionError: null));
+    try {
+      await _repository.endEncounter(current.snapshot.encounter.id);
+      if (_sessionId != null) {
+        await load(_sessionId!);
+      }
+    } on Object catch (e) {
+      emit(current.copyWith(actionInFlight: false, actionError: e.toString()));
+    }
   }
 }
