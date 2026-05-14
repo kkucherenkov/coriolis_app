@@ -34,11 +34,15 @@ If you are doing a design audit or onboarding, read in this order:
    `domain.subject.detail` key naming, `Intl.RelativeTimeFormat`, locale
    × Forum matrix (Forum **carries Cyrillic** — resolved 2026-05-14),
    untranslated-nouns list.
-6. [`HANDOFF_NAME_MAP.md`](./HANDOFF_NAME_MAP.md) — handoff term ⇄
+6. [`CHARACTER_WIZARD.md`](./CHARACTER_WIZARD.md) — canonical
+   character-creation step inventory (8 steps, ST3001-faithful);
+   resolves the handoff (8) / web (7) / mobile (6) conflict and lists
+   the per-client reorder + Gear backend follow-ups.
+7. [`HANDOFF_NAME_MAP.md`](./HANDOFF_NAME_MAP.md) — handoff term ⇄
    project name (`AppFoo` ⇄ `Foo`), rationale for every documented drift.
-7. The token JSON itself — `tokens/*.json` and the typography schema in
+8. The token JSON itself — `tokens/*.json` and the typography schema in
    [`packages/design-tokens/src/types.ts`](../../packages/design-tokens/src/types.ts).
-8. The remainder of this file — token pipeline, theme overrides, motion
+9. The remainder of this file — token pipeline, theme overrides, motion
    guarantee, component inventory.
 
 ## Token pipeline
@@ -277,9 +281,12 @@ treat as in-flight, not as drift:
   aphorism" surface. Implementation tracked in
   **T-2026-05-14-004** (specs/tasks/active.md). PATTERNS.md and
   CONTENT.md assume the Bridge naming throughout.
-- **Wizard step inventory** — handoff (8) vs. web (7) vs. mobile (6).
-  Reconciliation tracked in **T-2026-05-14-005** sub-step
-  `T-WIZARD-STEP-COUNT`.
+- **Wizard step inventory** — canonical 8-step inventory specced in
+  [`CHARACTER_WIZARD.md`](./CHARACTER_WIZARD.md) (ST3001-faithful, not
+  handoff-faithful). Code reorder + Gear backend tracked in
+  **T-2026-05-14-005** sub-step `T-WIZARD-STEP-COUNT` follow-ups
+  (`T-WIZARD-WEB-REORDER`, `T-WIZARD-MOBILE-PARITY`,
+  `T-WIZARD-GEAR-BACKEND`, `T-WIZARD-GEAR-UI`, `T-WIZARD-ICON-ROLL`).
 - **`AppModal.closeOnBackdrop` default** — currently `true`
   (`packages/ui/src/components/AppModal/AppModal.vue:25`); the
   documented contract in

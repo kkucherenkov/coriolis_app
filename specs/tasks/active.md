@@ -1,38 +1,6 @@
 # Active tasks
 
-LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md). All entries below are the follow-up tickets staged from that audit, consolidated into 5 parent tasks. Typography schema (T-2026-05-14-002) and the v1 atom layer (T-2026-05-14-003) have both landed; the remaining surface-layer tasks (T-2026-05-14-004 Bridge, T-2026-05-14-005 wizard/mobile parity, T-2026-05-14-006 design doc backfill) are all unblocked.
-
----
-
-## T-2026-05-14-006 — Backfill design documentation to handoff parity
-
-- Created: 2026-05-14
-- Owner: claude
-- Spec: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md) §2 + handoff `/tmp/coriolis-handoff/coriolis-app/project/specs/design/`
-- Goal: project design docs match the handoff's coverage so engineering has a single source of truth for patterns, voice, motifs, a11y, i18n.
-- Acceptance:
-  - `specs/design/PATTERNS.md` authored — page padding scale, card composition order, hero grid template, empty-state cadence, banner recipes, modal contract (backdrop click is **not** a close trigger), button taxonomy, view-only pattern triad.
-  - `specs/design/CONTENT.md` authored — voice ("steward, not a host"), in-product taxonomy (Bridge / Library / Push / Icon / Mystic), number formatting (`/` HP separator, ✶ U+2736 successes, `b` birr), dice flavor template, copy do/don't list.
-  - `FOUNDATIONS.md` backfilled — motif density rule (`restrained | balanced | maximum`), composite typography tokens, shadow semantics, opacity semantics, hard rules ("Forum never inside chat", min font 24px @ 1920×1080, no `<small>`, "no raw hex in screens").
-  - Canonical `A11Y.md` extracted — keyboard map (arrow-key roving for tablist, listbox/radio), focus-ring contract (`--focus-ring = var(--brand-brass-light)`, 2px outline + 2px soft-glow), color-is-not-the-only-signal matrix, landmark map, PR-gate checklist, RTL readiness. (`docs/A11Y_AUDIT.md` is a point-in-time snapshot — separate doc.)
-  - `I18N.md` design-layer added — Cyrillic stress-test, `domain.subject.detail` key naming, plural design (`=1{}other{}` + ru one/few/many/other), `Intl.RelativeTimeFormat`, untranslated-nouns list.
-  - **Forum-Cyrillic conflict resolved** between handoff `I18N.md:L110-L114` (Latin-only + Cormorant Garamond fallback) and `docs/DESIGN.md` §3 (full Cyrillic). Pick one and update both.
-- Spec diff: none
-- Codegen impact: no
-- Design impact: docs only
-- Tests: none (doc PRs reviewed via the spec-reviewer agent)
-- Sub-steps:
-  - [x] author `specs/design/PATTERNS.md` — landed 2026-05-14 (block 1)
-  - [x] author `specs/design/CONTENT.md` — landed 2026-05-14 (block 2)
-  - [x] backfill `FOUNDATIONS.md` — landed 2026-05-14 (block 3)
-  - [x] extract canonical `A11Y.md` — landed 2026-05-14 (block 4)
-  - [x] add I18N design layer + resolve Forum-Cyrillic conflict — landed 2026-05-14 (block 5)
-  - [x] update `specs/design/README.md` reading order + gap log — landed 2026-05-14 (block 6)
-- Status: done — to be moved to `done.md` on session close
-- Blockers: —
-- Follow-ups raised:
-  - Flip `AppModal.closeOnBackdrop` default to `false` and audit every call site so the documented modal contract in `PATTERNS.md §5` is the actual code default. Currently `true` in `packages/ui/src/components/AppModal/AppModal.vue:25`.
-  - Author `SURFACES.md` and `COMPONENTS.md` if the next design audit raises surface-level gaps that the README's component inventory + colocated Storybook stories do not already cover. Not blocking for v1.
+LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md). Typography schema (T-2026-05-14-002), the v1 atom layer (T-2026-05-14-003), and the design-doc backfill (T-2026-05-14-006) have all landed (see `done.md`). The remaining surface-layer tasks are T-2026-05-14-005 (wizard / mobile parity / landing) and T-2026-05-14-004 (Bridge dashboard) — both unblocked.
 
 ---
 
@@ -43,21 +11,26 @@ LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05
 - Spec: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md) §4 follow-ups 9–12
 - Goal: bring wizard, mobile ship sheet, mobile combat tracker, and landing to v1 parity with the handoff.
 - Acceptance:
-  - Wizard step count reconciled across handoff (8) / web (7) / mobile (6). Canonical inventory specced (likely 8: Origin · Concept · Group · Attributes · Icon · Skills · Talents · Gear). Origin + Gear added on web + mobile; Group added on mobile; ordering matches spec.
+  - Wizard step inventory specced canonically per ST3001 (not handoff). Spec doc: [`specs/design/CHARACTER_WIZARD.md`](../design/CHARACTER_WIZARD.md). Code reorder + Gear backend split into the follow-up sub-steps below.
   - `apps/mobile/lib/features/ships/` implemented — Flutter ship sheet on parity with `apps/web/app/pages/app/ships/[id].vue`.
   - Mobile combat expanded from `widgets/active_combat_card.dart` to full initiative tracker: initiative list, DP pool, sticky toolbar (End-encounter / End-round / Next-turn).
   - Landing (`apps/web/app/pages/index.vue`) gains 4 arabesque corners, top-nav locale toggle, 3-feature grid (Sheet / Share / Run), starfield bg, fan-project disclaimer footer.
-- Spec diff: none (surface-only work)
-- Codegen impact: no
-- Design impact: consumes atoms from T-2026-05-14-003
-- Tests: Vitest page specs (web), Flutter widget tests (mobile), Playwright smoke for landing
+- Spec diff: none for the spec sub-step; `T-WIZARD-GEAR-BACKEND` will require an OpenAPI diff.
+- Codegen impact: only `T-WIZARD-GEAR-BACKEND` (wallet endpoints).
+- Design impact: consumes atoms from T-2026-05-14-003; spec adds [`CHARACTER_WIZARD.md`](../design/CHARACTER_WIZARD.md) to the design-doc family.
+- Tests: Vitest page specs (web), Flutter widget tests (mobile), Playwright smoke for landing.
 - Sub-steps:
-  - [ ] **T-WIZARD-STEP-COUNT** — spec canonical step inventory; add missing steps (Origin + Gear on web+mobile, Group on mobile); fix ordering
-  - [ ] **T-MOBILE-SHIP-SHEET** — implement `apps/mobile/lib/features/ships/`
-  - [ ] **T-MOBILE-COMBAT-TRACKER** — expand combat to full initiative tracker + DP pool + sticky toolbar
-  - [ ] **T-LANDING-FRAMING** — arabesque corners, locale-toggle nav, 3-feature grid, starfield bg, fan-project footer
-- Status: queued
-- Blockers: — (T-2026-05-14-003 atom layer landed 2026-05-14)
+  - [x] **T-WIZARD-STEP-COUNT** (spec) — canonical 8-step inventory authored in [`specs/design/CHARACTER_WIZARD.md`](../design/CHARACTER_WIZARD.md); ST3001-faithful (Biography → Concept → Role → Attributes → Skills → Talents → Icon → Gear). Resolved handoff vs rulebook conflict in §5. _Block 1, 2026-05-14._
+  - [ ] **T-WIZARD-WEB-REORDER** — rename `Step{N}*.vue`, set `TOTAL_STEPS = 8`, reshuffle imports in `apps/web/app/pages/app/characters/new.vue`, swap legacy `step.N.*` i18n keys to `wizard.step.<name>.*`, update Vitest page spec.
+  - [ ] **T-WIZARD-MOBILE-PARITY** — add Role step, add CrewConcept field to Biography, reorder steps to canonical 8, port the i18n key rename in `apps/mobile/lib/i18n/characters_<locale>.i18n.json`.
+  - [ ] **T-WIZARD-GEAR-BACKEND** — design wallet (`birr` balance) + starting-kit derivation per (amplua, role, upbringing) per ST3001 amplua tables. Spec in `packages/specs/openapi/openapi.yaml` first.
+  - [ ] **T-WIZARD-GEAR-UI** — once backend ships, add Step 8 Gear on web + mobile (per-amplua picker + Bazaar shop).
+  - [ ] **T-WIZARD-ICON-ROLL** — add the optional "Roll d66 for me" CTA on the Icon step, mapping d66 → IconId via the rulebook table.
+  - [ ] **T-MOBILE-SHIP-SHEET** — implement `apps/mobile/lib/features/ships/`.
+  - [ ] **T-MOBILE-COMBAT-TRACKER** — expand combat to full initiative tracker + DP pool + sticky toolbar.
+  - [ ] **T-LANDING-FRAMING** — arabesque corners, locale-toggle nav, 3-feature grid, starfield bg, fan-project footer.
+- Status: in-progress (spec landed; code reorder + Gear backend queued).
+- Blockers: T-WIZARD-GEAR-UI is blocked by T-WIZARD-GEAR-BACKEND. Other sub-steps are independent.
 
 ---
 

@@ -2,6 +2,24 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-14-006 — Backfill design documentation to handoff parity
+
+- Created: 2026-05-14
+- Completed: 2026-05-14
+- Owner: claude
+- Spec: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md) §2 + handoff `/tmp/coriolis-handoff/coriolis-app/project/specs/design/`
+- Outcome:
+  - Block 1 — `specs/design/PATTERNS.md` authored: page padding scale, card composition order, hero grid template, empty-state cadence, banner recipes, modal contract (backdrop click is **not** a close trigger by design — code default flagged as a follow-up), button taxonomy, view-only triad, motion patterns.
+  - Block 2 — `specs/design/CONTENT.md` authored: voice ("steward, not a host"), in-product taxonomy (Bridge / Library / Push / Icon / Mystic), number formatting (`/` HP separator, ✶ U+2736 successes, `b` birr), dice flavour template, copy do/don't list.
+  - Block 3 — `specs/design/FOUNDATIONS.md` backfilled: motif density rule (`restrained | balanced | maximum`), composite typography tokens, shadow / opacity semantics, four hard rules (Forum-not-in-chat, 24px min @ 1920×1080, no `<small>`, no raw hex).
+  - Block 4 — Canonical `specs/design/A11Y.md` extracted: focus-ring contract, keyboard map (roving for tablist / listbox / radio), color-is-not-the-only-signal matrix, landmark map, PR-gate checklist, RTL readiness. `docs/A11Y_AUDIT.md` kept as the point-in-time snapshot.
+  - Block 5 — `specs/design/I18N.md` design layer added + Forum-Cyrillic conflict resolved (Forum **carries** Cyrillic; handoff `I18N.md` Latin-only assertion was wrong).
+  - Block 6 — `specs/design/README.md` reading order + gap log refreshed; `HANDOFF_NAME_MAP.md` cross-linked.
+- Follow-ups raised:
+  - Flip `AppModal.closeOnBackdrop` default to `false` and audit every call site so the documented modal contract in `PATTERNS.md §5` is the actual code default. Currently `true` in `packages/ui/src/components/AppModal/AppModal.vue:25`.
+  - Author `SURFACES.md` and `COMPONENTS.md` if a future audit raises surface-level gaps that the README's component inventory + colocated Storybook stories do not already cover. Not blocking for v1.
+- PRs: `bab8074`, `aa57a8f`, `f236bb1`, `6a24056`, `b0909cc` (and the block 1 commit).
+
 ## T-2026-05-14-003 — Scaffold critical v1 design atoms
 
 - Created: 2026-05-14
