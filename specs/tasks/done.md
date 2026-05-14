@@ -2,6 +2,21 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-14-001 — Design/UI audit vs handoff bundle (v1 scope)
+
+- Created: 2026-05-14
+- Completed: 2026-05-14
+- Owner: claude
+- Spec: `~/Downloads/Coriolis App-handoff.zip`
+- Result: `docs/audits/design-2026-05-14.md` on branch `chore/design-audit-2026-05-14`
+- Goal: surface every drift between the handoff design system and what's shipped, scoped to v1 (Phase 8 deferred).
+- Outcome:
+  - Tokens: 5/8 aligned; `color.json` drift is 100% Phase 8 (defer); `typography.json` schema-level refactor needs a decision.
+  - Docs: `PATTERNS.md` + `CONTENT.md` missing wholesale; `FOUNDATIONS / COMPONENTS / SURFACES / A11Y / I18N` partial.
+  - Components: 4 critical v1 atoms missing (`AppPanelTitle`, `AppSwash`, `AppWordmark`, `AppSkillRow`) + `AppButton` `secondary`/`mystic` variants.
+  - Surfaces: Bridge dashboard not shipped; wizard step inventory 8/7/6 mismatch (handoff/web/mobile); mobile missing ship sheet and full combat tracker.
+- 17 follow-up tickets staged in the report.
+
 ## T-2026-05-11-010 — Phase 7: Lighthouse CI gate + backend p95 save-latency alert
 
 - Created: 2026-05-11
