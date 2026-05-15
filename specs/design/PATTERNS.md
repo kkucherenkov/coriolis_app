@@ -343,8 +343,14 @@ Things that **do not** persist:
 
 ## 12. Permissions & view-only patterns
 
-Read-only echoes of a writable surface render with the **view-only triad** —
-all three signals together, never one alone:
+Two distinct view-only modes. Pick by scope, not by author convenience.
+
+### 12a. Partial view-only — the triad
+
+When a writable surface contains a **subset** of read-only data (the canonical
+case: a player viewing a session where DP, encounter cards, and roster live
+on a GM-writable surface), the read-only zones render with the **view-only
+triad** — all three signals together, never one alone:
 
 1. **Affordance suppression.** Buttons that mutate are absent or replaced
    with a static label.
@@ -358,10 +364,37 @@ Surfaces that exercise the triad today:
 
 - Player session header DP counter — number + ` view only` suffix.
 - Player session encounter card — dashed-border note inside the card.
-- Share viewer — entire sheet renders without any mutating affordances.
 
-Never partial — never show "looks editable" controls that quietly no-op. The
-banner alone (without affordance suppression) is also forbidden.
+Never partial within the triad — never show "looks editable" controls that
+quietly no-op. The banner alone (without affordance suppression) is also
+forbidden.
+
+### 12b. Fully read-only — chrome differentiation
+
+When the **entire surface** is read-only (the share viewer at
+`/shared/character/{slug}`, future archived-snapshot surfaces), the triad is
+overkill — every card would carry a redundant dashed-border note. Signal 2
+
+- signal 3 are scoped out; signal 1 (affordance suppression) is mandatory
+  and the **chrome itself** carries the read-only message:
+
+* A non-default surface palette — share viewer uses
+  `--surface-parchment` instead of `--surface-night`.
+* A top-of-page parchment banner with context metadata (GM display name,
+  last-updated, public URL eyebrow) — see `SURFACES.md §10`.
+* A faint `StarOrnament` watermark at low opacity.
+* Footer CTA inviting the viewer to author their own sheet
+  ("Sign in to create your own").
+
+Surfaces that exercise chrome differentiation today:
+
+- Share viewer (character) — `pages/shared/character/[slug].vue` +
+  `AppShareViewer.vue`.
+- Share viewer (ship) — `pages/shared/ship/[slug].vue`.
+
+Audit checklist: a fully read-only surface that loses its chrome
+differentiation (e.g. reverts to `--surface-night`) must adopt the §12a
+triad instead. There is no middle ground.
 
 ---
 
