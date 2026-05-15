@@ -5,6 +5,8 @@
   import { AppArabesqueCorner, AppPanelTitle, AppSegControl, AppWordmark } from '@app/ui';
   import { useCharactersApi } from '~/composables/useCharactersApi';
   import { useGameSessionsApi } from '~/composables/useGameSessionsApi';
+  import { useMyMembershipsApi } from '~/composables/useMyMembershipsApi';
+  import type { MyMembershipSummary } from '~/composables/useMyMembershipsApi';
   import {
     APHORISM_KEYS,
     formatCycleClock,
@@ -17,6 +19,7 @@
   const auth = useAuth();
   const charactersApi = useCharactersApi();
   const sessionsApi = useGameSessionsApi();
+  const membershipsApi = useMyMembershipsApi();
 
   // ── Greeting / username ─────────────────────────────────────────────────────
 
@@ -73,17 +76,16 @@
   // ── Sessions card + segmented control ──────────────────────────────────────
 
   // Two segments: Running (sessions owned by this GM) and Playing In
-  // (sessions the user is a member of). Playing-in count is fixed to 0
-  // in Stream A — the /me/memberships endpoint ships in Stream B.
+  // (sessions the user is a member of as a player).
   type SessionSegment = 'running' | 'playing';
   const sessionSegment = ref<SessionSegment>('running');
   const runningCount = ref<number>(0);
-  // playing count is intentionally 0 until Stream B wires /me/memberships.
-  const playingCount = 0;
+  const memberships = ref<MyMembershipSummary[]>([]);
+  const playerCount = computed(() => memberships.value.filter((m) => m.role === 'player').length);
 
   const sessionSegOptions = computed(() => [
     { value: 'running', label: t('card.sessions.running', { n: runningCount.value }) },
-    { value: 'playing', label: t('card.sessions.playing', { n: playingCount }) },
+    { value: 'playing', label: t('card.sessions.playing', { n: playerCount.value }) },
   ]);
 
   async function loadSessionCount(): Promise<void> {
@@ -94,6 +96,14 @@
       runningCount.value = result.items.length;
     } catch {
       // Non-fatal — count stays 0, sessions card still renders.
+    }
+  }
+
+  async function loadMemberships(): Promise<void> {
+    try {
+      memberships.value = await membershipsApi.list();
+    } catch {
+      // Non-fatal — playerCount stays 0 on network error; page remains functional.
     }
   }
 
@@ -125,6 +135,7 @@
 
     await loadCharacters();
     void loadSessionCount();
+    void loadMemberships();
   });
 
   onBeforeUnmount(() => {
@@ -338,10 +349,7 @@
 </i18n>
 
 <template>
-  <section
-    class="bridge"
-    :aria-label="t('wizardLabel')"
-  >
+  <section class="bridge" :aria-label="t('wizardLabel')">
     <AppArabesqueCorner
       orientation="tl"
       size="md"
@@ -356,30 +364,21 @@
     />
 
     <header class="bridge__hero">
-      <AppWordmark
-        :size="48"
-        :eyebrow="t('wizardLabel')"
-      />
+      <AppWordmark :size="48" :eyebrow="t('wizardLabel')" />
       <p class="bridge__greeting">
         {{ userName ? t('greeting.withName', { name: userName }) : t('greeting.anonymous') }}
       </p>
     </header>
 
     <div class="bridge__grid">
-      <article
-        class="bridge__card"
-        aria-labelledby="bridge-cycle-title"
-      >
+      <article class="bridge__card" aria-labelledby="bridge-cycle-title">
         <AppPanelTitle
           id="bridge-cycle-title"
           :kicker="t('card.cycle.kicker')"
           :title="t('card.cycle.title')"
           size="sm"
         />
-        <p
-          class="bridge__stat"
-          aria-live="polite"
-        >
+        <p class="bridge__stat" aria-live="polite">
           {{ cycleClock }}
         </p>
         <p class="bridge__caption">
@@ -387,10 +386,7 @@
         </p>
       </article>
 
-      <article
-        class="bridge__card"
-        aria-labelledby="bridge-sync-title"
-      >
+      <article class="bridge__card" aria-labelledby="bridge-sync-title">
         <AppPanelTitle
           id="bridge-sync-title"
           :kicker="t('card.sync.kicker')"
@@ -410,27 +406,15 @@
         </p>
       </article>
 
-      <article
-        class="bridge__card"
-        aria-labelledby="bridge-roster-title"
-      >
+      <article class="bridge__card" aria-labelledby="bridge-roster-title">
         <AppPanelTitle
           id="bridge-roster-title"
           :kicker="t('card.characters.kicker')"
           :title="t('card.characters.title')"
           size="sm"
         />
-        <p
-          v-if="charState === 'loading'"
-          class="bridge__stat"
-          aria-live="polite"
-        >
-          …
-        </p>
-        <p
-          v-else-if="charState === 'error'"
-          class="bridge__caption bridge__caption--error"
-        >
+        <p v-if="charState === 'loading'" class="bridge__stat" aria-live="polite">…</p>
+        <p v-else-if="charState === 'error'" class="bridge__caption bridge__caption--error">
           {{ t('card.characters.errorLoad') }}
         </p>
         <template v-else>
@@ -447,12 +431,7 @@
             >
               {{ t('card.characters.createCta') }}
             </button>
-            <button
-              v-else
-              type="button"
-              class="bridge__cta"
-              @click="navigateTo('/app/characters')"
-            >
+            <button v-else type="button" class="bridge__cta" @click="navigateTo('/app/characters')">
               {{ t('card.characters.browseCta') }}
             </button>
           </p>
@@ -460,19 +439,11 @@
       </article>
     </div>
 
-    <!-- Sessions panel (Phase 8 Stream A).
-         Running count comes from listSessions; Playing-in count is fixed
-         to 0 until Stream B wires /me/memberships. -->
-    <section
-      class="bridge__sessions"
-      aria-labelledby="bridge-sessions-title"
-    >
+    <!-- Sessions panel (Phase 8 Stream A/B).
+         Running count comes from listSessions; Playing-in count from /me/memberships (Stream B). -->
+    <section class="bridge__sessions" aria-labelledby="bridge-sessions-title">
       <div class="bridge__sessions-header">
-        <AppPanelTitle
-          id="bridge-sessions-title"
-          :title="t('card.sessions.title')"
-          size="sm"
-        />
+        <AppPanelTitle id="bridge-sessions-title" :title="t('card.sessions.title')" size="sm" />
         <AppSegControl
           v-model="sessionSegment"
           :options="sessionSegOptions"
@@ -480,10 +451,7 @@
           class="bridge__sessions-seg"
         />
       </div>
-      <p
-        v-if="sessionSegment === 'playing'"
-        class="bridge__sessions-empty"
-      >
+      <p v-if="sessionSegment === 'playing'" class="bridge__sessions-empty">
         {{ t('card.sessions.playingEmpty') }}
       </p>
       <p
@@ -496,20 +464,13 @@
         v-else-if="sessionSegment === 'running' && runningCount > 0"
         class="bridge__sessions-cta-row"
       >
-        <button
-          type="button"
-          class="bridge__cta"
-          @click="navigateTo('/app/game-sessions')"
-        >
+        <button type="button" class="bridge__cta" @click="navigateTo('/app/game-sessions')">
           {{ t('card.sessions.running', { n: runningCount }) }} →
         </button>
       </div>
     </section>
 
-    <footer
-      class="bridge__aphorism"
-      aria-label="aphorism"
-    >
+    <footer class="bridge__aphorism" aria-label="aphorism">
       <p>{{ t(aphorismKey) }}</p>
     </footer>
   </section>
