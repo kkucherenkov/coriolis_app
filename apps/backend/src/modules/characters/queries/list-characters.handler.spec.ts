@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  DEFAULT_ATTRIBUTES,
-  DEFAULT_CONDITIONS,
-  DEFAULT_SKILLS,
-} from '../domain/character.ports';
+import { DEFAULT_ATTRIBUTES, DEFAULT_CONDITIONS, DEFAULT_SKILLS } from '../domain/character.ports';
 
 import { ListCharactersQuery } from './list-characters.query';
 import { ListCharactersHandler } from './list-characters.handler';

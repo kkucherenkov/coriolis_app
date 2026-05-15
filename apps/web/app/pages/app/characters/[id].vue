@@ -2105,10 +2105,11 @@
   $stepper-btn-size: 32px;
   $counter-min-width: 90px;
   $stepper-min-width: 160px;
-  $panel-min-width-tablet: 200px;
-  $col-left-pct: 28%;
-  $col-center-pct: 44%;
-  $col-right-pct: 28%;
+  // Fractional units (not %): percentages summing to 100% + 24px gaps overflowed
+  // the grid container by 48px on desktop. fr distributes after gap accounting.
+  $col-left-fr: 28fr;
+  $col-center-fr: 44fr;
+  $col-right-fr: 28fr;
   $font-size-eyebrow: 11px;
   $font-size-legend: 10px;
   $font-size-micro: 9px;
@@ -2199,16 +2200,19 @@
 
     &__hero {
       display: grid;
-      grid-template-columns: $portrait-size 1fr auto;
+      // minmax(0, 1fr) on identity column lets long names ellipsis instead of
+      // forcing the hero wider than the page-sheet track.
+      grid-template-columns: $portrait-size minmax(0, 1fr) auto;
       gap: var(--space-6);
       align-items: center;
       padding: $hero-padding-v $hero-padding-h;
       background: linear-gradient(180deg, var(--surface-night) 0%, var(--surface-void) 100%);
       border: 1px solid var(--brand-brass-deep);
       border-radius: var(--radius-md);
+      min-width: 0;
 
       @media (max-width: #{$bp-mobile - 1px}) {
-        grid-template-columns: $portrait-size-mobile 1fr;
+        grid-template-columns: $portrait-size-mobile minmax(0, 1fr);
         grid-template-rows: auto auto;
         padding: var(--space-4) var(--space-5);
       }
@@ -2367,15 +2371,21 @@
 
     &__columns {
       display: grid;
-      grid-template-columns: $col-left-pct $col-center-pct $col-right-pct;
+      // minmax(0, …) lets tracks shrink below their content's intrinsic
+      // min-width, preventing a long token / non-wrapping row inside any
+      // panel from forcing horizontal page overflow on narrow viewports.
+      grid-template-columns:
+        minmax(0, $col-left-fr) minmax(0, $col-center-fr)
+        minmax(0, $col-right-fr);
       gap: $column-gap;
+      min-width: 0;
 
       @media (max-width: #{$bp-desktop - 1px}) {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       }
 
       @media (max-width: #{$bp-mobile - 1px}) {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
     }
 
@@ -2383,6 +2393,9 @@
       display: flex;
       flex-direction: column;
       gap: var(--space-5);
+      // Allow column to shrink below its content's intrinsic width so a wide
+      // panel never forces the parent grid track to overflow the viewport.
+      min-width: 0;
 
       @media (max-width: #{$bp-mobile - 1px}) {
         &--left {
@@ -2408,7 +2421,8 @@
 
       &__panel {
         flex: 1;
-        min-width: $panel-min-width-tablet;
+        // min() prevents overflow when the track is narrower than 200px
+        min-width: min(200px, 100%);
       }
     }
 
@@ -2695,7 +2709,7 @@
 
     &__attrs {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: var(--space-3);
 
       @media (max-width: #{$bp-mobile - 1px}) {
@@ -2751,11 +2765,11 @@
 
     &__skills-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       gap: var(--space-6);
 
       @media (max-width: #{$bp-mobile - 1px}) {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         gap: var(--space-4);
       }
     }
