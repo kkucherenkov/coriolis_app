@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 1.6.0
+  version: 1.7.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -49,6 +49,10 @@ tags:
     description: GM-owned non-player characters — CRUD and duplicate action
   - name: encounters
     description: GM-owned encounter containers nested under a game session — state-machine combat lifecycle
+  - name: memberships
+    description: Session membership management — join, leave, kick
+  - name: me
+    description: Authenticated user's own resources
 
 paths:
   /api/v1/characters:
@@ -2439,6 +2443,105 @@ paths:
                     instance: /api/v1/items/cuid_item01
                     code: ITEM_NOT_FOUND
 
+  # ---------------------------------------------------------------------------
+  # Invite public preview + accept (Phase 8 Stream B)
+  # ---------------------------------------------------------------------------
+
+  /api/v1/invites/{token}/preview:
+    get:
+      operationId: getInvitePreview
+      tags: [memberships]
+      summary: Public invite preview
+      description: |
+        Returns session name + GM display name. Does not require authentication.
+        If the caller is authenticated and already an active member, alreadyJoined
+        is true. Returns 404 if the token is unknown or the invite is revoked.
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Preview returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvitePreview"
+              examples:
+                ok:
+                  value:
+                    sessionName: The Mercy of Kua
+                    gmDisplayName: Kirill GM
+                    alreadyJoined: false
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "410":
+          $ref: "#/components/responses/Gone"
+
+  /api/v1/invites/{token}/accept:
+    post:
+      operationId: acceptInvite
+      tags: [memberships]
+      summary: Accept an invite link and join the session
+      description: |
+        Validates the invite token and creates a membership for the authenticated
+        caller. Idempotent — if the caller is already an active member the existing
+        membership is returned with 200. Returns 410 when the invite has been revoked.
+        An optional `characterId` may be supplied to link a character at join time.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AcceptInviteBody"
+            examples:
+              noCharacter:
+                value: {}
+              withCharacter:
+                value:
+                  characterId: cuid_char01
+      responses:
+        "200":
+          description: Joined (or already a member — idempotent)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AcceptInviteResponse"
+              examples:
+                joined:
+                  value:
+                    membership:
+                      id: cuid_mem02
+                      gameSessionId: cuid_gs01
+                      userId: cuid_user02
+                      role: player
+                      displayName: Tariq Player
+                      characterId: null
+                      characterName: null
+                      joinedAt: "2026-05-16T12:00:00Z"
+                      leftAt: null
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "410":
+          $ref: "#/components/responses/Gone"
+
   /api/v1/me:
     get:
       operationId: getMe
@@ -2692,6 +2795,49 @@ paths:
                     detail: No active session found. Sign in and retry.
                     instance: /api/v1/me/export
                     code: NO_ACTIVE_SESSION
+
+  /api/v1/me/memberships:
+    get:
+      operationId: getMyMemberships
+      tags: [me]
+      summary: List the caller's active session memberships
+      description: |
+        Returns all active (non-left) session memberships for the authenticated
+        user across all game sessions. Leaver rows (non-null `leftAt`) are excluded.
+        Includes the linked character name and ID for each membership when set.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Active memberships
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/MyMembershipSummary"
+              examples:
+                ok:
+                  value:
+                    items:
+                      - membershipId: cuid_mem01
+                        gameSessionId: cuid_gs01
+                        sessionName: The Mercy of Kua
+                        role: player
+                        characterId: cuid_char01
+                        characterName: Tariq al-Asari
+                        joinedAt: "2026-05-16T12:00:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
 
   # ---------------------------------------------------------------------------
   # NPC resource (Phase 6 Block 1)
@@ -6575,6 +6721,26 @@ paths:
                     code: ROLL_NOT_PUSHABLE
 
 components:
+  responses:
+    Gone:
+      description: Resource gone (invite revoked)
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Forbidden:
+      description: Caller is not authorised to perform this action
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+
   parameters:
     CharacterId:
       name: id
@@ -10045,6 +10211,62 @@ components:
         rotatedAt:
           type: string
           format: date-time
+
+    # -------------------------------------------------------------------------
+    # Invite preview + accept (Phase 8 Stream B)
+    # -------------------------------------------------------------------------
+
+    InvitePreview:
+      type: object
+      required: [sessionName, gmDisplayName, alreadyJoined]
+      properties:
+        sessionName:
+          type: string
+          example: The Mercy of Kua
+        gmDisplayName:
+          type: string
+          example: Kirill GM
+        alreadyJoined:
+          type: boolean
+          description: True when the authenticated caller already has an active membership.
+      description: |
+        Public preview returned before accepting an invite.
+        Contains only session name and GM display name — no session ID,
+        no member list, no liveness signal. Decision #4 in the design doc.
+
+    MyMembershipSummary:
+      type: object
+      required: [membershipId, gameSessionId, sessionName, role, joinedAt]
+      properties:
+        membershipId:
+          type: string
+        gameSessionId:
+          type: string
+        sessionName:
+          type: string
+        role:
+          $ref: "#/components/schemas/GameSessionMemberRole"
+        characterId:
+          type: ["string", "null"]
+        characterName:
+          type: ["string", "null"]
+        joinedAt:
+          type: string
+          format: date-time
+
+    AcceptInviteBody:
+      type: object
+      properties:
+        characterId:
+          type: ["string", "null"]
+          description: Optional character to link at join time.
+
+    AcceptInviteResponse:
+      type: object
+      required: [membership]
+      properties:
+        membership:
+          $ref: "#/components/schemas/GameSessionMembership"
 
     # -------------------------------------------------------------------------
     # Darkness Points (Epic 7 Feature 7.3)
