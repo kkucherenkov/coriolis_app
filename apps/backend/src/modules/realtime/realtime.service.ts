@@ -4,11 +4,12 @@
  * authenticated user is allowed to subscribe to.
  *
  * Channel allow list (embedded in the JWT `channels` claim):
- *  - session.<id>  for every GameSession owned by the user (GM role).
+ *  - session.<id>  for every GameSession the user has an active membership in
+ *    (role = 'gm' OR 'player', leftAt IS NULL).
  *  - character.<id> placeholder is reserved for Epic 8/9 player subscriptions;
  *    it is not yet populated here.
  *
- * ISessionOwnershipRepo is injected via SESSION_OWNERSHIP_REPO to avoid a
+ * ISessionAccessRepo is injected via SESSION_ACCESS_REPO to avoid a
  * circular module dependency: GameSessionsModule imports RealtimeModule (for
  * CENTRIFUGO_CLIENT), so RealtimeModule cannot import GameSessionsModule in
  * return. This narrow port keeps the layering clean.
@@ -20,10 +21,7 @@ import { I18nService } from 'nestjs-i18n';
 import { AuthService } from '../../common/auth/auth.service';
 import { AppConfig } from '../../common/config/app-config';
 import { RealtimeAuthError } from './domain/realtime.errors';
-import {
-  SESSION_OWNERSHIP_REPO,
-  type ISessionOwnershipRepo,
-} from './domain/session-ownership.port';
+import { SESSION_ACCESS_REPO, type ISessionAccessRepo } from './domain/session-ownership.port';
 
 import type { Request } from 'express';
 
@@ -38,8 +36,8 @@ export class RealtimeService {
     private readonly config: AppConfig,
     private readonly auth: AuthService,
     private readonly i18n: I18nService,
-    @Inject(SESSION_OWNERSHIP_REPO)
-    private readonly sessionOwnership: ISessionOwnershipRepo,
+    @Inject(SESSION_ACCESS_REPO)
+    private readonly sessionAccess: ISessionAccessRepo,
   ) {}
 
   async issueToken(request: Request): Promise<RealtimeToken> {
@@ -69,11 +67,11 @@ export class RealtimeService {
   /**
    * Builds the list of Centrifugo channel names this user may subscribe to.
    *
-   * GM sessions: every GameSession owned by the user maps to `session.<id>`.
+   * All active memberships (GM or player, leftAt IS NULL) map to `session.<id>`.
    * Player character channels (`character.<id>`) are deferred to Epic 8/9.
    */
   private async buildAllowedChannels(userId: string): Promise<string[]> {
-    const sessionIds = await this.sessionOwnership.findOwnedSessionIds(userId);
+    const sessionIds = await this.sessionAccess.findActiveSessionIdsForUser(userId);
     return sessionIds.map((id) => `session.${id}`);
   }
 }

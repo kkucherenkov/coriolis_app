@@ -3,20 +3,22 @@
  * Minimal read port used by RealtimeService to determine which Centrifugo
  * session channels a given user is allowed to subscribe to.
  *
- * A full IGameSessionRepo would create a circular module dependency:
+ * Renamed from ISessionOwnershipRepo (GM-only) to ISessionAccessRepo in
+ * Stream B — now covers any user with an active membership (leftAt IS NULL).
+ *
+ * The narrow-port pattern is preserved to avoid a circular module dependency:
  *   GameSessionsModule → RealtimeModule (for CENTRIFUGO_CLIENT)
  *   RealtimeModule → GameSessionsModule (for IGameSessionRepo)
- *
- * This port is intentionally narrow — only what the realtime ACL needs.
- * The adapter lives in realtime/infra/ and queries Prisma directly.
+ * The adapter queries Prisma directly in realtime/infra/.
  */
 
-export const SESSION_OWNERSHIP_REPO = Symbol('SESSION_OWNERSHIP_REPO');
+export const SESSION_ACCESS_REPO = Symbol('SESSION_ACCESS_REPO');
 
-export interface ISessionOwnershipRepo {
+export interface ISessionAccessRepo {
   /**
-   * Returns the IDs of all GameSessions owned by the given user.
+   * Returns the IDs of all GameSessions the user has an active membership in
+   * (role = 'gm' OR 'player', leftAt IS NULL).
    * Used to build the `channels` claim in the Centrifugo JWT.
    */
-  findOwnedSessionIds(userId: string): Promise<string[]>;
+  findActiveSessionIdsForUser(userId: string): Promise<string[]>;
 }

@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 
 import { CENTRIFUGO_CLIENT, CentrifugoClient } from './centrifugo.client';
-import { SESSION_OWNERSHIP_REPO } from './domain/session-ownership.port';
-import { SessionOwnershipRepo } from './infra/session-ownership.repo';
+import { SESSION_ACCESS_REPO } from './domain/session-ownership.port';
+import { SessionAccessRepo } from './infra/session-access.repo';
 import { RealtimeController } from './realtime.controller';
 import { RealtimeService } from './realtime.service';
 
@@ -11,7 +11,7 @@ import { RealtimeService } from './realtime.service';
   providers: [
     RealtimeService,
     { provide: CENTRIFUGO_CLIENT, useClass: CentrifugoClient },
-    { provide: SESSION_OWNERSHIP_REPO, useClass: SessionOwnershipRepo },
+    { provide: SESSION_ACCESS_REPO, useClass: SessionAccessRepo },
   ],
   exports: [CENTRIFUGO_CLIENT],
 })
