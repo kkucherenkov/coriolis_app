@@ -47,6 +47,12 @@
   const creating = ref(false);
   const pushing = ref(false);
   const errorMsg = ref('');
+  // SURFACES.md §9 — push can fail (no new 6s). `pushDelta` tracks the
+  // in-session outcome: count of hits gained by this push. Null until a
+  // push fires in this session. A reloaded already-pushed roll keeps the
+  // pushed badge but does NOT replay the outcome line — ritual feedback
+  // is session-scoped, not a persistent label.
+  const pushDelta = ref<number | null>(null);
 
   const labelTrimmed = computed(() => label.value.trim());
   const labelValid = computed(() => labelTrimmed.value.length > 0);
@@ -104,6 +110,7 @@
 
   async function onRoll(): Promise<void> {
     errorMsg.value = '';
+    pushDelta.value = null;
     if (!canRoll.value) return;
     creating.value = true;
     try {
@@ -125,10 +132,15 @@
   async function onPush(): Promise<void> {
     errorMsg.value = '';
     if (!canPush.value || !lastRoll.value) return;
+    // Snapshot pre-push hits so we can compute the new-successes delta.
+    // The server returns the same roll shape with updated `dice` and
+    // `hits`; the difference is "new 6s gained by the push" (≥ 0).
+    const preHits = lastRoll.value.hits;
     pushing.value = true;
     try {
       const roll = await rollsApi.pushRoll(lastRoll.value.id);
       lastRoll.value = roll;
+      pushDelta.value = roll.hits - preHits;
       emit('rollPushed', roll);
     } catch (error) {
       const problem = error as Problem;
@@ -150,6 +162,8 @@
     "rollButton": "Roll",
     "pushButton": "Push",
     "pushedBadge": "Pushed",
+    "pushFailLine": "The prayer goes unanswered — no new successes.",
+    "pushSuccessLine": "+{count} new successes",
     "exhaustedHint": "Exhausted — push not available.",
     "noRollYet": "No roll yet — describe one above.",
     "errorRoll": "Couldn't roll. Try again.",
@@ -164,6 +178,8 @@
     "rollButton": "Бросить",
     "pushButton": "Дожать",
     "pushedBadge": "Дожато",
+    "pushFailLine": "Молитва не услышана — новых успехов нет.",
+    "pushSuccessLine": "Новых успехов: +{count}",
     "exhaustedHint": "Истощение — дожать нельзя.",
     "noRollYet": "Бросков ещё нет — опиши бросок выше.",
     "errorRoll": "Не удалось бросить. Попробуй ещё раз.",
@@ -178,6 +194,8 @@
     "rollButton": "[uk-todo] Roll",
     "pushButton": "[uk-todo] Push",
     "pushedBadge": "[uk-todo] Pushed",
+    "pushFailLine": "[uk-todo] No new successes",
+    "pushSuccessLine": "[uk-todo] +{count} new successes",
     "exhaustedHint": "[uk-todo] Exhausted",
     "noRollYet": "[uk-todo] No roll yet",
     "errorRoll": "[uk-todo] Roll failed",
@@ -192,6 +210,8 @@
     "rollButton": "[el-todo] Roll",
     "pushButton": "[el-todo] Push",
     "pushedBadge": "[el-todo] Pushed",
+    "pushFailLine": "[el-todo] No new successes",
+    "pushSuccessLine": "[el-todo] +{count} new successes",
     "exhaustedHint": "[el-todo] Exhausted",
     "noRollYet": "[el-todo] No roll yet",
     "errorRoll": "[el-todo] Roll failed",
@@ -277,6 +297,28 @@
         size="md"
         tone="brass"
       />
+      <!--
+        SURFACES.md §9 — pushed outcome line. Renders only after an
+        in-session push (pushDelta !== null). Failure variant
+        (delta === 0) uses the darker brass-shadow divider per spec;
+        success variant uses mystic-teal.
+      -->
+      <p
+        v-if="pushDelta === 0"
+        class="dice-roller__push-outcome dice-roller__push-outcome--fail"
+        data-testid="sheet-dice-roller-push-fail"
+        role="status"
+      >
+        {{ t('pushFailLine') }}
+      </p>
+      <p
+        v-else-if="pushDelta !== null && pushDelta > 0"
+        class="dice-roller__push-outcome dice-roller__push-outcome--success"
+        data-testid="sheet-dice-roller-push-success"
+        role="status"
+      >
+        {{ t('pushSuccessLine', { count: pushDelta }) }}
+      </p>
       <div class="dice-roller__push-row">
         <AppButton
           type="button"
@@ -376,6 +418,27 @@
       color: var(--state-mystic-teal);
       text-transform: uppercase;
       letter-spacing: 0.1em;
+    }
+
+    &__push-outcome {
+      // SURFACES.md §9 — pushed-state outcome line. The top border IS the
+      // divider; the fail variant darkens it to brass-shadow per spec.
+      margin: var(--space-2) 0 0;
+      padding-top: var(--space-3);
+      border-top: 1px solid var(--brand-brass-deep);
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+      text-align: center;
+
+      &--fail {
+        border-top-color: var(--brand-brass-shadow);
+        color: var(--brand-brass-deep);
+        font-style: italic;
+      }
+
+      &--success {
+        color: var(--state-mystic-teal);
+      }
     }
 
     &__push-row {
