@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
-import 'package:coriolis_companion/features/sessions/presentation/blocs/session_detail/session_detail_state.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/session_repository.dart';
+import 'package:coriolis_companion/features/game_sessions/presentation/blocs/session_detail/session_detail_state.dart';
 import 'package:coriolis_companion/shared/realtime/session_realtime.dart';
 
 /// Drives the session detail page (Phase 4 Block 3 mobile).

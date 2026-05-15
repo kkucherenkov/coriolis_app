@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:coriolis_companion/app/routes.dart';
-import 'package:coriolis_companion/features/sessions/domain/game_session.dart';
-import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
-import 'package:coriolis_companion/features/sessions/presentation/blocs/sessions_list/sessions_list_cubit.dart';
-import 'package:coriolis_companion/features/sessions/presentation/blocs/sessions_list/sessions_list_state.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/game_session.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/session_repository.dart';
+import 'package:coriolis_companion/features/game_sessions/presentation/blocs/sessions_list/sessions_list_cubit.dart';
+import 'package:coriolis_companion/features/game_sessions/presentation/blocs/sessions_list/sessions_list_state.dart';
 import 'package:coriolis_companion/shared/di/injector.dart';
 
 /// Sessions index — tabbed (active / archived) list with per-row Open

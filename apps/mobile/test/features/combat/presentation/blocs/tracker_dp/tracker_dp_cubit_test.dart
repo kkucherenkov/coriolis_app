@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:coriolis_companion/features/combat/presentation/blocs/tracker_dp/tracker_dp_cubit.dart';
-import 'package:coriolis_companion/features/sessions/domain/game_session.dart';
-import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/game_session.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/session_repository.dart';
 
 class _MockSessionRepository extends Mock implements SessionRepository {}
 

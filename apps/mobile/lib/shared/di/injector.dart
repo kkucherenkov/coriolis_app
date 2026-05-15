@@ -28,10 +28,10 @@ import 'package:coriolis_companion/features/combat/domain/combat_repository.dart
 import 'package:coriolis_companion/features/npcs/data/npc_repository_impl.dart';
 import 'package:coriolis_companion/features/npcs/domain/npc_repository.dart';
 import 'package:coriolis_companion/features/combat/presentation/blocs/active_combat/active_combat_cubit.dart';
-import 'package:coriolis_companion/features/sessions/data/session_repository_impl.dart';
-import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
-import 'package:coriolis_companion/features/sessions/presentation/blocs/session_detail/session_detail_cubit.dart';
-import 'package:coriolis_companion/features/sessions/presentation/blocs/sessions_list/sessions_list_cubit.dart';
+import 'package:coriolis_companion/features/game_sessions/data/session_repository_impl.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/session_repository.dart';
+import 'package:coriolis_companion/features/game_sessions/presentation/blocs/session_detail/session_detail_cubit.dart';
+import 'package:coriolis_companion/features/game_sessions/presentation/blocs/sessions_list/sessions_list_cubit.dart';
 import 'package:coriolis_companion/features/ships/data/ship_repository_impl.dart';
 import 'package:coriolis_companion/features/ships/domain/ship_repository.dart';
 import 'package:coriolis_companion/features/ships/presentation/blocs/ship_create/ship_create_cubit.dart';

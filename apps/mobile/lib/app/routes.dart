@@ -8,9 +8,9 @@ import 'package:coriolis_companion/features/characters/presentation/pages/charac
 import 'package:coriolis_companion/features/characters/presentation/pages/characters_list_page.dart';
 import 'package:coriolis_companion/features/combat/presentation/blocs/active_combat/active_combat_cubit.dart';
 import 'package:coriolis_companion/features/combat/presentation/pages/combat_tracker_page.dart';
-import 'package:coriolis_companion/features/sessions/presentation/pages/session_detail_page.dart';
+import 'package:coriolis_companion/features/game_sessions/presentation/pages/session_detail_page.dart';
 import 'package:coriolis_companion/shared/di/injector.dart';
-import 'package:coriolis_companion/features/sessions/presentation/pages/sessions_list_page.dart';
+import 'package:coriolis_companion/features/game_sessions/presentation/pages/sessions_list_page.dart';
 import 'package:coriolis_companion/features/settings/presentation/settings_screen.dart';
 import 'package:coriolis_companion/features/ships/presentation/blocs/ship_create/ship_create_cubit.dart';
 import 'package:coriolis_companion/features/ships/presentation/pages/ship_create_page.dart';

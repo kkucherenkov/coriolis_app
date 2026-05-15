@@ -12,7 +12,7 @@ import 'package:coriolis_companion/features/combat/presentation/blocs/tracker_dp
 import 'package:coriolis_companion/features/combat/presentation/pages/combat_tracker_page.dart';
 import 'package:coriolis_companion/features/npcs/domain/npc_repository.dart';
 import 'package:coriolis_companion/features/npcs/domain/npc_summary.dart';
-import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/session_repository.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
 import 'package:coriolis_companion/shared/di/injector.dart';
 

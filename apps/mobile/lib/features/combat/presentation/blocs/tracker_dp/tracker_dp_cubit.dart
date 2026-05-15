@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/session_repository.dart';
 
 /// DP-pool sub-state on the combat tracker.
 ///

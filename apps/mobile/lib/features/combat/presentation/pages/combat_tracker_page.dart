@@ -10,7 +10,7 @@ import 'package:coriolis_companion/features/combat/domain/combatant.dart';
 import 'package:coriolis_companion/features/combat/domain/encounter.dart';
 import 'package:coriolis_companion/features/combat/presentation/blocs/active_combat/active_combat_cubit.dart';
 import 'package:coriolis_companion/features/combat/presentation/blocs/tracker_dp/tracker_dp_cubit.dart';
-import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/session_repository.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
 import 'package:coriolis_companion/shared/di/injector.dart';
 import 'package:coriolis_companion/shared/realtime/session_realtime.dart';

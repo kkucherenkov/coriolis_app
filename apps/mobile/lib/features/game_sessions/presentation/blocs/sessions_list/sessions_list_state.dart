@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import 'package:coriolis_companion/features/sessions/domain/game_session.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/game_session.dart';
 
 enum SessionsListStatus { loading, loaded, empty, error }
 

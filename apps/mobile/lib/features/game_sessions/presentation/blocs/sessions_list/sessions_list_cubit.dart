@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
-import 'package:coriolis_companion/features/sessions/presentation/blocs/sessions_list/sessions_list_state.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/session_repository.dart';
+import 'package:coriolis_companion/features/game_sessions/presentation/blocs/sessions_list/sessions_list_state.dart';
 
 /// Drives the sessions index screen (Phase 4 Block 3 mobile).
 ///

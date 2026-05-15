@@ -9,8 +9,8 @@ import 'package:app_api_client/app_api_client.dart' as api_client
         DpAdjustment,
         DpEvent;
 
-import 'package:coriolis_companion/features/sessions/domain/game_session.dart';
-import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/game_session.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/session_repository.dart';
 
 /// Adapter bridging `GameSessionsApi` (which on the Dart side hosts the
 /// DP endpoints too — `adjustDp`, `listDpEvents`) with the domain

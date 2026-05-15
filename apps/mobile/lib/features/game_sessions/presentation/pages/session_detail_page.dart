@@ -8,10 +8,10 @@ import 'package:coriolis_companion/app/routes.dart';
 import 'package:coriolis_companion/features/auth/domain/auth_repository.dart';
 import 'package:coriolis_companion/features/combat/presentation/blocs/active_combat/active_combat_cubit.dart';
 import 'package:coriolis_companion/features/combat/presentation/widgets/active_combat_card.dart';
-import 'package:coriolis_companion/features/sessions/domain/game_session.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/game_session.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
-import 'package:coriolis_companion/features/sessions/presentation/blocs/session_detail/session_detail_cubit.dart';
-import 'package:coriolis_companion/features/sessions/presentation/blocs/session_detail/session_detail_state.dart';
+import 'package:coriolis_companion/features/game_sessions/presentation/blocs/session_detail/session_detail_cubit.dart';
+import 'package:coriolis_companion/features/game_sessions/presentation/blocs/session_detail/session_detail_state.dart';
 import 'package:coriolis_companion/shared/di/injector.dart';
 import 'package:coriolis_companion/shared/realtime/session_realtime.dart';
 

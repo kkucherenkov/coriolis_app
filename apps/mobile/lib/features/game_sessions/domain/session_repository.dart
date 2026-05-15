@@ -1,4 +1,4 @@
-import 'package:coriolis_companion/features/sessions/domain/game_session.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/game_session.dart';
 
 /// Repository contract for game sessions (Phase 4 Features 7.2 + 7.3).
 ///
