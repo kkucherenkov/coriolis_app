@@ -96,6 +96,20 @@ function canonicalFlagIcon(flag: CanonicalFlag): string {
   return 'i-heroicons-shield-exclamation';
 }
 
+// ── Row-state helpers (T-AUDIT-2026-05-15-COMBAT-ROW-STATES) ─────────────────
+// Mirror the in-component helpers verbatim. Boss = NPC + case-insensitive
+// "boss" status-flag literal. Low HP = hpMax > 0 && hpCurrent / hpMax < 0.4.
+
+function isBossNpc(combatant: Combatant): boolean {
+  if (combatant.combatantType !== 'npc') return false;
+  return combatant.statusFlags.some((f) => f.toLowerCase() === 'boss');
+}
+
+function isLowHp(combatant: Combatant): boolean {
+  if (combatant.hpMax <= 0) return false;
+  return combatant.hpCurrent / combatant.hpMax < 0.4;
+}
+
 describe('CombatTracker — canonical chip logic', () => {
   it('incapacitated is canonical', () => {
     expect(isCanonical('incapacitated')).toBe(true);
@@ -596,5 +610,61 @@ describe('CombatTracker — removes combatant via SDK', () => {
     };
     const mock = vi.fn().mockResolvedValue({ data: undefined, error: problem });
     await expect(removeCombatantViaApi(mock, 'cbt-001')).rejects.toMatchObject({ status: 422 });
+  });
+});
+
+// ── Row-state helpers ────────────────────────────────────────────────────────
+
+describe('CombatTracker — isBossNpc (T-AUDIT-2026-05-15)', () => {
+  it('returns false for any PC, even with "boss" flag set', () => {
+    const pc = makeCombatant({ combatantType: 'pc', statusFlags: ['boss'] });
+    expect(isBossNpc(pc)).toBe(false);
+  });
+
+  it('returns true for an NPC with the literal "boss" flag', () => {
+    const npc = makeCombatant({ combatantType: 'npc', statusFlags: ['boss'] });
+    expect(isBossNpc(npc)).toBe(true);
+  });
+
+  it('matches the flag case-insensitively', () => {
+    expect(isBossNpc(makeCombatant({ statusFlags: ['BOSS'] }))).toBe(true);
+    expect(isBossNpc(makeCombatant({ statusFlags: ['Boss'] }))).toBe(true);
+  });
+
+  it('returns false for an NPC without a boss flag', () => {
+    expect(isBossNpc(makeCombatant({ statusFlags: [] }))).toBe(false);
+    expect(isBossNpc(makeCombatant({ statusFlags: ['prone', 'bleeding'] }))).toBe(false);
+  });
+
+  it('does not match partial substrings like "boss-monster"', () => {
+    // Free-form GM-set flag — only the exact literal counts. Partial-match
+    // would surprise a GM who types descriptive flags like "boss-room-only".
+    expect(isBossNpc(makeCombatant({ statusFlags: ['boss-monster'] }))).toBe(false);
+  });
+});
+
+describe('CombatTracker — isLowHp (T-AUDIT-2026-05-15)', () => {
+  it('triggers when hpCurrent / hpMax < 0.4', () => {
+    expect(isLowHp(makeCombatant({ hpCurrent: 3, hpMax: 8 }))).toBe(true); // 0.375
+  });
+
+  it('does not trigger at exactly 0.4', () => {
+    // Spec is "< 40%" so the inclusive 40% boundary stays neutral.
+    expect(isLowHp(makeCombatant({ hpCurrent: 4, hpMax: 10 }))).toBe(false);
+  });
+
+  it('triggers for negative hpCurrent (damage-overflow display)', () => {
+    // Schema allows negative hpCurrent so the GM tracker can show overflow.
+    expect(isLowHp(makeCombatant({ hpCurrent: -3, hpMax: 5 }))).toBe(true);
+  });
+
+  it('returns false when hpMax is zero (malformed record guard)', () => {
+    // Divide-by-zero guard. Real combatants are required to have hpMax >= 1
+    // per the OpenAPI schema; this is defensive.
+    expect(isLowHp(makeCombatant({ hpCurrent: 0, hpMax: 0 }))).toBe(false);
+  });
+
+  it('returns false at full HP', () => {
+    expect(isLowHp(makeCombatant({ hpCurrent: 8, hpMax: 8 }))).toBe(false);
   });
 });

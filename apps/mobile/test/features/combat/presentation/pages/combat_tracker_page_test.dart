@@ -468,4 +468,82 @@ void main() {
           )).called(1);
     });
   });
+
+  // ── Row-state helpers (T-AUDIT-2026-05-15-COMBAT-ROW-STATES) ───────────────
+
+  group('isBossNpc', () {
+    Combatant fixture({String source = 'npc', List<String> flags = const []}) {
+      return Combatant(
+        id: 'c',
+        encounterId: 'e',
+        source: source,
+        sourceId: 's',
+        displayName: 'X',
+        hpCurrent: 5,
+        hpMax: 5,
+        armor: 0,
+        signature: 0,
+        statusFlags: flags,
+      );
+    }
+
+    test('false for any PC even with "boss" flag', () {
+      expect(isBossNpc(fixture(source: 'pc', flags: ['boss'])), isFalse);
+    });
+
+    test('true for an NPC with the literal "boss" flag', () {
+      expect(isBossNpc(fixture(flags: ['boss'])), isTrue);
+    });
+
+    test('matches case-insensitively', () {
+      expect(isBossNpc(fixture(flags: ['BOSS'])), isTrue);
+      expect(isBossNpc(fixture(flags: ['Boss'])), isTrue);
+    });
+
+    test('false for an NPC without a boss flag', () {
+      expect(isBossNpc(fixture(flags: const [])), isFalse);
+      expect(isBossNpc(fixture(flags: ['prone', 'bleeding'])), isFalse);
+    });
+
+    test('does not match partial substrings like "boss-monster"', () {
+      expect(isBossNpc(fixture(flags: ['boss-monster'])), isFalse);
+    });
+  });
+
+  group('isLowHp', () {
+    Combatant fixture({required int hpCurrent, required int hpMax}) {
+      return Combatant(
+        id: 'c',
+        encounterId: 'e',
+        source: 'npc',
+        sourceId: 's',
+        displayName: 'X',
+        hpCurrent: hpCurrent,
+        hpMax: hpMax,
+        armor: 0,
+        signature: 0,
+        statusFlags: const [],
+      );
+    }
+
+    test('triggers when hpCurrent / hpMax < 0.4', () {
+      expect(isLowHp(fixture(hpCurrent: 3, hpMax: 8)), isTrue); // 0.375
+    });
+
+    test('does not trigger at exactly 0.4', () {
+      expect(isLowHp(fixture(hpCurrent: 4, hpMax: 10)), isFalse);
+    });
+
+    test('triggers for negative hpCurrent (damage-overflow display)', () {
+      expect(isLowHp(fixture(hpCurrent: -3, hpMax: 5)), isTrue);
+    });
+
+    test('returns false when hpMax is zero (malformed record guard)', () {
+      expect(isLowHp(fixture(hpCurrent: 0, hpMax: 0)), isFalse);
+    });
+
+    test('returns false at full HP', () {
+      expect(isLowHp(fixture(hpCurrent: 8, hpMax: 8)), isFalse);
+    });
+  });
 }

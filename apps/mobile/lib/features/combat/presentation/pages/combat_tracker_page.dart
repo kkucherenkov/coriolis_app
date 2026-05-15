@@ -495,6 +495,25 @@ class _ReadyBody extends StatelessWidget {
   }
 }
 
+// ── Row-state helpers (T-AUDIT-2026-05-15-COMBAT-ROW-STATES) ────────────────
+
+/// Boss NPC visual state — name renders in [AppColors.stateCrimsonBright]
+/// per SURFACES.md §8. Triggered by a case-insensitive free-form status
+/// flag literal "boss" applied by the GM. PCs never qualify.
+bool isBossNpc(Combatant c) {
+  if (c.source != 'npc') return false;
+  return c.statusFlags.any((f) => f.toLowerCase() == 'boss');
+}
+
+/// Low HP visual state — HP value tints crimson-bright when
+/// hpCurrent / hpMax < 0.4 per SURFACES.md §8. Negative hpCurrent (allowed
+/// by the schema for damage-overflow display) also triggers the tint via
+/// the same ratio. Guards hpMax <= 0 to avoid divide-by-zero.
+bool isLowHp(Combatant c) {
+  if (c.hpMax <= 0) return false;
+  return c.hpCurrent / c.hpMax < 0.4;
+}
+
 // ── Combatant row ───────────────────────────────────────────────────────────
 
 class _CombatantRow extends StatelessWidget {
@@ -516,6 +535,15 @@ class _CombatantRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.t.combat;
 
+    // Boss NPC: name renders in crimson-bright per SURFACES.md §8 — overrides
+    // the active/inactive default color. The active row still gets its own
+    // semibold + Semantics liveRegion treatment.
+    final boss = isBossNpc(combatant);
+    final activeColor =
+        boss ? AppColors.stateCrimsonBright : AppColors.textPrimary;
+    final inactiveColor =
+        boss ? AppColors.stateCrimsonBright : AppColors.textSecondary;
+
     final nameWidget = isActive
         ? Semantics(
             label: t.semanticsCurrentTurn(name: combatant.displayName),
@@ -524,7 +552,7 @@ class _CombatantRow extends StatelessWidget {
             child: Text(
               combatant.displayName,
               style: AppTypography.bodyMd.copyWith(
-                color: AppColors.textPrimary,
+                color: activeColor,
                 fontWeight: AppFontWeight.semibold,
               ),
             ),
@@ -532,7 +560,8 @@ class _CombatantRow extends StatelessWidget {
         : Text(
             combatant.displayName,
             style: AppTypography.bodyMd.copyWith(
-              color: AppColors.textSecondary,
+              color: inactiveColor,
+              fontWeight: boss ? AppFontWeight.semibold : null,
             ),
           );
 
@@ -575,6 +604,7 @@ class _CombatantRow extends StatelessWidget {
                         current: combatant.hpCurrent,
                         max: combatant.hpMax,
                       ),
+                      lowHp: isLowHp(combatant),
                     ),
                     const SizedBox(width: AppSpacing.s3),
                     _StatLabel(
@@ -649,6 +679,7 @@ class _StatLabel extends StatelessWidget {
     required this.value,
     required this.max,
     required this.semanticsLabel,
+    this.lowHp = false,
   });
 
   final String label;
@@ -656,9 +687,18 @@ class _StatLabel extends StatelessWidget {
   final int? max;
   final String semanticsLabel;
 
+  /// SURFACES.md §8 — Low-HP HP value (current/max < 0.4) renders in
+  /// crimson-bright + bold weight. Only meaningful for the HP _StatLabel
+  /// (the caller is responsible for passing [isLowHp]); other stat rows
+  /// pass the default `false`.
+  final bool lowHp;
+
   @override
   Widget build(BuildContext context) {
     final display = max != null ? '$value/$max' : '$value';
+    final valueColor =
+        lowHp ? AppColors.stateCrimsonBright : AppColors.textPrimary;
+    final valueWeight = lowHp ? AppFontWeight.bold : null;
     return Semantics(
       label: semanticsLabel,
       excludeSemantics: true,
@@ -676,8 +716,9 @@ class _StatLabel extends StatelessWidget {
             TextSpan(
               text: display,
               style: AppTypography.monoStatMd.copyWith(
-                color: AppColors.textPrimary,
+                color: valueColor,
                 fontSize: 13,
+                fontWeight: valueWeight,
               ),
             ),
           ],

@@ -1,6 +1,41 @@
 # Active tasks
 
-LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md). Typography schema (T-2026-05-14-002), the v1 atom layer (T-2026-05-14-003), and the design-doc backfill (T-2026-05-14-006) have all landed (see `done.md`). The remaining surface-layer tasks are T-2026-05-14-005 (wizard / mobile parity / landing) and T-2026-05-14-004 (Bridge dashboard) — both unblocked.
+LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md) (prior audit) and [`docs/audits/design-2026-05-15.md`](../../docs/audits/design-2026-05-15.md) (re-audit after T-2026-05-14-005/004 shipped). Typography schema (T-2026-05-14-002), the v1 atom layer (T-2026-05-14-003), and the design-doc backfill (T-2026-05-14-006) have all landed (see `done.md`). The remaining surface-layer tasks are T-2026-05-14-005 (wizard / mobile parity / landing) and T-2026-05-14-004 (Bridge dashboard) — both shipped.
+
+---
+
+## T-2026-05-15-AUDIT — Design / UI audit vs handoff 2026-05-14
+
+- Created: 2026-05-15
+- Owner: claude
+- Spec: [`docs/audits/design-2026-05-15.md`](../../docs/audits/design-2026-05-15.md)
+- Goal: re-audit design system against `Coriolis App-handoff.zip` after T-2026-05-14-005 + T-2026-05-14-004 shipped; verify atoms / tokens / surfaces still align, surface NEW gaps, defer Phase 8.
+- Acceptance:
+  - Token diff covers all 8 files (`color`, `typography`, `motion`, `opacity`, `radius`, `shadow`, `spacing`, `z-index`); canonical `jq -cS` parity verified for 6/8.
+  - Every atom row in `HANDOFF_NAME_MAP.md` §Atom-layer reverified against current `packages/ui/src/components/`.
+  - Phase 8 (chat / whisper / invite / presence / session-join / player-session) coverage explicitly catalogued (expected: still cold).
+  - State-matrix spot-check on combat tracker, dice roller, share viewer, landing, wizard ordering.
+  - Audit doc lands at `docs/audits/design-2026-05-15.md` with prioritised follow-up list.
+- Spec diff: —
+- Codegen impact: —
+- Design impact: documents `AppDivider` as a new project-only atom (needs row append in `HANDOFF_NAME_MAP.md` §CSS-class layer).
+- Tests: —
+- Sub-steps:
+  - [x] Extract `Coriolis App-handoff.zip` to `/tmp/coriolis-handoff/`; inventory the 9 docs + 8 token files + 21 JSX screens.
+  - [x] Token diff via `jq -cS` per file. 6/8 byte-identical; `color.json` drift = Phase 8 (defer); `typography.json` = ADR-0004-deferred schema vocabulary.
+  - [x] Atom-layer re-verification — every row in `HANDOFF_NAME_MAP.md` §Atom-layer + CSS-class layer spot-checked against `packages/ui/src/components/<Atom>/<Atom>.vue:line`. No new drift since 2026-05-14; `AppDivider` surfaced as new project-only atom.
+  - [x] Phase 8 surface inventory — 9 surfaces still not started; chat/whisper/invite/presence/focus-ring tokens still missing from `color.json`; no chat atoms in `@app/ui`; OpenAPI + AsyncAPI carry zero chat/whisper/invite/presence ops.
+  - [x] State-matrix spot-check — wizard 8-step ordering canonical on web + mobile; Bridge + landing shipped; combat tracker missing boss-NPC + low-HP row tints (web `CombatTracker.vue:1014–1025`); dice roller missing pushed-fail branch (`SheetDiceRoller.vue:125–139`, `dice_bottom_sheet.dart:110–113`); share viewer view-only triad partial (`AppShareViewer.vue:164–170` parchment-banner variant).
+  - [x] Audit doc written: [`docs/audits/design-2026-05-15.md`](../../docs/audits/design-2026-05-15.md).
+- Follow-ups (audit §6):
+  - [x] **T-AUDIT-2026-05-15-COMBAT-ROW-STATES — done.** Boss-NPC name and low-HP HP value now render in `--state-crimson-bright` on both web (`CombatTracker.vue` — new `isBossNpc` / `isLowHp` helpers; `combat-tracker__name--boss` + `combat-tracker__hp--low` BEM modifiers; SCSS hooks) and mobile (`combat_tracker_page.dart` — same helpers; `_CombatantRow` overrides active/inactive name color when boss; `_StatLabel.lowHp` flag swaps value TextSpan colour + weight on HP). Discriminator decision: case-insensitive free-form status flag literal `boss` applied by the GM via the existing add-flag input (no spec change, no new canonical flag, exact-literal match — partial substrings like `boss-monster` do not trigger). Low-HP boundary: strict `<` 0.4; negative `hpCurrent` (damage overflow) triggers via the same ratio; guarded against `hpMax <= 0`. Tests: +5 web Vitest helpers, +10 mobile (5 isBossNpc + 5 isLowHp). Full web Vitest (68/68 in CombatTracker.spec.ts) + full mobile `flutter test` (248/248) + web `pnpm --filter @app/web typecheck` pass. _Block 2, 2026-05-15._
+  - **T-AUDIT-2026-05-15-DICE-PUSH-FAIL** — pushed-fail branch (darker divider + "no new successes") on both clients.
+  - **T-AUDIT-2026-05-15-MODAL-BACKDROP-DEFAULT** — flip `AppModal.closeOnBackdrop` default `true` → `false`; audit every call site.
+  - **T-AUDIT-2026-05-15-STAR-VARIANT** — `AppStarOrnament.variant: 'outlined' | 'filled'`.
+  - **T-AUDIT-2026-05-15-SHARE-VIEWER-VIEWONLY** — decide spec vs code; either whitelist parchment-banner variant in `PATTERNS.md §12` or add in-card dashed-border note.
+  - **T-AUDIT-2026-05-15-DIVIDER-MAP-ROW** — append `AppDivider` to `HANDOFF_NAME_MAP.md` §CSS-class layer (status `aligned`).
+- Status: shipped (audit only — follow-up implementations are separate tasks).
+- Blockers: —
 
 ---
 
