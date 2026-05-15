@@ -17,12 +17,13 @@ import {
   GameSessionNotOwnerError,
 } from '../../game-sessions/domain/game-session.errors';
 
+import { toMembershipReadModel } from '../domain/membership.mapper';
+
 import type {
   IGameSessionInviteRepo,
   IMembershipRepo,
   InviteMetadataReadModel,
   MembershipReadModel,
-  MembershipRole,
 } from '../domain/membership.ports';
 
 const MEMBERSHIP_SELECT = {
@@ -36,31 +37,6 @@ const MEMBERSHIP_SELECT = {
   character: { select: { name: true } },
 } as const;
 
-interface PrismaMembership {
-  id: string;
-  gameSessionId: string;
-  userId: string;
-  role: string;
-  characterId: string | null;
-  joinedAt: Date;
-  leftAt: Date | null;
-  character: { name: string } | null;
-}
-
-function toReadModel(row: PrismaMembership, displayName: string | null): MembershipReadModel {
-  return {
-    id: row.id,
-    gameSessionId: row.gameSessionId,
-    userId: row.userId,
-    role: row.role as MembershipRole,
-    displayName,
-    characterId: row.characterId,
-    characterName: row.character?.name ?? null,
-    joinedAt: row.joinedAt.toISOString(),
-    leftAt: row.leftAt?.toISOString() ?? null,
-  };
-}
-
 @Injectable()
 export class MembershipRepo implements IMembershipRepo, IGameSessionInviteRepo {
   constructor(private readonly prisma: PrismaService) {}
@@ -72,7 +48,7 @@ export class MembershipRepo implements IMembershipRepo, IGameSessionInviteRepo {
       select: MEMBERSHIP_SELECT,
     });
     const users = await this.fetchDisplayNames(rows.map((r) => r.userId));
-    return rows.map((r) => toReadModel(r, users.get(r.userId) ?? null));
+    return rows.map((r) => toMembershipReadModel(r, users.get(r.userId) ?? null));
   }
 
   async findById(id: string): Promise<MembershipReadModel | null> {
@@ -82,7 +58,7 @@ export class MembershipRepo implements IMembershipRepo, IGameSessionInviteRepo {
     });
     if (!row) return null;
     const users = await this.fetchDisplayNames([row.userId]);
-    return toReadModel(row, users.get(row.userId) ?? null);
+    return toMembershipReadModel(row, users.get(row.userId) ?? null);
   }
 
   async findActiveByUser(
@@ -95,7 +71,7 @@ export class MembershipRepo implements IMembershipRepo, IGameSessionInviteRepo {
     });
     if (!row) return null;
     const users = await this.fetchDisplayNames([userId]);
-    return toReadModel(row, users.get(userId) ?? null);
+    return toMembershipReadModel(row, users.get(userId) ?? null);
   }
 
   async softDelete(id: string): Promise<void> {
@@ -112,7 +88,7 @@ export class MembershipRepo implements IMembershipRepo, IGameSessionInviteRepo {
       select: MEMBERSHIP_SELECT,
     });
     const users = await this.fetchDisplayNames([row.userId]);
-    return toReadModel(row, users.get(row.userId) ?? null);
+    return toMembershipReadModel(row, users.get(row.userId) ?? null);
   }
 
   async assertOwner(gameSessionId: string, userId: string): Promise<void> {

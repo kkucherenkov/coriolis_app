@@ -41,6 +41,7 @@ function makeSession(overrides: Partial<GameSessionReadModel> = {}): GameSession
     status: 'active',
     dpCount: 3,
     characterIds: [],
+    memberships: [],
     shipId: null,
     createdAt: '2026-05-09T10:00:00.000Z',
     updatedAt: '2026-05-09T10:00:00.000Z',

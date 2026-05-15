@@ -9,6 +9,8 @@
  * characterIds is assembled by the repo from the join table.
  */
 
+import type { MembershipReadModel } from '../../memberships/domain/membership.ports';
+
 export type GameSessionStatus = 'active' | 'archived';
 
 export interface GameSessionReadModel {
@@ -18,7 +20,8 @@ export interface GameSessionReadModel {
   description: string | null;
   status: GameSessionStatus;
   dpCount: number;
-  characterIds: string[];
+  characterIds: string[]; // deprecated, removed in Stream E
+  memberships: MembershipReadModel[];
   shipId: string | null;
   createdAt: string; // ISO-8601
   updatedAt: string; // ISO-8601

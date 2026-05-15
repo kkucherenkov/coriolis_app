@@ -16,6 +16,7 @@ import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../../common/prisma/prisma.service';
 import { CharacterNotOwnedError } from '../domain/game-session.errors';
+import { toMembershipReadModel } from '../../memberships/domain/membership.mapper';
 
 import type {
   GameSessionReadModel,
@@ -23,6 +24,7 @@ import type {
   IGameSessionRepo,
   ListGameSessionsOptions,
 } from '../domain/game-session.ports';
+import type { MembershipReadModel } from '../../memberships/domain/membership.ports';
 
 // --------------- Select shape ---------------
 
@@ -38,11 +40,36 @@ const GAME_SESSION_SELECT = {
     select: { characterId: true },
     orderBy: { assignedAt: 'asc' as const },
   },
+  memberships: {
+    where: { leftAt: null },
+    orderBy: { joinedAt: 'asc' as const },
+    select: {
+      id: true,
+      gameSessionId: true,
+      userId: true,
+      role: true,
+      characterId: true,
+      joinedAt: true,
+      leftAt: true,
+      character: { select: { name: true } },
+    },
+  },
   createdAt: true,
   updatedAt: true,
 } as const;
 
 // --------------- Mapper ---------------
+
+interface PrismaGameSessionMembershipRow {
+  id: string;
+  gameSessionId: string;
+  userId: string;
+  role: string;
+  characterId: string | null;
+  joinedAt: Date;
+  leftAt: Date | null;
+  character: { name: string } | null;
+}
 
 interface PrismaGameSession {
   id: string;
@@ -53,6 +80,7 @@ interface PrismaGameSession {
   dpCount: number;
   shipId: string | null;
   characters: { characterId: string }[];
+  memberships: PrismaGameSessionMembershipRow[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -61,7 +89,10 @@ function toStatus(s: string): GameSessionStatus {
   return s.toLowerCase() as GameSessionStatus;
 }
 
-function toReadModel(row: PrismaGameSession): GameSessionReadModel {
+function buildReadModel(
+  row: PrismaGameSession,
+  memberships: MembershipReadModel[],
+): GameSessionReadModel {
   return {
     id: row.id,
     ownerId: row.ownerId,
@@ -70,6 +101,7 @@ function toReadModel(row: PrismaGameSession): GameSessionReadModel {
     status: toStatus(row.status),
     dpCount: row.dpCount,
     characterIds: row.characters.map((c) => c.characterId),
+    memberships,
     shipId: row.shipId,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
@@ -87,7 +119,8 @@ export class GameSessionRepo implements IGameSessionRepo {
       where: { id },
       select: GAME_SESSION_SELECT,
     });
-    return row ? toReadModel(row) : null;
+    if (!row) return null;
+    return buildReadModel(row, await this.mapMemberships(row.memberships));
   }
 
   async list(
@@ -112,8 +145,17 @@ export class GameSessionRepo implements IGameSessionRepo {
     const hasNext = rows.length > limit;
     const items = hasNext ? rows.slice(0, limit) : rows;
 
+    // Collect all userIds across all sessions in one batch
+    const allUserIds = items.flatMap((r) => r.memberships.map((m) => m.userId));
+    const displayNames = await this.fetchDisplayNames(allUserIds);
+
     return {
-      items: items.map((r) => toReadModel(r)),
+      items: items.map((r) =>
+        buildReadModel(
+          r,
+          r.memberships.map((m) => toMembershipReadModel(m, displayNames.get(m.userId) ?? null)),
+        ),
+      ),
       nextCursor: hasNext ? (items.at(-1)?.id ?? null) : null,
     };
   }
@@ -133,7 +175,7 @@ export class GameSessionRepo implements IGameSessionRepo {
       },
       select: GAME_SESSION_SELECT,
     });
-    return toReadModel(row);
+    return buildReadModel(row, await this.mapMemberships(row.memberships));
   }
 
   async update(
@@ -156,7 +198,7 @@ export class GameSessionRepo implements IGameSessionRepo {
       data: updatePayload,
       select: GAME_SESSION_SELECT,
     });
-    return toReadModel(row);
+    return buildReadModel(row, await this.mapMemberships(row.memberships));
   }
 
   async delete(id: string): Promise<void> {
@@ -197,7 +239,7 @@ export class GameSessionRepo implements IGameSessionRepo {
       where: { id: gameSessionId },
       select: GAME_SESSION_SELECT,
     });
-    return toReadModel(row);
+    return buildReadModel(row, await this.mapMemberships(row.memberships));
   }
 
   async unassignCharacter(gameSessionId: string, characterId: string): Promise<void> {
@@ -205,5 +247,22 @@ export class GameSessionRepo implements IGameSessionRepo {
     await this.prisma.characterGameSession.deleteMany({
       where: { characterId, gameSessionId },
     });
+  }
+
+  private async mapMemberships(
+    rows: PrismaGameSessionMembershipRow[],
+  ): Promise<MembershipReadModel[]> {
+    if (rows.length === 0) return [];
+    const displayNames = await this.fetchDisplayNames(rows.map((r) => r.userId));
+    return rows.map((r) => toMembershipReadModel(r, displayNames.get(r.userId) ?? null));
+  }
+
+  private async fetchDisplayNames(userIds: string[]): Promise<Map<string, string | null>> {
+    if (userIds.length === 0) return new Map();
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: Array.from(new Set(userIds)) } },
+      select: { id: true, name: true },
+    });
+    return new Map(users.map((u) => [u.id, u.name ?? null]));
   }
 }

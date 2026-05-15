@@ -29,6 +29,7 @@ function makeSession(id: string, ownerId: string): GameSessionReadModel {
     status: 'active',
     dpCount: 0,
     characterIds: [],
+    memberships: [],
     shipId: null,
     createdAt: '2026-05-09T10:00:00.000Z',
     updatedAt: '2026-05-09T10:00:00.000Z',
