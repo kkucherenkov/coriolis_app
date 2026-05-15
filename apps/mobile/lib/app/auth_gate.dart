@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:coriolis_companion/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:coriolis_companion/features/auth/presentation/bloc/auth_state.dart';
 import 'package:coriolis_companion/features/auth/presentation/welcome_screen.dart';
-import 'package:coriolis_companion/features/characters/presentation/pages/characters_list_page.dart';
+import 'package:coriolis_companion/features/dashboard/presentation/dashboard_page.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
 import 'package:coriolis_companion/shared/di/injector.dart';
 
@@ -28,7 +28,7 @@ class AuthGate extends StatelessWidget {
             case AuthStatus.otpSent:
               return const _SplashScreen();
             case AuthStatus.authenticated:
-              return const CharactersListPage();
+              return const DashboardPage();
           }
         },
       ),
