@@ -4171,6 +4171,7 @@ paths:
         - name: membershipId
           in: path
           required: true
+          description: Membership identifier (cuid2)
           schema:
             type: string
       requestBody:
@@ -4183,6 +4184,7 @@ paths:
               properties:
                 characterId:
                   type: ["string", "null"]
+                  description: Character ID to link, or null to unlink
             examples:
               link:
                 value: { characterId: "cuid_char01" }
@@ -4241,6 +4243,7 @@ paths:
         - name: membershipId
           in: path
           required: true
+          description: Membership identifier (cuid2)
           schema:
             type: string
       responses:
