@@ -5,6 +5,7 @@ import AppStarOrnament from './AppStarOrnament.vue';
 
 const SIZES = ['sm', 'md', 'lg'] as const;
 const COLORS = ['brass', 'brass-deep', 'brass-light'] as const;
+const VARIANTS = ['filled', 'outlined'] as const;
 
 describe('AppStarOrnament', () => {
   // ── Root element ──────────────────────────────────────────────────────────
@@ -29,22 +30,58 @@ describe('AppStarOrnament', () => {
     expect(wrapper.find('svg').attributes('aria-hidden')).toBe('true');
   });
 
-  // ── Star shape ────────────────────────────────────────────────────────────
+  // ── Star shape — handoff geometry (two rects + centre dot) ───────────────
 
-  it('renders a <polygon> with the star points', () => {
+  it('renders two <rect> elements forming the overlapping squares', () => {
     const wrapper = mount(AppStarOrnament);
-    const polygon = wrapper.find('polygon.app-star-ornament__shape');
-    expect(polygon.exists()).toBe(true);
-    expect(polygon.attributes('points')).toBeTruthy();
+    const rects = wrapper.findAll('rect');
+    expect(rects).toHaveLength(2);
   });
 
-  it('polygon has 12 coordinate pairs (8-pointed star = 16 vertices)', () => {
+  it('rotates the second rect 45° around the centre (16,16)', () => {
     const wrapper = mount(AppStarOrnament);
-    const points = wrapper.find('polygon').attributes('points') ?? '';
-    // Pairs separated by spaces — 16 pairs but our compact star has 12 points listed
-    // (some are at 90° intervals): count the space-separated coordinate pairs.
-    const pairCount = points.trim().split(/\s+/).length;
-    expect(pairCount).toBeGreaterThanOrEqual(8); // at minimum 8 outer tips
+    const rects = wrapper.findAll('rect');
+    expect(rects[0]!.attributes('transform')).toBeFalsy();
+    expect(rects[1]!.attributes('transform')).toBe('rotate(45 16 16)');
+  });
+
+  it('renders a centre dot <circle>', () => {
+    const wrapper = mount(AppStarOrnament);
+    const circle = wrapper.find('circle.app-star-ornament__dot');
+    expect(circle.exists()).toBe(true);
+    expect(circle.attributes('cx')).toBe('16');
+    expect(circle.attributes('cy')).toBe('16');
+  });
+
+  it('uses viewBox 0 0 32 32 (handoff canvas)', () => {
+    const wrapper = mount(AppStarOrnament);
+    // SVG attributes are case-sensitive; jsdom preserves the mixed-case
+    // `viewBox` form. We probe both keys for resilience against test-utils
+    // version-to-version casing changes.
+    const attrs = wrapper.find('svg').attributes();
+    expect(attrs.viewBox ?? attrs.viewbox).toBe('0 0 32 32');
+  });
+
+  // ── Variant prop (T-AUDIT-2026-05-15-STAR-VARIANT) ───────────────────────
+
+  it.each(VARIANTS)('applies BEM variant modifier app-star-ornament--%s', (variant) => {
+    const wrapper = mount(AppStarOrnament, { props: { variant } });
+    expect(wrapper.classes()).toContain(`app-star-ornament--${variant}`);
+  });
+
+  it('defaults to variant=filled', () => {
+    const wrapper = mount(AppStarOrnament);
+    expect(wrapper.classes()).toContain('app-star-ornament--filled');
+  });
+
+  it('filled variant centre dot has radius 2 (handoff StarFilled)', () => {
+    const wrapper = mount(AppStarOrnament, { props: { variant: 'filled' } });
+    expect(wrapper.find('circle').attributes('r')).toBe('2');
+  });
+
+  it('outlined variant centre dot has radius 2.2 (handoff StarOrnament)', () => {
+    const wrapper = mount(AppStarOrnament, { props: { variant: 'outlined' } });
+    expect(wrapper.find('circle').attributes('r')).toBe('2.2');
   });
 
   // ── Size modifiers ────────────────────────────────────────────────────────
@@ -90,7 +127,6 @@ describe('AppStarOrnament', () => {
 
   it('does not set inline style when opacity=1 (default)', () => {
     const wrapper = mount(AppStarOrnament, { props: { opacity: 1 } });
-    // Style should be absent or empty when opacity is 1.
     const style = wrapper.attributes('style') ?? '';
     expect(style).not.toContain('opacity');
   });

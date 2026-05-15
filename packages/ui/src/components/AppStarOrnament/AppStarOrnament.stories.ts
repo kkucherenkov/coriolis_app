@@ -4,6 +4,7 @@ import type { Meta, StoryObj } from '@storybook/vue3';
 
 const SIZES = ['sm', 'md', 'lg'] as const;
 const COLORS = ['brass', 'brass-deep', 'brass-light'] as const;
+const VARIANTS = ['filled', 'outlined'] as const;
 
 const meta: Meta<typeof AppStarOrnament> = {
   title: 'Coriolis/AppStarOrnament',
@@ -12,11 +13,13 @@ const meta: Meta<typeof AppStarOrnament> = {
   argTypes: {
     size: { control: { type: 'select' }, options: SIZES },
     color: { control: { type: 'select' }, options: COLORS },
+    variant: { control: { type: 'select' }, options: VARIANTS },
     opacity: { control: { type: 'range', min: 0, max: 1, step: 0.05 } },
   },
   args: {
     size: 'md',
     color: 'brass',
+    variant: 'filled',
     opacity: 1,
   },
 };
@@ -51,6 +54,26 @@ export const Sizes: Story = {
             <AppStarOrnament :size="s" color="brass" />
             <span style="font-size:11px;color:var(--text-secondary);font-family:Inter,sans-serif;">{{ s }}</span>
           </div>
+        </div>
+      </div>
+    `,
+  }),
+};
+
+// ── Variants — filled vs outlined (T-AUDIT-2026-05-15) ───────────────────────
+
+export const Variants: Story = {
+  name: 'Variants — filled / outlined',
+  render: () => ({
+    components: { AppStarOrnament },
+    setup() {
+      return { variants: VARIANTS };
+    },
+    template: `
+      <div style="${bg}">
+        <div v-for="v in variants" :key="v" style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+          <AppStarOrnament size="lg" color="brass" :variant="v" />
+          <span style="font-size:11px;color:var(--text-secondary);font-family:Inter,sans-serif;">{{ v }}</span>
         </div>
       </div>
     `,
