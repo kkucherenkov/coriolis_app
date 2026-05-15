@@ -85,7 +85,7 @@
     { key: 'characters', prefix: '/app/characters' },
     { key: 'ships', prefix: '/app/ships' },
     { key: 'npcs', prefix: '/app/npcs' },
-    { key: 'sessions', prefix: '/app/sessions' },
+    { key: 'sessions', prefix: '/app/game-sessions' },
   ] as const;
 
   const activeKey = computed<string | undefined>(
@@ -97,7 +97,7 @@
     { key: 'characters', href: '/app/characters', label: t('nav.characters') },
     { key: 'ships', href: '/app/ships', label: t('nav.ships') },
     { key: 'npcs', href: '/app/npcs', label: t('nav.npcs') },
-    { key: 'sessions', href: '/app/sessions', label: t('nav.sessions') },
+    { key: 'sessions', href: '/app/game-sessions', label: t('nav.sessions') },
   ]);
 
   // ── User menu ─────────────────────────────────────────────────────────────────
@@ -265,7 +265,10 @@
 <template>
   <div class="layout-app">
     <!-- Skip-link: visible only when focused. -->
-    <a class="layout-app__skip-link" href="#main-content">{{ t('skipToContent') }}</a>
+    <a
+      class="layout-app__skip-link"
+      href="#main-content"
+    >{{ t('skipToContent') }}</a>
 
     <!--
       Offline / sync banner. Shows when:
@@ -318,7 +321,10 @@
       </template>
 
       <template #mobile-drawer-content>
-        <nav :aria-label="t('brand.navAriaLabel')" class="layout-app__mobile-nav">
+        <nav
+          :aria-label="t('brand.navAriaLabel')"
+          class="layout-app__mobile-nav"
+        >
           <NuxtLink
             v-for="item in navItems"
             :key="item.key"
@@ -352,7 +358,10 @@
       </template>
     </AppHeader>
 
-    <main id="main-content" class="layout-app__main">
+    <main
+      id="main-content"
+      class="layout-app__main"
+    >
       <slot />
     </main>
   </div>

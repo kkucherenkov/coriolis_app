@@ -430,7 +430,7 @@ const { resolve, dirname } = nodePath;
 const _dirname = dirname(fileURLToPath(import.meta.url));
 
 const PANEL_PATH = resolve(_dirname, '../../components/EncounterPanel.vue');
-const SESSION_DETAIL_PATH = resolve(_dirname, '../../pages/app/sessions/[id].vue');
+const SESSION_DETAIL_PATH = resolve(_dirname, '../../pages/app/game-sessions/[id].vue');
 
 describe('EncounterPanel.vue — structural wiring', () => {
   let src: string;

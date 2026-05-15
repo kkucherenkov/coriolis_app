@@ -11,7 +11,7 @@
    * GM index — game sessions owned by the authenticated user. Phase 4
    * Feature 7.2 list view: tabbed (active / archived), with an inline
    * "new session" form pinned at the top of the active tab. Detail page
-   * is `/app/sessions/[id]` (Block 4).
+   * is `/app/game-sessions/[id]` (Block 4).
    *
    * The OpenAPI list endpoint is cursor-paginated; for v1 we just take
    * the first page (limit=20) — pagination UI lands in a follow-up if
@@ -92,7 +92,7 @@
       // Take the user straight to the detail page rather than back to
       // the list — the GM is here to set up a session, the next thing
       // they want is to assign characters.
-      await navigateTo(`/app/sessions/${session.id}`);
+      await navigateTo(`/app/game-sessions/${session.id}`);
     } catch (error) {
       const problem = error as Problem;
       formError.value = problem.detail ?? t('errorCreate');
@@ -249,17 +249,28 @@
 </i18n>
 
 <template>
-  <section class="page-sessions" data-testid="page-sessions">
+  <section
+    class="page-sessions"
+    data-testid="page-sessions"
+  >
     <header class="page-sessions__header">
       <h1 class="page-sessions__title">
         {{ t('pageTitle') }}
       </h1>
-      <AppButton v-if="tab === 'active' && !formOpen" variant="primary" size="md" @click="openForm">
+      <AppButton
+        v-if="tab === 'active' && !formOpen"
+        variant="primary"
+        size="md"
+        @click="openForm"
+      >
         + {{ t('newSession') }}
       </AppButton>
     </header>
 
-    <div class="page-sessions__tabs" role="tablist">
+    <div
+      class="page-sessions__tabs"
+      role="tablist"
+    >
       <button
         type="button"
         role="tab"
@@ -282,12 +293,27 @@
       </button>
     </div>
 
-    <AppCard v-if="formOpen" class="page-sessions__form-card">
-      <form novalidate class="page-sessions__form" @submit.prevent="onCreate">
-        <AppBanner v-if="formError" tone="danger" role="alert">
+    <AppCard
+      v-if="formOpen"
+      class="page-sessions__form-card"
+    >
+      <form
+        novalidate
+        class="page-sessions__form"
+        @submit.prevent="onCreate"
+      >
+        <AppBanner
+          v-if="formError"
+          tone="danger"
+          role="alert"
+        >
           {{ formError }}
         </AppBanner>
-        <AppField :label="t('formNameLabel')" :help="t('formNameHint')" required>
+        <AppField
+          :label="t('formNameLabel')"
+          :help="t('formNameHint')"
+          required
+        >
           <template #default="slotAttrs">
             <AppInput
               v-bind="slotAttrs"
@@ -298,9 +324,17 @@
             />
           </template>
         </AppField>
-        <AppField :label="t('formDescriptionLabel')" :help="t('formDescriptionHint')">
+        <AppField
+          :label="t('formDescriptionLabel')"
+          :help="t('formDescriptionHint')"
+        >
           <template #default="slotAttrs">
-            <AppInput v-bind="slotAttrs" v-model="newDescription" type="text" maxlength="500" />
+            <AppInput
+              v-bind="slotAttrs"
+              v-model="newDescription"
+              type="text"
+              maxlength="500"
+            />
           </template>
         </AppField>
         <div class="page-sessions__form-actions">
@@ -326,13 +360,25 @@
       </form>
     </AppCard>
 
-    <AppBanner v-if="errorMsg && state === 'error'" tone="danger" role="alert">
+    <AppBanner
+      v-if="errorMsg && state === 'error'"
+      tone="danger"
+      role="alert"
+    >
       {{ errorMsg }}
     </AppBanner>
 
-    <p v-else-if="state === 'loading'" class="page-sessions__placeholder">…</p>
+    <p
+      v-else-if="state === 'loading'"
+      class="page-sessions__placeholder"
+    >
+      …
+    </p>
 
-    <div v-else-if="sessions.length === 0" class="page-sessions__empty">
+    <div
+      v-else-if="sessions.length === 0"
+      class="page-sessions__empty"
+    >
       <h2 class="page-sessions__empty-heading">
         {{ tab === 'active' ? t('emptyActiveHeading') : t('emptyArchivedHeading') }}
       </h2>
@@ -341,23 +387,39 @@
       </p>
     </div>
 
-    <ul v-else class="page-sessions__grid" role="list">
-      <li v-for="session in sessions" :key="session.id">
+    <ul
+      v-else
+      class="page-sessions__grid"
+      role="list"
+    >
+      <li
+        v-for="session in sessions"
+        :key="session.id"
+      >
         <AppCard class="page-sessions__card">
           <div class="page-sessions__card-head">
             <h3 class="page-sessions__card-title">
               {{ session.name }}
             </h3>
             <div class="page-sessions__card-badges">
-              <AppBadge variant="darkness" size="sm">
+              <AppBadge
+                variant="darkness"
+                size="sm"
+              >
                 {{ t('dpCount', { n: session.dpCount }) }}
               </AppBadge>
-              <AppBadge variant="brass" size="sm">
+              <AppBadge
+                variant="brass"
+                size="sm"
+              >
                 {{ t('characterCount', { n: session.characterIds.length }) }}
               </AppBadge>
             </div>
           </div>
-          <p v-if="session.description" class="page-sessions__card-desc">
+          <p
+            v-if="session.description"
+            class="page-sessions__card-desc"
+          >
             {{ session.description }}
           </p>
           <p class="page-sessions__card-meta">
@@ -367,7 +429,7 @@
             <AppButton
               variant="primary"
               size="sm"
-              @click="navigateTo(`/app/sessions/${session.id}`)"
+              @click="navigateTo(`/app/game-sessions/${session.id}`)"
             >
               {{ t('open') }}
             </AppButton>
@@ -379,7 +441,12 @@
             >
               {{ t('archive') }}
             </AppButton>
-            <AppButton v-else variant="ghost" size="sm" @click="onUnarchive(session)">
+            <AppButton
+              v-else
+              variant="ghost"
+              size="sm"
+              @click="onUnarchive(session)"
+            >
               {{ t('unarchive') }}
             </AppButton>
           </div>

@@ -34,7 +34,7 @@ function buildNavItems(t: (key: string) => string): NavItem[] {
     { key: 'characters', href: '/app/characters', label: t('nav.characters') },
     { key: 'ships', href: '/app/ships', label: t('nav.ships') },
     { key: 'npcs', href: '/app/npcs', label: t('nav.npcs') },
-    { key: 'sessions', href: '/app/sessions', label: t('nav.sessions') },
+    { key: 'sessions', href: '/app/game-sessions', label: t('nav.sessions') },
   ];
 }
 
@@ -45,7 +45,7 @@ function deriveActiveKey(path: string): string | undefined {
   if (path.startsWith('/app/characters')) return 'characters';
   if (path.startsWith('/app/ships')) return 'ships';
   if (path.startsWith('/app/npcs')) return 'npcs';
-  if (path.startsWith('/app/sessions')) return 'sessions';
+  if (path.startsWith('/app/game-sessions')) return 'sessions';
   return undefined;
 }
 
@@ -92,8 +92,14 @@ describe('app layout — navItems', () => {
 
   it('each nav item href matches its key-based route', () => {
     const items = buildNavItems(identityT);
+    // 'sessions' key maps to the GM route /app/game-sessions (Phase 8 Stream A rename).
+    // The player route /app/sessions ships in Stream B.
+    const HREF_OVERRIDES: Record<string, string> = {
+      sessions: '/app/game-sessions',
+    };
     for (const item of items) {
-      expect(item.href).toBe(`/app/${item.key}`);
+      const expected = HREF_OVERRIDES[item.key] ?? `/app/${item.key}`;
+      expect(item.href).toBe(expected);
     }
   });
 
@@ -130,8 +136,8 @@ describe('app layout — activeKey', () => {
     expect(deriveActiveKey('/app/npcs')).toBe('npcs');
   });
 
-  it('returns "sessions" for /app/sessions', () => {
-    expect(deriveActiveKey('/app/sessions')).toBe('sessions');
+  it('returns "sessions" for /app/game-sessions', () => {
+    expect(deriveActiveKey('/app/game-sessions')).toBe('sessions');
   });
 
   it('returns undefined for /app/settings (no nav match)', () => {
