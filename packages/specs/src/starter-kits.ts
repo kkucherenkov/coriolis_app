@@ -39,18 +39,20 @@
  *
  * ## Data sourcing
  *
- * This file ships a SCHEMA + a single stub entry (Pilot / Ace) to
- * exercise the contract. Populating the rest of the catalogue from
- * ST3001 ch.4 amplua tables is tracked as a follow-up task
- * `T-WIZARD-GEAR-CATALOGUE-FILL` and depends on the rulebook reference
- * memory (`coriolis-rulebook-ru.md`).
+ * Catalogue populated from ST3001 ГЛАВА 2 «Персонажи игроков»
+ * (Russian translation, canonical source — see memory pointer
+ * `coriolis-rulebook-ru`). Each amplua's СНАРЯЖЕНИЕ table is verbatim:
+ * 5 rows, 2 alternatives each, player picks one per row. All three
+ * roles within an amplua share the same gear table — roles only
+ * differentiate skills/talents/narrative, not starting equipment.
  *
  * ## Catalogue shape
  *
  * Each (concept, role) pair maps to a `StarterKit` with:
  *
  *   - `fixed[]` — items every character of that kit receives
- *     unconditionally (e.g. uniform, ID card).
+ *     unconditionally. Empty for every Coriolis amplua: ST3001 has no
+ *     unconditional starting items; everything is a choice.
  *   - `choices[]` — choice groups in canonical rulebook order. Each
  *     group has 1+ `options[]`; the player picks exactly one.
  *
@@ -104,7 +106,7 @@ export interface StarterKitChoice {
   /** Stable kebab-case id within the kit (e.g. `sidearm`, `outfit`). */
   readonly id: string;
   readonly label: LocalizedString;
-  readonly options: ReadonlyArray<StarterKitItem>;
+  readonly options: readonly StarterKitItem[];
   /**
    * Optional: number of items the player picks from this group. Defaults
    * to 1. Some ST3001 rows allow multi-pick (e.g. "choose two utility
@@ -117,79 +119,446 @@ export interface StarterKit {
   readonly concept: Concept;
   readonly role: Role;
   /** Items every character of this kit receives (no choice). */
-  readonly fixed: ReadonlyArray<StarterKitItem>;
+  readonly fixed: readonly StarterKitItem[];
   /** Choice groups in rulebook order; the player picks per group. */
-  readonly choices: ReadonlyArray<StarterKitChoice>;
+  readonly choices: readonly StarterKitChoice[];
 }
 
-// ── Stub catalogue ──────────────────────────────────────────────────────────
-//
-// One example entry to exercise the schema. The follow-up
-// `T-WIZARD-GEAR-CATALOGUE-FILL` populates the remaining 32 (concept ×
-// role) pairs from ST3001 ch.4 amplua tables.
+// ── Internal builders ────────────────────────────────────────────────────────
 
-const STUB_PILOT_ACE: StarterKit = {
-  concept: 'pilot',
-  role: 'ace',
-  fixed: [
-    {
-      id: 'pilot-suit',
-      template: {
-        kind: 'ARMOR',
-        name: {
-          en: 'Light flight suit',
-          ru: 'Лёгкий лётный комбинезон',
-          uk: '[uk-todo] Light flight suit',
-          el: '[el-todo] Light flight suit',
-        },
-      },
-    },
-  ],
+/** Templated kit shared by all three roles of an amplua. */
+interface AmpluaKitTemplate {
+  readonly fixed: readonly StarterKitItem[];
+  readonly choices: readonly StarterKitChoice[];
+}
+
+function rowLabel(n: number): LocalizedString {
+  const s = String(n);
+  return {
+    en: `Row ${s}`,
+    ru: `Ряд ${s}`,
+    uk: `[uk-todo] Row ${s}`,
+    el: `[el-todo] Row ${s}`,
+  };
+}
+
+function withTodo(en: string, ru: string): LocalizedString {
+  return {
+    en,
+    ru,
+    uk: `[uk-todo] ${en}`,
+    el: `[el-todo] ${en}`,
+  };
+}
+
+function item(id: string, kind: StarterKitItemKind, en: string, ru: string): StarterKitItem {
+  return { id, template: { kind, name: withTodo(en, ru) } };
+}
+
+function row(n: number, options: readonly StarterKitItem[]): StarterKitChoice {
+  return {
+    id: `row-${String(n)}`,
+    label: rowLabel(n),
+    options,
+  };
+}
+
+// ── ST3001 ГЛАВА 2 amplua kits ───────────────────────────────────────────────
+//
+// Source-of-truth: `/Users/kkucherenkov/Documents/vaults/obsidian/70.01
+// Areas/TRPG/Coriolis/ST3001/ГЛАВА 2 Персонажи игроков.md` (per-amplua
+// «СНАРЯЖЕНИЕ» tables). Each amplua has a 5-row table; the table is
+// shared by all three of the amplua's roles.
+
+const KIT_ARTIST: AmpluaKitTemplate = {
+  fixed: [],
   choices: [
-    {
-      id: 'sidearm',
-      label: {
-        en: 'Sidearm',
-        ru: 'Личное оружие',
-        uk: '[uk-todo] Sidearm',
-        el: '[el-todo] Sidearm',
-      },
-      options: [
-        {
-          id: 'sidearm-emp-pistol',
-          template: {
-            kind: 'WEAPON',
-            name: {
-              en: 'EMP pistol',
-              ru: 'ЭМИ-пистолет',
-              uk: '[uk-todo] EMP pistol',
-              el: '[el-todo] EMP pistol',
-            },
-          },
-        },
-        {
-          id: 'sidearm-acclerator',
-          template: {
-            kind: 'WEAPON',
-            name: {
-              en: 'Accelerator pistol',
-              ru: 'Пистолет-ускоритель',
-              uk: '[uk-todo] Accelerator pistol',
-              el: '[el-todo] Accelerator pistol',
-            },
-          },
-        },
-      ],
-    },
+    row(1, [
+      item('alam-fan', 'OTHER', 'Hand fan of Alam', 'Веер Алама'),
+      item('tabula', 'GEAR', 'Tabula', 'Табула'),
+    ]),
+    row(2, [
+      item('opor', 'OTHER', 'Opor', 'Опор'),
+      item('sensor-analyzer', 'GEAR', 'Sensor analyzer', 'Сенсорный анализатор'),
+    ]),
+    row(3, [
+      item('luxury-outfit', 'GEAR', 'Luxury outfit', 'Роскошный наряд'),
+      item('musical-instrument', 'GEAR', 'Musical instrument', 'Музыкальный инструмент'),
+    ]),
+    row(4, [
+      item(
+        'beautiful-appearance-biomod',
+        'CYBERNETIC',
+        'Beautiful appearance (biomod)',
+        'Прекрасная внешность (мод.)',
+      ),
+      item('rare-poetry-collection', 'OTHER', 'Collection of rare poetry', 'Сборник редких стихов'),
+    ]),
+    row(5, [
+      item('memoirs-meizelmann', 'OTHER', '“Memoirs” by Meizelmann', '«Мемуары» Мейзельмана'),
+      item(
+        'alkamaar-restaurant-card',
+        'OTHER',
+        'Regular customer card at Alkamaar restaurant',
+        'Карта постоянного клиента ресторана «Алькамаар»',
+      ),
+    ]),
   ],
 };
 
-export const STARTER_KIT_CATALOG: ReadonlyArray<StarterKit> = Object.freeze([STUB_PILOT_ACE]);
+const KIT_NETWORKER: AmpluaKitTemplate = {
+  fixed: [],
+  choices: [
+    row(1, [
+      item('comlink-iv', 'GEAR', 'Comlink (IV)', 'Коммуникатор (IV)'),
+      item('holograph-i', 'GEAR', 'Holograph (I)', 'Голограф (I)'),
+    ]),
+    row(2, [
+      item('broadband-sensor', 'GEAR', 'Broadband sensor', 'Широкополосный сенсор'),
+      item('computer-s', 'GEAR', 'Computer (S)', 'Компьютер (С)'),
+    ]),
+    row(3, [
+      item('pocket-vulcan-pistol', 'WEAPON', 'Pocket Vulcan pistol', 'Карманный вулкан-пистолет'),
+      item('neuroshock-stun', 'WEAPON', 'Neuroshocker', 'Нейрошокер'),
+    ]),
+    row(4, [
+      item('tabula', 'GEAR', 'Tabula', 'Табула'),
+      item(
+        'transactor-1000-birr',
+        'GEAR',
+        'Transactor with 1000 birr',
+        'Транзактор с 1000 бирров на счету',
+      ),
+    ]),
+    row(5, [item('opor', 'OTHER', 'Opor', 'Опор'), item('arrash', 'OTHER', 'Arrash', 'Арраш')]),
+  ],
+};
+
+const KIT_FUGITIVE: AmpluaKitTemplate = {
+  fixed: [],
+  choices: [
+    row(1, [
+      item('anonymous-clothing', 'GEAR', 'Anonymous clothing', 'Обезличивающая одежда'),
+      item('birr-chip-500', 'GEAR', 'Birr-chip with 500 birr', 'Бирка с 500 бирров'),
+    ]),
+    row(2, [
+      item('comlink-ii', 'GEAR', 'Comlink (II)', 'Коммуникатор (II)'),
+      item('protective-clothing', 'ARMOR', 'Protective clothing', 'Защитная одежда'),
+    ]),
+    row(3, [
+      item('vulcan-carbine', 'WEAPON', 'Vulcan carbine', 'Вулкан-карабин'),
+      item('vibro-sword', 'WEAPON', 'Vibro sword', 'Вибромеч'),
+    ]),
+    row(4, [
+      item('thermal-suit', 'ARMOR', 'Thermal suit', 'Термостатический комбинезон'),
+      item('vacsuit', 'ARMOR', 'Vacsuit', 'Экзоскафандр'),
+    ]),
+    row(5, [
+      item(
+        'transactor-fake-id',
+        'GEAR',
+        'Transactor with forged ID',
+        'Транзактор с фальшивым удостоверением личности',
+      ),
+      item('mask', 'GEAR', 'Mask', 'Маска'),
+    ]),
+  ],
+};
+
+const KIT_NEGOTIATOR: AmpluaKitTemplate = {
+  fixed: [],
+  choices: [
+    row(1, [
+      item('tabula', 'GEAR', 'Tabula', 'Табула'),
+      item('interpreter-implant', 'CYBERNETIC', 'Interpreter (implant)', 'Интерпретатор (имп.)'),
+    ]),
+    row(2, [
+      item('comlink-v', 'GEAR', 'Comlink (V)', 'Коммуникатор (V)'),
+      item('megaphone', 'GEAR', 'Megaphone', 'Громкоговоритель'),
+    ]),
+    row(3, [
+      item('luxury-outfit', 'GEAR', 'Luxury outfit', 'Роскошный наряд'),
+      item('kamra-d6-doses', 'OTHER', 'Kamra (d6 doses)', 'Камбра (d6 доз)'),
+    ]),
+    row(4, [
+      item('lie-detector-implant', 'CYBERNETIC', 'Lie detector (implant)', 'Детектор лжи (имп.)'),
+      item('auto-translator', 'GEAR', 'Auto-translator', 'Автоматический переводчик'),
+    ]),
+    row(5, [
+      item('pocket-vulcan-pistol', 'WEAPON', 'Pocket Vulcan pistol', 'Карманный вулкан-пистолет'),
+      item('mercury-knife', 'WEAPON', 'Mercury knife', 'Ртутный нож'),
+    ]),
+  ],
+};
+
+const KIT_OPERATIVE: AmpluaKitTemplate = {
+  fixed: [],
+  choices: [
+    row(1, [
+      item('pocket-vulcan-pistol', 'WEAPON', 'Pocket Vulcan pistol', 'Карманный вулкан-пистолет'),
+      item(
+        'advanced-melee-weapon',
+        'WEAPON',
+        'Advanced melee weapon',
+        'Передовое оружие ближнего боя',
+      ),
+    ]),
+    row(2, [
+      item('broadband-sensor', 'GEAR', 'Broadband sensor', 'Широкополосный сенсор'),
+      item('computer-s', 'GEAR', 'Computer (S)', 'Компьютер (С)'),
+    ]),
+    row(3, [
+      item('modulating-mask', 'GEAR', 'Modulating mask', 'Модулирующая маска'),
+      item('mechanical-lockpick', 'GEAR', 'Mechanical lockpick', 'Механическая отмычка'),
+    ]),
+    row(4, [
+      item('recon-probe', 'GEAR', 'Recon probe', 'Разведзонд'),
+      item('fake-id-set', 'GEAR', 'Set of forged IDs', 'Набор фальшивых удостоверений личности'),
+    ]),
+    row(5, [
+      item('electronic-lockpick', 'GEAR', 'Electronic lockpick', 'Электронная отмычка'),
+      item('poison-5-doses', 'OTHER', 'Poison (5 doses)', 'Яд (5 доз)'),
+    ]),
+  ],
+};
+
+const KIT_PILOT: AmpluaKitTemplate = {
+  fixed: [],
+  choices: [
+    row(1, [
+      item('tool-kit-s', 'GEAR', 'Tool kit (S)', 'Набор инструментов (С)'),
+      item('piloting-talisman', 'OTHER', 'Piloting talisman', 'Талисман пилотирования'),
+    ]),
+    row(2, [
+      item('vacsuit', 'ARMOR', 'Vacsuit', 'Экзоскафандр'),
+      item(
+        'manual-maneuvering-unit',
+        'GEAR',
+        'Manual maneuvering unit',
+        'Ручной маневровый двигатель',
+      ),
+    ]),
+    row(3, [
+      item(
+        'targeting-reticle-implant',
+        'CYBERNETIC',
+        'Targeting reticle (implant)',
+        'Целеуказатель (имп.)',
+      ),
+      item('comlink-iv', 'GEAR', 'Comlink (IV)', 'Коммуникатор (IV)'),
+    ]),
+    row(4, [
+      item('rail-pistol', 'WEAPON', 'Rail pistol', 'Рельсовый пистолет'),
+      item('neuroshock-stun', 'WEAPON', 'Neuroshocker', 'Нейрошокер'),
+    ]),
+    row(5, [
+      item('flight-suit', 'ARMOR', 'Flight suit', 'Лётный комбинезон'),
+      item('luxury-outfit', 'GEAR', 'Luxury outfit', 'Роскошный наряд'),
+    ]),
+  ],
+};
+
+const KIT_PREACHER: AmpluaKitTemplate = {
+  fixed: [],
+  choices: [
+    row(1, [
+      item('holy-scriptures', 'OTHER', 'Holy scriptures', 'Священные писания'),
+      item('censer', 'OTHER', 'Censer', 'Кадило'),
+    ]),
+    row(2, [
+      item('talisman-any', 'OTHER', 'Talisman (any)', 'Талисман (любой)'),
+      item('ritual-robes', 'GEAR', 'Ritual robes', 'Ритуальное облачение'),
+    ]),
+    row(3, [
+      item('reliquary', 'OTHER', 'Reliquary', 'Реликварий'),
+      item('prophecy-scrolls', 'OTHER', 'Prophecy scrolls', 'Рукописи с пророчествами'),
+    ]),
+    row(4, [
+      item('m-stims-5', 'GEAR', '5 Medi-stims', '5 м-стимов'),
+      item(
+        'blessed-herbs-10',
+        'OTHER',
+        '10 doses of blessed healing herbs',
+        '10 порций освящённых целебных трав',
+      ),
+    ]),
+    row(5, [
+      item('tabula', 'GEAR', 'Tabula', 'Табула'),
+      item('writing-kit', 'GEAR', 'Writing kit', 'Писчие принадлежности'),
+    ]),
+  ],
+};
+
+const KIT_SCIENTIST: AmpluaKitTemplate = {
+  fixed: [],
+  choices: [
+    row(1, [
+      item('comlink-iii', 'GEAR', 'Comlink (III)', 'Коммуникатор (III)'),
+      item('broadband-sensor', 'GEAR', 'Broadband sensor', 'Широкополосный сенсор'),
+    ]),
+    row(2, [
+      item('portable-lab', 'GEAR', 'Portable lab', 'Портативная лаборатория'),
+      item('computer-s', 'GEAR', 'Computer (S)', 'Компьютер (С)'),
+    ]),
+    row(3, [
+      item('vacsuit', 'ARMOR', 'Vacsuit', 'Экзоскафандр'),
+      item('data-library', 'GEAR', 'Data library', 'Электронная библиотека'),
+    ]),
+    row(4, [
+      item('pressure-tent', 'GEAR', 'Pressure tent', 'Герметичный шатёр'),
+      item('med-kit', 'GEAR', 'Med-kit', 'М-комплект'),
+    ]),
+    row(5, [
+      item('tool-kit-p', 'GEAR', 'Tool kit (P)', 'Набор инструментов (П)'),
+      item('compass', 'GEAR', 'Compass', 'Компас'),
+    ]),
+  ],
+};
+
+const KIT_SAILOR: AmpluaKitTemplate = {
+  fixed: [],
+  choices: [
+    row(1, [
+      item('tool-kit-s', 'GEAR', 'Tool kit (S)', 'Набор инструментов (С)'),
+      item('sealant', 'GEAR', 'Sealant', 'Герметик'),
+    ]),
+    row(2, [
+      item('power-knuckles', 'WEAPON', 'Power knuckles', 'Силовой кастет'),
+      item('sensor-analyzer', 'GEAR', 'Sensor analyzer', 'Сенсорный анализатор'),
+    ]),
+    row(3, [
+      item('arrash', 'OTHER', 'Arrash', 'Арраш'),
+      item('tobacco', 'OTHER', 'Tobacco', 'Табак'),
+    ]),
+    row(4, [
+      item('exo-loader', 'GEAR', 'Exo-loader', 'Экзопогрузчик'),
+      item('vacsuit', 'ARMOR', 'Vacsuit', 'Экзоскафандр'),
+    ]),
+    row(5, [
+      item('hyper-cable', 'GEAR', 'Hyper-cable', 'Гипертрос'),
+      item('vibro-knife', 'WEAPON', 'Vibro knife', 'Вибронож'),
+    ]),
+  ],
+};
+
+const KIT_SOLDIER: AmpluaKitTemplate = {
+  fixed: [],
+  choices: [
+    row(1, [
+      item('heavy-armor', 'ARMOR', 'Heavy armor', 'Тяжёлая броня'),
+      item('mercury-sword', 'WEAPON', 'Mercury sword', 'Ртутный меч'),
+    ]),
+    row(2, [
+      item(
+        'rail-pistol-sensor-sight-s',
+        'WEAPON',
+        'Rail pistol with sensor sight (S)',
+        'Рельсовый пистолет с сенсорным прицелом (С)',
+      ),
+      item('vulcan-carbine', 'WEAPON', 'Vulcan carbine', 'Вулкан-карабин'),
+    ]),
+    row(3, [
+      item('frag-grenade', 'WEAPON', 'Frag grenade', 'Осколочная граната'),
+      item(
+        'reinforced-muscles-implant',
+        'CYBERNETIC',
+        'Reinforced muscles (implant)',
+        'Усиленные мышцы (имп.)',
+      ),
+    ]),
+    row(4, [
+      item('officer-pad', 'GEAR', 'Officer pad', 'Командирский планшет'),
+      item('sensor-sight-p', 'GEAR', 'Sensor sight (P)', 'Сенсорный прицел (П)'),
+    ]),
+    row(5, [
+      item('comlink-ii', 'GEAR', 'Comlink (II)', 'Коммуникатор (II)'),
+      item('med-kit', 'GEAR', 'Med-kit', 'М-комплект'),
+    ]),
+  ],
+};
+
+const KIT_PIONEER: AmpluaKitTemplate = {
+  fixed: [],
+  choices: [
+    row(1, [
+      item('drone-uav', 'GEAR', 'UAV drone', 'БПЛА'),
+      item('comlink-v', 'GEAR', 'Comlink (V)', 'Коммуникатор (V)'),
+    ]),
+    row(2, [
+      item('vibro-axe', 'WEAPON', 'Vibro axe', 'Вибросекира'),
+      item('vulcan-carbine', 'WEAPON', 'Vulcan carbine', 'Вулкан-карабин'),
+    ]),
+    row(3, [
+      item('m-stims-5', 'GEAR', '5 Medi-stims', '5 м-стимов'),
+      item('data-library', 'GEAR', 'Data library', 'Электронная библиотека'),
+    ]),
+    row(4, [
+      item(
+        'optimized-metabolism-implant',
+        'CYBERNETIC',
+        'Optimized metabolism (implant)',
+        'Оптимизированный метаболизм (имп.)',
+      ),
+      item('vacsuit', 'ARMOR', 'Vacsuit', 'Экзоскафандр'),
+    ]),
+    row(5, [
+      item('sensor-analyzer', 'GEAR', 'Sensor analyzer', 'Сенсорный анализатор'),
+      item('compass', 'GEAR', 'Compass', 'Компас'),
+    ]),
+  ],
+};
+
+// ── (concept, roles) → 33 kits expansion ─────────────────────────────────────
+//
+// Roles within an amplua share the same gear table (per ST3001 ch.2);
+// we expand once per role for direct `(concept, role)` lookup.
+
+const AMPLUA_KITS: readonly {
+  readonly concept: Concept;
+  readonly roles: readonly Role[];
+  readonly template: AmpluaKitTemplate;
+}[] = [
+  { concept: 'artist', roles: ['companion', 'musician', 'poet'], template: KIT_ARTIST },
+  {
+    concept: 'networker',
+    roles: ['analyst', 'correspondent', 'network-djinn'],
+    template: KIT_NETWORKER,
+  },
+  { concept: 'fugitive', roles: ['criminal', 'mystic', 'revolutionary'], template: KIT_FUGITIVE },
+  { concept: 'negotiator', roles: ['agitator', 'diplomat', 'dealer'], template: KIT_NEGOTIATOR },
+  { concept: 'operative', roles: ['assassin', 'guard', 'spy'], template: KIT_OPERATIVE },
+  { concept: 'pilot', roles: ['ace', 'driver', 'trucker'], template: KIT_PILOT },
+  { concept: 'pioneer', roles: ['colonist', 'prospector', 'scout'], template: KIT_PIONEER },
+  { concept: 'preacher', roles: ['ascetic', 'missionary', 'prophet'], template: KIT_PREACHER },
+  {
+    concept: 'scientist',
+    roles: ['archaeologist', 'medicurg', 'technologist'],
+    template: KIT_SCIENTIST,
+  },
+  { concept: 'sailor', roles: ['ship-engineer', 'labourer', 'loader'], template: KIT_SAILOR },
+  { concept: 'soldier', roles: ['legionnaire', 'mercenary', 'officer'], template: KIT_SOLDIER },
+];
+
+function expandKits(): readonly StarterKit[] {
+  const out: StarterKit[] = [];
+  for (const { concept, roles, template } of AMPLUA_KITS) {
+    for (const role of roles) {
+      out.push({
+        concept,
+        role,
+        fixed: template.fixed,
+        choices: template.choices,
+      });
+    }
+  }
+  return Object.freeze(out);
+}
+
+export const STARTER_KIT_CATALOG: readonly StarterKit[] = expandKits();
 
 /**
  * Returns the starter kit for [concept, role], or `null` if no entry
- * exists yet. v1 catalogue is intentionally sparse — see
- * `T-WIZARD-GEAR-CATALOGUE-FILL`.
+ * exists yet.
  */
 export function findStarterKit(concept: Concept, role: Role): StarterKit | null {
   return STARTER_KIT_CATALOG.find((k) => k.concept === concept && k.role === role) ?? null;
