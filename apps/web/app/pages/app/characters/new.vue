@@ -33,21 +33,24 @@
   import Step5Skills from '~/components/wizard/Step5Skills.vue';
   import Step6Talents from '~/components/wizard/Step6Talents.vue';
   import Step7Icon from '~/components/wizard/Step7Icon.vue';
+  import Step8Gear from '~/components/wizard/Step8Gear.vue';
+  import { useItemsApi } from '~/composables/useItemsApi';
+  import { findStarterKit } from '@app/specs';
+  import type { StarterKitItem } from '@app/specs';
+  import type { ItemCreate, ItemRangeEnum } from '~/composables/useItemsApi';
 
-  // TODO(wizard-step-8-gear): Gear (canonical step 8) is deferred until
-  // the backend ships a wallet (`birr` balance) + starting-kit derivation.
-  // Tracked as T-WIZARD-GEAR-BACKEND / T-WIZARD-GEAR-UI.
   // TODO(wizard-step-relationships): Relationships step deferred to v1.1+.
 
   const { t } = useI18n({ useScope: 'local' });
 
   const api = useCharactersApi();
+  const itemsApi = useItemsApi();
   const route = useRoute();
   const router = useRouter();
 
   // ── Constants ────────────────────────────────────────────────────────────────
 
-  const TOTAL_STEPS = 7;
+  const TOTAL_STEPS = 8;
 
   const DEFAULT_ATTRS: Attributes = {
     strength: 2,
@@ -103,6 +106,9 @@
   const draftPersonalTalentId = ref<string | null>(null);
   const draftCrewTalentId = ref<string | null>(null);
   const draftStigmaTalentId = ref<string | null>(null);
+  // Gear picks are held in memory and POSTed at forge() time — not
+  // autosaved because picks have no server representation until forging.
+  const draftGearPicks = ref<Record<string, string | null>>({});
 
   // ── AutoSave ─────────────────────────────────────────────────────────────────
 
@@ -198,7 +204,10 @@
 
   const canAdvance = computed<boolean>(() => {
     if (step.value === 2) return conceptStepValid.value;
-    return true; // All other steps are fully optional at the data level
+    // Step 8 (Gear) is lenient — player can forge with zero picks. The
+    // starter kit is canonical but not mandatory; partial kits are valid.
+    // This mirrors the Talents step (step 6) which also doesn't block forging.
+    return true;
   });
 
   // ── Navigation ────────────────────────────────────────────────────────────────
@@ -251,6 +260,21 @@
         await postPickedTalent(draftStigmaTalentId.value, 'stigma');
       }
 
+      // POST each chosen gear item sequentially. An early failure aborts
+      // the loop and surfaces via the existing errorForge branch.
+      if (draftConcept.value && draftRole.value) {
+        const kit = findStarterKit(draftConcept.value, draftRole.value);
+        if (kit) {
+          for (const choice of kit.choices) {
+            const optionId = draftGearPicks.value[choice.id];
+            if (!optionId) continue;
+            const item = choice.options.find((o) => o.id === optionId);
+            if (!item) continue;
+            await itemsApi.addItem(draftId.value, buildItemCreateBody(item));
+          }
+        }
+      }
+
       await navigateTo(`/app/characters/${draftId.value}`);
     } catch {
       errorMsg.value = t('errorForge');
@@ -275,6 +299,46 @@
       description: typed.description.en,
       rank: 1,
     });
+  }
+
+  /**
+   * Builds the `ItemCreate` body for a starter-kit item.
+   *
+   * Name is always persisted as the EN canonical string — `Item.name` is
+   * the source of truth across locales; the UI locale is display-only.
+   * Conservative gameplay defaults fill the per-discriminator required fields
+   * that the wizard does not surface to the player.
+   */
+  function buildItemCreateBody(item: StarterKitItem): ItemCreate {
+    const name = item.template.name.en;
+    switch (item.template.kind) {
+      case 'WEAPON': {
+        return {
+          type: 'WEAPON',
+          name,
+          damage: 1,
+          range: 'close' as ItemRangeEnum,
+          bonus: 0,
+          crit: 1,
+          weight: 1,
+          features: [],
+          equipped: false,
+        };
+      }
+      case 'ARMOR': {
+        return { type: 'ARMOR', name, armorRating: 1, weight: 1, features: [], equipped: false };
+      }
+      case 'GEAR': {
+        return { type: 'GEAR', name, weight: 1, quantity: 1, notes: null };
+      }
+      case 'CYBERNETIC': {
+        // 5 XP is the canonical cost per ST3001 ГЛАВА 4.
+        return { type: 'CYBERNETIC', name, xpCost: 5, effect: '' };
+      }
+      default: {
+        return { type: 'OTHER', name, weight: 1, notes: null };
+      }
+    }
   }
 
   // ── Field mutations — schedule auto-save on every change ─────────────────────
@@ -363,6 +427,11 @@
     // Picks are persisted at forge() time.
   }
 
+  function onGearPicksUpdate(val: Record<string, string | null>): void {
+    draftGearPicks.value = val;
+    // Not autosaved — gear picks are forge-time-only (no autosave watch).
+  }
+
   // ── Step metadata ─────────────────────────────────────────────────────────────
 
   // Canonical step ID per `specs/design/CHARACTER_WIZARD.md` §2. Drives
@@ -375,6 +444,7 @@
     'skills',
     'talents',
     'icon',
+    'gear',
   ] as const;
 
   const stepId = computed<string>(() => STEP_IDS[step.value - 1] ?? STEP_IDS[0]);
@@ -422,6 +492,10 @@
         "icon": {
           "title": "Choose your Icon",
           "blurb": "The Icons watch from beyond the dark water. One walks beside you. Choose, and they will hear your prayers."
+        },
+        "gear": {
+          "title": "Outfit the cycle ahead",
+          "blurb": "Choose one item from each row. You can refine your kit later."
         }
       }
     }
@@ -463,6 +537,10 @@
         "icon": {
           "title": "Выберите свою Икону",
           "blurb": "Иконы наблюдают из-за тёмных вод. Одна идёт рядом с вами. Выберите — и она услышит ваши молитвы."
+        },
+        "gear": {
+          "title": "Снаряжение для нового цикла",
+          "blurb": "Выбери по одному предмету в каждом ряду. Уточнить набор можно будет позже."
         }
       }
     }
@@ -501,7 +579,11 @@
           "title": "[uk-todo] Choose talents",
           "blurb": "[uk-todo] Pick up to 3 talents."
         },
-        "icon": { "title": "[uk-todo] Choose your Icon", "blurb": "[uk-todo] Pick an Icon." }
+        "icon": { "title": "[uk-todo] Choose your Icon", "blurb": "[uk-todo] Pick an Icon." },
+        "gear": {
+          "title": "[uk-todo] Outfit the cycle ahead",
+          "blurb": "[uk-todo] Choose one item from each row."
+        }
       }
     }
   },
@@ -539,7 +621,11 @@
           "title": "[el-todo] Choose talents",
           "blurb": "[el-todo] Pick up to 3 talents."
         },
-        "icon": { "title": "[el-todo] Choose your Icon", "blurb": "[el-todo] Pick an Icon." }
+        "icon": { "title": "[el-todo] Choose your Icon", "blurb": "[el-todo] Pick an Icon." },
+        "gear": {
+          "title": "[el-todo] Outfit the cycle ahead",
+          "blurb": "[el-todo] Choose one item from each row."
+        }
       }
     }
   }
@@ -637,6 +723,14 @@
       />
 
       <Step7Icon v-if="step === 7" :icon-id="draftIconId" @update:icon-id="onIconUpdate" />
+
+      <Step8Gear
+        v-if="step === 8"
+        :concept="draftConcept"
+        :role="draftRole"
+        :picks="draftGearPicks"
+        @update:picks="onGearPicksUpdate"
+      />
     </WizardShell>
   </div>
 </template>

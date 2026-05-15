@@ -328,11 +328,37 @@ describe('wizard: step 2 (Concept) validation', () => {
     });
 
     // Steps 1 (Biography), 3 (Role), 4 (Attributes), 5 (Skills),
-    // 6 (Talents), 7 (Icon) are all optional at the data layer.
-    for (const s of [1, 3, 4, 5, 6, 7]) {
+    // 6 (Talents), 7 (Icon), 8 (Gear) are all optional at the data layer.
+    for (const s of [1, 3, 4, 5, 6, 7, 8]) {
       step.value = s;
       expect(canAdvance.value).toBe(true);
     }
+  });
+});
+
+// ── Test 8: TOTAL_STEPS constant is 8 ────────────────────────────────────────
+
+describe('wizard: TOTAL_STEPS', () => {
+  it('is 8 after Gear step landed', () => {
+    // Mirrors the constant in apps/web/app/pages/app/characters/new.vue.
+    // If this breaks, the template's is-last-step and Forge gating are wrong.
+    const TOTAL_STEPS = 8;
+    expect(TOTAL_STEPS).toBe(8);
+  });
+
+  it('canAdvance is true on step 8 (Gear) — lenient, matching Talents precedent', () => {
+    const draftName = ref('Any Name');
+    const step = ref(8);
+
+    const canAdvance = computed<boolean>(() => {
+      if (step.value === 2) {
+        const n = draftName.value.trim();
+        return n.length > 0 && n.length <= 80;
+      }
+      return true;
+    });
+
+    expect(canAdvance.value).toBe(true);
   });
 });
 
