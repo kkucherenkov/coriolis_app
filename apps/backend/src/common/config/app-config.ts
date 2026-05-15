@@ -153,6 +153,11 @@ export class AppConfig {
     return { provider, resendApiKey, fromAddress };
   }
 
+  /** Public base URL of the web client. Used to build invite share links. */
+  get webHost(): string {
+    return this.stringOrDefault('WEB_HOST', 'http://localhost:3001');
+  }
+
   get centrifugo(): CentrifugoConfig {
     return {
       apiUrl: this.requireString('CENTRIFUGO_API_URL'),
