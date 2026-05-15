@@ -135,6 +135,24 @@ class ActiveCombatCubit extends Cubit<ActiveCombatState> {
     }
   }
 
+  /// Adds an NPC combatant to the active encounter and reloads.
+  Future<void> addNpcCombatant(String npcId) async {
+    final current = state;
+    if (current is! ActiveCombatReady) return;
+    emit(current.copyWith(actionInFlight: true, actionError: null));
+    try {
+      await _repository.addNpcCombatant(
+        encounterId: current.snapshot.encounter.id,
+        npcId: npcId,
+      );
+      if (_sessionId != null) {
+        await load(_sessionId!);
+      }
+    } on Object catch (e) {
+      emit(current.copyWith(actionInFlight: false, actionError: e.toString()));
+    }
+  }
+
   /// Removes [combatantId] from the active encounter and reloads.
   Future<void> removeCombatant(String combatantId) async {
     final current = state;

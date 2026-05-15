@@ -152,6 +152,25 @@ class CombatRepositoryImpl implements CombatRepository {
   }
 
   @override
+  Future<Combatant> addNpcCombatant({
+    required String encounterId,
+    required String npcId,
+  }) async {
+    final body = api_client.CombatantCreate((b) => b
+      ..combatantType = api_client.CombatantType.npc
+      ..sourceId = npcId);
+    final res = await _api.addCombatant(
+      id: encounterId,
+      combatantCreate: body,
+    );
+    final created = res.data;
+    if (created == null) {
+      throw StateError('addCombatant returned empty body');
+    }
+    return _combatantToDomain(created);
+  }
+
+  @override
   Future<void> deleteCombatant(String combatantId) async {
     await _api.deleteCombatant(id: combatantId);
   }

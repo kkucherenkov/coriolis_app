@@ -4,6 +4,7 @@ import 'package:app_api_client/app_api_client.dart'
         DiceApi,
         EncountersApi,
         GameSessionsApi,
+        NpcsApi,
         RealtimeApi,
         ShipsApi,
         standardSerializers;
@@ -24,6 +25,8 @@ import 'package:coriolis_companion/features/rolls/presentation/blocs/dice_roller
 import 'package:coriolis_companion/features/rolls/presentation/blocs/roll_history/roll_history_cubit.dart';
 import 'package:coriolis_companion/features/combat/data/combat_repository_impl.dart';
 import 'package:coriolis_companion/features/combat/domain/combat_repository.dart';
+import 'package:coriolis_companion/features/npcs/data/npc_repository_impl.dart';
+import 'package:coriolis_companion/features/npcs/domain/npc_repository.dart';
 import 'package:coriolis_companion/features/combat/presentation/blocs/active_combat/active_combat_cubit.dart';
 import 'package:coriolis_companion/features/sessions/data/session_repository_impl.dart';
 import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
@@ -84,6 +87,9 @@ void configureDependencies() {
     ..registerLazySingleton<GameSessionsApi>(
       () => GameSessionsApi(getIt<Dio>(), standardSerializers),
     )
+    ..registerLazySingleton<NpcsApi>(
+      () => NpcsApi(getIt<Dio>(), standardSerializers),
+    )
     ..registerLazySingleton<RealtimeApi>(
       () => RealtimeApi(getIt<Dio>(), standardSerializers),
     )
@@ -107,6 +113,11 @@ void configureDependencies() {
   // ── Sessions domain (Phase 4 Features 7.2 + 7.3) ─────────────────────────
   getIt.registerLazySingleton<SessionRepository>(
     () => SessionRepositoryImpl(api: getIt<GameSessionsApi>()),
+  );
+
+  // ── NPCs domain (T-MOBILE-NPC-PICKER) ────────────────────────────────────
+  getIt.registerLazySingleton<NpcRepository>(
+    () => NpcRepositoryImpl(api: getIt<NpcsApi>()),
   );
 
   // ── Combat domain (Phase 6 Block 1) ──────────────────────────────────────

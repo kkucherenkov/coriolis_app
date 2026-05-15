@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:coriolis_companion/features/characters/domain/character_repository.dart';
 import 'package:coriolis_companion/features/characters/domain/character_summary.dart';
+import 'package:coriolis_companion/features/npcs/domain/npc_repository.dart';
+import 'package:coriolis_companion/features/npcs/domain/npc_summary.dart';
 import 'package:coriolis_companion/features/combat/domain/combatant.dart';
 import 'package:coriolis_companion/features/combat/domain/encounter.dart';
 import 'package:coriolis_companion/features/combat/presentation/blocs/active_combat/active_combat_cubit.dart';
@@ -297,7 +299,7 @@ class _CombatTrackerViewState extends State<_CombatTrackerView> {
     final existingSourceIds = {
       for (final c in state.snapshot.combatants) c.sourceId,
     };
-    final pick = await showModalBottomSheet<String>(
+    final pick = await showModalBottomSheet<_AddCombatantPick>(
       context: context,
       backgroundColor: AppColors.surfaceNight,
       isScrollControlled: true,
@@ -307,7 +309,11 @@ class _CombatTrackerViewState extends State<_CombatTrackerView> {
       ),
     );
     if (pick == null || !context.mounted) return;
-    await cubit.addPcCombatant(pick);
+    if (pick.kind == 'pc') {
+      await cubit.addPcCombatant(pick.sourceId);
+    } else {
+      await cubit.addNpcCombatant(pick.sourceId);
+    }
   }
 }
 
@@ -1018,6 +1024,17 @@ class _DpControls extends StatelessWidget {
   }
 }
 
+// ── Add Combatant picker result ───────────────────────────────────────────────
+
+/// Discriminated result returned by [_AddCombatantSheet].
+class _AddCombatantPick {
+  const _AddCombatantPick({required this.kind, required this.sourceId});
+
+  /// `'pc'` for a player character, `'npc'` for an NPC.
+  final String kind;
+  final String sourceId;
+}
+
 // ── Add Combatant sheet ────────────────────────────────────────────────────
 
 class _AddCombatantSheet extends StatefulWidget {
@@ -1026,21 +1043,23 @@ class _AddCombatantSheet extends StatefulWidget {
     required this.existingSourceIds,
   });
 
-  /// Character ids assigned to the session; the picker only surfaces these.
+  /// Character ids assigned to the session; the PC picker only surfaces these.
   /// Empty list means "show all of the user's characters" — useful when
   /// the tracker was opened without session context.
   final List<String> sessionCharacterIds;
 
   /// `sourceId`s already attached to the encounter; filtered out so each
-  /// character can only be added once.
+  /// source can only be added once.
   final Set<String> existingSourceIds;
 
   @override
   State<_AddCombatantSheet> createState() => _AddCombatantSheetState();
 }
 
-class _AddCombatantSheetState extends State<_AddCombatantSheet> {
-  late final Future<List<CharacterSummary>> _future;
+class _AddCombatantSheetState extends State<_AddCombatantSheet>
+    with SingleTickerProviderStateMixin {
+  late final Future<List<CharacterSummary>> _pcFuture;
+  late final Future<List<NpcSummary>> _npcFuture;
 
   @override
   void initState() {
@@ -1048,99 +1067,216 @@ class _AddCombatantSheetState extends State<_AddCombatantSheet> {
     // Reach into DI directly — see the matching pattern in
     // `ShipSheetPage._CrewPickerSheet`. Keeps the page-level test
     // harness off the broken `character_repository_impl` graph.
-    _future = _loadCharacters();
-  }
-
-  Future<List<CharacterSummary>> _loadCharacters() async {
-    return getIt<CharacterRepository>().list(limit: 200);
+    _pcFuture = getIt<CharacterRepository>().list(limit: 200);
+    _npcFuture = getIt<NpcRepository>().list(limit: 200);
   }
 
   @override
   Widget build(BuildContext context) {
     final t = context.t.combat;
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.s4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              t.addCombatantTitle,
-              style: AppTypography.bodyLg
-                  .copyWith(color: AppColors.brandBrassLight),
-            ),
-            const SizedBox(height: AppSpacing.s3),
-            FutureBuilder<List<CharacterSummary>>(
-              future: _future,
-              builder: (context, snap) {
-                if (!snap.hasData &&
-                    snap.connectionState != ConnectionState.done) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(AppSpacing.s4),
-                      child: CircularProgressIndicator(
-                          color: AppColors.brandBrass),
-                    ),
-                  );
-                }
-                if (snap.hasError) {
-                  return Text(
-                    snap.error.toString(),
-                    style: AppTypography.bodySm.copyWith(
-                      color: AppColors.stateCrimsonBright,
-                    ),
-                  );
-                }
-                final chars = snap.data ?? const <CharacterSummary>[];
-                final sessionFilter = widget.sessionCharacterIds.toSet();
-                final pickable = chars
-                    .where((c) =>
-                        sessionFilter.isEmpty ||
-                        sessionFilter.contains(c.id))
-                    .where((c) => !widget.existingSourceIds.contains(c.id))
-                    .toList();
-                if (pickable.isEmpty) {
-                  return Text(
-                    t.addCombatantEmpty,
-                    style: AppTypography.bodySm
-                        .copyWith(color: AppColors.textSecondary),
-                  );
-                }
-                return ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 480),
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: pickable.length,
-                    itemBuilder: (ctx, i) {
-                      final c = pickable[i];
-                      return ListTile(
-                        key: Key('tracker-add-pick-${c.id}'),
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(
-                          c.name,
-                          style: AppTypography.bodyMd
-                              .copyWith(color: AppColors.textPrimary),
-                        ),
-                        onTap: () => Navigator.of(context).pop(c.id),
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: AppSpacing.s3),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(t.addCombatantCancel),
+    return DefaultTabController(
+      length: 2,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.s4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                t.addCombatantTitle,
+                style: AppTypography.bodyLg
+                    .copyWith(color: AppColors.brandBrassLight),
               ),
-            ),
-          ],
+              const SizedBox(height: AppSpacing.s3),
+              TabBar(
+                indicatorColor: AppColors.brandBrass,
+                labelColor: AppColors.brandBrass,
+                unselectedLabelColor: AppColors.textSecondary,
+                tabs: [
+                  Tab(text: t.addCombatantTabPc),
+                  Tab(text: t.addCombatantTabNpc),
+                ],
+              ),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 480),
+                child: TabBarView(
+                  children: [
+                    _PcPickerTab(
+                      future: _pcFuture,
+                      sessionCharacterIds: widget.sessionCharacterIds,
+                      existingSourceIds: widget.existingSourceIds,
+                    ),
+                    _NpcPickerTab(
+                      future: _npcFuture,
+                      existingSourceIds: widget.existingSourceIds,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s3),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(t.addCombatantCancel),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+// ── PC tab ────────────────────────────────────────────────────────────────────
+
+class _PcPickerTab extends StatelessWidget {
+  const _PcPickerTab({
+    required this.future,
+    required this.sessionCharacterIds,
+    required this.existingSourceIds,
+  });
+
+  final Future<List<CharacterSummary>> future;
+  final List<String> sessionCharacterIds;
+  final Set<String> existingSourceIds;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t.combat;
+    return FutureBuilder<List<CharacterSummary>>(
+      future: future,
+      builder: (context, snap) {
+        if (!snap.hasData && snap.connectionState != ConnectionState.done) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(AppSpacing.s4),
+              child: CircularProgressIndicator(color: AppColors.brandBrass),
+            ),
+          );
+        }
+        if (snap.hasError) {
+          return Padding(
+            padding: const EdgeInsets.all(AppSpacing.s3),
+            child: Text(
+              snap.error.toString(),
+              style: AppTypography.bodySm
+                  .copyWith(color: AppColors.stateCrimsonBright),
+            ),
+          );
+        }
+        final chars = snap.data ?? const <CharacterSummary>[];
+        final sessionFilter = sessionCharacterIds.toSet();
+        final pickable = chars
+            .where((c) =>
+                sessionFilter.isEmpty || sessionFilter.contains(c.id))
+            .where((c) => !existingSourceIds.contains(c.id))
+            .toList();
+        if (pickable.isEmpty) {
+          return Padding(
+            padding: const EdgeInsets.all(AppSpacing.s3),
+            child: Text(
+              t.addCombatantEmpty,
+              style: AppTypography.bodySm
+                  .copyWith(color: AppColors.textSecondary),
+            ),
+          );
+        }
+        return ListView.builder(
+          shrinkWrap: true,
+          itemCount: pickable.length,
+          itemBuilder: (ctx, i) {
+            final c = pickable[i];
+            return ListTile(
+              key: Key('tracker-add-pc-pick-${c.id}'),
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                c.name,
+                style: AppTypography.bodyMd
+                    .copyWith(color: AppColors.textPrimary),
+              ),
+              onTap: () => Navigator.of(context).pop(
+                _AddCombatantPick(kind: 'pc', sourceId: c.id),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+// ── NPC tab ───────────────────────────────────────────────────────────────────
+
+class _NpcPickerTab extends StatelessWidget {
+  const _NpcPickerTab({
+    required this.future,
+    required this.existingSourceIds,
+  });
+
+  final Future<List<NpcSummary>> future;
+  final Set<String> existingSourceIds;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t.combat;
+    return FutureBuilder<List<NpcSummary>>(
+      future: future,
+      builder: (context, snap) {
+        if (!snap.hasData && snap.connectionState != ConnectionState.done) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(AppSpacing.s4),
+              child: CircularProgressIndicator(color: AppColors.brandBrass),
+            ),
+          );
+        }
+        if (snap.hasError) {
+          return Padding(
+            padding: const EdgeInsets.all(AppSpacing.s3),
+            child: Text(
+              snap.error.toString(),
+              style: AppTypography.bodySm
+                  .copyWith(color: AppColors.stateCrimsonBright),
+            ),
+          );
+        }
+        final npcs = snap.data ?? const <NpcSummary>[];
+        final pickable =
+            npcs.where((n) => !existingSourceIds.contains(n.id)).toList();
+        if (pickable.isEmpty) {
+          return Padding(
+            padding: const EdgeInsets.all(AppSpacing.s3),
+            child: Text(
+              t.addCombatantNpcEmpty,
+              style: AppTypography.bodySm
+                  .copyWith(color: AppColors.textSecondary),
+            ),
+          );
+        }
+        return ListView.builder(
+          shrinkWrap: true,
+          itemCount: pickable.length,
+          itemBuilder: (ctx, i) {
+            final n = pickable[i];
+            return ListTile(
+              key: Key('tracker-add-npc-pick-${n.id}'),
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                n.name,
+                style: AppTypography.bodyMd
+                    .copyWith(color: AppColors.textPrimary),
+              ),
+              onTap: () => Navigator.of(context).pop(
+                _AddCombatantPick(kind: 'npc', sourceId: n.id),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

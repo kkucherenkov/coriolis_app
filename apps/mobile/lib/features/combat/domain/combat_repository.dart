@@ -52,6 +52,13 @@ abstract class CombatRepository {
     required String characterId,
   });
 
+  /// Adds an NPC combatant to [encounterId] from [npcId] (must be one of
+  /// the caller's own NPCs). 422 surfaces as a thrown Object.
+  Future<Combatant> addNpcCombatant({
+    required String encounterId,
+    required String npcId,
+  });
+
   /// Removes [combatantId] from its encounter.
   Future<void> deleteCombatant(String combatantId);
 

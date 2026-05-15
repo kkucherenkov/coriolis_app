@@ -540,6 +540,54 @@ void main() {
     },
   );
 
+  // ── addNpcCombatant ───────────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'addNpcCombatant dispatches and reloads',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.addNpcCombatant(
+            encounterId: any(named: 'encounterId'),
+            npcId: any(named: 'npcId'),
+          )).thenAnswer((_) async => _combatants.first);
+      await cubit.load(_sessionId);
+      await cubit.addNpcCombatant('npc-99');
+    },
+    verify: (_) {
+      verify(() => repo.addNpcCombatant(
+            encounterId: _activeEncounter.id,
+            npcId: 'npc-99',
+          )).called(1);
+      verify(() => repo.listEncounters(_sessionId)).called(2);
+    },
+  );
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'addNpcCombatant failure keeps Ready and surfaces actionError',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.addNpcCombatant(
+            encounterId: any(named: 'encounterId'),
+            npcId: any(named: 'npcId'),
+          )).thenThrow(StateError('422 NPC not found'));
+      await cubit.load(_sessionId);
+      await cubit.addNpcCombatant('npc-99');
+    },
+    verify: (cubit) {
+      final s = cubit.state as ActiveCombatReady;
+      expect(s.actionError, contains('422 NPC not found'));
+      expect(s.actionInFlight, isFalse);
+    },
+  );
+
   // ── removeCombatant ───────────────────────────────────────────────────────
 
   blocTest<ActiveCombatCubit, ActiveCombatState>(
