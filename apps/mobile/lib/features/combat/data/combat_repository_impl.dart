@@ -11,7 +11,17 @@
 // ────────────────────────────────────────────────────────────────────────────
 
 import 'package:app_api_client/app_api_client.dart' as api_client
-    show EncountersApi, Encounter, Combatant;
+    show
+        EncountersApi,
+        Encounter,
+        Combatant,
+        CombatantCreate,
+        CombatantType,
+        CombatantUpdate,
+        EncounterStatus,
+        EncounterUpdate,
+        EncounterUpdateBuilder;
+import 'package:built_collection/built_collection.dart';
 
 import 'package:coriolis_companion/features/combat/domain/combat_repository.dart';
 import 'package:coriolis_companion/features/combat/domain/combatant.dart';
@@ -78,5 +88,125 @@ class CombatRepositoryImpl implements CombatRepository {
     final list = res.data;
     if (list == null) return const [];
     return list.items.map(_combatantToDomain).toList(growable: false);
+  }
+
+  @override
+  Future<InitiativeRollOutcome> rollInitiative(String encounterId) async {
+    final res = await _api.rollInitiative(id: encounterId);
+    final result = res.data;
+    if (result == null) {
+      throw StateError('rollInitiative returned empty body');
+    }
+    return InitiativeRollOutcome(
+      combatants:
+          result.combatants.map(_combatantToDomain).toList(growable: false),
+      round: result.round,
+    );
+  }
+
+  @override
+  Future<TurnAdvanceOutcome> advanceTurn(String encounterId) async {
+    final res = await _api.advanceTurn(id: encounterId);
+    final result = res.data;
+    if (result == null) {
+      throw StateError('advanceTurn returned empty body');
+    }
+    return TurnAdvanceOutcome(
+      activeCombatantId: result.activeCombatantId,
+      round: result.round,
+      isNewRound: result.isNewRound,
+    );
+  }
+
+  @override
+  Future<TurnAdvanceOutcome> advanceRound(String encounterId) async {
+    final res = await _api.advanceRound(id: encounterId);
+    final result = res.data;
+    if (result == null) {
+      throw StateError('advanceRound returned empty body');
+    }
+    return TurnAdvanceOutcome(
+      activeCombatantId: result.activeCombatantId,
+      round: result.round,
+      isNewRound: result.isNewRound,
+    );
+  }
+
+  @override
+  Future<Combatant> addPcCombatant({
+    required String encounterId,
+    required String characterId,
+  }) async {
+    final body = api_client.CombatantCreate((b) => b
+      ..combatantType = api_client.CombatantType.pc
+      ..sourceId = characterId);
+    final res = await _api.addCombatant(
+      id: encounterId,
+      combatantCreate: body,
+    );
+    final created = res.data;
+    if (created == null) {
+      throw StateError('addCombatant returned empty body');
+    }
+    return _combatantToDomain(created);
+  }
+
+  @override
+  Future<Combatant> addNpcCombatant({
+    required String encounterId,
+    required String npcId,
+  }) async {
+    final body = api_client.CombatantCreate((b) => b
+      ..combatantType = api_client.CombatantType.npc
+      ..sourceId = npcId);
+    final res = await _api.addCombatant(
+      id: encounterId,
+      combatantCreate: body,
+    );
+    final created = res.data;
+    if (created == null) {
+      throw StateError('addCombatant returned empty body');
+    }
+    return _combatantToDomain(created);
+  }
+
+  @override
+  Future<void> deleteCombatant(String combatantId) async {
+    await _api.deleteCombatant(id: combatantId);
+  }
+
+  @override
+  Future<Combatant> setStatusFlags({
+    required String combatantId,
+    required List<String> flags,
+  }) async {
+    final body = api_client.CombatantUpdate((b) => b
+      ..statusFlags = ListBuilder<String>(flags));
+    final res = await _api.updateCombatant(
+      id: combatantId,
+      combatantUpdate: body,
+    );
+    final updated = res.data;
+    if (updated == null) {
+      throw StateError('updateCombatant returned empty body');
+    }
+    return _combatantToDomain(updated);
+  }
+
+  @override
+  Future<Encounter> endEncounter(String encounterId) async {
+    final body = api_client.EncounterUpdate(
+      (api_client.EncounterUpdateBuilder b) => b
+        ..status = api_client.EncounterStatus.ended,
+    );
+    final res = await _api.updateEncounter(
+      id: encounterId,
+      encounterUpdate: body,
+    );
+    final encounter = res.data;
+    if (encounter == null) {
+      throw StateError('updateEncounter returned empty body');
+    }
+    return _encounterToDomain(encounter);
   }
 }

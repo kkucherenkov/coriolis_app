@@ -14,12 +14,12 @@ class _$GameSessionCreate extends GameSessionCreate {
   @override
   final String? shipId;
 
-  factory _$GameSessionCreate([
-    void Function(GameSessionCreateBuilder)? updates,
-  ]) => (GameSessionCreateBuilder()..update(updates))._build();
+  factory _$GameSessionCreate(
+          [void Function(GameSessionCreateBuilder)? updates]) =>
+      (GameSessionCreateBuilder()..update(updates))._build();
 
   _$GameSessionCreate._({required this.name, this.description, this.shipId})
-    : super._();
+      : super._();
   @override
   GameSessionCreate rebuild(void Function(GameSessionCreateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -102,14 +102,10 @@ class GameSessionCreateBuilder
   GameSessionCreate build() => _build();
 
   _$GameSessionCreate _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$GameSessionCreate._(
           name: BuiltValueNullFieldError.checkNotNull(
-            name,
-            r'GameSessionCreate',
-            'name',
-          ),
+              name, r'GameSessionCreate', 'name'),
           description: description,
           shipId: shipId,
         );

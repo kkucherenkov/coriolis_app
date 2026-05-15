@@ -224,6 +224,12 @@ export class CreateCharacterHandler implements ICommandHandler<
       origin: dto.origin ?? null,
       reputation,
       startingWealth: budget.startingWealth,
+      // Wallet starts in lockstep with the historical record. While the
+      // character is a draft, every upbringing change re-derives both
+      // `startingWealth` and `birr` (see UpdateCharacterHandler) so the
+      // wallet is never stale; on the draft → active forge transition,
+      // birr stays at this seeded value and becomes mutable.
+      birr: budget.startingWealth,
       crewConcept,
       mutant,
       mutantLineage,

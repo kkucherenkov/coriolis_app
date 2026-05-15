@@ -78,7 +78,7 @@ class _$ConceptMeta {
   BuiltSet<Concept> get values => _$values;
 }
 
-mixin _$ConceptMixin {
+abstract class _$ConceptMixin {
   // ignore: non_constant_identifier_names
   _$ConceptMeta get Concept => const _$ConceptMeta();
 }
@@ -119,20 +119,15 @@ class _$ConceptSerializer implements PrimitiveSerializer<Concept> {
   final String wireName = 'Concept';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    Concept object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, Concept object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  Concept deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => Concept.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  Concept deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      Concept.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

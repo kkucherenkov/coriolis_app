@@ -3,28 +3,44 @@
 
   type StarSize = 'sm' | 'md' | 'lg';
   type StarColor = 'brass' | 'brass-deep' | 'brass-light';
+  type StarVariant = 'filled' | 'outlined';
+
+  /**
+   * Eight-pointed star (rub el hizb / Coriolis decorative motif).
+   *
+   * Geometry per the handoff (`/screens/primitives.jsx` `StarOrnament` /
+   * `StarFilled`): two squares — one normal, one rotated 45° around the
+   * centre — with an optional centre dot. The two squares overlap to form
+   * the eight-pointed silhouette without resorting to a polygon path.
+   *
+   * Two `variant` modes:
+   *
+   * - `filled` (default) — rects fill with currentColor at 18 % opacity +
+   *   the same stroke; centre dot at r=2. Used for hero ornaments, panel
+   *   accents, dashboard card glyphs.
+   * - `outlined` — rects are stroke-only (`fill: none`); centre dot at
+   *   r=2.2. Used for empty-state ornaments, share-viewer watermarks,
+   *   chat empty-state icons.
+   *
+   * Closes T-AUDIT-2026-05-15-STAR-VARIANT and resolves the
+   * "drift-documented" row in `HANDOFF_NAME_MAP.md` §Atom-layer.
+   */
+
+  interface Props {
+    size?: StarSize;
+    color?: StarColor;
+    opacity?: number;
+    variant?: StarVariant;
+  }
 
   const props = withDefaults(defineProps<Props>(), {
     size: 'md',
     color: 'brass',
     opacity: 1,
+    variant: 'filled',
   });
-  /**
-   * Eight-pointed star (rub el hizb / Coriolis decorative motif).
-   * Constructed from two squares rotated 45° apart, expressed as a 16-vertex
-   * polygon on a 100×100 internal canvas. This approach is cleaner than two
-   * <rect> elements and produces a consistent sharp eight-pointed silhouette.
-   *
-   * The 16 polygon points (cx=50, cy=50, inner r=22, outer r=40, 8 points):
-   * Each of the 8 outer tips alternates with 8 inner corners.
-   * Outer tip angle starts at -90° (top), inner corners at -90°+22.5°.
-   */
-  const STAR_POINTS =
-    '50,10 58.5,38.5 87,28 65,50 87,72 58.5,61.5 50,90 41.5,61.5 13,72 35,50 13,28 41.5,38.5';
-  // Above is a compact 8-pointed star: outer r=40, inner r=19 at 22.5° offsets.
-  // Rounded to nearest 0.5 for visual clarity at small sizes.
 
-  // Pixel dimensions per size token — mirroring the three sizes in the brief:
+  // Pixel dimensions per size token. Mirrors the three sizes in the brief:
   // sm=16px, md=24px, lg=56px.
   const SIZE_PX: Record<StarSize, number> = {
     sm: 16,
@@ -32,18 +48,14 @@
     lg: 56,
   };
 
-  interface Props {
-    size?: StarSize;
-    color?: StarColor;
-    opacity?: number;
-  }
-
   const sizePx = computed(() => SIZE_PX[props.size]);
+  const centreRadius = computed(() => (props.variant === 'outlined' ? 2.2 : 2));
 
   const classes = computed(() => [
     'app-star-ornament',
     `app-star-ornament--${props.size}`,
     `app-star-ornament--${props.color}`,
+    `app-star-ornament--${props.variant}`,
   ]);
 </script>
 
@@ -52,13 +64,19 @@
     <svg
       :width="sizePx"
       :height="sizePx"
-      viewBox="0 0 100 100"
+      viewBox="0 0 32 32"
       role="presentation"
       aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       class="app-star-ornament__svg"
     >
-      <polygon :points="STAR_POINTS" class="app-star-ornament__shape" />
+      <!-- Two overlapping squares — variant decides fill vs stroke-only. -->
+      <g class="app-star-ornament__rects">
+        <rect x="6" y="6" width="20" height="20" />
+        <rect x="6" y="6" width="20" height="20" transform="rotate(45 16 16)" />
+      </g>
+      <!-- Centre dot — always filled with currentColor. -->
+      <circle cx="16" cy="16" :r="centreRadius" class="app-star-ornament__dot" />
     </svg>
   </span>
 </template>
@@ -98,12 +116,31 @@
       display: block;
     }
 
-    // ── Star shape ────────────────────────────────────────────────────────────
+    // ── Shape — currentColor drives both stroke and fill ─────────────────────
 
-    &__shape {
-      // Filled by currentColor so the consumer's color token drives the shade.
+    &__rects {
+      // Both rects share the same paint rules per the active variant.
+      fill: currentColor;
+      stroke: currentColor;
+    }
+
+    &__dot {
       fill: currentColor;
       stroke: none;
+    }
+
+    // ── Variant: filled (handoff `StarFilled`) ───────────────────────────────
+
+    &--filled .app-star-ornament__rects {
+      fill-opacity: 0.18;
+      stroke-width: 1;
+    }
+
+    // ── Variant: outlined (handoff `StarOrnament`) ───────────────────────────
+
+    &--outlined .app-star-ornament__rects {
+      fill: none;
+      stroke-width: 1.2;
     }
 
     // ── Color modifiers ───────────────────────────────────────────────────────

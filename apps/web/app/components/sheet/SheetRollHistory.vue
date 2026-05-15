@@ -251,6 +251,7 @@
       :aria-label="t('modalTitle')"
       size="md"
       data-testid="sheet-roll-history-modal"
+      close-on-backdrop
       @update:open="(v: boolean) => !v && closeModal()"
     >
       <div v-if="modalRoll" class="roll-history__modal">

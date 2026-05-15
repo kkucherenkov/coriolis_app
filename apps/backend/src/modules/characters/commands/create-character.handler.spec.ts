@@ -51,6 +51,7 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     origin: null,
     reputation: 2,
     startingWealth: 500,
+    birr: 500,
     crewConcept: null,
     mutant: false,
     mutantLineage: null,
@@ -268,7 +269,7 @@ describe('CreateCharacterHandler', () => {
 
   // -------- Upbringing-derived budgets (Coriolis core book ch.2) --------
 
-  it('plebeian: derives reputation 2 and startingWealth 500', async () => {
+  it('plebeian: derives reputation 2, startingWealth 500, birr 500', async () => {
     vi.mocked(repo.create).mockResolvedValue(makeCharacter({ upbringing: 'plebeian' }));
 
     await handler.execute(
@@ -276,13 +277,18 @@ describe('CreateCharacterHandler', () => {
     );
 
     expect(repo.create).toHaveBeenCalledWith(
-      expect.objectContaining({ upbringing: 'plebeian', reputation: 2, startingWealth: 500 }),
+      expect.objectContaining({
+        upbringing: 'plebeian',
+        reputation: 2,
+        startingWealth: 500,
+        birr: 500,
+      }),
     );
   });
 
-  it('stationary: derives reputation 4 and startingWealth 1000', async () => {
+  it('stationary: derives reputation 4, startingWealth 1000, birr 1000', async () => {
     vi.mocked(repo.create).mockResolvedValue(
-      makeCharacter({ upbringing: 'stationary', reputation: 4, startingWealth: 1000 }),
+      makeCharacter({ upbringing: 'stationary', reputation: 4, startingWealth: 1000, birr: 1000 }),
     );
 
     await handler.execute(
@@ -290,13 +296,18 @@ describe('CreateCharacterHandler', () => {
     );
 
     expect(repo.create).toHaveBeenCalledWith(
-      expect.objectContaining({ upbringing: 'stationary', reputation: 4, startingWealth: 1000 }),
+      expect.objectContaining({
+        upbringing: 'stationary',
+        reputation: 4,
+        startingWealth: 1000,
+        birr: 1000,
+      }),
     );
   });
 
-  it('aristocrat: derives reputation 6 and startingWealth 5000', async () => {
+  it('aristocrat: derives reputation 6, startingWealth 5000, birr 5000', async () => {
     vi.mocked(repo.create).mockResolvedValue(
-      makeCharacter({ upbringing: 'aristocrat', reputation: 6, startingWealth: 5000 }),
+      makeCharacter({ upbringing: 'aristocrat', reputation: 6, startingWealth: 5000, birr: 5000 }),
     );
 
     await handler.execute(
@@ -304,7 +315,12 @@ describe('CreateCharacterHandler', () => {
     );
 
     expect(repo.create).toHaveBeenCalledWith(
-      expect.objectContaining({ upbringing: 'aristocrat', reputation: 6, startingWealth: 5000 }),
+      expect.objectContaining({
+        upbringing: 'aristocrat',
+        reputation: 6,
+        startingWealth: 5000,
+        birr: 5000,
+      }),
     );
   });
 
@@ -362,6 +378,7 @@ describe('CreateCharacterHandler', () => {
         upbringing: 'aristocrat',
         reputation: 6,
         startingWealth: 5000,
+        birr: 5000,
         attributes: { strength: 4, agility: 3, wits: 3, empathy: 3 },
       }),
     );

@@ -5,7 +5,8 @@ import 'package:app_ui/app_ui.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
-import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_1_concept.dart' show WizardStepHeader;
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_1_biography.dart'
+    show WizardStepHeader;
 
 // TODO(wizard-step-7-relationships): Step 7 Relationships is deferred.
 
@@ -31,8 +32,8 @@ class Step6Talents extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               WizardStepHeader(
-                title: t.wizardStep6Title,
-                blurb: t.wizardStep6Blurb,
+                title: t.wizard.step.talents.title,
+                blurb: t.wizard.step.talents.blurb,
               ),
               const SizedBox(height: AppSpacing.s4),
               // Talent count indicator

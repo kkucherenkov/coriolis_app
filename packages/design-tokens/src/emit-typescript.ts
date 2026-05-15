@@ -1,4 +1,12 @@
-import type { ColorFile, ColorGroup, DtcgLeaf, TokenBundle, TypographyFile } from './types.ts';
+import { resolveTypographyValue } from './parse.ts';
+import type {
+  ColorFile,
+  ColorGroup,
+  DtcgLeaf,
+  TokenBundle,
+  TypographyFile,
+  TypographyValue,
+} from './types.ts';
 
 const COLOR_GROUPS: readonly ColorGroup[] = ['surface', 'brand', 'text', 'state'];
 
@@ -35,11 +43,28 @@ function plain<T>(entries: Record<string, DtcgLeaf<T>>): Record<string, T> {
 function fontBlock(typography: TypographyFile): {
   family: Record<string, string | string[]>;
   weight: Record<string, number>;
+  size: Record<string, string>;
+  lineHeight: Record<string, number>;
+  tracking: Record<string, string>;
 } {
   return {
     family: plain(typography.font.family),
     weight: plain(typography.font.weight),
+    size: typography.font.size === undefined ? {} : plain(typography.font.size),
+    lineHeight:
+      typography.font['line-height'] === undefined ? {} : plain(typography.font['line-height']),
+    tracking: typography.font.tracking === undefined ? {} : plain(typography.font.tracking),
   };
+}
+
+function typographyBlock(typography: TypographyFile): Record<string, TypographyValue> {
+  // Resolve `{font.<bucket>.<key>}` refs so TS consumers see literal values.
+  const out: Record<string, TypographyValue> = {};
+  for (const [role, leaf] of Object.entries(typography.typography)) {
+    if (role.startsWith('$')) continue;
+    out[role] = resolveTypographyValue(typography, leaf.$value);
+  }
+  return out;
 }
 
 export function emitTypescript(tokens: TokenBundle): string {
@@ -58,7 +83,7 @@ export function emitTypescript(tokens: TokenBundle): string {
     color: colorsBlock(tokens.color.color),
     theme: themeOverrides,
     font: fontBlock(tokens.typography),
-    type: plain(tokens.typography.type),
+    typography: typographyBlock(tokens.typography),
     spacing: plain(tokens.spacing.spacing),
     radius: plain(tokens.radius.radius),
     motion: {

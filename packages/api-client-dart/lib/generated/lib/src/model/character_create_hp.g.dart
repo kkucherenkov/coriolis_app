@@ -10,9 +10,9 @@ class _$CharacterCreateHp extends CharacterCreateHp {
   @override
   final int? current;
 
-  factory _$CharacterCreateHp([
-    void Function(CharacterCreateHpBuilder)? updates,
-  ]) => (CharacterCreateHpBuilder()..update(updates))._build();
+  factory _$CharacterCreateHp(
+          [void Function(CharacterCreateHpBuilder)? updates]) =>
+      (CharacterCreateHpBuilder()..update(updates))._build();
 
   _$CharacterCreateHp._({this.current}) : super._();
   @override
@@ -39,9 +39,9 @@ class _$CharacterCreateHp extends CharacterCreateHp {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-      r'CharacterCreateHp',
-    )..add('current', current)).toString();
+    return (newBuiltValueToStringHelper(r'CharacterCreateHp')
+          ..add('current', current))
+        .toString();
   }
 }
 
@@ -80,7 +80,10 @@ class CharacterCreateHpBuilder
   CharacterCreateHp build() => _build();
 
   _$CharacterCreateHp _build() {
-    final _$result = _$v ?? _$CharacterCreateHp._(current: current);
+    final _$result = _$v ??
+        _$CharacterCreateHp._(
+          current: current,
+        );
     replace(_$result);
     return _$result;
   }

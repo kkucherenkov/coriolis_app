@@ -1,3 +1,5 @@
+import { decideAuthAction, type SessionResult } from '~/utils/auth-redirect';
+
 /**
  * auth-required.global — guards every route under /app/*.
  *
@@ -7,23 +9,34 @@
  * first navigation after sign-in it can still report `data: null` even
  * though the cookie is valid. Reading the explicit fetch result avoids that
  * race entirely.
+ *
+ * Three outcomes (see `decideAuthAction`):
+ *   - session present → allow.
+ *   - no session AND backend rate-limited us (429 from the auth
+ *     catch-all throttle) → allow optimistically; the next API call
+ *     will surface the real auth state. This stops the SPA from
+ *     silently signing the user out after a burst of route navigations
+ *     consumes the `/auth/get-session` throttle budget.
+ *     See T-UX-2026-05-15-AUTH-THROTTLE.
+ *   - anything else → redirect to /login with the original target.
  */
 export default defineNuxtRouteMiddleware(async (to) => {
   if (!to.path.startsWith('/app')) return;
 
   const auth = useAuth();
 
-  let userId: string | undefined;
+  let result: SessionResult | null = null;
   try {
-    const result = await auth.getSession();
-    const data = result.data as { user?: { id?: string } } | null;
-    userId = data?.user?.id;
+    result = (await auth.getSession()) as SessionResult;
   } catch {
-    // Network failure — treat as unauthenticated.
+    // Network failure — treat as unauthenticated (decideAuthAction
+    // maps `null` to 'redirect').
   }
 
-  if (!userId) {
+  const decision = decideAuthAction(result);
+  if (decision === 'redirect') {
     const redirect = encodeURIComponent(to.fullPath);
     return navigateTo(`/login?redirect=${redirect}`);
   }
+  // 'allow' and 'rate-limited-allow' both fall through.
 });

@@ -37,11 +37,14 @@ export interface ShadowPart {
 export type ShadowValue = ShadowPart | ShadowPart[];
 
 export interface TypographyValue {
-  fontFamily: string; // family key from font.family (e.g. "display"), not a literal stack
-  fontSize: string; // px
-  lineHeight: string | number; // unit-less ratio or px
-  fontWeight: string | number; // weight key from font.weight (e.g. "regular") or numeric
-  letterSpacing?: string; // em
+  // Each string field may be a DTCG reference (`{font.size.16}`) or a literal.
+  // The pipeline resolves refs against TypographyFile.font.* before emit; see
+  // resolveTypographyValue() in parse.ts.
+  fontFamily: string; // either a {font.family.X} ref or a bare family key (e.g. "display")
+  fontSize: string; // either a {font.size.X} ref or a literal like "16px"
+  lineHeight: string | number; // ref, unit-less ratio, or px literal
+  fontWeight: string | number; // ref, weight key (e.g. "regular"), or numeric (e.g. 400)
+  letterSpacing?: string; // ref or em literal
   textCase?: 'uppercase' | 'lowercase' | 'none';
 }
 
@@ -70,11 +73,28 @@ export interface ColorFile {
 
 export interface TypographyFile {
   $schema?: string;
+  $description?: string;
   font: {
     family: Record<string, DtcgLeaf<string | string[]>>;
     weight: Record<string, DtcgLeaf<number>>;
+    /**
+     * Optional atom scale referenced from composite roles as `{font.size.16}`.
+     * Required for the v2 schema (ADR-0004). Each leaf is a DTCG `dimension`
+     * with a px literal value.
+     */
+    size?: Record<string, DtcgLeaf<string>>;
+    /**
+     * Optional atom enums for line-height (`{font.line-height.tight}`). Each
+     * leaf is a DTCG `number` (unit-less ratio).
+     */
+    'line-height'?: Record<string, DtcgLeaf<number>>;
+    /**
+     * Optional atom scale for letter-spacing (`{font.tracking.06}`). Each
+     * leaf is a DTCG `dimension` with an em literal value.
+     */
+    tracking?: Record<string, DtcgLeaf<string>>;
   };
-  type: Record<string, DtcgLeaf<TypographyValue>>;
+  typography: Record<string, DtcgLeaf<TypographyValue>>;
 }
 
 export interface SpacingFile {

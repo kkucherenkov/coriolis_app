@@ -23,14 +23,14 @@ class _$Problem extends Problem {
   factory _$Problem([void Function(ProblemBuilder)? updates]) =>
       (ProblemBuilder()..update(updates))._build();
 
-  _$Problem._({
-    this.type,
-    this.title,
-    required this.status,
-    this.detail,
-    this.instance,
-    this.code,
-  }) : super._();
+  _$Problem._(
+      {this.type,
+      this.title,
+      required this.status,
+      this.detail,
+      this.instance,
+      this.code})
+      : super._();
   @override
   Problem rebuild(void Function(ProblemBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -135,16 +135,12 @@ class ProblemBuilder implements Builder<Problem, ProblemBuilder> {
   Problem build() => _build();
 
   _$Problem _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$Problem._(
           type: type,
           title: title,
           status: BuiltValueNullFieldError.checkNotNull(
-            status,
-            r'Problem',
-            'status',
-          ),
+              status, r'Problem', 'status'),
           detail: detail,
           instance: instance,
           code: code,

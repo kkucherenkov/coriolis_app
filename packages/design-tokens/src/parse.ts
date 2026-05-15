@@ -1,5 +1,95 @@
 // Small parsers that turn CSS-shaped strings into Dart-friendly values.
 
+import type { TypographyFile, TypographyValue } from './types.ts';
+
+/**
+ * Resolve a DTCG-style `{font.<bucket>.<key>}` reference against a
+ * TypographyFile. Throws on unknown paths so `pnpm design:build` fails loud
+ * on typos rather than silently emitting the literal `{font.size.42}` string.
+ *
+ * Resolution mode depends on the bucket — the downstream emitters need
+ * different shapes:
+ *
+ * - `{font.family.X}` → returns the bare key `X` so emit-scss/emit-dart can
+ *   still convert it to `var(--font-X)` / `AppFontFamily.X`.
+ * - `{font.weight.X}` → returns the bare key `X` for the same reason.
+ * - `{font.size.X}` → returns the leaf `$value` literal (e.g. `"16px"`).
+ * - `{font.line-height.X}` → returns the leaf `$value` number (e.g. `1.25`).
+ * - `{font.tracking.X}` → returns the leaf `$value` literal (e.g. `"0.06em"`).
+ *
+ * Non-ref inputs (literals without `{}` brackets) are returned unchanged so
+ * pre-existing inline literals stay forward-compatible.
+ */
+export function resolveRef(typography: TypographyFile, input: string | number): string | number {
+  if (typeof input !== 'string') return input;
+  if (!input.startsWith('{') || !input.endsWith('}')) return input;
+
+  const path = input.slice(1, -1).split('.');
+  if (path[0] !== 'font') {
+    throw new Error(`Unsupported token reference: ${input} (expected {font.*.*})`);
+  }
+  const bucket = path[1] ?? '';
+  const key = path.slice(2).join('.');
+  if (bucket === '' || key === '') {
+    throw new Error(`Malformed token reference: ${input}`);
+  }
+
+  // For family / weight: return the bare key so downstream emitters keep
+  // producing `var(--font-X)` / `var(--fw-X)` references rather than inlining.
+  if (bucket === 'family' || bucket === 'weight') {
+    const lookup = (typography.font as Record<string, Record<string, unknown> | undefined>)[bucket];
+    if (lookup === undefined || !(key in lookup)) {
+      throw new Error(`Unresolved token reference: ${input}`);
+    }
+    return key;
+  }
+
+  // For size / line-height / tracking: walk to the DTCG leaf and return its $value.
+  const lookup = (typography.font as Record<string, Record<string, unknown> | undefined>)[bucket];
+  if (lookup === undefined) {
+    throw new Error(
+      `Unknown token bucket in ${input} — bucket "${bucket}" is not declared on font.*`,
+    );
+  }
+  if (!(key in lookup)) {
+    throw new Error(`Unresolved token reference: ${input}`);
+  }
+  const leaf = lookup[key] as { $value?: string | number | string[] } | undefined;
+  if (leaf?.$value === undefined) {
+    throw new Error(`Token reference does not point at a DTCG leaf: ${input}`);
+  }
+  const value = leaf.$value;
+  if (Array.isArray(value)) {
+    return value.map((name) => (name.includes(' ') ? `"${name}"` : name)).join(', ');
+  }
+  return value;
+}
+
+/**
+ * Resolve every field of a composite typography value through the atom layer.
+ * After this pass, `fontFamily` / `fontWeight` carry their bucket key (string)
+ * and `fontSize` / `lineHeight` / `letterSpacing` carry their literal values.
+ * No `{...}` ref-form strings survive.
+ */
+export function resolveTypographyValue(
+  typography: TypographyFile,
+  value: TypographyValue,
+): TypographyValue {
+  const resolved: TypographyValue = {
+    fontFamily: String(resolveRef(typography, value.fontFamily)),
+    fontSize: String(resolveRef(typography, value.fontSize)),
+    lineHeight: resolveRef(typography, value.lineHeight),
+    fontWeight: resolveRef(typography, value.fontWeight),
+  };
+  if (value.letterSpacing !== undefined) {
+    resolved.letterSpacing = String(resolveRef(typography, value.letterSpacing));
+  }
+  if (value.textCase !== undefined) {
+    resolved.textCase = value.textCase;
+  }
+  return resolved;
+}
+
 export interface ParsedColor {
   r: number;
   g: number;

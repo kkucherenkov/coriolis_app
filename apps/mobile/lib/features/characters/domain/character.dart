@@ -335,12 +335,29 @@ class DomainItem extends Equatable {
 ///
 /// Immutable; built from the `app_api_client` generated `Character` in the
 /// data layer. Presentation never imports `app_api_client` types directly.
+///
+/// Enum-shaped fields ([concept], [iconId], [role], [crewConcept],
+/// [upbringing], [mutantLineage], [status]) are stored as their kebab-case
+/// wire-string form so the presentation layer never needs to import the
+/// generated typed enums.
 class Character extends Equatable {
   const Character({
     required this.id,
     required this.ownerId,
     required this.name,
     this.concept,
+    this.role,
+    this.roleUnmigrated = false,
+    this.iconId,
+    this.upbringing = 'plebeian',
+    this.origin,
+    this.reputation = 2,
+    this.startingWealth = 500,
+    this.birr = 500,
+    this.crewConcept,
+    this.mutant = false,
+    this.mutantLineage,
+    this.status = 'active',
     required this.attributes,
     required this.skills,
     required this.hp,
@@ -360,6 +377,18 @@ class Character extends Equatable {
   final String ownerId;
   final String name;
   final String? concept;
+  final String? role;
+  final bool roleUnmigrated;
+  final String? iconId;
+  final String upbringing;
+  final String? origin;
+  final int reputation;
+  final int startingWealth;
+  final int birr;
+  final String? crewConcept;
+  final bool mutant;
+  final String? mutantLineage;
+  final String status; // 'draft' | 'active'
   final CharacterAttributes attributes;
   final CharacterSkills skills;
   final CharacterHp hp;
@@ -389,6 +418,18 @@ class Character extends Equatable {
     String? ownerId,
     String? name,
     String? concept,
+    String? role,
+    bool? roleUnmigrated,
+    String? iconId,
+    String? upbringing,
+    String? origin,
+    int? reputation,
+    int? startingWealth,
+    int? birr,
+    String? crewConcept,
+    bool? mutant,
+    String? mutantLineage,
+    String? status,
     CharacterAttributes? attributes,
     CharacterSkills? skills,
     CharacterHp? hp,
@@ -408,6 +449,18 @@ class Character extends Equatable {
       ownerId: ownerId ?? this.ownerId,
       name: name ?? this.name,
       concept: concept ?? this.concept,
+      role: role ?? this.role,
+      roleUnmigrated: roleUnmigrated ?? this.roleUnmigrated,
+      iconId: iconId ?? this.iconId,
+      upbringing: upbringing ?? this.upbringing,
+      origin: origin ?? this.origin,
+      reputation: reputation ?? this.reputation,
+      startingWealth: startingWealth ?? this.startingWealth,
+      birr: birr ?? this.birr,
+      crewConcept: crewConcept ?? this.crewConcept,
+      mutant: mutant ?? this.mutant,
+      mutantLineage: mutantLineage ?? this.mutantLineage,
+      status: status ?? this.status,
       attributes: attributes ?? this.attributes,
       skills: skills ?? this.skills,
       hp: hp ?? this.hp,
@@ -426,7 +479,10 @@ class Character extends Equatable {
 
   @override
   List<Object?> get props => [
-        id, ownerId, name, concept, attributes, skills, hp, mp,
+        id, ownerId, name, concept, role, roleUnmigrated, iconId,
+        upbringing, origin, reputation, startingWealth, birr,
+        crewConcept, mutant, mutantLineage, status,
+        attributes, skills, hp, mp,
         encumbrance, experience, conditions, criticalInjuries, talents,
         inventory, notes, updatedAt, createdAt,
       ];

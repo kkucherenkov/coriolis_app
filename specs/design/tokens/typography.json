@@ -1,5 +1,6 @@
 {
   "$schema": "https://design-tokens.github.io/community-group/format/",
+  "$description": "Typography tokens. Atom layer (font.size, font.line-height, font.tracking) feeds the composite roles under typography.* via DTCG {path.to.atom} references. Schema rationale: docs/adr/0004-typography-token-schema.md.",
   "font": {
     "family": {
       "display": {
@@ -23,52 +24,105 @@
       "medium": { "$value": 500, "$type": "fontWeight" },
       "semibold": { "$value": 600, "$type": "fontWeight" },
       "bold": { "$value": 700, "$type": "fontWeight" }
+    },
+    "size": {
+      "$description": "Atom scale — drop into composite roles as {font.size.N}.",
+      "9": { "$value": "9px", "$type": "dimension" },
+      "10": { "$value": "10px", "$type": "dimension" },
+      "11": { "$value": "11px", "$type": "dimension" },
+      "12": { "$value": "12px", "$type": "dimension" },
+      "13": { "$value": "13px", "$type": "dimension" },
+      "14": { "$value": "14px", "$type": "dimension" },
+      "15": { "$value": "15px", "$type": "dimension" },
+      "16": { "$value": "16px", "$type": "dimension" },
+      "18": { "$value": "18px", "$type": "dimension" },
+      "20": { "$value": "20px", "$type": "dimension" },
+      "24": { "$value": "24px", "$type": "dimension" },
+      "28": { "$value": "28px", "$type": "dimension" },
+      "32": { "$value": "32px", "$type": "dimension" },
+      "36": { "$value": "36px", "$type": "dimension" },
+      "40": { "$value": "40px", "$type": "dimension" },
+      "44": { "$value": "44px", "$type": "dimension" },
+      "48": { "$value": "48px", "$type": "dimension" },
+      "56": { "$value": "56px", "$type": "dimension" },
+      "64": { "$value": "64px", "$type": "dimension" }
+    },
+    "line-height": {
+      "$description": "Atom enums — unit-less ratios. {font.line-height.tight} = 1.1, etc.",
+      "tight": { "$value": 1.1, "$type": "number" },
+      "snug": { "$value": 1.25, "$type": "number" },
+      "normal": { "$value": 1.4, "$type": "number" },
+      "relaxed": { "$value": 1.5, "$type": "number" },
+      "loose": { "$value": 1.6, "$type": "number" }
+    },
+    "tracking": {
+      "$description": "Atom scale — letter-spacing in em. {font.tracking.06} = 0.06em.",
+      "tight": { "$value": "-0.01em", "$type": "dimension" },
+      "normal": { "$value": "0em", "$type": "dimension" },
+      "04": { "$value": "0.04em", "$type": "dimension", "$description": "Display titles." },
+      "06": { "$value": "0.06em", "$type": "dimension", "$description": "Section heads." },
+      "08": { "$value": "0.08em", "$type": "dimension", "$description": "Uppercase eyebrows." },
+      "10": { "$value": "0.10em", "$type": "dimension" },
+      "12": { "$value": "0.12em", "$type": "dimension" },
+      "14": { "$value": "0.14em", "$type": "dimension" },
+      "16": { "$value": "0.16em", "$type": "dimension" },
+      "18": { "$value": "0.18em", "$type": "dimension" },
+      "20": {
+        "$value": "0.20em",
+        "$type": "dimension",
+        "$description": "Heaviest tracking — chapter heads, swash labels."
+      },
+      "30": {
+        "$value": "0.30em",
+        "$type": "dimension",
+        "$description": "Hero eyebrow above portrait."
+      }
     }
   },
-  "type": {
-    "$description": "Composite type roles per DESIGN §3.2. Each role decomposes to --type-<role>-{font-family,font-size,line-height,font-weight,letter-spacing} CSS custom properties.",
+  "typography": {
+    "$description": "Composite type roles per DESIGN §3.2. Each role decomposes to --type-<role>-{font-family,font-size,line-height,font-weight,letter-spacing} CSS custom properties. Schema: docs/adr/0004-typography-token-schema.md.",
     "display-xl": {
       "$type": "typography",
       "$description": "Landing headline only.",
       "$value": {
-        "fontFamily": "display",
-        "fontSize": "48px",
-        "lineHeight": "56px",
-        "fontWeight": "regular",
-        "letterSpacing": "0.06em"
+        "fontFamily": "{font.family.display}",
+        "fontSize": "{font.size.48}",
+        "lineHeight": "{font.size.56}",
+        "fontWeight": "{font.weight.regular}",
+        "letterSpacing": "{font.tracking.06}"
       }
     },
     "display-lg": {
       "$type": "typography",
       "$description": "Character name on sheet header.",
       "$value": {
-        "fontFamily": "display",
-        "fontSize": "36px",
-        "lineHeight": "44px",
-        "fontWeight": "regular",
-        "letterSpacing": "0.04em"
+        "fontFamily": "{font.family.display}",
+        "fontSize": "{font.size.36}",
+        "lineHeight": "{font.size.44}",
+        "fontWeight": "{font.weight.regular}",
+        "letterSpacing": "{font.tracking.04}"
       }
     },
     "display-md": {
       "$type": "typography",
       "$description": "Section headers (Skills, Inventory).",
       "$value": {
-        "fontFamily": "display",
-        "fontSize": "28px",
-        "lineHeight": "36px",
-        "fontWeight": "regular",
-        "letterSpacing": "0.04em"
+        "fontFamily": "{font.family.display}",
+        "fontSize": "{font.size.28}",
+        "lineHeight": "{font.size.36}",
+        "fontWeight": "{font.weight.regular}",
+        "letterSpacing": "{font.tracking.04}"
       }
     },
     "display-sm": {
       "$type": "typography",
       "$description": "Stat-block labels.",
       "$value": {
-        "fontFamily": "display",
-        "fontSize": "20px",
-        "lineHeight": "28px",
-        "fontWeight": "regular",
-        "letterSpacing": "0.08em",
+        "fontFamily": "{font.family.display}",
+        "fontSize": "{font.size.20}",
+        "lineHeight": "{font.size.28}",
+        "fontWeight": "{font.weight.regular}",
+        "letterSpacing": "{font.tracking.08}",
         "textCase": "uppercase"
       }
     },
@@ -76,50 +130,72 @@
       "$type": "typography",
       "$description": "Primary body.",
       "$value": {
-        "fontFamily": "body",
-        "fontSize": "18px",
-        "lineHeight": "28px",
-        "fontWeight": "regular"
+        "fontFamily": "{font.family.body}",
+        "fontSize": "{font.size.18}",
+        "lineHeight": "{font.size.28}",
+        "fontWeight": "{font.weight.regular}"
       }
     },
     "body-md": {
       "$type": "typography",
       "$description": "Default body.",
       "$value": {
-        "fontFamily": "body",
-        "fontSize": "16px",
-        "lineHeight": "24px",
-        "fontWeight": "regular"
+        "fontFamily": "{font.family.body}",
+        "fontSize": "{font.size.16}",
+        "lineHeight": "{font.size.24}",
+        "fontWeight": "{font.weight.regular}"
       }
     },
     "body-sm": {
       "$type": "typography",
       "$description": "Labels, captions.",
       "$value": {
-        "fontFamily": "body",
-        "fontSize": "14px",
-        "lineHeight": "20px",
-        "fontWeight": "medium"
+        "fontFamily": "{font.family.body}",
+        "fontSize": "{font.size.14}",
+        "lineHeight": "{font.size.20}",
+        "fontWeight": "{font.weight.medium}"
+      }
+    },
+    "body-xs": {
+      "$type": "typography",
+      "$description": "Footnotes, meta, dense table rows. Added 2026-05-14 to back the existing consumers that referenced --type-body-xs-* against an undefined role.",
+      "$value": {
+        "fontFamily": "{font.family.body}",
+        "fontSize": "{font.size.12}",
+        "lineHeight": "{font.line-height.normal}",
+        "fontWeight": "{font.weight.regular}"
+      }
+    },
+    "label-sm": {
+      "$type": "typography",
+      "$description": "Small uppercase labels. Added 2026-05-14 to back UserMenu and similar consumers.",
+      "$value": {
+        "fontFamily": "{font.family.body}",
+        "fontSize": "{font.size.12}",
+        "lineHeight": "{font.line-height.normal}",
+        "fontWeight": "{font.weight.medium}",
+        "letterSpacing": "{font.tracking.06}",
+        "textCase": "uppercase"
       }
     },
     "mono-stat-xl": {
       "$type": "typography",
       "$description": "HP and MP big counters.",
       "$value": {
-        "fontFamily": "mono",
-        "fontSize": "32px",
-        "lineHeight": "32px",
-        "fontWeight": "bold"
+        "fontFamily": "{font.family.mono}",
+        "fontSize": "{font.size.32}",
+        "lineHeight": "{font.size.32}",
+        "fontWeight": "{font.weight.bold}"
       }
     },
     "mono-stat-md": {
       "$type": "typography",
       "$description": "Skill ranks, item weights.",
       "$value": {
-        "fontFamily": "mono",
-        "fontSize": "20px",
-        "lineHeight": "24px",
-        "fontWeight": "medium"
+        "fontFamily": "{font.family.mono}",
+        "fontSize": "{font.size.20}",
+        "lineHeight": "{font.size.24}",
+        "fontWeight": "{font.weight.medium}"
       }
     }
   }

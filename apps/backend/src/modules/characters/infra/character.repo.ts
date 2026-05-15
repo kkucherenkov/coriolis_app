@@ -4,18 +4,20 @@
  * This is the only place in the characters bounded context that imports PrismaService.
  * Handlers inject ICharacterRepo by the CHARACTER_REPO token.
  *
- * SELECT shapes are scoped to use cases:
- * - list() omits heavy nested arrays (inventory, talents, etc.) for performance
- * - findActiveById() fetches the full graph needed for CharacterReadModel
+ * SELECT shape: both list() and findActiveById() use CHARACTER_FULL_SELECT and
+ * return CharacterReadModel. The OpenAPI contract for GET /api/v1/characters
+ * (`CharacterList.items: $ref: Character`) is the source of truth — every list
+ * item must satisfy the full Character schema (including `upbringing`,
+ * `attributes`, `skills`, `encumbrance`, `criticalInjuries`, `talents`,
+ * `relationships`, `inventory`). A lightweight summary projection lived here
+ * briefly and silently drifted from the spec; express-openapi-validator now
+ * enforces parity.
  *
  * Derived stats are computed by the rules-engine module (Story 3.2.2):
  *   hp.max         = computeHpMax(strength, agility)     — PRD §5.2
  *   mp.max         = computeMpMax(wits, empathy)          — PRD §5.2
  *   encumbrance.max     = computeEncumbranceMax(strength)      — PRD §5.2
  *   encumbrance.current = computeEncumbranceCurrent(items) — PRD §5.3
- *
- * For the list() projection, items are not fetched (perf), so encumbrance.current
- * is not returned in CharacterListItem — only in CharacterReadModel (full).
  */
 import { Injectable } from '@nestjs/common';
 
@@ -30,7 +32,6 @@ import {
 
 import type {
   Attributes,
-  CharacterListItem,
   CharacterReadModel,
   CharacterStatus,
   Concept,
@@ -66,6 +67,7 @@ const CHARACTER_FULL_SELECT = {
   origin: true,
   reputation: true,
   startingWealth: true,
+  birr: true,
   crewConcept: true,
   mutant: true,
   mutantLineage: true,
@@ -97,21 +99,6 @@ const CHARACTER_FULL_SELECT = {
   },
 } as const;
 
-const CHARACTER_LIST_SELECT = {
-  id: true,
-  ownerId: true,
-  name: true,
-  concept: true,
-  iconId: true,
-  attributes: true,
-  hpCurrent: true,
-  mpCurrent: true,
-  conditions: true,
-  status: true,
-  createdAt: true,
-  updatedAt: true,
-} as const;
-
 // --------------- Mappers ---------------
 
 interface PrismaCharacterFull {
@@ -126,6 +113,7 @@ interface PrismaCharacterFull {
   origin: string | null;
   reputation: number;
   startingWealth: number;
+  birr: number;
   crewConcept: string | null;
   mutant: boolean;
   mutantLineage: string | null;
@@ -232,6 +220,7 @@ function toReadModel(row: PrismaCharacterFull): CharacterReadModel {
     origin: row.origin,
     reputation: row.reputation,
     startingWealth: row.startingWealth,
+    birr: row.birr,
     crewConcept: fromCrewConceptEnum(row.crewConcept),
     mutant: row.mutant,
     mutantLineage: row.mutantLineage as MutantLineage | null,
@@ -286,7 +275,7 @@ export class CharacterRepo implements ICharacterRepo {
 
   async list(
     opts: ListCharactersOptions,
-  ): Promise<{ items: CharacterListItem[]; nextCursor: string | null }> {
+  ): Promise<{ items: CharacterReadModel[]; nextCursor: string | null }> {
     const { ownerId, limit, cursor, includeDrafts } = opts;
     const take = limit + 1; // fetch one extra to detect next page
 
@@ -299,39 +288,18 @@ export class CharacterRepo implements ICharacterRepo {
         ownerId,
         ...(statusFilter ? { status: statusFilter } : {}),
       },
-      select: CHARACTER_LIST_SELECT,
+      select: CHARACTER_FULL_SELECT,
       orderBy: { createdAt: 'desc' },
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       take,
     });
 
     const hasNext = rows.length > limit;
-    const items = hasNext ? rows.slice(0, limit) : rows;
+    const pageRows = hasNext ? rows.slice(0, limit) : rows;
 
     return {
-      items: items.map((row) => {
-        const attrs = row.attributes as unknown as Attributes;
-        return {
-          id: row.id,
-          ownerId: row.ownerId,
-          name: row.name,
-          concept: row.concept,
-          iconId: row.iconId as unknown as IconId | null,
-          hp: {
-            current: row.hpCurrent,
-            max: computeHpMax(attrs.strength, attrs.agility),
-          },
-          mp: {
-            current: row.mpCurrent,
-            max: computeMpMax(attrs.wits, attrs.empathy),
-          },
-          conditions: row.conditions as unknown as ConditionFlags,
-          status: toCharacterStatus(row.status),
-          createdAt: row.createdAt.toISOString(),
-          updatedAt: row.updatedAt.toISOString(),
-        };
-      }),
-      nextCursor: hasNext ? (items.at(-1)?.id ?? null) : null,
+      items: pageRows.map((row) => toReadModel(row)),
+      nextCursor: hasNext ? (pageRows.at(-1)?.id ?? null) : null,
     };
   }
 
@@ -346,6 +314,7 @@ export class CharacterRepo implements ICharacterRepo {
     origin?: string | null;
     reputation: number;
     startingWealth: number;
+    birr: number;
     crewConcept?: CrewConcept | null;
     mutant?: boolean;
     mutantLineage?: MutantLineage | null;
@@ -374,6 +343,7 @@ export class CharacterRepo implements ICharacterRepo {
         origin: data.origin ?? null,
         reputation: data.reputation,
         startingWealth: data.startingWealth,
+        birr: data.birr,
         crewConcept: this.toCrewConceptEnum(data.crewConcept ?? null),
         mutant: data.mutant ?? false,
         mutantLineage: data.mutantLineage ?? null,
@@ -419,6 +389,7 @@ export class CharacterRepo implements ICharacterRepo {
       upbringing: Upbringing;
       origin: string | null;
       reputation: number;
+      birr: number;
       crewConcept: CrewConcept | null;
       mutant: boolean;
       mutantLineage: MutantLineage | null;

@@ -39,15 +39,10 @@ import { ListCharactersQuery } from './queries/list-characters.query';
 import { AddTalentCommand, AddTalentDto } from './talents/commands/add-talent.command';
 
 import type { AuthenticatedRequest } from '../../common/auth/auth.guard';
-import type {
-  CharacterListItem,
-  CharacterReadModel,
-  ItemReadModel,
-  TalentReadModel,
-} from './domain/character.ports';
+import type { CharacterReadModel, ItemReadModel, TalentReadModel } from './domain/character.ports';
 
 interface CharacterListResponse {
-  items: CharacterListItem[];
+  items: CharacterReadModel[];
   nextCursor: string | null;
 }
 

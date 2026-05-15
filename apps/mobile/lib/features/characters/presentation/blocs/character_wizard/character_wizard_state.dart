@@ -2,42 +2,43 @@ import 'package:equatable/equatable.dart';
 
 import 'package:coriolis_companion/features/characters/domain/character.dart';
 
-/// The Nine Icons of the Third Horizon.
-///
-/// Each value maps to a canonical glyph name used in the domain and i18n.
-enum CoriolisIcon {
-  theJudiciary,
-  theTraveler,
-  theMessenger,
-  theLegionnaire,
-  theNurse,
-  theMerchant,
-  theSymbiont,
-  theFaceless,
-  theChained,
-}
-
 /// Draft-data collected step-by-step before the character is activated.
 ///
-/// All fields are nullable so the wizard can persist partial progress
-/// without requiring every step to be complete.
+/// All fields except [mutant] are nullable so the wizard can persist partial
+/// progress without requiring every step to be complete. [mutant] defaults to
+/// `false` to mirror the backend `CharacterCreate` default.
+///
+/// Domain semantics (post-T-WIZARD-MOBILE-DOMAIN-ALIGN, block 2026-05-15):
+///
+/// - [concept] is the **canonical Concept enum value** (e.g. `pilot`,
+///   `scientist`), not a freeform phrase. The wizard's old free-text
+///   "concept phrase" no longer round-trips to the API — the canonical
+///   reorder block will add a dedicated Concept-picker step.
+/// - [origin] is the **free-text** narrative description from
+///   `Character.origin` (max 200 chars).
+/// - [upbringing] is one of `plebeian | stationary | aristocrat`.
+/// - [iconId] is one of the nine canonical kebab-case Icon ids
+///   (`lady-of-tears | traveler | messenger | merchant | dancer | gambler |
+///   judge | faceless-one | deckhand`).
+/// - [role] is one of the canonical 33 Role enum values.
+/// - [crewConcept] is one of the five crew archetypes.
+/// - [mutantLineage] is one of `zirba | shingura | nerida`.
 class WizardDraft extends Equatable {
   const WizardDraft({
-    // Step 1 — Concept
+    // Step 1 — Biography (name)
     this.name,
-    this.concept,
     // Step 2 — People & Background
     this.origin,
     this.upbringing,
     this.age,
     // Step 3 — Icon
-    this.selectedIcon,
-    // Step 4 — Attributes (store as a map key→value for easy per-step mutation)
+    this.iconId,
+    // Step 4 — Attributes
     this.strength,
     this.agility,
     this.wits,
     this.empathy,
-    // Step 5 — Skills (same)
+    // Step 5 — Skills
     this.dexterity,
     this.force,
     this.infiltration,
@@ -56,17 +57,25 @@ class WizardDraft extends Equatable {
     this.technology,
     // Step 6 — Talents
     this.pendingTalents,
+    // Step 8 — Gear (memory-only until forge)
+    this.pendingGearPicks = const {},
+    // Reorder-block additions (data plumbing only — UI lands in
+    // T-WIZARD-MOBILE-REORDER):
+    this.concept,
+    this.role,
+    this.crewConcept,
+    this.mutant = false,
+    this.mutantLineage,
   });
 
   // Step 1
   final String? name;
-  final String? concept;
   // Step 2
   final String? origin;
   final String? upbringing;
   final int? age;
   // Step 3
-  final CoriolisIcon? selectedIcon;
+  final String? iconId;
   // Step 4
   final int? strength;
   final int? agility;
@@ -91,6 +100,15 @@ class WizardDraft extends Equatable {
   final int? technology;
   // Step 6
   final List<PendingTalent>? pendingTalents;
+  // Step 8 — rowId → chosen optionId (null = no pick for that row).
+  // Memory-only: not persisted until forge().
+  final Map<String, String?> pendingGearPicks;
+  // Reorder-block additions
+  final String? concept;
+  final String? role;
+  final String? crewConcept;
+  final bool mutant;
+  final String? mutantLineage;
 
   // ── Derived point-pool helpers ───────────────────────────────────────────
 
@@ -120,11 +138,10 @@ class WizardDraft extends Equatable {
 
   WizardDraft copyWith({
     String? name,
-    String? concept,
     String? origin,
     String? upbringing,
     int? age,
-    CoriolisIcon? selectedIcon,
+    String? iconId,
     int? strength,
     int? agility,
     int? wits,
@@ -146,14 +163,20 @@ class WizardDraft extends Equatable {
     int? science,
     int? technology,
     List<PendingTalent>? pendingTalents,
+    Map<String, String?>? pendingGearPicks,
+    String? concept,
+    String? role,
+    String? crewConcept,
+    bool? mutant,
+    String? mutantLineage,
+    bool clearMutantLineage = false,
   }) {
     return WizardDraft(
       name: name ?? this.name,
-      concept: concept ?? this.concept,
       origin: origin ?? this.origin,
       upbringing: upbringing ?? this.upbringing,
       age: age ?? this.age,
-      selectedIcon: selectedIcon ?? this.selectedIcon,
+      iconId: iconId ?? this.iconId,
       strength: strength ?? this.strength,
       agility: agility ?? this.agility,
       wits: wits ?? this.wits,
@@ -175,19 +198,28 @@ class WizardDraft extends Equatable {
       science: science ?? this.science,
       technology: technology ?? this.technology,
       pendingTalents: pendingTalents ?? this.pendingTalents,
+      pendingGearPicks: pendingGearPicks ?? this.pendingGearPicks,
+      concept: concept ?? this.concept,
+      role: role ?? this.role,
+      crewConcept: crewConcept ?? this.crewConcept,
+      mutant: mutant ?? this.mutant,
+      mutantLineage:
+          clearMutantLineage ? null : (mutantLineage ?? this.mutantLineage),
     );
   }
 
   @override
   List<Object?> get props => [
-        name, concept, origin, upbringing, age,
-        selectedIcon,
+        name, origin, upbringing, age,
+        iconId,
         strength, agility, wits, empathy,
         dexterity, force, infiltration, manipulation,
         meleeCombat, observation, rangedCombat, survival,
         command, culture, dataDjinn, medicurgy,
         mysticPowers, pilot, science, technology,
         pendingTalents,
+        pendingGearPicks,
+        concept, role, crewConcept, mutant, mutantLineage,
       ];
 }
 

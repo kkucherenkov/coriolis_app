@@ -20,9 +20,11 @@ GameSessionStatus _$valueOf(String name) {
   }
 }
 
-final BuiltSet<GameSessionStatus> _$values = BuiltSet<GameSessionStatus>(
-  const <GameSessionStatus>[_$active, _$archived],
-);
+final BuiltSet<GameSessionStatus> _$values =
+    BuiltSet<GameSessionStatus>(const <GameSessionStatus>[
+  _$active,
+  _$archived,
+]);
 
 class _$GameSessionStatusMeta {
   const _$GameSessionStatusMeta();
@@ -32,7 +34,7 @@ class _$GameSessionStatusMeta {
   BuiltSet<GameSessionStatus> get values => _$values;
 }
 
-mixin _$GameSessionStatusMixin {
+abstract class _$GameSessionStatusMixin {
   // ignore: non_constant_identifier_names
   _$GameSessionStatusMeta get GameSessionStatus =>
       const _$GameSessionStatusMeta();
@@ -58,20 +60,15 @@ class _$GameSessionStatusSerializer
   final String wireName = 'GameSessionStatus';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    GameSessionStatus object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, GameSessionStatus object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  GameSessionStatus deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => GameSessionStatus.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  GameSessionStatus deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      GameSessionStatus.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

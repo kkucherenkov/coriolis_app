@@ -99,9 +99,12 @@ class TalentUpdateBuilder
   TalentUpdate build() => _build();
 
   _$TalentUpdate _build() {
-    final _$result =
-        _$v ??
-        _$TalentUpdate._(name: name, description: description, rank: rank);
+    final _$result = _$v ??
+        _$TalentUpdate._(
+          name: name,
+          description: description,
+          rank: rank,
+        );
     replace(_$result);
     return _$result;
   }

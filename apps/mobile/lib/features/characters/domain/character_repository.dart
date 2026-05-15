@@ -14,13 +14,27 @@ abstract class CharacterRepository {
   /// Fetches the full character DTO for [id].
   Future<Character> get(String id);
 
-  /// Creates a new character with [name].
+  /// Creates a new character with [name] and [upbringing].
+  ///
+  /// [upbringing] is required by the backend (`plebeian | stationary |
+  /// aristocrat`); pass `'plebeian'` as the default when starting a fresh
+  /// draft from the wizard — the user can still change it on Step 2 while
+  /// the character is in `draft` state.
   ///
   /// [status] defaults to `active`; pass `draft` from the creation wizard
   /// so the character does not surface in the dashboard until forged.
-  Future<Character> create({required String name, String? status});
+  Future<Character> create({
+    required String name,
+    required String upbringing,
+    String? status,
+  });
 
   /// Partially updates the character identified by [id].
+  ///
+  /// All canonical wire-string enums (`concept`, `role`, `iconId`,
+  /// `crewConcept`, `mutantLineage`, `upbringing`, `status`) are accepted as
+  /// kebab-case strings; the implementation routes them through the
+  /// generated EnumClass `.valueOf()` constructors.
   ///
   /// [status] is the lifecycle transition: only `draft → active` (forge) is
   /// permitted by the server; `active → draft` returns 422
@@ -29,6 +43,15 @@ abstract class CharacterRepository {
     String id, {
     String? name,
     String? concept,
+    String? role,
+    String? iconId,
+    String? upbringing,
+    String? origin,
+    String? crewConcept,
+    bool? mutant,
+    String? mutantLineage,
+    int? reputation,
+    int? birr,
     CharacterAttributes? attributes,
     CharacterSkills? skills,
     CharacterHp? hp,

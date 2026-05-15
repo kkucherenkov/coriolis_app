@@ -238,6 +238,29 @@
     return (CANONICAL_FLAGS as string[]).includes(flag);
   }
 
+  /**
+   * Boss NPC visual state — name renders in --state-crimson-bright per
+   * SURFACES.md §8. Triggered by a case-insensitive free-form status flag
+   * literal "boss" applied by the GM via the existing add-flag input.
+   * PCs never qualify (boss tint applies to NPCs only).
+   */
+  function isBossNpc(combatant: Combatant): boolean {
+    if (combatant.combatantType !== 'npc') return false;
+    return combatant.statusFlags.some((f) => f.toLowerCase() === 'boss');
+  }
+
+  /**
+   * Low HP visual state — HP value tints --state-crimson-bright when
+   * hpCurrent / hpMax < 0.4 per SURFACES.md §8. Negative hpCurrent
+   * (allowed by the schema for damage-overflow display) also triggers
+   * the tint via the same ratio. Guards against hpMax <= 0 to avoid
+   * divide-by-zero for malformed records.
+   */
+  function isLowHp(combatant: Combatant): boolean {
+    if (combatant.hpMax <= 0) return false;
+    return combatant.hpCurrent / combatant.hpMax < 0.4;
+  }
+
   /** Icon name (heroicons) for canonical flags. */
   function canonicalFlagIcon(flag: CanonicalFlag): string {
     if (flag === 'incapacitated') return 'i-heroicons-x-circle';
@@ -688,11 +711,20 @@
         <!-- Combatant info -->
         <div class="combat-tracker__row-body">
           <div class="combat-tracker__row-top">
-            <span class="combat-tracker__name">{{ combatant.displayName }}</span>
+            <span
+              class="combat-tracker__name"
+              :class="{ 'combat-tracker__name--boss': isBossNpc(combatant) }"
+              :data-testid="`combatant-name-${combatant.id}`"
+              >{{ combatant.displayName }}</span
+            >
             <AppBadge variant="brass" size="sm">
               {{ combatant.combatantType === 'pc' ? t('tabPc') : t('tabNpc') }}
             </AppBadge>
-            <span class="combat-tracker__hp">
+            <span
+              class="combat-tracker__hp"
+              :class="{ 'combat-tracker__hp--low': isLowHp(combatant) }"
+              :data-testid="`combatant-hp-${combatant.id}`"
+            >
               {{ t('hpLabel') }}: {{ combatant.hpCurrent }}/{{ combatant.hpMax }}
             </span>
             <span v-if="combatant.initiative !== null" class="combat-tracker__initiative">
@@ -1016,12 +1048,24 @@
       font-size: var(--type-body-sm-font-size);
       color: var(--text-primary);
       font-weight: var(--fw-bold);
+
+      &--boss {
+        // SURFACES.md §8 — Boss NPC name in crimson-bright.
+        // Triggered via the case-insensitive "boss" status flag (see isBossNpc).
+        color: var(--state-crimson-bright);
+      }
     }
 
     &__hp {
       font-family: var(--font-body);
       font-size: var(--type-body-xs-font-size);
       color: var(--text-secondary);
+
+      &--low {
+        // SURFACES.md §8 — Low-HP HP value (current/max < 0.4) in crimson-bright.
+        color: var(--state-crimson-bright);
+        font-weight: var(--fw-bold);
+      }
     }
 
     &__initiative {

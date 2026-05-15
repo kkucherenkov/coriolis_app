@@ -6,9 +6,8 @@ part of 'item_armor.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const ItemArmorTypeEnum _$itemArmorTypeEnum_ARMOR = const ItemArmorTypeEnum._(
-  'ARMOR',
-);
+const ItemArmorTypeEnum _$itemArmorTypeEnum_ARMOR =
+    const ItemArmorTypeEnum._('ARMOR');
 
 ItemArmorTypeEnum _$itemArmorTypeEnumValueOf(String name) {
   switch (name) {
@@ -21,8 +20,8 @@ ItemArmorTypeEnum _$itemArmorTypeEnumValueOf(String name) {
 
 final BuiltSet<ItemArmorTypeEnum> _$itemArmorTypeEnumValues =
     BuiltSet<ItemArmorTypeEnum>(const <ItemArmorTypeEnum>[
-      _$itemArmorTypeEnum_ARMOR,
-    ]);
+  _$itemArmorTypeEnum_ARMOR,
+]);
 
 Serializer<ItemArmorTypeEnum> _$itemArmorTypeEnumSerializer =
     _$ItemArmorTypeEnumSerializer();
@@ -42,20 +41,15 @@ class _$ItemArmorTypeEnumSerializer
   final String wireName = 'ItemArmorTypeEnum';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    ItemArmorTypeEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, ItemArmorTypeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  ItemArmorTypeEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => ItemArmorTypeEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  ItemArmorTypeEnum deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ItemArmorTypeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 class _$ItemArmor extends ItemArmor {
@@ -67,16 +61,28 @@ class _$ItemArmor extends ItemArmor {
   final num weight;
   @override
   final int armorRating;
+  @override
+  final int? extraSlotCount;
+  @override
+  final String id;
+  @override
+  final String type;
+  @override
+  final String name;
 
   factory _$ItemArmor([void Function(ItemArmorBuilder)? updates]) =>
       (ItemArmorBuilder()..update(updates))._build();
 
-  _$ItemArmor._({
-    required this.features,
-    required this.equipped,
-    required this.weight,
-    required this.armorRating,
-  }) : super._();
+  _$ItemArmor._(
+      {required this.features,
+      required this.equipped,
+      required this.weight,
+      required this.armorRating,
+      this.extraSlotCount,
+      required this.id,
+      required this.type,
+      required this.name})
+      : super._();
   @override
   ItemArmor rebuild(void Function(ItemArmorBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -91,7 +97,11 @@ class _$ItemArmor extends ItemArmor {
         features == other.features &&
         equipped == other.equipped &&
         weight == other.weight &&
-        armorRating == other.armorRating;
+        armorRating == other.armorRating &&
+        extraSlotCount == other.extraSlotCount &&
+        id == other.id &&
+        type == other.type &&
+        name == other.name;
   }
 
   @override
@@ -101,6 +111,10 @@ class _$ItemArmor extends ItemArmor {
     _$hash = $jc(_$hash, equipped.hashCode);
     _$hash = $jc(_$hash, weight.hashCode);
     _$hash = $jc(_$hash, armorRating.hashCode);
+    _$hash = $jc(_$hash, extraSlotCount.hashCode);
+    _$hash = $jc(_$hash, id.hashCode);
+    _$hash = $jc(_$hash, type.hashCode);
+    _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -111,30 +125,54 @@ class _$ItemArmor extends ItemArmor {
           ..add('features', features)
           ..add('equipped', equipped)
           ..add('weight', weight)
-          ..add('armorRating', armorRating))
+          ..add('armorRating', armorRating)
+          ..add('extraSlotCount', extraSlotCount)
+          ..add('id', id)
+          ..add('type', type)
+          ..add('name', name))
         .toString();
   }
 }
 
-class ItemArmorBuilder implements Builder<ItemArmor, ItemArmorBuilder> {
+class ItemArmorBuilder
+    implements Builder<ItemArmor, ItemArmorBuilder>, ItemBaseBuilder {
   _$ItemArmor? _$v;
 
   ListBuilder<String>? _features;
   ListBuilder<String> get features =>
       _$this._features ??= ListBuilder<String>();
-  set features(ListBuilder<String>? features) => _$this._features = features;
+  set features(covariant ListBuilder<String>? features) =>
+      _$this._features = features;
 
   bool? _equipped;
   bool? get equipped => _$this._equipped;
-  set equipped(bool? equipped) => _$this._equipped = equipped;
+  set equipped(covariant bool? equipped) => _$this._equipped = equipped;
 
   num? _weight;
   num? get weight => _$this._weight;
-  set weight(num? weight) => _$this._weight = weight;
+  set weight(covariant num? weight) => _$this._weight = weight;
 
   int? _armorRating;
   int? get armorRating => _$this._armorRating;
-  set armorRating(int? armorRating) => _$this._armorRating = armorRating;
+  set armorRating(covariant int? armorRating) =>
+      _$this._armorRating = armorRating;
+
+  int? _extraSlotCount;
+  int? get extraSlotCount => _$this._extraSlotCount;
+  set extraSlotCount(covariant int? extraSlotCount) =>
+      _$this._extraSlotCount = extraSlotCount;
+
+  String? _id;
+  String? get id => _$this._id;
+  set id(covariant String? id) => _$this._id = id;
+
+  String? _type;
+  String? get type => _$this._type;
+  set type(covariant String? type) => _$this._type = type;
+
+  String? _name;
+  String? get name => _$this._name;
+  set name(covariant String? name) => _$this._name = name;
 
   ItemArmorBuilder() {
     ItemArmor._defaults(this);
@@ -147,13 +185,17 @@ class ItemArmorBuilder implements Builder<ItemArmor, ItemArmorBuilder> {
       _equipped = $v.equipped;
       _weight = $v.weight;
       _armorRating = $v.armorRating;
+      _extraSlotCount = $v.extraSlotCount;
+      _id = $v.id;
+      _type = $v.type;
+      _name = $v.name;
       _$v = null;
     }
     return this;
   }
 
   @override
-  void replace(ItemArmor other) {
+  void replace(covariant ItemArmor other) {
     _$v = other as _$ItemArmor;
   }
 
@@ -168,25 +210,21 @@ class ItemArmorBuilder implements Builder<ItemArmor, ItemArmorBuilder> {
   _$ItemArmor _build() {
     _$ItemArmor _$result;
     try {
-      _$result =
-          _$v ??
+      _$result = _$v ??
           _$ItemArmor._(
             features: features.build(),
             equipped: BuiltValueNullFieldError.checkNotNull(
-              equipped,
-              r'ItemArmor',
-              'equipped',
-            ),
+                equipped, r'ItemArmor', 'equipped'),
             weight: BuiltValueNullFieldError.checkNotNull(
-              weight,
-              r'ItemArmor',
-              'weight',
-            ),
+                weight, r'ItemArmor', 'weight'),
             armorRating: BuiltValueNullFieldError.checkNotNull(
-              armorRating,
-              r'ItemArmor',
-              'armorRating',
-            ),
+                armorRating, r'ItemArmor', 'armorRating'),
+            extraSlotCount: extraSlotCount,
+            id: BuiltValueNullFieldError.checkNotNull(id, r'ItemArmor', 'id'),
+            type: BuiltValueNullFieldError.checkNotNull(
+                type, r'ItemArmor', 'type'),
+            name: BuiltValueNullFieldError.checkNotNull(
+                name, r'ItemArmor', 'name'),
           );
     } catch (_) {
       late String _$failedField;
@@ -195,10 +233,7 @@ class ItemArmorBuilder implements Builder<ItemArmor, ItemArmorBuilder> {
         features.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'ItemArmor',
-          _$failedField,
-          e.toString(),
-        );
+            r'ItemArmor', _$failedField, e.toString());
       }
       rethrow;
     }

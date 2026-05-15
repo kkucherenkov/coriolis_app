@@ -18,6 +18,7 @@ class DiceRollerState extends Equatable {
     this.pool = 5,
     this.lastRoll,
     this.errorMessage,
+    this.pushDelta,
   });
 
   final DiceRollerStatus status;
@@ -26,15 +27,23 @@ class DiceRollerState extends Equatable {
   final Roll? lastRoll;
   final String? errorMessage;
 
+  /// SURFACES.md §9 — push can fail (no new 6s). [pushDelta] tracks the
+  /// in-session outcome: count of hits gained by the most recent push.
+  /// Null until a push fires in this session. A fresh roll resets it to
+  /// null; a reloaded already-pushed roll never replays the outcome line.
+  final int? pushDelta;
+
   DiceRollerState copyWith({
     DiceRollerStatus? status,
     String? label,
     int? pool,
     Roll? lastRoll,
     String? errorMessage,
+    int? pushDelta,
     // Sentinels so the caller can explicitly clear nullable fields.
     bool clearError = false,
     bool clearLastRoll = false,
+    bool clearPushDelta = false,
   }) {
     return DiceRollerState(
       status: status ?? this.status,
@@ -42,9 +51,11 @@ class DiceRollerState extends Equatable {
       pool: pool ?? this.pool,
       lastRoll: clearLastRoll ? null : (lastRoll ?? this.lastRoll),
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      pushDelta: clearPushDelta ? null : (pushDelta ?? this.pushDelta),
     );
   }
 
   @override
-  List<Object?> get props => [status, label, pool, lastRoll, errorMessage];
+  List<Object?> get props =>
+      [status, label, pool, lastRoll, errorMessage, pushDelta];
 }

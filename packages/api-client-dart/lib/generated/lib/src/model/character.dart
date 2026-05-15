@@ -39,6 +39,7 @@ part 'character.g.dart';
 /// * [origin] - Free-text narrative description of where the character is from (home station, planet, or region). Has no mechanical effect. 
 /// * [reputation] - Current social reputation. Initial value is derived from `upbringing` (plebeian=2, stationary=4, aristocrat=6) and may change during play. 
 /// * [startingWealth] - The number of birrs (currency) the character started with at creation. Derived from `upbringing` (plebeian=500, stationary=1000, aristocrat=5000). Immutable historical record. 
+/// * [birr] - Current spendable birr balance (the character's wallet). Seeded from `startingWealth` when the wizard transitions `status: draft → active` (the forge step). Mutable any time after activation — debited on Bazaar purchases via the items API and credited from session payouts via PATCH. While the character is still a `draft`, the server keeps `birr` in lock-step with `startingWealth` so changing `upbringing` does not strand a stale balance; explicit PATCHes to `birr` on a draft are rejected with `BIRR_DRAFT_IMMUTABLE`. 
 /// * [crewConcept] 
 /// * [mutant] - Whether this character is a mutant (пасынок) per Coriolis ST3001 ch.4 §Стигмы пасынков. Mutants additionally pick one starting talent of `kind: stigma` from the catalog (any of the three stigmas) through the regular `addTalent` endpoint. Mutable while `status: draft` and immutable once `active` — `MUTANT_IMMUTABLE`. When `true`, `mutantLineage` must be set; when `false`, `mutantLineage` must be `null`. 
 /// * [mutantLineage] 
@@ -103,6 +104,10 @@ abstract class Character implements Built<Character, CharacterBuilder> {
   /// The number of birrs (currency) the character started with at creation. Derived from `upbringing` (plebeian=500, stationary=1000, aristocrat=5000). Immutable historical record. 
   @BuiltValueField(wireName: r'startingWealth')
   int get startingWealth;
+
+  /// Current spendable birr balance (the character's wallet). Seeded from `startingWealth` when the wizard transitions `status: draft → active` (the forge step). Mutable any time after activation — debited on Bazaar purchases via the items API and credited from session payouts via PATCH. While the character is still a `draft`, the server keeps `birr` in lock-step with `startingWealth` so changing `upbringing` does not strand a stale balance; explicit PATCHes to `birr` on a draft are rejected with `BIRR_DRAFT_IMMUTABLE`. 
+  @BuiltValueField(wireName: r'birr')
+  int get birr;
 
   @BuiltValueField(wireName: r'crewConcept')
   CrewConcept? get crewConcept;
@@ -247,6 +252,11 @@ class _$CharacterSerializer implements PrimitiveSerializer<Character> {
     yield r'startingWealth';
     yield serializers.serialize(
       object.startingWealth,
+      specifiedType: const FullType(int),
+    );
+    yield r'birr';
+    yield serializers.serialize(
+      object.birr,
       specifiedType: const FullType(int),
     );
     yield r'crewConcept';
@@ -442,6 +452,13 @@ class _$CharacterSerializer implements PrimitiveSerializer<Character> {
             specifiedType: const FullType(int),
           ) as int;
           result.startingWealth = valueDes;
+          break;
+        case r'birr':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.birr = valueDes;
           break;
         case r'crewConcept':
           final valueDes = serializers.deserialize(

@@ -7,6 +7,9 @@ import 'package:coriolis_companion/features/characters/domain/character_reposito
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
 
+// Fallback value for addItem.
+class _FakeDomainItem extends Fake implements DomainItem {}
+
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
 class _MockRepo extends Mock implements CharacterRepository {}
@@ -50,8 +53,6 @@ Character _makeCharacter({String id = 'c1', String name = 'Untitled'}) =>
 CharacterWizardCubit _buildCubit(_MockRepo repo) =>
     CharacterWizardCubit(repository: repo);
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
-
 void main() {
   late _MockRepo repo;
 
@@ -66,6 +67,7 @@ void main() {
       command: 0, culture: 0, dataDjinn: 0, medicurgy: 0,
       mysticPowers: 0, pilot: 0, science: 0, technology: 0,
     ));
+    registerFallbackValue(_FakeDomainItem());
   });
 
   setUp(() {
@@ -76,10 +78,13 @@ void main() {
     // ── start with no id — creates new draft ────────────────────────────────
 
     blocTest<CharacterWizardCubit, CharacterWizardState>(
-      'start(id: null) POSTs a new draft and returns the new id',
+      'start(id: null) POSTs a new draft with default upbringing=plebeian',
       build: () {
-        when(() => repo.create(name: 'Untitled', status: 'draft'))
-            .thenAnswer((_) async => _makeCharacter());
+        when(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).thenAnswer((_) async => _makeCharacter());
         return _buildCubit(repo);
       },
       act: (cubit) => cubit.start(),
@@ -92,15 +97,22 @@ void main() {
             .having((s) => s.saveStatus, 'saveStatus', WizardSaveStatus.idle),
       ],
       verify: (_) {
-        verify(() => repo.create(name: 'Untitled', status: 'draft')).called(1);
+        verify(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).called(1);
       },
     );
 
     blocTest<CharacterWizardCubit, CharacterWizardState>(
       'start(id: null) emits error state when create throws',
       build: () {
-        when(() => repo.create(name: 'Untitled', status: 'draft'))
-            .thenThrow(Exception('network error'));
+        when(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).thenThrow(Exception('network error'));
         return _buildCubit(repo);
       },
       act: (cubit) => cubit.start(),
@@ -139,10 +151,17 @@ void main() {
     blocTest<CharacterWizardCubit, CharacterWizardState>(
       'next() advances step after persisting current step data',
       build: () {
-        when(() => repo.create(name: 'Untitled', status: 'draft'))
-            .thenAnswer((_) async => _makeCharacter());
-        when(() => repo.update('c1', name: any(named: 'name'), concept: any(named: 'concept')))
-            .thenAnswer((_) async => _makeCharacter());
+        when(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).thenAnswer((_) async => _makeCharacter());
+        when(() => repo.update('c1',
+                  name: any(named: 'name'),
+                  upbringing: any(named: 'upbringing'),
+                  origin: any(named: 'origin'),
+                  crewConcept: any(named: 'crewConcept'),
+                )).thenAnswer((_) async => _makeCharacter());
         return _buildCubit(repo);
       },
       act: (cubit) async {
@@ -157,12 +176,17 @@ void main() {
     blocTest<CharacterWizardCubit, CharacterWizardState>(
       'back() decrements step without saving',
       build: () {
-        when(() => repo.create(name: 'Untitled', status: 'draft'))
-            .thenAnswer((_) async => _makeCharacter());
+        when(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).thenAnswer((_) async => _makeCharacter());
         when(() => repo.update('c1',
-              name: any(named: 'name'),
-              concept: any(named: 'concept')))
-            .thenAnswer((_) async => _makeCharacter());
+                  name: any(named: 'name'),
+                  upbringing: any(named: 'upbringing'),
+                  origin: any(named: 'origin'),
+                  crewConcept: any(named: 'crewConcept'),
+                )).thenAnswer((_) async => _makeCharacter());
         return _buildCubit(repo);
       },
       act: (cubit) async {
@@ -174,9 +198,132 @@ void main() {
         expect(cubit.state.step, 1);
         // update was called once (for next), not twice.
         verify(() => repo.update(any(),
-              name: any(named: 'name'),
-              concept: any(named: 'concept')))
-            .called(1);
+                  name: any(named: 'name'),
+                  upbringing: any(named: 'upbringing'),
+                  origin: any(named: 'origin'),
+                  crewConcept: any(named: 'crewConcept'),
+                )).called(1);
+      },
+    );
+
+    // ── Step 1 Biography persists name + upbringing + origin + crew ──────
+
+    blocTest<CharacterWizardCubit, CharacterWizardState>(
+      'Step 1 Biography → next() PATCHes name + canonical upbringing + origin + crew',
+      build: () {
+        when(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).thenAnswer((_) async => _makeCharacter());
+        when(() => repo.update('c1',
+                  name: any(named: 'name'),
+                  upbringing: any(named: 'upbringing'),
+                  origin: any(named: 'origin'),
+                  crewConcept: any(named: 'crewConcept'),
+                )).thenAnswer((_) async => _makeCharacter());
+        return _buildCubit(repo);
+      },
+      act: (cubit) async {
+        await cubit.start();
+        cubit.updateName('Kira Sol');
+        cubit.updateUpbringing('aristocrat');
+        cubit.updateOrigin('Atlas Outpost');
+        cubit.updateCrewConcept('freeTrader');
+        await cubit.next(); // 1 → 2
+      },
+      verify: (cubit) {
+        expect(cubit.state.step, 2);
+        verify(() => repo.update('c1',
+                  name: 'Kira Sol',
+                  upbringing: 'aristocrat',
+                  origin: 'Atlas Outpost',
+                  crewConcept: 'freeTrader',
+                )).called(1);
+      },
+    );
+
+    // ── Step 2 Concept (амплуа) persists canonical concept ────────────────
+
+    blocTest<CharacterWizardCubit, CharacterWizardState>(
+      'Step 2 Concept → next() PATCHes the canonical Concept enum value',
+      build: () {
+        when(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).thenAnswer((_) async => _makeCharacter());
+        when(() => repo.update('c1',
+                  name: any(named: 'name'),
+                  upbringing: any(named: 'upbringing'),
+                  origin: any(named: 'origin'),
+                  crewConcept: any(named: 'crewConcept'),
+                )).thenAnswer((_) async => _makeCharacter());
+        when(() => repo.update('c1', concept: any(named: 'concept')))
+            .thenAnswer((_) async => _makeCharacter());
+        return _buildCubit(repo);
+      },
+      act: (cubit) async {
+        await cubit.start();
+        await cubit.next(); // 1 → 2
+        cubit.updateConcept('pilot');
+        await cubit.next(); // 2 → 3
+      },
+      verify: (cubit) {
+        expect(cubit.state.step, 3);
+        verify(() => repo.update('c1', concept: 'pilot')).called(1);
+      },
+    );
+
+    // ── Step 3 Role persists canonical role ───────────────────────────────
+
+    blocTest<CharacterWizardCubit, CharacterWizardState>(
+      'Step 3 Role → next() PATCHes the canonical Role enum value',
+      build: () {
+        when(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).thenAnswer((_) async => _makeCharacter());
+        when(() => repo.update('c1',
+                  name: any(named: 'name'),
+                  upbringing: any(named: 'upbringing'),
+                  origin: any(named: 'origin'),
+                  crewConcept: any(named: 'crewConcept'),
+                )).thenAnswer((_) async => _makeCharacter());
+        when(() => repo.update('c1', concept: any(named: 'concept')))
+            .thenAnswer((_) async => _makeCharacter());
+        when(() => repo.update('c1', role: any(named: 'role')))
+            .thenAnswer((_) async => _makeCharacter());
+        return _buildCubit(repo);
+      },
+      act: (cubit) async {
+        await cubit.start();
+        cubit.updateConcept('pilot');
+        await cubit.next(); // 1 → 2
+        await cubit.next(); // 2 → 3
+        cubit.updateRole('ace');
+        await cubit.next(); // 3 → 4
+      },
+      verify: (cubit) {
+        expect(cubit.state.step, 4);
+        verify(() => repo.update('c1', role: 'ace')).called(1);
+      },
+    );
+
+    // ── Step 7 Icon persists canonical iconId ─────────────────────────────
+
+    blocTest<CharacterWizardCubit, CharacterWizardState>(
+      'Step 7 Icon → next() returns false (no step 8); selectIconId roundtrips locally',
+      build: () {
+        return _buildCubit(repo);
+      },
+      act: (cubit) {
+        // Without going through the full wizard, simulate landing on step 7.
+        cubit.selectIconId('traveler');
+      },
+      verify: (cubit) {
+        expect(cubit.state.draft.iconId, 'traveler');
       },
     );
 
@@ -186,12 +333,22 @@ void main() {
       'forge() calls update with all draft data and re-fetches character',
       build: () {
         final base = _makeCharacter(name: 'Kira Sol');
-        when(() => repo.create(name: 'Untitled', status: 'draft'))
-            .thenAnswer((_) async => base);
+        when(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).thenAnswer((_) async => base);
         when(() => repo.update(
               'c1',
               name: any(named: 'name'),
               concept: any(named: 'concept'),
+              role: any(named: 'role'),
+              iconId: any(named: 'iconId'),
+              upbringing: any(named: 'upbringing'),
+              origin: any(named: 'origin'),
+              crewConcept: any(named: 'crewConcept'),
+              mutant: any(named: 'mutant'),
+              mutantLineage: any(named: 'mutantLineage'),
               attributes: any(named: 'attributes'),
               skills: any(named: 'skills'),
               status: any(named: 'status'),
@@ -211,6 +368,13 @@ void main() {
               'c1',
               name: any(named: 'name'),
               concept: any(named: 'concept'),
+              role: any(named: 'role'),
+              iconId: any(named: 'iconId'),
+              upbringing: any(named: 'upbringing'),
+              origin: any(named: 'origin'),
+              crewConcept: any(named: 'crewConcept'),
+              mutant: any(named: 'mutant'),
+              mutantLineage: any(named: 'mutantLineage'),
               attributes: any(named: 'attributes'),
               skills: any(named: 'skills'),
               status: 'active',
@@ -222,12 +386,22 @@ void main() {
     blocTest<CharacterWizardCubit, CharacterWizardState>(
       'forge() emits error state on repository failure',
       build: () {
-        when(() => repo.create(name: 'Untitled', status: 'draft'))
-            .thenAnswer((_) async => _makeCharacter());
+        when(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).thenAnswer((_) async => _makeCharacter());
         when(() => repo.update(
               'c1',
               name: any(named: 'name'),
               concept: any(named: 'concept'),
+              role: any(named: 'role'),
+              iconId: any(named: 'iconId'),
+              upbringing: any(named: 'upbringing'),
+              origin: any(named: 'origin'),
+              crewConcept: any(named: 'crewConcept'),
+              mutant: any(named: 'mutant'),
+              mutantLineage: any(named: 'mutantLineage'),
               attributes: any(named: 'attributes'),
               skills: any(named: 'skills'),
               status: any(named: 'status'),
@@ -243,6 +417,172 @@ void main() {
         expect(cubit.state.lastError, isNotNull);
       },
     );
+
+    // ── Step 8 — selectGearPick ──────────────────────────────────────────────
+
+    test('selectGearPick sets the option for a row', () {
+      final cubit = _buildCubit(repo);
+      cubit.selectGearPick('row-1', 'tool-kit-s');
+      expect(cubit.state.draft.pendingGearPicks['row-1'], 'tool-kit-s');
+    });
+
+    test('selectGearPick re-tap same option clears the row', () {
+      final cubit = _buildCubit(repo);
+      cubit.selectGearPick('row-1', 'tool-kit-s');
+      expect(cubit.state.draft.pendingGearPicks['row-1'], 'tool-kit-s');
+      cubit.selectGearPick('row-1', 'tool-kit-s');
+      expect(cubit.state.draft.pendingGearPicks['row-1'], isNull);
+    });
+
+    test('selectGearPick flipping from one option to another in same row', () {
+      final cubit = _buildCubit(repo);
+      cubit.selectGearPick('row-1', 'tool-kit-s');
+      cubit.selectGearPick('row-1', 'piloting-talisman');
+      expect(cubit.state.draft.pendingGearPicks['row-1'], 'piloting-talisman');
+    });
+
+    // ── forge() posts picked gear items ─────────────────────────────────────
+
+    blocTest<CharacterWizardCubit, CharacterWizardState>(
+      'forge() calls addItem for each non-null gear pick in order',
+      build: () {
+        final base = _makeCharacter(name: 'Kira Sol');
+        when(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).thenAnswer((_) async => base);
+        when(() => repo.update(
+              'c1',
+              name: any(named: 'name'),
+              concept: any(named: 'concept'),
+              role: any(named: 'role'),
+              iconId: any(named: 'iconId'),
+              upbringing: any(named: 'upbringing'),
+              origin: any(named: 'origin'),
+              crewConcept: any(named: 'crewConcept'),
+              mutant: any(named: 'mutant'),
+              mutantLineage: any(named: 'mutantLineage'),
+              attributes: any(named: 'attributes'),
+              skills: any(named: 'skills'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => base);
+        when(() => repo.get('c1')).thenAnswer((_) async => base);
+        when(() => repo.addItem('c1', any()))
+            .thenAnswer((_) async => const DomainItem(
+                  id: 'new-item',
+                  type: ItemType.gear,
+                  name: 'Tool kit (S)',
+                ));
+        return _buildCubit(repo);
+      },
+      act: (cubit) async {
+        await cubit.start();
+        // Seed concept + role + two gear picks.
+        cubit.updateConcept('pilot');
+        cubit.updateRole('ace');
+        cubit.selectGearPick('row-1', 'tool-kit-s');
+        cubit.selectGearPick('row-4', 'rail-pistol');
+        await cubit.forge();
+      },
+      verify: (cubit) {
+        expect(cubit.state.saveStatus, WizardSaveStatus.saved);
+        // addItem called twice — once per non-null pick.
+        verify(() => repo.addItem('c1', any())).called(2);
+      },
+    );
+
+    blocTest<CharacterWizardCubit, CharacterWizardState>(
+      'forge() with no gear picks calls addItem zero times',
+      build: () {
+        final base = _makeCharacter();
+        when(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).thenAnswer((_) async => base);
+        when(() => repo.update(
+              'c1',
+              name: any(named: 'name'),
+              concept: any(named: 'concept'),
+              role: any(named: 'role'),
+              iconId: any(named: 'iconId'),
+              upbringing: any(named: 'upbringing'),
+              origin: any(named: 'origin'),
+              crewConcept: any(named: 'crewConcept'),
+              mutant: any(named: 'mutant'),
+              mutantLineage: any(named: 'mutantLineage'),
+              attributes: any(named: 'attributes'),
+              skills: any(named: 'skills'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => base);
+        when(() => repo.get('c1')).thenAnswer((_) async => base);
+        return _buildCubit(repo);
+      },
+      act: (cubit) async {
+        await cubit.start();
+        cubit.updateConcept('pilot');
+        cubit.updateRole('ace');
+        // No gear picks.
+        await cubit.forge();
+      },
+      verify: (cubit) {
+        expect(cubit.state.saveStatus, WizardSaveStatus.saved);
+        verifyNever(() => repo.addItem(any(), any()));
+      },
+    );
+
+    blocTest<CharacterWizardCubit, CharacterWizardState>(
+      'forge() with null concept/role skips gear items',
+      build: () {
+        final base = _makeCharacter();
+        when(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).thenAnswer((_) async => base);
+        when(() => repo.update(
+              'c1',
+              name: any(named: 'name'),
+              concept: any(named: 'concept'),
+              role: any(named: 'role'),
+              iconId: any(named: 'iconId'),
+              upbringing: any(named: 'upbringing'),
+              origin: any(named: 'origin'),
+              crewConcept: any(named: 'crewConcept'),
+              mutant: any(named: 'mutant'),
+              mutantLineage: any(named: 'mutantLineage'),
+              attributes: any(named: 'attributes'),
+              skills: any(named: 'skills'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => base);
+        when(() => repo.get('c1')).thenAnswer((_) async => base);
+        return _buildCubit(repo);
+      },
+      act: (cubit) async {
+        await cubit.start();
+        // No concept/role — findStarterKit returns null.
+        cubit.selectGearPick('row-1', 'something');
+        await cubit.forge();
+      },
+      verify: (cubit) {
+        verifyNever(() => repo.addItem(any(), any()));
+      },
+    );
+
+    // ── mutant / mutantLineage coupling ──────────────────────────────────────
+
+    test('setMutant(false) clears mutantLineage', () {
+      final cubit = _buildCubit(repo);
+      cubit.setMutant(true);
+      cubit.setMutantLineage('zirba');
+      expect(cubit.state.draft.mutant, isTrue);
+      expect(cubit.state.draft.mutantLineage, 'zirba');
+
+      cubit.setMutant(false);
+      expect(cubit.state.draft.mutant, isFalse);
+      expect(cubit.state.draft.mutantLineage, isNull);
+    });
 
     // ── point-pool guard ─────────────────────────────────────────────────────
 

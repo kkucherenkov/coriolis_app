@@ -68,7 +68,7 @@ class _$IconIdMeta {
   BuiltSet<IconId> get values => _$values;
 }
 
-mixin _$IconIdMixin {
+abstract class _$IconIdMixin {
   // ignore: non_constant_identifier_names
   _$IconIdMeta get IconId => const _$IconIdMeta();
 }
@@ -105,20 +105,15 @@ class _$IconIdSerializer implements PrimitiveSerializer<IconId> {
   final String wireName = 'IconId';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    IconId object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, IconId object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  IconId deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => IconId.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  IconId deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      IconId.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

@@ -179,6 +179,25 @@ export class CrewConceptImmutableError extends DomainError {
 }
 
 /**
+ * Thrown when a PATCH on a draft character tries to set `birr`. The wallet
+ * is seeded from `startingWealth` on the draft → active forge transition;
+ * while the character is still a draft the upbringing (and therefore the
+ * derived starting wealth) is mutable, so any explicit `birr` write would
+ * be stranded by the next upbringing change.
+ */
+export class BirrDraftImmutableError extends DomainError {
+  constructor() {
+    super({
+      code: 'BIRR_DRAFT_IMMUTABLE',
+      status: 422,
+      title: 'Validation Error',
+      detail:
+        'Birr balance cannot be set while the character is still a draft. The wallet is seeded from startingWealth on the forge step.',
+    });
+  }
+}
+
+/**
  * Thrown when adding a second talent of a non-`personal` kind to a character.
  * Per Coriolis ch.2 each character has at most one of each crew, iconGift,
  * and stigma talent at character creation; further talents acquired during

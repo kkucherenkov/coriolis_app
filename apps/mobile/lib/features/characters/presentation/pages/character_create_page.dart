@@ -6,16 +6,29 @@ import 'package:coriolis_companion/app/routes.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
 import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/wizard_shell.dart';
-import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_1_concept.dart';
-import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_2_background.dart';
-import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_3_icon.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_1_biography.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_2_concept.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_3_role.dart';
 import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_4_attributes.dart';
 import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_5_skills.dart';
 import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_6_talents.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_7_icon.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_8_gear.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
 import 'package:coriolis_companion/shared/di/injector.dart';
 
-/// Character creation wizard — 6-step PageView backed by [CharacterWizardCubit].
+/// Character creation wizard — 8-step PageView backed by [CharacterWizardCubit].
+///
+/// Canonical step order (per
+/// [`specs/design/CHARACTER_WIZARD.md`](../../../../../../specs/design/CHARACTER_WIZARD.md)):
+///   1. Biography (name · origin · upbringing · crew · age)
+///   2. Concept (амплуа)
+///   3. Role
+///   4. Attributes
+///   5. Skills
+///   6. Talents
+///   7. Icon
+///   8. Gear
 ///
 /// Routing:
 /// - `/app/characters/new`        → start fresh draft (POST on first advance).
@@ -114,12 +127,14 @@ class _WizardView extends StatelessWidget {
             child: WizardShell(
               pageController: pageController,
               steps: const [
-                Step1Concept(),
-                Step2Background(),
-                Step3Icon(),
+                Step1Biography(),
+                Step2Concept(),
+                Step3Role(),
                 Step4Attributes(),
                 Step5Skills(),
                 Step6Talents(),
+                Step7Icon(),
+                Step8Gear(),
               ],
               onSaveAndExit: () {
                 Navigator.of(context)

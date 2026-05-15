@@ -8,7 +8,7 @@ part of 'character_list.dart';
 
 class _$CharacterList extends CharacterList {
   @override
-  final BuiltList<dynamic> items;
+  final BuiltList<Character> items;
   @override
   final String? nextCursor;
 
@@ -53,9 +53,10 @@ class CharacterListBuilder
     implements Builder<CharacterList, CharacterListBuilder> {
   _$CharacterList? _$v;
 
-  ListBuilder<dynamic>? _items;
-  ListBuilder<dynamic> get items => _$this._items ??= ListBuilder<dynamic>();
-  set items(ListBuilder<dynamic>? items) => _$this._items = items;
+  ListBuilder<Character>? _items;
+  ListBuilder<Character> get items =>
+      _$this._items ??= ListBuilder<Character>();
+  set items(ListBuilder<Character>? items) => _$this._items = items;
 
   String? _nextCursor;
   String? get nextCursor => _$this._nextCursor;
@@ -91,9 +92,11 @@ class CharacterListBuilder
   _$CharacterList _build() {
     _$CharacterList _$result;
     try {
-      _$result =
-          _$v ??
-          _$CharacterList._(items: items.build(), nextCursor: nextCursor);
+      _$result = _$v ??
+          _$CharacterList._(
+            items: items.build(),
+            nextCursor: nextCursor,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -101,10 +104,7 @@ class CharacterListBuilder
         items.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'CharacterList',
-          _$failedField,
-          e.toString(),
-        );
+            r'CharacterList', _$failedField, e.toString());
       }
       rethrow;
     }

@@ -12,9 +12,9 @@ class _$ShipCreateEnergy extends ShipCreateEnergy {
   @override
   final int? max;
 
-  factory _$ShipCreateEnergy([
-    void Function(ShipCreateEnergyBuilder)? updates,
-  ]) => (ShipCreateEnergyBuilder()..update(updates))._build();
+  factory _$ShipCreateEnergy(
+          [void Function(ShipCreateEnergyBuilder)? updates]) =>
+      (ShipCreateEnergyBuilder()..update(updates))._build();
 
   _$ShipCreateEnergy._({this.current, this.max}) : super._();
   @override
@@ -91,7 +91,11 @@ class ShipCreateEnergyBuilder
   ShipCreateEnergy build() => _build();
 
   _$ShipCreateEnergy _build() {
-    final _$result = _$v ?? _$ShipCreateEnergy._(current: current, max: max);
+    final _$result = _$v ??
+        _$ShipCreateEnergy._(
+          current: current,
+          max: max,
+        );
     replace(_$result);
     return _$result;
   }

@@ -5,7 +5,25 @@ import 'package:app_ui/app_ui.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
-import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_1_concept.dart' show WizardStepHeader;
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_1_biography.dart'
+    show WizardStepHeader;
+
+/// Canonical Icon ids (Dart-side EnumClass names).
+///
+/// Order matches the OpenAPI `IconId` enum:
+///   ladyOfTears, traveler, messenger, merchant, dancer,
+///   gambler, judge, facelessOne, deckhand
+const List<String> kCanonicalIconIds = <String>[
+  'ladyOfTears',
+  'traveler',
+  'messenger',
+  'merchant',
+  'dancer',
+  'gambler',
+  'judge',
+  'facelessOne',
+  'deckhand',
+];
 
 /// Wizard step 3 — Nine Icons.
 ///
@@ -13,14 +31,14 @@ import 'package:coriolis_companion/features/characters/presentation/widgets/wiza
 /// aura via an [AnimationController] scale + opacity tween.
 ///
 /// [MediaQuery.disableAnimations] → no animation, static teal border only.
-class Step3Icon extends StatelessWidget {
-  const Step3Icon({super.key});
+class Step7Icon extends StatelessWidget {
+  const Step7Icon({super.key});
 
   @override
   Widget build(BuildContext context) {
     final t = context.t.characters;
     return BlocBuilder<CharacterWizardCubit, CharacterWizardState>(
-      buildWhen: (p, n) => p.draft.selectedIcon != n.draft.selectedIcon,
+      buildWhen: (p, n) => p.draft.iconId != n.draft.iconId,
       builder: (context, state) {
         return SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.s4),
@@ -28,8 +46,8 @@ class Step3Icon extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               WizardStepHeader(
-                title: t.wizardStep3Title,
-                blurb: t.wizardStep3Blurb,
+                title: t.wizard.step.icon.title,
+                blurb: t.wizard.step.icon.blurb,
               ),
               const SizedBox(height: AppSpacing.s6),
               GridView.builder(
@@ -42,15 +60,16 @@ class Step3Icon extends StatelessWidget {
                   crossAxisSpacing: AppSpacing.s3,
                   childAspectRatio: 0.85,
                 ),
-                itemCount: CoriolisIcon.values.length,
+                itemCount: kCanonicalIconIds.length,
                 itemBuilder: (ctx, i) {
-                  final icon = CoriolisIcon.values[i];
-                  final isSelected = state.draft.selectedIcon == icon;
+                  final iconId = kCanonicalIconIds[i];
+                  final isSelected = state.draft.iconId == iconId;
                   return _IconCard(
-                    icon: icon,
+                    iconId: iconId,
                     isSelected: isSelected,
-                    onTap: () =>
-                        context.read<CharacterWizardCubit>().selectIcon(icon),
+                    onTap: () => context
+                        .read<CharacterWizardCubit>()
+                        .selectIconId(iconId),
                   );
                 },
               ),
@@ -68,12 +87,12 @@ class Step3Icon extends StatelessWidget {
 /// reduced-motion enabled ([MediaQuery.disableAnimations]).
 class _IconCard extends StatefulWidget {
   const _IconCard({
-    required this.icon,
+    required this.iconId,
     required this.isSelected,
     required this.onTap,
   });
 
-  final CoriolisIcon icon;
+  final String iconId;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -136,9 +155,9 @@ class _IconCardState extends State<_IconCard>
   @override
   Widget build(BuildContext context) {
     final t = context.t.characters;
-    final name = _iconName(t, widget.icon);
-    final domain = _iconDomain(t, widget.icon);
-    final letter = _iconLetter(widget.icon);
+    final name = _iconName(t, widget.iconId);
+    final domain = _iconDomain(t, widget.iconId);
+    final letter = _iconLetter(widget.iconId);
     final disableAnimations = MediaQuery.of(context).disableAnimations;
 
     Widget card = AppCard(
@@ -226,7 +245,7 @@ class _IconCardState extends State<_IconCard>
                   borderRadius: BorderRadius.circular(AppRadius.md + 2),
                   boxShadow: AppShadows.iconGlow,
                 ),
-                child: child,
+                child: card,
               ),
             ),
           ),
@@ -249,40 +268,44 @@ class _IconCardState extends State<_IconCard>
 
 // ── Icon data helpers ──────────────────────────────────────────────────────
 
-String _iconName(TranslationsCharactersEn t, CoriolisIcon icon) =>
-    switch (icon) {
-      CoriolisIcon.theJudiciary => t.iconNameJudiciary,
-      CoriolisIcon.theTraveler => t.iconNameTraveler,
-      CoriolisIcon.theMessenger => t.iconNameMessenger,
-      CoriolisIcon.theLegionnaire => t.iconNameLegionnaire,
-      CoriolisIcon.theNurse => t.iconNameNurse,
-      CoriolisIcon.theMerchant => t.iconNameMerchant,
-      CoriolisIcon.theSymbiont => t.iconNameSymbiont,
-      CoriolisIcon.theFaceless => t.iconNameFaceless,
-      CoriolisIcon.theChained => t.iconNameChained,
+String _iconName(TranslationsCharactersEn t, String iconId) => switch (iconId) {
+      'ladyOfTears' => t.iconNameLadyOfTears,
+      'traveler' => t.iconNameTraveler,
+      'messenger' => t.iconNameMessenger,
+      'merchant' => t.iconNameMerchant,
+      'dancer' => t.iconNameDancer,
+      'gambler' => t.iconNameGambler,
+      'judge' => t.iconNameJudge,
+      'facelessOne' => t.iconNameFacelessOne,
+      'deckhand' => t.iconNameDeckhand,
+      _ => iconId,
     };
 
-String _iconDomain(TranslationsCharactersEn t, CoriolisIcon icon) =>
-    switch (icon) {
-      CoriolisIcon.theJudiciary => t.iconDomainJudiciary,
-      CoriolisIcon.theTraveler => t.iconDomainTraveler,
-      CoriolisIcon.theMessenger => t.iconDomainMessenger,
-      CoriolisIcon.theLegionnaire => t.iconDomainLegionnaire,
-      CoriolisIcon.theNurse => t.iconDomainNurse,
-      CoriolisIcon.theMerchant => t.iconDomainMerchant,
-      CoriolisIcon.theSymbiont => t.iconDomainSymbiont,
-      CoriolisIcon.theFaceless => t.iconDomainFaceless,
-      CoriolisIcon.theChained => t.iconDomainChained,
+String _iconDomain(TranslationsCharactersEn t, String iconId) =>
+    switch (iconId) {
+      'ladyOfTears' => t.iconDomainLadyOfTears,
+      'traveler' => t.iconDomainTraveler,
+      'messenger' => t.iconDomainMessenger,
+      'merchant' => t.iconDomainMerchant,
+      'dancer' => t.iconDomainDancer,
+      'gambler' => t.iconDomainGambler,
+      'judge' => t.iconDomainJudge,
+      'facelessOne' => t.iconDomainFacelessOne,
+      'deckhand' => t.iconDomainDeckhand,
+      _ => '',
     };
 
-String _iconLetter(CoriolisIcon icon) => switch (icon) {
-      CoriolisIcon.theJudiciary => 'J',
-      CoriolisIcon.theTraveler => 'T',
-      CoriolisIcon.theMessenger => 'M',
-      CoriolisIcon.theLegionnaire => 'L',
-      CoriolisIcon.theNurse => 'N',
-      CoriolisIcon.theMerchant => 'Mc',
-      CoriolisIcon.theSymbiont => 'Sy',
-      CoriolisIcon.theFaceless => 'F',
-      CoriolisIcon.theChained => 'Ch',
+/// Single-letter glyph fallback (replaced by the icon SVGs once assets land
+/// — keys match `packages/ui/src/assets/icons/<icon-id>.svg`).
+String _iconLetter(String iconId) => switch (iconId) {
+      'ladyOfTears' => 'L',
+      'traveler' => 'T',
+      'messenger' => 'M',
+      'merchant' => 'Mc',
+      'dancer' => 'D',
+      'gambler' => 'G',
+      'judge' => 'J',
+      'facelessOne' => 'F',
+      'deckhand' => 'Dh',
+      _ => '?',
     };

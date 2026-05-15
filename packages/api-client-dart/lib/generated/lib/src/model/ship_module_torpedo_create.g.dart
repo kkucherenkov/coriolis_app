@@ -7,12 +7,11 @@ part of 'ship_module_torpedo_create.dart';
 // **************************************************************************
 
 const ShipModuleTorpedoCreateSlotEnum
-_$shipModuleTorpedoCreateSlotEnum_TORPEDO =
+    _$shipModuleTorpedoCreateSlotEnum_TORPEDO =
     const ShipModuleTorpedoCreateSlotEnum._('TORPEDO');
 
 ShipModuleTorpedoCreateSlotEnum _$shipModuleTorpedoCreateSlotEnumValueOf(
-  String name,
-) {
+    String name) {
   switch (name) {
     case 'TORPEDO':
       return _$shipModuleTorpedoCreateSlotEnum_TORPEDO;
@@ -22,15 +21,13 @@ ShipModuleTorpedoCreateSlotEnum _$shipModuleTorpedoCreateSlotEnumValueOf(
 }
 
 final BuiltSet<ShipModuleTorpedoCreateSlotEnum>
-_$shipModuleTorpedoCreateSlotEnumValues =
-    BuiltSet<ShipModuleTorpedoCreateSlotEnum>(
-      const <ShipModuleTorpedoCreateSlotEnum>[
-        _$shipModuleTorpedoCreateSlotEnum_TORPEDO,
-      ],
-    );
+    _$shipModuleTorpedoCreateSlotEnumValues = BuiltSet<
+        ShipModuleTorpedoCreateSlotEnum>(const <ShipModuleTorpedoCreateSlotEnum>[
+  _$shipModuleTorpedoCreateSlotEnum_TORPEDO,
+]);
 
 Serializer<ShipModuleTorpedoCreateSlotEnum>
-_$shipModuleTorpedoCreateSlotEnumSerializer =
+    _$shipModuleTorpedoCreateSlotEnumSerializer =
     _$ShipModuleTorpedoCreateSlotEnumSerializer();
 
 class _$ShipModuleTorpedoCreateSlotEnumSerializer
@@ -49,19 +46,16 @@ class _$ShipModuleTorpedoCreateSlotEnumSerializer
 
   @override
   Object serialize(
-    Serializers serializers,
-    ShipModuleTorpedoCreateSlotEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+          Serializers serializers, ShipModuleTorpedoCreateSlotEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
   ShipModuleTorpedoCreateSlotEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => ShipModuleTorpedoCreateSlotEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ShipModuleTorpedoCreateSlotEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 class _$ShipModuleTorpedoCreate extends ShipModuleTorpedoCreate {
@@ -78,22 +72,22 @@ class _$ShipModuleTorpedoCreate extends ShipModuleTorpedoCreate {
   @override
   final String? notes;
 
-  factory _$ShipModuleTorpedoCreate([
-    void Function(ShipModuleTorpedoCreateBuilder)? updates,
-  ]) => (ShipModuleTorpedoCreateBuilder()..update(updates))._build();
+  factory _$ShipModuleTorpedoCreate(
+          [void Function(ShipModuleTorpedoCreateBuilder)? updates]) =>
+      (ShipModuleTorpedoCreateBuilder()..update(updates))._build();
 
-  _$ShipModuleTorpedoCreate._({
-    required this.slot,
-    required this.name,
-    required this.energyUse,
-    this.torpedoCount,
-    this.mineCount,
-    this.notes,
-  }) : super._();
+  _$ShipModuleTorpedoCreate._(
+      {required this.slot,
+      required this.name,
+      required this.energyUse,
+      this.torpedoCount,
+      this.mineCount,
+      this.notes})
+      : super._();
   @override
   ShipModuleTorpedoCreate rebuild(
-    void Function(ShipModuleTorpedoCreateBuilder) updates,
-  ) => (toBuilder()..update(updates)).build();
+          void Function(ShipModuleTorpedoCreateBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
 
   @override
   ShipModuleTorpedoCreateBuilder toBuilder() =>
@@ -198,24 +192,14 @@ class ShipModuleTorpedoCreateBuilder
   ShipModuleTorpedoCreate build() => _build();
 
   _$ShipModuleTorpedoCreate _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$ShipModuleTorpedoCreate._(
           slot: BuiltValueNullFieldError.checkNotNull(
-            slot,
-            r'ShipModuleTorpedoCreate',
-            'slot',
-          ),
+              slot, r'ShipModuleTorpedoCreate', 'slot'),
           name: BuiltValueNullFieldError.checkNotNull(
-            name,
-            r'ShipModuleTorpedoCreate',
-            'name',
-          ),
+              name, r'ShipModuleTorpedoCreate', 'name'),
           energyUse: BuiltValueNullFieldError.checkNotNull(
-            energyUse,
-            r'ShipModuleTorpedoCreate',
-            'energyUse',
-          ),
+              energyUse, r'ShipModuleTorpedoCreate', 'energyUse'),
           torpedoCount: torpedoCount,
           mineCount: mineCount,
           notes: notes,

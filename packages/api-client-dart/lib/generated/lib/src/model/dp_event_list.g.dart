@@ -8,7 +8,7 @@ part of 'dp_event_list.dart';
 
 class _$DpEventList extends DpEventList {
   @override
-  final BuiltList<dynamic> items;
+  final BuiltList<DpEvent> items;
   @override
   final String? nextCursor;
 
@@ -52,9 +52,9 @@ class _$DpEventList extends DpEventList {
 class DpEventListBuilder implements Builder<DpEventList, DpEventListBuilder> {
   _$DpEventList? _$v;
 
-  ListBuilder<dynamic>? _items;
-  ListBuilder<dynamic> get items => _$this._items ??= ListBuilder<dynamic>();
-  set items(ListBuilder<dynamic>? items) => _$this._items = items;
+  ListBuilder<DpEvent>? _items;
+  ListBuilder<DpEvent> get items => _$this._items ??= ListBuilder<DpEvent>();
+  set items(ListBuilder<DpEvent>? items) => _$this._items = items;
 
   String? _nextCursor;
   String? get nextCursor => _$this._nextCursor;
@@ -90,8 +90,11 @@ class DpEventListBuilder implements Builder<DpEventList, DpEventListBuilder> {
   _$DpEventList _build() {
     _$DpEventList _$result;
     try {
-      _$result =
-          _$v ?? _$DpEventList._(items: items.build(), nextCursor: nextCursor);
+      _$result = _$v ??
+          _$DpEventList._(
+            items: items.build(),
+            nextCursor: nextCursor,
+          );
     } catch (_) {
       late String _$failedField;
       try {
@@ -99,10 +102,7 @@ class DpEventListBuilder implements Builder<DpEventList, DpEventListBuilder> {
         items.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'DpEventList',
-          _$failedField,
-          e.toString(),
-        );
+            r'DpEventList', _$failedField, e.toString());
       }
       rethrow;
     }

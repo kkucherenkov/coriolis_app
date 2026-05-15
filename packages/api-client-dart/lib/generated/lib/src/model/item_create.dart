@@ -9,8 +9,6 @@ import 'package:app_api_client/src/model/item_gear_create.dart';
 import 'package:app_api_client/src/model/item_weapon_create.dart';
 import 'package:app_api_client/src/model/item_cybernetic_create.dart';
 import 'package:app_api_client/src/model/item_other_create.dart';
-import 'package:app_api_client/src/model/item_range_enum.dart';
-import 'package:app_api_client/src/model/ship_module_slot.dart';
 import 'package:app_api_client/src/model/item_armor_create.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';

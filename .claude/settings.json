@@ -55,5 +55,20 @@
   "env": {
     "NODE_ENV": "development",
     "CI": "false"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/format-on-edit.sh",
+            "timeout": 15,
+            "statusMessage": "Formatting with Prettier..."
+          }
+        ]
+      }
+    ]
   }
 }

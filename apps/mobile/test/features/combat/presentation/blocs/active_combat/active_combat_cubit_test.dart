@@ -241,4 +241,426 @@ void main() {
       verifyNever(() => repo.listCombatants(_activeEncounter.id));
     },
   );
+
+  // ── rollInitiative ────────────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'rollInitiative: setup → active reloads snapshot',
+    build: makeCubit,
+    act: (cubit) async {
+      // First load: setup encounter is "active" enough for the cubit.
+      when(() => repo.listEncounters(_sessionId)).thenAnswer(
+        (_) async => [_setupEncounter.copyWith(state: 'active')],
+      );
+      when(() => repo.listCombatants(_setupEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.rollInitiative(_setupEncounter.id))
+          .thenAnswer((_) async => InitiativeRollOutcome(
+                combatants: _combatants,
+                round: 1,
+              ));
+      await cubit.load(_sessionId);
+      await cubit.rollInitiative();
+    },
+    expect: () => [
+      const ActiveCombatLoading(),
+      // post-load Ready
+      isA<ActiveCombatReady>(),
+      // action begins → actionInFlight = true
+      isA<ActiveCombatReady>().having(
+        (s) => s.actionInFlight,
+        'actionInFlight',
+        isTrue,
+      ),
+      // post-action reload Loading
+      const ActiveCombatLoading(),
+      // reload Ready (actionInFlight resets to false on the new state)
+      isA<ActiveCombatReady>().having(
+        (s) => s.actionInFlight,
+        'actionInFlight',
+        isFalse,
+      ),
+    ],
+    verify: (_) {
+      verify(() => repo.rollInitiative(_setupEncounter.id)).called(1);
+      // The cached _sessionId triggers a reload of the encounter list.
+      verify(() => repo.listEncounters(_sessionId)).called(2);
+    },
+  );
+
+  // ── advanceTurn ───────────────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'advanceTurn dispatches and reloads',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.advanceTurn(_activeEncounter.id))
+          .thenAnswer((_) async => const TurnAdvanceOutcome(
+                activeCombatantId: 'cbt-2',
+                round: 2,
+                isNewRound: false,
+              ));
+      await cubit.load(_sessionId);
+      await cubit.advanceTurn();
+    },
+    expect: () => [
+      const ActiveCombatLoading(),
+      isA<ActiveCombatReady>(),
+      isA<ActiveCombatReady>().having(
+        (s) => s.actionInFlight,
+        'actionInFlight',
+        isTrue,
+      ),
+      const ActiveCombatLoading(),
+      isA<ActiveCombatReady>(),
+    ],
+    verify: (_) {
+      verify(() => repo.advanceTurn(_activeEncounter.id)).called(1);
+    },
+  );
+
+  // ── endEncounter ──────────────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'endEncounter lands on Empty after reload (no more active encounters)',
+    build: makeCubit,
+    act: (cubit) async {
+      var listCallCount = 0;
+      when(() => repo.listEncounters(_sessionId)).thenAnswer((_) async {
+        listCallCount += 1;
+        // First call returns the active encounter; second call (after
+        // endEncounter mutates state) returns it as `ended`.
+        return listCallCount == 1
+            ? [_activeEncounter]
+            : [_activeEncounter.copyWith(state: 'ended')];
+      });
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.endEncounter(_activeEncounter.id)).thenAnswer(
+        (_) async => _activeEncounter.copyWith(state: 'ended'),
+      );
+      await cubit.load(_sessionId);
+      await cubit.endEncounter();
+    },
+    expect: () => [
+      const ActiveCombatLoading(),
+      isA<ActiveCombatReady>(),
+      isA<ActiveCombatReady>().having(
+        (s) => s.actionInFlight,
+        'actionInFlight',
+        isTrue,
+      ),
+      const ActiveCombatLoading(),
+      const ActiveCombatEmpty(),
+    ],
+    verify: (_) {
+      verify(() => repo.endEncounter(_activeEncounter.id)).called(1);
+    },
+  );
+
+  // ── action failure path ───────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'rollInitiative failure keeps Ready and surfaces actionError',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.rollInitiative(_activeEncounter.id))
+          .thenThrow(StateError('422 invalid status'));
+      await cubit.load(_sessionId);
+      await cubit.rollInitiative();
+    },
+    expect: () => [
+      const ActiveCombatLoading(),
+      isA<ActiveCombatReady>(),
+      isA<ActiveCombatReady>().having(
+        (s) => s.actionInFlight,
+        'actionInFlight',
+        isTrue,
+      ),
+      isA<ActiveCombatReady>()
+          .having((s) => s.actionInFlight, 'actionInFlight', isFalse)
+          .having(
+            (s) => s.actionError,
+            'actionError',
+            contains('422 invalid status'),
+          ),
+    ],
+  );
+
+  // ── action no-op outside Ready ────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'rollInitiative is a no-op when not in Ready state',
+    build: makeCubit,
+    act: (cubit) async {
+      await cubit.rollInitiative();
+    },
+    expect: () => const <ActiveCombatState>[],
+    verify: (_) {
+      verifyNever(() => repo.rollInitiative(any<String>()));
+    },
+  );
+
+  // ── advanceRound ──────────────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'advanceRound dispatches and reloads with incremented round',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.advanceRound(_activeEncounter.id))
+          .thenAnswer((_) async => const TurnAdvanceOutcome(
+                activeCombatantId: 'cbt-10',
+                round: 3,
+                isNewRound: true,
+              ));
+      await cubit.load(_sessionId);
+      await cubit.advanceRound();
+    },
+    expect: () => [
+      const ActiveCombatLoading(),
+      isA<ActiveCombatReady>(),
+      isA<ActiveCombatReady>().having(
+        (s) => s.actionInFlight,
+        'actionInFlight',
+        isTrue,
+      ),
+      const ActiveCombatLoading(),
+      isA<ActiveCombatReady>().having(
+        (s) => s.actionInFlight,
+        'actionInFlight',
+        isFalse,
+      ),
+    ],
+    verify: (_) {
+      verify(() => repo.advanceRound(_activeEncounter.id)).called(1);
+      verify(() => repo.listEncounters(_sessionId)).called(2);
+    },
+  );
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'advanceRound failure keeps Ready and surfaces actionError',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.advanceRound(_activeEncounter.id))
+          .thenThrow(StateError('422 round already ended'));
+      await cubit.load(_sessionId);
+      await cubit.advanceRound();
+    },
+    expect: () => [
+      const ActiveCombatLoading(),
+      isA<ActiveCombatReady>(),
+      isA<ActiveCombatReady>().having(
+        (s) => s.actionInFlight,
+        'actionInFlight',
+        isTrue,
+      ),
+      isA<ActiveCombatReady>()
+          .having((s) => s.actionInFlight, 'actionInFlight', isFalse)
+          .having(
+            (s) => s.actionError,
+            'actionError',
+            contains('422 round already ended'),
+          ),
+    ],
+  );
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'advanceRound is a no-op when not in Ready state',
+    build: makeCubit,
+    act: (cubit) async {
+      await cubit.advanceRound();
+    },
+    expect: () => const <ActiveCombatState>[],
+    verify: (_) {
+      verifyNever(() => repo.advanceRound(any<String>()));
+    },
+  );
+
+  // ── addPcCombatant ────────────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'addPcCombatant dispatches and reloads',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.addPcCombatant(
+            encounterId: any(named: 'encounterId'),
+            characterId: any(named: 'characterId'),
+          )).thenAnswer((_) async => _combatants.first);
+      await cubit.load(_sessionId);
+      await cubit.addPcCombatant('char-99');
+    },
+    verify: (_) {
+      verify(() => repo.addPcCombatant(
+            encounterId: _activeEncounter.id,
+            characterId: 'char-99',
+          )).called(1);
+      verify(() => repo.listEncounters(_sessionId)).called(2);
+    },
+  );
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'addPcCombatant failure keeps Ready and surfaces actionError',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.addPcCombatant(
+            encounterId: any(named: 'encounterId'),
+            characterId: any(named: 'characterId'),
+          )).thenThrow(StateError('409 already in encounter'));
+      await cubit.load(_sessionId);
+      await cubit.addPcCombatant('char-99');
+    },
+    verify: (cubit) {
+      final s = cubit.state as ActiveCombatReady;
+      expect(s.actionError, contains('409 already in encounter'));
+      expect(s.actionInFlight, isFalse);
+    },
+  );
+
+  // ── addNpcCombatant ───────────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'addNpcCombatant dispatches and reloads',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.addNpcCombatant(
+            encounterId: any(named: 'encounterId'),
+            npcId: any(named: 'npcId'),
+          )).thenAnswer((_) async => _combatants.first);
+      await cubit.load(_sessionId);
+      await cubit.addNpcCombatant('npc-99');
+    },
+    verify: (_) {
+      verify(() => repo.addNpcCombatant(
+            encounterId: _activeEncounter.id,
+            npcId: 'npc-99',
+          )).called(1);
+      verify(() => repo.listEncounters(_sessionId)).called(2);
+    },
+  );
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'addNpcCombatant failure keeps Ready and surfaces actionError',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.addNpcCombatant(
+            encounterId: any(named: 'encounterId'),
+            npcId: any(named: 'npcId'),
+          )).thenThrow(StateError('422 NPC not found'));
+      await cubit.load(_sessionId);
+      await cubit.addNpcCombatant('npc-99');
+    },
+    verify: (cubit) {
+      final s = cubit.state as ActiveCombatReady;
+      expect(s.actionError, contains('422 NPC not found'));
+      expect(s.actionInFlight, isFalse);
+    },
+  );
+
+  // ── removeCombatant ───────────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'removeCombatant dispatches and reloads',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.deleteCombatant(any<String>()))
+          .thenAnswer((_) async {});
+      await cubit.load(_sessionId);
+      await cubit.removeCombatant('cbt-1');
+    },
+    verify: (_) {
+      verify(() => repo.deleteCombatant('cbt-1')).called(1);
+    },
+  );
+
+  // ── toggleCanonicalFlag ───────────────────────────────────────────────────
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'toggleCanonicalFlag adds the flag when absent',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.setStatusFlags(
+            combatantId: any(named: 'combatantId'),
+            flags: any(named: 'flags'),
+          )).thenAnswer((_) async => _combatants.first);
+      await cubit.load(_sessionId);
+      // cbt-1 has no statusFlags; toggling 'prone' should add it.
+      await cubit.toggleCanonicalFlag(
+        combatantId: 'cbt-1',
+        flag: 'prone',
+      );
+    },
+    verify: (_) {
+      verify(() => repo.setStatusFlags(
+            combatantId: 'cbt-1',
+            flags: ['prone'],
+          )).called(1);
+    },
+  );
+
+  blocTest<ActiveCombatCubit, ActiveCombatState>(
+    'toggleCanonicalFlag removes the flag when present',
+    build: makeCubit,
+    act: (cubit) async {
+      when(() => repo.listEncounters(_sessionId))
+          .thenAnswer((_) async => [_activeEncounter]);
+      when(() => repo.listCombatants(_activeEncounter.id))
+          .thenAnswer((_) async => _combatants);
+      when(() => repo.setStatusFlags(
+            combatantId: any(named: 'combatantId'),
+            flags: any(named: 'flags'),
+          )).thenAnswer((_) async => _combatants[1]);
+      await cubit.load(_sessionId);
+      // cbt-2 starts with ['prone']; toggling 'prone' should remove it.
+      await cubit.toggleCanonicalFlag(
+        combatantId: 'cbt-2',
+        flag: 'prone',
+      );
+    },
+    verify: (_) {
+      verify(() => repo.setStatusFlags(
+            combatantId: 'cbt-2',
+            flags: <String>[],
+          )).called(1);
+    },
+  );
 }

@@ -1,4 +1,10 @@
-import { colorToDart, parseCubicBezier, parseMs, stripPxForDart } from './parse.ts';
+import {
+  colorToDart,
+  parseCubicBezier,
+  parseMs,
+  resolveTypographyValue,
+  stripPxForDart,
+} from './parse.ts';
 import {
   DART_BANNER,
   type ColorFile,
@@ -129,7 +135,9 @@ function familyValue(value: string | string[]): string {
   return JSON.stringify(primary);
 }
 
-function typeRoleField(role: string, value: TypographyValue, typography: TypographyFile): string[] {
+function typeRoleField(role: string, raw: TypographyValue, typography: TypographyFile): string[] {
+  // Resolve `{font.<bucket>.<key>}` refs before emit — see ADR-0004.
+  const value = resolveTypographyValue(typography, raw);
   const fieldName = camel(role);
   const familyKey = value.fontFamily;
   const familyExpr =
@@ -187,15 +195,11 @@ export function emitDart(tokens: TokenBundle): string {
   for (const [key, leaf] of leafEntries(tokens.spacing.spacing)) {
     parts.push(`  static const double ${safeKey('s', key)} = ${stripPxForDart(leaf.$value)};`);
   }
-  parts.push('}', '');
-
-  parts.push('abstract final class AppRadius {');
+  parts.push('}', '', 'abstract final class AppRadius {');
   for (const [key, leaf] of leafEntries(tokens.radius.radius)) {
     parts.push(`  static const double ${safeKey('r', key)} = ${stripPxForDart(leaf.$value)};`);
   }
-  parts.push('}', '');
-
-  parts.push('abstract final class AppFontFamily {');
+  parts.push('}', '', 'abstract final class AppFontFamily {');
   for (const [key, leaf] of leafEntries(tokens.typography.font.family)) {
     parts.push(`  static const String ${camel(key)} = ${familyValue(leaf.$value)};`);
   }
@@ -203,15 +207,11 @@ export function emitDart(tokens: TokenBundle): string {
   for (const [key, leaf] of leafEntries(tokens.typography.font.weight)) {
     parts.push(`  static const FontWeight ${camel(key)} = FontWeight.w${leaf.$value};`);
   }
-  parts.push('}', '');
-
-  parts.push('abstract final class AppTypography {');
-  for (const [role, leaf] of leafEntries(tokens.typography.type)) {
+  parts.push('}', '', 'abstract final class AppTypography {');
+  for (const [role, leaf] of leafEntries(tokens.typography.typography)) {
     parts.push(...typeRoleField(role, leaf.$value, tokens.typography));
   }
-  parts.push('}', '');
-
-  parts.push('abstract final class AppDuration {');
+  parts.push('}', '', 'abstract final class AppDuration {');
   for (const [key, leaf] of leafEntries(tokens.motion.motion.duration)) {
     parts.push(
       `  static const Duration ${safeKey('d', key)} = Duration(milliseconds: ${parseMs(leaf.$value)});`,
@@ -221,21 +221,15 @@ export function emitDart(tokens: TokenBundle): string {
   for (const [key, leaf] of leafEntries(tokens.motion.motion.ease)) {
     parts.push(`  static const Cubic ${safeKey('ease', key)} = ${bezierToDart(leaf.$value)};`);
   }
-  parts.push('}', '');
-
-  parts.push('abstract final class AppZIndex {');
+  parts.push('}', '', 'abstract final class AppZIndex {');
   for (const [key, leaf] of leafEntries(tokens.zIndex['z-index'])) {
     parts.push(`  static const int ${safeKey('z', key)} = ${leaf.$value};`);
   }
-  parts.push('}', '');
-
-  parts.push('abstract final class AppOpacity {');
+  parts.push('}', '', 'abstract final class AppOpacity {');
   for (const [key, leaf] of leafEntries(tokens.opacity.opacity)) {
     parts.push(`  static const double ${safeKey('o', key)} = ${dartDouble(leaf.$value)};`);
   }
-  parts.push('}', '');
-
-  parts.push('abstract final class AppShadows {');
+  parts.push('}', '', 'abstract final class AppShadows {');
   for (const [key, leaf] of leafEntries(tokens.shadow.shadow)) {
     parts.push(`  static const List<BoxShadow> ${camel(key)} = ${shadowExpr(leaf.$value)};`);
   }

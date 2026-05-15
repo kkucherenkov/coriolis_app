@@ -1,7 +1,7 @@
 ---
 name: spec-reviewer
 description: Read-only review of changes to packages/specs. Use before merging any spec change. Surfaces breaking changes, missing examples, inconsistent naming, and semver mistakes. Does NOT edit files.
-model: sonnet
+model: haiku
 tools: Read, Grep, Glob, Bash
 ---
 

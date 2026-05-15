@@ -30,6 +30,7 @@ const MOCK_CHARACTER: CharacterReadModel = {
   origin: null,
   reputation: 2,
   startingWealth: 500,
+  birr: 500,
   crewConcept: null,
   mutant: false,
   mutantLineage: null,

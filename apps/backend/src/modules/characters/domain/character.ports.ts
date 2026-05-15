@@ -179,6 +179,15 @@ export interface CharacterReadModel {
   origin: string | null;
   reputation: number;
   startingWealth: number;
+  /**
+   * Current spendable birr balance (the character's wallet). Seeded as
+   * `birr = startingWealth` on the wizard's draft → active forge
+   * transition; while `status: 'draft'` the handler keeps `birr` in
+   * lockstep with `startingWealth` so changing `upbringing` does not
+   * strand a stale balance. Mutable via PATCH only after activation —
+   * draft writes are rejected with `BIRR_DRAFT_IMMUTABLE`.
+   */
+  birr: number;
   crewConcept: CrewConcept | null;
   mutant: boolean;
   mutantLineage: MutantLineage | null;
@@ -213,24 +222,6 @@ export interface CharacterReadModel {
   updatedAt: string; // ISO-8601
 }
 
-/**
- * Lightweight summary for list endpoint — avoids over-fetching nested arrays.
- */
-export interface CharacterListItem {
-  id: string;
-  ownerId: string;
-  name: string;
-  concept: Concept | null;
-  iconId: IconId | null;
-  hp: { current: number; max: number };
-  mp: { current: number; max: number };
-  conditions: ConditionFlags;
-  /** Lifecycle state: 'draft' or 'active'. */
-  status: CharacterStatus;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export const CHARACTER_REPO = Symbol('CHARACTER_REPO');
 
 export interface ListCharactersOptions {
@@ -254,9 +245,14 @@ export interface ICharacterRepo {
    */
   findOwnerIdById(id: string): Promise<{ ownerId: string } | null>;
 
+  /**
+   * Returns full `CharacterReadModel` objects per the OpenAPI contract
+   * (`CharacterList.items: $ref: Character`). The list endpoint and the
+   * single-character endpoint share the same projection.
+   */
   list(
     opts: ListCharactersOptions,
-  ): Promise<{ items: CharacterListItem[]; nextCursor: string | null }>;
+  ): Promise<{ items: CharacterReadModel[]; nextCursor: string | null }>;
 
   create(data: {
     ownerId: string;
@@ -271,6 +267,8 @@ export interface ICharacterRepo {
     origin?: string | null;
     reputation: number;
     startingWealth: number;
+    /** Current wallet balance. The handler seeds this from `startingWealth`. */
+    birr: number;
     crewConcept?: CrewConcept | null;
     mutant?: boolean;
     mutantLineage?: MutantLineage | null;
@@ -300,6 +298,8 @@ export interface ICharacterRepo {
       upbringing: Upbringing;
       origin: string | null;
       reputation: number;
+      /** Current wallet balance — only writable while status is 'active'. */
+      birr: number;
       crewConcept: CrewConcept | null;
       mutant: boolean;
       mutantLineage: MutantLineage | null;

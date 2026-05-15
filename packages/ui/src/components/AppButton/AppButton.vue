@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed } from 'vue';
 
-  type Variant = 'primary' | 'ghost' | 'danger';
+  type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'mystic';
   type Size = 'sm' | 'md' | 'lg';
 
   interface Props {
@@ -139,6 +139,28 @@
       }
     }
 
+    // ── Variant: secondary ───────────────────────────────────────────────────
+    // Handoff `.cor-btn--secondary`: transparent fill + 1px brass border +
+    // brass text. Sits between `primary` (filled) and `ghost` (borderless)
+    // and is used for Cancel / Skip / Reroll actions.
+
+    &--secondary {
+      background-color: transparent;
+      color: var(--brand-brass);
+      border: 1px solid var(--brand-brass);
+
+      &:hover:not(.app-button--disabled) {
+        background-color: color-mix(in srgb, var(--brand-brass) 10%, transparent);
+        border-color: var(--brand-brass-light);
+        color: var(--brand-brass-light);
+      }
+
+      &:active:not(.app-button--disabled) {
+        background-color: color-mix(in srgb, var(--brand-brass) 18%, transparent);
+        border-color: var(--brand-brass-light);
+      }
+    }
+
     // ── Variant: ghost ───────────────────────────────────────────────────────
 
     &--ghost {
@@ -170,6 +192,31 @@
 
       &:active:not(.app-button--disabled) {
         background-color: color-mix(in srgb, var(--state-crimson-bright) 80%, transparent);
+      }
+    }
+
+    // ── Variant: mystic ──────────────────────────────────────────────────────
+    // Ritual CTA — Push the Roll, Pray-eligible confirms. Handoff
+    // `.cor-btn--mystic`: mystic-teal fill + on-brass text + matching border.
+    // Pairs with AppDie's mystic die rendering in the dice-roller surface.
+
+    &--mystic {
+      background-color: var(--state-mystic-teal);
+      color: var(--text-on-brass);
+      border: 1px solid var(--state-mystic-teal);
+
+      &:hover:not(.app-button--disabled) {
+        background-color: color-mix(
+          in srgb,
+          var(--state-mystic-teal) 88%,
+          var(--brand-brass-light)
+        );
+        border-color: color-mix(in srgb, var(--state-mystic-teal) 88%, var(--brand-brass-light));
+      }
+
+      &:active:not(.app-button--disabled) {
+        background-color: color-mix(in srgb, var(--state-mystic-teal) 72%, transparent);
+        border-color: var(--state-mystic-teal);
       }
     }
 

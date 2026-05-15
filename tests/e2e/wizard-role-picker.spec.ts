@@ -43,33 +43,30 @@ test.describe('wizard — role picker', () => {
   });
 
   test('forge a pilot/driver character — role lands on the server', async ({ page, request }) => {
-    // Step 1 — concept + name.
+    // Canonical wizard order per `specs/design/CHARACTER_WIZARD.md` §2:
+    //   1 Biography → 2 Concept → 3 Role → 4 Attributes → 5 Skills →
+    //   6 Talents → 7 Icon.
     await page.goto('/app/characters/new');
     await expect(page.locator('body')).toBeVisible();
 
-    // The wizard is one page that steps through Step1Concept → ... →
-    // Step7Talents inline. We navigate by clicking "Next" on each step.
-    // Selectors prefer i18n-stable role / aria attributes; if the
-    // markup shifts, update here, not in the rest of the suite.
+    // Step 1 — Biography. Defaults are valid; advance immediately.
+    await page.getByRole('button', { name: /^next$|^далее$/i }).click(); // → 2 Concept
 
-    // Type a deterministic name so we can assert it later.
+    // Step 2 — Concept + name. Type a deterministic name so we can
+    // assert it later, then pick the pilot concept card.
     const characterName = `e2e-role-picker-${Date.now()}`;
     await page.getByLabel(/character name|имя персонажа/i).fill(characterName);
-
-    // Pick the pilot concept card.
     await page.getByRole('button', { name: /^pilot$|^пилот$/i }).click();
+    await page.getByRole('button', { name: /^next$|^далее$/i }).click(); // → 3 Role
 
-    await page.getByRole('button', { name: /^next$|^далее$/i }).click(); // → 2 background
-    await page.getByRole('button', { name: /^next$|^далее$/i }).click(); // → 3 icon
-    await page.getByRole('button', { name: /^next$|^далее$/i }).click(); // → 4 attributes
-    await page.getByRole('button', { name: /^next$|^далее$/i }).click(); // → 5 role
-
-    // Step 5 — role-picker. Pick "driver" (Pilot's first role:
+    // Step 3 — Role picker. Pick "driver" (Pilot's first role:
     // ace / driver / trucker — order from CONCEPT_ROLES).
     await page.getByRole('radio', { name: /^driver$|^водитель$/i }).click();
 
-    await page.getByRole('button', { name: /^next$|^далее$/i }).click(); // → 6 skills
-    await page.getByRole('button', { name: /^next$|^далее$/i }).click(); // → 7 talents
+    await page.getByRole('button', { name: /^next$|^далее$/i }).click(); // → 4 Attributes
+    await page.getByRole('button', { name: /^next$|^далее$/i }).click(); // → 5 Skills
+    await page.getByRole('button', { name: /^next$|^далее$/i }).click(); // → 6 Talents
+    await page.getByRole('button', { name: /^next$|^далее$/i }).click(); // → 7 Icon
 
     // Last step — forge.
     await page.getByRole('button', { name: /^forge|^создать персонажа/i }).click();

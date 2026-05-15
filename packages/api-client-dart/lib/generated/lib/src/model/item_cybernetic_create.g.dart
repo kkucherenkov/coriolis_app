@@ -10,8 +10,7 @@ const ItemCyberneticCreateTypeEnum _$itemCyberneticCreateTypeEnum_CYBERNETIC =
     const ItemCyberneticCreateTypeEnum._('CYBERNETIC');
 
 ItemCyberneticCreateTypeEnum _$itemCyberneticCreateTypeEnumValueOf(
-  String name,
-) {
+    String name) {
   switch (name) {
     case 'CYBERNETIC':
       return _$itemCyberneticCreateTypeEnum_CYBERNETIC;
@@ -21,14 +20,13 @@ ItemCyberneticCreateTypeEnum _$itemCyberneticCreateTypeEnumValueOf(
 }
 
 final BuiltSet<ItemCyberneticCreateTypeEnum>
-_$itemCyberneticCreateTypeEnumValues = BuiltSet<ItemCyberneticCreateTypeEnum>(
-  const <ItemCyberneticCreateTypeEnum>[
-    _$itemCyberneticCreateTypeEnum_CYBERNETIC,
-  ],
-);
+    _$itemCyberneticCreateTypeEnumValues =
+    BuiltSet<ItemCyberneticCreateTypeEnum>(const <ItemCyberneticCreateTypeEnum>[
+  _$itemCyberneticCreateTypeEnum_CYBERNETIC,
+]);
 
 Serializer<ItemCyberneticCreateTypeEnum>
-_$itemCyberneticCreateTypeEnumSerializer =
+    _$itemCyberneticCreateTypeEnumSerializer =
     _$ItemCyberneticCreateTypeEnumSerializer();
 
 class _$ItemCyberneticCreateTypeEnumSerializer
@@ -46,20 +44,16 @@ class _$ItemCyberneticCreateTypeEnumSerializer
   final String wireName = 'ItemCyberneticCreateTypeEnum';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    ItemCyberneticCreateTypeEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, ItemCyberneticCreateTypeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
   ItemCyberneticCreateTypeEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => ItemCyberneticCreateTypeEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ItemCyberneticCreateTypeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 class _$ItemCyberneticCreate extends ItemCyberneticCreate {
@@ -68,24 +62,24 @@ class _$ItemCyberneticCreate extends ItemCyberneticCreate {
   @override
   final String name;
   @override
-  final int bodyPoints;
+  final int xpCost;
   @override
   final String effect;
 
-  factory _$ItemCyberneticCreate([
-    void Function(ItemCyberneticCreateBuilder)? updates,
-  ]) => (ItemCyberneticCreateBuilder()..update(updates))._build();
+  factory _$ItemCyberneticCreate(
+          [void Function(ItemCyberneticCreateBuilder)? updates]) =>
+      (ItemCyberneticCreateBuilder()..update(updates))._build();
 
-  _$ItemCyberneticCreate._({
-    required this.type,
-    required this.name,
-    required this.bodyPoints,
-    required this.effect,
-  }) : super._();
+  _$ItemCyberneticCreate._(
+      {required this.type,
+      required this.name,
+      required this.xpCost,
+      required this.effect})
+      : super._();
   @override
   ItemCyberneticCreate rebuild(
-    void Function(ItemCyberneticCreateBuilder) updates,
-  ) => (toBuilder()..update(updates)).build();
+          void Function(ItemCyberneticCreateBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
 
   @override
   ItemCyberneticCreateBuilder toBuilder() =>
@@ -97,7 +91,7 @@ class _$ItemCyberneticCreate extends ItemCyberneticCreate {
     return other is ItemCyberneticCreate &&
         type == other.type &&
         name == other.name &&
-        bodyPoints == other.bodyPoints &&
+        xpCost == other.xpCost &&
         effect == other.effect;
   }
 
@@ -106,7 +100,7 @@ class _$ItemCyberneticCreate extends ItemCyberneticCreate {
     var _$hash = 0;
     _$hash = $jc(_$hash, type.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
-    _$hash = $jc(_$hash, bodyPoints.hashCode);
+    _$hash = $jc(_$hash, xpCost.hashCode);
     _$hash = $jc(_$hash, effect.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -117,7 +111,7 @@ class _$ItemCyberneticCreate extends ItemCyberneticCreate {
     return (newBuiltValueToStringHelper(r'ItemCyberneticCreate')
           ..add('type', type)
           ..add('name', name)
-          ..add('bodyPoints', bodyPoints)
+          ..add('xpCost', xpCost)
           ..add('effect', effect))
         .toString();
   }
@@ -135,9 +129,9 @@ class ItemCyberneticCreateBuilder
   String? get name => _$this._name;
   set name(String? name) => _$this._name = name;
 
-  int? _bodyPoints;
-  int? get bodyPoints => _$this._bodyPoints;
-  set bodyPoints(int? bodyPoints) => _$this._bodyPoints = bodyPoints;
+  int? _xpCost;
+  int? get xpCost => _$this._xpCost;
+  set xpCost(int? xpCost) => _$this._xpCost = xpCost;
 
   String? _effect;
   String? get effect => _$this._effect;
@@ -152,7 +146,7 @@ class ItemCyberneticCreateBuilder
     if ($v != null) {
       _type = $v.type;
       _name = $v.name;
-      _bodyPoints = $v.bodyPoints;
+      _xpCost = $v.xpCost;
       _effect = $v.effect;
       _$v = null;
     }
@@ -173,29 +167,16 @@ class ItemCyberneticCreateBuilder
   ItemCyberneticCreate build() => _build();
 
   _$ItemCyberneticCreate _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$ItemCyberneticCreate._(
           type: BuiltValueNullFieldError.checkNotNull(
-            type,
-            r'ItemCyberneticCreate',
-            'type',
-          ),
+              type, r'ItemCyberneticCreate', 'type'),
           name: BuiltValueNullFieldError.checkNotNull(
-            name,
-            r'ItemCyberneticCreate',
-            'name',
-          ),
-          bodyPoints: BuiltValueNullFieldError.checkNotNull(
-            bodyPoints,
-            r'ItemCyberneticCreate',
-            'bodyPoints',
-          ),
+              name, r'ItemCyberneticCreate', 'name'),
+          xpCost: BuiltValueNullFieldError.checkNotNull(
+              xpCost, r'ItemCyberneticCreate', 'xpCost'),
           effect: BuiltValueNullFieldError.checkNotNull(
-            effect,
-            r'ItemCyberneticCreate',
-            'effect',
-          ),
+              effect, r'ItemCyberneticCreate', 'effect'),
         );
     replace(_$result);
     return _$result;

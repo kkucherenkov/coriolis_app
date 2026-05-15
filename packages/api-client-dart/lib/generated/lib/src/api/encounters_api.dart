@@ -137,6 +137,92 @@ class EncountersApi {
     );
   }
 
+  /// Advance the encounter to the start of the next round
+  /// Atomically advances the encounter to the start of the next round.  **Effects:** - &#x60;encounter.round&#x60; is incremented by 1. - &#x60;encounter.activeCombatantId&#x60; is reset to the first combatant in   &#x60;turnOrder&#x60; (the lowest &#x60;turnOrder&#x60; index). - One &#x60;combat.updated&#x60; realtime event is emitted on the encounter&#39;s   session channel.  **Allowed only while &#x60;status&#x60; is &#x60;active&#x60;.** Returns 422 &#x60;ENCOUNTER_INVALID_STATUS&#x60; otherwise.  **Defensive guard:** returns 422 &#x60;ENCOUNTER_INITIATIVE_NOT_ROLLED&#x60; when &#x60;activeCombatantId&#x60; is null (initiative was never set).  The response &#x60;TurnAdvanceResult.isNewRound&#x60; is always &#x60;true&#x60; on success — this endpoint always crosses a round boundary by definition. Use &#x60;POST /api/v1/encounters/{id}/turn/advance&#x60; for within-round progression. 
+  ///
+  /// Parameters:
+  /// * [id] - Encounter identifier (cuid2)
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [TurnAdvanceResult] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<TurnAdvanceResult>> advanceRound({ 
+    required String id,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/api/v1/encounters/{id}/round/advance'.replaceAll('{' r'id' '}', encodeQueryParameter(_serializers, id, const FullType(String)).toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'apiKey',
+            'name': 'cookieAuth',
+            'keyName': 'better-auth.session_token',
+            'where': '',
+          },{
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    TurnAdvanceResult? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(TurnAdvanceResult),
+      ) as TurnAdvanceResult;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<TurnAdvanceResult>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// Advance to the next combatant&#39;s turn
   /// Moves &#x60;encounter.activeCombatantId&#x60; forward by one position in the turn order: &#x60;(currentIndex + 1) % combatants.length&#x60;.  **Wrap behaviour:** when the advance moves past the last combatant (index &#x60;combatants.length - 1&#x60;), the turn wraps to index 0 and &#x60;encounter.round&#x60; is incremented by 1. &#x60;TurnAdvanceResult.isNewRound&#x60; is &#x60;true&#x60; in that case.  **Allowed only while &#x60;status&#x60; is &#x60;active&#x60;.** Returns 422 &#x60;ENCOUNTER_INVALID_STATUS&#x60; otherwise.  **Defensive guard:** returns 422 &#x60;ENCOUNTER_INITIATIVE_NOT_ROLLED&#x60; when &#x60;activeCombatantId&#x60; is null (i.e. initiative was never set, which should not be reachable via normal &#x60;rollInitiative&#x60; flow but is possible if a future code path bypasses that operation).  **Error codes (422):** - &#x60;ENCOUNTER_INVALID_STATUS&#x60; — encounter is not in &#x60;active&#x60; status. - &#x60;ENCOUNTER_INITIATIVE_NOT_ROLLED&#x60; — &#x60;activeCombatantId&#x60; is null;   initiative must be rolled before turns can be advanced. 
   ///

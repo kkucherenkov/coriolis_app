@@ -5,7 +5,8 @@ import 'package:app_ui/app_ui.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
-import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_1_concept.dart' show WizardStepHeader;
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_1_biography.dart'
+    show WizardStepHeader;
 import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/wizard_shared.dart';
 
 /// Wizard step 4 — Attribute distribution.
@@ -45,8 +46,8 @@ class Step4Attributes extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               WizardStepHeader(
-                title: t.wizardStep4Title,
-                blurb: t.wizardStep4Blurb,
+                title: t.wizard.step.attributes.title,
+                blurb: t.wizard.step.attributes.blurb,
               ),
               const SizedBox(height: AppSpacing.s4),
               // ── Point pool banner ──────────────────────────────────────

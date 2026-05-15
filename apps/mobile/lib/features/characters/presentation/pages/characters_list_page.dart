@@ -41,6 +41,13 @@ class _CharactersListView extends StatelessWidget {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.rocket_launch_outlined,
+                color: AppColors.brandBrass),
+            tooltip: context.t.ships.tooltipNav,
+            onPressed: () =>
+                Navigator.of(context).pushNamed(AppRoutes.ships),
+          ),
+          IconButton(
             icon: const Icon(Icons.casino_outlined,
                 color: AppColors.brandBrass),
             tooltip: 'Game sessions',

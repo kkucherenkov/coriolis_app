@@ -90,6 +90,17 @@ describe('AppModal', () => {
     wrapper.unmount();
   });
 
+  // PATTERNS.md §5 — backdrop click is NOT a close trigger by default.
+  // Pins the post-2026-05-15 contract (T-AUDIT-2026-05-15-MODAL-BACKDROP-DEFAULT).
+  it('does NOT emit on backdrop click by default (closeOnBackdrop unset)', async () => {
+    const wrapper = mountModal({ open: true });
+    const backdrop = document.body.querySelector<HTMLElement>('.app-modal__backdrop');
+    backdrop!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted('update:open')).toBeUndefined();
+    wrapper.unmount();
+  });
+
   // ── aria-label flows through ──────────────────────────────────────────────
 
   it('forwards aria-label to the backdrop element', () => {

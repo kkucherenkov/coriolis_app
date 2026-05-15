@@ -125,6 +125,21 @@ abstract final class AppTypography {
     height: 1.4285714285714286,
     letterSpacing: 0.0,
   );
+  static const TextStyle bodyXs = TextStyle(
+    fontFamily: AppFontFamily.body,
+    fontSize: 12.0,
+    fontWeight: AppFontWeight.regular,
+    height: 1.4,
+    letterSpacing: 0.0,
+  );
+  static const TextStyle labelSm = TextStyle(
+    fontFamily: AppFontFamily.body,
+    fontSize: 12.0,
+    fontWeight: AppFontWeight.medium,
+    height: 1.4,
+    letterSpacing: 0.06 * 12.0,
+    // textCase: uppercase — apply via Text.toUpperCase() at the call site
+  );
   static const TextStyle monoStatXl = TextStyle(
     fontFamily: AppFontFamily.mono,
     fontSize: 32.0,

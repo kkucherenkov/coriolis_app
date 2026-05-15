@@ -20,8 +20,8 @@ ItemGearCreateTypeEnum _$itemGearCreateTypeEnumValueOf(String name) {
 
 final BuiltSet<ItemGearCreateTypeEnum> _$itemGearCreateTypeEnumValues =
     BuiltSet<ItemGearCreateTypeEnum>(const <ItemGearCreateTypeEnum>[
-      _$itemGearCreateTypeEnum_GEAR,
-    ]);
+  _$itemGearCreateTypeEnum_GEAR,
+]);
 
 Serializer<ItemGearCreateTypeEnum> _$itemGearCreateTypeEnumSerializer =
     _$ItemGearCreateTypeEnumSerializer();
@@ -41,20 +41,15 @@ class _$ItemGearCreateTypeEnumSerializer
   final String wireName = 'ItemGearCreateTypeEnum';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    ItemGearCreateTypeEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, ItemGearCreateTypeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  ItemGearCreateTypeEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => ItemGearCreateTypeEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  ItemGearCreateTypeEnum deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ItemGearCreateTypeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 class _$ItemGearCreate extends ItemGearCreate {
@@ -72,13 +67,13 @@ class _$ItemGearCreate extends ItemGearCreate {
   factory _$ItemGearCreate([void Function(ItemGearCreateBuilder)? updates]) =>
       (ItemGearCreateBuilder()..update(updates))._build();
 
-  _$ItemGearCreate._({
-    required this.type,
-    required this.name,
-    required this.weight,
-    required this.quantity,
-    this.notes,
-  }) : super._();
+  _$ItemGearCreate._(
+      {required this.type,
+      required this.name,
+      required this.weight,
+      required this.quantity,
+      this.notes})
+      : super._();
   @override
   ItemGearCreate rebuild(void Function(ItemGearCreateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -176,29 +171,16 @@ class ItemGearCreateBuilder
   ItemGearCreate build() => _build();
 
   _$ItemGearCreate _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$ItemGearCreate._(
           type: BuiltValueNullFieldError.checkNotNull(
-            type,
-            r'ItemGearCreate',
-            'type',
-          ),
+              type, r'ItemGearCreate', 'type'),
           name: BuiltValueNullFieldError.checkNotNull(
-            name,
-            r'ItemGearCreate',
-            'name',
-          ),
+              name, r'ItemGearCreate', 'name'),
           weight: BuiltValueNullFieldError.checkNotNull(
-            weight,
-            r'ItemGearCreate',
-            'weight',
-          ),
+              weight, r'ItemGearCreate', 'weight'),
           quantity: BuiltValueNullFieldError.checkNotNull(
-            quantity,
-            r'ItemGearCreate',
-            'quantity',
-          ),
+              quantity, r'ItemGearCreate', 'quantity'),
           notes: notes,
         );
     replace(_$result);

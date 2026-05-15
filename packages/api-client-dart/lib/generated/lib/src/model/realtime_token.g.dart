@@ -89,8 +89,11 @@ class RealtimeTokenBuilder
   RealtimeToken build() => _build();
 
   _$RealtimeToken _build() {
-    final _$result =
-        _$v ?? _$RealtimeToken._(token: token, expiresAt: expiresAt);
+    final _$result = _$v ??
+        _$RealtimeToken._(
+          token: token,
+          expiresAt: expiresAt,
+        );
     replace(_$result);
     return _$result;
   }

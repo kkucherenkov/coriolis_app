@@ -20,9 +20,11 @@ CombatantType _$valueOf(String name) {
   }
 }
 
-final BuiltSet<CombatantType> _$values = BuiltSet<CombatantType>(
-  const <CombatantType>[_$pc, _$npc],
-);
+final BuiltSet<CombatantType> _$values =
+    BuiltSet<CombatantType>(const <CombatantType>[
+  _$pc,
+  _$npc,
+]);
 
 class _$CombatantTypeMeta {
   const _$CombatantTypeMeta();
@@ -32,7 +34,7 @@ class _$CombatantTypeMeta {
   BuiltSet<CombatantType> get values => _$values;
 }
 
-mixin _$CombatantTypeMixin {
+abstract class _$CombatantTypeMixin {
   // ignore: non_constant_identifier_names
   _$CombatantTypeMeta get CombatantType => const _$CombatantTypeMeta();
 }
@@ -56,20 +58,15 @@ class _$CombatantTypeSerializer implements PrimitiveSerializer<CombatantType> {
   final String wireName = 'CombatantType';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    CombatantType object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, CombatantType object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  CombatantType deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => CombatantType.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  CombatantType deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      CombatantType.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

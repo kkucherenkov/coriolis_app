@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   AttributeOutOfRangeError,
+  BirrDraftImmutableError,
   CharacterNameEmptyError,
   CharacterNotFoundError,
   CharacterNotOwnedError,
@@ -48,6 +49,7 @@ function makeCharacter(overrides: Partial<CharacterReadModel> = {}): CharacterRe
     origin: null,
     reputation: 2,
     startingWealth: 500,
+    birr: 500,
     crewConcept: null,
     mutant: false,
     mutantLineage: null,
@@ -528,6 +530,95 @@ describe('UpdateCharacterHandler', () => {
       const updateArg = vi.mocked(repo.update).mock.calls[0]?.[1] ?? {};
       expect(Object.hasOwn(updateArg, 'mutant')).toBe(false);
       expect(Object.hasOwn(updateArg, 'mutantLineage')).toBe(false);
+    });
+  });
+
+  // -------- Wallet (`birr`) — T-WIZARD-GEAR-BACKEND-IMPL --------
+
+  describe('birr (wallet)', () => {
+    it('rejects birr PATCH on a draft with BirrDraftImmutableError', async () => {
+      vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter({ status: 'draft' }));
+
+      const dto = Object.assign(new UpdateCharacterDto(), { birr: 750 });
+      await expect(
+        handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+      ).rejects.toBeInstanceOf(BirrDraftImmutableError);
+      expect(repo.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects negative birr with AttributeOutOfRangeError before fetching the row', async () => {
+      const dto = Object.assign(new UpdateCharacterDto(), { birr: -1 });
+      await expect(
+        handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+      ).rejects.toBeInstanceOf(AttributeOutOfRangeError);
+      expect(repo.findActiveById).not.toHaveBeenCalled();
+    });
+
+    it('accepts birr PATCH on an active character and forwards to the repo', async () => {
+      vi.mocked(repo.findActiveById).mockResolvedValue(
+        makeCharacter({ status: 'active', birr: 1000 }),
+      );
+      vi.mocked(repo.update).mockResolvedValue(makeCharacter({ status: 'active', birr: 750 }));
+
+      const dto = Object.assign(new UpdateCharacterDto(), { birr: 750 });
+      await handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto));
+
+      expect(repo.update).toHaveBeenCalledWith('char-1', expect.objectContaining({ birr: 750 }));
+    });
+
+    it('re-derives birr to the new startingWealth on a draft upbringing change', async () => {
+      vi.mocked(repo.findActiveById).mockResolvedValue(
+        makeCharacter({
+          status: 'draft',
+          upbringing: 'plebeian',
+          startingWealth: 500,
+          birr: 500,
+        }),
+      );
+      vi.mocked(repo.update).mockResolvedValue(
+        makeCharacter({
+          status: 'draft',
+          upbringing: 'aristocrat',
+          startingWealth: 5000,
+          birr: 5000,
+        }),
+      );
+
+      const dto = Object.assign(new UpdateCharacterDto(), { upbringing: 'aristocrat' });
+      await handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto));
+
+      // Aristocrat startingWealth = 5000 — birr is re-derived to match.
+      expect(repo.update).toHaveBeenCalledWith(
+        'char-1',
+        expect.objectContaining({ upbringing: 'aristocrat', birr: 5000 }),
+      );
+    });
+
+    it('does not touch birr when upbringing is unchanged on a draft', async () => {
+      vi.mocked(repo.findActiveById).mockResolvedValue(
+        makeCharacter({ status: 'draft', upbringing: 'plebeian', birr: 500 }),
+      );
+      vi.mocked(repo.update).mockResolvedValue(
+        makeCharacter({ status: 'draft', name: 'Renamed', birr: 500 }),
+      );
+
+      const dto = Object.assign(new UpdateCharacterDto(), { name: 'Renamed' });
+      await handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto));
+
+      const updateArg = vi.mocked(repo.update).mock.calls[0]?.[1] ?? {};
+      expect(Object.hasOwn(updateArg, 'birr')).toBe(false);
+    });
+
+    it('does not derive birr on an active upbringing change (upbringing is immutable)', async () => {
+      vi.mocked(repo.findActiveById).mockResolvedValue(
+        makeCharacter({ status: 'active', upbringing: 'plebeian' }),
+      );
+      // Active upbringing change is rejected upstream (UpbringingImmutableError) —
+      // we just confirm the birr-derive branch did not pre-empt that error.
+      const dto = Object.assign(new UpdateCharacterDto(), { upbringing: 'aristocrat' });
+      await expect(
+        handler.execute(new UpdateCharacterCommand('char-1', 'user-1', dto)),
+      ).rejects.toThrow();
     });
   });
 });

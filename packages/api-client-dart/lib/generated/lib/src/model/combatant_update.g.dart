@@ -27,16 +27,16 @@ class _$CombatantUpdate extends CombatantUpdate {
   factory _$CombatantUpdate([void Function(CombatantUpdateBuilder)? updates]) =>
       (CombatantUpdateBuilder()..update(updates))._build();
 
-  _$CombatantUpdate._({
-    this.displayName,
-    this.hpCurrent,
-    this.armor,
-    this.signature,
-    this.statusFlags,
-    this.notes,
-    this.initiative,
-    this.turnOrder,
-  }) : super._();
+  _$CombatantUpdate._(
+      {this.displayName,
+      this.hpCurrent,
+      this.armor,
+      this.signature,
+      this.statusFlags,
+      this.notes,
+      this.initiative,
+      this.turnOrder})
+      : super._();
   @override
   CombatantUpdate rebuild(void Function(CombatantUpdateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -162,8 +162,7 @@ class CombatantUpdateBuilder
   _$CombatantUpdate _build() {
     _$CombatantUpdate _$result;
     try {
-      _$result =
-          _$v ??
+      _$result = _$v ??
           _$CombatantUpdate._(
             displayName: displayName,
             hpCurrent: hpCurrent,
@@ -181,10 +180,7 @@ class CombatantUpdateBuilder
         _statusFlags?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'CombatantUpdate',
-          _$failedField,
-          e.toString(),
-        );
+            r'CombatantUpdate', _$failedField, e.toString());
       }
       rethrow;
     }

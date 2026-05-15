@@ -24,9 +24,8 @@ const ShipModuleSlot _$CRYO = const ShipModuleSlot._('CRYO');
 const ShipModuleSlot _$DOCKING = const ShipModuleSlot._('DOCKING');
 const ShipModuleSlot _$MINING = const ShipModuleSlot._('MINING');
 const ShipModuleSlot _$REPAIR = const ShipModuleSlot._('REPAIR');
-const ShipModuleSlot _$CONCEALED_HOLD = const ShipModuleSlot._(
-  'CONCEALED_HOLD',
-);
+const ShipModuleSlot _$CONCEALED_HOLD =
+    const ShipModuleSlot._('CONCEALED_HOLD');
 const ShipModuleSlot _$PROXY_DECK = const ShipModuleSlot._('PROXY_DECK');
 const ShipModuleSlot _$OTHER = const ShipModuleSlot._('OTHER');
 
@@ -81,28 +80,28 @@ ShipModuleSlot _$valueOf(String name) {
 
 final BuiltSet<ShipModuleSlot> _$values =
     BuiltSet<ShipModuleSlot>(const <ShipModuleSlot>[
-      _$BRIDGE,
-      _$REACTOR,
-      _$DRIVE,
-      _$HOLD,
-      _$WEAPON,
-      _$TORPEDO,
-      _$SENSOR,
-      _$COMMS,
-      _$HANGAR,
-      _$QUARTERS,
-      _$MEDICAL,
-      _$WORKSHOP,
-      _$CHAPEL,
-      _$ESCAPE_PODS,
-      _$CRYO,
-      _$DOCKING,
-      _$MINING,
-      _$REPAIR,
-      _$CONCEALED_HOLD,
-      _$PROXY_DECK,
-      _$OTHER,
-    ]);
+  _$BRIDGE,
+  _$REACTOR,
+  _$DRIVE,
+  _$HOLD,
+  _$WEAPON,
+  _$TORPEDO,
+  _$SENSOR,
+  _$COMMS,
+  _$HANGAR,
+  _$QUARTERS,
+  _$MEDICAL,
+  _$WORKSHOP,
+  _$CHAPEL,
+  _$ESCAPE_PODS,
+  _$CRYO,
+  _$DOCKING,
+  _$MINING,
+  _$REPAIR,
+  _$CONCEALED_HOLD,
+  _$PROXY_DECK,
+  _$OTHER,
+]);
 
 class _$ShipModuleSlotMeta {
   const _$ShipModuleSlotMeta();
@@ -131,7 +130,7 @@ class _$ShipModuleSlotMeta {
   BuiltSet<ShipModuleSlot> get values => _$values;
 }
 
-mixin _$ShipModuleSlotMixin {
+abstract class _$ShipModuleSlotMixin {
   // ignore: non_constant_identifier_names
   _$ShipModuleSlotMeta get ShipModuleSlot => const _$ShipModuleSlotMeta();
 }
@@ -194,20 +193,15 @@ class _$ShipModuleSlotSerializer
   final String wireName = 'ShipModuleSlot';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    ShipModuleSlot object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, ShipModuleSlot object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  ShipModuleSlot deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => ShipModuleSlot.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  ShipModuleSlot deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ShipModuleSlot.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

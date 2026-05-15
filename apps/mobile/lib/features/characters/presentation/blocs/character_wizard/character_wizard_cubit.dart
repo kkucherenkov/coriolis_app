@@ -1,33 +1,55 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:coriolis_companion/features/characters/data/starter_kits_catalog.dart';
 import 'package:coriolis_companion/features/characters/domain/character.dart';
 import 'package:coriolis_companion/features/characters/domain/character_repository.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
 
-/// Manages the six-step character creation wizard.
+/// Manages the eight-step character creation wizard.
+///
+/// Canonical step order (per
+/// [`specs/design/CHARACTER_WIZARD.md`](../../../../../../specs/design/CHARACTER_WIZARD.md)):
+///   1. Biography (name · origin · upbringing · crewConcept · age)
+///   2. Concept (амплуа)
+///   3. Role
+///   4. Attributes
+///   5. Skills
+///   6. Talents
+///   7. Icon
+///   8. Gear
 ///
 /// ## Draft persistence contract
 ///
-/// - `start({id: null})` — creates a new `{ name: 'Untitled', status: draft }` via
-///   [CharacterRepository.create] and stores the returned id. The caller should
-///   replace the route to `/characters/new?id=<id>` so refreshing resumes.
+/// - `start({id: null})` — creates a new draft with `name: 'Untitled'`,
+///   `upbringing: 'plebeian'`, `status: 'draft'` via
+///   [CharacterRepository.create] and stores the returned id. The caller
+///   should replace the route to `/characters/new?id=<id>` so refreshing
+///   resumes. The default `plebeian` upbringing satisfies the server's
+///   `CharacterCreate` contract (`upbringing` is required) and is mutable
+///   while the character is in `draft` state — Step 1 lets the user pick
+///   a different value.
 ///
-/// - `start({id: <existing>})` — loads the character; if it is not a draft or
-///   not owned the cubit emits an error state.
+/// - `start({id: <existing>})` — loads the character; if it is not a draft
+///   or not owned the cubit emits an error state.
 ///
 /// - `next()` / `back()` — patch the current step's data before advancing.
 ///
-/// - `forge()` — PATCH `status: active` (via name + concept field presence)
-///   then the caller navigates to the character sheet.
+/// - `forge()` — PATCH `status: active` then the caller navigates to the
+///   character sheet.
 ///
 /// Each step advance calls [CharacterRepository.update] with the accumulated
-/// [WizardDraft] fields so the server always has the latest draft.
+/// [WizardDraft] fields for that step so the server always has the latest
+/// draft.
 class CharacterWizardCubit extends Cubit<CharacterWizardState> {
   CharacterWizardCubit({required CharacterRepository repository})
       : _repository = repository,
         super(const CharacterWizardState());
 
   final CharacterRepository _repository;
+
+  /// Default upbringing seeded on initial draft create. Mutable on Step 2
+  /// while the character is in `draft` state.
+  static const String _defaultDraftUpbringing = 'plebeian';
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -41,10 +63,6 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
       if (id != null) {
         // Resume flow: load existing draft.
         final character = await _repository.get(id);
-        // If the character has no draft status field we treat any character
-        // that can be fetched as resumable (spec v0.6.0 exposes status
-        // through the concept field convention until the status field lands
-        // in a future migration).
         final draft = _draftFromCharacter(character);
         emit(state.copyWith(
           isLoading: false,
@@ -54,12 +72,18 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
         ));
         return null; // id already known to caller
       } else {
-        // New flow: create a placeholder draft.
-        final character =
-            await _repository.create(name: 'Untitled', status: 'draft');
+        // New flow: create a placeholder draft. The backend requires
+        // `upbringing` on create; default to `plebeian` and let Step 2
+        // change it via PATCH (allowed while status=draft).
+        final character = await _repository.create(
+          name: 'Untitled',
+          upbringing: _defaultDraftUpbringing,
+          status: 'draft',
+        );
         emit(state.copyWith(
           isLoading: false,
           character: character,
+          draft: _draftFromCharacter(character),
           saveStatus: WizardSaveStatus.idle,
         ));
         return character.id;
@@ -80,7 +104,7 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
   ///
   /// Returns `true` on success; `false` on save failure (stays on current step).
   Future<bool> next() async {
-    if (state.step >= 6) return false;
+    if (state.step >= 8) return false;
     final saved = await _persistCurrentStep();
     if (!saved) return false;
     emit(state.copyWith(step: state.step + 1, saveStatus: WizardSaveStatus.idle));
@@ -93,29 +117,61 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
     emit(state.copyWith(step: state.step - 1, saveStatus: WizardSaveStatus.idle));
   }
 
-  // ── Step 1 — Concept ──────────────────────────────────────────────────────
+  // ── Step 1 — Biography (name) ────────────────────────────────────────────
 
   void updateName(String value) =>
       emit(state.copyWith(draft: state.draft.copyWith(name: value)));
 
-  void updateConcept(String value) =>
-      emit(state.copyWith(draft: state.draft.copyWith(concept: value)));
-
   // ── Step 2 — People & Background ─────────────────────────────────────────
 
+  /// Free-text narrative origin (max 200 chars per the OpenAPI contract).
   void updateOrigin(String value) =>
       emit(state.copyWith(draft: state.draft.copyWith(origin: value)));
 
+  /// Canonical Upbringing — `plebeian | stationary | aristocrat`.
   void updateUpbringing(String value) =>
       emit(state.copyWith(draft: state.draft.copyWith(upbringing: value)));
 
+  /// Local-only age (not persisted to backend — canonical biography step
+  /// will own this once the reorder block lands).
   void updateAge(int value) =>
       emit(state.copyWith(draft: state.draft.copyWith(age: value)));
 
   // ── Step 3 — Icon ─────────────────────────────────────────────────────────
 
-  void selectIcon(CoriolisIcon icon) =>
-      emit(state.copyWith(draft: state.draft.copyWith(selectedIcon: icon)));
+  /// Canonical IconId — one of the nine Dart-side enum names
+  /// (`ladyOfTears | traveler | messenger | merchant | dancer | gambler |
+  /// judge | facelessOne | deckhand`).
+  void selectIconId(String value) =>
+      emit(state.copyWith(draft: state.draft.copyWith(iconId: value)));
+
+  // ── Concept / Role / Crew / Mutant (data plumbing only — UI lands in
+  // T-WIZARD-MOBILE-REORDER) ───────────────────────────────────────────────
+
+  void updateConcept(String value) =>
+      emit(state.copyWith(draft: state.draft.copyWith(concept: value)));
+
+  void updateRole(String value) =>
+      emit(state.copyWith(draft: state.draft.copyWith(role: value)));
+
+  void updateCrewConcept(String value) =>
+      emit(state.copyWith(draft: state.draft.copyWith(crewConcept: value)));
+
+  void setMutant(bool value) => emit(state.copyWith(
+        draft: state.draft.copyWith(
+          mutant: value,
+          // Mutant=false clears any previously chosen lineage to stay
+          // consistent with the API contract (`MUTANT_LINEAGE_FORBIDDEN`).
+          clearMutantLineage: !value,
+        ),
+      ));
+
+  void setMutantLineage(String? value) => emit(state.copyWith(
+        draft: state.draft.copyWith(
+          mutantLineage: value,
+          clearMutantLineage: value == null,
+        ),
+      ));
 
   // ── Step 4 — Attributes ───────────────────────────────────────────────────
 
@@ -256,6 +312,23 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
     emit(state.copyWith(draft: state.draft.copyWith(pendingTalents: current)));
   }
 
+  // ── Step 8 — Gear ─────────────────────────────────────────────────────────
+
+  /// Toggle a gear pick for [rowId].
+  ///
+  /// Pass [optionId] to select an option; passing the already-selected
+  /// optionId or `null` clears the row's pick. Memory-only until [forge].
+  void selectGearPick(String rowId, String? optionId) {
+    final current = Map<String, String?>.from(state.draft.pendingGearPicks);
+    if (current[rowId] == optionId) {
+      // Re-tap → clear the row.
+      current[rowId] = null;
+    } else {
+      current[rowId] = optionId;
+    }
+    emit(state.copyWith(draft: state.draft.copyWith(pendingGearPicks: current)));
+  }
+
   // ── Forge ─────────────────────────────────────────────────────────────────
 
   /// Persist all remaining data and activate the character.
@@ -276,7 +349,17 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
       Character updated = await _repository.update(
         id,
         name: d.name?.trim().isEmpty == true ? 'Untitled' : d.name,
-        concept: d.concept,
+        // Empty-string sentinels in draft are how `updateRole` and
+        // `updateConcept` mark "cleared"; the repository layer routes
+        // typed enums through `valueOf` so we must not forward those.
+        concept: (d.concept?.isNotEmpty ?? false) ? d.concept : null,
+        role: (d.role?.isNotEmpty ?? false) ? d.role : null,
+        iconId: d.iconId,
+        upbringing: d.upbringing,
+        origin: d.origin,
+        crewConcept: d.crewConcept,
+        mutant: d.mutant,
+        mutantLineage: d.mutantLineage,
         attributes: CharacterAttributes(
           strength: d.strength ?? 2,
           agility: d.agility ?? 2,
@@ -313,7 +396,22 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
         );
       }
 
-      // Re-fetch to pick up any talent changes.
+      // Persist gear picks from Step 8.
+      // Item.name is locale-invariant: we always POST the EN name.
+      final kit = findStarterKit(d.concept ?? '', d.role ?? '');
+      if (kit != null) {
+        for (final choice in kit.choices) {
+          final pickedId = d.pendingGearPicks[choice.id];
+          if (pickedId == null) continue;
+          final option = choice.options.firstWhere(
+            (o) => o.id == pickedId,
+            orElse: () => choice.options.first,
+          );
+          await _repository.addItem(id, _buildDomainItem(option));
+        }
+      }
+
+      // Re-fetch to pick up any talent + gear changes.
       updated = await _repository.get(id);
 
       emit(state.copyWith(
@@ -345,25 +443,25 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
       final d = state.draft;
       switch (state.step) {
         case 1:
+          // Biography — name + canonical upbringing + free-text origin +
+          // optional crewConcept. Age stays local (no canonical field on
+          // the API contract).
           await _repository.update(
             id,
             name: d.name?.trim().isEmpty == true ? 'Untitled' : d.name,
-            concept: d.concept,
+            upbringing: d.upbringing,
+            origin: d.origin,
+            crewConcept: d.crewConcept,
           );
         case 2:
-          // origin / upbringing stored in concept until spec adds explicit fields.
-          final conceptParts = [
-            if (d.origin != null) 'origin:${d.origin}',
-            if (d.upbringing != null) 'upbringing:${d.upbringing}',
-            if (d.age != null) 'age:${d.age}',
-          ].join('|');
-          if (conceptParts.isNotEmpty) {
-            await _repository.update(id, concept: conceptParts);
+          // Concept (амплуа).
+          if (d.concept != null && d.concept!.isNotEmpty) {
+            await _repository.update(id, concept: d.concept);
           }
         case 3:
-          // icon stored in notes until spec adds explicit field.
-          if (d.selectedIcon != null) {
-            await _repository.update(id, notes: 'icon:${d.selectedIcon!.name}');
+          // Role within the chosen amplua.
+          if (d.role != null && d.role!.isNotEmpty) {
+            await _repository.update(id, role: d.role);
           }
         case 4:
           await _repository.update(
@@ -400,6 +498,14 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
         case 6:
           // Talents are committed on forge(); nothing to PATCH mid-step.
           break;
+        case 7:
+          // Icon — canonical IconId.
+          if (d.iconId != null) {
+            await _repository.update(id, iconId: d.iconId);
+          }
+        case 8:
+          // Gear picks — memory-only until forge(); nothing to PATCH.
+          break;
         default:
           break;
       }
@@ -414,11 +520,67 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
     }
   }
 
+  /// Build a [DomainItem] from a starter-kit item with safe defaults.
+  ///
+  /// Always uses the EN display name — `Item.name` is locale-invariant.
+  static DomainItem _buildDomainItem(StarterKitItem item) {
+    final name = item.template.name['en']!;
+    return switch (item.template.kind) {
+      StarterKitItemKind.weapon => DomainItem(
+          id: '',
+          type: ItemType.weapon,
+          name: name,
+          damage: 1,
+          range: 'close',
+          bonus: 0,
+          crit: 1,
+          weight: 1,
+          features: const [],
+          equipped: false,
+        ),
+      StarterKitItemKind.armor => DomainItem(
+          id: '',
+          type: ItemType.armor,
+          name: name,
+          armorRating: 1,
+          weight: 1,
+          features: const [],
+          equipped: false,
+        ),
+      StarterKitItemKind.gear => DomainItem(
+          id: '',
+          type: ItemType.gear,
+          name: name,
+          weight: 1,
+          quantity: 1,
+        ),
+      StarterKitItemKind.cybernetic => DomainItem(
+          id: '',
+          type: ItemType.cybernetic,
+          name: name,
+          effect: '',
+        ),
+      StarterKitItemKind.other => DomainItem(
+          id: '',
+          type: ItemType.other,
+          name: name,
+          weight: 1,
+        ),
+    };
+  }
+
   /// Reconstruct local draft from an existing character (resume flow).
   static WizardDraft _draftFromCharacter(Character c) {
     return WizardDraft(
       name: c.name == 'Untitled' ? null : c.name,
       concept: c.concept,
+      role: c.role,
+      iconId: c.iconId,
+      upbringing: c.upbringing,
+      origin: c.origin,
+      crewConcept: c.crewConcept,
+      mutant: c.mutant,
+      mutantLineage: c.mutantLineage,
       strength: c.attributes.strength,
       agility: c.attributes.agility,
       wits: c.attributes.wits,

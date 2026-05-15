@@ -10,6 +10,7 @@ All URIs are relative to *http://localhost:3010*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**addCombatant**](EncountersApi.md#addcombatant) | **POST** /api/v1/encounters/{id}/combatants | Add a combatant to an encounter
+[**advanceRound**](EncountersApi.md#advanceround) | **POST** /api/v1/encounters/{id}/round/advance | Advance the encounter to the start of the next round
 [**advanceTurn**](EncountersApi.md#advanceturn) | **POST** /api/v1/encounters/{id}/turn/advance | Advance to the next combatant&#39;s turn
 [**createEncounter**](EncountersApi.md#createencounter) | **POST** /api/v1/game-sessions/{sessionId}/encounters | Create an encounter in a game session
 [**deleteCombatant**](EncountersApi.md#deletecombatant) | **DELETE** /api/v1/combatants/{id} | Remove a combatant from an encounter
@@ -68,6 +69,53 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: application/json
+ - **Accept**: application/json, application/problem+json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **advanceRound**
+> TurnAdvanceResult advanceRound(id)
+
+Advance the encounter to the start of the next round
+
+Atomically advances the encounter to the start of the next round.  **Effects:** - `encounter.round` is incremented by 1. - `encounter.activeCombatantId` is reset to the first combatant in   `turnOrder` (the lowest `turnOrder` index). - One `combat.updated` realtime event is emitted on the encounter's   session channel.  **Allowed only while `status` is `active`.** Returns 422 `ENCOUNTER_INVALID_STATUS` otherwise.  **Defensive guard:** returns 422 `ENCOUNTER_INITIATIVE_NOT_ROLLED` when `activeCombatantId` is null (initiative was never set).  The response `TurnAdvanceResult.isNewRound` is always `true` on success — this endpoint always crosses a round boundary by definition. Use `POST /api/v1/encounters/{id}/turn/advance` for within-round progression. 
+
+### Example
+```dart
+import 'package:app_api_client/api.dart';
+// TODO Configure API key authorization: cookieAuth
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKeyPrefix = 'Bearer';
+
+final api = AppApiClient().getEncountersApi();
+final String id = id_example; // String | Encounter identifier (cuid2)
+
+try {
+    final response = api.advanceRound(id);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling EncountersApi->advanceRound: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **String**| Encounter identifier (cuid2) | 
+
+### Return type
+
+[**TurnAdvanceResult**](TurnAdvanceResult.md)
+
+### Authorization
+
+[cookieAuth](../README.md#cookieAuth), [bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json, application/problem+json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

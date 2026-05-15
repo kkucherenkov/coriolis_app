@@ -86,19 +86,12 @@ class CharacterMpBuilder implements Builder<CharacterMp, CharacterMpBuilder> {
   CharacterMp build() => _build();
 
   _$CharacterMp _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$CharacterMp._(
           current: BuiltValueNullFieldError.checkNotNull(
-            current,
-            r'CharacterMp',
-            'current',
-          ),
-          max: BuiltValueNullFieldError.checkNotNull(
-            max,
-            r'CharacterMp',
-            'max',
-          ),
+              current, r'CharacterMp', 'current'),
+          max:
+              BuiltValueNullFieldError.checkNotNull(max, r'CharacterMp', 'max'),
         );
     replace(_$result);
     return _$result;

@@ -1,3 +1,4 @@
+import { resolveTypographyValue } from './parse.ts';
 import {
   BANNER,
   type ColorFile,
@@ -63,7 +64,9 @@ function lineHeight(value: string | number): string {
   return typeof value === 'number' ? value.toString() : value;
 }
 
-function emitTypeRole(role: string, value: TypographyValue, typography: TypographyFile): string[] {
+function emitTypeRole(role: string, raw: TypographyValue, typography: TypographyFile): string[] {
+  // Resolve `{font.<bucket>.<key>}` refs before emit — see ADR-0004.
+  const value = resolveTypographyValue(typography, raw);
   const prefix = `--type-${kebab(role)}`;
   const lines = [
     `  ${prefix}-font-family: ${familyRef(typography, value.fontFamily)};`,
@@ -107,7 +110,7 @@ export function emitScss(tokens: TokenBundle): string {
     lines.push(`  --fw-${kebab(key)}: ${leaf.$value};`);
   }
 
-  for (const [role, leaf] of leafEntries(tokens.typography.type)) {
+  for (const [role, leaf] of leafEntries(tokens.typography.typography)) {
     lines.push(...emitTypeRole(role, leaf.$value, tokens.typography));
   }
 

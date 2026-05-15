@@ -7,12 +7,10 @@ part of 'critical_injury_severity.dart';
 // **************************************************************************
 
 const CriticalInjurySeverity _$light = const CriticalInjurySeverity._('light');
-const CriticalInjurySeverity _$severe = const CriticalInjurySeverity._(
-  'severe',
-);
-const CriticalInjurySeverity _$critical = const CriticalInjurySeverity._(
-  'critical',
-);
+const CriticalInjurySeverity _$severe =
+    const CriticalInjurySeverity._('severe');
+const CriticalInjurySeverity _$critical =
+    const CriticalInjurySeverity._('critical');
 
 CriticalInjurySeverity _$valueOf(String name) {
   switch (name) {
@@ -29,10 +27,10 @@ CriticalInjurySeverity _$valueOf(String name) {
 
 final BuiltSet<CriticalInjurySeverity> _$values =
     BuiltSet<CriticalInjurySeverity>(const <CriticalInjurySeverity>[
-      _$light,
-      _$severe,
-      _$critical,
-    ]);
+  _$light,
+  _$severe,
+  _$critical,
+]);
 
 class _$CriticalInjurySeverityMeta {
   const _$CriticalInjurySeverityMeta();
@@ -43,7 +41,7 @@ class _$CriticalInjurySeverityMeta {
   BuiltSet<CriticalInjurySeverity> get values => _$values;
 }
 
-mixin _$CriticalInjurySeverityMixin {
+abstract class _$CriticalInjurySeverityMixin {
   // ignore: non_constant_identifier_names
   _$CriticalInjurySeverityMeta get CriticalInjurySeverity =>
       const _$CriticalInjurySeverityMeta();
@@ -71,20 +69,15 @@ class _$CriticalInjurySeveritySerializer
   final String wireName = 'CriticalInjurySeverity';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    CriticalInjurySeverity object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, CriticalInjurySeverity object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  CriticalInjurySeverity deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => CriticalInjurySeverity.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  CriticalInjurySeverity deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      CriticalInjurySeverity.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

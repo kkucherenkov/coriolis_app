@@ -86,7 +86,11 @@ class NpcCreateMpBuilder implements Builder<NpcCreateMp, NpcCreateMpBuilder> {
   NpcCreateMp build() => _build();
 
   _$NpcCreateMp _build() {
-    final _$result = _$v ?? _$NpcCreateMp._(current: current, max: max);
+    final _$result = _$v ??
+        _$NpcCreateMp._(
+          current: current,
+          max: max,
+        );
     replace(_$result);
     return _$result;
   }

@@ -29,6 +29,7 @@ import { DeleteEncounterHandler } from './commands/delete-encounter.handler';
 import { RollInitiativeHandler } from './commands/roll-initiative.handler';
 import { ReorderInitiativeHandler } from './commands/reorder-initiative.handler';
 import { AdvanceTurnHandler } from './commands/advance-turn.handler';
+import { AdvanceRoundHandler } from './commands/advance-round.handler';
 import { GAME_SESSION_ACCESS } from './domain/game-session-access.ports';
 import { ENCOUNTER_REPO, INITIATIVE_REPO } from './domain/encounter.ports';
 import { EncounterRepo } from './infra/encounter.repo';
@@ -51,6 +52,7 @@ import { NestedEncountersController } from './nested-encounters.controller';
     RollInitiativeHandler,
     ReorderInitiativeHandler,
     AdvanceTurnHandler,
+    AdvanceRoundHandler,
     // Queries
     GetEncounterHandler,
     ListEncountersHandler,

@@ -111,6 +111,7 @@ paths:
                         origin: Cinder Quarter, Coriolis Station
                         reputation: 4
                         startingWealth: 1000
+                        birr: 1000
                         crewConcept: free-trader
                         mutant: false
                         mutantLineage: null
@@ -224,6 +225,7 @@ paths:
                     origin: Coriolis Station, Cinder Quarter
                     reputation: 4
                     startingWealth: 1000
+                    birr: 1000
                     crewConcept: agents
                     mutant: false
                     mutantLineage: null
@@ -376,6 +378,7 @@ paths:
                     origin: Cinder Quarter, Coriolis Station
                     reputation: 4
                     startingWealth: 1000
+                    birr: 1000
                     crewConcept: free-trader
                     mutant: false
                     mutantLineage: null
@@ -546,6 +549,7 @@ paths:
                     origin: Cinder Quarter, Coriolis Station
                     reputation: 4
                     startingWealth: 1000
+                    birr: 1000
                     crewConcept: free-trader
                     mutant: false
                     mutantLineage: null
@@ -738,6 +742,7 @@ paths:
                     origin: Cinder Quarter, Coriolis Station
                     reputation: 4
                     startingWealth: 1000
+                    birr: 1000
                     crewConcept: free-trader
                     mutant: false
                     mutantLineage: null
@@ -857,6 +862,7 @@ paths:
                     origin: Cinder Quarter, Coriolis Station
                     reputation: 4
                     startingWealth: 1000
+                    birr: 1000
                     crewConcept: free-trader
                     mutant: false
                     mutantLineage: null
@@ -5502,6 +5508,112 @@ paths:
                     instance: /api/v1/encounters/cuid_enc01/turn/advance
                     code: ENCOUNTER_INITIATIVE_NOT_ROLLED
 
+  /api/v1/encounters/{id}/round/advance:
+    post:
+      operationId: advanceRound
+      summary: Advance the encounter to the start of the next round
+      description: |
+        Atomically advances the encounter to the start of the next round.
+
+        **Effects:**
+        - `encounter.round` is incremented by 1.
+        - `encounter.activeCombatantId` is reset to the first combatant in
+          `turnOrder` (the lowest `turnOrder` index).
+        - One `combat.updated` realtime event is emitted on the encounter's
+          session channel.
+
+        **Allowed only while `status` is `active`.** Returns 422
+        `ENCOUNTER_INVALID_STATUS` otherwise.
+
+        **Defensive guard:** returns 422 `ENCOUNTER_INITIATIVE_NOT_ROLLED`
+        when `activeCombatantId` is null (initiative was never set).
+
+        The response `TurnAdvanceResult.isNewRound` is always `true` on
+        success — this endpoint always crosses a round boundary by definition.
+        Use `POST /api/v1/encounters/{id}/turn/advance` for within-round
+        progression.
+      tags: [encounters]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EncounterId"
+      responses:
+        "200":
+          description: Round advanced; returns the new active combatant and updated round number
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TurnAdvanceResult"
+              examples:
+                roundEnded:
+                  summary: Round wraps to the next
+                  value:
+                    activeCombatantId: cuid_comb01
+                    round: 2
+                    isNewRound: true
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own the encounter
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notOwned:
+                  value:
+                    type: https://coriolis.example.com/problems/forbidden
+                    title: Forbidden
+                    status: 403
+                    detail: You do not own the game session for this encounter
+                    instance: /api/v1/encounters/cuid_enc01/round/advance
+                    code: ENCOUNTER_NOT_OWNED
+        "404":
+          description: Encounter not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notFound:
+                  value:
+                    type: https://coriolis.example.com/problems/not-found
+                    title: Not Found
+                    status: 404
+                    detail: Encounter cuid_enc01 does not exist
+                    instance: /api/v1/encounters/cuid_enc01/round/advance
+                    code: ENCOUNTER_NOT_FOUND
+        "422":
+          description: Business rule violation. `code` identifies the specific error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                invalidStatus:
+                  summary: Encounter is not active
+                  value:
+                    type: https://coriolis.example.com/problems/unprocessable
+                    title: Invalid encounter status
+                    status: 422
+                    detail: "Round advance is only allowed during active combat. Current status: setup."
+                    instance: /api/v1/encounters/cuid_enc01/round/advance
+                    code: ENCOUNTER_INVALID_STATUS
+                initiativeNotRolled:
+                  summary: Initiative not set (defensive guard)
+                  value:
+                    type: https://coriolis.example.com/problems/unprocessable
+                    title: Initiative not rolled
+                    status: 422
+                    detail: activeCombatantId is null — roll initiative before advancing rounds.
+                    instance: /api/v1/encounters/cuid_enc01/round/advance
+                    code: ENCOUNTER_INITIATIVE_NOT_ROLLED
+
   # ---------------------------------------------------------------------------
   # Share links (Epic 6 Feature 6.1)
   # ---------------------------------------------------------------------------
@@ -5751,6 +5863,7 @@ paths:
                     origin: Cinder Quarter, Coriolis Station
                     reputation: 4
                     startingWealth: 1000
+                    birr: 1000
                     crewConcept: free-trader
                     mutant: false
                     mutantLineage: null
@@ -7718,6 +7831,7 @@ components:
         - relationships
         - inventory
         - notes
+        - birr
         - status
         - createdAt
         - updatedAt
@@ -7805,6 +7919,19 @@ components:
             The number of birrs (currency) the character started with at
             creation. Derived from `upbringing` (plebeian=500,
             stationary=1000, aristocrat=5000). Immutable historical record.
+        birr:
+          type: integer
+          minimum: 0
+          description: |
+            Current spendable birr balance (the character's wallet).
+            Seeded from `startingWealth` when the wizard transitions
+            `status: draft → active` (the forge step). Mutable any time
+            after activation — debited on Bazaar purchases via the items
+            API and credited from session payouts via PATCH. While the
+            character is still a `draft`, the server keeps `birr` in
+            lock-step with `startingWealth` so changing `upbringing`
+            does not strand a stale balance; explicit PATCHes to `birr`
+            on a draft are rejected with `BIRR_DRAFT_IMMUTABLE`.
         crewConcept:
           oneOf:
             - $ref: "#/components/schemas/CrewConcept"
@@ -8136,6 +8263,15 @@ components:
             creation time; while the character is a `draft`, changing
             `upbringing` resets `reputation` to the new upbringing's
             baseline.
+        birr:
+          type: integer
+          minimum: 0
+          description: |
+            Update the current birr balance (Bazaar purchases, session
+            payouts). Allowed only while `status` is `active`. PATCHes
+            to `birr` on a draft are rejected with
+            `BIRR_DRAFT_IMMUTABLE` — the wizard re-seeds birr from
+            `startingWealth` on the forge transition.
         attributes:
           $ref: "#/components/schemas/Attributes"
         skills:

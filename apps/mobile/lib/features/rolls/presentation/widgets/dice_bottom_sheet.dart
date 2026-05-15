@@ -227,6 +227,7 @@ class _DiceBottomSheetContentState extends State<_DiceBottomSheetContent> {
                   pushBusy: state.status == DiceRollerStatus.pushing,
                   canPush: canPush,
                   onPush: cubit.push,
+                  pushDelta: state.pushDelta,
                 ),
               ],
 
@@ -255,6 +256,7 @@ class _LastRollCard extends StatelessWidget {
     required this.pushBusy,
     required this.canPush,
     required this.onPush,
+    this.pushDelta,
   });
 
   final Roll roll;
@@ -262,6 +264,12 @@ class _LastRollCard extends StatelessWidget {
   final bool pushBusy;
   final bool canPush;
   final VoidCallback onPush;
+
+  /// SURFACES.md §9 — in-session count of new 6s gained by the most
+  /// recent push. Null when no push has happened in this session;
+  /// `0` for the fail branch ("no new successes"); `> 0` for the
+  /// happy branch ("+N new successes").
+  final int? pushDelta;
 
   @override
   Widget build(BuildContext context) {
@@ -295,6 +303,10 @@ class _LastRollCard extends StatelessWidget {
               dice: roll.dice,
               pushedIndices: roll.pushedDieIndices,
             ),
+            if (pushDelta != null) ...[
+              const SizedBox(height: 8),
+              _PushOutcomeLine(delta: pushDelta!),
+            ],
             const SizedBox(height: 8),
             Row(
               children: [
@@ -330,6 +342,59 @@ class _LastRollCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// SURFACES.md §9 — pushed-state outcome line. `delta == 0` is the
+/// "prayer goes unanswered" fail branch (darker top border, italic);
+/// `delta > 0` is the success branch (mystic teal accent).
+///
+/// Strings are intentionally English-only for now to match the rest of
+/// `dice_bottom_sheet.dart` — the file is awaiting a broader i18n pass
+/// (see open audit gap T-MOBILE-DICE-I18N).
+class _PushOutcomeLine extends StatelessWidget {
+  const _PushOutcomeLine({required this.delta});
+
+  final int delta;
+
+  @override
+  Widget build(BuildContext context) {
+    final fail = delta == 0;
+    final divider = Divider(
+      key: ValueKey<bool>(fail),
+      height: 1,
+      thickness: 1,
+      color: fail
+          ? Theme.of(context).colorScheme.outlineVariant
+          : Theme.of(context).colorScheme.outline,
+    );
+    final text = fail
+        ? 'The prayer goes unanswered — no new successes.'
+        : '+$delta new successes';
+    final style = TextStyle(
+      fontSize: 12,
+      fontStyle: fail ? FontStyle.italic : FontStyle.normal,
+      color: fail
+          ? Theme.of(context).colorScheme.outline
+          : Theme.of(context).colorScheme.tertiary,
+    );
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          divider,
+          const SizedBox(height: 6),
+          Text(
+            text,
+            key: ValueKey<String>(fail ? 'push-fail' : 'push-success'),
+            textAlign: TextAlign.center,
+            style: style,
+          ),
+        ],
       ),
     );
   }

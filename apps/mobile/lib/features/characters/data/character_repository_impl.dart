@@ -34,13 +34,18 @@ import 'package:app_api_client/app_api_client.dart'
         ItemOtherUpdate,
         ItemOtherUpdateTypeEnum,
         ItemRangeEnum,
-        ItemSlotType,
+        ShipModuleSlot,
         Attributes,
         Skills,
         ConditionFlags,
         CharacterCreateHp,
         CriticalInjury,
         CriticalInjurySeverity,
+        CrewConcept,
+        IconId,
+        MutantLineage,
+        Role,
+        Upbringing,
         Item,
         ItemArmor,
         ItemWeapon,
@@ -73,11 +78,23 @@ class CharacterRepositoryImpl implements CharacterRepository {
         id: src.id,
         ownerId: src.ownerId,
         name: src.name,
-        // The regenerated SDK ships `Concept` as an EnumClass; the mobile
-        // domain still carries the wire string for now (matches the web's
-        // `Concept` string-literal type). Promote to a typed enum on the
-        // domain side in a follow-up.
+        // Enum-shaped fields are stored as the Dart-side `EnumClass.name`
+        // form (camelCase). The wire form uses kebab-case where applicable
+        // (`lady-of-tears`, `network-djinn`) — the EnumClass handles the
+        // wire serialisation; the domain only sees the Dart name.
         concept: src.concept?.name,
+        role: src.role?.name,
+        roleUnmigrated: src.roleUnmigrated ?? false,
+        iconId: src.iconId?.name,
+        upbringing: src.upbringing.name,
+        origin: src.origin,
+        reputation: src.reputation,
+        startingWealth: src.startingWealth,
+        birr: src.birr,
+        crewConcept: src.crewConcept?.name,
+        mutant: src.mutant,
+        mutantLineage: src.mutantLineage?.name,
+        status: src.status.name,
         attributes: CharacterAttributes(
           strength: src.attributes.strength,
           agility: src.attributes.agility,
@@ -184,11 +201,13 @@ class CharacterRepositoryImpl implements CharacterRepository {
       );
     }
     if (raw is ItemCybernetic) {
+      // `bodyPoints` was retired in the ItemCybernetic spec (now tracked
+      // via `xpCost`); the domain field stays null until a future mapper
+      // surfaces XP cost as a separate first-class column.
       return DomainItem(
         id: raw.id,
         type: ItemType.cybernetic,
         name: raw.name,
-        bodyPoints: raw.bodyPoints,
         effect: raw.effect,
       );
     }
@@ -281,9 +300,14 @@ class CharacterRepositoryImpl implements CharacterRepository {
   }
 
   @override
-  Future<Character> create({required String name, String? status}) async {
+  Future<Character> create({
+    required String name,
+    required String upbringing,
+    String? status,
+  }) async {
     final payload = CharacterCreate((b) {
       b.name = name;
+      b.upbringing = Upbringing.valueOf(upbringing);
       if (status != null) {
         b.status = CharacterCreateStatusEnum.valueOf(status);
       }
@@ -299,6 +323,15 @@ class CharacterRepositoryImpl implements CharacterRepository {
     String id, {
     String? name,
     String? concept,
+    String? role,
+    String? iconId,
+    String? upbringing,
+    String? origin,
+    String? crewConcept,
+    bool? mutant,
+    String? mutantLineage,
+    int? reputation,
+    int? birr,
     CharacterAttributes? attributes,
     CharacterSkills? skills,
     CharacterHp? hp,
@@ -311,9 +344,23 @@ class CharacterRepositoryImpl implements CharacterRepository {
   }) async {
     final payload = CharacterUpdate((b) {
       if (name != null) b.name = name;
-      // Domain concept is still a wire string; the SDK now expects the
-      // typed `Concept` enum, so route through `Concept.valueOf`.
+      // Domain stores enum-shaped fields as the Dart-side `EnumClass.name`
+      // (camelCase). Route every enum field through its `valueOf` to get
+      // the typed SDK value.
       if (concept != null) b.concept = api_client.Concept.valueOf(concept);
+      if (role != null) b.role = Role.valueOf(role);
+      if (iconId != null) b.iconId = IconId.valueOf(iconId);
+      if (upbringing != null) b.upbringing = Upbringing.valueOf(upbringing);
+      if (origin != null) b.origin = origin;
+      if (crewConcept != null) {
+        b.crewConcept = CrewConcept.valueOf(crewConcept);
+      }
+      if (mutant != null) b.mutant = mutant;
+      if (mutantLineage != null) {
+        b.mutantLineage = MutantLineage.valueOf(mutantLineage);
+      }
+      if (reputation != null) b.reputation = reputation;
+      if (birr != null) b.birr = birr;
       if (experience != null) b.experience = experience;
       if (notes != null) b.notes = notes;
       if (status != null) {
@@ -496,10 +543,13 @@ class CharacterRepositoryImpl implements CharacterRepository {
             value: raw,
           ));
       case ItemType.cybernetic:
+        // Spec dropped `bodyPoints`; cyberware is XP-priced now. Default
+        // to the canonical 5 XP cost (ГЛАВА 4) when the editor hasn't
+        // surfaced XP cost yet — accepted range is 0..15.
         final raw = ItemCyberneticCreate((b) => b
           ..type = ItemCyberneticCreateTypeEnum.CYBERNETIC
           ..name = item.name
-          ..bodyPoints = item.bodyPoints ?? 0
+          ..xpCost = 5
           ..effect = item.effect ?? '');
         return ItemCreate((b) => b
           ..oneOf = OneOfDynamic(
@@ -508,10 +558,15 @@ class CharacterRepositoryImpl implements CharacterRepository {
             value: raw,
           ));
       case ItemType.shipModule:
+        // Spec renamed the slot enum (`ItemSlotType` → `ShipModuleSlot`)
+        // and collapsed values. The character-inventory ItemShipModule
+        // doesn't carry a slot in the domain layer, so default to HOLD
+        // — the closest semantic match for "ship cargo / generic" slot
+        // until a richer mapper lands.
         final raw = ItemShipModuleCreate((b) => b
           ..type = ItemShipModuleCreateTypeEnum.SHIP_MODULE
           ..name = item.name
-          ..slot = ItemSlotType.hull
+          ..slot = ShipModuleSlot.HOLD
           ..effect = item.effect ?? '');
         return ItemCreate((b) => b
           ..oneOf = OneOfDynamic(
@@ -583,10 +638,12 @@ class CharacterRepositoryImpl implements CharacterRepository {
             value: raw,
           ));
       case ItemType.cybernetic:
+        // bodyPoints retired; xpCost is optional on update so we don't
+        // touch it from the mapper. The domain model has no xpCost field
+        // yet, so xpCost mutations live with the future Cyberware editor.
         final raw = ItemCyberneticUpdate((b) => b
           ..type = ItemCyberneticUpdateTypeEnum.CYBERNETIC
           ..name = item.name
-          ..bodyPoints = item.bodyPoints
           ..effect = item.effect);
         return ItemUpdate((b) => b
           ..oneOf = OneOfDynamic(
@@ -620,18 +677,33 @@ class CharacterRepositoryImpl implements CharacterRepository {
     }
   }
 
+  /// Maps a wire range string to [ItemRangeEnum].
+  ///
+  /// The personal-scale range ladder was collapsed from 5 → 4 bands in
+  /// the ST3001-faithful migration (`ItemRangeEnum`):
+  ///   - `arm` / `near` / `close`     → close   (Ближняя, up to 2 m)
+  ///   - `short` / `medium`           → medium  (Средняя, up to 20 m)
+  ///   - `long`                       → long    (Дальняя, up to 100 m)
+  ///   - `distant` / `extreme`        → extreme (Предельная, up to 1000 m)
+  ///
+  /// Legacy values surface in old persisted weapon records — translate
+  /// them rather than dropping data on the floor.
   static ItemRangeEnum _parseRange(String? range) {
     switch (range) {
+      case 'close':
+      case 'arm':
       case 'near':
-        return ItemRangeEnum.near;
+        return ItemRangeEnum.close;
+      case 'medium':
       case 'short':
-        return ItemRangeEnum.short;
+        return ItemRangeEnum.medium;
       case 'long':
         return ItemRangeEnum.long;
+      case 'extreme':
       case 'distant':
-        return ItemRangeEnum.distant;
+        return ItemRangeEnum.extreme;
       default:
-        return ItemRangeEnum.arm;
+        return ItemRangeEnum.close;
     }
   }
 }

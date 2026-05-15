@@ -130,7 +130,7 @@ void main() {
 
     group('push', () {
       blocTest<DiceRollerCubit, DiceRollerState>(
-        'replaces lastRoll with the pushed result',
+        'replaces lastRoll with the pushed result and records pushDelta',
         build: () {
           when(() => repo.pushRoll('roll-1'))
               .thenAnswer((_) async => _rolledPushed);
@@ -143,8 +143,61 @@ void main() {
             status: DiceRollerStatus.pushing,
             lastRoll: _rolledFreshly,
           ),
-          DiceRollerState(lastRoll: _rolledPushed),
+          // _rolledFreshly.hits == 2, _rolledPushed.hits == 3 → delta 1.
+          DiceRollerState(lastRoll: _rolledPushed, pushDelta: 1),
         ],
+      );
+
+      blocTest<DiceRollerCubit, DiceRollerState>(
+        'pushDelta is 0 when the push adds no new 6s (T-AUDIT-2026-05-15)',
+        build: () {
+          // Same fixture as _rolledFreshly (hits=2) but flipped pushed=true
+          // and dice reshuffled with no new 6s.
+          final pushedNoGain = Roll(
+            id: 'roll-1',
+            characterId: 'char-1',
+            label: 'Pilot · Evade',
+            pool: 5,
+            dice: const [6, 5, 3, 1, 6], // identical hit count
+            hits: 2,
+            pushed: true,
+            createdAt: DateTime.utc(2026, 5, 10),
+          );
+          when(() => repo.pushRoll('roll-1'))
+              .thenAnswer((_) async => pushedNoGain);
+          return DiceRollerCubit(repository: repo);
+        },
+        seed: () => DiceRollerState(lastRoll: _rolledFreshly),
+        act: (cubit) => cubit.push(),
+        skip: 1, // skip the intermediate 'pushing' state, assert outcome only
+        verify: (cubit) {
+          expect(cubit.state.pushDelta, 0);
+          expect(cubit.state.lastRoll?.pushed, isTrue);
+        },
+      );
+
+      blocTest<DiceRollerCubit, DiceRollerState>(
+        'fresh roll resets pushDelta to null (T-AUDIT-2026-05-15)',
+        build: () {
+          when(() => repo.createRoll(
+                characterId: any(named: 'characterId'),
+                label: any(named: 'label'),
+                pool: any(named: 'pool'),
+                gameSessionId: any(named: 'gameSessionId'),
+              )).thenAnswer((_) async => _rolledFreshly);
+          return DiceRollerCubit(repository: repo);
+        },
+        // Seed: a previous push outcome is still on screen, label set.
+        seed: () => DiceRollerState(
+          label: 'Pilot · Evade',
+          lastRoll: _rolledPushed,
+          pushDelta: 1,
+        ),
+        act: (cubit) => cubit.roll(characterId: 'char-1'),
+        verify: (cubit) {
+          expect(cubit.state.pushDelta, isNull);
+          expect(cubit.state.lastRoll, _rolledFreshly);
+        },
       );
 
       blocTest<DiceRollerCubit, DiceRollerState>(

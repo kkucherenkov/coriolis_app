@@ -65,9 +65,7 @@
     "errorLoad": "Failed to load characters. Please try again.",
     "retry": "Try again",
     "iconLabel": "Icon",
-    "skeletonAria": "Loading characters…",
-    "navShips": "Ships",
-    "navNpcs": "NPCs"
+    "skeletonAria": "Loading characters…"
   },
   "ru": {
     "pageTitle": "Персонажи",
@@ -77,9 +75,7 @@
     "errorLoad": "Не удалось загрузить персонажей. Попробуйте ещё раз.",
     "retry": "Попробовать снова",
     "iconLabel": "Икона",
-    "skeletonAria": "Загрузка персонажей…",
-    "navShips": "Корабли",
-    "navNpcs": "НПС"
+    "skeletonAria": "Загрузка персонажей…"
   },
   "uk": {
     "pageTitle": "[uk-todo] Characters",
@@ -89,9 +85,7 @@
     "errorLoad": "[uk-todo] Failed to load characters",
     "retry": "[uk-todo] Try again",
     "iconLabel": "[uk-todo] Icon",
-    "skeletonAria": "[uk-todo] Loading characters",
-    "navShips": "[uk-todo] Ships",
-    "navNpcs": "[uk-todo] NPCs"
+    "skeletonAria": "[uk-todo] Loading characters"
   },
   "el": {
     "pageTitle": "[el-todo] Characters",
@@ -101,9 +95,7 @@
     "errorLoad": "[el-todo] Failed to load characters",
     "retry": "[el-todo] Try again",
     "iconLabel": "[el-todo] Icon",
-    "skeletonAria": "[el-todo] Loading characters",
-    "navShips": "[el-todo] Ships",
-    "navNpcs": "[el-todo] NPCs"
+    "skeletonAria": "[el-todo] Loading characters"
   }
 }
 </i18n>
@@ -115,12 +107,6 @@
         {{ t('pageTitle') }}
       </h1>
       <div class="page-characters__header-actions">
-        <AppButton variant="ghost" size="md" @click="navigateTo('/app/ships')">
-          {{ t('navShips') }}
-        </AppButton>
-        <AppButton variant="ghost" size="md" @click="navigateTo('/app/npcs')">
-          {{ t('navNpcs') }}
-        </AppButton>
         <AppButton variant="primary" size="md" @click="navigateTo('/app/characters/new')">
           {{ t('newCharacter') }}
         </AppButton>
@@ -193,7 +179,7 @@
 
 <style lang="scss" scoped>
   // Layout constants — not part of the spacing scale.
-  $card-min-width: 280px;
+  $card-min-width: 320px;
   $skeleton-min-height: 120px;
   $avatar-size: 44px;
   $card-empty-max-width: 480px;
@@ -302,8 +288,8 @@
 
     &__card {
       display: flex;
-      align-items: center;
-      gap: var(--space-4);
+      flex-direction: column;
+      gap: var(--space-3);
       padding: var(--space-5);
       text-align: left;
       cursor: pointer;
@@ -324,6 +310,19 @@
       &:hover {
         border-color: var(--brand-brass-deep);
       }
+    }
+
+    &__card-top {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    &__card-footer {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-3);
     }
 
     &__avatar {
@@ -369,11 +368,15 @@
     }
 
     &__card-meta {
+      min-width: 0;
       font-family: var(--font-body);
       font-size: var(--type-body-sm-font-size);
       color: var(--brand-brass);
       letter-spacing: 0.08em;
       text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     &__card-date {
@@ -381,6 +384,7 @@
       font-family: var(--font-body);
       font-size: var(--type-body-sm-font-size);
       color: var(--text-secondary);
+      margin-left: auto;
     }
   }
 

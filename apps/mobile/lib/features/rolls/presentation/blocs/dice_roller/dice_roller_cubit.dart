@@ -57,6 +57,9 @@ class DiceRollerCubit extends Cubit<DiceRollerState> {
     emit(state.copyWith(
       status: DiceRollerStatus.rolling,
       clearError: true,
+      // A fresh roll discards any prior push-outcome banner. The
+      // SURFACES.md §9 ritual feedback is scoped to one roll → push pair.
+      clearPushDelta: true,
     ));
     try {
       final roll = await _repository.createRoll(
@@ -84,6 +87,10 @@ class DiceRollerCubit extends Cubit<DiceRollerState> {
   Future<void> push() async {
     final last = state.lastRoll;
     if (last == null || last.pushed) return;
+    // Snapshot pre-push hits so we can compute the SURFACES.md §9
+    // pushDelta — count of new 6s gained by the reroll. The server
+    // guarantees kept 6s are preserved, so the delta is always >= 0.
+    final preHits = last.hits;
 
     emit(state.copyWith(
       status: DiceRollerStatus.pushing,
@@ -94,6 +101,7 @@ class DiceRollerCubit extends Cubit<DiceRollerState> {
       emit(state.copyWith(
         status: DiceRollerStatus.idle,
         lastRoll: pushed,
+        pushDelta: pushed.hits - preHits,
       ));
     } on Object catch (e) {
       emit(state.copyWith(

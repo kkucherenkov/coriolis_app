@@ -4,7 +4,9 @@ import 'package:app_api_client/app_api_client.dart'
         DiceApi,
         EncountersApi,
         GameSessionsApi,
+        NpcsApi,
         RealtimeApi,
+        ShipsApi,
         standardSerializers;
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
@@ -23,11 +25,18 @@ import 'package:coriolis_companion/features/rolls/presentation/blocs/dice_roller
 import 'package:coriolis_companion/features/rolls/presentation/blocs/roll_history/roll_history_cubit.dart';
 import 'package:coriolis_companion/features/combat/data/combat_repository_impl.dart';
 import 'package:coriolis_companion/features/combat/domain/combat_repository.dart';
+import 'package:coriolis_companion/features/npcs/data/npc_repository_impl.dart';
+import 'package:coriolis_companion/features/npcs/domain/npc_repository.dart';
 import 'package:coriolis_companion/features/combat/presentation/blocs/active_combat/active_combat_cubit.dart';
 import 'package:coriolis_companion/features/sessions/data/session_repository_impl.dart';
 import 'package:coriolis_companion/features/sessions/domain/session_repository.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/session_detail/session_detail_cubit.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/sessions_list/sessions_list_cubit.dart';
+import 'package:coriolis_companion/features/ships/data/ship_repository_impl.dart';
+import 'package:coriolis_companion/features/ships/domain/ship_repository.dart';
+import 'package:coriolis_companion/features/ships/presentation/blocs/ship_create/ship_create_cubit.dart';
+import 'package:coriolis_companion/features/ships/presentation/blocs/ship_sheet/ship_sheet_cubit.dart';
+import 'package:coriolis_companion/features/ships/presentation/blocs/ships_list/ships_list_cubit.dart';
 import 'package:coriolis_companion/shared/auth/token_storage.dart';
 import 'package:coriolis_companion/shared/config/app_config.dart';
 import 'package:coriolis_companion/shared/network/api_client.dart';
@@ -78,11 +87,17 @@ void configureDependencies() {
     ..registerLazySingleton<GameSessionsApi>(
       () => GameSessionsApi(getIt<Dio>(), standardSerializers),
     )
+    ..registerLazySingleton<NpcsApi>(
+      () => NpcsApi(getIt<Dio>(), standardSerializers),
+    )
     ..registerLazySingleton<RealtimeApi>(
       () => RealtimeApi(getIt<Dio>(), standardSerializers),
     )
     ..registerLazySingleton<EncountersApi>(
       () => EncountersApi(getIt<Dio>(), standardSerializers),
+    )
+    ..registerLazySingleton<ShipsApi>(
+      () => ShipsApi(getIt<Dio>(), standardSerializers),
     );
 
   // ── Characters domain ────────────────────────────────────────────────────
@@ -100,6 +115,11 @@ void configureDependencies() {
     () => SessionRepositoryImpl(api: getIt<GameSessionsApi>()),
   );
 
+  // ── NPCs domain (T-MOBILE-NPC-PICKER) ────────────────────────────────────
+  getIt.registerLazySingleton<NpcRepository>(
+    () => NpcRepositoryImpl(api: getIt<NpcsApi>()),
+  );
+
   // ── Combat domain (Phase 6 Block 1) ──────────────────────────────────────
   getIt.registerLazySingleton<CombatRepository>(
     () => CombatRepositoryImpl(api: getIt<EncountersApi>()),
@@ -108,6 +128,22 @@ void configureDependencies() {
   getIt.registerFactory<ActiveCombatCubit>(
     () => ActiveCombatCubit(repository: getIt<CombatRepository>()),
   );
+
+  // ── Ships domain (T-MOBILE-SHIP-SHEET, T-2026-05-14-005) ─────────────────
+  getIt.registerLazySingleton<ShipRepository>(
+    () => ShipRepositoryImpl(api: getIt<ShipsApi>()),
+  );
+
+  getIt
+    ..registerFactory<ShipsListCubit>(
+      () => ShipsListCubit(getIt<ShipRepository>()),
+    )
+    ..registerFactory<ShipSheetCubit>(
+      () => ShipSheetCubit(repository: getIt<ShipRepository>()),
+    )
+    ..registerFactory<ShipCreateCubit>(
+      () => ShipCreateCubit(repository: getIt<ShipRepository>()),
+    );
 
   // ── Cubit factories ─────────────────────────────────────────────────────
   getIt.registerFactory<AuthCubit>(

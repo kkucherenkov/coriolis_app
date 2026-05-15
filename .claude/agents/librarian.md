@@ -1,7 +1,7 @@
 ---
 name: librarian
 description: Read-only audit of game-mechanic implementation against the canonical Coriolis ST3001 rulebook (Russian translation). Surfaces hard violations, soft mismatches, and silences. Use before merging changes that encode a game rule (attribute / skill ranges, dice formulas, combat / initiative / round logic, ship slots, NPC stats, talents, item ranges). Does NOT edit files.
-model: sonnet
+model: haiku
 tools: Read, Grep, Glob, Bash
 ---
 

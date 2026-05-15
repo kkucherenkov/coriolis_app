@@ -23,25 +23,34 @@
   } from '@app/api-client-ts';
   import { rolesForConcept } from '~/utils/roleCatalogue';
   import WizardShell from '~/components/wizard/WizardShell.vue';
-  import Step1Concept from '~/components/wizard/Step1Concept.vue';
-  import Step2Background from '~/components/wizard/Step2Background.vue';
-  import Step3Icon from '~/components/wizard/Step3Icon.vue';
+  // Step order is canonical per `specs/design/CHARACTER_WIZARD.md` §2:
+  //   1 Biography → 2 Concept → 3 Role → 4 Attributes → 5 Skills →
+  //   6 Talents → 7 Icon → (8 Gear deferred — needs backend wallet).
+  import Step1Biography from '~/components/wizard/Step1Biography.vue';
+  import Step2Concept from '~/components/wizard/Step2Concept.vue';
+  import Step3Role from '~/components/wizard/Step3Role.vue';
   import Step4Attributes from '~/components/wizard/Step4Attributes.vue';
-  import Step5Role from '~/components/wizard/Step5Role.vue';
-  import Step6Skills from '~/components/wizard/Step6Skills.vue';
-  import Step7Talents from '~/components/wizard/Step7Talents.vue';
+  import Step5Skills from '~/components/wizard/Step5Skills.vue';
+  import Step6Talents from '~/components/wizard/Step6Talents.vue';
+  import Step7Icon from '~/components/wizard/Step7Icon.vue';
+  import Step8Gear from '~/components/wizard/Step8Gear.vue';
+  import { useItemsApi } from '~/composables/useItemsApi';
+  import { findStarterKit } from '@app/specs';
+  import type { StarterKitItem } from '@app/specs';
+  import type { ItemCreate, ItemRangeEnum } from '~/composables/useItemsApi';
 
-  // TODO(wizard-step-7-relationships): Relationships step deferred to v1.1+.
+  // TODO(wizard-step-relationships): Relationships step deferred to v1.1+.
 
   const { t } = useI18n({ useScope: 'local' });
 
   const api = useCharactersApi();
+  const itemsApi = useItemsApi();
   const route = useRoute();
   const router = useRouter();
 
   // ── Constants ────────────────────────────────────────────────────────────────
 
-  const TOTAL_STEPS = 7;
+  const TOTAL_STEPS = 8;
 
   const DEFAULT_ATTRS: Attributes = {
     strength: 2,
@@ -79,7 +88,7 @@
   // Draft character fields mirrored locally. Upbringing defaults to
   // 'stationary' (the balanced middle path per ST3001 ch.2 table 2.2 —
   // 14 attribute pts, 10 skill pts, 4 reputation, 1000 birrs); the user
-  // can change it on Step 2 before forging.
+  // can change it on Step 1 (Biography) before forging.
   const DEFAULT_UPBRINGING: Upbringing = 'stationary';
   const draftId = ref<string>('');
   const draftName = ref<string>('Untitled');
@@ -97,6 +106,9 @@
   const draftPersonalTalentId = ref<string | null>(null);
   const draftCrewTalentId = ref<string | null>(null);
   const draftStigmaTalentId = ref<string | null>(null);
+  // Gear picks are held in memory and POSTed at forge() time — not
+  // autosaved because picks have no server representation until forging.
+  const draftGearPicks = ref<Record<string, string | null>>({});
 
   // ── AutoSave ─────────────────────────────────────────────────────────────────
 
@@ -144,7 +156,7 @@
         hydrateDraft(char);
       } else {
         // Create a fresh draft. Upbringing is required server-side; we seed
-        // with the wizard's DEFAULT_UPBRINGING and let the user pick on Step 2.
+        // with the wizard's DEFAULT_UPBRINGING and let the user pick on Step 1.
         const char = await api.create({
           name: 'Untitled',
           upbringing: DEFAULT_UPBRINGING,
@@ -182,14 +194,20 @@
 
   // ── Validation guards ─────────────────────────────────────────────────────────
 
-  const step1Valid = computed<boolean>(() => {
+  // Name input lives on Step2Concept (it is the surface where the player
+  // commits to "who" they are). Advance from Concept requires a non-empty,
+  // ≤80-char name; all other steps are optional at the data layer.
+  const conceptStepValid = computed<boolean>(() => {
     const n = draftName.value.trim();
     return n.length > 0 && n.length <= 80;
   });
 
   const canAdvance = computed<boolean>(() => {
-    if (step.value === 1) return step1Valid.value;
-    return true; // Steps 2–6 are fully optional at the data level
+    if (step.value === 2) return conceptStepValid.value;
+    // Step 8 (Gear) is lenient — player can forge with zero picks. The
+    // starter kit is canonical but not mandatory; partial kits are valid.
+    // This mirrors the Talents step (step 6) which also doesn't block forging.
+    return true;
   });
 
   // ── Navigation ────────────────────────────────────────────────────────────────
@@ -242,6 +260,21 @@
         await postPickedTalent(draftStigmaTalentId.value, 'stigma');
       }
 
+      // POST each chosen gear item sequentially. An early failure aborts
+      // the loop and surfaces via the existing errorForge branch.
+      if (draftConcept.value && draftRole.value) {
+        const kit = findStarterKit(draftConcept.value, draftRole.value);
+        if (kit) {
+          for (const choice of kit.choices) {
+            const optionId = draftGearPicks.value[choice.id];
+            if (!optionId) continue;
+            const item = choice.options.find((o) => o.id === optionId);
+            if (!item) continue;
+            await itemsApi.addItem(draftId.value, buildItemCreateBody(item));
+          }
+        }
+      }
+
       await navigateTo(`/app/characters/${draftId.value}`);
     } catch {
       errorMsg.value = t('errorForge');
@@ -266,6 +299,46 @@
       description: typed.description.en,
       rank: 1,
     });
+  }
+
+  /**
+   * Builds the `ItemCreate` body for a starter-kit item.
+   *
+   * Name is always persisted as the EN canonical string — `Item.name` is
+   * the source of truth across locales; the UI locale is display-only.
+   * Conservative gameplay defaults fill the per-discriminator required fields
+   * that the wizard does not surface to the player.
+   */
+  function buildItemCreateBody(item: StarterKitItem): ItemCreate {
+    const name = item.template.name.en;
+    switch (item.template.kind) {
+      case 'WEAPON': {
+        return {
+          type: 'WEAPON',
+          name,
+          damage: 1,
+          range: 'close' as ItemRangeEnum,
+          bonus: 0,
+          crit: 1,
+          weight: 1,
+          features: [],
+          equipped: false,
+        };
+      }
+      case 'ARMOR': {
+        return { type: 'ARMOR', name, armorRating: 1, weight: 1, features: [], equipped: false };
+      }
+      case 'GEAR': {
+        return { type: 'GEAR', name, weight: 1, quantity: 1, notes: null };
+      }
+      case 'CYBERNETIC': {
+        // 5 XP is the canonical cost per ST3001 ГЛАВА 4.
+        return { type: 'CYBERNETIC', name, xpCost: 5, effect: '' };
+      }
+      default: {
+        return { type: 'OTHER', name, weight: 1, notes: null };
+      }
+    }
   }
 
   // ── Field mutations — schedule auto-save on every change ─────────────────────
@@ -336,8 +409,8 @@
 
   function onMutantUpdate(val: boolean): void {
     draftMutant.value = val;
-    // Clearing the flag in Step1 must also clear any stigma the player
-    // already picked — backend rejects stigma-on-non-mutant via
+    // Clearing the flag on Step2Concept must also clear any stigma the
+    // player already picked — backend rejects stigma-on-non-mutant via
     // `STIGMA_REQUIRES_MUTANT`, and we don't want to retain a dangling
     // selection across toggles.
     if (!val) draftStigmaTalentId.value = null;
@@ -354,10 +427,29 @@
     // Picks are persisted at forge() time.
   }
 
+  function onGearPicksUpdate(val: Record<string, string | null>): void {
+    draftGearPicks.value = val;
+    // Not autosaved — gear picks are forge-time-only (no autosave watch).
+  }
+
   // ── Step metadata ─────────────────────────────────────────────────────────────
 
-  const stepTitle = computed<string>(() => t(`step.${String(step.value)}.title`));
-  const stepBlurb = computed<string>(() => t(`step.${String(step.value)}.blurb`));
+  // Canonical step ID per `specs/design/CHARACTER_WIZARD.md` §2. Drives
+  // i18n key resolution under `wizard.step.<id>.title|blurb`.
+  const STEP_IDS = [
+    'biography',
+    'concept',
+    'role',
+    'attributes',
+    'skills',
+    'talents',
+    'icon',
+    'gear',
+  ] as const;
+
+  const stepId = computed<string>(() => STEP_IDS[step.value - 1] ?? STEP_IDS[0]);
+  const stepTitle = computed<string>(() => t(`wizard.step.${stepId.value}.title`));
+  const stepBlurb = computed<string>(() => t(`wizard.step.${stepId.value}.blurb`));
   const stepLabel = computed<string>(() => t('wizardLabel'));
 </script>
 
@@ -371,34 +463,40 @@
     "forge": "Forge character",
     "errorLoad": "Could not load the draft. Please try again.",
     "errorForge": "Could not forge the character. Please try again.",
-    "step": {
-      "1": {
-        "title": "Your concept",
-        "blurb": "Give your character a name and a short phrase that captures who they are at the table."
-      },
-      "2": {
-        "title": "People & Background",
-        "blurb": "Where did you come from? How were you raised among the stars?"
-      },
-      "3": {
-        "title": "Choose your Icon",
-        "blurb": "The Icons watch from beyond the dark water. One walks beside you. Choose, and they will hear your prayers."
-      },
-      "4": {
-        "title": "Distribute your attributes",
-        "blurb": "Spend the attribute points your upbringing grants. Each attribute is between 2 and 4."
-      },
-      "5": {
-        "title": "Choose your role",
-        "blurb": "Your role shapes who you are within your concept. It sets four key skills that define your specialty."
-      },
-      "6": {
-        "title": "Train your skills",
-        "blurb": "General skills you may use untrained. Advanced skills require at least one rank to attempt."
-      },
-      "7": {
-        "title": "Choose your talents",
-        "blurb": "Talents are habits forged in the dark between worlds. Pick up to three starting talents."
+    "wizard": {
+      "step": {
+        "biography": {
+          "title": "People & Background",
+          "blurb": "Where did you come from? How were you raised among the stars?"
+        },
+        "concept": {
+          "title": "Your concept",
+          "blurb": "Give your character a name and a short phrase that captures who they are at the table."
+        },
+        "role": {
+          "title": "Choose your role",
+          "blurb": "Your role shapes who you are within your concept. It sets four key skills that define your specialty."
+        },
+        "attributes": {
+          "title": "Distribute your attributes",
+          "blurb": "Spend the attribute points your upbringing grants. Each attribute is between 2 and 4."
+        },
+        "skills": {
+          "title": "Train your skills",
+          "blurb": "General skills you may use untrained. Advanced skills require at least one rank to attempt."
+        },
+        "talents": {
+          "title": "Choose your talents",
+          "blurb": "Talents are habits forged in the dark between worlds. Pick up to three starting talents."
+        },
+        "icon": {
+          "title": "Choose your Icon",
+          "blurb": "The Icons watch from beyond the dark water. One walks beside you. Choose, and they will hear your prayers."
+        },
+        "gear": {
+          "title": "Outfit the cycle ahead",
+          "blurb": "Choose one item from each row. You can refine your kit later."
+        }
       }
     }
   },
@@ -410,34 +508,40 @@
     "forge": "Создать персонажа",
     "errorLoad": "Не удалось загрузить черновик. Попробуйте ещё раз.",
     "errorForge": "Не удалось создать персонажа. Попробуйте ещё раз.",
-    "step": {
-      "1": {
-        "title": "Концепт персонажа",
-        "blurb": "Дайте персонажу имя и короткую фразу, отражающую его роль за столом."
-      },
-      "2": {
-        "title": "Люди и происхождение",
-        "blurb": "Откуда вы? Как вы выросли среди звёзд Третьего горизонта?"
-      },
-      "3": {
-        "title": "Выберите свою Икону",
-        "blurb": "Иконы наблюдают из-за тёмных вод. Одна идёт рядом с вами. Выберите — и она услышит ваши молитвы."
-      },
-      "4": {
-        "title": "Распределите атрибуты",
-        "blurb": "Потратьте очки атрибутов, которые даёт ваше воспитание. Значение каждого — от 2 до 4."
-      },
-      "5": {
-        "title": "Выберите роль",
-        "blurb": "Роль определяет ваше место внутри амплуа и задаёт четыре ключевых навыка специализации."
-      },
-      "6": {
-        "title": "Развейте навыки",
-        "blurb": "Общие навыки можно использовать без тренировки. Для продвинутых нужен хотя бы один ранг."
-      },
-      "7": {
-        "title": "Выберите таланты",
-        "blurb": "Таланты — привычки, выкованные в тёмном пространстве между мирами. Возьмите до трёх начальных талантов."
+    "wizard": {
+      "step": {
+        "biography": {
+          "title": "Люди и происхождение",
+          "blurb": "Откуда вы? Как вы выросли среди звёзд Третьего горизонта?"
+        },
+        "concept": {
+          "title": "Концепт персонажа",
+          "blurb": "Дайте персонажу имя и короткую фразу, отражающую его роль за столом."
+        },
+        "role": {
+          "title": "Выберите роль",
+          "blurb": "Роль определяет ваше место внутри амплуа и задаёт четыре ключевых навыка специализации."
+        },
+        "attributes": {
+          "title": "Распределите атрибуты",
+          "blurb": "Потратьте очки атрибутов, которые даёт ваше воспитание. Значение каждого — от 2 до 4."
+        },
+        "skills": {
+          "title": "Развейте навыки",
+          "blurb": "Общие навыки можно использовать без тренировки. Для продвинутых нужен хотя бы один ранг."
+        },
+        "talents": {
+          "title": "Выберите таланты",
+          "blurb": "Таланты — привычки, выкованные в тёмном пространстве между мирами. Возьмите до трёх начальных талантов."
+        },
+        "icon": {
+          "title": "Выберите свою Икону",
+          "blurb": "Иконы наблюдают из-за тёмных вод. Одна идёт рядом с вами. Выберите — и она услышит ваши молитвы."
+        },
+        "gear": {
+          "title": "Снаряжение для нового цикла",
+          "blurb": "Выбери по одному предмету в каждом ряду. Уточнить набор можно будет позже."
+        }
       }
     }
   },
@@ -449,17 +553,38 @@
     "forge": "[uk-todo] Forge character",
     "errorLoad": "[uk-todo] Could not load the draft.",
     "errorForge": "[uk-todo] Could not forge the character.",
-    "step": {
-      "1": { "title": "[uk-todo] Your concept", "blurb": "[uk-todo] Name your character." },
-      "2": { "title": "[uk-todo] People & Background", "blurb": "[uk-todo] Where are you from?" },
-      "3": { "title": "[uk-todo] Choose your Icon", "blurb": "[uk-todo] Pick an Icon." },
-      "4": { "title": "[uk-todo] Distribute attributes", "blurb": "[uk-todo] 13 points." },
-      "5": {
-        "title": "[uk-todo] Choose your role",
-        "blurb": "[uk-todo] Pick a role for your concept."
-      },
-      "6": { "title": "[uk-todo] Train your skills", "blurb": "[uk-todo] Spend skill points." },
-      "7": { "title": "[uk-todo] Choose talents", "blurb": "[uk-todo] Pick up to 3 talents." }
+    "wizard": {
+      "step": {
+        "biography": {
+          "title": "[uk-todo] People & Background",
+          "blurb": "[uk-todo] Where are you from?"
+        },
+        "concept": {
+          "title": "[uk-todo] Your concept",
+          "blurb": "[uk-todo] Name your character."
+        },
+        "role": {
+          "title": "[uk-todo] Choose your role",
+          "blurb": "[uk-todo] Pick a role for your concept."
+        },
+        "attributes": {
+          "title": "[uk-todo] Distribute attributes",
+          "blurb": "[uk-todo] 13 points."
+        },
+        "skills": {
+          "title": "[uk-todo] Train your skills",
+          "blurb": "[uk-todo] Spend skill points."
+        },
+        "talents": {
+          "title": "[uk-todo] Choose talents",
+          "blurb": "[uk-todo] Pick up to 3 talents."
+        },
+        "icon": { "title": "[uk-todo] Choose your Icon", "blurb": "[uk-todo] Pick an Icon." },
+        "gear": {
+          "title": "[uk-todo] Outfit the cycle ahead",
+          "blurb": "[uk-todo] Choose one item from each row."
+        }
+      }
     }
   },
   "el": {
@@ -470,17 +595,38 @@
     "forge": "[el-todo] Forge character",
     "errorLoad": "[el-todo] Could not load the draft.",
     "errorForge": "[el-todo] Could not forge the character.",
-    "step": {
-      "1": { "title": "[el-todo] Your concept", "blurb": "[el-todo] Name your character." },
-      "2": { "title": "[el-todo] People & Background", "blurb": "[el-todo] Where are you from?" },
-      "3": { "title": "[el-todo] Choose your Icon", "blurb": "[el-todo] Pick an Icon." },
-      "4": { "title": "[el-todo] Distribute attributes", "blurb": "[el-todo] 13 points." },
-      "5": {
-        "title": "[el-todo] Choose your role",
-        "blurb": "[el-todo] Pick a role for your concept."
-      },
-      "6": { "title": "[el-todo] Train your skills", "blurb": "[el-todo] Spend skill points." },
-      "7": { "title": "[el-todo] Choose talents", "blurb": "[el-todo] Pick up to 3 talents." }
+    "wizard": {
+      "step": {
+        "biography": {
+          "title": "[el-todo] People & Background",
+          "blurb": "[el-todo] Where are you from?"
+        },
+        "concept": {
+          "title": "[el-todo] Your concept",
+          "blurb": "[el-todo] Name your character."
+        },
+        "role": {
+          "title": "[el-todo] Choose your role",
+          "blurb": "[el-todo] Pick a role for your concept."
+        },
+        "attributes": {
+          "title": "[el-todo] Distribute attributes",
+          "blurb": "[el-todo] 13 points."
+        },
+        "skills": {
+          "title": "[el-todo] Train your skills",
+          "blurb": "[el-todo] Spend skill points."
+        },
+        "talents": {
+          "title": "[el-todo] Choose talents",
+          "blurb": "[el-todo] Pick up to 3 talents."
+        },
+        "icon": { "title": "[el-todo] Choose your Icon", "blurb": "[el-todo] Pick an Icon." },
+        "gear": {
+          "title": "[el-todo] Outfit the cycle ahead",
+          "blurb": "[el-todo] Choose one item from each row."
+        }
+      }
     }
   }
 }
@@ -514,20 +660,8 @@
       @forge="forge"
       @save-exit="saveAndExit"
     >
-      <Step1Concept
+      <Step1Biography
         v-if="step === 1"
-        :name="draftName"
-        :concept="draftConcept"
-        :mutant="draftMutant"
-        :mutant-lineage="draftMutantLineage"
-        @update:name="onNameUpdate"
-        @update:concept="onConceptUpdate"
-        @update:mutant="onMutantUpdate"
-        @update:mutant-lineage="onMutantLineageUpdate"
-      />
-
-      <Step2Background
-        v-if="step === 2"
         :origin="draftOrigin"
         :upbringing="draftUpbringing"
         :crew-concept="draftCrewConcept"
@@ -538,7 +672,24 @@
         @update:age="onAgeUpdate"
       />
 
-      <Step3Icon v-if="step === 3" :icon-id="draftIconId" @update:icon-id="onIconUpdate" />
+      <Step2Concept
+        v-if="step === 2"
+        :name="draftName"
+        :concept="draftConcept"
+        :mutant="draftMutant"
+        :mutant-lineage="draftMutantLineage"
+        @update:name="onNameUpdate"
+        @update:concept="onConceptUpdate"
+        @update:mutant="onMutantUpdate"
+        @update:mutant-lineage="onMutantLineageUpdate"
+      />
+
+      <Step3Role
+        v-if="step === 3"
+        :concept="draftConcept"
+        :role="draftRole"
+        @update:role="onRoleUpdate"
+      />
 
       <Step4Attributes
         v-if="step === 4"
@@ -548,15 +699,8 @@
         @update:attributes="onAttributesUpdate"
       />
 
-      <Step5Role
+      <Step5Skills
         v-if="step === 5"
-        :concept="draftConcept"
-        :role="draftRole"
-        @update:role="onRoleUpdate"
-      />
-
-      <Step6Skills
-        v-if="step === 6"
         :skills="draftSkills"
         :upbringing="draftUpbringing"
         :concept="draftConcept"
@@ -564,8 +708,8 @@
         @update:skills="onSkillsUpdate"
       />
 
-      <Step7Talents
-        v-if="step === 7"
+      <Step6Talents
+        v-if="step === 6"
         :personal-talent-id="draftPersonalTalentId"
         :crew-talent-id="draftCrewTalentId"
         :stigma-talent-id="draftStigmaTalentId"
@@ -576,6 +720,16 @@
         @update:personal-talent-id="onPersonalTalentUpdate"
         @update:crew-talent-id="onCrewTalentUpdate"
         @update:stigma-talent-id="onStigmaTalentUpdate"
+      />
+
+      <Step7Icon v-if="step === 7" :icon-id="draftIconId" @update:icon-id="onIconUpdate" />
+
+      <Step8Gear
+        v-if="step === 8"
+        :concept="draftConcept"
+        :role="draftRole"
+        :picks="draftGearPicks"
+        @update:picks="onGearPicksUpdate"
       />
     </WizardShell>
   </div>

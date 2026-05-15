@@ -20,8 +20,8 @@ ItemOtherCreateTypeEnum _$itemOtherCreateTypeEnumValueOf(String name) {
 
 final BuiltSet<ItemOtherCreateTypeEnum> _$itemOtherCreateTypeEnumValues =
     BuiltSet<ItemOtherCreateTypeEnum>(const <ItemOtherCreateTypeEnum>[
-      _$itemOtherCreateTypeEnum_OTHER,
-    ]);
+  _$itemOtherCreateTypeEnum_OTHER,
+]);
 
 Serializer<ItemOtherCreateTypeEnum> _$itemOtherCreateTypeEnumSerializer =
     _$ItemOtherCreateTypeEnumSerializer();
@@ -41,20 +41,16 @@ class _$ItemOtherCreateTypeEnumSerializer
   final String wireName = 'ItemOtherCreateTypeEnum';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    ItemOtherCreateTypeEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, ItemOtherCreateTypeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
   ItemOtherCreateTypeEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => ItemOtherCreateTypeEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ItemOtherCreateTypeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 class _$ItemOtherCreate extends ItemOtherCreate {
@@ -70,12 +66,12 @@ class _$ItemOtherCreate extends ItemOtherCreate {
   factory _$ItemOtherCreate([void Function(ItemOtherCreateBuilder)? updates]) =>
       (ItemOtherCreateBuilder()..update(updates))._build();
 
-  _$ItemOtherCreate._({
-    required this.type,
-    required this.name,
-    required this.weight,
-    this.notes,
-  }) : super._();
+  _$ItemOtherCreate._(
+      {required this.type,
+      required this.name,
+      required this.weight,
+      this.notes})
+      : super._();
   @override
   ItemOtherCreate rebuild(void Function(ItemOtherCreateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -165,24 +161,14 @@ class ItemOtherCreateBuilder
   ItemOtherCreate build() => _build();
 
   _$ItemOtherCreate _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$ItemOtherCreate._(
           type: BuiltValueNullFieldError.checkNotNull(
-            type,
-            r'ItemOtherCreate',
-            'type',
-          ),
+              type, r'ItemOtherCreate', 'type'),
           name: BuiltValueNullFieldError.checkNotNull(
-            name,
-            r'ItemOtherCreate',
-            'name',
-          ),
+              name, r'ItemOtherCreate', 'name'),
           weight: BuiltValueNullFieldError.checkNotNull(
-            weight,
-            r'ItemOtherCreate',
-            'weight',
-          ),
+              weight, r'ItemOtherCreate', 'weight'),
           notes: notes,
         );
     replace(_$result);

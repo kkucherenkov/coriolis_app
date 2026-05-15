@@ -6,9 +6,8 @@ part of 'item_other.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const ItemOtherTypeEnum _$itemOtherTypeEnum_OTHER = const ItemOtherTypeEnum._(
-  'OTHER',
-);
+const ItemOtherTypeEnum _$itemOtherTypeEnum_OTHER =
+    const ItemOtherTypeEnum._('OTHER');
 
 ItemOtherTypeEnum _$itemOtherTypeEnumValueOf(String name) {
   switch (name) {
@@ -21,8 +20,8 @@ ItemOtherTypeEnum _$itemOtherTypeEnumValueOf(String name) {
 
 final BuiltSet<ItemOtherTypeEnum> _$itemOtherTypeEnumValues =
     BuiltSet<ItemOtherTypeEnum>(const <ItemOtherTypeEnum>[
-      _$itemOtherTypeEnum_OTHER,
-    ]);
+  _$itemOtherTypeEnum_OTHER,
+]);
 
 Serializer<ItemOtherTypeEnum> _$itemOtherTypeEnumSerializer =
     _$ItemOtherTypeEnumSerializer();
@@ -42,20 +41,15 @@ class _$ItemOtherTypeEnumSerializer
   final String wireName = 'ItemOtherTypeEnum';
 
   @override
-  Object serialize(
-    Serializers serializers,
-    ItemOtherTypeEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
+  Object serialize(Serializers serializers, ItemOtherTypeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
 
   @override
-  ItemOtherTypeEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => ItemOtherTypeEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
+  ItemOtherTypeEnum deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ItemOtherTypeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
 class _$ItemOther extends ItemOther {
@@ -63,11 +57,23 @@ class _$ItemOther extends ItemOther {
   final String? notes;
   @override
   final num weight;
+  @override
+  final String id;
+  @override
+  final String type;
+  @override
+  final String name;
 
   factory _$ItemOther([void Function(ItemOtherBuilder)? updates]) =>
       (ItemOtherBuilder()..update(updates))._build();
 
-  _$ItemOther._({this.notes, required this.weight}) : super._();
+  _$ItemOther._(
+      {this.notes,
+      required this.weight,
+      required this.id,
+      required this.type,
+      required this.name})
+      : super._();
   @override
   ItemOther rebuild(void Function(ItemOtherBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -78,7 +84,12 @@ class _$ItemOther extends ItemOther {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is ItemOther && notes == other.notes && weight == other.weight;
+    return other is ItemOther &&
+        notes == other.notes &&
+        weight == other.weight &&
+        id == other.id &&
+        type == other.type &&
+        name == other.name;
   }
 
   @override
@@ -86,6 +97,9 @@ class _$ItemOther extends ItemOther {
     var _$hash = 0;
     _$hash = $jc(_$hash, notes.hashCode);
     _$hash = $jc(_$hash, weight.hashCode);
+    _$hash = $jc(_$hash, id.hashCode);
+    _$hash = $jc(_$hash, type.hashCode);
+    _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -94,21 +108,37 @@ class _$ItemOther extends ItemOther {
   String toString() {
     return (newBuiltValueToStringHelper(r'ItemOther')
           ..add('notes', notes)
-          ..add('weight', weight))
+          ..add('weight', weight)
+          ..add('id', id)
+          ..add('type', type)
+          ..add('name', name))
         .toString();
   }
 }
 
-class ItemOtherBuilder implements Builder<ItemOther, ItemOtherBuilder> {
+class ItemOtherBuilder
+    implements Builder<ItemOther, ItemOtherBuilder>, ItemBaseBuilder {
   _$ItemOther? _$v;
 
   String? _notes;
   String? get notes => _$this._notes;
-  set notes(String? notes) => _$this._notes = notes;
+  set notes(covariant String? notes) => _$this._notes = notes;
 
   num? _weight;
   num? get weight => _$this._weight;
-  set weight(num? weight) => _$this._weight = weight;
+  set weight(covariant num? weight) => _$this._weight = weight;
+
+  String? _id;
+  String? get id => _$this._id;
+  set id(covariant String? id) => _$this._id = id;
+
+  String? _type;
+  String? get type => _$this._type;
+  set type(covariant String? type) => _$this._type = type;
+
+  String? _name;
+  String? get name => _$this._name;
+  set name(covariant String? name) => _$this._name = name;
 
   ItemOtherBuilder() {
     ItemOther._defaults(this);
@@ -119,13 +149,16 @@ class ItemOtherBuilder implements Builder<ItemOther, ItemOtherBuilder> {
     if ($v != null) {
       _notes = $v.notes;
       _weight = $v.weight;
+      _id = $v.id;
+      _type = $v.type;
+      _name = $v.name;
       _$v = null;
     }
     return this;
   }
 
   @override
-  void replace(ItemOther other) {
+  void replace(covariant ItemOther other) {
     _$v = other as _$ItemOther;
   }
 
@@ -138,15 +171,16 @@ class ItemOtherBuilder implements Builder<ItemOther, ItemOtherBuilder> {
   ItemOther build() => _build();
 
   _$ItemOther _build() {
-    final _$result =
-        _$v ??
+    final _$result = _$v ??
         _$ItemOther._(
           notes: notes,
           weight: BuiltValueNullFieldError.checkNotNull(
-            weight,
-            r'ItemOther',
-            'weight',
-          ),
+              weight, r'ItemOther', 'weight'),
+          id: BuiltValueNullFieldError.checkNotNull(id, r'ItemOther', 'id'),
+          type:
+              BuiltValueNullFieldError.checkNotNull(type, r'ItemOther', 'type'),
+          name:
+              BuiltValueNullFieldError.checkNotNull(name, r'ItemOther', 'name'),
         );
     replace(_$result);
     return _$result;

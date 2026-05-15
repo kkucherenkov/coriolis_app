@@ -1025,7 +1025,7 @@
       :open="deleteConfirmOpen"
       :aria-label="t('deleteConfirmTitle')"
       size="sm"
-      :close-on-backdrop="!deleting"
+      :close-on-backdrop="false"
       :close-on-esc="!deleting"
       data-testid="delete-modal"
       @update:open="

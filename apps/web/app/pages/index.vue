@@ -1,15 +1,18 @@
 <script setup lang="ts">
-  const { t } = useI18n({ useScope: 'local' });
+  import { computed } from 'vue';
+  import { AppArabesqueCorner, AppWordmark } from '@app/ui';
+
+  const { t, locale, locales, setLocale } = useI18n({ useScope: 'local' });
   const auth = useAuth();
 
   // Already-authenticated visitors should never see the public landing —
-  // bounce them straight to the characters home. The app is SPA-only
+  // bounce them straight to the Bridge dashboard. The app is SPA-only
   // (nuxt.config.ts ssr: false), so this only runs in the browser.
   try {
     const result = await auth.getSession();
     const data = result.data as { user?: { id?: string } } | null;
     if (data?.user?.id) {
-      await navigateTo('/app/characters', { replace: true });
+      await navigateTo('/app/dashboard', { replace: true });
     }
   } catch {
     // Network/session failure — leave the visitor on the landing.
@@ -22,79 +25,373 @@
   function onCreateAccount(): void {
     void navigateTo('/signup');
   }
+
+  // Locale switcher — three-dot brass row of `code` chips. The list is
+  // sourced from the global Nuxt i18n config so adding a locale there
+  // propagates here automatically.
+  const localeOptions = computed(() =>
+    (locales.value as { code: string; name?: string }[]).map((l) => ({
+      code: l.code,
+      label: l.name ?? l.code.toUpperCase(),
+    })),
+  );
+
+  async function onLocaleChange(code: string): Promise<void> {
+    await setLocale(code as 'en' | 'ru' | 'uk' | 'el');
+  }
+
+  // Three-feature grid keys. Order matches the handoff: Sheet → Share → Run.
+  const FEATURES = [
+    { id: 'sheet', icon: '✦' },
+    { id: 'share', icon: '☍' },
+    { id: 'run', icon: '⚂' },
+  ] as const;
 </script>
 
 <i18n lang="json">
 {
   "en": {
-    "wordmark": "Coriolis Companion",
     "tagline": "Your character sheet for the Third Horizon.",
     "signIn": "Sign in",
-    "createAccount": "Create account"
+    "createAccount": "Create account",
+    "localeSwitcherLabel": "Choose language",
+    "feature": {
+      "sheet": {
+        "title": "Sheet",
+        "blurb": "Create a character with rules-faithful step-by-step guidance — concept, role, attributes, skills, talents, the Nine Icons."
+      },
+      "share": {
+        "title": "Share",
+        "blurb": "Publish a read-only sheet to the table over a single short link. Revoke any time; rotation keeps stale screenshots stale."
+      },
+      "run": {
+        "title": "Run",
+        "blurb": "Roll dice, push the roll, track combat, manage Darkness Points — the wheel of the Horizon stays at your fingertips."
+      }
+    },
+    "footer": {
+      "fan": "An unofficial fan project for Coriolis: The Third Horizon. Not affiliated with Free League Publishing.",
+      "ip": "Coriolis and all related marks belong to Fria Ligan / Free League Publishing."
+    }
   },
   "ru": {
-    "wordmark": "Coriolis Companion",
     "tagline": "Ваш лист персонажа для Третьего Горизонта.",
     "signIn": "Войти",
-    "createAccount": "Создать аккаунт"
+    "createAccount": "Создать аккаунт",
+    "localeSwitcherLabel": "Выбор языка",
+    "feature": {
+      "sheet": {
+        "title": "Лист",
+        "blurb": "Создавайте персонажа по канону — амплуа, роль, характеристики, навыки, достоинства, Девять Икон."
+      },
+      "share": {
+        "title": "Поделиться",
+        "blurb": "Откройте лист для стола одной короткой ссылкой. Можно отозвать или повернуть — устаревшие скриншоты остаются устаревшими."
+      },
+      "run": {
+        "title": "Игра",
+        "blurb": "Бросайте кубики, пушьте бросок, ведите бой, считайте Очки Тьмы — Колесо Горизонта всегда под рукой."
+      }
+    },
+    "footer": {
+      "fan": "Неофициальный фан-проект по Coriolis: Третий Горизонт. Не аффилирован с Free League Publishing.",
+      "ip": "Coriolis и связанные знаки принадлежат Fria Ligan / Free League Publishing."
+    }
   },
   "uk": {
-    "wordmark": "Coriolis Companion",
     "tagline": "[uk-todo] tagline for landing hero",
     "signIn": "[uk-todo] sign in",
-    "createAccount": "[uk-todo] create account"
+    "createAccount": "[uk-todo] create account",
+    "localeSwitcherLabel": "[uk-todo] Choose language",
+    "feature": {
+      "sheet": {
+        "title": "[uk-todo] Sheet",
+        "blurb": "[uk-todo] Create a character with rules-faithful guidance."
+      },
+      "share": {
+        "title": "[uk-todo] Share",
+        "blurb": "[uk-todo] Publish a read-only sheet over a short link."
+      },
+      "run": {
+        "title": "[uk-todo] Run",
+        "blurb": "[uk-todo] Roll dice, push, track combat."
+      }
+    },
+    "footer": {
+      "fan": "[uk-todo] Unofficial fan project. Not affiliated with Free League Publishing.",
+      "ip": "[uk-todo] Coriolis marks belong to Fria Ligan / Free League Publishing."
+    }
   },
   "el": {
-    "wordmark": "Coriolis Companion",
     "tagline": "[el-todo] tagline for landing hero",
     "signIn": "[el-todo] sign in",
-    "createAccount": "[el-todo] create account"
+    "createAccount": "[el-todo] create account",
+    "localeSwitcherLabel": "[el-todo] Choose language",
+    "feature": {
+      "sheet": {
+        "title": "[el-todo] Sheet",
+        "blurb": "[el-todo] Create a character with rules-faithful guidance."
+      },
+      "share": {
+        "title": "[el-todo] Share",
+        "blurb": "[el-todo] Publish a read-only sheet over a short link."
+      },
+      "run": {
+        "title": "[el-todo] Run",
+        "blurb": "[el-todo] Roll dice, push, track combat."
+      }
+    },
+    "footer": {
+      "fan": "[el-todo] Unofficial fan project. Not affiliated with Free League Publishing.",
+      "ip": "[el-todo] Coriolis marks belong to Fria Ligan / Free League Publishing."
+    }
   }
 }
 </i18n>
 
 <template>
-  <section class="page-landing">
-    <div class="page-landing__hero">
-      <h1 class="page-landing__wordmark">
-        {{ t('wordmark') }}
-      </h1>
-      <p class="page-landing__tagline">
-        {{ t('tagline') }}
-      </p>
+  <div class="page-landing">
+    <div class="page-landing__starfield" aria-hidden="true" />
 
-      <div class="page-landing__cta">
+    <AppArabesqueCorner
+      orientation="tl"
+      size="lg"
+      color="brass-deep"
+      class="page-landing__corner page-landing__corner--tl"
+    />
+    <AppArabesqueCorner
+      orientation="tr"
+      size="lg"
+      color="brass-deep"
+      class="page-landing__corner page-landing__corner--tr"
+    />
+    <AppArabesqueCorner
+      orientation="bl"
+      size="lg"
+      color="brass-deep"
+      class="page-landing__corner page-landing__corner--bl"
+    />
+    <AppArabesqueCorner
+      orientation="br"
+      size="lg"
+      color="brass-deep"
+      class="page-landing__corner page-landing__corner--br"
+    />
+
+    <header class="page-landing__topnav">
+      <nav class="page-landing__locales" :aria-label="t('localeSwitcherLabel')">
         <button
+          v-for="opt in localeOptions"
+          :key="opt.code"
           type="button"
-          class="page-landing__button page-landing__button--primary"
-          @click="onSignIn"
+          class="page-landing__locale"
+          :class="{ 'page-landing__locale--active': locale === opt.code }"
+          :aria-current="locale === opt.code ? 'true' : undefined"
+          @click="onLocaleChange(opt.code)"
         >
-          {{ t('signIn') }}
+          {{ opt.code.toUpperCase() }}
         </button>
-        <button
-          type="button"
-          class="page-landing__button page-landing__button--ghost"
-          @click="onCreateAccount"
-        >
-          {{ t('createAccount') }}
-        </button>
-      </div>
-    </div>
-  </section>
+      </nav>
+    </header>
+
+    <main class="page-landing__main">
+      <section class="page-landing__hero" aria-labelledby="landing-tagline">
+        <AppWordmark :size="88" />
+        <p id="landing-tagline" class="page-landing__tagline">
+          {{ t('tagline') }}
+        </p>
+
+        <div class="page-landing__cta">
+          <button
+            type="button"
+            class="page-landing__button page-landing__button--primary"
+            @click="onSignIn"
+          >
+            {{ t('signIn') }}
+          </button>
+          <button
+            type="button"
+            class="page-landing__button page-landing__button--ghost"
+            @click="onCreateAccount"
+          >
+            {{ t('createAccount') }}
+          </button>
+        </div>
+      </section>
+
+      <section class="page-landing__features" aria-label="Features">
+        <article v-for="f in FEATURES" :key="f.id" class="page-landing__feature">
+          <span class="page-landing__feature-glyph" aria-hidden="true">{{ f.icon }}</span>
+          <h2 class="page-landing__feature-title">
+            {{ t(`feature.${f.id}.title`) }}
+          </h2>
+          <p class="page-landing__feature-blurb">
+            {{ t(`feature.${f.id}.blurb`) }}
+          </p>
+        </article>
+      </section>
+    </main>
+
+    <footer class="page-landing__footer">
+      <p class="page-landing__footer-line">
+        {{ t('footer.fan') }}
+      </p>
+      <p class="page-landing__footer-line page-landing__footer-line--muted">
+        {{ t('footer.ip') }}
+      </p>
+    </footer>
+  </div>
 </template>
 
 <style lang="scss" scoped>
-  // Layout dimensions for the landing hero. Page-scoped, not part of the
+  // Layout caps for the landing surface. Page-scoped, not part of the
   // shared spacing scale — Stylelint allows named SCSS variables for
   // layout caps (see stylelint.config.mjs declaration-property-value rule).
   $hero-max-width: 640px;
+  $features-max-width: 1080px;
+  $corner-inset: 16px;
+  // Starfield density + cycle vars — tuned for ambience without distraction.
+  $starfield-density: 240px;
+  $starfield-twinkle: 8s;
 
   .page-landing {
+    position: relative;
     flex: 1;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-9) var(--space-7);
+    flex-direction: column;
+    min-height: 100vh;
+    overflow: hidden;
+    background-color: var(--surface-void);
+
+    // ── Starfield ──────────────────────────────────────────────────────────────
+
+    &__starfield {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      // Two-layer radial-gradient stipple — low-density bright pinpricks
+      // over a denser dim layer. SCSS percentages stay literal because
+      // they encode the star positions, not design tokens.
+      background-image:
+        radial-gradient(
+          1.5px 1.5px at 20% 30%,
+          color-mix(in srgb, var(--brand-brass-light) 80%, transparent),
+          transparent 60%
+        ),
+        radial-gradient(
+          1px 1px at 70% 60%,
+          color-mix(in srgb, var(--brand-brass-light) 60%, transparent),
+          transparent 60%
+        ),
+        radial-gradient(
+          1px 1px at 40% 80%,
+          color-mix(in srgb, var(--text-secondary) 50%, transparent),
+          transparent 60%
+        ),
+        radial-gradient(
+          0.5px 0.5px at 85% 25%,
+          color-mix(in srgb, var(--text-secondary) 40%, transparent),
+          transparent 60%
+        );
+      background-size: $starfield-density $starfield-density;
+      animation: landing-twinkle $starfield-twinkle ease-in-out infinite alternate;
+
+      @media (prefers-reduced-motion: reduce) {
+        animation: none;
+      }
+    }
+
+    // ── Arabesque corners ──────────────────────────────────────────────────────
+
+    &__corner {
+      position: absolute;
+      pointer-events: none;
+      z-index: var(--z-raised);
+
+      &--tl {
+        top: $corner-inset;
+        left: $corner-inset;
+      }
+
+      &--tr {
+        top: $corner-inset;
+        right: $corner-inset;
+      }
+
+      &--bl {
+        bottom: $corner-inset;
+        left: $corner-inset;
+      }
+
+      &--br {
+        bottom: $corner-inset;
+        right: $corner-inset;
+      }
+    }
+
+    // ── Top nav ────────────────────────────────────────────────────────────────
+
+    &__topnav {
+      position: relative;
+      z-index: var(--z-raised);
+      display: flex;
+      justify-content: flex-end;
+      padding: var(--space-5) var(--space-7) 0;
+    }
+
+    &__locales {
+      display: inline-flex;
+      gap: var(--space-1);
+      padding: var(--space-1) var(--space-2);
+      background: color-mix(in srgb, var(--surface-night) 70%, transparent);
+      border: 1px solid var(--brand-brass-shadow);
+      border-radius: var(--radius-pill);
+    }
+
+    &__locale {
+      cursor: pointer;
+      padding: var(--space-1) var(--space-3);
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-pill);
+      transition:
+        color var(--motion-duration-fast) var(--motion-ease-standard),
+        background-color var(--motion-duration-fast) var(--motion-ease-standard);
+
+      &:hover {
+        color: var(--brand-brass-light);
+        background: color-mix(in srgb, var(--brand-brass) 8%, transparent);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--brand-brass);
+        outline-offset: 2px;
+      }
+
+      &--active {
+        color: var(--brand-brass-light);
+        background: color-mix(in srgb, var(--brand-brass) 12%, transparent);
+      }
+    }
+
+    // ── Main column ────────────────────────────────────────────────────────────
+
+    &__main {
+      position: relative;
+      z-index: var(--z-raised);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-10);
+      padding: var(--space-9) var(--space-7);
+    }
 
     &__hero {
       max-width: $hero-max-width;
@@ -103,16 +400,6 @@
       flex-direction: column;
       align-items: center;
       gap: var(--space-6);
-    }
-
-    &__wordmark {
-      margin: 0;
-      font-family: var(--font-display);
-      font-size: var(--type-display-xl-font-size);
-      line-height: var(--type-display-xl-line-height);
-      font-weight: var(--type-display-xl-font-weight);
-      letter-spacing: var(--type-display-xl-letter-spacing);
-      color: var(--brand-brass-light);
     }
 
     &__tagline {
@@ -171,6 +458,95 @@
           background: color-mix(in srgb, var(--brand-brass) 8%, transparent);
         }
       }
+    }
+
+    // ── Three-feature grid ─────────────────────────────────────────────────────
+
+    &__features {
+      width: 100%;
+      max-width: $features-max-width;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-6);
+
+      @media (max-width: 720px) {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    &__feature {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      padding: var(--space-6) var(--space-5);
+      background: color-mix(in srgb, var(--surface-night) 60%, transparent);
+      border: 1px solid var(--brand-brass-shadow);
+      border-radius: var(--radius-lg);
+      transition: border-color var(--motion-duration-fast) var(--motion-ease-standard);
+
+      &:hover {
+        border-color: var(--brand-brass-deep);
+      }
+    }
+
+    &__feature-glyph {
+      font-family: var(--font-display);
+      font-size: var(--type-display-md-font-size);
+      color: var(--brand-brass);
+      line-height: 1;
+    }
+
+    &__feature-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--type-display-sm-font-size);
+      letter-spacing: 0.06em;
+      color: var(--brand-brass-light);
+      text-transform: uppercase;
+    }
+
+    &__feature-blurb {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: var(--type-body-md-font-size);
+      line-height: var(--type-body-md-line-height);
+      color: var(--text-secondary);
+    }
+
+    // ── Footer ─────────────────────────────────────────────────────────────────
+
+    &__footer {
+      position: relative;
+      z-index: var(--z-raised);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-6) var(--space-7);
+      text-align: center;
+    }
+
+    &__footer-line {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--text-secondary);
+
+      &--muted {
+        color: color-mix(in srgb, var(--text-secondary) 60%, transparent);
+      }
+    }
+  }
+
+  // Starfield twinkle — slow opacity drift, suppressed under reduced motion
+  // (handled inline on `&__starfield`).
+  @keyframes landing-twinkle {
+    from {
+      opacity: 0.55;
+    }
+
+    to {
+      opacity: 1;
     }
   }
 </style>

@@ -19,16 +19,24 @@ export 'active_combat_state.dart';
 /// [replaceSnapshot] is a synchronous setter for Block 4 realtime wiring —
 /// the Centrifugo subscription calls it with an updated snapshot and it
 /// emits a new [ActiveCombatReady] without triggering a network fetch.
+///
+/// Write actions ([rollInitiative], [advanceTurn], [endEncounter]) are
+/// idempotent re-load wrappers: they call the repository, then refresh the
+/// snapshot via [load]. `actionInFlight` is flipped while the round-trip
+/// is in flight; on failure `actionError` is set and the previous snapshot
+/// is retained so the GM can retry.
 class ActiveCombatCubit extends Cubit<ActiveCombatState> {
   ActiveCombatCubit({required CombatRepository repository})
       : _repository = repository,
         super(const ActiveCombatLoading());
 
   final CombatRepository _repository;
+  String? _sessionId;
 
   /// Fetches encounters for [sessionId], picks the most-recent active one,
   /// loads its combatants, and emits the appropriate state.
   Future<void> load(String sessionId) async {
+    _sessionId = sessionId;
     emit(const ActiveCombatLoading());
     try {
       final encounters = await _repository.listEncounters(sessionId);
@@ -58,5 +66,156 @@ class ActiveCombatCubit extends Cubit<ActiveCombatState> {
   /// [ActiveCombatLoading] is in flight.
   void replaceSnapshot(ActiveCombatSnapshot snapshot) {
     emit(ActiveCombatReady(snapshot));
+  }
+
+  /// Rolls initiative for the current encounter (`setup → active`).
+  ///
+  /// No-op if the current state is not [ActiveCombatReady]. Mirrors the web
+  /// pattern: dispatch, then reload to consume the post-transition state.
+  Future<void> rollInitiative() async {
+    final current = state;
+    if (current is! ActiveCombatReady) return;
+    emit(current.copyWith(actionInFlight: true, actionError: null));
+    try {
+      await _repository.rollInitiative(current.snapshot.encounter.id);
+      if (_sessionId != null) {
+        await load(_sessionId!);
+      }
+    } on Object catch (e) {
+      emit(current.copyWith(actionInFlight: false, actionError: e.toString()));
+    }
+  }
+
+  /// Advances the active turn to the next combatant.
+  Future<void> advanceTurn() async {
+    final current = state;
+    if (current is! ActiveCombatReady) return;
+    emit(current.copyWith(actionInFlight: true, actionError: null));
+    try {
+      await _repository.advanceTurn(current.snapshot.encounter.id);
+      if (_sessionId != null) {
+        await load(_sessionId!);
+      }
+    } on Object catch (e) {
+      emit(current.copyWith(actionInFlight: false, actionError: e.toString()));
+    }
+  }
+
+  /// Advances to the start of the next round, resetting the active combatant
+  /// to the top of the initiative order.
+  Future<void> advanceRound() async {
+    final current = state;
+    if (current is! ActiveCombatReady) return;
+    emit(current.copyWith(actionInFlight: true, actionError: null));
+    try {
+      await _repository.advanceRound(current.snapshot.encounter.id);
+      if (_sessionId != null) {
+        await load(_sessionId!);
+      }
+    } on Object catch (e) {
+      emit(current.copyWith(actionInFlight: false, actionError: e.toString()));
+    }
+  }
+
+  /// Adds a PC combatant to the active encounter and reloads.
+  Future<void> addPcCombatant(String characterId) async {
+    final current = state;
+    if (current is! ActiveCombatReady) return;
+    emit(current.copyWith(actionInFlight: true, actionError: null));
+    try {
+      await _repository.addPcCombatant(
+        encounterId: current.snapshot.encounter.id,
+        characterId: characterId,
+      );
+      if (_sessionId != null) {
+        await load(_sessionId!);
+      }
+    } on Object catch (e) {
+      emit(current.copyWith(actionInFlight: false, actionError: e.toString()));
+    }
+  }
+
+  /// Adds an NPC combatant to the active encounter and reloads.
+  Future<void> addNpcCombatant(String npcId) async {
+    final current = state;
+    if (current is! ActiveCombatReady) return;
+    emit(current.copyWith(actionInFlight: true, actionError: null));
+    try {
+      await _repository.addNpcCombatant(
+        encounterId: current.snapshot.encounter.id,
+        npcId: npcId,
+      );
+      if (_sessionId != null) {
+        await load(_sessionId!);
+      }
+    } on Object catch (e) {
+      emit(current.copyWith(actionInFlight: false, actionError: e.toString()));
+    }
+  }
+
+  /// Removes [combatantId] from the active encounter and reloads.
+  Future<void> removeCombatant(String combatantId) async {
+    final current = state;
+    if (current is! ActiveCombatReady) return;
+    emit(current.copyWith(actionInFlight: true, actionError: null));
+    try {
+      await _repository.deleteCombatant(combatantId);
+      if (_sessionId != null) {
+        await load(_sessionId!);
+      }
+    } on Object catch (e) {
+      emit(current.copyWith(actionInFlight: false, actionError: e.toString()));
+    }
+  }
+
+  /// Toggles [flag] on the named combatant. Reads the current flag set from
+  /// [snapshot] so the caller doesn't have to thread it through; the server
+  /// receives the full replaced list per the spec.
+  Future<void> toggleCanonicalFlag({
+    required String combatantId,
+    required String flag,
+  }) async {
+    final current = state;
+    if (current is! ActiveCombatReady) return;
+    final target = current.snapshot.combatants
+        .where((c) => c.id == combatantId)
+        .firstOrNull;
+    if (target == null) return;
+    final present = target.statusFlags.contains(flag);
+    final next = present
+        ? [
+            for (final f in target.statusFlags)
+              if (f != flag) f,
+          ]
+        : [...target.statusFlags, flag];
+    emit(current.copyWith(actionInFlight: true, actionError: null));
+    try {
+      await _repository.setStatusFlags(
+        combatantId: combatantId,
+        flags: next,
+      );
+      if (_sessionId != null) {
+        await load(_sessionId!);
+      }
+    } on Object catch (e) {
+      emit(current.copyWith(actionInFlight: false, actionError: e.toString()));
+    }
+  }
+
+  /// Closes the encounter (`status → ended`). Once successful the tracker
+  /// reloads and lands on [ActiveCombatEmpty] since the previously-active
+  /// encounter is no longer in `active` status.
+  Future<void> endEncounter() async {
+    final current = state;
+    if (current is! ActiveCombatReady) return;
+    emit(current.copyWith(actionInFlight: true, actionError: null));
+    try {
+      await _repository.endEncounter(current.snapshot.encounter.id);
+      if (_sessionId != null) {
+        await load(_sessionId!);
+      }
+    } on Object catch (e) {
+      emit(current.copyWith(actionInFlight: false, actionError: e.toString()));
+    }
   }
 }

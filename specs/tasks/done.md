@@ -2,6 +2,89 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-15-UX-DEFECTS-001 — Live-use UX defects batch
+
+- Created: 2026-05-15
+- Completed: 2026-05-15
+- Owner: claude
+- Spec: — (no doc; bugs reported from live interactive use on `chore/design-audit-2026-05-15`).
+- Outcome:
+  - Block A — T-UX-2026-05-15-AUTH-THROTTLE — backend `auth/{*rest}` catch-all throttle raised `10/60s` → `100/60s` (`apps/backend/src/common/auth/auth.controller.ts:17`) with inline rationale citing the SPA `/auth/get-session` hot path; frontend `auth-required.global.ts` now consults a new pure helper `decideAuthAction()` in `apps/web/app/utils/auth-redirect.ts` — three outcomes (`allow` / `rate-limited-allow` / `redirect`), defense-in-depth detection (status field variants + message regex). New `auth-redirect.spec.ts` with 16 assertions (7 `isRateLimitedError`, 9 `decideAuthAction`). 521/521 web + 964/964 backend, both typechecks pass.
+  - Block B — T-UX-2026-05-15-DASHBOARD-NAV-DUPE — dropped duplicate `navShips` / `navNpcs` ghost buttons from `page-characters__header-actions` on `apps/web/app/pages/app/characters/index.vue` (lines 117–127 → single primary CTA `newCharacter`); the AppHeader nav already exposes Ships/NPCs links. Removed 8 unused i18n keys across all 4 locales. `use-npcs-api.spec.ts` describe block rewritten to assert _absence_ of the removed buttons + survival of the CTA.
+  - Block C — T-UX-2026-05-15-CHAR-CARD-CRAMPED — `/app/characters` card redesigned to two-row internal layout: `__card-top` (avatar 44px + name/concept stack, full width) over `__card-footer` (`space-between` flex: meta left, date right, both conditional). `__card` flipped from single-row `align-items:center` to `flex-direction:column` + `gap:var(--space-3)`. `$card-min-width` raised `280px` → `320px`. `__card-meta` gains `min-width:0` + ellipsis; `__card-date` gains `margin-left:auto`. All existing focus/hover/transition/BEM semantics preserved.
+  - Block D — T-UX-2026-05-15-CHAR-VIEW-OVERFLOW — three-part fix on `apps/web/app/pages/app/characters/[id].vue`. **(1) Tablet (768–1023px).** Swapped `min-width: $panel-min-width-tablet` (200px floor) for `min-width: min(200px, 100%)` on `&__panel` inside the tablet media query — `min()` caps the floor at the actual track width so a panel shrinks to 100% of its column when there's no room for 200px. Now-unused `$panel-min-width-tablet: 200px;` variable removed. **(2) Desktop (≥1024px) — follow-up after user-reported screenshot.** Root cause: `grid-template-columns: 28% 44% 28%` summed to 100% AND was paired with `gap: 24px`; CSS grid percentages reference the container's inline size while `gap` is added between tracks, so total content width was `100% + 2 × 24px = container + 48px` — the right column visibly extended past the viewport. Fix: switched the three column tracks from percentages to fractional units (`$col-left-fr: 28fr`, `$col-center-fr: 44fr`, `$col-right-fr: 28fr`); `fr` distributes the remaining space _after_ gap accounting, so total = container width exactly. Visual proportion preserved (28/44/28 ratio identical). **(3) Mobile (<768px) — follow-up after second user-reported screenshot.** Defensive hardening against intrinsic-min-width overflow: every grid track in the page-sheet wrapped in `minmax(0, …)` (three column variants on `&__columns`, hero's `1fr` identity track on `&__hero`, `repeat(4, 1fr)` attributes grid on `&__attrs`, `1fr 1fr` skills grid on `&__skills-grid`) so a panel whose intrinsic content (e.g. a long stat label, an un-wrapped flex row) is wider than the track no longer pushes its parent past the viewport — the track shrinks below content's min size, and per-element `min-width: 0` / wrap rules absorb the rest. Also added `min-width: 0` on `&__columns`, `&__col`, `&__hero`. Inline SCSS comments document the rationale. Visual proportions and the existing single-column mobile stack are preserved. 523/523 web tests pass; typecheck clean. Collateral: `pnpm format` auto-formatted two pre-existing multi-line imports in `apps/backend/src/modules/characters/{characters.controller.ts,queries/list-characters.handler.spec.ts}` — pure whitespace, no logic change.
+- PR: TBD (single PR off `chore/design-audit-2026-05-15`).
+
+---
+
+## T-2026-05-14-006 — Backfill design documentation to handoff parity
+
+- Created: 2026-05-14
+- Completed: 2026-05-14
+- Owner: claude
+- Spec: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md) §2 + handoff `/tmp/coriolis-handoff/coriolis-app/project/specs/design/`
+- Outcome:
+  - Block 1 — `specs/design/PATTERNS.md` authored: page padding scale, card composition order, hero grid template, empty-state cadence, banner recipes, modal contract (backdrop click is **not** a close trigger by design — code default flagged as a follow-up), button taxonomy, view-only triad, motion patterns.
+  - Block 2 — `specs/design/CONTENT.md` authored: voice ("steward, not a host"), in-product taxonomy (Bridge / Library / Push / Icon / Mystic), number formatting (`/` HP separator, ✶ U+2736 successes, `b` birr), dice flavour template, copy do/don't list.
+  - Block 3 — `specs/design/FOUNDATIONS.md` backfilled: motif density rule (`restrained | balanced | maximum`), composite typography tokens, shadow / opacity semantics, four hard rules (Forum-not-in-chat, 24px min @ 1920×1080, no `<small>`, no raw hex).
+  - Block 4 — Canonical `specs/design/A11Y.md` extracted: focus-ring contract, keyboard map (roving for tablist / listbox / radio), color-is-not-the-only-signal matrix, landmark map, PR-gate checklist, RTL readiness. `docs/A11Y_AUDIT.md` kept as the point-in-time snapshot.
+  - Block 5 — `specs/design/I18N.md` design layer added + Forum-Cyrillic conflict resolved (Forum **carries** Cyrillic; handoff `I18N.md` Latin-only assertion was wrong).
+  - Block 6 — `specs/design/README.md` reading order + gap log refreshed; `HANDOFF_NAME_MAP.md` cross-linked.
+- Follow-ups raised:
+  - Flip `AppModal.closeOnBackdrop` default to `false` and audit every call site so the documented modal contract in `PATTERNS.md §5` is the actual code default. Currently `true` in `packages/ui/src/components/AppModal/AppModal.vue:25`.
+  - Author `SURFACES.md` and `COMPONENTS.md` if a future audit raises surface-level gaps that the README's component inventory + colocated Storybook stories do not already cover. Not blocking for v1.
+- PRs: `bab8074`, `aa57a8f`, `f236bb1`, `6a24056`, `b0909cc` (and the block 1 commit).
+
+## T-2026-05-14-003 — Scaffold critical v1 design atoms
+
+- Created: 2026-05-14
+- Completed: 2026-05-14
+- Owner: claude
+- Spec: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md) §3.1, §3.2 + handoff `COMPONENTS.md` + handoff `primitives.jsx`
+- Outcome:
+  - Block 1 — `AppPanelTitle` + `AppSwash` (paired sibling). Forum heading + brass calligraphic flourish; sm / md / lg sizes; auto-paired swash width. Vue + Flutter + Storybook + Vitest + Flutter widget tests.
+  - Block 2 — `AppWordmark`. Forum "Coriolis" uppercase + brass swash + Inter "Companion" eyebrow lockup. Eyebrow auto-scales at `size × 0.18` (floored at 10), swash at `size × 2.4`. Single `role="img"` with combined accessible name for the lockup. Used by landing hero, dashboard hero, session-join card.
+  - Block 3 — `AppSkillRow`. Dense skill row (`name + attr eyebrow + dot meter + monospace rank`) on a `1fr-auto-auto-auto` grid. `name` slot / `nameBuilder` covers the handoff's "name may be a React node" case for the key-skill chip. Brass + mystic tones for general / advanced. Rank clamped to `[0, rankMax]`.
+  - Block 4 — `AppButton` variants `secondary` + `mystic`. `secondary` mirrors handoff `.cor-btn--secondary` (transparent + brass border, Cancel / Skip / Reroll). `mystic` mirrors `.cor-btn--mystic` (mystic-teal fill, "Push the Roll" CTA). Existing `primary` / `ghost` / `danger` untouched; no consumer regressions.
+  - Block 5 — `AppIconMedallion`. Radial-gradient brass disc + 16 astrolabe ticks + Forum monogram letter + optional mystic-teal halo on `glow`. `useId()`-based gradient ids so multiple medallions on the same surface don't collide. Distinct from `AppIconCoriolis` (sprite-based); ships alongside without refactor.
+  - Block 6 — `AppPortrait`. Standalone atom for the character portrait medallion (Forum initials over indigo + brass ring + 24 astrolabe ticks). Cyrillic-safe initials derivation via code-point iteration; explicit `initials` + a11y `label` overrides; falls back to `"NA"`. **Strategy decision recorded:** shipped as standalone atom rather than extending `AppAvatar` with an `astrolabe` shape — handoff Portrait has no image-bearing path, so overloading `AppAvatar.shape` would conflict with its `src` semantics. Used by sheet hero, combat tracker, GM crew list, member lists, chat bubbles.
+  - Block 7 — Published [`specs/design/HANDOFF_NAME_MAP.md`](../design/HANDOFF_NAME_MAP.md): handoff ⇄ project mapping for the atom layer, `cor-*` CSS-class layer, composition layer, and project-only extras. Per-row status (`aligned` / `aligned-rename` / `drift-documented` / `project-only` / `handoff-only`) + one-line rationale + source citation. Linked from `specs/design/README.md`.
+  - Test totals across blocks: 39 Vitest test files (872 specs) + 214 Flutter widget tests, all green at HEAD. `pnpm design:audit` clean.
+  - Cosmetic drift items called out in the audit (AppStarOrnament filled vs outlined, AppArabesqueCorner default colour, AppDie API mapping, AppChip / AppConditionPill split) stay deferred as explicit follow-ups in HANDOFF_NAME_MAP.md.
+- Unblocks: T-2026-05-14-004 (Bridge dashboard), T-2026-05-14-005 (wizard / mobile parity), T-2026-05-14-006 (design doc backfill).
+- PR: pending
+
+## T-2026-05-14-002 — Reconcile typography token schema
+
+- Created: 2026-05-14
+- Completed: 2026-05-14
+- Owner: claude
+- Spec: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md) §1.2
+- Decision: [`docs/adr/0004-typography-token-schema.md`](../../docs/adr/0004-typography-token-schema.md)
+- Outcome:
+  - Adopted handoff atom-refs schema: composite roles consume `{font.size.N}`, `{font.line-height.X}`, `{font.tracking.X}` via DTCG ref syntax. Top-level role bucket renamed `type` → `typography`. Project role-name vocabulary retained (`display-{xl,lg,md,sm}` / `body-{lg,md,sm}` / `mono-stat-{xl,md}`) — handoff vocabulary deferred to avoid 50-file rename + visible visual diff in a schema-only PR.
+  - Pipeline (`packages/design-tokens/src/{parse,types,emit-*,emit-typescript}.ts`) gained `resolveRef()` + `resolveTypographyValue()`: family/weight refs return the bucket key (preserves `var(--font-X)` / `var(--fw-X)` emit), size/line-height/tracking refs return literal `$value`. Unknown refs throw at build.
+  - Two referenced-but-undefined roles added — `body-xs` (12px Inter regular, ratio 1.4) and `label-sm` (12px Inter medium uppercase, tracking 0.06em) — back ~26 silently broken `--type-body-xs-*` / `--type-label-sm-*` consumer references.
+  - Zero CSS drift on the 9 pre-existing roles. Dart artefact diff is purely additive (`bodyXs`, `labelSm` new TextStyles). Web + UI typecheck green. Design audit clean. Lint baseline improved 26 → 19 errors (autofix touched pre-existing code; my code is lint-clean).
+- Follow-ups staged in active.md: `T-FOLLOWUP-FONT-VAR-DRIFT`, `T-FOLLOWUP-BARE-TYPE-VARS`, `T-FOLLOWUP-DESIGN-TOKENS-LINT`.
+- Unblocks: T-2026-05-14-003 (atom layer needed for v1 atoms).
+- PR: pending
+
+## T-2026-05-14-001 — Design/UI audit vs handoff bundle (v1 scope)
+
+- Created: 2026-05-14
+- Completed: 2026-05-14
+- Owner: claude
+- Spec: `~/Downloads/Coriolis App-handoff.zip`
+- Result: `docs/audits/design-2026-05-14.md` on branch `chore/design-audit-2026-05-14`
+- Goal: surface every drift between the handoff design system and what's shipped, scoped to v1 (Phase 8 deferred).
+- Outcome:
+  - Tokens: 5/8 aligned; `color.json` drift is 100% Phase 8 (defer); `typography.json` schema-level refactor needs a decision.
+  - Docs: `PATTERNS.md` + `CONTENT.md` missing wholesale; `FOUNDATIONS / COMPONENTS / SURFACES / A11Y / I18N` partial.
+  - Components: 4 critical v1 atoms missing (`AppPanelTitle`, `AppSwash`, `AppWordmark`, `AppSkillRow`) + `AppButton` `secondary`/`mystic` variants.
+  - Surfaces: Bridge dashboard not shipped; wizard step inventory 8/7/6 mismatch (handoff/web/mobile); mobile missing ship sheet and full combat tracker.
+- 17 follow-up tickets staged in the report.
+
 ## T-2026-05-11-010 — Phase 7: Lighthouse CI gate + backend p95 save-latency alert
 
 - Created: 2026-05-11

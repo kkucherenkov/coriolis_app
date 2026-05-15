@@ -69,6 +69,7 @@ function makeDraft(overrides: Partial<Character> = {}): Character {
     origin: null,
     reputation: 4,
     startingWealth: 1000,
+    birr: 1000,
     crewConcept: null,
     mutant: false,
     mutantLineage: null,
@@ -262,15 +263,19 @@ describe('wizard: icon selection', () => {
   });
 });
 
-// ── Test 6: step-1 validation blocks advance when name is empty ───────────────
+// ── Test 6: step-2 (Concept) validation blocks advance when name is empty ─────
 
-describe('wizard: step 1 validation', () => {
-  it('canAdvance is false when name is empty', () => {
+// After T-WIZARD-WEB-REORDER (canonical step order per
+// `specs/design/CHARACTER_WIZARD.md`), the Concept screen — which carries
+// the name input — is step **2** (step 1 is Biography). All other steps
+// are optional at the data layer.
+describe('wizard: step 2 (Concept) validation', () => {
+  it('canAdvance is false when name is empty on Concept', () => {
     const draftName = ref('');
-    const step = ref(1);
+    const step = ref(2);
 
     const canAdvance = computed<boolean>(() => {
-      if (step.value === 1) {
+      if (step.value === 2) {
         const n = draftName.value.trim();
         return n.length > 0 && n.length <= 80;
       }
@@ -282,10 +287,10 @@ describe('wizard: step 1 validation', () => {
 
   it('canAdvance is true when name is non-empty and within limit', () => {
     const draftName = ref('Zara Prime');
-    const step = ref(1);
+    const step = ref(2);
 
     const canAdvance = computed<boolean>(() => {
-      if (step.value === 1) {
+      if (step.value === 2) {
         const n = draftName.value.trim();
         return n.length > 0 && n.length <= 80;
       }
@@ -297,10 +302,10 @@ describe('wizard: step 1 validation', () => {
 
   it('canAdvance is false when name exceeds 80 chars', () => {
     const draftName = ref('Z'.repeat(81));
-    const step = ref(1);
+    const step = ref(2);
 
     const canAdvance = computed<boolean>(() => {
-      if (step.value === 1) {
+      if (step.value === 2) {
         const n = draftName.value.trim();
         return n.length > 0 && n.length <= 80;
       }
@@ -310,22 +315,50 @@ describe('wizard: step 1 validation', () => {
     expect(canAdvance.value).toBe(false);
   });
 
-  it('canAdvance is true for steps 2–6 regardless of name', () => {
+  it('canAdvance is true for non-Concept steps regardless of name', () => {
     const draftName = ref('');
-    const step = ref(2);
+    const step = ref(1);
 
     const canAdvance = computed<boolean>(() => {
-      if (step.value === 1) {
+      if (step.value === 2) {
         const n = draftName.value.trim();
         return n.length > 0 && n.length <= 80;
       }
       return true;
     });
 
-    for (let s = 2; s <= 6; s++) {
+    // Steps 1 (Biography), 3 (Role), 4 (Attributes), 5 (Skills),
+    // 6 (Talents), 7 (Icon), 8 (Gear) are all optional at the data layer.
+    for (const s of [1, 3, 4, 5, 6, 7, 8]) {
       step.value = s;
       expect(canAdvance.value).toBe(true);
     }
+  });
+});
+
+// ── Test 8: TOTAL_STEPS constant is 8 ────────────────────────────────────────
+
+describe('wizard: TOTAL_STEPS', () => {
+  it('is 8 after Gear step landed', () => {
+    // Mirrors the constant in apps/web/app/pages/app/characters/new.vue.
+    // If this breaks, the template's is-last-step and Forge gating are wrong.
+    const TOTAL_STEPS = 8;
+    expect(TOTAL_STEPS).toBe(8);
+  });
+
+  it('canAdvance is true on step 8 (Gear) — lenient, matching Talents precedent', () => {
+    const draftName = ref('Any Name');
+    const step = ref(8);
+
+    const canAdvance = computed<boolean>(() => {
+      if (step.value === 2) {
+        const n = draftName.value.trim();
+        return n.length > 0 && n.length <= 80;
+      }
+      return true;
+    });
+
+    expect(canAdvance.value).toBe(true);
   });
 });
 
