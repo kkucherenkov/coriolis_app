@@ -1,13 +1,22 @@
 <script setup lang="ts">
   definePageMeta({ layout: 'app' });
 
-  import { AppCard, AppButton, AppInput, AppField, AppBanner, AppBadge } from '@app/ui';
+  import {
+    AppCard,
+    AppButton,
+    AppInput,
+    AppField,
+    AppBanner,
+    AppBadge,
+    AppInviteManager,
+  } from '@app/ui';
   import EncounterPanel from '~/components/EncounterPanel.vue';
   import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
   import { useGameSessionsApi } from '~/composables/useGameSessionsApi';
   import { useDpApi } from '~/composables/useDpApi';
   import { useMeApi } from '~/composables/useMeApi';
   import { useCharactersApi } from '~/composables/useCharactersApi';
+  import { useInviteApi } from '~/composables/useInviteApi';
   import {
     useSessionRealtime,
     type DpChangedPayload,
@@ -45,6 +54,7 @@
   const dpApi = useDpApi();
   const meApi = useMeApi();
   const charactersApi = useCharactersApi();
+  const inviteApi = useInviteApi();
 
   const sessionId = computed<string>(() => route.params.id as string);
 
@@ -70,6 +80,97 @@
     // grabbed the wrong character; let the player publish first.
     return myCharacters.value.filter((c) => !ids.has(c.id) && c.status === 'active');
   });
+
+  // ── Invite manager ────────────────────────────────────────────────────────
+  // revealState drives which panel AppInviteManager renders:
+  //   'none'          → no active invite; shows Generate CTA
+  //   'active'        → invite exists; shows Copy / Rotate / Revoke
+  //   'just-generated'→ reveal panel (fresh link after first generate)
+  //   'just-rotated'  → reveal panel (fresh link after rotate)
+  // revealUrl holds the plaintext URL only in the just-* states; cleared
+  // on closeReveal so the URL never persists in component state beyond one
+  // interaction (by design — the server never re-serves it).
+  //
+  // Confirmation for Revoke and Rotate uses window.confirm() as a fallback
+  // because the project has no useConfirm / AppConfirm primitive yet.
+  // TODO: replace with a proper modal confirm once one is added (follow-up task).
+  type InviteState = 'none' | 'active' | 'just-generated' | 'just-rotated';
+  const inviteState = ref<InviteState>('none');
+  const inviteRotatedAt = ref<string | null>(null);
+  const revealUrl = ref<string>('');
+
+  async function loadInviteMetadata(): Promise<void> {
+    if (!isGm.value) return;
+    try {
+      const meta = await inviteApi.getMetadata(sessionId.value);
+      inviteState.value = meta.active ? 'active' : 'none';
+      inviteRotatedAt.value = meta.rotatedAt ?? null;
+    } catch {
+      // Non-fatal — invite panel simply stays hidden on error.
+    }
+  }
+
+  async function onInviteGenerate(): Promise<void> {
+    try {
+      const rotated = await inviteApi.rotate(sessionId.value);
+      inviteRotatedAt.value = rotated.rotatedAt;
+      revealUrl.value = rotated.url;
+      inviteState.value = 'just-generated';
+    } catch (error) {
+      const problem = error as { detail?: string };
+      // Surface error via the existing AppBanner pattern would require a
+      // dedicated ref; for now fall through (generate button re-enables).
+      console.error('Invite generate failed:', problem.detail);
+    }
+  }
+
+  async function onInviteRotate(): Promise<void> {
+    // window.confirm fallback — see TODO above.
+    const ok = globalThis.confirm(
+      t('invite.confirmRotateTitle') + '\n' + t('invite.confirmRotateBody'),
+    );
+    if (!ok) return;
+    try {
+      const rotated = await inviteApi.rotate(sessionId.value);
+      inviteRotatedAt.value = rotated.rotatedAt;
+      revealUrl.value = rotated.url;
+      inviteState.value = 'just-rotated';
+    } catch (error) {
+      const problem = error as { detail?: string };
+      console.error('Invite rotate failed:', problem.detail);
+    }
+  }
+
+  async function onInviteRevoke(): Promise<void> {
+    // window.confirm fallback — see TODO above.
+    const ok = globalThis.confirm(
+      t('invite.confirmRevokeTitle') + '\n' + t('invite.confirmRevokeBody'),
+    );
+    if (!ok) return;
+    try {
+      await inviteApi.revoke(sessionId.value);
+      inviteState.value = 'none';
+      inviteRotatedAt.value = null;
+      revealUrl.value = '';
+    } catch (error) {
+      const problem = error as { detail?: string };
+      console.error('Invite revoke failed:', problem.detail);
+    }
+  }
+
+  function onInviteCopy(): void {
+    // The 'copy' event from AppInviteManager fires when the active-state
+    // Copy button is clicked. In 'active' state the plaintext URL is no
+    // longer available from the server, so we trigger a rotate instead —
+    // this surfaces the new URL in the reveal panel, where the user can
+    // copy it from AppSessionShareLinkCard.
+    void onInviteRotate();
+  }
+
+  function onInviteCloseReveal(): void {
+    revealUrl.value = '';
+    inviteState.value = inviteRotatedAt.value ? 'active' : 'none';
+  }
 
   // ── DP adjustment form ────────────────────────────────────────────────────
   const dpDelta = ref(1);
@@ -204,9 +305,12 @@
   });
 
   // Once the session resolves and we know whether the user is the GM,
-  // pull in the audit log.
+  // pull in the audit log and invite metadata.
   watch(isGm, (now, before) => {
-    if (now && !before) void loadDpEvents();
+    if (now && !before) {
+      void loadDpEvents();
+      void loadInviteMetadata();
+    }
   });
 
   async function applyDelta(magnitude: number): Promise<void> {
@@ -331,6 +435,26 @@
       "gmManual": "GM",
       "rollPush": "Roll push",
       "system": "System"
+    },
+    "invite": {
+      "title": "Player invite",
+      "blurbNone": "Generate a link your players can use to join this session and link their characters.",
+      "ctaGenerate": "Generate invite link",
+      "labelActiveSince": "Active since",
+      "noteActive": "Current link is valid. Rotating invalidates the old link immediately.",
+      "ctaCopy": "Copy link",
+      "ctaRotate": "Rotate",
+      "ctaRevoke": "Revoke",
+      "revealTitleNew": "Your new invite link",
+      "revealTitleRotated": "Link rotated",
+      "revealClose": "I've copied it — close",
+      "revealWarning": "This URL appears once. If you lose it, rotate the invite to generate a new one.",
+      "revealCopy": "Copy",
+      "revealCopied": "Copied",
+      "confirmRevokeTitle": "Revoke invite?",
+      "confirmRevokeBody": "Players who open the current link after revoking will see an empty state. Continue?",
+      "confirmRotateTitle": "Rotate invite?",
+      "confirmRotateBody": "The current link will immediately stop working. You'll need to share the new one with every player."
     }
   },
   "ru": {
@@ -371,6 +495,26 @@
       "gmManual": "ГМ",
       "rollPush": "Дожим броска",
       "system": "Система"
+    },
+    "invite": {
+      "title": "Приглашение игроков",
+      "blurbNone": "Создайте ссылку, по которой игроки смогут присоединиться к сессии и привязать персонажей.",
+      "ctaGenerate": "Создать ссылку",
+      "labelActiveSince": "Активна с",
+      "noteActive": "Текущая ссылка действительна. При смене старая немедленно перестаёт работать.",
+      "ctaCopy": "Скопировать",
+      "ctaRotate": "Сменить",
+      "ctaRevoke": "Отозвать",
+      "revealTitleNew": "Ваша новая ссылка",
+      "revealTitleRotated": "Ссылка обновлена",
+      "revealClose": "Скопировал(-а) — закрыть",
+      "revealWarning": "Эта ссылка показывается один раз. Если потеряете — придётся сменить инвайт.",
+      "revealCopy": "Скопировать",
+      "revealCopied": "Скопировано",
+      "confirmRevokeTitle": "Отозвать приглашение?",
+      "confirmRevokeBody": "После отзыва открывшие старую ссылку увидят пустой экран. Продолжить?",
+      "confirmRotateTitle": "Сменить приглашение?",
+      "confirmRotateBody": "Старая ссылка немедленно перестанет работать. Новую нужно будет разослать всем игрокам."
     }
   },
   "uk": {
@@ -411,6 +555,26 @@
       "gmManual": "[uk-todo] GM",
       "rollPush": "[uk-todo] Roll push",
       "system": "[uk-todo] System"
+    },
+    "invite": {
+      "title": "Запрошення гравців",
+      "blurbNone": "Створіть посилання, за яким гравці зможуть приєднатися до сесії та прив'язати персонажів.",
+      "ctaGenerate": "Створити посилання",
+      "labelActiveSince": "Активне з",
+      "noteActive": "Поточне посилання дійсне. При зміні старе негайно перестає працювати.",
+      "ctaCopy": "Скопіювати",
+      "ctaRotate": "Змінити",
+      "ctaRevoke": "Відкликати",
+      "revealTitleNew": "Ваше нове посилання",
+      "revealTitleRotated": "Посилання оновлено",
+      "revealClose": "Скопіював(-ла) — закрити",
+      "revealWarning": "Це посилання показується лише один раз. Якщо втратите — доведеться змінити інвайт.",
+      "revealCopy": "Скопіювати",
+      "revealCopied": "Скопійовано",
+      "confirmRevokeTitle": "Відкликати запрошення?",
+      "confirmRevokeBody": "Після відкликання, хто відкриє старе посилання, побачить порожній екран. Продовжити?",
+      "confirmRotateTitle": "Змінити запрошення?",
+      "confirmRotateBody": "Старе посилання негайно перестане працювати. Нове потрібно буде розіслати всім гравцям."
     }
   },
   "el": {
@@ -451,6 +615,26 @@
       "gmManual": "[el-todo] GM",
       "rollPush": "[el-todo] Roll push",
       "system": "[el-todo] System"
+    },
+    "invite": {
+      "title": "Πρόσκληση παικτών",
+      "blurbNone": "Δημιουργήστε έναν σύνδεσμο που οι παίκτες μπορούν να χρησιμοποιήσουν για να συνδεθούν στη συνεδρία και να συνδέσουν τους χαρακτήρες τους.",
+      "ctaGenerate": "Δημιουργία συνδέσμου πρόσκλησης",
+      "labelActiveSince": "Ενεργό από",
+      "noteActive": "Ο τρέχων σύνδεσμος είναι έγκυρος. Η αλλαγή ακυρώνει αμέσως τον παλιό σύνδεσμο.",
+      "ctaCopy": "Αντιγραφή",
+      "ctaRotate": "Αλλαγή",
+      "ctaRevoke": "Ανάκληση",
+      "revealTitleNew": "Ο νέος σας σύνδεσμος",
+      "revealTitleRotated": "Σύνδεσμος ανανεώθηκε",
+      "revealClose": "Αντέγραψα — κλείσιμο",
+      "revealWarning": "Αυτό το URL εμφανίζεται μία φορά. Αν το χάσετε, αλλάξτε την πρόσκληση για να δημιουργήσετε ένα νέο.",
+      "revealCopy": "Αντιγραφή",
+      "revealCopied": "Αντιγράφηκε",
+      "confirmRevokeTitle": "Ανάκληση πρόσκλησης;",
+      "confirmRevokeBody": "Όσοι ανοίξουν τον τρέχοντα σύνδεσμο μετά την ανάκληση θα δουν μια κενή οθόνη. Συνέχεια;",
+      "confirmRotateTitle": "Αλλαγή πρόσκλησης;",
+      "confirmRotateBody": "Ο τρέχων σύνδεσμος θα σταματήσει να λειτουργεί αμέσως. Θα πρέπει να μοιραστείτε το νέο με κάθε παίκτη."
     }
   }
 }
@@ -766,6 +950,43 @@
             </span>
           </li>
         </ul>
+      </AppCard>
+
+      <!-- Invite manager (Phase 8 Stream A) — GM only. Surfaces generate /
+           rotate / revoke controls and a one-time reveal panel for the
+           plaintext invite URL. window.confirm() is used for destructive
+           confirmations until a proper modal-confirm primitive is added. -->
+      <AppCard
+        v-if="isGm"
+        class="page-session-detail__panel"
+        data-testid="invite-manager-section"
+      >
+        <AppInviteManager
+          :state="inviteState"
+          :rotated-at="inviteRotatedAt"
+          :reveal-url="revealUrl"
+          :labels="{
+            title: t('invite.title'),
+            blurbNone: t('invite.blurbNone'),
+            ctaGenerate: t('invite.ctaGenerate'),
+            labelActiveSince: t('invite.labelActiveSince'),
+            noteActive: t('invite.noteActive'),
+            ctaCopy: t('invite.ctaCopy'),
+            ctaRotate: t('invite.ctaRotate'),
+            ctaRevoke: t('invite.ctaRevoke'),
+            revealTitleNew: t('invite.revealTitleNew'),
+            revealTitleRotated: t('invite.revealTitleRotated'),
+            revealClose: t('invite.revealClose'),
+            revealWarning: t('invite.revealWarning'),
+            revealCopy: t('invite.revealCopy'),
+            revealCopied: t('invite.revealCopied'),
+          }"
+          @generate="onInviteGenerate"
+          @rotate="onInviteRotate"
+          @revoke="onInviteRevoke"
+          @copy="onInviteCopy"
+          @close-reveal="onInviteCloseReveal"
+        />
       </AppCard>
 
       <!-- Encounters (Block 5) — GM only; players see the combat state
