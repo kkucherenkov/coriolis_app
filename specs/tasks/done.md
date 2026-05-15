@@ -17,6 +17,65 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
 
 ---
 
+## T-2026-05-15-AUDIT — Design / UI re-audit vs handoff 2026-05-14
+
+- Created: 2026-05-15
+- Completed: 2026-05-15
+- Owner: claude
+- Spec: [`docs/audits/design-2026-05-15.md`](../../docs/audits/design-2026-05-15.md)
+- Outcome:
+  - Token diff covers all 8 files (`color`, `typography`, `motion`, `opacity`, `radius`, `shadow`, `spacing`, `z-index`); 6/8 byte-identical via canonical `jq -cS`. `color.json` drift = Phase 8 (defer); `typography.json` = ADR-0004 deferred schema vocabulary.
+  - Atom-layer + CSS-class layer re-verified row-by-row against `packages/ui/src/components/`; no new drift since 2026-05-14; `AppDivider` surfaced as a new project-only atom.
+  - Phase 8 surface inventory — 9 surfaces still cold; chat / whisper / invite / presence / focus-ring tokens absent from `color.json`; OpenAPI + AsyncAPI carry zero chat/whisper/invite/presence ops.
+  - State-matrix spot-check on combat tracker, dice roller, share viewer, landing, wizard ordering; gaps catalogued in §6 follow-ups.
+  - Audit doc landed at [`docs/audits/design-2026-05-15.md`](../../docs/audits/design-2026-05-15.md) with prioritised follow-up list.
+- Follow-ups closed in-task:
+  - T-AUDIT-2026-05-15-COMBAT-ROW-STATES — boss-NPC name + low-HP HP value render in `--state-crimson-bright` on web (`CombatTracker.vue`: `isBossNpc` / `isLowHp` helpers + `combat-tracker__name--boss` / `combat-tracker__hp--low` BEM hooks) and mobile (`combat_tracker_page.dart`). Discriminator: case-insensitive exact `boss` status flag. Low-HP boundary: strict `<` 0.4, negative `hpCurrent` triggers via same ratio. +5 web Vitest + 10 mobile tests.
+  - T-AUDIT-2026-05-15-DICE-PUSH-FAIL — pushed-state outcome line on both clients per SURFACES.md §9. Session-scoped `pushDelta` snapshot in `SheetDiceRoller.vue` + `DiceRollerCubit.push()`; renders `pushFailLine` ("Молитва не услышана") vs `pushSuccessLine` ("+N новых успехов"). +4 web + 3 mobile tests.
+  - T-AUDIT-2026-05-15-MODAL-BACKDROP-DEFAULT — `AppModal.closeOnBackdrop` default flipped `true` → `false` per PATTERNS.md §5; 9-call-site audit, 4 delete-confirm modals tightened to `:close-on-backdrop="false"` retaining `:close-on-esc="!deleting"`.
+  - T-AUDIT-2026-05-15-STAR-VARIANT — `AppStarOrnament` geometry rewritten to handoff two-rect construction; new `variant: 'filled' | 'outlined'` prop with `filled` default; HANDOFF_NAME_MAP `StarOrnament` row flipped to `aligned`. UI tests 873 → 880.
+  - T-AUDIT-2026-05-15-DIVIDER-MAP-ROW — `.cor-divider` → `AppDivider` row appended to HANDOFF_NAME_MAP §CSS-class layer.
+  - T-AUDIT-2026-05-15-SHARE-VIEWER-VIEWONLY — doc-only fix. PATTERNS.md §12 split into §12a (partial view-only triad) + §12b (fully read-only chrome differentiation); share viewer already spec-compliant under §12b. No code change.
+- PRs: `f1d5913` (STAR-VARIANT), `4d5fbce` (SHARE-VIEWER-VIEWONLY), plus block commits across `chore/design-audit-2026-05-15`.
+
+---
+
+## T-2026-05-14-005 — Close remaining v1 surface gaps
+
+- Created: 2026-05-14
+- Completed: 2026-05-15
+- Owner: claude
+- Spec: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md) §4 follow-ups 9–12 + [`specs/design/CHARACTER_WIZARD.md`](../design/CHARACTER_WIZARD.md)
+- Outcome:
+  - Wizard expanded 7 → 8 canonical ST3001 steps (Biography → Concept → Role → Attributes → Skills → Talents → Icon → Gear) on web + mobile; i18n nested under `wizard.step.<id>.*` across EN/RU/UK/EL; d66 Icon roll deterministic table at `apps/web/app/utils/iconRoll.ts`. Step 8 Gear ships a per-amplua starter-kit catalogue (`packages/specs/src/starter-kits.ts` — 33 `(concept × role)` entries from ST3001 ГЛАВА 2, 5 rows × 2 options each; 11 unique `AmpluaKitTemplate` objects expanded via `expandKits()` helper). Birr wallet lifecycle (`Character.birr` + `BIRR_DRAFT_IMMUTABLE` 422 + Prisma migration `20260514000001_add_character_birr`).
+  - Mobile ship sheet shipped (`apps/mobile/lib/features/ships/`): list / sheet / create flows; Identity / Stats / Modules / Crew / Notes / History / Problems blocks; module editor covers all 5 discriminator variants (`Other` + `Weapon` / `Hold` / `Torpedo` / `Sensor`); crew assignment via session-character picker; Duplicate + Export header actions; `ShipRepository` add/update/delete methods for all variants.
+  - Mobile combat tracker shipped (`apps/mobile/lib/features/combat/`): initiative list + DP chip + ±1 DP controls (`TrackerDpCubit`) + canonical-flag chips (`incapacitated` / `prone` / `covered`) + PC+NPC combatant CRUD + Roll Initiative / Next Turn / End Round / End Encounter sticky toolbar (GM-gated, status-driven). Server-owned `POST /api/v1/encounters/{id}/round/advance` (operationId `advanceRound`) added with `AdvanceRoundHandler` reusing existing 422 codes. Session-scoped Centrifugo subscription on the tracker.
+  - Mobile NPC picker shell (`apps/mobile/lib/features/npcs/`) — list-only `NpcRepository` (wraps generated `NpcsApi.listNpcs`) mounted in the combat tracker add-combatant tabbed sheet; full NPC CRUD deferred to a future task.
+  - Landing rebuilt (`apps/web/app/pages/index.vue`): 4 arabesque corners (brass-deep), top-nav EN/RU/UK/EL locale switcher, `AppWordmark` hero (size 88), 3-feature grid (Sheet · Share · Run) EN/RU full + UK/EL stubs, two-layer radial-gradient starfield (suppressed under `prefers-reduced-motion`), fan-project + IP-attribution footer.
+  - Codegen pipeline self-contained: `pnpm spec:codegen` now injects the `ShipModuleSlot` import into the four oneOf subclasses (`ship_module_{hold,sensor,torpedo,weapon}.dart`) and runs `dart run build_runner build` against `packages/api-client-dart/lib/generated` as post-steps.
+- Test totals across the run: backend 964/964; mobile 238/238; web 521/521; UI 880/880; all typechecks green; `flutter analyze lib` 0 issues.
+- PRs: across `chore/design-audit-2026-05-15`; tip commits include `7d83319` (advanceRound spec+codegen), `29aab81` (backend handler), `0378b16` (mobile wiring), plus block commits.
+
+---
+
+## T-2026-05-14-004 — Ship the Bridge dashboard
+
+- Created: 2026-05-14
+- Completed: 2026-05-15
+- Owner: claude
+- Spec: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md) §4 (Dashboard / Bridge row) + handoff `SURFACES.md` Bridge section
+- Outcome:
+  - `apps/web/app/pages/app/dashboard.vue` ships the Bridge: 3-card grid (cycle / sync / roster) + `AppArabesqueCorner` pair + `AppWordmark` hero + per-card `AppPanelTitle`.
+  - Greeting eyebrow sourced from `useAuth().getSession()`; cycle clock via `Intl.DateTimeFormat` ticking every minute; sync indicator from `navigator.onLine` + relative-time-formatted last sync; roster card with live count via `useCharactersApi.list` (empty / error / browse states).
+  - Footer aphorism — three Coriolis lines, deterministic day-of-year pick.
+  - Auth redirect target flipped from `/app/characters` to `/app/dashboard` across `pages/index.vue`, `pages/login.vue`, `pages/signup.vue`.
+  - Pure helpers extracted to `apps/web/app/utils/bridge.ts` (`pickAphorism`, `formatCycleClock`, `formatCycleDate`, `formatSyncLabel`); 16-assertion Vitest spec (`app/utils/__tests__/bridge.spec.ts`) locks day-of-epoch picker, 24h clock shape, locale-respecting long-form date, and all sync-label branches.
+  - i18n EN + RU full; UK + EL stubs landed for every `wizardLabel` / `greeting.*` / `card.*` / `sync.*` / `aphorism.*` key (T-BRIDGE-I18N-STUBS).
+  - Playwright smoke at `tests/e2e/bridge-smoke.spec.ts` — auth-gated via `CORIOLIS_E2E_SESSION_COOKIE`, locale-invariant via `aria-labelledby` selectors; 2 specs (root-redirect, first-paint with all three cards + aria-live cycle stat + sync dot + aphorism footer + ≥2 `.bridge__corner` arabesques).
+- PRs: across `chore/design-audit-2026-05-15`.
+
+---
+
 ## T-2026-05-14-006 — Backfill design documentation to handoff parity
 
 - Created: 2026-05-14
