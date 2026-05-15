@@ -24,6 +24,8 @@ import type {
   IMembershipRepo,
   InviteMetadataReadModel,
   MembershipReadModel,
+  MembershipRole,
+  MyMembershipReadModel,
 } from '../domain/membership.ports';
 
 const MEMBERSHIP_SELECT = {
@@ -79,6 +81,50 @@ export class MembershipRepo implements IMembershipRepo, IGameSessionInviteRepo {
       where: { id, leftAt: null },
       data: { leftAt: new Date() },
     });
+  }
+
+  async insert(data: {
+    gameSessionId: string;
+    userId: string;
+    role: MembershipRole;
+    characterId?: string | null;
+  }): Promise<MembershipReadModel> {
+    const row = await this.prisma.gameSessionMembership.create({
+      data: {
+        gameSessionId: data.gameSessionId,
+        userId: data.userId,
+        role: data.role,
+        characterId: data.characterId ?? null,
+      },
+      select: MEMBERSHIP_SELECT,
+    });
+    const users = await this.fetchDisplayNames([row.userId]);
+    return toMembershipReadModel(row, users.get(row.userId) ?? null);
+  }
+
+  async findActiveSessionsForUser(userId: string): Promise<MyMembershipReadModel[]> {
+    const rows = await this.prisma.gameSessionMembership.findMany({
+      where: { userId, leftAt: null },
+      orderBy: { joinedAt: 'asc' },
+      select: {
+        id: true,
+        gameSessionId: true,
+        role: true,
+        characterId: true,
+        joinedAt: true,
+        character: { select: { name: true } },
+        gameSession: { select: { name: true } },
+      },
+    });
+    return rows.map((r) => ({
+      membershipId: r.id,
+      gameSessionId: r.gameSessionId,
+      sessionName: r.gameSession.name,
+      role: r.role as MembershipRole,
+      characterId: r.characterId,
+      characterName: r.character?.name ?? null,
+      joinedAt: (r.joinedAt as Date).toISOString(),
+    }));
   }
 
   async setCharacter(id: string, characterId: string | null): Promise<MembershipReadModel> {
@@ -138,6 +184,23 @@ export class MembershipRepo implements IMembershipRepo, IGameSessionInviteRepo {
         inviteCreatedById: null,
       },
     });
+  }
+
+  async findSessionByTokenHash(tokenHash: string): Promise<{
+    gameSessionId: string;
+    sessionName: string;
+    gmUserId: string;
+  } | null> {
+    const session = await this.prisma.gameSession.findFirst({
+      where: { inviteTokenHash: tokenHash },
+      select: { id: true, name: true, ownerId: true },
+    });
+    if (!session) return null;
+    return {
+      gameSessionId: session.id,
+      sessionName: session.name,
+      gmUserId: session.ownerId,
+    };
   }
 
   private async fetchDisplayNames(userIds: string[]): Promise<Map<string, string | null>> {
