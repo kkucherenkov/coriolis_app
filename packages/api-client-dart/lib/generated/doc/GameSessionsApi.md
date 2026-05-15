@@ -92,7 +92,7 @@ import 'package:app_api_client/api.dart';
 
 final api = AppApiClient().getGameSessionsApi();
 final String id = id_example; // String | Game session identifier (cuid2)
-final AssignCharacterToSession assignCharacterToSession = {"characterId":"cuid_char01"}; // AssignCharacterToSession | 
+final AssignCharacterToSession assignCharacterToSession = {characterId=cuid_char01}; // AssignCharacterToSession | 
 
 try {
     final response = api.assignCharacterToSession(id, assignCharacterToSession);

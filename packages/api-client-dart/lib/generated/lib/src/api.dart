@@ -13,6 +13,8 @@ import 'package:app_api_client/src/api/characters_api.dart';
 import 'package:app_api_client/src/api/dice_api.dart';
 import 'package:app_api_client/src/api/encounters_api.dart';
 import 'package:app_api_client/src/api/game_sessions_api.dart';
+import 'package:app_api_client/src/api/me_api.dart';
+import 'package:app_api_client/src/api/memberships_api.dart';
 import 'package:app_api_client/src/api/npcs_api.dart';
 import 'package:app_api_client/src/api/public_api.dart';
 import 'package:app_api_client/src/api/realtime_api.dart';
@@ -97,6 +99,18 @@ class AppApiClient {
   /// by doing that all interceptors will not be executed
   GameSessionsApi getGameSessionsApi() {
     return GameSessionsApi(dio, serializers);
+  }
+
+  /// Get MeApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  MeApi getMeApi() {
+    return MeApi(dio, serializers);
+  }
+
+  /// Get MembershipsApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  MembershipsApi getMembershipsApi() {
+    return MembershipsApi(dio, serializers);
   }
 
   /// Get NpcsApi instance, base route and serializer can be overridden by a given but be careful,

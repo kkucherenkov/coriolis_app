@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddCharacterItemData, AddCharacterItemErrors, AddCharacterItemResponses, AddCharacterTalentData, AddCharacterTalentErrors, AddCharacterTalentResponses, AddCombatantData, AddCombatantErrors, AddCombatantResponses, AddShipModuleData, AddShipModuleErrors, AddShipModuleResponses, AdjustDpData, AdjustDpErrors, AdjustDpResponses, AdvanceRoundData, AdvanceRoundErrors, AdvanceRoundResponses, AdvanceTurnData, AdvanceTurnErrors, AdvanceTurnResponses, AssignCharacterToSessionData, AssignCharacterToSessionErrors, AssignCharacterToSessionResponses, AssignCrewData, AssignCrewErrors, AssignCrewResponses, CreateCharacterData, CreateCharacterErrors, CreateCharacterResponses, CreateEncounterData, CreateEncounterErrors, CreateEncounterResponses, CreateGameSessionData, CreateGameSessionErrors, CreateGameSessionResponses, CreateNpcData, CreateNpcErrors, CreateNpcResponses, CreateRollData, CreateRollErrors, CreateRollResponses, CreateShareLinkData, CreateShareLinkErrors, CreateShareLinkResponses, CreateShipData, CreateShipErrors, CreateShipResponses, DeleteCharacterData, DeleteCharacterErrors, DeleteCharacterResponses, DeleteCombatantData, DeleteCombatantErrors, DeleteCombatantResponses, DeleteEncounterData, DeleteEncounterErrors, DeleteEncounterResponses, DeleteGameSessionData, DeleteGameSessionErrors, DeleteGameSessionResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteNpcData, DeleteNpcErrors, DeleteNpcResponses, DeleteShipData, DeleteShipErrors, DeleteShipModuleData, DeleteShipModuleErrors, DeleteShipModuleResponses, DeleteShipResponses, DeleteTalentData, DeleteTalentErrors, DeleteTalentResponses, DuplicateCharacterData, DuplicateCharacterErrors, DuplicateCharacterResponses, DuplicateNpcData, DuplicateNpcErrors, DuplicateNpcResponses, DuplicateShipData, DuplicateShipErrors, DuplicateShipResponses, ExportCharacterData, ExportCharacterErrors, ExportCharacterResponses, ExportMeData, ExportMeErrors, ExportMeResponses, ExportShipData, ExportShipErrors, ExportShipResponses, GetCharacterData, GetCharacterErrors, GetCharacterOgImageData, GetCharacterOgImageErrors, GetCharacterOgImageResponses, GetCharacterResponses, GetEncounterData, GetEncounterErrors, GetEncounterResponses, GetGameSessionData, GetGameSessionErrors, GetGameSessionResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetInviteMetadataData, GetInviteMetadataErrors, GetInviteMetadataResponses, GetMeData, GetMeErrors, GetMeResponses, GetNpcData, GetNpcErrors, GetNpcResponses, GetPublicCharacterData, GetPublicCharacterErrors, GetPublicCharacterResponses, GetShipData, GetShipErrors, GetShipResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, LinkMembershipCharacterData, LinkMembershipCharacterErrors, LinkMembershipCharacterResponses, ListCharactersData, ListCharactersErrors, ListCharactersResponses, ListCombatantsData, ListCombatantsErrors, ListCombatantsResponses, ListDpEventsData, ListDpEventsErrors, ListDpEventsResponses, ListEncountersData, ListEncountersErrors, ListEncountersResponses, ListGameSessionsData, ListGameSessionsErrors, ListGameSessionsResponses, ListMembersData, ListMembersErrors, ListMembersResponses, ListNpcsData, ListNpcsErrors, ListNpcsResponses, ListRollsData, ListRollsErrors, ListRollsResponses, ListShareLinksData, ListShareLinksErrors, ListShareLinksResponses, ListShipsData, ListShipsErrors, ListShipsResponses, PushRollData, PushRollErrors, PushRollResponses, RemoveMembershipData, RemoveMembershipErrors, RemoveMembershipResponses, ReorderInitiativeData, ReorderInitiativeErrors, ReorderInitiativeResponses, RevokeInviteData, RevokeInviteErrors, RevokeInviteResponses, RevokeShareLinkData, RevokeShareLinkErrors, RevokeShareLinkResponses, RollInitiativeData, RollInitiativeErrors, RollInitiativeResponses, RotateInviteData, RotateInviteErrors, RotateInviteResponses, UnassignCharacterFromSessionData, UnassignCharacterFromSessionErrors, UnassignCharacterFromSessionResponses, UnassignCrewData, UnassignCrewErrors, UnassignCrewResponses, UpdateCharacterData, UpdateCharacterErrors, UpdateCharacterResponses, UpdateCombatantData, UpdateCombatantErrors, UpdateCombatantResponses, UpdateEncounterData, UpdateEncounterErrors, UpdateEncounterResponses, UpdateGameSessionData, UpdateGameSessionErrors, UpdateGameSessionResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses, UpdateNpcData, UpdateNpcErrors, UpdateNpcResponses, UpdateShipData, UpdateShipErrors, UpdateShipModuleData, UpdateShipModuleErrors, UpdateShipModuleResponses, UpdateShipResponses, UpdateTalentData, UpdateTalentErrors, UpdateTalentResponses } from './types.gen';
+import type { AcceptInviteData, AcceptInviteErrors, AcceptInviteResponses, AddCharacterItemData, AddCharacterItemErrors, AddCharacterItemResponses, AddCharacterTalentData, AddCharacterTalentErrors, AddCharacterTalentResponses, AddCombatantData, AddCombatantErrors, AddCombatantResponses, AddShipModuleData, AddShipModuleErrors, AddShipModuleResponses, AdjustDpData, AdjustDpErrors, AdjustDpResponses, AdvanceRoundData, AdvanceRoundErrors, AdvanceRoundResponses, AdvanceTurnData, AdvanceTurnErrors, AdvanceTurnResponses, AssignCharacterToSessionData, AssignCharacterToSessionErrors, AssignCharacterToSessionResponses, AssignCrewData, AssignCrewErrors, AssignCrewResponses, CreateCharacterData, CreateCharacterErrors, CreateCharacterResponses, CreateEncounterData, CreateEncounterErrors, CreateEncounterResponses, CreateGameSessionData, CreateGameSessionErrors, CreateGameSessionResponses, CreateNpcData, CreateNpcErrors, CreateNpcResponses, CreateRollData, CreateRollErrors, CreateRollResponses, CreateShareLinkData, CreateShareLinkErrors, CreateShareLinkResponses, CreateShipData, CreateShipErrors, CreateShipResponses, DeleteCharacterData, DeleteCharacterErrors, DeleteCharacterResponses, DeleteCombatantData, DeleteCombatantErrors, DeleteCombatantResponses, DeleteEncounterData, DeleteEncounterErrors, DeleteEncounterResponses, DeleteGameSessionData, DeleteGameSessionErrors, DeleteGameSessionResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteNpcData, DeleteNpcErrors, DeleteNpcResponses, DeleteShipData, DeleteShipErrors, DeleteShipModuleData, DeleteShipModuleErrors, DeleteShipModuleResponses, DeleteShipResponses, DeleteTalentData, DeleteTalentErrors, DeleteTalentResponses, DuplicateCharacterData, DuplicateCharacterErrors, DuplicateCharacterResponses, DuplicateNpcData, DuplicateNpcErrors, DuplicateNpcResponses, DuplicateShipData, DuplicateShipErrors, DuplicateShipResponses, ExportCharacterData, ExportCharacterErrors, ExportCharacterResponses, ExportMeData, ExportMeErrors, ExportMeResponses, ExportShipData, ExportShipErrors, ExportShipResponses, GetCharacterData, GetCharacterErrors, GetCharacterOgImageData, GetCharacterOgImageErrors, GetCharacterOgImageResponses, GetCharacterResponses, GetEncounterData, GetEncounterErrors, GetEncounterResponses, GetGameSessionData, GetGameSessionErrors, GetGameSessionResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetInviteMetadataData, GetInviteMetadataErrors, GetInviteMetadataResponses, GetInvitePreviewData, GetInvitePreviewErrors, GetInvitePreviewResponses, GetMeData, GetMeErrors, GetMeResponses, GetMyMembershipsData, GetMyMembershipsErrors, GetMyMembershipsResponses, GetNpcData, GetNpcErrors, GetNpcResponses, GetPublicCharacterData, GetPublicCharacterErrors, GetPublicCharacterResponses, GetShipData, GetShipErrors, GetShipResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, LinkMembershipCharacterData, LinkMembershipCharacterErrors, LinkMembershipCharacterResponses, ListCharactersData, ListCharactersErrors, ListCharactersResponses, ListCombatantsData, ListCombatantsErrors, ListCombatantsResponses, ListDpEventsData, ListDpEventsErrors, ListDpEventsResponses, ListEncountersData, ListEncountersErrors, ListEncountersResponses, ListGameSessionsData, ListGameSessionsErrors, ListGameSessionsResponses, ListMembersData, ListMembersErrors, ListMembersResponses, ListNpcsData, ListNpcsErrors, ListNpcsResponses, ListRollsData, ListRollsErrors, ListRollsResponses, ListShareLinksData, ListShareLinksErrors, ListShareLinksResponses, ListShipsData, ListShipsErrors, ListShipsResponses, PushRollData, PushRollErrors, PushRollResponses, RemoveMembershipData, RemoveMembershipErrors, RemoveMembershipResponses, ReorderInitiativeData, ReorderInitiativeErrors, ReorderInitiativeResponses, RevokeInviteData, RevokeInviteErrors, RevokeInviteResponses, RevokeShareLinkData, RevokeShareLinkErrors, RevokeShareLinkResponses, RollInitiativeData, RollInitiativeErrors, RollInitiativeResponses, RotateInviteData, RotateInviteErrors, RotateInviteResponses, UnassignCharacterFromSessionData, UnassignCharacterFromSessionErrors, UnassignCharacterFromSessionResponses, UnassignCrewData, UnassignCrewErrors, UnassignCrewResponses, UpdateCharacterData, UpdateCharacterErrors, UpdateCharacterResponses, UpdateCombatantData, UpdateCombatantErrors, UpdateCombatantResponses, UpdateEncounterData, UpdateEncounterErrors, UpdateEncounterResponses, UpdateGameSessionData, UpdateGameSessionErrors, UpdateGameSessionResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses, UpdateNpcData, UpdateNpcErrors, UpdateNpcResponses, UpdateShipData, UpdateShipErrors, UpdateShipModuleData, UpdateShipModuleErrors, UpdateShipModuleResponses, UpdateShipResponses, UpdateTalentData, UpdateTalentErrors, UpdateTalentResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -502,6 +502,39 @@ export const updateItem = <ThrowOnError extends boolean = false>(options: Option
 });
 
 /**
+ * Public invite preview
+ *
+ * Returns session name + GM display name. Does not require authentication.
+ * If the caller is authenticated and already an active member, alreadyJoined
+ * is true. Returns 404 if the token is unknown or the invite is revoked.
+ *
+ */
+export const getInvitePreview = <ThrowOnError extends boolean = false>(options: Options<GetInvitePreviewData, ThrowOnError>) => (options.client ?? client).get<GetInvitePreviewResponses, GetInvitePreviewErrors, ThrowOnError>({ url: '/api/v1/invites/{token}/preview', ...options });
+
+/**
+ * Accept an invite link and join the session
+ *
+ * Validates the invite token and creates a membership for the authenticated
+ * caller. Idempotent — if the caller is already an active member the existing
+ * membership is returned with 200. Returns 410 when the invite has been revoked.
+ * An optional `characterId` may be supplied to link a character at join time.
+ *
+ */
+export const acceptInvite = <ThrowOnError extends boolean = false>(options: Options<AcceptInviteData, ThrowOnError>) => (options.client ?? client).post<AcceptInviteResponses, AcceptInviteErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/invites/{token}/accept',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Soft-delete the authenticated user's account.
  *
  * Initiates a soft-delete of the authenticated user's account per PRD §4.2.
@@ -625,6 +658,24 @@ export const exportMe = <ThrowOnError extends boolean = false>(options?: Options
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/me/export',
+    ...options
+});
+
+/**
+ * List the caller's active session memberships
+ *
+ * Returns all active (non-left) session memberships for the authenticated
+ * user across all game sessions. Leaver rows (non-null `leftAt`) are excluded.
+ * Includes the linked character name and ID for each membership when set.
+ *
+ */
+export const getMyMemberships = <ThrowOnError extends boolean = false>(options?: Options<GetMyMembershipsData, ThrowOnError>) => (options?.client ?? client).get<GetMyMembershipsResponses, GetMyMembershipsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/me/memberships',
     ...options
 });
 

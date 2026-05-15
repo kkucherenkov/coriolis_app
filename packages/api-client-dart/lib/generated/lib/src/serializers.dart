@@ -14,6 +14,8 @@ import 'package:built_value/iso_8601_date_time_serializer.dart';
 import 'package:app_api_client/src/date_serializer.dart';
 import 'package:app_api_client/src/model/date.dart';
 
+import 'package:app_api_client/src/model/accept_invite_body.dart';
+import 'package:app_api_client/src/model/accept_invite_response.dart';
 import 'package:app_api_client/src/model/assign_character_to_session.dart';
 import 'package:app_api_client/src/model/assign_crew_request.dart';
 import 'package:app_api_client/src/model/attributes.dart';
@@ -54,12 +56,14 @@ import 'package:app_api_client/src/model/game_session_member_role.dart';
 import 'package:app_api_client/src/model/game_session_membership.dart';
 import 'package:app_api_client/src/model/game_session_status.dart';
 import 'package:app_api_client/src/model/game_session_update.dart';
+import 'package:app_api_client/src/model/get_my_memberships200_response.dart';
 import 'package:app_api_client/src/model/health_status.dart';
 import 'package:app_api_client/src/model/health_status_dependencies.dart';
 import 'package:app_api_client/src/model/icon_id.dart';
 import 'package:app_api_client/src/model/initiative_reorder_request.dart';
 import 'package:app_api_client/src/model/initiative_roll_result.dart';
 import 'package:app_api_client/src/model/invite_metadata.dart';
+import 'package:app_api_client/src/model/invite_preview.dart';
 import 'package:app_api_client/src/model/invite_rotated.dart';
 import 'package:app_api_client/src/model/item.dart';
 import 'package:app_api_client/src/model/item_armor.dart';
@@ -92,6 +96,7 @@ import 'package:app_api_client/src/model/me_export_game_session.dart';
 import 'package:app_api_client/src/model/me_export_user.dart';
 import 'package:app_api_client/src/model/me_update.dart';
 import 'package:app_api_client/src/model/mutant_lineage.dart';
+import 'package:app_api_client/src/model/my_membership_summary.dart';
 import 'package:app_api_client/src/model/npc.dart';
 import 'package:app_api_client/src/model/npc_create.dart';
 import 'package:app_api_client/src/model/npc_create_hp.dart';
@@ -156,6 +161,8 @@ import 'package:app_api_client/src/model/upbringing.dart';
 part 'serializers.g.dart';
 
 @SerializersFor([
+  AcceptInviteBody,
+  AcceptInviteResponse,
   AssignCharacterToSession,
   AssignCrewRequest,
   Attributes,
@@ -196,12 +203,14 @@ part 'serializers.g.dart';
   GameSessionMembership,
   GameSessionStatus,
   GameSessionUpdate,
+  GetMyMemberships200Response,
   HealthStatus,
   HealthStatusDependencies,
   IconId,
   InitiativeReorderRequest,
   InitiativeRollResult,
   InviteMetadata,
+  InvitePreview,
   InviteRotated,
   Item,
   ItemArmor,
@@ -234,6 +243,7 @@ part 'serializers.g.dart';
   MeExportUser,
   MeUpdate,
   MutantLineage,
+  MyMembershipSummary,
   Npc,
   NpcCreate,
   NpcCreateHp,

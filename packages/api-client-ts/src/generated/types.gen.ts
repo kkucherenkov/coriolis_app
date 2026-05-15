@@ -2378,6 +2378,42 @@ export type InviteRotated = {
 };
 
 /**
+ * Public preview returned before accepting an invite.
+ * Contains only session name and GM display name — no session ID,
+ * no member list, no liveness signal. Decision #4 in the design doc.
+ *
+ */
+export type InvitePreview = {
+    sessionName: string;
+    gmDisplayName: string;
+    /**
+     * True when the authenticated caller already has an active membership.
+     */
+    alreadyJoined: boolean;
+};
+
+export type MyMembershipSummary = {
+    membershipId: string;
+    gameSessionId: string;
+    sessionName: string;
+    role: GameSessionMemberRole;
+    characterId?: string | null;
+    characterName?: string | null;
+    joinedAt: string;
+};
+
+export type AcceptInviteBody = {
+    /**
+     * Optional character to link at join time.
+     */
+    characterId?: string | null;
+};
+
+export type AcceptInviteResponse = {
+    membership: GameSessionMembership;
+};
+
+/**
  * Payload for adjusting Darkness Points on a game session
  */
 export type DpAdjustment = {
@@ -4964,6 +5000,72 @@ export type UpdateItemResponses = {
 
 export type UpdateItemResponse = UpdateItemResponses[keyof UpdateItemResponses];
 
+export type GetInvitePreviewData = {
+    body?: never;
+    path: {
+        token: string;
+    };
+    query?: never;
+    url: '/api/v1/invites/{token}/preview';
+};
+
+export type GetInvitePreviewErrors = {
+    /**
+     * Resource not found
+     */
+    404: Problem;
+    /**
+     * Resource gone (invite revoked)
+     */
+    410: Problem;
+};
+
+export type GetInvitePreviewError = GetInvitePreviewErrors[keyof GetInvitePreviewErrors];
+
+export type GetInvitePreviewResponses = {
+    /**
+     * Preview returned
+     */
+    200: InvitePreview;
+};
+
+export type GetInvitePreviewResponse = GetInvitePreviewResponses[keyof GetInvitePreviewResponses];
+
+export type AcceptInviteData = {
+    body?: AcceptInviteBody;
+    path: {
+        token: string;
+    };
+    query?: never;
+    url: '/api/v1/invites/{token}/accept';
+};
+
+export type AcceptInviteErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller is not authorised to perform this action
+     */
+    403: Problem;
+    /**
+     * Resource gone (invite revoked)
+     */
+    410: Problem;
+};
+
+export type AcceptInviteError = AcceptInviteErrors[keyof AcceptInviteErrors];
+
+export type AcceptInviteResponses = {
+    /**
+     * Joined (or already a member — idempotent)
+     */
+    200: AcceptInviteResponse;
+};
+
+export type AcceptInviteResponse2 = AcceptInviteResponses[keyof AcceptInviteResponses];
+
 export type DeleteMeData = {
     body?: never;
     path?: never;
@@ -5074,6 +5176,33 @@ export type ExportMeResponses = {
 };
 
 export type ExportMeResponse = ExportMeResponses[keyof ExportMeResponses];
+
+export type GetMyMembershipsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/me/memberships';
+};
+
+export type GetMyMembershipsErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+};
+
+export type GetMyMembershipsError = GetMyMembershipsErrors[keyof GetMyMembershipsErrors];
+
+export type GetMyMembershipsResponses = {
+    /**
+     * Active memberships
+     */
+    200: {
+        items: Array<MyMembershipSummary>;
+    };
+};
+
+export type GetMyMembershipsResponse = GetMyMembershipsResponses[keyof GetMyMembershipsResponses];
 
 export type ListNpcsData = {
     body?: never;
