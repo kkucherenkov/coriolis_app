@@ -9,6 +9,8 @@ import 'package:coriolis_companion/features/auth/domain/auth_repository.dart';
 import 'package:coriolis_companion/features/combat/presentation/blocs/active_combat/active_combat_cubit.dart';
 import 'package:coriolis_companion/features/combat/presentation/widgets/active_combat_card.dart';
 import 'package:coriolis_companion/features/game_sessions/domain/game_session.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/session_repository.dart';
+import 'package:coriolis_companion/features/game_sessions/presentation/widgets/invite_manager.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
 import 'package:coriolis_companion/features/game_sessions/presentation/blocs/session_detail/session_detail_cubit.dart';
 import 'package:coriolis_companion/features/game_sessions/presentation/blocs/session_detail/session_detail_state.dart';
@@ -186,6 +188,104 @@ class _DetailContent extends StatefulWidget {
 class _DetailContentState extends State<_DetailContent> {
   bool _kickedAuditLoad = false;
 
+  // ── Invite state machine ─────────────────────────────────────────────────
+  InviteState _inviteState = InviteState.none;
+  DateTime? _inviteRotatedAt;
+  String? _inviteRevealUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isGm) {
+      _kickedAuditLoad = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.read<SessionDetailCubit>().loadDpEvents();
+          _loadInviteMetadata();
+        }
+      });
+    }
+  }
+
+  Future<void> _loadInviteMetadata() async {
+    try {
+      final repo = getIt<SessionRepository>();
+      final meta = await repo.getInviteMetadata(widget.session.id);
+      if (!mounted) return;
+      setState(() {
+        _inviteState = meta.active ? InviteState.active : InviteState.none;
+        _inviteRotatedAt = meta.rotatedAt;
+      });
+    } on Object {
+      // Non-critical: leave state as [InviteState.none] if metadata fails.
+    }
+  }
+
+  Future<void> _onGenerateOrRotate({required bool isRotate}) async {
+    try {
+      final repo = getIt<SessionRepository>();
+      final rotated = await repo.rotateInvite(widget.session.id);
+      if (!mounted) return;
+      setState(() {
+        _inviteState =
+            isRotate ? InviteState.justRotated : InviteState.justGenerated;
+        _inviteRevealUrl = rotated.url;
+        _inviteRotatedAt = rotated.rotatedAt;
+      });
+    } on Object catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to rotate invite: $e')),
+      );
+    }
+  }
+
+  Future<void> _onRevoke() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Revoke invite link?'),
+        content: const Text(
+          'Players who received the old link will no longer be able to join. '
+          'You can generate a new one at any time.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Revoke'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      final repo = getIt<SessionRepository>();
+      await repo.revokeInvite(widget.session.id);
+      if (!mounted) return;
+      setState(() {
+        _inviteState = InviteState.none;
+        _inviteRotatedAt = null;
+        _inviteRevealUrl = null;
+      });
+    } on Object catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to revoke invite: $e')),
+      );
+    }
+  }
+
+  void _onCloseReveal() {
+    setState(() {
+      _inviteRevealUrl = null;
+      _inviteState = InviteState.active;
+    });
+  }
+
   @override
   void didUpdateWidget(covariant _DetailContent oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -195,17 +295,7 @@ class _DetailContentState extends State<_DetailContent> {
       // know the user is the owner. didUpdateWidget covers the case
       // where `isGm` flips true after the async `_resolveMe`.
       context.read<SessionDetailCubit>().loadDpEvents();
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.isGm) {
-      _kickedAuditLoad = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) context.read<SessionDetailCubit>().loadDpEvents();
-      });
+      _loadInviteMetadata();
     }
   }
 
@@ -237,6 +327,19 @@ class _DetailContentState extends State<_DetailContent> {
         if (widget.isGm) ...[
           const SizedBox(height: 12),
           _AuditCard(events: widget.dpEvents),
+          const SizedBox(height: 12),
+          InviteManagerWidget(
+            state: _inviteState,
+            rotatedAt: _inviteRotatedAt,
+            revealUrl: _inviteRevealUrl,
+            onGenerate: () => _onGenerateOrRotate(isRotate: false),
+            onRotate: () => _onGenerateOrRotate(isRotate: true),
+            onRevoke: _onRevoke,
+            // "Copy link" in active state re-rotates to expose the URL —
+            // mirrors the web AppInviteManager behaviour.
+            onCopy: () => _onGenerateOrRotate(isRotate: true),
+            onCloseReveal: _onCloseReveal,
+          ),
         ],
       ],
     );

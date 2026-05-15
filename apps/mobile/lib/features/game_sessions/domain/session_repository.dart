@@ -1,4 +1,5 @@
 import 'package:coriolis_companion/features/game_sessions/domain/game_session.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/invite.dart';
 
 /// Repository contract for game sessions (Phase 4 Features 7.2 + 7.3).
 ///
@@ -33,4 +34,17 @@ abstract class SessionRepository {
   Future<GameSession> adjustDp(String sessionId, {required int delta, String? reason});
 
   Future<List<DpEvent>> listDpEvents(String sessionId, {int limit = 20});
+
+  // ── Invite management (Phase 8 Stream A, GM only) ─────────────────────────
+
+  /// Returns whether an invite is active and when it was last rotated.
+  /// Never returns the plaintext URL — that is revealed once by [rotateInvite].
+  Future<InviteMetadata> getInviteMetadata(String sessionId);
+
+  /// Generates (or rotates) the invite link. Returns the plaintext URL exactly
+  /// once. If the GM loses the URL they must call this again.
+  Future<InviteRotated> rotateInvite(String sessionId);
+
+  /// Clears the invite hash. Subsequent accept attempts return 410.
+  Future<void> revokeInvite(String sessionId);
 }

@@ -10,6 +10,8 @@ import 'package:app_api_client/app_api_client.dart' as api_client
         DpEvent;
 
 import 'package:coriolis_companion/features/game_sessions/domain/game_session.dart';
+import 'package:coriolis_companion/features/game_sessions/domain/invite.dart'
+    as domain;
 import 'package:coriolis_companion/features/game_sessions/domain/session_repository.dart';
 
 /// Adapter bridging `GameSessionsApi` (which on the Dart side hosts the
@@ -137,5 +139,32 @@ class SessionRepositoryImpl implements SessionRepository {
     final list = res.data;
     if (list == null) return const [];
     return list.items.map(_toDpEvent).toList(growable: false);
+  }
+
+  // ── Invite management (Phase 8 Stream A, GM only) ─────────────────────────
+
+  @override
+  Future<domain.InviteMetadata> getInviteMetadata(String sessionId) async {
+    final res = await _api.getInviteMetadata(id: sessionId);
+    final d = res.data;
+    if (d == null) throw StateError('GET invite-metadata returned empty body');
+    return domain.InviteMetadata(active: d.active, rotatedAt: d.rotatedAt);
+  }
+
+  @override
+  Future<domain.InviteRotated> rotateInvite(String sessionId) async {
+    final res = await _api.rotateInvite(id: sessionId);
+    final d = res.data;
+    if (d == null) throw StateError('POST rotate-invite returned empty body');
+    return domain.InviteRotated(
+      url: d.url,
+      token: d.token,
+      rotatedAt: d.rotatedAt,
+    );
+  }
+
+  @override
+  Future<void> revokeInvite(String sessionId) async {
+    await _api.revokeInvite(id: sessionId);
   }
 }
