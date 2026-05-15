@@ -2,8 +2,9 @@
   definePageMeta({ layout: 'app' });
 
   import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
-  import { AppArabesqueCorner, AppPanelTitle, AppWordmark } from '@app/ui';
+  import { AppArabesqueCorner, AppPanelTitle, AppSegControl, AppWordmark } from '@app/ui';
   import { useCharactersApi } from '~/composables/useCharactersApi';
+  import { useGameSessionsApi } from '~/composables/useGameSessionsApi';
   import {
     APHORISM_KEYS,
     formatCycleClock,
@@ -15,6 +16,7 @@
   const { t, locale } = useI18n({ useScope: 'local' });
   const auth = useAuth();
   const charactersApi = useCharactersApi();
+  const sessionsApi = useGameSessionsApi();
 
   // ── Greeting / username ─────────────────────────────────────────────────────
 
@@ -68,6 +70,33 @@
     }
   }
 
+  // ── Sessions card + segmented control ──────────────────────────────────────
+
+  // Two segments: Running (sessions owned by this GM) and Playing In
+  // (sessions the user is a member of). Playing-in count is fixed to 0
+  // in Stream A — the /me/memberships endpoint ships in Stream B.
+  type SessionSegment = 'running' | 'playing';
+  const sessionSegment = ref<SessionSegment>('running');
+  const runningCount = ref<number>(0);
+  // playing count is intentionally 0 until Stream B wires /me/memberships.
+  const playingCount = 0;
+
+  const sessionSegOptions = computed(() => [
+    { value: 'running', label: t('card.sessions.running', { n: runningCount.value }) },
+    { value: 'playing', label: t('card.sessions.playing', { n: playingCount }) },
+  ]);
+
+  async function loadSessionCount(): Promise<void> {
+    try {
+      // Until the API exposes a `total` field, fetch up to 100 and count.
+      // TODO: replace with a dedicated count endpoint or `total` in response.
+      const result = await sessionsApi.listSessions({ status: 'active', limit: 100 });
+      runningCount.value = result.items.length;
+    } catch {
+      // Non-fatal — count stays 0, sessions card still renders.
+    }
+  }
+
   // ── Aphorism (footer) ───────────────────────────────────────────────────────
 
   // The Bridge always closes with a Coriolis aphorism. Keys + the
@@ -95,6 +124,7 @@
     }
 
     await loadCharacters();
+    void loadSessionCount();
   });
 
   onBeforeUnmount(() => {
@@ -152,6 +182,13 @@
         "createCta": "Create character",
         "browseCta": "Open roster",
         "errorLoad": "Could not load your roster."
+      },
+      "sessions": {
+        "title": "Sessions",
+        "running": "Running ({n})",
+        "playing": "Playing in ({n})",
+        "runningEmpty": "No sessions running. Create one to get started.",
+        "playingEmpty": "You haven't joined any sessions yet. Ask your GM for an invite link."
       }
     },
     "sync": {
@@ -189,6 +226,13 @@
         "createCta": "Создать персонажа",
         "browseCta": "Открыть команду",
         "errorLoad": "Не удалось загрузить команду."
+      },
+      "sessions": {
+        "title": "Сессии",
+        "running": "Активные ({n})",
+        "playing": "Я игрок в ({n})",
+        "runningEmpty": "Нет запущенных сессий. Создайте одну, чтобы начать.",
+        "playingEmpty": "Вы ещё не присоединились ни к одной сессии. Попросите ведущего прислать ссылку-инвайт."
       }
     },
     "sync": {
@@ -226,6 +270,13 @@
         "createCta": "[uk-todo] Create character",
         "browseCta": "[uk-todo] Open roster",
         "errorLoad": "[uk-todo] Could not load your roster."
+      },
+      "sessions": {
+        "title": "Сесії",
+        "running": "Активні ({n})",
+        "playing": "Я гравець у ({n})",
+        "runningEmpty": "Немає активних сесій. Створіть одну, щоб почати.",
+        "playingEmpty": "Ви ще не приєдналися до жодної сесії. Попросіть ведучого надіслати посилання-інвайт."
       }
     },
     "sync": {
@@ -263,6 +314,13 @@
         "createCta": "[el-todo] Create character",
         "browseCta": "[el-todo] Open roster",
         "errorLoad": "[el-todo] Could not load your roster."
+      },
+      "sessions": {
+        "title": "Συνεδρίες",
+        "running": "Σε εξέλιξη ({n})",
+        "playing": "Παίζω σε ({n})",
+        "runningEmpty": "Δεν υπάρχουν συνεδρίες σε εξέλιξη. Δημιουργήστε μία για να ξεκινήσετε.",
+        "playingEmpty": "Δεν έχετε ακόμα συμμετάσχει σε καμία συνεδρία. Ζητήστε από τον GM σας έναν σύνδεσμο πρόσκλησης."
       }
     },
     "sync": {
@@ -280,7 +338,10 @@
 </i18n>
 
 <template>
-  <section class="bridge" :aria-label="t('wizardLabel')">
+  <section
+    class="bridge"
+    :aria-label="t('wizardLabel')"
+  >
     <AppArabesqueCorner
       orientation="tl"
       size="md"
@@ -295,21 +356,30 @@
     />
 
     <header class="bridge__hero">
-      <AppWordmark :size="48" :eyebrow="t('wizardLabel')" />
+      <AppWordmark
+        :size="48"
+        :eyebrow="t('wizardLabel')"
+      />
       <p class="bridge__greeting">
         {{ userName ? t('greeting.withName', { name: userName }) : t('greeting.anonymous') }}
       </p>
     </header>
 
     <div class="bridge__grid">
-      <article class="bridge__card" aria-labelledby="bridge-cycle-title">
+      <article
+        class="bridge__card"
+        aria-labelledby="bridge-cycle-title"
+      >
         <AppPanelTitle
           id="bridge-cycle-title"
           :kicker="t('card.cycle.kicker')"
           :title="t('card.cycle.title')"
           size="sm"
         />
-        <p class="bridge__stat" aria-live="polite">
+        <p
+          class="bridge__stat"
+          aria-live="polite"
+        >
           {{ cycleClock }}
         </p>
         <p class="bridge__caption">
@@ -317,7 +387,10 @@
         </p>
       </article>
 
-      <article class="bridge__card" aria-labelledby="bridge-sync-title">
+      <article
+        class="bridge__card"
+        aria-labelledby="bridge-sync-title"
+      >
         <AppPanelTitle
           id="bridge-sync-title"
           :kicker="t('card.sync.kicker')"
@@ -337,15 +410,27 @@
         </p>
       </article>
 
-      <article class="bridge__card" aria-labelledby="bridge-roster-title">
+      <article
+        class="bridge__card"
+        aria-labelledby="bridge-roster-title"
+      >
         <AppPanelTitle
           id="bridge-roster-title"
           :kicker="t('card.characters.kicker')"
           :title="t('card.characters.title')"
           size="sm"
         />
-        <p v-if="charState === 'loading'" class="bridge__stat" aria-live="polite">…</p>
-        <p v-else-if="charState === 'error'" class="bridge__caption bridge__caption--error">
+        <p
+          v-if="charState === 'loading'"
+          class="bridge__stat"
+          aria-live="polite"
+        >
+          …
+        </p>
+        <p
+          v-else-if="charState === 'error'"
+          class="bridge__caption bridge__caption--error"
+        >
           {{ t('card.characters.errorLoad') }}
         </p>
         <template v-else>
@@ -362,7 +447,12 @@
             >
               {{ t('card.characters.createCta') }}
             </button>
-            <button v-else type="button" class="bridge__cta" @click="navigateTo('/app/characters')">
+            <button
+              v-else
+              type="button"
+              class="bridge__cta"
+              @click="navigateTo('/app/characters')"
+            >
               {{ t('card.characters.browseCta') }}
             </button>
           </p>
@@ -370,7 +460,56 @@
       </article>
     </div>
 
-    <footer class="bridge__aphorism" aria-label="aphorism">
+    <!-- Sessions panel (Phase 8 Stream A).
+         Running count comes from listSessions; Playing-in count is fixed
+         to 0 until Stream B wires /me/memberships. -->
+    <section
+      class="bridge__sessions"
+      aria-labelledby="bridge-sessions-title"
+    >
+      <div class="bridge__sessions-header">
+        <AppPanelTitle
+          id="bridge-sessions-title"
+          :title="t('card.sessions.title')"
+          size="sm"
+        />
+        <AppSegControl
+          v-model="sessionSegment"
+          :options="sessionSegOptions"
+          size="sm"
+          class="bridge__sessions-seg"
+        />
+      </div>
+      <p
+        v-if="sessionSegment === 'playing'"
+        class="bridge__sessions-empty"
+      >
+        {{ t('card.sessions.playingEmpty') }}
+      </p>
+      <p
+        v-else-if="sessionSegment === 'running' && runningCount === 0"
+        class="bridge__sessions-empty"
+      >
+        {{ t('card.sessions.runningEmpty') }}
+      </p>
+      <div
+        v-else-if="sessionSegment === 'running' && runningCount > 0"
+        class="bridge__sessions-cta-row"
+      >
+        <button
+          type="button"
+          class="bridge__cta"
+          @click="navigateTo('/app/game-sessions')"
+        >
+          {{ t('card.sessions.running', { n: runningCount }) }} →
+        </button>
+      </div>
+    </section>
+
+    <footer
+      class="bridge__aphorism"
+      aria-label="aphorism"
+    >
       <p>{{ t(aphorismKey) }}</p>
     </footer>
   </section>
@@ -510,6 +649,40 @@
       &--offline {
         background: var(--state-crimson);
       }
+    }
+
+    &__sessions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      padding: var(--space-5);
+      background: color-mix(in srgb, var(--surface-night) 70%, transparent);
+      border: 1px solid var(--brand-brass-shadow);
+      border-radius: var(--radius-lg);
+    }
+
+    &__sessions-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    &__sessions-seg {
+      flex-shrink: 0;
+    }
+
+    &__sessions-empty {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: var(--type-body-sm-font-size);
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    &__sessions-cta-row {
+      display: flex;
     }
 
     &__aphorism {

@@ -23,7 +23,7 @@
   - [x] T-11.1.1.g — `AppInviteManager` panel on GM Overview tab (`@app/ui` component per handoff `invite-manager.jsx`). States: `none` / `active` / `just-generated` / `just-rotated`. Reveal as `role="alertdialog"`, **no auto-dismiss**, explicit "I've copied it — close" CTA.
   - [x] T-11.1.1.g.2 — `AppSessionShareLinkCard` reusable one-shot URL card (`@app/ui` per `session-share-link-card.jsx`).
   - [ ] T-11.1.1.j (partial) — `Kick` action on GM members list with `AppConfirm`. (Member self-`Leave` is Stream B; same modal pattern.)
-  - [ ] T-11.1.2 — Dashboard `Running | Playing in` segmented control per handoff `dashboard.jsx` (web + mobile). _Playing-in count is 0 until Stream B ships `GetMyMembershipsQuery`._
+  - [x] T-11.1.2 (web) — Dashboard `Running | Playing in` segmented control per handoff `dashboard.jsx`. _Playing-in count fixed to 0; mobile portion is Stream B._
   - [ ] T-11.1.1.m (Stream A subset) — backend tests: rotate invalidates previous hash; revoke nullifies field; character-ownership rejection (placeholder, full test in Stream B); membership uniqueness; migration backfill produces one GM membership per pre-existing `GameSession`.
   - [ ] T-11.1.1.m.2 — `@app/ui` component specs: `AppInviteManager` four states; `AppSessionShareLinkCard` copy-button behaviour; Storybook a11y addon green on both.
   - [ ] precheck before PR: `pnpm spec:validate && pnpm spec:bundle && pnpm spec:codegen` clean; `turbo run lint test typecheck`; `pnpm --filter @app/ui storybook` builds; `flutter analyze lib` 0 issues.
