@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 1.5.0
+  version: 1.6.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -3582,6 +3582,7 @@ paths:
                         dpCount: 0
                         characterIds: []
                         shipId: null
+                        memberships: []
                         createdAt: "2026-05-08T10:00:00Z"
                         updatedAt: "2026-05-08T10:00:00Z"
                     nextCursor: null
@@ -3635,6 +3636,7 @@ paths:
                     dpCount: 0
                     characterIds: []
                     shipId: null
+                    memberships: []
                     createdAt: "2026-05-08T10:00:00Z"
                     updatedAt: "2026-05-08T10:00:00Z"
         "400":
@@ -3684,6 +3686,16 @@ paths:
                     dpCount: 0
                     characterIds: [cuid_char01]
                     shipId: null
+                    memberships:
+                      - id: cuid_mem01
+                        gameSessionId: cuid_gs01
+                        userId: cuid_user01
+                        role: gm
+                        displayName: null
+                        characterId: null
+                        characterName: null
+                        joinedAt: "2026-05-08T10:00:00Z"
+                        leftAt: null
                     createdAt: "2026-05-08T10:00:00Z"
                     updatedAt: "2026-05-08T10:00:00Z"
         "401":
@@ -3898,6 +3910,7 @@ paths:
                     dpCount: 0
                     characterIds: [cuid_char01]
                     shipId: null
+                    memberships: []
                     createdAt: "2026-05-08T10:00:00Z"
                     updatedAt: "2026-05-08T10:00:00Z"
         "400":
@@ -3979,6 +3992,286 @@ paths:
                 $ref: "#/components/schemas/Problem"
 
   # ---------------------------------------------------------------------------
+  # Game Session Invite (Phase 8 Stream A)
+  # ---------------------------------------------------------------------------
+
+  /api/v1/game-sessions/{id}/invite:
+    get:
+      operationId: getInviteMetadata
+      summary: Read invite metadata (GM only)
+      description: |
+        Returns whether an invite is active for this session and when
+        it was last rotated. Never returns the plaintext URL — that is
+        revealed exactly once by POST /invite/rotate.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+      responses:
+        "200":
+          description: Invite metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InviteMetadata"
+              examples:
+                noActiveInvite:
+                  value: { active: false, rotatedAt: null }
+                active:
+                  value: { active: true, rotatedAt: "2026-05-15T10:00:00Z" }
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+    delete:
+      operationId: revokeInvite
+      summary: Revoke the current invite (GM only)
+      description: |
+        Clears the invite hash on the session. Subsequent accept attempts
+        return 410 Gone. Re-issuing requires POST /invite/rotate.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+      responses:
+        "204":
+          description: Revoked (or already inactive — idempotent)
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /api/v1/game-sessions/{id}/invite/rotate:
+    post:
+      operationId: rotateInvite
+      summary: Rotate (or first-generate) the session's invite link (GM only)
+      description: |
+        Generates a fresh 22-char URL-safe nanoid, stores its SHA-256 hash,
+        and returns the plaintext URL exactly once. Any previously-issued
+        invite immediately becomes invalid.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+      responses:
+        "200":
+          description: Invite rotated; plaintext URL returned ONCE
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InviteRotated"
+              examples:
+                rotated:
+                  value:
+                    url: "https://app.coriolis.example.com/app/sessions/join/Sl9X3kQpZr8mVtNuY7Hb2C"
+                    token: "Sl9X3kQpZr8mVtNuY7Hb2C"
+                    rotatedAt: "2026-05-15T10:00:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller does not own this session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  # ---------------------------------------------------------------------------
+  # Game Session Members (Phase 8 Stream A)
+  # ---------------------------------------------------------------------------
+
+  /api/v1/game-sessions/{id}/members:
+    get:
+      operationId: listMembers
+      summary: List session members (GM or member)
+      description: |
+        Returns active memberships for this session. Available to the
+        GM and to any active member. Leaver rows (with non-null leftAt)
+        are excluded.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+      responses:
+        "200":
+          description: Member list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GameSessionMembership"
+              examples:
+                ok:
+                  value:
+                    - id: cuid_mem01
+                      gameSessionId: cuid_gs01
+                      userId: cuid_user01
+                      role: gm
+                      displayName: "The GM"
+                      characterId: null
+                      characterName: null
+                      joinedAt: "2026-05-08T10:00:00Z"
+                      leftAt: null
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller is neither the GM nor an active member
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /api/v1/game-sessions/{id}/members/{membershipId}:
+    patch:
+      operationId: linkMembershipCharacter
+      summary: Link or unlink a character to a membership
+      description: |
+        The owner of the membership (the player or the GM themselves) can
+        change which character is attached. The GM can also operate on
+        any membership for moderation. Pass `characterId: null` to unlink.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+        - name: membershipId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [characterId]
+              properties:
+                characterId:
+                  type: ["string", "null"]
+            examples:
+              link:
+                value: { characterId: "cuid_char01" }
+              unlink:
+                value: { characterId: null }
+      responses:
+        "200":
+          description: Updated membership
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameSessionMembership"
+              examples:
+                linked:
+                  value:
+                    id: cuid_mem01
+                    gameSessionId: cuid_gs01
+                    userId: cuid_user02
+                    role: player
+                    displayName: "A Player"
+                    characterId: cuid_char01
+                    characterName: "Hassan"
+                    joinedAt: "2026-05-08T11:00:00Z"
+                    leftAt: null
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Not the owning member or the session GM, or character not owned
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: Membership or character not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+    delete:
+      operationId: removeMembership
+      summary: Kick (GM) or leave (member) — soft delete
+      description: |
+        Stamps `leftAt` on the membership. The GM can kick any non-GM member;
+        a player can self-leave. The GM cannot kick themselves.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+        - name: membershipId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Membership left/kicked
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Not authorized for this membership
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: Membership not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "422":
+          description: GM cannot kick themselves
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  # ---------------------------------------------------------------------------
   # Darkness Points (Epic 7 Feature 7.3)
   # ---------------------------------------------------------------------------
 
@@ -4037,6 +4330,7 @@ paths:
                     dpCount: 4
                     characterIds: []
                     shipId: null
+                    memberships: []
                     createdAt: "2026-05-08T10:00:00Z"
                     updatedAt: "2026-05-09T10:00:00Z"
         "401":
@@ -9572,7 +9866,8 @@ components:
     GameSession:
       type: object
       description: A campaign session container owned by a GM.
-      required: [id, ownerId, name, status, dpCount, characterIds, createdAt, updatedAt]
+      required:
+        [id, ownerId, name, status, dpCount, characterIds, memberships, createdAt, updatedAt]
       properties:
         id:
           type: string
@@ -9609,6 +9904,16 @@ components:
         shipId:
           type: ["string", "null"]
           description: Optional ship linked to the session (Epic 8)
+        memberships:
+          type: array
+          readOnly: true
+          description: |
+            Active members of this session. Always includes the GM row.
+            Phase 8: this replaces `characterIds` as the source of truth
+            for "who is at this table" — `characterIds` is deprecated and
+            will be removed in Stream E.
+          items:
+            $ref: "#/components/schemas/GameSessionMembership"
         createdAt:
           type: string
           format: date-time
@@ -9668,6 +9973,75 @@ components:
         characterId:
           type: string
           description: Identifier of the character to assign
+
+    GameSessionMembership:
+      type: object
+      description: |
+        A row in the GameSessionMembership join table. Identifies a user's
+        participation in a GameSession with a role and an optionally-linked
+        character.
+      required: [id, gameSessionId, userId, role, joinedAt]
+      properties:
+        id:
+          type: string
+          description: Stable cuid; used as targetMembershipId in chat whispers.
+        gameSessionId:
+          type: string
+        userId:
+          type: string
+        role:
+          $ref: "#/components/schemas/GameSessionMemberRole"
+        displayName:
+          type: ["string", "null"]
+          description: Cached display name of the user (denormalised for UI).
+        characterId:
+          type: ["string", "null"]
+        characterName:
+          type: ["string", "null"]
+        joinedAt:
+          type: string
+          format: date-time
+        leftAt:
+          type: ["string", "null"]
+          format: date-time
+
+    GameSessionMemberRole:
+      type: string
+      enum: [gm, player]
+      description: Role of a user within a GameSession.
+
+    InviteMetadata:
+      type: object
+      description: |
+        Metadata about a GameSession's current invite link. The plaintext
+        URL is returned only once, by POST /invite/rotate — this endpoint
+        only exposes whether an invite is active and when it was rotated.
+      required: [active]
+      properties:
+        active:
+          type: boolean
+        rotatedAt:
+          type: ["string", "null"]
+          format: date-time
+
+    InviteRotated:
+      type: object
+      description: |
+        Response to POST /invite/rotate. Contains the plaintext URL exactly
+        once; subsequent reads (GET /invite) return InviteMetadata without
+        the URL. If the GM loses the URL they must rotate again.
+      required: [url, token, rotatedAt]
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Absolute URL clients should share with players.
+        token:
+          type: string
+          description: The 22-char nanoid component of the URL.
+        rotatedAt:
+          type: string
+          format: date-time
 
     # -------------------------------------------------------------------------
     # Darkness Points (Epic 7 Feature 7.3)
