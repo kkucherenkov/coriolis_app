@@ -2,6 +2,109 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-16-PHASE-8-STREAM-B — Phase 8 / Stream B — Player shell + realtime ACL
+
+- Created: 2026-05-16
+- Completed: 2026-05-16
+- Owner: claude
+- Spec: [docs/superpowers/specs/2026-05-15-phase-8-implementation-design.md](../../docs/superpowers/specs/2026-05-15-phase-8-implementation-design.md) §6 Stream B
+- Plan: [docs/superpowers/plans/2026-05-16-phase-8-stream-b.md](../../docs/superpowers/plans/2026-05-16-phase-8-stream-b.md) (16-phase TDD blueprint, ~52 steps; executed via `superpowers:subagent-driven-development`)
+- Task inventory: [`docs/IMPLEMENTATION_PLAN_PHASE_8.md`](../../docs/IMPLEMENTATION_PLAN_PHASE_8.md) T-11.1.1.h / i / j (player half) / k / l + T-11.2.1.a–h
+- Goal: a signed-in player opens an invite link, picks a character, lands on `/app/sessions/:id` (web) or the mirrored mobile page, and starts receiving `dp.changed` / `encounter.updated` realtime events.
+- Acceptance:
+  - Cold-open an invite link → preview → pick character → join → land on player shell (both clients). — **manual smoke required (cookies)**; headless route + preview-404 + auth-gate verified in P16.
+  - GM kicks a player → player's next realtime-token issuance (after TTL ≤5 min) excludes `session.<id>` from the JWT `channels` claim. — covered by `SessionAccessRepo` regression spec (P7, `4d2e9c8`).
+  - Both clients receive `dp.changed` realtime when GM increments DP. — covered by P7 ACL widening; full WS round-trip needs manual smoke.
+  - Legacy redirect middleware `apps/web/app/middleware/redirect-legacy-session.global.ts` removed in the same commit that lights up `pages/app/sessions/[id].vue`. — verified: `bdaaf8d` deletes the middleware and adds the new page in one commit.
+  - Web + mobile dashboard "Playing in" segment count is real (was hard-zero after Stream A). — verified: web `apps/web/app/pages/app/dashboard.vue:84` (`playerCount` computed) + mobile `apps/mobile/lib/features/dashboard/presentation/dashboard_page.dart:27` (`_playerCount` from `getMyMemberships()`).
+- Sub-steps (one phase = one block = one commit + push + active.md update + STOP):
+  - [x] P1 — OpenAPI spec 1.6.0 → 1.7.0 (3 new routes + 2 new schemas) + codegen (488295b + 81ac1ac + 598b732)
+  - [x] P2 — Backend domain: errors + ports + read models (394642b)
+  - [x] P3 — Backend infra: implement new port methods on `MembershipRepo` (24bd57a)
+  - [x] P4 — `AcceptInviteCommand` TDD — 6 tests (38e3bfd)
+  - [x] P5 — `GetInvitePreviewQuery` TDD — 4 tests (bd4f68e)
+  - [x] P6 — `GetMyMembershipsQuery` TDD — 3 tests (367bde8)
+  - [x] P7 — `RealtimeModule` ACL widening + kicked-token regression (4d2e9c8)
+  - [x] P8 — Backend wiring: `InvitesController` + `MeMembershipsController` + `MembershipsModule` (9c36d31)
+  - [x] P9 — `@app/ui` `AppSessionHeader` — 7 tests, 4 stories (d183856)
+  - [x] P10 — `@app/ui` `AppSessionJoinCard` — 5 tests, 4 stories (7175832)
+  - [x] P11 — Web player routes + route guards + delete legacy redirect (246950c + bdaaf8d)
+  - [x] P12 — Web dashboard "Playing in" wiring (09683cf)
+  - [x] P13 — Mobile player parallel feature folder `lib/features/sessions/` (251570e)
+  - [x] P14 — Mobile dashboard "Playing in" wiring + DI + routes (5d625a5)
+  - [x] P15 — Deep-link gating: APP_LINKS_HOST not configured, follow-up T-2026-05-17-DEEP-LINK-SETUP filed (remains in `active.md`, `blocked`)
+  - [x] P16 — Smoke: headless route + auth-gate verification + full test/typecheck sweeps green
+- Smoke summary (P16):
+  - **Containers (start of run)**: `coriolis-companion-backend-1` healthy (Up 41 min, `:3010→3000`); `web`, `postgres`, `redis`, `centrifugo`, `otel-lgtm` all up. No restart needed.
+  - **Route table**: `RouterExplorer` log confirms the three new routes mapped under `/api/v1`:
+    - `GET /api/v1/invites/:token/preview`
+    - `POST /api/v1/invites/:token/accept`
+    - `GET /api/v1/me/memberships`
+  - **Unauthenticated smoke (Step B)**:
+    - `curl http://localhost:3010/api/v1/invites/nonexistent/preview` → **404** (token-shaped 404 — invite lookup happens before auth)
+    - `curl -X POST http://localhost:3010/api/v1/invites/anything/accept` → **401** (auth-required)
+    - `curl http://localhost:3010/api/v1/me/memberships` → **401** (auth-required)
+    - 404 body is canonical `application/problem+json`:
+      `{"type":"urn:problem-type:INVITE_NOT_FOUND","title":"Invite Not Found","status":404,"instance":"/api/v1/invites/zzz/preview","code":"INVITE_NOT_FOUND","detail":"No active invite found for token starting with zzz…"}`
+  - **Test sweeps (Step C)**:
+    - `@app/backend` — **1013 / 1013** passed, 97 files, 12.36s.
+    - `@app/ui` — **901 / 901** passed, 43 files, 9.33s (Stream A baseline 889 → +12 for `AppSessionHeader` + `AppSessionJoinCard` + adjacent updates).
+    - `@app/web` — **523 / 523** passed, 24 files, 5.52s.
+    - `apps/mobile` (`flutter test`) — **259 / 259** passed.
+  - **Typechecks (Step D)** — all green (`pnpm --filter @app/backend typecheck` → tsc, `@app/ui` → vue-tsc, `@app/web` → nuxt typecheck; exit 0 across the board; only noise was a pre-existing duplicate-import warning in `useItemsApi.ts` / `useShipModulesApi.ts`, unrelated to Stream B).
+  - **What couldn't be verified headlessly**: the full 3-step cold-open invite flow (preview → accept → land on player shell) requires real GM + Player session cookies. Same for the live WebSocket `dp.changed` fan-out. Manual smoke recipe documented below.
+- Manual end-to-end smoke recipe (for the human running with real cookies):
+  ```sh
+  # 1. GM creates a fresh invite (replace <GM_COOKIE>, <SESSION_ID>).
+  curl -s -X POST \
+    -H "Cookie: <GM_COOKIE>" \
+    "http://localhost:3010/api/v1/game-sessions/<SESSION_ID>/invite/rotate" | jq .
+  # → expect { token, expiresAt, … } — capture token as <TOKEN>
+
+  # 2. Player previews the invite (replace <PLAYER_COOKIE>, <TOKEN>).
+  curl -s -H "Cookie: <PLAYER_COOKIE>" \
+    "http://localhost:3010/api/v1/invites/<TOKEN>/preview" | jq .
+  # → expect 200 with session name + GM display name + revoked:false
+
+  # 3. Player accepts the invite, optionally linking a character.
+  curl -s -X POST \
+    -H "Cookie: <PLAYER_COOKIE>" \
+    -H "Content-Type: application/json" \
+    -d '{"characterId": "<CHARACTER_ID>"}' \
+    "http://localhost:3010/api/v1/invites/<TOKEN>/accept" | jq .
+  # → expect 200 with membership { gameSessionId, role:"player", … }
+
+  # 4. Confirm the new membership shows up.
+  curl -s -H "Cookie: <PLAYER_COOKIE>" \
+    "http://localhost:3010/api/v1/me/memberships" | jq .
+  # → expect array containing the joined session
+
+  # 5. WS smoke: open both clients on /app/sessions/<id>, increment DP from the GM;
+  #    both should receive dp.changed via session.<id>. Then kick the player from
+  #    the GM members list — within 5 min (token TTL) the player's next realtime
+  #    token issuance must NOT include session.<id> in the JWT channels claim.
+  ```
+- Notable architectural notes:
+  - Preview returns 404 (not 401) for unknown tokens — invite preview is intentionally public so the join page can render a "revoked / not found" state without forcing sign-in. Auth-required routes (`accept`, `me/memberships`) return 401 as expected.
+  - `SessionAccessRepo` (renamed from `SessionOwnershipRepo` in P7) widens the realtime ACL from "GM only" to "any active membership", so the same channel feeds GM and players; kick path soft-deletes the membership row and the next token issuance naturally excludes the channel.
+  - Mobile player folder is `lib/features/sessions/` (alongside the GM `lib/features/game_sessions/` from Stream A) — no shared base; both folders own their bloc/repo/page trees.
+  - Deep-link binding (`APP_LINKS_HOST`) intentionally deferred to T-2026-05-17 — the web invite-join page (`/app/sessions/join/:token`) works as a plain link in v1.1.
+- Follow-ups (filed in `active.md`):
+  - T-2026-05-17-DEEP-LINK-SETUP (blocked — awaiting marketing host).
+- Commits (chronological on `main`, Stream B only):
+  - `488295b` + `81ac1ac` + `598b732` OpenAPI 1.7.0 + codegen
+  - `394642b` domain errors + ports + read models · `24bd57a` MembershipRepo new methods
+  - `38e3bfd` AcceptInvite · `bd4f68e` GetInvitePreview · `367bde8` GetMyMemberships
+  - `4d2e9c8` SessionAccessRepo + realtime ACL widening
+  - `9c36d31` controllers + module wiring
+  - `d183856` AppSessionHeader · `7175832` AppSessionJoinCard
+  - `246950c` composables · `bdaaf8d` web player routes + middleware + legacy-redirect deletion
+  - `09683cf` web dashboard Playing-in wiring
+  - `251570e` mobile player feature folder · `5d625a5` mobile DI + routes + dashboard wiring
+- Result: Stream B shipped on `main` through commits listed above.
+
+---
+
 ## T-2026-05-15-PHASE-8-STREAM-A — Phase 8 / Stream A — Foundation (route move + memberships + invite)
 
 - Created: 2026-05-15
