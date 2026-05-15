@@ -212,3 +212,21 @@ Current target: **Phase 0 — Adoption** (PRD §11). Don't start Phase 1 work (e
 Each phase ends with a green CI run and a `phase-N-complete` git tag.
 
 Every shipped feature gets a `docs/done/<feature>.md` entry with the PR link.
+
+---
+
+## 13. URL naming policy (Phase 8+)
+
+DB tables, Prisma models, TS/Dart classes use `GameSession` — never bare `Session`.
+URL paths split by role:
+
+| Path                              | Audience                               |
+| --------------------------------- | -------------------------------------- |
+| `/api/v1/game-sessions/*`         | GM-owned REST surface (all backend)    |
+| `/app/game-sessions/*` (web)      | GM client shell                        |
+| `/app/sessions/*` (web)           | Player client shell (Phase 8 Stream B) |
+| `/app/sessions/join/:token` (web) | Public-ish invite landing              |
+
+Rationale: the GM client has been at `/app/game-sessions/*` since Phase 8 Stream A;
+Phase 8 Stream B mounts the player client at `/app/sessions/*` and removes the
+legacy redirect middleware.
