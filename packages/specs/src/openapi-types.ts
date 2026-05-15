@@ -423,6 +423,51 @@ export interface paths {
     patch: operations['updateItem'];
     trace?: never;
   };
+  '/api/v1/invites/{token}/preview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Public invite preview
+     * @description Returns session name + GM display name. Does not require authentication.
+     *     If the caller is authenticated and already an active member, alreadyJoined
+     *     is true. Returns 404 if the token is unknown or the invite is revoked.
+     */
+    get: operations['getInvitePreview'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/invites/{token}/accept': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Accept an invite link and join the session
+     * @description Validates the invite token and creates a membership for the authenticated
+     *     caller. Idempotent — if the caller is already an active member the existing
+     *     membership is returned with 200. Returns 410 when the invite has been revoked.
+     *     An optional `characterId` may be supplied to link a character at join time.
+     */
+    post: operations['acceptInvite'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/me': {
     parameters: {
       query?: never;
@@ -522,6 +567,28 @@ export interface paths {
      *     doc.
      */
     get: operations['exportMe'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/me/memberships': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List the caller's active session memberships
+     * @description Returns all active (non-left) session memberships for the authenticated
+     *     user across all game sessions. Leaver rows (non-null `leftAt`) are excluded.
+     *     Includes the linked character name and ID for each membership when set.
+     */
+    get: operations['getMyMemberships'];
     put?: never;
     post?: never;
     delete?: never;
@@ -3798,6 +3865,36 @@ export interface components {
       /** Format: date-time */
       rotatedAt: string;
     };
+    /**
+     * @description Public preview returned before accepting an invite.
+     *     Contains only session name and GM display name — no session ID,
+     *     no member list, no liveness signal. Decision #4 in the design doc.
+     */
+    InvitePreview: {
+      /** @example The Mercy of Kua */
+      sessionName: string;
+      /** @example Kirill GM */
+      gmDisplayName: string;
+      /** @description True when the authenticated caller already has an active membership. */
+      alreadyJoined: boolean;
+    };
+    MyMembershipSummary: {
+      membershipId: string;
+      gameSessionId: string;
+      sessionName: string;
+      role: components['schemas']['GameSessionMemberRole'];
+      characterId?: string | null;
+      characterName?: string | null;
+      /** Format: date-time */
+      joinedAt: string;
+    };
+    AcceptInviteBody: {
+      /** @description Optional character to link at join time. */
+      characterId?: string | null;
+    };
+    AcceptInviteResponse: {
+      membership: components['schemas']['GameSessionMembership'];
+    };
     /** @description Payload for adjusting Darkness Points on a game session */
     DpAdjustment: {
       /**
@@ -4480,7 +4577,35 @@ export interface components {
       isNewRound: boolean;
     };
   };
-  responses: never;
+  responses: {
+    /** @description Resource gone (invite revoked) */
+    Gone: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/problem+json': components['schemas']['Problem'];
+      };
+    };
+    /** @description Resource not found */
+    NotFound: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/problem+json': components['schemas']['Problem'];
+      };
+    };
+    /** @description Caller is not authorised to perform this action */
+    Forbidden: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/problem+json': components['schemas']['Problem'];
+      };
+    };
+  };
   parameters: {
     /** @description Character identifier (cuid2) */
     CharacterId: string;
@@ -5808,6 +5933,67 @@ export interface operations {
       };
     };
   };
+  getInvitePreview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        token: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Preview returned */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['InvitePreview'];
+        };
+      };
+      404: components['responses']['NotFound'];
+      410: components['responses']['Gone'];
+    };
+  };
+  acceptInvite: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        token: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        'application/json': components['schemas']['AcceptInviteBody'];
+      };
+    };
+    responses: {
+      /** @description Joined (or already a member — idempotent) */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AcceptInviteResponse'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      403: components['responses']['Forbidden'];
+      410: components['responses']['Gone'];
+    };
+  };
   getMe: {
     parameters: {
       query?: never;
@@ -5936,6 +6122,37 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['MeExportBundle'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  getMyMemberships: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Active memberships */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            items: components['schemas']['MyMembershipSummary'][];
+          };
         };
       };
       /** @description No active session */
