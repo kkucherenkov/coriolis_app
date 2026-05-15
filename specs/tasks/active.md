@@ -1,6 +1,6 @@
 # Active tasks
 
-LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md) (prior audit) and [`docs/audits/design-2026-05-15.md`](../../docs/audits/design-2026-05-15.md) (re-audit after T-2026-05-14-005/004 shipped). Typography schema (T-2026-05-14-002), the v1 atom layer (T-2026-05-14-003), and the design-doc backfill (T-2026-05-14-006) have all landed (see `done.md`). The remaining surface-layer tasks are T-2026-05-14-005 (wizard / mobile parity / landing) and T-2026-05-14-004 (Bridge dashboard) — both shipped.
+LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05-14.md`](../../docs/audits/design-2026-05-14.md) (prior audit) and [`docs/audits/design-2026-05-15.md`](../../docs/audits/design-2026-05-15.md) (re-audit after T-2026-05-14-005/004 shipped). Typography schema (T-2026-05-14-002), the v1 atom layer (T-2026-05-14-003), the design-doc backfill (T-2026-05-14-006), and the live-use UX defects batch (T-2026-05-15-UX-DEFECTS-001) have all landed (see `done.md`). The remaining surface-layer tasks are T-2026-05-14-005 (wizard / mobile parity / landing) and T-2026-05-14-004 (Bridge dashboard) — both shipped.
 
 ---
 
