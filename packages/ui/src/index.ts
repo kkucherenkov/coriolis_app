@@ -30,6 +30,8 @@ export { AppPortrait } from './components/AppPortrait';
 export { AppProgress } from './components/AppProgress';
 export { AppSegControl } from './components/AppSegControl';
 export { AppSelect } from './components/AppSelect';
+export { AppSessionHeader } from './components/AppSessionHeader';
+export type { AppSessionHeaderProps, AppSessionHeaderLabels } from './components/AppSessionHeader';
 export { AppSessionShareLinkCard } from './components/AppSessionShareLinkCard';
 export type { AppSelectOption } from './components/AppSelect/AppSelect.vue';
 export { AppSavePulse } from './components/AppSavePulse';
