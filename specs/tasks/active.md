@@ -4,6 +4,31 @@ LIFO stack. Newest task on top. Full audit context: [`docs/audits/design-2026-05
 
 ---
 
+## T-2026-05-15-UX-DEFECTS-001 — Live-use UX defects batch
+
+- Created: 2026-05-15
+- Owner: claude
+- Spec: — (no doc; bugs reported from live interactive use on `chore/design-audit-2026-05-15`).
+- Goal: fix four user-reported UX defects observed during generic interactive use of the web app — (1) tight `/auth/*` throttle (`10 req / 60s`) ejects the user on `get-session` 429 because middleware redirects on any error; (2) duplicate navigation on `/app/characters` (AppHeader nav + page-level Ships/NPCs/New buttons); (3) character card on dashboard is cramped at 280px minmax — name truncated to "Ahmed il-…", icon row wraps; (4) character view `/app/characters/[id]` panels overflow viewport on narrow tablet (768–1023px) because the right-column `flex-wrap` rule forces `min-width: 200px` per panel.
+- Acceptance:
+  - **Block A — Auth throttle.** Backend `auth/{*rest}` controller throttle raised from `10/60s` to `100/60s` with comment justifying the bump (covers SPA `get-session` chatter without disabling the brute-force ceiling). Frontend `auth-required.global.ts` distinguishes 429 (rate-limited) from "no session" — on `error.status === 429` the middleware no longer redirects to `/login`; user stays on their current route. Tested via extracted pure helper + Vitest.
+  - **Block B — Dashboard nav dedupe.** `apps/web/app/pages/app/characters/index.vue` drops the `Корабли` / `НПС` page-level buttons (already in AppHeader); keeps `Новый персонаж` as the page-specific primary CTA. Vitest snapshot / DOM test updated if any.
+  - **Block C — Character card layout.** Card on `/app/characters` redesigned to two-row internal layout (top: avatar + name/concept stack; bottom: meta + date right-aligned) and minmax raised so names + icon row don't crowd at the smallest grid track. Vitest if applicable.
+  - **Block D — Character view overflow.** `apps/web/app/pages/app/characters/[id].vue` tablet breakpoint cleaned up — right column either stacks at narrow tablet or panels use `min-width: min(200px, 100%)` so they never exceed their column track.
+- Spec diff: —
+- Codegen impact: —
+- Design impact: minor — character card layout becomes two-row at all widths (Block C); reconsider against `SURFACES.md` if a card-spec exists. No tokens change.
+- Tests: per-block Vitest where logic is non-trivial; existing tests must keep passing.
+- Sub-steps:
+  - [x] **Block A — T-UX-2026-05-15-AUTH-THROTTLE — done.** Backend catch-all auth controller throttle raised `10/60s` → `100/60s` (`apps/backend/src/common/auth/auth.controller.ts:17`) with inline rationale citing the `/auth/get-session` hot path. Frontend `auth-required.global.ts` now consults a new pure helper `decideAuthAction()` (in `apps/web/app/utils/auth-redirect.ts`) — three outcomes: `allow` (session present), `rate-limited-allow` (HTTP 429 from `getSession`; let the navigation proceed, the next API call will surface real auth state), `redirect` (anything else). Detection is defense-in-depth: `error.status === 429`, legacy `error.statusCode === 429`, or `/\b(429|too many|rate.?limit)/i` against `error.message` (matches our RFC 9457 `ThrottlerException: Too Many Requests` detail body). Tests: new `auth-redirect.spec.ts` with 16 assertions (7 on `isRateLimitedError`, 9 on `decideAuthAction`) — exhaustive across null/undefined, status field variants, message-only path, 401/500 negatives, the regression guard ("429 must not bounce to /login"), and the defensive "session beats stale 429". Full `pnpm --filter @app/web test` 521/521 + `pnpm --filter @app/backend test` 964/964 + both typechecks pass. _Block 1, 2026-05-15._
+  - [ ] **Block B — T-UX-2026-05-15-DASHBOARD-NAV-DUPE** — remove page-level Ships/NPCs buttons on `/app/characters`.
+  - [ ] **Block C — T-UX-2026-05-15-CHAR-CARD-CRAMPED** — redesign card on `/app/characters` (two-row layout + minmax bump).
+  - [ ] **Block D — T-UX-2026-05-15-CHAR-VIEW-OVERFLOW** — fix `[id].vue` tablet panel overflow.
+- Status: in-progress (Block A landed; B/C/D queued for follow-up sessions).
+- Blockers: —
+
+---
+
 ## T-2026-05-15-AUDIT — Design / UI audit vs handoff 2026-05-14
 
 - Created: 2026-05-15

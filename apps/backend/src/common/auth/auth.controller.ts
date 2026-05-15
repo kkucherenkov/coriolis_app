@@ -13,8 +13,21 @@ import type { Request, Response } from 'express';
  * The path `auth/{*rest}` (NestJS v10+ catch-all syntax) resolves to
  * `/api/v1/auth/*` via `setGlobalPrefix('api')` + `enableVersioning({ URI, defaultVersion: '1' })`.
  * No `VERSION_NEUTRAL` — we deliberately live under `v1`.
+ *
+ * Rate limit: `100 req / 60s` is a deliberate raise from the original `10/60s`.
+ * The catch-all routes the entire Better Auth API surface — including the
+ * hot `auth/get-session` endpoint that the SPA hits on every route navigation
+ * via the `auth-required.global` middleware. `10/60s` is fine for credential
+ * endpoints (sign-in/sign-up/forget-password) but starves `get-session` and
+ * burns through the budget after ~10 page transitions, causing 429s that the
+ * frontend used to treat as "no session" → redirect to /login (effectively a
+ * silent sign-out). `100/60s` keeps the brute-force ceiling without that
+ * collateral. If we later split the catch-all into per-endpoint controllers
+ * we can tighten the credential paths back to ~10/60s individually.
+ *
+ * See T-UX-2026-05-15-AUTH-THROTTLE.
  */
-@Throttle({ default: { limit: 10, ttl: 60_000 } })
+@Throttle({ default: { limit: 100, ttl: 60_000 } })
 @Controller({ path: 'auth/{*rest}', version: '1' })
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
