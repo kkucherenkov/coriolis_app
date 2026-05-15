@@ -48,6 +48,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(EncounterUpdate.serializer)
       ..add(GameSessionCreate.serializer)
       ..add(GameSessionList.serializer)
+      ..add(GameSessionMemberRole.serializer)
+      ..add(GameSessionMembership.serializer)
       ..add(GameSessionStatus.serializer)
       ..add(GameSessionUpdate.serializer)
       ..add(HealthStatus.serializer)
@@ -55,6 +57,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(IconId.serializer)
       ..add(InitiativeReorderRequest.serializer)
       ..add(InitiativeRollResult.serializer)
+      ..add(InviteMetadata.serializer)
+      ..add(InviteRotated.serializer)
       ..add(Item.serializer)
       ..add(ItemArmor.serializer)
       ..add(ItemArmorCreate.serializer)
@@ -89,6 +93,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(ItemWeaponCreateTypeEnum.serializer)
       ..add(ItemWeaponUpdate.serializer)
       ..add(ItemWeaponUpdateTypeEnum.serializer)
+      ..add(LinkMembershipCharacterRequest.serializer)
       ..add(Me.serializer)
       ..add(MeExportBundle.serializer)
       ..add(MeExportBundleDollarSchemaVersionEnum.serializer)
@@ -249,6 +254,10 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(BuiltList, const [const FullType(String)]),
           () => ListBuilder<String>())
       ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(GameSessionMembership)]),
+          () => ListBuilder<GameSessionMembership>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(Npc)]),
           () => ListBuilder<Npc>())
       ..addBuilderFactory(
@@ -302,6 +311,10 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(String)]),
           () => ListBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(GameSessionMembership)]),
+          () => ListBuilder<GameSessionMembership>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(int)]),
           () => ListBuilder<int>()))

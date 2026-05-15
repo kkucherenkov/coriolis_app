@@ -2273,6 +2273,14 @@ export type GameSession = {
      * Optional ship linked to the session (Epic 8)
      */
     shipId?: string | null;
+    /**
+     * Active members of this session. Always includes the GM row.
+     * Phase 8: this replaces `characterIds` as the source of truth
+     * for "who is at this table" — `characterIds` is deprecated and
+     * will be removed in Stream E.
+     *
+     */
+    readonly memberships: Array<GameSessionMembership>;
     readonly createdAt: string;
     readonly updatedAt: string;
 };
@@ -2309,6 +2317,64 @@ export type AssignCharacterToSession = {
      * Identifier of the character to assign
      */
     characterId: string;
+};
+
+/**
+ * A row in the GameSessionMembership join table. Identifies a user's
+ * participation in a GameSession with a role and an optionally-linked
+ * character.
+ *
+ */
+export type GameSessionMembership = {
+    /**
+     * Stable cuid; used as targetMembershipId in chat whispers.
+     */
+    id: string;
+    gameSessionId: string;
+    userId: string;
+    role: GameSessionMemberRole;
+    /**
+     * Cached display name of the user (denormalised for UI).
+     */
+    displayName?: string | null;
+    characterId?: string | null;
+    characterName?: string | null;
+    joinedAt: string;
+    leftAt?: string | null;
+};
+
+/**
+ * Role of a user within a GameSession.
+ */
+export type GameSessionMemberRole = 'gm' | 'player';
+
+/**
+ * Metadata about a GameSession's current invite link. The plaintext
+ * URL is returned only once, by POST /invite/rotate — this endpoint
+ * only exposes whether an invite is active and when it was rotated.
+ *
+ */
+export type InviteMetadata = {
+    active: boolean;
+    rotatedAt?: string | null;
+};
+
+/**
+ * Response to POST /invite/rotate. Contains the plaintext URL exactly
+ * once; subsequent reads (GET /invite) return InviteMetadata without
+ * the URL. If the GM loses the URL they must rotate again.
+ *
+ */
+export type InviteRotated = {
+    /**
+     * Absolute URL clients should share with players.
+     */
+    url: string;
+    /**
+     * The 22-char nanoid component of the URL.
+     */
+    token: string;
+    rotatedAt: string;
 };
 
 /**
@@ -5624,6 +5690,226 @@ export type UnassignCharacterFromSessionResponses = {
 };
 
 export type UnassignCharacterFromSessionResponse = UnassignCharacterFromSessionResponses[keyof UnassignCharacterFromSessionResponses];
+
+export type RevokeInviteData = {
+    body?: never;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}/invite';
+};
+
+export type RevokeInviteErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this session
+     */
+    403: Problem;
+};
+
+export type RevokeInviteError = RevokeInviteErrors[keyof RevokeInviteErrors];
+
+export type RevokeInviteResponses = {
+    /**
+     * Revoked (or already inactive — idempotent)
+     */
+    204: void;
+};
+
+export type RevokeInviteResponse = RevokeInviteResponses[keyof RevokeInviteResponses];
+
+export type GetInviteMetadataData = {
+    body?: never;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}/invite';
+};
+
+export type GetInviteMetadataErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this session
+     */
+    403: Problem;
+};
+
+export type GetInviteMetadataError = GetInviteMetadataErrors[keyof GetInviteMetadataErrors];
+
+export type GetInviteMetadataResponses = {
+    /**
+     * Invite metadata
+     */
+    200: InviteMetadata;
+};
+
+export type GetInviteMetadataResponse = GetInviteMetadataResponses[keyof GetInviteMetadataResponses];
+
+export type RotateInviteData = {
+    body?: never;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}/invite/rotate';
+};
+
+export type RotateInviteErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller does not own this session
+     */
+    403: Problem;
+};
+
+export type RotateInviteError = RotateInviteErrors[keyof RotateInviteErrors];
+
+export type RotateInviteResponses = {
+    /**
+     * Invite rotated; plaintext URL returned ONCE
+     */
+    200: InviteRotated;
+};
+
+export type RotateInviteResponse = RotateInviteResponses[keyof RotateInviteResponses];
+
+export type ListMembersData = {
+    body?: never;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}/members';
+};
+
+export type ListMembersErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller is neither the GM nor an active member
+     */
+    403: Problem;
+};
+
+export type ListMembersError = ListMembersErrors[keyof ListMembersErrors];
+
+export type ListMembersResponses = {
+    /**
+     * Member list
+     */
+    200: Array<GameSessionMembership>;
+};
+
+export type ListMembersResponse = ListMembersResponses[keyof ListMembersResponses];
+
+export type RemoveMembershipData = {
+    body?: never;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+        membershipId: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}/members/{membershipId}';
+};
+
+export type RemoveMembershipErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Not authorized for this membership
+     */
+    403: Problem;
+    /**
+     * Membership not found
+     */
+    404: Problem;
+    /**
+     * GM cannot kick themselves
+     */
+    422: Problem;
+};
+
+export type RemoveMembershipError = RemoveMembershipErrors[keyof RemoveMembershipErrors];
+
+export type RemoveMembershipResponses = {
+    /**
+     * Membership left/kicked
+     */
+    204: void;
+};
+
+export type RemoveMembershipResponse = RemoveMembershipResponses[keyof RemoveMembershipResponses];
+
+export type LinkMembershipCharacterData = {
+    body: {
+        characterId: string | null;
+    };
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+        membershipId: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}/members/{membershipId}';
+};
+
+export type LinkMembershipCharacterErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Not the owning member or the session GM, or character not owned
+     */
+    403: Problem;
+    /**
+     * Membership or character not found
+     */
+    404: Problem;
+};
+
+export type LinkMembershipCharacterError = LinkMembershipCharacterErrors[keyof LinkMembershipCharacterErrors];
+
+export type LinkMembershipCharacterResponses = {
+    /**
+     * Updated membership
+     */
+    200: GameSessionMembership;
+};
+
+export type LinkMembershipCharacterResponse = LinkMembershipCharacterResponses[keyof LinkMembershipCharacterResponses];
 
 export type AdjustDpData = {
     body: DpAdjustment;

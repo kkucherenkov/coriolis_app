@@ -50,6 +50,8 @@ import 'package:app_api_client/src/model/encounter_update.dart';
 import 'package:app_api_client/src/model/game_session.dart';
 import 'package:app_api_client/src/model/game_session_create.dart';
 import 'package:app_api_client/src/model/game_session_list.dart';
+import 'package:app_api_client/src/model/game_session_member_role.dart';
+import 'package:app_api_client/src/model/game_session_membership.dart';
 import 'package:app_api_client/src/model/game_session_status.dart';
 import 'package:app_api_client/src/model/game_session_update.dart';
 import 'package:app_api_client/src/model/health_status.dart';
@@ -57,6 +59,8 @@ import 'package:app_api_client/src/model/health_status_dependencies.dart';
 import 'package:app_api_client/src/model/icon_id.dart';
 import 'package:app_api_client/src/model/initiative_reorder_request.dart';
 import 'package:app_api_client/src/model/initiative_roll_result.dart';
+import 'package:app_api_client/src/model/invite_metadata.dart';
+import 'package:app_api_client/src/model/invite_rotated.dart';
 import 'package:app_api_client/src/model/item.dart';
 import 'package:app_api_client/src/model/item_armor.dart';
 import 'package:app_api_client/src/model/item_armor_create.dart';
@@ -80,6 +84,7 @@ import 'package:app_api_client/src/model/item_update.dart';
 import 'package:app_api_client/src/model/item_weapon.dart';
 import 'package:app_api_client/src/model/item_weapon_create.dart';
 import 'package:app_api_client/src/model/item_weapon_update.dart';
+import 'package:app_api_client/src/model/link_membership_character_request.dart';
 import 'package:app_api_client/src/model/me.dart';
 import 'package:app_api_client/src/model/me_export_bundle.dart';
 import 'package:app_api_client/src/model/me_export_encounter.dart';
@@ -187,6 +192,8 @@ part 'serializers.g.dart';
   GameSession,$GameSession,
   GameSessionCreate,
   GameSessionList,
+  GameSessionMemberRole,
+  GameSessionMembership,
   GameSessionStatus,
   GameSessionUpdate,
   HealthStatus,
@@ -194,6 +201,8 @@ part 'serializers.g.dart';
   IconId,
   InitiativeReorderRequest,
   InitiativeRollResult,
+  InviteMetadata,
+  InviteRotated,
   Item,
   ItemArmor,
   ItemArmorCreate,
@@ -217,6 +226,7 @@ part 'serializers.g.dart';
   ItemWeapon,
   ItemWeaponCreate,
   ItemWeaponUpdate,
+  LinkMembershipCharacterRequest,
   Me,
   MeExportBundle,
   MeExportEncounter,
@@ -286,6 +296,10 @@ part 'serializers.g.dart';
   Upbringing,
 ])
 Serializers serializers = (_$serializers.toBuilder()
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(GameSessionMembership)]),
+        () => ListBuilder<GameSessionMembership>(),
+      )
       ..add(Encounter.serializer)
       ..add(GameSession.serializer)
       ..add(ItemBase.serializer)

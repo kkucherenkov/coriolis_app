@@ -26,6 +26,8 @@ class _$MeExportGameSession extends MeExportGameSession {
   @override
   final String? shipId;
   @override
+  final BuiltList<GameSessionMembership> memberships;
+  @override
   final DateTime createdAt;
   @override
   final DateTime updatedAt;
@@ -44,6 +46,7 @@ class _$MeExportGameSession extends MeExportGameSession {
       required this.dpCount,
       required this.characterIds,
       this.shipId,
+      required this.memberships,
       required this.createdAt,
       required this.updatedAt})
       : super._();
@@ -69,6 +72,7 @@ class _$MeExportGameSession extends MeExportGameSession {
         dpCount == other.dpCount &&
         characterIds == other.characterIds &&
         shipId == other.shipId &&
+        memberships == other.memberships &&
         createdAt == other.createdAt &&
         updatedAt == other.updatedAt;
   }
@@ -85,6 +89,7 @@ class _$MeExportGameSession extends MeExportGameSession {
     _$hash = $jc(_$hash, dpCount.hashCode);
     _$hash = $jc(_$hash, characterIds.hashCode);
     _$hash = $jc(_$hash, shipId.hashCode);
+    _$hash = $jc(_$hash, memberships.hashCode);
     _$hash = $jc(_$hash, createdAt.hashCode);
     _$hash = $jc(_$hash, updatedAt.hashCode);
     _$hash = $jf(_$hash);
@@ -103,6 +108,7 @@ class _$MeExportGameSession extends MeExportGameSession {
           ..add('dpCount', dpCount)
           ..add('characterIds', characterIds)
           ..add('shipId', shipId)
+          ..add('memberships', memberships)
           ..add('createdAt', createdAt)
           ..add('updatedAt', updatedAt))
         .toString();
@@ -156,6 +162,12 @@ class MeExportGameSessionBuilder
   String? get shipId => _$this._shipId;
   set shipId(covariant String? shipId) => _$this._shipId = shipId;
 
+  ListBuilder<GameSessionMembership>? _memberships;
+  ListBuilder<GameSessionMembership> get memberships =>
+      _$this._memberships ??= ListBuilder<GameSessionMembership>();
+  set memberships(covariant ListBuilder<GameSessionMembership>? memberships) =>
+      _$this._memberships = memberships;
+
   DateTime? _createdAt;
   DateTime? get createdAt => _$this._createdAt;
   set createdAt(covariant DateTime? createdAt) => _$this._createdAt = createdAt;
@@ -180,6 +192,7 @@ class MeExportGameSessionBuilder
       _dpCount = $v.dpCount;
       _characterIds = $v.characterIds.toBuilder();
       _shipId = $v.shipId;
+      _memberships = $v.memberships.toBuilder();
       _createdAt = $v.createdAt;
       _updatedAt = $v.updatedAt;
       _$v = null;
@@ -219,6 +232,7 @@ class MeExportGameSessionBuilder
                 dpCount, r'MeExportGameSession', 'dpCount'),
             characterIds: characterIds.build(),
             shipId: shipId,
+            memberships: memberships.build(),
             createdAt: BuiltValueNullFieldError.checkNotNull(
                 createdAt, r'MeExportGameSession', 'createdAt'),
             updatedAt: BuiltValueNullFieldError.checkNotNull(
@@ -232,6 +246,9 @@ class MeExportGameSessionBuilder
 
         _$failedField = 'characterIds';
         characterIds.build();
+
+        _$failedField = 'memberships';
+        memberships.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
             r'MeExportGameSession', _$failedField, e.toString());

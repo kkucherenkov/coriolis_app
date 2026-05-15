@@ -782,6 +782,104 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/game-sessions/{id}/invite': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Read invite metadata (GM only)
+     * @description Returns whether an invite is active for this session and when
+     *     it was last rotated. Never returns the plaintext URL — that is
+     *     revealed exactly once by POST /invite/rotate.
+     */
+    get: operations['getInviteMetadata'];
+    put?: never;
+    post?: never;
+    /**
+     * Revoke the current invite (GM only)
+     * @description Clears the invite hash on the session. Subsequent accept attempts
+     *     return 410 Gone. Re-issuing requires POST /invite/rotate.
+     */
+    delete: operations['revokeInvite'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/game-sessions/{id}/invite/rotate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Rotate (or first-generate) the session's invite link (GM only)
+     * @description Generates a fresh 22-char URL-safe nanoid, stores its SHA-256 hash,
+     *     and returns the plaintext URL exactly once. Any previously-issued
+     *     invite immediately becomes invalid.
+     */
+    post: operations['rotateInvite'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/game-sessions/{id}/members': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List session members (GM or member)
+     * @description Returns active memberships for this session. Available to the
+     *     GM and to any active member. Leaver rows (with non-null leftAt)
+     *     are excluded.
+     */
+    get: operations['listMembers'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/game-sessions/{id}/members/{membershipId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Kick (GM) or leave (member) — soft delete
+     * @description Stamps `leftAt` on the membership. The GM can kick any non-GM member;
+     *     a player can self-leave. The GM cannot kick themselves.
+     */
+    delete: operations['removeMembership'];
+    options?: never;
+    head?: never;
+    /**
+     * Link or unlink a character to a membership
+     * @description The owner of the membership (the player or the GM themselves) can
+     *     change which character is attached. The GM can also operate on
+     *     any membership for moderation. Pass `characterId: null` to unlink.
+     */
+    patch: operations['linkMembershipCharacter'];
+    trace?: never;
+  };
   '/api/v1/game-sessions/{id}/dp': {
     parameters: {
       query?: never;
@@ -3615,6 +3713,13 @@ export interface components {
       readonly characterIds: string[];
       /** @description Optional ship linked to the session (Epic 8) */
       shipId?: string | null;
+      /**
+       * @description Active members of this session. Always includes the GM row.
+       *     Phase 8: this replaces `characterIds` as the source of truth
+       *     for "who is at this table" — `characterIds` is deprecated and
+       *     will be removed in Stream E.
+       */
+      readonly memberships: components['schemas']['GameSessionMembership'][];
       /** Format: date-time */
       readonly createdAt: string;
       /** Format: date-time */
@@ -3641,6 +3746,57 @@ export interface components {
     AssignCharacterToSession: {
       /** @description Identifier of the character to assign */
       characterId: string;
+    };
+    /**
+     * @description A row in the GameSessionMembership join table. Identifies a user's
+     *     participation in a GameSession with a role and an optionally-linked
+     *     character.
+     */
+    GameSessionMembership: {
+      /** @description Stable cuid; used as targetMembershipId in chat whispers. */
+      id: string;
+      gameSessionId: string;
+      userId: string;
+      role: components['schemas']['GameSessionMemberRole'];
+      /** @description Cached display name of the user (denormalised for UI). */
+      displayName?: string | null;
+      characterId?: string | null;
+      characterName?: string | null;
+      /** Format: date-time */
+      joinedAt: string;
+      /** Format: date-time */
+      leftAt?: string | null;
+    };
+    /**
+     * @description Role of a user within a GameSession.
+     * @enum {string}
+     */
+    GameSessionMemberRole: 'gm' | 'player';
+    /**
+     * @description Metadata about a GameSession's current invite link. The plaintext
+     *     URL is returned only once, by POST /invite/rotate — this endpoint
+     *     only exposes whether an invite is active and when it was rotated.
+     */
+    InviteMetadata: {
+      active: boolean;
+      /** Format: date-time */
+      rotatedAt?: string | null;
+    };
+    /**
+     * @description Response to POST /invite/rotate. Contains the plaintext URL exactly
+     *     once; subsequent reads (GET /invite) return InviteMetadata without
+     *     the URL. If the GM loses the URL they must rotate again.
+     */
+    InviteRotated: {
+      /**
+       * Format: uri
+       * @description Absolute URL clients should share with players.
+       */
+      url: string;
+      /** @description The 22-char nanoid component of the URL. */
+      token: string;
+      /** Format: date-time */
+      rotatedAt: string;
     };
     /** @description Payload for adjusting Darkness Points on a game session */
     DpAdjustment: {
@@ -6593,6 +6749,283 @@ export interface operations {
         };
       };
       /** @description Game session not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  getInviteMetadata: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Invite metadata */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['InviteMetadata'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this session */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  revokeInvite: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Revoked (or already inactive — idempotent) */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this session */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  rotateInvite: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Invite rotated; plaintext URL returned ONCE */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['InviteRotated'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller does not own this session */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  listMembers: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Member list */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['GameSessionMembership'][];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller is neither the GM nor an active member */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  removeMembership: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+        membershipId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Membership left/kicked */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Not authorized for this membership */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Membership not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description GM cannot kick themselves */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  linkMembershipCharacter: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+        membershipId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          characterId: string | null;
+        };
+      };
+    };
+    responses: {
+      /** @description Updated membership */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['GameSessionMembership'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Not the owning member or the session GM, or character not owned */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Membership or character not found */
       404: {
         headers: {
           [name: string]: unknown;

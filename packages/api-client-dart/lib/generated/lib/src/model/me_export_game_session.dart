@@ -6,6 +6,7 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:app_api_client/src/model/game_session.dart';
 import 'package:app_api_client/src/model/me_export_encounter.dart';
+import 'package:app_api_client/src/model/game_session_membership.dart';
 import 'package:app_api_client/src/model/game_session_status.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -23,6 +24,7 @@ part 'me_export_game_session.g.dart';
 /// * [dpCount] - Darkness Points counter; mutated by Feature 7.3
 /// * [characterIds] - Character ids assigned to this session. Manage via the join endpoint (POST / DELETE on /game-sessions/{id}/characters). 
 /// * [shipId] - Optional ship linked to the session (Epic 8)
+/// * [memberships] - Active members of this session. Always includes the GM row. Phase 8: this replaces `characterIds` as the source of truth for \"who is at this table\" — `characterIds` is deprecated and will be removed in Stream E. 
 /// * [createdAt] 
 /// * [updatedAt] 
 /// * [encounters] 
@@ -95,6 +97,11 @@ class _$MeExportGameSessionSerializer implements PrimitiveSerializer<MeExportGam
     yield serializers.serialize(
       object.ownerId,
       specifiedType: const FullType(String),
+    );
+    yield r'memberships';
+    yield serializers.serialize(
+      object.memberships,
+      specifiedType: const FullType(BuiltList, [FullType(GameSessionMembership)]),
     );
     yield r'status';
     yield serializers.serialize(
@@ -192,6 +199,13 @@ class _$MeExportGameSessionSerializer implements PrimitiveSerializer<MeExportGam
             specifiedType: const FullType(String),
           ) as String;
           result.ownerId = valueDes;
+          break;
+        case r'memberships':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(GameSessionMembership)]),
+          ) as BuiltList<GameSessionMembership>;
+          result.memberships.replace(valueDes);
           break;
         case r'status':
           final valueDes = serializers.deserialize(
