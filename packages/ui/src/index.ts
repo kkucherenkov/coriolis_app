@@ -32,6 +32,13 @@ export { AppSegControl } from './components/AppSegControl';
 export { AppSelect } from './components/AppSelect';
 export { AppSessionHeader } from './components/AppSessionHeader';
 export type { AppSessionHeaderProps, AppSessionHeaderLabels } from './components/AppSessionHeader';
+export { AppSessionJoinCard } from './components/AppSessionJoinCard';
+export type {
+  AppSessionJoinCardProps,
+  AppSessionJoinCardLabels,
+  AppSessionJoinCardPreview,
+  JoinState,
+} from './components/AppSessionJoinCard';
 export { AppSessionShareLinkCard } from './components/AppSessionShareLinkCard';
 export type { AppSelectOption } from './components/AppSelect/AppSelect.vue';
 export { AppSavePulse } from './components/AppSavePulse';
