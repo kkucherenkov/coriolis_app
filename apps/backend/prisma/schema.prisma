@@ -261,6 +261,7 @@ model Character {
   shareLinks          ShareLink[]
   rolls               Roll[]
   gameSessions        CharacterGameSession[]
+  memberships         GameSessionMembership[]
   crewAssignments     CrewSlot[]
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
@@ -424,19 +425,23 @@ enum DpSource {
 ///   It is not declared as a Prisma relation here to avoid a circular dep on a
 ///   model that doesn't exist yet.
 model GameSession {
-  id          String                @id @default(cuid())
-  ownerId     String
-  owner       User                  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  name        String
-  description String?
-  status      GameSessionStatus     @default(ACTIVE)
-  dpCount     Int                   @default(0)
-  shipId      String?
-  characters  CharacterGameSession[]
-  dpEvents    DpEvent[]
-  encounters  Encounter[]
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
+  id                 String                @id @default(cuid())
+  ownerId            String
+  owner              User                  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name               String
+  description        String?
+  status             GameSessionStatus     @default(ACTIVE)
+  dpCount            Int                   @default(0)
+  shipId             String?
+  inviteTokenHash    String?               @db.Char(64) // SHA-256 hex; NULL = no active invite
+  inviteRotatedAt    DateTime?
+  inviteCreatedById  String?
+  characters         CharacterGameSession[]
+  memberships        GameSessionMembership[]
+  dpEvents           DpEvent[]
+  encounters         Encounter[]
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
 
   @@index([ownerId, status])
   @@map("game_session")
@@ -476,6 +481,26 @@ model CharacterGameSession {
   @@id([characterId, gameSessionId])
   @@index([gameSessionId])
   @@map("character_game_session")
+}
+
+/// Phase 8 — a row per (user, gameSession). Source of truth for "who is at
+/// this table." Backfilled from existing owners by migration
+/// 20260516000001_add_memberships_and_invite. The legacy `characterIds`
+/// array on GameSession is deprecated and removed in Phase 8 Stream E.
+model GameSessionMembership {
+  id            String       @id @default(cuid())
+  gameSessionId String
+  gameSession   GameSession  @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+  userId        String
+  role          String       // "gm" | "player"
+  characterId   String?
+  character     Character?   @relation(fields: [characterId], references: [id], onDelete: SetNull)
+  joinedAt      DateTime     @default(now())
+  leftAt        DateTime?
+
+  @@unique([gameSessionId, userId])
+  @@index([userId])
+  @@map("game_session_membership")
 }
 
 /// A critical injury recorded on a character's sheet.
