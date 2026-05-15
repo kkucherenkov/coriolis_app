@@ -1,3 +1,43 @@
 # Active tasks
 
-_No active tasks. T-2026-05-15-PHASE-8-STREAM-A archived to `done.md` 2026-05-16; Stream B is the next pull (per the design doc, gated on Stream A merging to `main`)._
+## T-2026-05-16-PHASE-8-STREAM-B — Phase 8 / Stream B — Player shell + realtime ACL
+
+- Created: 2026-05-16
+- Owner: claude
+- Spec: [docs/superpowers/specs/2026-05-15-phase-8-implementation-design.md](../../docs/superpowers/specs/2026-05-15-phase-8-implementation-design.md) §6 Stream B
+- Plan: [docs/superpowers/plans/2026-05-16-phase-8-stream-b.md](../../docs/superpowers/plans/2026-05-16-phase-8-stream-b.md) (16-phase TDD blueprint, ~52 steps; execute via `superpowers:subagent-driven-development`)
+- Task inventory: [`docs/IMPLEMENTATION_PLAN_PHASE_8.md`](../../docs/IMPLEMENTATION_PLAN_PHASE_8.md) T-11.1.1.h / i / j (player half) / k / l + T-11.2.1.a–h
+- Goal: a signed-in player opens an invite link, picks a character, lands on `/app/sessions/:id` (web) or the mirrored mobile page, and starts receiving `dp.changed` / `encounter.updated` realtime events.
+- Acceptance:
+  - Cold-open an invite link → preview → pick character → join → land on player shell (both clients).
+  - GM kicks a player → player's next realtime-token issuance (after TTL ≤5 min) excludes `session.<id>` from the JWT `channels` claim.
+  - Both clients receive `dp.changed` realtime when the GM increments DP.
+  - Legacy redirect middleware `apps/web/app/middleware/redirect-legacy-session.global.ts` removed in the same commit that lights up `pages/app/sessions/[id].vue`.
+  - Web + mobile dashboard "Playing in" segment count is real (was hard-zero after Stream A).
+- Spec diff: `packages/specs/openapi/openapi.yaml` — bump 1.6.0 → 1.7.0; add `POST /invites/{token}/accept`, `GET /invites/{token}/preview`, `GET /me/memberships`; add `InvitePreview`, `MyMembershipSummary` schemas.
+- Codegen impact: yes — regenerate `packages/api-client-{ts,dart}` (own commit).
+- Design impact: two new `@app/ui` components — `AppSessionHeader` (mode: `player` | `gm`) extracted from GM `[id].vue`; `AppSessionJoinCard` (four states: valid / revoked / already-member / not-signed-in). Each with colocated stories + specs per design loop.
+- Tests:
+  - Backend: handler-spec coverage for `AcceptInvite` (5+ cases), `GetInvitePreview` (3+ cases), `GetMyMemberships` (3+ cases); RealtimeService regression for kicked-token ACL exclusion.
+  - Web: vitest + @testing-library/vue specs for both new `@app/ui` components; route-guard middleware tests for player/GM cross-traffic.
+  - Mobile: widget tests for `JoinSessionPage` (happy + revoked + already-member), `SessionDetailPage` layout.
+  - Smoke (P16): cold-open invite flow end-to-end on web; kicked-token regression curl; both clients receive `dp.changed` over the broadened ACL.
+- Sub-steps (one phase = one block = one commit + push + active.md update + STOP):
+  - [ ] P1 — OpenAPI spec 1.6.0 → 1.7.0 (3 new routes + 2 new schemas) + codegen
+  - [ ] P2 — Backend domain: errors + ports + read models
+  - [ ] P3 — Backend infra: implement new port methods on `MembershipRepo`
+  - [ ] P4 — `AcceptInviteCommand` TDD (5+ tests)
+  - [ ] P5 — `GetInvitePreviewQuery` TDD (3+ tests)
+  - [ ] P6 — `GetMyMembershipsQuery` TDD (3+ tests)
+  - [ ] P7 — `RealtimeModule` ACL widening: rename `ISessionOwnershipRepo` → `ISessionAccessRepo`; kicked-token regression test
+  - [ ] P8 — Backend wiring: `InvitesController` + `MeMembershipsController` + `MembershipsModule` updates + smoke
+  - [ ] P9 — `@app/ui` `AppSessionHeader` (mode: `player` | `gm`); mount on GM `[id].vue`
+  - [ ] P10 — `@app/ui` `AppSessionJoinCard` (four states)
+  - [ ] P11 — Web player routes (`/app/sessions/join/[token]`, `/app/sessions`, `/app/sessions/[id]`) + route guards + delete legacy redirect middleware
+  - [ ] P12 — Web dashboard "Playing in" wiring + i18n keys (en/ru/uk/el)
+  - [ ] P13 — Mobile player parallel feature folder `lib/features/sessions/` (3 pages + cubits + repo extensions + widget tests)
+  - [ ] P14 — Mobile dashboard "Playing in" wiring (mirror P12)
+  - [ ] P15 — Mobile deep-link gating (configure if `APP_LINKS_HOST` env live, else document fallback)
+  - [ ] P16 — Smoke: end-to-end cold-open invite flow + kicked-token curl regression + `dp.changed` over broadened ACL
+- Status: in-progress
+- Blockers: —
