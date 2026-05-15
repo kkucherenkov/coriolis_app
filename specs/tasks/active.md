@@ -23,21 +23,31 @@
   - Mobile: widget tests for `JoinSessionPage` (happy + revoked + already-member), `SessionDetailPage` layout.
   - Smoke (P16): cold-open invite flow end-to-end on web; kicked-token regression curl; both clients receive `dp.changed` over the broadened ACL.
 - Sub-steps (one phase = one block = one commit + push + active.md update + STOP):
-  - [ ] P1 — OpenAPI spec 1.6.0 → 1.7.0 (3 new routes + 2 new schemas) + codegen
-  - [ ] P2 — Backend domain: errors + ports + read models
-  - [ ] P3 — Backend infra: implement new port methods on `MembershipRepo`
-  - [ ] P4 — `AcceptInviteCommand` TDD (5+ tests)
-  - [ ] P5 — `GetInvitePreviewQuery` TDD (3+ tests)
-  - [ ] P6 — `GetMyMembershipsQuery` TDD (3+ tests)
-  - [ ] P7 — `RealtimeModule` ACL widening: rename `ISessionOwnershipRepo` → `ISessionAccessRepo`; kicked-token regression test
-  - [ ] P8 — Backend wiring: `InvitesController` + `MeMembershipsController` + `MembershipsModule` updates + smoke
-  - [ ] P9 — `@app/ui` `AppSessionHeader` (mode: `player` | `gm`); mount on GM `[id].vue`
-  - [ ] P10 — `@app/ui` `AppSessionJoinCard` (four states)
-  - [ ] P11 — Web player routes (`/app/sessions/join/[token]`, `/app/sessions`, `/app/sessions/[id]`) + route guards + delete legacy redirect middleware
-  - [ ] P12 — Web dashboard "Playing in" wiring + i18n keys (en/ru/uk/el)
-  - [ ] P13 — Mobile player parallel feature folder `lib/features/sessions/` (3 pages + cubits + repo extensions + widget tests)
-  - [ ] P14 — Mobile dashboard "Playing in" wiring (mirror P12)
-  - [ ] P15 — Mobile deep-link gating (configure if `APP_LINKS_HOST` env live, else document fallback)
+  - [x] P1 — OpenAPI spec 1.6.0 → 1.7.0 (3 new routes + 2 new schemas) + codegen (488295b + 81ac1ac + 598b732)
+  - [x] P2 — Backend domain: errors + ports + read models (394642b)
+  - [x] P3 — Backend infra: implement new port methods on `MembershipRepo` (24bd57a)
+  - [x] P4 — `AcceptInviteCommand` TDD — 6 tests (38e3bfd)
+  - [x] P5 — `GetInvitePreviewQuery` TDD — 4 tests (bd4f68e)
+  - [x] P6 — `GetMyMembershipsQuery` TDD — 3 tests (367bde8)
+  - [x] P7 — `RealtimeModule` ACL widening + kicked-token regression (4d2e9c8)
+  - [x] P8 — Backend wiring: `InvitesController` + `MeMembershipsController` + `MembershipsModule` (9c36d31)
+  - [x] P9 — `@app/ui` `AppSessionHeader` — 7 tests, 4 stories (d183856)
+  - [x] P10 — `@app/ui` `AppSessionJoinCard` — 5 tests, 4 stories (7175832)
+  - [x] P11 — Web player routes + route guards + delete legacy redirect (246950c + bdaaf8d)
+  - [x] P12 — Web dashboard "Playing in" wiring (09683cf)
+  - [x] P13 — Mobile player parallel feature folder `lib/features/sessions/` (251570e)
+  - [x] P14 — Mobile dashboard "Playing in" wiring + DI + routes (5d625a5)
+  - [x] P15 — Deep-link gating: APP_LINKS_HOST not configured, follow-up T-2026-05-17-DEEP-LINK-SETUP filed below
   - [ ] P16 — Smoke: end-to-end cold-open invite flow + kicked-token curl regression + `dp.changed` over broadened ACL
 - Status: in-progress
 - Blockers: —
+
+## T-2026-05-17-DEEP-LINK-SETUP — Deep-link configuration (mobile + web)
+
+- Created: 2026-05-16
+- Status: blocked — waiting on marketing host availability
+- Goal: Configure `app_links` (mobile) + `apple-app-site-association` / `assetlinks.json` (web) so that tapping an invite URL on a phone opens the native app instead of the browser.
+- Gate: `APP_LINKS_HOST` env var must be live (currently unset across the monorepo — `grep -r APP_LINKS_HOST apps/ docker/` returned zero matches).
+- Design ref: `docs/superpowers/specs/2026-05-15-phase-8-implementation-design.md` decision #5 ("defer until host available").
+- Unblocks: T-11.1.1.l from `docs/IMPLEMENTATION_PLAN_PHASE_8.md`.
+- Notes: The web invite-join page at `/app/sessions/join/:token` works as a plain web link without deep-link configuration. This is the correct v1.1 state per decision #5. When the marketing host is provisioned: add iOS Universal Links manifest, Android App Links assetlinks.json, and `app_links` mobile package wiring.
