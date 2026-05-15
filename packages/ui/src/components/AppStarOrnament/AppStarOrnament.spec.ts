@@ -59,7 +59,7 @@ describe('AppStarOrnament', () => {
     // `viewBox` form. We probe both keys for resilience against test-utils
     // version-to-version casing changes.
     const attrs = wrapper.find('svg').attributes();
-    expect(attrs.viewBox ?? attrs.viewbox).toBe('0 0 32 32');
+    expect(attrs['viewBox'] ?? attrs['viewbox']).toBe('0 0 32 32');
   });
 
   // ── Variant prop (T-AUDIT-2026-05-15-STAR-VARIANT) ───────────────────────

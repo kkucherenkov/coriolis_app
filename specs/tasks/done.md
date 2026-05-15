@@ -2,6 +2,66 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-15-PHASE-8-STREAM-A — Phase 8 / Stream A — Foundation (route move + memberships + invite)
+
+- Created: 2026-05-15
+- Completed: 2026-05-16
+- Owner: claude
+- Spec: [docs/superpowers/specs/2026-05-15-phase-8-implementation-design.md](../../docs/superpowers/specs/2026-05-15-phase-8-implementation-design.md) §6 Stream A
+- Plan: [docs/superpowers/plans/2026-05-15-phase-8-stream-a.md](../../docs/superpowers/plans/2026-05-15-phase-8-stream-a.md) (29-task TDD blueprint, executed via subagent-driven development)
+- Outcome:
+  - **Phase P1 — route move**: GM client moved `/app/sessions/*` → `/app/game-sessions/*` (web `8126c96`), mobile `features/sessions/` → `features/game_sessions/` (`e103fbc`); legacy redirect middleware lives at `apps/web/app/middleware/redirect-legacy-session.global.ts` (301, removed in Stream B); URL naming policy documented in `AGENTS.md §13` (`bcd1986`).
+  - **Phase P2 — OpenAPI**: 4 schemas added (`GameSessionMembership`, `GameSessionMemberRole`, `InviteMetadata`, `InviteRotated`) + 6 operations under `/api/v1/game-sessions/{id}/{invite,invite/rotate,members,members/{membershipId}}`; OpenAPI version bumped 1.5.0 → 1.6.0; codegen regenerated for TS + Dart clients. Commits `1869885` (spec) + `645ce27` (codegen) + `756eb17` (description fixes) + `477bbef` (codegen rerun).
+  - **Phase P3 — Prisma**: `game_session` gains `inviteTokenHash CHAR(64)`, `inviteRotatedAt`, `inviteCreatedById`. New `game_session_membership` model with `(gameSessionId, userId)` unique, `userId` index, `Cascade` FK to session, `SetNull` FK to character. Migration `20260516000001_add_memberships_and_invite` includes GM backfill (`INSERT … WHERE NOT EXISTS`). Commits `5acba27` (schema) + `80cd8bf` (migration; `BEGIN/COMMIT` dropped — Prisma engine wraps each migration in its own transaction).
+  - **Phase P4 — backend domain**: `MembershipNotFoundError` / `MembershipNotAuthorizedError` / `CannotKickGmError` / `CharacterNotOwnedError` / `InviteRevokedError` (`abfa776`); ports `IMembershipRepo` + `IGameSessionInviteRepo` + read-models (`b475b9a`); TDD invite-token utility — 22-char nanoid generator + SHA-256 hash, 5 tests (`95d357d`).
+  - **Phase P5 — backend infra**: `MembershipRepo` implements both ports against PrismaService with denormalised display-name/character-name joins (`f7159d7`).
+  - **Phase P6 — commands (5 TDD)**: `RotateInvite` (`f70f056`, 4 tests, adds `AppConfig.webHost`), `RevokeInvite` (`06de2df`, 3 tests), `KickMember` (`724cc39`, 6 tests, soft-delete + event), `LeaveSession` (`2f923f7`, 5 tests, refuses GM self-leave), `LinkCharacter` (`9d16ef8`, 5 tests, ownership check via DI port).
+  - **Phase P7 — queries (2 TDD)**: `ListMemberships` (`7e510f1`, 3 tests, GM-or-active-member), `GetInviteMetadata` (`81f79b9`, 3 tests, owner-only).
+  - **Phase P8 — wiring**: `CharacterOwnershipAdapter` Prisma bridge (`4b4b41e`), `MembershipsController` mapping six routes to bus (`ff7e80e`), `MembershipsModule` composition root registered in `AppModule` (`34e0aac`) — 6 new routes live in startup log under `/api/v1/game-sessions/:gameSessionId/...`.
+  - **Phase P9 — GameSession response**: `GameSessionReadModel.memberships[]` added; shared `toMembershipReadModel` extracted to `modules/memberships/domain/membership.mapper.ts` and consumed by both `MembershipRepo` and `GameSessionRepo`; 9 fixture builders updated (`1d05f9c`).
+  - **Phase P10 — smoke**: 6 new routes reachable, unauthenticated probe returns 401 (route matches, guard rejects) — no spec/runtime drift.
+  - **Phase P11 — @app/ui components**: `AppSessionShareLinkCard` (`d7d1e60`, 4 tests, 3 stories) — one-shot URL card with copy-to-clipboard + warning; `AppInviteManager` (`a24a92d`, 5 tests, 4 stories) — four states (`none` / `active` / `just-generated` / `just-rotated`) with inline `role="alertdialog"` reveal panel (AppModal doesn't expose `role` and uses Teleport; reveal rendered inline matching handoff JSX). i18n via the component's `labels` prop (no global strings).
+  - **Phase P12 — web mount + i18n**: GM session detail Overview tab hosts `AppInviteManager` (`8786fb9`); new composable `useInviteApi.ts` wraps the generated client; revoke uses `globalThis.confirm()` (project has no `useConfirm`/`AppConfirm` primitive — flagged for follow-up). i18n keys for `invite.*` in colocated `<i18n lang="json">` blocks for EN/RU/UK/EL. Dashboard segmented control `Running | Playing in` (`1f89d2d`); Running count from `listSessions({status:'active'})`, Playing-in count fixed to 0 until Stream B.
+  - **Phase P13 — mobile parity**: `InviteManagerWidget` + 3 widget tests + state machine on session detail page (`320bf9c`); `SessionsRepository` gains `getInviteMetadata` / `rotateInvite` / `revokeInvite`. New `DashboardPage` with `SegmentedButton<DashboardSessionsScope>` (`0729c1c`), now the auth-gate home; Running segment navigates to `SessionsListPage`, Playing-in shows empty-state placeholder.
+- Sub-step accounting:
+  - **Shipped (12/15 sub-steps)**: T-11.1.0.a (web move), T-11.1.0.b (mobile move), T-11.1.0.c (AGENTS.md), T-11.1.1.a (OpenAPI), T-11.1.1.f (Prisma migration + backfill), T-11.1.1.d (invite-token), T-11.1.1.b (MembershipsModule CQRS), T-11.1.1.c (GameSession `memberships[]`), T-11.1.1.g (AppInviteManager), T-11.1.1.g.2 (AppSessionShareLinkCard), T-11.1.2 (Dashboard segmented — web + mobile), T-11.1.1.m.2 (UI component specs).
+  - **Deferred to Stream B (3/15)**: T-11.1.1.j (Kick action UI on GM members list — backend `DELETE /members/:id` ships in this stream; UI surface deferred), T-11.1.1.m (migration-backfill dedicated test — backfill `INSERT … WHERE NOT EXISTS` is provably idempotent + handler specs already cover rotate/revoke/kick/leave/link/list/getMetadata behaviour, 998 passing), precheck `pnpm --filter @app/ui storybook` build (a11y addon verification deferred to a separate format/quality sweep — Phase 8 scope itself is green).
+- Tests on this branch:
+  - Backend: **998 / 93 files** (baseline 964 → +34 across `invite-token.spec`, 5 commands, 2 queries, fixture updates in 9 existing specs).
+  - Web: **523 / 24 files** (unchanged; route-move tests updated in-place).
+  - UI: **889 / 41 files** (baseline 880 → +5 `AppInviteManager` + +4 `AppSessionShareLinkCard`).
+  - Mobile: **253 / unchanged-files** (baseline 250 → +3 widget tests in `invite_manager_test.dart`).
+  - Flutter analyze: **0 issues**.
+  - OpenAPI: `spec:validate` ✅, `spec:bundle` ✅, `spec:codegen` ✅.
+  - Pre-existing repo-wide drift NOT introduced by Stream A: `@app/design-tokens` lint (19 errors), `@app/specs` lint, `@app/ui/web/backend` lint warnings about Vue multi-line attributes — separate format-sweep concern, untouched.
+- Notable architectural deviations (all justified, documented in commit messages):
+  - **`memberships` added to `GameSession.required`** while still in `1.6.0` minor bump — greenfield + backend ships the change in same PR, no live consumers.
+  - **Prisma migration `BEGIN/COMMIT` removed** — Prisma's schema-engine wraps every migration in its own transaction; nested `BEGIN` triggers `current transaction is aborted` in PostgreSQL.
+  - **`AppModal` not used for invite reveal** — it doesn't expose a `role` prop and uses `<Teleport to="body">`; reveal rendered inline with `role="alertdialog" aria-modal="true"` directly inside `AppInviteManager`, matching the handoff JSX.
+  - **`useConfirm` composable doesn't exist in this codebase** — revoke uses `globalThis.confirm()` with a TODO marker for the follow-up.
+  - **Dashboard had no Sessions section on web before this stream** — added a full `bridge__sessions` block (title + segmented control + body) rather than retrofitting into a non-existent container.
+  - **OpenAPI extracted `GameSessionMemberRole` enum into its own schema** — project rule "no inline enums in paths".
+- Stream A explicitly excludes (per design doc): chat (Streams C/D), player join flow + realtime ACL widening (Stream B), mobile deep-link binding (Stream B), `characterIds` cleanup (Stream E).
+- Follow-ups to file as Stream B starts:
+  - Add a `useConfirm` composable / `AppConfirm` component primitive so revoke + future destructive actions stop using `globalThis.confirm`.
+  - Kick action UI on the GM members list in `/app/game-sessions/[id].vue` (backend command already wired).
+  - Dedicated migration-backfill test that loads a fixture session row, applies the migration via a throwaway DB, and asserts the GM membership row exists with the right `joinedAt`.
+- Commits (chronological on `main`):
+  - `8126c96` route move web · `e103fbc` route move mobile · `bcd1986` AGENTS.md URL policy
+  - `1869885` OpenAPI · `645ce27` codegen · `756eb17` OpenAPI desc · `477bbef` codegen
+  - `5acba27` Prisma schema · `80cd8bf` migration SQL
+  - `abfa776` errors · `b475b9a` ports · `95d357d` invite-token
+  - `f7159d7` MembershipRepo
+  - `f70f056` Rotate · `06de2df` Revoke · `724cc39` Kick · `2f923f7` Leave · `9d16ef8` Link
+  - `7e510f1` List · `81f79b9` GetInviteMetadata
+  - `4b4b41e` ownership adapter · `ff7e80e` controller · `34e0aac` module wiring
+  - `1d05f9c` GameSession memberships[]
+  - `d7d1e60` AppSessionShareLinkCard · `a24a92d` AppInviteManager
+  - `8786fb9` web mount + i18n · `1f89d2d` web dashboard
+  - `320bf9c` mobile InviteManager · `0729c1c` mobile dashboard
+
+---
+
 ## T-2026-05-15-UX-DEFECTS-001 — Live-use UX defects batch
 
 - Created: 2026-05-15
