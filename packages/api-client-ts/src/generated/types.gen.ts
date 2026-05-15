@@ -5834,6 +5834,9 @@ export type RemoveMembershipData = {
          * Game session identifier (cuid2)
          */
         id: string;
+        /**
+         * Membership identifier (cuid2)
+         */
         membershipId: string;
     };
     query?: never;
@@ -5872,6 +5875,9 @@ export type RemoveMembershipResponse = RemoveMembershipResponses[keyof RemoveMem
 
 export type LinkMembershipCharacterData = {
     body: {
+        /**
+         * Character ID to link, or null to unlink
+         */
         characterId: string | null;
     };
     path: {
@@ -5879,6 +5885,9 @@ export type LinkMembershipCharacterData = {
          * Game session identifier (cuid2)
          */
         id: string;
+        /**
+         * Membership identifier (cuid2)
+         */
         membershipId: string;
     };
     query?: never;

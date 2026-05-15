@@ -328,7 +328,7 @@ import 'package:app_api_client/api.dart';
 
 final api = AppApiClient().getGameSessionsApi();
 final String id = id_example; // String | Game session identifier (cuid2)
-final String membershipId = membershipId_example; // String | 
+final String membershipId = membershipId_example; // String | Membership identifier (cuid2)
 final LinkMembershipCharacterRequest linkMembershipCharacterRequest = {characterId=cuid_char01}; // LinkMembershipCharacterRequest | 
 
 try {
@@ -344,7 +344,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **String**| Game session identifier (cuid2) | 
- **membershipId** | **String**|  | 
+ **membershipId** | **String**| Membership identifier (cuid2) | 
  **linkMembershipCharacterRequest** | [**LinkMembershipCharacterRequest**](LinkMembershipCharacterRequest.md)|  | 
 
 ### Return type
@@ -528,7 +528,7 @@ import 'package:app_api_client/api.dart';
 
 final api = AppApiClient().getGameSessionsApi();
 final String id = id_example; // String | Game session identifier (cuid2)
-final String membershipId = membershipId_example; // String | 
+final String membershipId = membershipId_example; // String | Membership identifier (cuid2)
 
 try {
     api.removeMembership(id, membershipId);
@@ -542,7 +542,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **String**| Game session identifier (cuid2) | 
- **membershipId** | **String**|  | 
+ **membershipId** | **String**| Membership identifier (cuid2) | 
 
 ### Return type
 

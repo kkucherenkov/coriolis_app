@@ -11,9 +11,10 @@ part 'link_membership_character_request.g.dart';
 /// LinkMembershipCharacterRequest
 ///
 /// Properties:
-/// * [characterId] 
+/// * [characterId] - Character ID to link, or null to unlink
 @BuiltValue()
 abstract class LinkMembershipCharacterRequest implements Built<LinkMembershipCharacterRequest, LinkMembershipCharacterRequestBuilder> {
+  /// Character ID to link, or null to unlink
   @BuiltValueField(wireName: r'characterId')
   String? get characterId;
 

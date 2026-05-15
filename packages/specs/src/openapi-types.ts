@@ -6928,6 +6928,7 @@ export interface operations {
       path: {
         /** @description Game session identifier (cuid2) */
         id: components['parameters']['GameSessionId'];
+        /** @description Membership identifier (cuid2) */
         membershipId: string;
       };
       cookie?: never;
@@ -6986,6 +6987,7 @@ export interface operations {
       path: {
         /** @description Game session identifier (cuid2) */
         id: components['parameters']['GameSessionId'];
+        /** @description Membership identifier (cuid2) */
         membershipId: string;
       };
       cookie?: never;
@@ -6993,6 +6995,7 @@ export interface operations {
     requestBody: {
       content: {
         'application/json': {
+          /** @description Character ID to link, or null to unlink */
           characterId: string | null;
         };
       };

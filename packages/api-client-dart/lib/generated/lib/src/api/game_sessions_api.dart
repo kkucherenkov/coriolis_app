@@ -587,7 +587,7 @@ class GameSessionsApi {
   ///
   /// Parameters:
   /// * [id] - Game session identifier (cuid2)
-  /// * [membershipId] 
+  /// * [membershipId] - Membership identifier (cuid2)
   /// * [linkMembershipCharacterRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -976,7 +976,7 @@ class GameSessionsApi {
   ///
   /// Parameters:
   /// * [id] - Game session identifier (cuid2)
-  /// * [membershipId] 
+  /// * [membershipId] - Membership identifier (cuid2)
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
