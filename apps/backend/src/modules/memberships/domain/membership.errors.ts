@@ -62,3 +62,14 @@ export class InviteRevokedError extends DomainError {
     });
   }
 }
+
+export class InviteNotFoundError extends DomainError {
+  constructor(token: string) {
+    super({
+      code: 'INVITE_NOT_FOUND',
+      status: 404,
+      title: 'Invite Not Found',
+      detail: `No active invite found for token starting with ${token.slice(0, 6)}…`,
+    });
+  }
+}

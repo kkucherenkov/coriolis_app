@@ -8,7 +8,13 @@ import { GetInviteMetadataHandler } from './get-invite-metadata.handler';
 import type { IGameSessionInviteRepo } from '../domain/membership.ports';
 
 function makeRepo(): IGameSessionInviteRepo {
-  return { assertOwner: vi.fn(), getMetadata: vi.fn(), rotate: vi.fn(), revoke: vi.fn() };
+  return {
+    assertOwner: vi.fn(),
+    getMetadata: vi.fn(),
+    rotate: vi.fn(),
+    revoke: vi.fn(),
+    findSessionByTokenHash: vi.fn(),
+  };
 }
 
 describe('GetInviteMetadataHandler', () => {

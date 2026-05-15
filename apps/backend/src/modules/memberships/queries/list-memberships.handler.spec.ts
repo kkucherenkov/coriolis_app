@@ -14,6 +14,8 @@ function makeRepo(): IMembershipRepo {
     findActiveByUser: vi.fn(),
     softDelete: vi.fn(),
     setCharacter: vi.fn(),
+    insert: vi.fn(),
+    findActiveSessionsForUser: vi.fn(),
   };
 }
 

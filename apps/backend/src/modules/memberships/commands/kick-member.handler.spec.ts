@@ -20,11 +20,19 @@ function makeMembershipRepo(): IMembershipRepo {
     findActiveByUser: vi.fn(),
     softDelete: vi.fn(),
     setCharacter: vi.fn(),
+    insert: vi.fn(),
+    findActiveSessionsForUser: vi.fn(),
   };
 }
 
 function makeInviteRepo(): IGameSessionInviteRepo {
-  return { assertOwner: vi.fn(), getMetadata: vi.fn(), rotate: vi.fn(), revoke: vi.fn() };
+  return {
+    assertOwner: vi.fn(),
+    getMetadata: vi.fn(),
+    rotate: vi.fn(),
+    revoke: vi.fn(),
+    findSessionByTokenHash: vi.fn(),
+  };
 }
 
 function makeBus(): EventBus {

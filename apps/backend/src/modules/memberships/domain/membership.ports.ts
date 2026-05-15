@@ -28,6 +28,22 @@ export interface InviteMetadataReadModel {
   rotatedAt: string | null;
 }
 
+export interface InvitePreviewReadModel {
+  sessionName: string;
+  gmDisplayName: string;
+  alreadyJoined: boolean;
+}
+
+export interface MyMembershipReadModel {
+  membershipId: string;
+  gameSessionId: string;
+  sessionName: string;
+  role: MembershipRole;
+  characterId: string | null;
+  characterName: string | null;
+  joinedAt: string; // ISO-8601
+}
+
 export const MEMBERSHIP_REPO = Symbol('MEMBERSHIP_REPO');
 
 export interface IMembershipRepo {
@@ -45,6 +61,23 @@ export interface IMembershipRepo {
 
   /** Patches characterId on an existing membership. */
   setCharacter(id: string, characterId: string | null): Promise<MembershipReadModel>;
+
+  /**
+   * Inserts a new active membership row. Returns the new membership.
+   * Callers are responsible for idempotency checks before calling.
+   */
+  insert(data: {
+    gameSessionId: string;
+    userId: string;
+    role: MembershipRole;
+    characterId?: string | null;
+  }): Promise<MembershipReadModel>;
+
+  /**
+   * Returns all active (leftAt IS NULL) sessions for the given user,
+   * with session name. Powers GET /me/memberships.
+   */
+  findActiveSessionsForUser(userId: string): Promise<MyMembershipReadModel[]>;
 }
 
 export const GAME_SESSION_INVITE_REPO = Symbol('GAME_SESSION_INVITE_REPO');
@@ -69,4 +102,14 @@ export interface IGameSessionInviteRepo {
 
   /** Nulls the invite hash field. Idempotent. */
   revoke(gameSessionId: string): Promise<void>;
+
+  /**
+   * Looks up a GameSession by its stored inviteTokenHash.
+   * Returns null when no matching active invite exists.
+   */
+  findSessionByTokenHash(tokenHash: string): Promise<{
+    gameSessionId: string;
+    sessionName: string;
+    gmUserId: string;
+  } | null>;
 }

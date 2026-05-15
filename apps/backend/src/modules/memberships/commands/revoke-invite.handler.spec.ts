@@ -13,6 +13,7 @@ function makeRepo(): IGameSessionInviteRepo {
     getMetadata: vi.fn(),
     rotate: vi.fn(),
     revoke: vi.fn(),
+    findSessionByTokenHash: vi.fn(),
   };
 }
 
