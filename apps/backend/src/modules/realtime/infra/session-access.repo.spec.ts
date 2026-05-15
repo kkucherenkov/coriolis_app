@@ -18,7 +18,7 @@ describe('SessionAccessRepo', () => {
     vi.mocked(prisma.gameSessionMembership.findMany).mockResolvedValue([
       { gameSessionId: 'gs-1' },
       { gameSessionId: 'gs-2' },
-    ] as any);
+    ] as Awaited<ReturnType<typeof prisma.gameSessionMembership.findMany>>);
 
     const repo = new SessionAccessRepo(prisma);
     const result = await repo.findActiveSessionIdsForUser('user-1');

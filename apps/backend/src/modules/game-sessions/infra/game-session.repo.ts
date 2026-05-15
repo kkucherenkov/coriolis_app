@@ -260,9 +260,9 @@ export class GameSessionRepo implements IGameSessionRepo {
   private async fetchDisplayNames(userIds: string[]): Promise<Map<string, string | null>> {
     if (userIds.length === 0) return new Map();
     const users = await this.prisma.user.findMany({
-      where: { id: { in: Array.from(new Set(userIds)) } },
+      where: { id: { in: [...new Set(userIds)] } },
       select: { id: true, name: true },
     });
-    return new Map(users.map((u) => [u.id, u.name ?? null]));
+    return new Map(users.map((u) => [u.id, u.name]));
   }
 }

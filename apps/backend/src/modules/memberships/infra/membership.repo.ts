@@ -123,7 +123,7 @@ export class MembershipRepo implements IMembershipRepo, IGameSessionInviteRepo {
       role: r.role as MembershipRole,
       characterId: r.characterId,
       characterName: r.character?.name ?? null,
-      joinedAt: (r.joinedAt as Date).toISOString(),
+      joinedAt: r.joinedAt.toISOString(),
     }));
   }
 
@@ -206,9 +206,9 @@ export class MembershipRepo implements IMembershipRepo, IGameSessionInviteRepo {
   private async fetchDisplayNames(userIds: string[]): Promise<Map<string, string | null>> {
     if (userIds.length === 0) return new Map();
     const users = await this.prisma.user.findMany({
-      where: { id: { in: Array.from(new Set(userIds)) } },
+      where: { id: { in: [...new Set(userIds)] } },
       select: { id: true, name: true },
     });
-    return new Map(users.map((u) => [u.id, u.name ?? null]));
+    return new Map(users.map((u) => [u.id, u.name]));
   }
 }
