@@ -20,7 +20,7 @@
   - [x] T-11.1.1.d — invite-token generator: 22-char URL-safe `nanoid`, SHA-256 hash at rest, plaintext only in the rotate-response body.
   - [x] T-11.1.1.b — `MembershipsModule` (CQRS) with `RotateInviteCommand`, `RevokeInviteCommand`, `KickMemberCommand`, `LeaveSessionCommand`, `LinkCharacterCommand` (commands); `ListMembershipsQuery`, `GetInviteMetadataQuery` (queries); `MemberJoinedEvent`, `MemberLeftEvent`, `MemberKickedEvent`, `CharacterLinkedEvent` (events). _Stream B adds `AcceptInviteCommand`, `GetMyMembershipsQuery`, `GetInvitePreviewQuery`._
   - [x] T-11.1.1.c — extend `GameSessionsModule.get` to include `memberships[]` in the response.
-  - [ ] T-11.1.1.g — `AppInviteManager` panel on GM Overview tab (`@app/ui` component per handoff `invite-manager.jsx`). States: `none` / `active` / `just-generated` / `just-rotated`. Reveal as `role="alertdialog"`, **no auto-dismiss**, explicit "I've copied it — close" CTA.
+  - [x] T-11.1.1.g — `AppInviteManager` panel on GM Overview tab (`@app/ui` component per handoff `invite-manager.jsx`). States: `none` / `active` / `just-generated` / `just-rotated`. Reveal as `role="alertdialog"`, **no auto-dismiss**, explicit "I've copied it — close" CTA.
   - [x] T-11.1.1.g.2 — `AppSessionShareLinkCard` reusable one-shot URL card (`@app/ui` per `session-share-link-card.jsx`).
   - [ ] T-11.1.1.j (partial) — `Kick` action on GM members list with `AppConfirm`. (Member self-`Leave` is Stream B; same modal pattern.)
   - [ ] T-11.1.2 — Dashboard `Running | Playing in` segmented control per handoff `dashboard.jsx` (web + mobile). _Playing-in count is 0 until Stream B ships `GetMyMembershipsQuery`._

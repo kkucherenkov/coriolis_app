@@ -14,6 +14,7 @@ export { AppDiePool } from './components/AppDiePool';
 export { AppDivider } from './components/AppDivider';
 export { AppDots } from './components/AppDots';
 export { AppField } from './components/AppField';
+export { AppInviteManager } from './components/AppInviteManager';
 export { AppIconCoriolis } from './components/AppIconCoriolis';
 export type { IconCoriolisName } from './components/AppIconCoriolis';
 export { AppIconMedallion } from './components/AppIconMedallion';
