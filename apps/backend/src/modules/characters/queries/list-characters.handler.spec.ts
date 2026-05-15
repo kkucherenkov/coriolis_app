@@ -1,11 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DEFAULT_CONDITIONS } from '../domain/character.ports';
+import {
+  DEFAULT_ATTRIBUTES,
+  DEFAULT_CONDITIONS,
+  DEFAULT_SKILLS,
+} from '../domain/character.ports';
 
 import { ListCharactersQuery } from './list-characters.query';
 import { ListCharactersHandler } from './list-characters.handler';
 
-import type { ICharacterRepo, CharacterListItem } from '../domain/character.ports';
+import type { CharacterReadModel, ICharacterRepo } from '../domain/character.ports';
 
 function makeRepo(): ICharacterRepo {
   return {
@@ -19,16 +23,35 @@ function makeRepo(): ICharacterRepo {
   };
 }
 
-function makeListItem(overrides: Partial<CharacterListItem> = {}): CharacterListItem {
+function makeListItem(overrides: Partial<CharacterReadModel> = {}): CharacterReadModel {
   return {
     id: 'char-1',
     ownerId: 'user-1',
     name: 'Kalim',
     concept: null,
+    role: null,
+    roleUnmigrated: false,
     iconId: null,
+    upbringing: 'plebeian',
+    origin: null,
+    reputation: 2,
+    startingWealth: 500,
+    birr: 500,
+    crewConcept: null,
+    mutant: false,
+    mutantLineage: null,
+    attributes: { ...DEFAULT_ATTRIBUTES },
+    skills: { ...DEFAULT_SKILLS },
     hp: { current: 14, max: 14 },
     mp: { current: 10, max: 10 },
+    encumbrance: { current: 0, max: 5 },
+    experience: 0,
     conditions: { ...DEFAULT_CONDITIONS },
+    criticalInjuries: [],
+    talents: [],
+    relationships: [],
+    inventory: [],
+    notes: null,
     status: 'active',
     createdAt: '2026-01-15T00:00:00.000Z',
     updatedAt: '2026-01-15T00:00:00.000Z',

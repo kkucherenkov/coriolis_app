@@ -222,24 +222,6 @@ export interface CharacterReadModel {
   updatedAt: string; // ISO-8601
 }
 
-/**
- * Lightweight summary for list endpoint — avoids over-fetching nested arrays.
- */
-export interface CharacterListItem {
-  id: string;
-  ownerId: string;
-  name: string;
-  concept: Concept | null;
-  iconId: IconId | null;
-  hp: { current: number; max: number };
-  mp: { current: number; max: number };
-  conditions: ConditionFlags;
-  /** Lifecycle state: 'draft' or 'active'. */
-  status: CharacterStatus;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export const CHARACTER_REPO = Symbol('CHARACTER_REPO');
 
 export interface ListCharactersOptions {
@@ -263,9 +245,14 @@ export interface ICharacterRepo {
    */
   findOwnerIdById(id: string): Promise<{ ownerId: string } | null>;
 
+  /**
+   * Returns full `CharacterReadModel` objects per the OpenAPI contract
+   * (`CharacterList.items: $ref: Character`). The list endpoint and the
+   * single-character endpoint share the same projection.
+   */
   list(
     opts: ListCharactersOptions,
-  ): Promise<{ items: CharacterListItem[]; nextCursor: string | null }>;
+  ): Promise<{ items: CharacterReadModel[]; nextCursor: string | null }>;
 
   create(data: {
     ownerId: string;

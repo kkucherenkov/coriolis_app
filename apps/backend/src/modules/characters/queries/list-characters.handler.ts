@@ -1,14 +1,14 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
-import { CHARACTER_REPO, CharacterListItem } from '../domain/character.ports';
+import { CHARACTER_REPO } from '../domain/character.ports';
 
 import { ListCharactersQuery } from './list-characters.query';
 
-import type { ICharacterRepo } from '../domain/character.ports';
+import type { CharacterReadModel, ICharacterRepo } from '../domain/character.ports';
 
 export interface CharacterListResult {
-  items: CharacterListItem[];
+  items: CharacterReadModel[];
   nextCursor: string | null;
 }
 
