@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, Optional } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { AppConfig } from '../../../common/config/app-config';
@@ -24,8 +24,8 @@ export class RotateInviteHandler implements ICommandHandler<
   constructor(
     @Inject(GAME_SESSION_INVITE_REPO) private readonly repo: IGameSessionInviteRepo,
     private readonly config: AppConfig,
-    private readonly generate: () => string = defaultGenerate,
-    private readonly hash: (s: string) => string = defaultHash,
+    @Optional() private readonly generate: () => string = defaultGenerate,
+    @Optional() private readonly hash: (s: string) => string = defaultHash,
   ) {}
 
   async execute(cmd: RotateInviteCommand): Promise<RotateInviteResult> {
