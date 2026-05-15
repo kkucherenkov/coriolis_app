@@ -4,6 +4,8 @@ import 'package:app_api_client/app_api_client.dart'
         DiceApi,
         EncountersApi,
         GameSessionsApi,
+        MeApi,
+        MembershipsApi,
         NpcsApi,
         RealtimeApi,
         ShipsApi,
@@ -32,6 +34,10 @@ import 'package:coriolis_companion/features/game_sessions/data/session_repositor
 import 'package:coriolis_companion/features/game_sessions/domain/session_repository.dart';
 import 'package:coriolis_companion/features/game_sessions/presentation/blocs/session_detail/session_detail_cubit.dart';
 import 'package:coriolis_companion/features/game_sessions/presentation/blocs/sessions_list/sessions_list_cubit.dart';
+import 'package:coriolis_companion/features/sessions/data/player_session_repository_impl.dart';
+import 'package:coriolis_companion/features/sessions/domain/player_session_repository.dart';
+import 'package:coriolis_companion/features/sessions/presentation/blocs/join_session/join_session_cubit.dart';
+import 'package:coriolis_companion/features/sessions/presentation/blocs/player_sessions_list/player_sessions_list_cubit.dart';
 import 'package:coriolis_companion/features/ships/data/ship_repository_impl.dart';
 import 'package:coriolis_companion/features/ships/domain/ship_repository.dart';
 import 'package:coriolis_companion/features/ships/presentation/blocs/ship_create/ship_create_cubit.dart';
@@ -98,6 +104,12 @@ void configureDependencies() {
     )
     ..registerLazySingleton<ShipsApi>(
       () => ShipsApi(getIt<Dio>(), standardSerializers),
+    )
+    ..registerLazySingleton<MembershipsApi>(
+      () => MembershipsApi(getIt<Dio>(), standardSerializers),
+    )
+    ..registerLazySingleton<MeApi>(
+      () => MeApi(getIt<Dio>(), standardSerializers),
     );
 
   // ── Characters domain ────────────────────────────────────────────────────
@@ -143,6 +155,24 @@ void configureDependencies() {
     )
     ..registerFactory<ShipCreateCubit>(
       () => ShipCreateCubit(repository: getIt<ShipRepository>()),
+    );
+
+  // ── Player sessions domain (Phase 8 Stream B) ────────────────────────────
+  getIt
+    ..registerLazySingleton<PlayerSessionRepository>(
+      () => PlayerSessionRepositoryImpl(
+        membershipsApi: getIt<MembershipsApi>(),
+        meApi: getIt<MeApi>(),
+        gameSessionsApi: getIt<GameSessionsApi>(),
+      ),
+    )
+    ..registerFactory<PlayerSessionsListCubit>(
+      () => PlayerSessionsListCubit(
+        repository: getIt<PlayerSessionRepository>(),
+      ),
+    )
+    ..registerFactory<JoinSessionCubit>(
+      () => JoinSessionCubit(repository: getIt<PlayerSessionRepository>()),
     );
 
   // ── Cubit factories ─────────────────────────────────────────────────────

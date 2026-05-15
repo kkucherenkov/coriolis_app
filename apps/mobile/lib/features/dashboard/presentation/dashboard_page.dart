@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:coriolis_companion/app/routes.dart';
+import 'package:coriolis_companion/features/sessions/domain/player_session_repository.dart';
+import 'package:coriolis_companion/shared/di/injector.dart';
 
 /// Dashboard home screen — the authenticated landing page.
 ///
@@ -22,6 +24,25 @@ enum DashboardSessionsScope { running, playing }
 
 class _DashboardPageState extends State<DashboardPage> {
   DashboardSessionsScope _scope = DashboardSessionsScope.running;
+  int _playerCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlayerCount();
+  }
+
+  Future<void> _loadPlayerCount() async {
+    try {
+      final repo = getIt<PlayerSessionRepository>();
+      final memberships = await repo.getMyMemberships();
+      final playerMemberships =
+          memberships.where((m) => m.role == 'player').toList();
+      if (mounted) setState(() => _playerCount = playerMemberships.length);
+    } catch (_) {
+      // Keep at 0 — non-fatal; count displayed when load succeeds.
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,17 +60,16 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
               const Spacer(),
               SegmentedButton<DashboardSessionsScope>(
-                segments: const [
-                  ButtonSegment(
+                segments: [
+                  const ButtonSegment(
                     value: DashboardSessionsScope.running,
                     label: Text('Running'),
                     icon: Icon(Icons.play_circle_outline),
                   ),
                   ButtonSegment(
                     value: DashboardSessionsScope.playing,
-                    // Playing-in count fixed to (0) until Stream B.
-                    label: Text('Playing in (0)'),
-                    icon: Icon(Icons.people_outline),
+                    label: Text('Playing in ($_playerCount)'),
+                    icon: const Icon(Icons.people_outline),
                   ),
                 ],
                 selected: {_scope},
@@ -88,33 +108,15 @@ class _SessionsScopeBody extends StatelessWidget {
       );
     }
 
-    // Playing-in — Stream B will replace this empty state with the
-    // memberships list fetched from GET /me/memberships.
+    // Playing-in — navigates to the player sessions list (Stream B).
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            Icon(
-              Icons.people_outline,
-              size: 40,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Not playing in any sessions yet',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Ask your GM for an invite link to join a session.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
+      child: ListTile(
+        leading: const Icon(Icons.people_outline),
+        title: const Text('Sessions I play in'),
+        subtitle: const Text('View and manage sessions you joined as a player.'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () =>
+            Navigator.of(context).pushNamed(AppRoutes.playerSessions),
       ),
     );
   }

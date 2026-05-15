@@ -9,6 +9,10 @@ import 'package:coriolis_companion/features/characters/presentation/pages/charac
 import 'package:coriolis_companion/features/combat/presentation/blocs/active_combat/active_combat_cubit.dart';
 import 'package:coriolis_companion/features/combat/presentation/pages/combat_tracker_page.dart';
 import 'package:coriolis_companion/features/game_sessions/presentation/pages/session_detail_page.dart';
+import 'package:coriolis_companion/features/sessions/domain/player_session_repository.dart';
+import 'package:coriolis_companion/features/sessions/presentation/pages/join_session_page.dart';
+import 'package:coriolis_companion/features/sessions/presentation/pages/player_session_detail_page.dart';
+import 'package:coriolis_companion/features/sessions/presentation/pages/player_sessions_list_page.dart';
 import 'package:coriolis_companion/shared/di/injector.dart';
 import 'package:coriolis_companion/features/game_sessions/presentation/pages/sessions_list_page.dart';
 import 'package:coriolis_companion/features/settings/presentation/settings_screen.dart';
@@ -49,6 +53,15 @@ abstract class AppRoutes {
   // Combat feature.
   /// Pass a [CombatTrackerArgs] as [RouteSettings.arguments].
   static const combatTracker = '/app/combat/tracker';
+
+  // Player sessions feature (Phase 8 Stream B).
+  static const playerSessions = '/app/player-sessions';
+
+  /// Pass the game session id as a [RouteSettings.arguments] String.
+  static const playerSessionDetail = '/app/player-sessions/detail';
+
+  /// Pass the invite token as a [RouteSettings.arguments] String.
+  static const joinSession = '/app/sessions/join';
 }
 
 /// Arguments for the [AppRoutes.combatTracker] route.
@@ -184,6 +197,39 @@ Route<dynamic>? onGenerateRoute(RouteSettings settings) {
         dpCount: args.dpCount,
         sessionCharacterIds: args.sessionCharacterIds,
         cubitFactory: () => getIt<ActiveCombatCubit>(),
+      ),
+      settings: settings,
+    );
+  }
+
+  // ── Player sessions feature ────────────────────────────────────────────
+
+  if (name == AppRoutes.playerSessions) {
+    return MaterialPageRoute<void>(
+      builder: (_) => PlayerSessionsListPage(
+        repository: getIt<PlayerSessionRepository>(),
+      ),
+      settings: settings,
+    );
+  }
+
+  if (name == AppRoutes.playerSessionDetail) {
+    final gameSessionId = settings.arguments as String;
+    return MaterialPageRoute<void>(
+      builder: (_) => PlayerSessionDetailPage(
+        gameSessionId: gameSessionId,
+        repository: getIt<PlayerSessionRepository>(),
+      ),
+      settings: settings,
+    );
+  }
+
+  if (name == AppRoutes.joinSession) {
+    final token = settings.arguments as String;
+    return MaterialPageRoute<void>(
+      builder: (_) => JoinSessionPage(
+        token: token,
+        repository: getIt<PlayerSessionRepository>(),
       ),
       settings: settings,
     );
