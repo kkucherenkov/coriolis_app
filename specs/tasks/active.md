@@ -16,7 +16,7 @@
   - [x] T-11.1.0.b — route move mobile (`apps/mobile/lib/features/sessions/` → `lib/features/game_sessions/`) + update all Dart imports.
   - [x] T-11.1.0.c — document the URL naming policy in `AGENTS.md` (GameSession TS/Dart/DB → `/game-sessions/*` for GM, `/sessions/*` for player).
   - [x] T-11.1.1.a — OpenAPI: invite-rotate, invite-revoke, invite-metadata, members-list, member-patch, member-delete. Run `pnpm spec:validate && pnpm spec:bundle && pnpm spec:codegen`.
-  - [ ] T-11.1.1.f — Prisma migration: add `inviteTokenHash`, `inviteRotatedAt`, `inviteCreatedById` to `GameSession`; create `GameSessionMembership(@@unique gameSessionId,userId)`; backfill GM-role `GameSessionMembership` for every existing `GameSession`. Wrap migration in a transaction.
+  - [x] T-11.1.1.f — Prisma migration: add `inviteTokenHash`, `inviteRotatedAt`, `inviteCreatedById` to `GameSession`; create `GameSessionMembership(@@unique gameSessionId,userId)`; backfill GM-role `GameSessionMembership` for every existing `GameSession`. Wrap migration in a transaction.
   - [ ] T-11.1.1.d — invite-token generator: 22-char URL-safe `nanoid`, SHA-256 hash at rest, plaintext only in the rotate-response body.
   - [ ] T-11.1.1.b — `MembershipsModule` (CQRS) with `RotateInviteCommand`, `RevokeInviteCommand`, `KickMemberCommand`, `LeaveSessionCommand`, `LinkCharacterCommand` (commands); `ListMembershipsQuery`, `GetInviteMetadataQuery` (queries); `MemberJoinedEvent`, `MemberLeftEvent`, `MemberKickedEvent`, `CharacterLinkedEvent` (events). _Stream B adds `AcceptInviteCommand`, `GetMyMembershipsQuery`, `GetInvitePreviewQuery`._
   - [ ] T-11.1.1.c — extend `GameSessionsModule.get` to include `memberships[]` in the response.
