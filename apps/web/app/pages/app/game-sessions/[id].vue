@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  definePageMeta({ layout: 'app' });
+  definePageMeta({ layout: 'app', middleware: ['require-gm-role'] });
 
   import {
     AppCard,
@@ -9,7 +9,9 @@
     AppBanner,
     AppBadge,
     AppInviteManager,
+    AppSessionHeader,
   } from '@app/ui';
+  import type { AppSessionHeaderLabels } from '@app/ui';
   import EncounterPanel from '~/components/EncounterPanel.vue';
   import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
   import { useGameSessionsApi } from '~/composables/useGameSessionsApi';
@@ -189,6 +191,20 @@
   // refs drive a small "live" indicator on the DP card; we also watch them
   // to push DP / roll-pushed events into the visible state.
   const realtime = useSessionRealtime(sessionId.value);
+
+  // ── AppSessionHeader bindings (Phase 11 Stream B) ─────────────────────────
+  const headerStatus = computed<'online' | 'offline'>(() =>
+    realtime.connected.value ? 'online' : 'offline',
+  );
+
+  const headerLabels = computed<AppSessionHeaderLabels>(() => ({
+    statusOnline: t('header.statusOnline'),
+    statusOffline: t('header.statusOffline'),
+    dpLabel: t('header.dpLabel'),
+    leaveLabel: t('header.leaveLabel'),
+    backLabel: t('header.backLabel'),
+  }));
+
   const recentRollPushed = ref<RollPushedPayload | null>(null);
   // Last combat.updated snapshot forwarded to EncounterPanel → CombatTracker.
   const lastCombatSnapshot = ref<CombatUpdatedPayload | null>(null);
@@ -398,6 +414,13 @@
 <i18n lang="json">
 {
   "en": {
+    "header": {
+      "statusOnline": "Online",
+      "statusOffline": "Offline",
+      "dpLabel": "Darkness Points",
+      "leaveLabel": "Leave",
+      "backLabel": "← Back"
+    },
     "backToList": "← Back to sessions",
     "loading": "Loading session…",
     "errorLoad": "Couldn't load that session.",
@@ -458,6 +481,13 @@
     }
   },
   "ru": {
+    "header": {
+      "statusOnline": "Онлайн",
+      "statusOffline": "Офлайн",
+      "dpLabel": "Пункты тьмы",
+      "leaveLabel": "Выйти",
+      "backLabel": "← Назад"
+    },
     "backToList": "← К списку сессий",
     "loading": "Загружаем сессию…",
     "errorLoad": "Не удалось загрузить сессию.",
@@ -518,6 +548,13 @@
     }
   },
   "uk": {
+    "header": {
+      "statusOnline": "[uk-todo] Online",
+      "statusOffline": "[uk-todo] Offline",
+      "dpLabel": "[uk-todo] Darkness Points",
+      "leaveLabel": "[uk-todo] Leave",
+      "backLabel": "[uk-todo] ← Back"
+    },
     "backToList": "[uk-todo] Back",
     "loading": "[uk-todo] Loading session",
     "errorLoad": "[uk-todo] Couldn't load",
@@ -578,6 +615,13 @@
     }
   },
   "el": {
+    "header": {
+      "statusOnline": "[el-todo] Online",
+      "statusOffline": "[el-todo] Offline",
+      "dpLabel": "[el-todo] Darkness Points",
+      "leaveLabel": "[el-todo] Leave",
+      "backLabel": "[el-todo] ← Back"
+    },
     "backToList": "[el-todo] Back",
     "loading": "[el-todo] Loading session",
     "errorLoad": "[el-todo] Couldn't load",
@@ -641,36 +685,20 @@
 </i18n>
 
 <template>
-  <section
-    class="page-session-detail"
-    data-testid="page-session-detail"
-  >
-    <NuxtLink
-      to="/app/game-sessions"
-      class="page-session-detail__back"
-    >
+  <section class="page-session-detail" data-testid="page-session-detail">
+    <NuxtLink to="/app/game-sessions" class="page-session-detail__back">
       {{ t('backToList') }}
     </NuxtLink>
 
-    <p
-      v-if="state === 'loading'"
-      class="page-session-detail__placeholder"
-    >
+    <p v-if="state === 'loading'" class="page-session-detail__placeholder">
       {{ t('loading') }}
     </p>
 
-    <AppBanner
-      v-else-if="state === 'error'"
-      tone="danger"
-      role="alert"
-    >
+    <AppBanner v-else-if="state === 'error'" tone="danger" role="alert">
       {{ errorMsg }}
     </AppBanner>
 
-    <div
-      v-else-if="state === 'notfound'"
-      class="page-session-detail__empty"
-    >
+    <div v-else-if="state === 'notfound'" class="page-session-detail__empty">
       <h2 class="page-session-detail__empty-heading">
         {{ t('notFoundHeading') }}
       </h2>
@@ -680,25 +708,15 @@
     </div>
 
     <template v-else-if="session">
-      <header class="page-session-detail__header">
-        <div class="page-session-detail__title-row">
-          <h1 class="page-session-detail__title">
-            {{ session.name }}
-          </h1>
-          <AppBadge
-            :variant="isGm ? 'mystic' : 'brass'"
-            size="sm"
-          >
-            {{ isGm ? t('gmBadge') : t('playerBadge') }}
-          </AppBadge>
-        </div>
-        <p
-          v-if="session.description"
-          class="page-session-detail__description"
-        >
-          {{ session.description }}
-        </p>
-      </header>
+      <!-- Session header (Phase 11 Stream B): replaced inline h1 + badge
+           with AppSessionHeader. GM mode — no leave button rendered. -->
+      <AppSessionHeader
+        mode="gm"
+        :session-name="session.name"
+        :status="headerStatus"
+        :dp-count="session.dpCount"
+        :labels="headerLabels"
+      />
 
       <Transition name="fade">
         <AppBanner
@@ -734,50 +752,26 @@
           </AppBadge>
         </AppCard>
 
-        <AppCard
-          v-if="isGm"
-          class="page-session-detail__dp-controls"
-        >
+        <AppCard v-if="isGm" class="page-session-detail__dp-controls">
           <h3 class="page-session-detail__panel-title">
             {{ t('dpAdjustHeading') }}
           </h3>
           <p class="page-session-detail__panel-hint">
             {{ t('dpAdjustHint') }}
           </p>
-          <AppBanner
-            v-if="dpError"
-            tone="danger"
-            role="alert"
-          >
+          <AppBanner v-if="dpError" tone="danger" role="alert">
             {{ dpError }}
           </AppBanner>
           <div class="page-session-detail__dp-quick">
-            <AppButton
-              variant="ghost"
-              size="sm"
-              :disabled="dpSubmitting"
-              @click="applyDelta(-1)"
-            >
+            <AppButton variant="ghost" size="sm" :disabled="dpSubmitting" @click="applyDelta(-1)">
               {{ t('dpQuickMinus') }}
             </AppButton>
-            <AppButton
-              variant="primary"
-              size="sm"
-              :disabled="dpSubmitting"
-              @click="applyDelta(1)"
-            >
+            <AppButton variant="primary" size="sm" :disabled="dpSubmitting" @click="applyDelta(1)">
               {{ t('dpQuickPlus') }}
             </AppButton>
           </div>
-          <form
-            class="page-session-detail__dp-form"
-            novalidate
-            @submit.prevent="onApplyForm"
-          >
-            <AppField
-              :label="t('dpDeltaLabel')"
-              required
-            >
+          <form class="page-session-detail__dp-form" novalidate @submit.prevent="onApplyForm">
+            <AppField :label="t('dpDeltaLabel')" required>
               <template #default="slotAttrs">
                 <AppInput
                   v-bind="slotAttrs"
@@ -816,24 +810,13 @@
         <h3 class="page-session-detail__panel-title">
           {{ t('charactersHeading') }}
         </h3>
-        <AppBanner
-          v-if="assignError"
-          tone="danger"
-          role="alert"
-        >
+        <AppBanner v-if="assignError" tone="danger" role="alert">
           {{ assignError }}
         </AppBanner>
-        <p
-          v-if="(session.characterIds.length ?? 0) === 0"
-          class="page-session-detail__panel-hint"
-        >
+        <p v-if="(session.characterIds.length ?? 0) === 0" class="page-session-detail__panel-hint">
           {{ t('charactersEmpty') }}
         </p>
-        <ul
-          v-else
-          class="page-session-detail__char-list"
-          role="list"
-        >
+        <ul v-else class="page-session-detail__char-list" role="list">
           <li
             v-for="characterId in session.characterIds"
             :key="characterId"
@@ -842,28 +825,17 @@
             <span class="page-session-detail__char-name">
               {{ assignedCharacters.find((c) => c.id === characterId)?.name ?? `#${characterId}` }}
             </span>
-            <AppButton
-              v-if="isGm"
-              variant="ghost"
-              size="sm"
-              @click="onUnassign(characterId)"
-            >
+            <AppButton v-if="isGm" variant="ghost" size="sm" @click="onUnassign(characterId)">
               {{ t('removeButton') }}
             </AppButton>
           </li>
         </ul>
 
-        <div
-          v-if="isGm"
-          class="page-session-detail__assign"
-        >
+        <div v-if="isGm" class="page-session-detail__assign">
           <h4 class="page-session-detail__panel-subtitle">
             {{ t('assignHeading') }}
           </h4>
-          <p
-            v-if="assignableCharacters.length === 0"
-            class="page-session-detail__panel-hint"
-          >
+          <p v-if="assignableCharacters.length === 0" class="page-session-detail__panel-hint">
             {{ t('assignNoneLeft') }}
           </p>
           <form
@@ -878,17 +850,10 @@
               :disabled="assignBusy"
               :aria-label="t('assignHeading')"
             >
-              <option
-                value=""
-                disabled
-              >
+              <option value="" disabled>
                 {{ t('assignSelectPlaceholder') }}
               </option>
-              <option
-                v-for="c in assignableCharacters"
-                :key="c.id"
-                :value="c.id"
-              >
+              <option v-for="c in assignableCharacters" :key="c.id" :value="c.id">
                 {{ c.name }}
               </option>
             </select>
@@ -905,29 +870,15 @@
         </div>
       </AppCard>
 
-      <AppCard
-        v-if="isGm"
-        class="page-session-detail__panel"
-      >
+      <AppCard v-if="isGm" class="page-session-detail__panel">
         <h3 class="page-session-detail__panel-title">
           {{ t('auditHeading') }}
         </h3>
-        <p
-          v-if="dpEvents.length === 0"
-          class="page-session-detail__panel-hint"
-        >
+        <p v-if="dpEvents.length === 0" class="page-session-detail__panel-hint">
           {{ t('auditEmpty') }}
         </p>
-        <ul
-          v-else
-          class="page-session-detail__audit-list"
-          role="list"
-        >
-          <li
-            v-for="event in dpEvents"
-            :key="event.id"
-            class="page-session-detail__audit-row"
-          >
+        <ul v-else class="page-session-detail__audit-list" role="list">
+          <li v-for="event in dpEvents" :key="event.id" class="page-session-detail__audit-row">
             <span
               class="page-session-detail__audit-delta"
               :class="{
@@ -939,10 +890,7 @@
             <span class="page-session-detail__audit-source">
               {{ sourceLabel(event.source) }}
             </span>
-            <span
-              v-if="event.reason"
-              class="page-session-detail__audit-reason"
-            >
+            <span v-if="event.reason" class="page-session-detail__audit-reason">
               {{ event.reason }}
             </span>
             <span class="page-session-detail__audit-time">
@@ -956,11 +904,7 @@
            rotate / revoke controls and a one-time reveal panel for the
            plaintext invite URL. window.confirm() is used for destructive
            confirmations until a proper modal-confirm primitive is added. -->
-      <AppCard
-        v-if="isGm"
-        class="page-session-detail__panel"
-        data-testid="invite-manager-section"
-      >
+      <AppCard v-if="isGm" class="page-session-detail__panel" data-testid="invite-manager-section">
         <AppInviteManager
           :state="inviteState"
           :rotated-at="inviteRotatedAt"

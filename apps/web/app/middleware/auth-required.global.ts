@@ -22,6 +22,7 @@ import { decideAuthAction, type SessionResult } from '~/utils/auth-redirect';
  */
 export default defineNuxtRouteMiddleware(async (to) => {
   if (!to.path.startsWith('/app')) return;
+  if (to.path.startsWith('/app/sessions/join/')) return; // public invite join page
 
   const auth = useAuth();
 
