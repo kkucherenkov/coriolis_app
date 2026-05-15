@@ -57,6 +57,8 @@ class WizardDraft extends Equatable {
     this.technology,
     // Step 6 — Talents
     this.pendingTalents,
+    // Step 8 — Gear (memory-only until forge)
+    this.pendingGearPicks = const {},
     // Reorder-block additions (data plumbing only — UI lands in
     // T-WIZARD-MOBILE-REORDER):
     this.concept,
@@ -98,6 +100,9 @@ class WizardDraft extends Equatable {
   final int? technology;
   // Step 6
   final List<PendingTalent>? pendingTalents;
+  // Step 8 — rowId → chosen optionId (null = no pick for that row).
+  // Memory-only: not persisted until forge().
+  final Map<String, String?> pendingGearPicks;
   // Reorder-block additions
   final String? concept;
   final String? role;
@@ -158,6 +163,7 @@ class WizardDraft extends Equatable {
     int? science,
     int? technology,
     List<PendingTalent>? pendingTalents,
+    Map<String, String?>? pendingGearPicks,
     String? concept,
     String? role,
     String? crewConcept,
@@ -192,6 +198,7 @@ class WizardDraft extends Equatable {
       science: science ?? this.science,
       technology: technology ?? this.technology,
       pendingTalents: pendingTalents ?? this.pendingTalents,
+      pendingGearPicks: pendingGearPicks ?? this.pendingGearPicks,
       concept: concept ?? this.concept,
       role: role ?? this.role,
       crewConcept: crewConcept ?? this.crewConcept,
@@ -211,6 +218,7 @@ class WizardDraft extends Equatable {
         command, culture, dataDjinn, medicurgy,
         mysticPowers, pilot, science, technology,
         pendingTalents,
+        pendingGearPicks,
         concept, role, crewConcept, mutant, mutantLineage,
       ];
 }

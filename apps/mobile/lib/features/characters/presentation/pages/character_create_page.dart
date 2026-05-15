@@ -13,10 +13,11 @@ import 'package:coriolis_companion/features/characters/presentation/widgets/wiza
 import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_5_skills.dart';
 import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_6_talents.dart';
 import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_7_icon.dart';
+import 'package:coriolis_companion/features/characters/presentation/widgets/wizard/step_8_gear.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
 import 'package:coriolis_companion/shared/di/injector.dart';
 
-/// Character creation wizard — 7-step PageView backed by [CharacterWizardCubit].
+/// Character creation wizard — 8-step PageView backed by [CharacterWizardCubit].
 ///
 /// Canonical step order (per
 /// [`specs/design/CHARACTER_WIZARD.md`](../../../../../../specs/design/CHARACTER_WIZARD.md)):
@@ -27,8 +28,7 @@ import 'package:coriolis_companion/shared/di/injector.dart';
 ///   5. Skills
 ///   6. Talents
 ///   7. Icon
-///
-/// Step 8 Gear is deferred until `T-WIZARD-GEAR-UI`.
+///   8. Gear
 ///
 /// Routing:
 /// - `/app/characters/new`        → start fresh draft (POST on first advance).
@@ -134,6 +134,7 @@ class _WizardView extends StatelessWidget {
                 Step5Skills(),
                 Step6Talents(),
                 Step7Icon(),
+                Step8Gear(),
               ],
               onSaveAndExit: () {
                 Navigator.of(context)

@@ -102,7 +102,7 @@
   "saveStatusError": "[el-todo] Save error",
   "encumbranceWarning": "[el-todo] Encumbrance limit reached",
 
-  "wizardTitle": "[el-todo] New character · Step {step} / 7",
+  "wizardTitle": "[el-todo] New character · Step {step} / 8",
   "wizardProgressLabel": "[el-todo] Character creation progress",
   "wizardBack": "[el-todo] ← Back",
   "wizardNext": "[el-todo] Next →",
@@ -145,6 +145,20 @@
         "label": "[el-todo] Icon",
         "title": "[el-todo] Choose your Icon",
         "blurb": "[el-todo] The Icons watch from beyond the dark water."
+      },
+      "gear": {
+        "label": "[el-todo] Gear",
+        "title": "[el-todo] Outfit the cycle ahead",
+        "blurb": "[el-todo] Choose one item from each row. You can refine your kit later.",
+        "placeholderNoConcept": "[el-todo] Pick a concept and role first; your starter kit follows from those.",
+        "progress": "[el-todo] Picked {picked} of {total}",
+        "kind": {
+          "weapon": "[el-todo] Weapon",
+          "armor": "[el-todo] Armor",
+          "gear": "[el-todo] Gear",
+          "cybernetic": "[el-todo] Implant",
+          "other": "[el-todo] Other"
+        }
       }
     }
   },

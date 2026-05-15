@@ -7,6 +7,9 @@ import 'package:coriolis_companion/features/characters/domain/character_reposito
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
 
+// Fallback value for addItem.
+class _FakeDomainItem extends Fake implements DomainItem {}
+
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
 class _MockRepo extends Mock implements CharacterRepository {}
@@ -64,6 +67,7 @@ void main() {
       command: 0, culture: 0, dataDjinn: 0, medicurgy: 0,
       mysticPowers: 0, pilot: 0, science: 0, technology: 0,
     ));
+    registerFallbackValue(_FakeDomainItem());
   });
 
   setUp(() {
@@ -411,6 +415,158 @@ void main() {
       verify: (cubit) {
         expect(cubit.state.saveStatus, WizardSaveStatus.error);
         expect(cubit.state.lastError, isNotNull);
+      },
+    );
+
+    // ── Step 8 — selectGearPick ──────────────────────────────────────────────
+
+    test('selectGearPick sets the option for a row', () {
+      final cubit = _buildCubit(repo);
+      cubit.selectGearPick('row-1', 'tool-kit-s');
+      expect(cubit.state.draft.pendingGearPicks['row-1'], 'tool-kit-s');
+    });
+
+    test('selectGearPick re-tap same option clears the row', () {
+      final cubit = _buildCubit(repo);
+      cubit.selectGearPick('row-1', 'tool-kit-s');
+      expect(cubit.state.draft.pendingGearPicks['row-1'], 'tool-kit-s');
+      cubit.selectGearPick('row-1', 'tool-kit-s');
+      expect(cubit.state.draft.pendingGearPicks['row-1'], isNull);
+    });
+
+    test('selectGearPick flipping from one option to another in same row', () {
+      final cubit = _buildCubit(repo);
+      cubit.selectGearPick('row-1', 'tool-kit-s');
+      cubit.selectGearPick('row-1', 'piloting-talisman');
+      expect(cubit.state.draft.pendingGearPicks['row-1'], 'piloting-talisman');
+    });
+
+    // ── forge() posts picked gear items ─────────────────────────────────────
+
+    blocTest<CharacterWizardCubit, CharacterWizardState>(
+      'forge() calls addItem for each non-null gear pick in order',
+      build: () {
+        final base = _makeCharacter(name: 'Kira Sol');
+        when(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).thenAnswer((_) async => base);
+        when(() => repo.update(
+              'c1',
+              name: any(named: 'name'),
+              concept: any(named: 'concept'),
+              role: any(named: 'role'),
+              iconId: any(named: 'iconId'),
+              upbringing: any(named: 'upbringing'),
+              origin: any(named: 'origin'),
+              crewConcept: any(named: 'crewConcept'),
+              mutant: any(named: 'mutant'),
+              mutantLineage: any(named: 'mutantLineage'),
+              attributes: any(named: 'attributes'),
+              skills: any(named: 'skills'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => base);
+        when(() => repo.get('c1')).thenAnswer((_) async => base);
+        when(() => repo.addItem('c1', any()))
+            .thenAnswer((_) async => const DomainItem(
+                  id: 'new-item',
+                  type: ItemType.gear,
+                  name: 'Tool kit (S)',
+                ));
+        return _buildCubit(repo);
+      },
+      act: (cubit) async {
+        await cubit.start();
+        // Seed concept + role + two gear picks.
+        cubit.updateConcept('pilot');
+        cubit.updateRole('ace');
+        cubit.selectGearPick('row-1', 'tool-kit-s');
+        cubit.selectGearPick('row-4', 'rail-pistol');
+        await cubit.forge();
+      },
+      verify: (cubit) {
+        expect(cubit.state.saveStatus, WizardSaveStatus.saved);
+        // addItem called twice — once per non-null pick.
+        verify(() => repo.addItem('c1', any())).called(2);
+      },
+    );
+
+    blocTest<CharacterWizardCubit, CharacterWizardState>(
+      'forge() with no gear picks calls addItem zero times',
+      build: () {
+        final base = _makeCharacter();
+        when(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).thenAnswer((_) async => base);
+        when(() => repo.update(
+              'c1',
+              name: any(named: 'name'),
+              concept: any(named: 'concept'),
+              role: any(named: 'role'),
+              iconId: any(named: 'iconId'),
+              upbringing: any(named: 'upbringing'),
+              origin: any(named: 'origin'),
+              crewConcept: any(named: 'crewConcept'),
+              mutant: any(named: 'mutant'),
+              mutantLineage: any(named: 'mutantLineage'),
+              attributes: any(named: 'attributes'),
+              skills: any(named: 'skills'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => base);
+        when(() => repo.get('c1')).thenAnswer((_) async => base);
+        return _buildCubit(repo);
+      },
+      act: (cubit) async {
+        await cubit.start();
+        cubit.updateConcept('pilot');
+        cubit.updateRole('ace');
+        // No gear picks.
+        await cubit.forge();
+      },
+      verify: (cubit) {
+        expect(cubit.state.saveStatus, WizardSaveStatus.saved);
+        verifyNever(() => repo.addItem(any(), any()));
+      },
+    );
+
+    blocTest<CharacterWizardCubit, CharacterWizardState>(
+      'forge() with null concept/role skips gear items',
+      build: () {
+        final base = _makeCharacter();
+        when(() => repo.create(
+              name: 'Untitled',
+              upbringing: 'plebeian',
+              status: 'draft',
+            )).thenAnswer((_) async => base);
+        when(() => repo.update(
+              'c1',
+              name: any(named: 'name'),
+              concept: any(named: 'concept'),
+              role: any(named: 'role'),
+              iconId: any(named: 'iconId'),
+              upbringing: any(named: 'upbringing'),
+              origin: any(named: 'origin'),
+              crewConcept: any(named: 'crewConcept'),
+              mutant: any(named: 'mutant'),
+              mutantLineage: any(named: 'mutantLineage'),
+              attributes: any(named: 'attributes'),
+              skills: any(named: 'skills'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => base);
+        when(() => repo.get('c1')).thenAnswer((_) async => base);
+        return _buildCubit(repo);
+      },
+      act: (cubit) async {
+        await cubit.start();
+        // No concept/role — findStarterKit returns null.
+        cubit.selectGearPick('row-1', 'something');
+        await cubit.forge();
+      },
+      verify: (cubit) {
+        verifyNever(() => repo.addItem(any(), any()));
       },
     );
 

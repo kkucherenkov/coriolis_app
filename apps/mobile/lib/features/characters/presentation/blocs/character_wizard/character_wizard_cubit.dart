@@ -1,10 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:coriolis_companion/features/characters/data/starter_kits_catalog.dart';
 import 'package:coriolis_companion/features/characters/domain/character.dart';
 import 'package:coriolis_companion/features/characters/domain/character_repository.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_state.dart';
 
-/// Manages the seven-step character creation wizard.
+/// Manages the eight-step character creation wizard.
 ///
 /// Canonical step order (per
 /// [`specs/design/CHARACTER_WIZARD.md`](../../../../../../specs/design/CHARACTER_WIZARD.md)):
@@ -15,6 +16,7 @@ import 'package:coriolis_companion/features/characters/presentation/blocs/charac
 ///   5. Skills
 ///   6. Talents
 ///   7. Icon
+///   8. Gear
 ///
 /// ## Draft persistence contract
 ///
@@ -102,7 +104,7 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
   ///
   /// Returns `true` on success; `false` on save failure (stays on current step).
   Future<bool> next() async {
-    if (state.step >= 7) return false;
+    if (state.step >= 8) return false;
     final saved = await _persistCurrentStep();
     if (!saved) return false;
     emit(state.copyWith(step: state.step + 1, saveStatus: WizardSaveStatus.idle));
@@ -310,6 +312,23 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
     emit(state.copyWith(draft: state.draft.copyWith(pendingTalents: current)));
   }
 
+  // ── Step 8 — Gear ─────────────────────────────────────────────────────────
+
+  /// Toggle a gear pick for [rowId].
+  ///
+  /// Pass [optionId] to select an option; passing the already-selected
+  /// optionId or `null` clears the row's pick. Memory-only until [forge].
+  void selectGearPick(String rowId, String? optionId) {
+    final current = Map<String, String?>.from(state.draft.pendingGearPicks);
+    if (current[rowId] == optionId) {
+      // Re-tap → clear the row.
+      current[rowId] = null;
+    } else {
+      current[rowId] = optionId;
+    }
+    emit(state.copyWith(draft: state.draft.copyWith(pendingGearPicks: current)));
+  }
+
   // ── Forge ─────────────────────────────────────────────────────────────────
 
   /// Persist all remaining data and activate the character.
@@ -377,7 +396,22 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
         );
       }
 
-      // Re-fetch to pick up any talent changes.
+      // Persist gear picks from Step 8.
+      // Item.name is locale-invariant: we always POST the EN name.
+      final kit = findStarterKit(d.concept ?? '', d.role ?? '');
+      if (kit != null) {
+        for (final choice in kit.choices) {
+          final pickedId = d.pendingGearPicks[choice.id];
+          if (pickedId == null) continue;
+          final option = choice.options.firstWhere(
+            (o) => o.id == pickedId,
+            orElse: () => choice.options.first,
+          );
+          await _repository.addItem(id, _buildDomainItem(option));
+        }
+      }
+
+      // Re-fetch to pick up any talent + gear changes.
       updated = await _repository.get(id);
 
       emit(state.copyWith(
@@ -469,6 +503,9 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
           if (d.iconId != null) {
             await _repository.update(id, iconId: d.iconId);
           }
+        case 8:
+          // Gear picks — memory-only until forge(); nothing to PATCH.
+          break;
         default:
           break;
       }
@@ -481,6 +518,55 @@ class CharacterWizardCubit extends Cubit<CharacterWizardState> {
       ));
       return false;
     }
+  }
+
+  /// Build a [DomainItem] from a starter-kit item with safe defaults.
+  ///
+  /// Always uses the EN display name — `Item.name` is locale-invariant.
+  static DomainItem _buildDomainItem(StarterKitItem item) {
+    final name = item.template.name['en']!;
+    return switch (item.template.kind) {
+      StarterKitItemKind.weapon => DomainItem(
+          id: '',
+          type: ItemType.weapon,
+          name: name,
+          damage: 1,
+          range: 'close',
+          bonus: 0,
+          crit: 1,
+          weight: 1,
+          features: const [],
+          equipped: false,
+        ),
+      StarterKitItemKind.armor => DomainItem(
+          id: '',
+          type: ItemType.armor,
+          name: name,
+          armorRating: 1,
+          weight: 1,
+          features: const [],
+          equipped: false,
+        ),
+      StarterKitItemKind.gear => DomainItem(
+          id: '',
+          type: ItemType.gear,
+          name: name,
+          weight: 1,
+          quantity: 1,
+        ),
+      StarterKitItemKind.cybernetic => DomainItem(
+          id: '',
+          type: ItemType.cybernetic,
+          name: name,
+          effect: '',
+        ),
+      StarterKitItemKind.other => DomainItem(
+          id: '',
+          type: ItemType.other,
+          name: name,
+          weight: 1,
+        ),
+    };
   }
 
   /// Reconstruct local draft from an existing character (resume flow).

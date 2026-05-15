@@ -102,7 +102,7 @@
   "saveStatusError": "[uk-todo] Save error",
   "encumbranceWarning": "[uk-todo] Encumbrance limit reached",
 
-  "wizardTitle": "[uk-todo] New character · Step {step} / 7",
+  "wizardTitle": "[uk-todo] New character · Step {step} / 8",
   "wizardProgressLabel": "[uk-todo] Character creation progress",
   "wizardBack": "[uk-todo] ← Back",
   "wizardNext": "[uk-todo] Next →",
@@ -145,6 +145,20 @@
         "label": "[uk-todo] Icon",
         "title": "[uk-todo] Choose your Icon",
         "blurb": "[uk-todo] The Icons watch from beyond the dark water."
+      },
+      "gear": {
+        "label": "[uk-todo] Gear",
+        "title": "[uk-todo] Outfit the cycle ahead",
+        "blurb": "[uk-todo] Choose one item from each row. You can refine your kit later.",
+        "placeholderNoConcept": "[uk-todo] Pick a concept and role first; your starter kit follows from those.",
+        "progress": "[uk-todo] Picked {picked} of {total}",
+        "kind": {
+          "weapon": "[uk-todo] Weapon",
+          "armor": "[uk-todo] Armor",
+          "gear": "[uk-todo] Gear",
+          "cybernetic": "[uk-todo] Implant",
+          "other": "[uk-todo] Other"
+        }
       }
     }
   },

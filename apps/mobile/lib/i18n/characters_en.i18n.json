@@ -102,7 +102,7 @@
   "saveStatusError": "Save error",
   "encumbranceWarning": "Encumbrance limit reached",
 
-  "wizardTitle": "New character · Step {step} / 7",
+  "wizardTitle": "New character · Step {step} / 8",
   "wizardProgressLabel": "Character creation progress",
   "wizardBack": "← Back",
   "wizardNext": "Next →",
@@ -145,6 +145,20 @@
         "label": "Icon",
         "title": "Choose your Icon",
         "blurb": "The Icons watch from beyond the dark water. One walks beside you. Choose, and they will hear your prayers."
+      },
+      "gear": {
+        "label": "Gear",
+        "title": "Outfit the cycle ahead",
+        "blurb": "Choose one item from each row. You can refine your kit later.",
+        "placeholderNoConcept": "Pick a concept and role first; your starter kit follows from those.",
+        "progress": "Picked {picked} of {total}",
+        "kind": {
+          "weapon": "Weapon",
+          "armor": "Armor",
+          "gear": "Gear",
+          "cybernetic": "Implant",
+          "other": "Other"
+        }
       }
     }
   },
