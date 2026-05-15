@@ -10,7 +10,14 @@
     ariaLabel?: string;
     /** Optional aria-labelledby — pass an id of a heading element inside the modal. */
     ariaLabelledby?: string;
-    /** Closes on click on the backdrop (default: true). */
+    /**
+     * Closes on click on the backdrop (default: **false**).
+     *
+     * PATTERNS.md §5 — backdrop click is too easy to mis-click; the
+     * default is conservative. Override to `true` only when the modal
+     * carries no risk — e.g. a read-only viewer or a benign picker
+     * (whisper picker, role-migration prompt).
+     */
     closeOnBackdrop?: boolean;
     /** Closes on Escape (default: true). */
     closeOnEsc?: boolean;
@@ -22,7 +29,11 @@
     open: false,
     ariaLabel: undefined,
     ariaLabelledby: undefined,
-    closeOnBackdrop: true,
+    // PATTERNS.md §5 — default `false` (T-AUDIT-2026-05-15-MODAL-BACKDROP-DEFAULT).
+    // Was `true` through 2026-05-14; flipped after the design audit to align
+    // the atom's contract with the doctrine. Read-only viewers and benign
+    // pickers must now opt-in via `:close-on-backdrop="true"`.
+    closeOnBackdrop: false,
     closeOnEsc: true,
     size: 'md',
   });

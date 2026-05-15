@@ -410,8 +410,13 @@ describe('npcs/index.vue — delete confirm modal', () => {
     expect(src).toContain('deleteConfirmOpen');
   });
 
-  it('passes closeOnBackdrop=false while deleting to prevent accidental dismiss', () => {
-    expect(src).toContain(':close-on-backdrop="!deleting"');
+  it('passes closeOnBackdrop=false to prevent accidental dismiss (PATTERNS.md §5)', () => {
+    // T-AUDIT-2026-05-15-MODAL-BACKDROP-DEFAULT — delete is a destructive
+    // confirm; PATTERNS.md §5 disallows backdrop close. Esc-close stays
+    // gated on `!deleting` so the user can still cancel before the
+    // request lands but cannot interrupt the in-flight delete.
+    expect(src).toContain(':close-on-backdrop="false"');
+    expect(src).toContain(':close-on-esc="!deleting"');
   });
 });
 
