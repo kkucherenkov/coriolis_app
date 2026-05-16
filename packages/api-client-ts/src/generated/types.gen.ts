@@ -3131,6 +3131,98 @@ export type TurnAdvanceResult = {
 };
 
 /**
+ * Discriminates user-authored text messages from server-generated system messages.
+ */
+export type ChatMessageKind = 'text' | 'system';
+
+export type ChatMessage = {
+    id: string;
+    gameSessionId: string;
+    /**
+     * GameSessionMembership.id; null for system messages
+     */
+    authorMembershipId: string | null;
+    /**
+     * Denormalised at read time
+     */
+    authorDisplayName?: string | null;
+    /**
+     * null = broadcast; non-null = whisper
+     */
+    targetMembershipId: string | null;
+    kind: ChatMessageKind;
+    /**
+     * null for kind=system; non-empty trimmed text for kind=text
+     */
+    body?: string | null;
+    /**
+     * i18n key for kind=system, e.g. chat.system.member_joined
+     */
+    systemKey?: string | null;
+    systemParams?: {
+        [key: string]: unknown;
+    } | null;
+    createdAt: string;
+    editedAt?: string | null;
+    deletedAt?: string | null;
+};
+
+export type ChatMessageList = {
+    items: Array<ChatMessage>;
+    /**
+     * Opaque base64url cursor; null = end of results
+     */
+    nextCursor: string | null;
+};
+
+export type PostChatMessageRequest = {
+    /**
+     * Client-submitted messages must be of kind=text; system messages are server-generated only.
+     */
+    kind: 'text';
+    body: string;
+    /**
+     * null or omitted = broadcast; non-null = whisper to this membership
+     */
+    targetMembershipId?: string | null;
+};
+
+export type EditChatMessageRequest = {
+    body: string;
+};
+
+export type ChatConversationSummary = {
+    /**
+     * 'broadcast' or a membershipId
+     */
+    conversationKey: string;
+    kind: 'broadcast' | 'whisper';
+    partnerMembershipId?: string | null;
+    partnerDisplayName?: string | null;
+    partnerCharacterName?: string | null;
+    lastMessageAt: string | null;
+    unreadCount: number;
+};
+
+export type ChatConversationList = {
+    items: Array<ChatConversationSummary>;
+};
+
+export type MarkReadRequest = {
+    lastReadAt: string;
+};
+
+export type ChatBlockRequest = {
+    targetMembershipId: string;
+};
+
+export type ChatBlockSummary = {
+    targetMembershipId: string;
+    targetDisplayName?: string | null;
+    createdAt: string;
+};
+
+/**
  * A single Coriolis dice roll. Dice are rolled server-side using a
  * cryptographically secure RNG. Hits = count of 6s. A roll can be pushed
  * at most once (PRD §10). `gameSessionId` is null until Feature 7.2 lands.
@@ -7004,3 +7096,402 @@ export type PushRollResponses = {
 };
 
 export type PushRollResponse = PushRollResponses[keyof PushRollResponses];
+
+export type DeleteChatMessageData = {
+    body?: never;
+    path: {
+        /**
+         * Chat message identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/chat/messages/{id}';
+};
+
+export type DeleteChatMessageErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller is not authorised to delete this message
+     */
+    403: Problem;
+    /**
+     * Message not found or not visible to caller
+     */
+    404: Problem;
+};
+
+export type DeleteChatMessageError = DeleteChatMessageErrors[keyof DeleteChatMessageErrors];
+
+export type DeleteChatMessageResponses = {
+    /**
+     * Message soft-deleted
+     */
+    204: void;
+};
+
+export type DeleteChatMessageResponse = DeleteChatMessageResponses[keyof DeleteChatMessageResponses];
+
+export type GetChatMessageData = {
+    body?: never;
+    path: {
+        /**
+         * Chat message identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/chat/messages/{id}';
+};
+
+export type GetChatMessageErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Message not found or not visible to caller
+     */
+    404: Problem;
+};
+
+export type GetChatMessageError = GetChatMessageErrors[keyof GetChatMessageErrors];
+
+export type GetChatMessageResponses = {
+    /**
+     * Chat message
+     */
+    200: ChatMessage;
+};
+
+export type GetChatMessageResponse = GetChatMessageResponses[keyof GetChatMessageResponses];
+
+export type EditChatMessageData = {
+    body: EditChatMessageRequest;
+    path: {
+        /**
+         * Chat message identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/chat/messages/{id}';
+};
+
+export type EditChatMessageErrors = {
+    /**
+     * Validation error
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller is not the message author
+     */
+    403: Problem;
+    /**
+     * Message not found or not visible to caller
+     */
+    404: Problem;
+    /**
+     * Edit window has expired (CHAT_EDIT_WINDOW_EXPIRED)
+     */
+    422: Problem;
+};
+
+export type EditChatMessageError = EditChatMessageErrors[keyof EditChatMessageErrors];
+
+export type EditChatMessageResponses = {
+    /**
+     * Updated message
+     */
+    200: ChatMessage;
+};
+
+export type EditChatMessageResponse = EditChatMessageResponses[keyof EditChatMessageResponses];
+
+export type ListChatMessagesData = {
+    body?: never;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: {
+        /**
+         * 'broadcast' or a membershipId (whisper partner)
+         */
+        conversation?: string;
+        /**
+         * Opaque cursor from the previous page's nextCursor
+         */
+        cursor?: string;
+        /**
+         * Number of messages to return (1–100, default 50)
+         */
+        limit?: number;
+    };
+    url: '/api/v1/game-sessions/{id}/chat/messages';
+};
+
+export type ListChatMessagesErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller is not an active session member
+     */
+    403: Problem;
+};
+
+export type ListChatMessagesError = ListChatMessagesErrors[keyof ListChatMessagesErrors];
+
+export type ListChatMessagesResponses = {
+    /**
+     * Paginated message list
+     */
+    200: ChatMessageList;
+};
+
+export type ListChatMessagesResponse = ListChatMessagesResponses[keyof ListChatMessagesResponses];
+
+export type PostChatMessageData = {
+    body: PostChatMessageRequest;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}/chat/messages';
+};
+
+export type PostChatMessageErrors = {
+    /**
+     * Validation error
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Target has blocked the author (CHAT_TARGET_BLOCKED)
+     */
+    403: Problem;
+    /**
+     * Target membership not found in session (CHAT_TARGET_NOT_MEMBER)
+     */
+    404: Problem;
+    /**
+     * Rate limit exceeded (CHAT_RATE_LIMITED)
+     */
+    429: Problem;
+};
+
+export type PostChatMessageError = PostChatMessageErrors[keyof PostChatMessageErrors];
+
+export type PostChatMessageResponses = {
+    /**
+     * Message created and published
+     */
+    201: ChatMessage;
+};
+
+export type PostChatMessageResponse = PostChatMessageResponses[keyof PostChatMessageResponses];
+
+export type ListChatConversationsData = {
+    body?: never;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}/chat/conversations';
+};
+
+export type ListChatConversationsErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller is not an active session member
+     */
+    403: Problem;
+};
+
+export type ListChatConversationsError = ListChatConversationsErrors[keyof ListChatConversationsErrors];
+
+export type ListChatConversationsResponses = {
+    /**
+     * Conversation list
+     */
+    200: ChatConversationList;
+};
+
+export type ListChatConversationsResponse = ListChatConversationsResponses[keyof ListChatConversationsResponses];
+
+export type MarkChatConversationReadData = {
+    body: MarkReadRequest;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+        /**
+         * 'broadcast' or a membershipId (URL-encoded)
+         */
+        conversationKey: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}/chat/conversations/{conversationKey}/read';
+};
+
+export type MarkChatConversationReadErrors = {
+    /**
+     * Validation error
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller is not an active session member
+     */
+    403: Problem;
+};
+
+export type MarkChatConversationReadError = MarkChatConversationReadErrors[keyof MarkChatConversationReadErrors];
+
+export type MarkChatConversationReadResponses = {
+    /**
+     * Read cursor upserted
+     */
+    204: void;
+};
+
+export type MarkChatConversationReadResponse = MarkChatConversationReadResponses[keyof MarkChatConversationReadResponses];
+
+export type ListBlocksData = {
+    body?: never;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}/blocks';
+};
+
+export type ListBlocksErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller is not an active session member
+     */
+    403: Problem;
+};
+
+export type ListBlocksError = ListBlocksErrors[keyof ListBlocksErrors];
+
+export type ListBlocksResponses = {
+    /**
+     * Block list
+     */
+    200: {
+        items: Array<ChatBlockSummary>;
+    };
+};
+
+export type ListBlocksResponse = ListBlocksResponses[keyof ListBlocksResponses];
+
+export type BlockMemberData = {
+    body: ChatBlockRequest;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}/blocks';
+};
+
+export type BlockMemberErrors = {
+    /**
+     * Validation error
+     */
+    400: Problem;
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller is not an active session member
+     */
+    403: Problem;
+};
+
+export type BlockMemberError = BlockMemberErrors[keyof BlockMemberErrors];
+
+export type BlockMemberResponses = {
+    /**
+     * Member blocked (or already blocked — idempotent)
+     */
+    204: void;
+};
+
+export type BlockMemberResponse = BlockMemberResponses[keyof BlockMemberResponses];
+
+export type UnblockMemberData = {
+    body?: never;
+    path: {
+        /**
+         * Game session identifier (cuid2)
+         */
+        id: string;
+        /**
+         * Membership identifier of the member to unblock (cuid2)
+         */
+        targetMembershipId: string;
+    };
+    query?: never;
+    url: '/api/v1/game-sessions/{id}/blocks/{targetMembershipId}';
+};
+
+export type UnblockMemberErrors = {
+    /**
+     * No active session
+     */
+    401: Problem;
+    /**
+     * Caller is not an active session member
+     */
+    403: Problem;
+};
+
+export type UnblockMemberError = UnblockMemberErrors[keyof UnblockMemberErrors];
+
+export type UnblockMemberResponses = {
+    /**
+     * Member unblocked (or was not blocked — idempotent)
+     */
+    204: void;
+};
+
+export type UnblockMemberResponse = UnblockMemberResponses[keyof UnblockMemberResponses];

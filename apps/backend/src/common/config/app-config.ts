@@ -1,6 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+export interface ChatConfig {
+  readonly maxBodyBytes: number;
+  readonly maxMessagesPerMinute: number;
+  readonly burst: number;
+  readonly editWindowSeconds: number;
+}
+
 export interface CentrifugoConfig {
   readonly apiUrl: string;
   readonly apiKey: string;
@@ -164,6 +171,15 @@ export class AppConfig {
       apiKey: this.requireString('CENTRIFUGO_API_KEY'),
       tokenHmacSecret: this.requireString('CENTRIFUGO_TOKEN_HMAC_SECRET'),
       tokenTtlSeconds: this.numberOrDefault('CENTRIFUGO_TOKEN_TTL_SECONDS', 300),
+    };
+  }
+
+  get chat(): ChatConfig {
+    return {
+      maxBodyBytes: this.numberOrDefault('CHAT_MAX_BODY_BYTES', 4096),
+      maxMessagesPerMinute: this.numberOrDefault('CHAT_RATE_LIMIT_PER_MINUTE', 30),
+      burst: this.numberOrDefault('CHAT_RATE_LIMIT_BURST', 5),
+      editWindowSeconds: this.numberOrDefault('CHAT_EDIT_WINDOW_SECONDS', 300),
     };
   }
 

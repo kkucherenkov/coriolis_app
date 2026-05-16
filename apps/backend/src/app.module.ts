@@ -25,6 +25,7 @@ import { SmsModule } from './common/sms/sms.module';
 import { CharactersModule } from './modules/characters/characters.module';
 import { DiceModule } from './modules/dice/dice.module';
 import { GameSessionsModule } from './modules/game-sessions/game-sessions.module';
+import { ChatModule } from './modules/chat/chat.module';
 import { MembershipsModule } from './modules/memberships/memberships.module';
 import { CombatantsModule } from './modules/combatants/combatants.module';
 import { EncountersModule } from './modules/encounters/encounters.module';
@@ -79,6 +80,7 @@ const devOnlyModules: ImportableModule[] = [];
     DiceModule,
     GameSessionsModule,
     MembershipsModule,
+    ChatModule,
     ShipsModule,
     NpcsModule,
     EncountersModule,

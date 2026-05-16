@@ -115,11 +115,61 @@ export interface CombatUpdated {
   at: string;
 }
 
-export type RealtimeChannel = 'system:health' | 'session.{gameSessionId}';
+/**
+ * Chat message payload mirroring the OpenAPI `ChatMessage` schema (OpenAPI 1.8.0).
+ * Keep in sync when either schema changes.
+ *
+ */
+export interface ChatMessage {
+  id: string;
+  gameSessionId: string;
+  /**
+   * GameSessionMembership.id; null for system messages
+   */
+  authorMembershipId: string | null;
+  /**
+   * Denormalised at read time
+   */
+  authorDisplayName?: string | null;
+  /**
+   * null = broadcast; non-null = whisper
+   */
+  targetMembershipId: string | null;
+  kind: 'text' | 'system';
+  /**
+   * null for kind=system; non-empty trimmed text for kind=text
+   */
+  body?: string | null;
+  /**
+   * i18n key for kind=system, e.g. chat.system.member_joined
+   */
+  systemKey?: string | null;
+  systemParams?: {
+    [k: string]: unknown;
+  } | null;
+  createdAt: string;
+  editedAt?: string | null;
+  deletedAt?: string | null;
+}
+
+export interface ChatMessageDeleted {
+  id: string;
+  gameSessionId: string;
+  targetMembershipId?: string | null;
+  deletedAt: string;
+}
+
+export type RealtimeChannel =
+  | 'system:health'
+  | 'session.{gameSessionId}'
+  | 'session.{gameSessionId}.chat'
+  | 'session.{gameSessionId}.member.{membershipId}';
 
 export interface RealtimeChannelPayloadMap {
   'system:health': HealthUpdate;
   'session.{gameSessionId}': DpChanged | RollPushed | CombatUpdated;
+  'session.{gameSessionId}.chat': ChatMessage | ChatMessage | ChatMessageDeleted;
+  'session.{gameSessionId}.member.{membershipId}': ChatMessage | ChatMessage | ChatMessageDeleted;
 }
 
 export type RealtimeChannelPayload<C extends RealtimeChannel> = RealtimeChannelPayloadMap[C];

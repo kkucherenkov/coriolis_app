@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcceptInviteData, AcceptInviteErrors, AcceptInviteResponses, AddCharacterItemData, AddCharacterItemErrors, AddCharacterItemResponses, AddCharacterTalentData, AddCharacterTalentErrors, AddCharacterTalentResponses, AddCombatantData, AddCombatantErrors, AddCombatantResponses, AddShipModuleData, AddShipModuleErrors, AddShipModuleResponses, AdjustDpData, AdjustDpErrors, AdjustDpResponses, AdvanceRoundData, AdvanceRoundErrors, AdvanceRoundResponses, AdvanceTurnData, AdvanceTurnErrors, AdvanceTurnResponses, AssignCharacterToSessionData, AssignCharacterToSessionErrors, AssignCharacterToSessionResponses, AssignCrewData, AssignCrewErrors, AssignCrewResponses, CreateCharacterData, CreateCharacterErrors, CreateCharacterResponses, CreateEncounterData, CreateEncounterErrors, CreateEncounterResponses, CreateGameSessionData, CreateGameSessionErrors, CreateGameSessionResponses, CreateNpcData, CreateNpcErrors, CreateNpcResponses, CreateRollData, CreateRollErrors, CreateRollResponses, CreateShareLinkData, CreateShareLinkErrors, CreateShareLinkResponses, CreateShipData, CreateShipErrors, CreateShipResponses, DeleteCharacterData, DeleteCharacterErrors, DeleteCharacterResponses, DeleteCombatantData, DeleteCombatantErrors, DeleteCombatantResponses, DeleteEncounterData, DeleteEncounterErrors, DeleteEncounterResponses, DeleteGameSessionData, DeleteGameSessionErrors, DeleteGameSessionResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteNpcData, DeleteNpcErrors, DeleteNpcResponses, DeleteShipData, DeleteShipErrors, DeleteShipModuleData, DeleteShipModuleErrors, DeleteShipModuleResponses, DeleteShipResponses, DeleteTalentData, DeleteTalentErrors, DeleteTalentResponses, DuplicateCharacterData, DuplicateCharacterErrors, DuplicateCharacterResponses, DuplicateNpcData, DuplicateNpcErrors, DuplicateNpcResponses, DuplicateShipData, DuplicateShipErrors, DuplicateShipResponses, ExportCharacterData, ExportCharacterErrors, ExportCharacterResponses, ExportMeData, ExportMeErrors, ExportMeResponses, ExportShipData, ExportShipErrors, ExportShipResponses, GetCharacterData, GetCharacterErrors, GetCharacterOgImageData, GetCharacterOgImageErrors, GetCharacterOgImageResponses, GetCharacterResponses, GetEncounterData, GetEncounterErrors, GetEncounterResponses, GetGameSessionData, GetGameSessionErrors, GetGameSessionResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetInviteMetadataData, GetInviteMetadataErrors, GetInviteMetadataResponses, GetInvitePreviewData, GetInvitePreviewErrors, GetInvitePreviewResponses, GetMeData, GetMeErrors, GetMeResponses, GetMyMembershipsData, GetMyMembershipsErrors, GetMyMembershipsResponses, GetNpcData, GetNpcErrors, GetNpcResponses, GetPublicCharacterData, GetPublicCharacterErrors, GetPublicCharacterResponses, GetShipData, GetShipErrors, GetShipResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, LinkMembershipCharacterData, LinkMembershipCharacterErrors, LinkMembershipCharacterResponses, ListCharactersData, ListCharactersErrors, ListCharactersResponses, ListCombatantsData, ListCombatantsErrors, ListCombatantsResponses, ListDpEventsData, ListDpEventsErrors, ListDpEventsResponses, ListEncountersData, ListEncountersErrors, ListEncountersResponses, ListGameSessionsData, ListGameSessionsErrors, ListGameSessionsResponses, ListMembersData, ListMembersErrors, ListMembersResponses, ListNpcsData, ListNpcsErrors, ListNpcsResponses, ListRollsData, ListRollsErrors, ListRollsResponses, ListShareLinksData, ListShareLinksErrors, ListShareLinksResponses, ListShipsData, ListShipsErrors, ListShipsResponses, PushRollData, PushRollErrors, PushRollResponses, RemoveMembershipData, RemoveMembershipErrors, RemoveMembershipResponses, ReorderInitiativeData, ReorderInitiativeErrors, ReorderInitiativeResponses, RevokeInviteData, RevokeInviteErrors, RevokeInviteResponses, RevokeShareLinkData, RevokeShareLinkErrors, RevokeShareLinkResponses, RollInitiativeData, RollInitiativeErrors, RollInitiativeResponses, RotateInviteData, RotateInviteErrors, RotateInviteResponses, UnassignCharacterFromSessionData, UnassignCharacterFromSessionErrors, UnassignCharacterFromSessionResponses, UnassignCrewData, UnassignCrewErrors, UnassignCrewResponses, UpdateCharacterData, UpdateCharacterErrors, UpdateCharacterResponses, UpdateCombatantData, UpdateCombatantErrors, UpdateCombatantResponses, UpdateEncounterData, UpdateEncounterErrors, UpdateEncounterResponses, UpdateGameSessionData, UpdateGameSessionErrors, UpdateGameSessionResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses, UpdateNpcData, UpdateNpcErrors, UpdateNpcResponses, UpdateShipData, UpdateShipErrors, UpdateShipModuleData, UpdateShipModuleErrors, UpdateShipModuleResponses, UpdateShipResponses, UpdateTalentData, UpdateTalentErrors, UpdateTalentResponses } from './types.gen';
+import type { AcceptInviteData, AcceptInviteErrors, AcceptInviteResponses, AddCharacterItemData, AddCharacterItemErrors, AddCharacterItemResponses, AddCharacterTalentData, AddCharacterTalentErrors, AddCharacterTalentResponses, AddCombatantData, AddCombatantErrors, AddCombatantResponses, AddShipModuleData, AddShipModuleErrors, AddShipModuleResponses, AdjustDpData, AdjustDpErrors, AdjustDpResponses, AdvanceRoundData, AdvanceRoundErrors, AdvanceRoundResponses, AdvanceTurnData, AdvanceTurnErrors, AdvanceTurnResponses, AssignCharacterToSessionData, AssignCharacterToSessionErrors, AssignCharacterToSessionResponses, AssignCrewData, AssignCrewErrors, AssignCrewResponses, BlockMemberData, BlockMemberErrors, BlockMemberResponses, CreateCharacterData, CreateCharacterErrors, CreateCharacterResponses, CreateEncounterData, CreateEncounterErrors, CreateEncounterResponses, CreateGameSessionData, CreateGameSessionErrors, CreateGameSessionResponses, CreateNpcData, CreateNpcErrors, CreateNpcResponses, CreateRollData, CreateRollErrors, CreateRollResponses, CreateShareLinkData, CreateShareLinkErrors, CreateShareLinkResponses, CreateShipData, CreateShipErrors, CreateShipResponses, DeleteCharacterData, DeleteCharacterErrors, DeleteCharacterResponses, DeleteChatMessageData, DeleteChatMessageErrors, DeleteChatMessageResponses, DeleteCombatantData, DeleteCombatantErrors, DeleteCombatantResponses, DeleteEncounterData, DeleteEncounterErrors, DeleteEncounterResponses, DeleteGameSessionData, DeleteGameSessionErrors, DeleteGameSessionResponses, DeleteItemData, DeleteItemErrors, DeleteItemResponses, DeleteMeData, DeleteMeErrors, DeleteMeResponses, DeleteNpcData, DeleteNpcErrors, DeleteNpcResponses, DeleteShipData, DeleteShipErrors, DeleteShipModuleData, DeleteShipModuleErrors, DeleteShipModuleResponses, DeleteShipResponses, DeleteTalentData, DeleteTalentErrors, DeleteTalentResponses, DuplicateCharacterData, DuplicateCharacterErrors, DuplicateCharacterResponses, DuplicateNpcData, DuplicateNpcErrors, DuplicateNpcResponses, DuplicateShipData, DuplicateShipErrors, DuplicateShipResponses, EditChatMessageData, EditChatMessageErrors, EditChatMessageResponses, ExportCharacterData, ExportCharacterErrors, ExportCharacterResponses, ExportMeData, ExportMeErrors, ExportMeResponses, ExportShipData, ExportShipErrors, ExportShipResponses, GetCharacterData, GetCharacterErrors, GetCharacterOgImageData, GetCharacterOgImageErrors, GetCharacterOgImageResponses, GetCharacterResponses, GetChatMessageData, GetChatMessageErrors, GetChatMessageResponses, GetEncounterData, GetEncounterErrors, GetEncounterResponses, GetGameSessionData, GetGameSessionErrors, GetGameSessionResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetInviteMetadataData, GetInviteMetadataErrors, GetInviteMetadataResponses, GetInvitePreviewData, GetInvitePreviewErrors, GetInvitePreviewResponses, GetMeData, GetMeErrors, GetMeResponses, GetMyMembershipsData, GetMyMembershipsErrors, GetMyMembershipsResponses, GetNpcData, GetNpcErrors, GetNpcResponses, GetPublicCharacterData, GetPublicCharacterErrors, GetPublicCharacterResponses, GetShipData, GetShipErrors, GetShipResponses, IssueRealtimeTokenData, IssueRealtimeTokenErrors, IssueRealtimeTokenResponses, LinkMembershipCharacterData, LinkMembershipCharacterErrors, LinkMembershipCharacterResponses, ListBlocksData, ListBlocksErrors, ListBlocksResponses, ListCharactersData, ListCharactersErrors, ListCharactersResponses, ListChatConversationsData, ListChatConversationsErrors, ListChatConversationsResponses, ListChatMessagesData, ListChatMessagesErrors, ListChatMessagesResponses, ListCombatantsData, ListCombatantsErrors, ListCombatantsResponses, ListDpEventsData, ListDpEventsErrors, ListDpEventsResponses, ListEncountersData, ListEncountersErrors, ListEncountersResponses, ListGameSessionsData, ListGameSessionsErrors, ListGameSessionsResponses, ListMembersData, ListMembersErrors, ListMembersResponses, ListNpcsData, ListNpcsErrors, ListNpcsResponses, ListRollsData, ListRollsErrors, ListRollsResponses, ListShareLinksData, ListShareLinksErrors, ListShareLinksResponses, ListShipsData, ListShipsErrors, ListShipsResponses, MarkChatConversationReadData, MarkChatConversationReadErrors, MarkChatConversationReadResponses, PostChatMessageData, PostChatMessageErrors, PostChatMessageResponses, PushRollData, PushRollErrors, PushRollResponses, RemoveMembershipData, RemoveMembershipErrors, RemoveMembershipResponses, ReorderInitiativeData, ReorderInitiativeErrors, ReorderInitiativeResponses, RevokeInviteData, RevokeInviteErrors, RevokeInviteResponses, RevokeShareLinkData, RevokeShareLinkErrors, RevokeShareLinkResponses, RollInitiativeData, RollInitiativeErrors, RollInitiativeResponses, RotateInviteData, RotateInviteErrors, RotateInviteResponses, UnassignCharacterFromSessionData, UnassignCharacterFromSessionErrors, UnassignCharacterFromSessionResponses, UnassignCrewData, UnassignCrewErrors, UnassignCrewResponses, UnblockMemberData, UnblockMemberErrors, UnblockMemberResponses, UpdateCharacterData, UpdateCharacterErrors, UpdateCharacterResponses, UpdateCombatantData, UpdateCombatantErrors, UpdateCombatantResponses, UpdateEncounterData, UpdateEncounterErrors, UpdateEncounterResponses, UpdateGameSessionData, UpdateGameSessionErrors, UpdateGameSessionResponses, UpdateItemData, UpdateItemErrors, UpdateItemResponses, UpdateMeData, UpdateMeErrors, UpdateMeResponses, UpdateNpcData, UpdateNpcErrors, UpdateNpcResponses, UpdateShipData, UpdateShipErrors, UpdateShipModuleData, UpdateShipModuleErrors, UpdateShipModuleResponses, UpdateShipResponses, UpdateTalentData, UpdateTalentErrors, UpdateTalentResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -1705,5 +1705,203 @@ export const pushRoll = <ThrowOnError extends boolean = false>(options: Options<
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/api/v1/rolls/{id}/push',
+    ...options
+});
+
+/**
+ * Delete (soft) a chat message
+ *
+ * Stamps `deletedAt` on the message. Authors may always delete their own
+ * broadcast messages. GMs may delete any broadcast. Whispers may only be
+ * deleted by the author — GM has no visibility into whispers and receives
+ * 404 rather than 403 (privacy contract).
+ *
+ */
+export const deleteChatMessage = <ThrowOnError extends boolean = false>(options: Options<DeleteChatMessageData, ThrowOnError>) => (options.client ?? client).delete<DeleteChatMessageResponses, DeleteChatMessageErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/chat/messages/{id}',
+    ...options
+});
+
+/**
+ * Get a single chat message by ID
+ *
+ * Returns the message if the caller has visibility. Broadcast messages
+ * are visible to any active session member. Whisper messages are visible
+ * only to the author and the target — any other caller, including the GM,
+ * receives 404 (privacy contract: non-existence over forbidden).
+ *
+ */
+export const getChatMessage = <ThrowOnError extends boolean = false>(options: Options<GetChatMessageData, ThrowOnError>) => (options.client ?? client).get<GetChatMessageResponses, GetChatMessageErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/chat/messages/{id}',
+    ...options
+});
+
+/**
+ * Edit a chat message body
+ *
+ * Replaces the message body. Only the original author may edit.
+ * Returns 422 when the edit window (5 min) has expired.
+ * Returns 403 when the caller is not the author.
+ *
+ */
+export const editChatMessage = <ThrowOnError extends boolean = false>(options: Options<EditChatMessageData, ThrowOnError>) => (options.client ?? client).patch<EditChatMessageResponses, EditChatMessageErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/chat/messages/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List chat messages for a session conversation
+ *
+ * Returns a cursor-paginated list of messages for the specified conversation.
+ * Pass `conversation=broadcast` (default) for the session broadcast channel,
+ * or pass a `membershipId` to read a whisper thread. Only the two participants
+ * of a whisper thread can see its messages.
+ *
+ */
+export const listChatMessages = <ThrowOnError extends boolean = false>(options: Options<ListChatMessagesData, ThrowOnError>) => (options.client ?? client).get<ListChatMessagesResponses, ListChatMessagesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/game-sessions/{id}/chat/messages',
+    ...options
+});
+
+/**
+ * Post a chat message to a session
+ *
+ * Posts a broadcast (`targetMembershipId: null`) or whisper
+ * (`targetMembershipId: <membershipId>`) message. Returns 403 when the
+ * target has blocked the author. Returns 404 when the target is not an
+ * active session member. Rate-limited to 30 msg/min and 5/s burst per
+ * user.
+ *
+ */
+export const postChatMessage = <ThrowOnError extends boolean = false>(options: Options<PostChatMessageData, ThrowOnError>) => (options.client ?? client).post<PostChatMessageResponses, PostChatMessageErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/game-sessions/{id}/chat/messages',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List chat conversations for a session member
+ *
+ * Returns a summary of all conversations visible to the caller: the
+ * broadcast channel plus any whisper threads they participate in.
+ * Includes unread counts relative to the caller's read cursor.
+ *
+ */
+export const listChatConversations = <ThrowOnError extends boolean = false>(options: Options<ListChatConversationsData, ThrowOnError>) => (options.client ?? client).get<ListChatConversationsResponses, ListChatConversationsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/game-sessions/{id}/chat/conversations',
+    ...options
+});
+
+/**
+ * Mark a conversation as read up to a timestamp
+ *
+ * Upserts the caller's read cursor for the given conversation. The
+ * `conversationKey` is URL-encoded; use `broadcast` for the session
+ * broadcast or a membershipId for a whisper thread.
+ *
+ */
+export const markChatConversationRead = <ThrowOnError extends boolean = false>(options: Options<MarkChatConversationReadData, ThrowOnError>) => (options.client ?? client).post<MarkChatConversationReadResponses, MarkChatConversationReadErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/game-sessions/{id}/chat/conversations/{conversationKey}/read',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List the caller's block list for a session
+ *
+ * Returns all memberships the caller has blocked in this session.
+ *
+ */
+export const listBlocks = <ThrowOnError extends boolean = false>(options: Options<ListBlocksData, ThrowOnError>) => (options.client ?? client).get<ListBlocksResponses, ListBlocksErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/game-sessions/{id}/blocks',
+    ...options
+});
+
+/**
+ * Block a session member
+ *
+ * Adds the target membership to the caller's block list for this session.
+ * Idempotent — blocking an already-blocked member is a no-op.
+ * Once blocked, the blocked member cannot whisper to the blocker.
+ *
+ */
+export const blockMember = <ThrowOnError extends boolean = false>(options: Options<BlockMemberData, ThrowOnError>) => (options.client ?? client).post<BlockMemberResponses, BlockMemberErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/game-sessions/{id}/blocks',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Unblock a session member
+ *
+ * Removes the target membership from the caller's block list.
+ * Idempotent — unblocking a member who was not blocked is a no-op.
+ *
+ */
+export const unblockMember = <ThrowOnError extends boolean = false>(options: Options<UnblockMemberData, ThrowOnError>) => (options.client ?? client).delete<UnblockMemberResponses, UnblockMemberErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'better-auth.session_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/game-sessions/{id}/blocks/{targetMembershipId}',
     ...options
 });

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 1.7.0
+  version: 1.8.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -53,6 +53,8 @@ tags:
     description: Session membership management — join, leave, kick
   - name: me
     description: Authenticated user's own resources
+  - name: chat
+    description: Session-scoped chat — broadcast messages, whispers, read cursors, block list
 
 paths:
   /api/v1/characters:
@@ -6720,6 +6722,603 @@ paths:
                     detail: The character is Exhausted and cannot push rolls (PRD §10).
                     code: ROLL_NOT_PUSHABLE
 
+  # ---------------------------------------------------------------------------
+  # Chat — direct message routes (Phase 8 Stream C)
+  # ---------------------------------------------------------------------------
+
+  /api/v1/chat/messages/{id}:
+    get:
+      operationId: getChatMessage
+      summary: Get a single chat message by ID
+      description: |
+        Returns the message if the caller has visibility. Broadcast messages
+        are visible to any active session member. Whisper messages are visible
+        only to the author and the target — any other caller, including the GM,
+        receives 404 (privacy contract: non-existence over forbidden).
+      tags: [chat]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Chat message identifier (cuid2)
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Chat message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessage"
+              examples:
+                broadcast:
+                  value:
+                    id: cuid_msg01
+                    gameSessionId: cuid_gs01
+                    authorMembershipId: cuid_mem01
+                    authorDisplayName: Tariq
+                    targetMembershipId: null
+                    kind: text
+                    body: "Attention, crew!"
+                    systemKey: null
+                    systemParams: null
+                    createdAt: "2026-05-17T10:00:00Z"
+                    editedAt: null
+                    deletedAt: null
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: Message not found or not visible to caller
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+    patch:
+      operationId: editChatMessage
+      summary: Edit a chat message body
+      description: |
+        Replaces the message body. Only the original author may edit.
+        Returns 422 when the edit window (5 min) has expired.
+        Returns 403 when the caller is not the author.
+      tags: [chat]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Chat message identifier (cuid2)
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditChatMessageRequest"
+            examples:
+              edit:
+                value:
+                  body: "Corrected text"
+      responses:
+        "200":
+          description: Updated message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessage"
+              examples:
+                edited:
+                  value:
+                    id: cuid_msg01
+                    gameSessionId: cuid_gs01
+                    authorMembershipId: cuid_mem01
+                    authorDisplayName: Tariq
+                    targetMembershipId: null
+                    kind: text
+                    body: "Corrected text"
+                    systemKey: null
+                    systemParams: null
+                    createdAt: "2026-05-17T10:00:00Z"
+                    editedAt: "2026-05-17T10:03:00Z"
+                    deletedAt: null
+        "400":
+          description: Validation error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller is not the message author
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: Message not found or not visible to caller
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "422":
+          description: Edit window has expired (CHAT_EDIT_WINDOW_EXPIRED)
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                windowExpired:
+                  value:
+                    type: urn:problem-type:CHAT_EDIT_WINDOW_EXPIRED
+                    title: Edit window expired
+                    status: 422
+                    detail: Messages can only be edited within 5 minutes of posting.
+                    code: CHAT_EDIT_WINDOW_EXPIRED
+
+    delete:
+      operationId: deleteChatMessage
+      summary: Delete (soft) a chat message
+      description: |
+        Stamps `deletedAt` on the message. Authors may always delete their own
+        broadcast messages. GMs may delete any broadcast. Whispers may only be
+        deleted by the author — GM has no visibility into whispers and receives
+        404 rather than 403 (privacy contract).
+      tags: [chat]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Chat message identifier (cuid2)
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Message soft-deleted
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller is not authorised to delete this message
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: Message not found or not visible to caller
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  # ---------------------------------------------------------------------------
+  # Chat — session-scoped routes (Phase 8 Stream C)
+  # ---------------------------------------------------------------------------
+
+  /api/v1/game-sessions/{id}/chat/messages:
+    post:
+      operationId: postChatMessage
+      summary: Post a chat message to a session
+      description: |
+        Posts a broadcast (`targetMembershipId: null`) or whisper
+        (`targetMembershipId: <membershipId>`) message. Returns 403 when the
+        target has blocked the author. Returns 404 when the target is not an
+        active session member. Rate-limited to 30 msg/min and 5/s burst per
+        user.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostChatMessageRequest"
+            examples:
+              broadcast:
+                value:
+                  kind: text
+                  body: "Ready when you are, captain."
+              whisper:
+                value:
+                  kind: text
+                  body: "Between us — watch the GM."
+                  targetMembershipId: cuid_mem02
+      responses:
+        "201":
+          description: Message created and published
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessage"
+              examples:
+                created:
+                  value:
+                    id: cuid_msg01
+                    gameSessionId: cuid_gs01
+                    authorMembershipId: cuid_mem01
+                    authorDisplayName: Tariq
+                    targetMembershipId: null
+                    kind: text
+                    body: "Ready when you are, captain."
+                    systemKey: null
+                    systemParams: null
+                    createdAt: "2026-05-17T10:00:00Z"
+                    editedAt: null
+                    deletedAt: null
+        "400":
+          description: Validation error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Target has blocked the author (CHAT_TARGET_BLOCKED)
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                blocked:
+                  value:
+                    type: urn:problem-type:CHAT_TARGET_BLOCKED
+                    title: Cannot send message
+                    status: 403
+                    detail: Recipient is not accepting messages.
+                    code: CHAT_TARGET_BLOCKED
+        "404":
+          description: Target membership not found in session (CHAT_TARGET_NOT_MEMBER)
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                notMember:
+                  value:
+                    type: urn:problem-type:CHAT_TARGET_NOT_MEMBER
+                    title: Target not a session member
+                    status: 404
+                    detail: The specified membership does not exist in this session.
+                    code: CHAT_TARGET_NOT_MEMBER
+        "429":
+          description: Rate limit exceeded (CHAT_RATE_LIMITED)
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              examples:
+                rateLimited:
+                  value:
+                    type: urn:problem-type:CHAT_RATE_LIMITED
+                    title: Too many messages
+                    status: 429
+                    detail: Message rate limit exceeded. Try again shortly.
+                    code: CHAT_RATE_LIMITED
+
+    get:
+      operationId: listChatMessages
+      summary: List chat messages for a session conversation
+      description: |
+        Returns a cursor-paginated list of messages for the specified conversation.
+        Pass `conversation=broadcast` (default) for the session broadcast channel,
+        or pass a `membershipId` to read a whisper thread. Only the two participants
+        of a whisper thread can see its messages.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+        - name: conversation
+          in: query
+          required: false
+          description: "'broadcast' or a membershipId (whisper partner)"
+          schema:
+            type: string
+            default: broadcast
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque cursor from the previous page's nextCursor
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          description: Number of messages to return (1–100, default 50)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        "200":
+          description: Paginated message list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessageList"
+              examples:
+                ok:
+                  value:
+                    items:
+                      - id: cuid_msg01
+                        gameSessionId: cuid_gs01
+                        authorMembershipId: cuid_mem01
+                        authorDisplayName: Tariq
+                        targetMembershipId: null
+                        kind: text
+                        body: "Welcome to the session!"
+                        systemKey: null
+                        systemParams: null
+                        createdAt: "2026-05-17T10:00:00Z"
+                        editedAt: null
+                        deletedAt: null
+                    nextCursor: null
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller is not an active session member
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /api/v1/game-sessions/{id}/chat/conversations:
+    get:
+      operationId: listChatConversations
+      summary: List chat conversations for a session member
+      description: |
+        Returns a summary of all conversations visible to the caller: the
+        broadcast channel plus any whisper threads they participate in.
+        Includes unread counts relative to the caller's read cursor.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+      responses:
+        "200":
+          description: Conversation list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatConversationList"
+              examples:
+                ok:
+                  value:
+                    items:
+                      - conversationKey: broadcast
+                        kind: broadcast
+                        partnerMembershipId: null
+                        partnerDisplayName: null
+                        partnerCharacterName: null
+                        lastMessageAt: "2026-05-17T10:05:00Z"
+                        unreadCount: 3
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller is not an active session member
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /api/v1/game-sessions/{id}/chat/conversations/{conversationKey}/read:
+    post:
+      operationId: markChatConversationRead
+      summary: Mark a conversation as read up to a timestamp
+      description: |
+        Upserts the caller's read cursor for the given conversation. The
+        `conversationKey` is URL-encoded; use `broadcast` for the session
+        broadcast or a membershipId for a whisper thread.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+        - name: conversationKey
+          in: path
+          required: true
+          description: "'broadcast' or a membershipId (URL-encoded)"
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarkReadRequest"
+            examples:
+              markRead:
+                value:
+                  lastReadAt: "2026-05-17T10:05:00Z"
+      responses:
+        "204":
+          description: Read cursor upserted
+        "400":
+          description: Validation error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller is not an active session member
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /api/v1/game-sessions/{id}/blocks:
+    post:
+      operationId: blockMember
+      summary: Block a session member
+      description: |
+        Adds the target membership to the caller's block list for this session.
+        Idempotent — blocking an already-blocked member is a no-op.
+        Once blocked, the blocked member cannot whisper to the blocker.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatBlockRequest"
+            examples:
+              block:
+                value:
+                  targetMembershipId: cuid_mem02
+      responses:
+        "204":
+          description: Member blocked (or already blocked — idempotent)
+        "400":
+          description: Validation error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller is not an active session member
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+    get:
+      operationId: listBlocks
+      summary: List the caller's block list for a session
+      description: |
+        Returns all memberships the caller has blocked in this session.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+      responses:
+        "200":
+          description: Block list
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ChatBlockSummary"
+              examples:
+                ok:
+                  value:
+                    items:
+                      - targetMembershipId: cuid_mem02
+                        targetDisplayName: "Trouble Maker"
+                        createdAt: "2026-05-17T09:00:00Z"
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller is not an active session member
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /api/v1/game-sessions/{id}/blocks/{targetMembershipId}:
+    delete:
+      operationId: unblockMember
+      summary: Unblock a session member
+      description: |
+        Removes the target membership from the caller's block list.
+        Idempotent — unblocking a member who was not blocked is a no-op.
+      tags: [game-sessions]
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameSessionId"
+        - name: targetMembershipId
+          in: path
+          required: true
+          description: Membership identifier of the member to unblock (cuid2)
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Member unblocked (or was not blocked — idempotent)
+        "401":
+          description: No active session
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: Caller is not an active session member
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
 components:
   responses:
     Gone:
@@ -11240,3 +11839,192 @@ components:
         activeCombatantId: cuid_comb01
         round: 1
         isNewRound: false
+
+    # -------------------------------------------------------------------------
+    # Chat schemas (Phase 8 Stream C)
+    # -------------------------------------------------------------------------
+
+    ChatMessageKind:
+      type: string
+      enum: [text, system]
+      description: Discriminates user-authored text messages from server-generated system messages.
+
+    ChatMessage:
+      type: object
+      required: [id, gameSessionId, authorMembershipId, targetMembershipId, kind, createdAt]
+      properties:
+        id:
+          type: string
+        gameSessionId:
+          type: string
+        authorMembershipId:
+          type: ["string", "null"]
+          description: "GameSessionMembership.id; null for system messages"
+        authorDisplayName:
+          type: ["string", "null"]
+          description: Denormalised at read time
+        targetMembershipId:
+          type: ["string", "null"]
+          description: "null = broadcast; non-null = whisper"
+        kind:
+          $ref: "#/components/schemas/ChatMessageKind"
+        body:
+          type: ["string", "null"]
+          description: "null for kind=system; non-empty trimmed text for kind=text"
+        systemKey:
+          type: ["string", "null"]
+          description: "i18n key for kind=system, e.g. chat.system.member_joined"
+        systemParams:
+          type: ["object", "null"]
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        editedAt:
+          type: ["string", "null"]
+          format: date-time
+        deletedAt:
+          type: ["string", "null"]
+          format: date-time
+      example:
+        id: cuid_msg01
+        gameSessionId: cuid_gs01
+        authorMembershipId: cuid_mem01
+        authorDisplayName: Tariq
+        targetMembershipId: null
+        kind: text
+        body: "Ready when you are, captain."
+        systemKey: null
+        systemParams: null
+        createdAt: "2026-05-17T10:00:00Z"
+        editedAt: null
+        deletedAt: null
+
+    ChatMessageList:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+        nextCursor:
+          type: ["string", "null"]
+          description: "Opaque base64url cursor; null = end of results"
+      example:
+        items: []
+        nextCursor: null
+
+    PostChatMessageRequest:
+      type: object
+      required: [kind, body]
+      properties:
+        kind:
+          type: string
+          enum: [text]
+          description: Client-submitted messages must be of kind=text; system messages are server-generated only.
+        body:
+          type: string
+          minLength: 1
+          maxLength: 4096
+        targetMembershipId:
+          type: ["string", "null"]
+          description: "null or omitted = broadcast; non-null = whisper to this membership"
+      example:
+        kind: text
+        body: "Ready when you are, captain."
+
+    EditChatMessageRequest:
+      type: object
+      required: [body]
+      properties:
+        body:
+          type: string
+          minLength: 1
+          maxLength: 4096
+      example:
+        body: "Corrected text."
+
+    ChatConversationSummary:
+      type: object
+      required: [conversationKey, kind, unreadCount, lastMessageAt]
+      properties:
+        conversationKey:
+          type: string
+          description: "'broadcast' or a membershipId"
+        kind:
+          type: string
+          enum: [broadcast, whisper]
+        partnerMembershipId:
+          type: ["string", "null"]
+        partnerDisplayName:
+          type: ["string", "null"]
+        partnerCharacterName:
+          type: ["string", "null"]
+        lastMessageAt:
+          type: ["string", "null"]
+          format: date-time
+        unreadCount:
+          type: integer
+          minimum: 0
+      example:
+        conversationKey: broadcast
+        kind: broadcast
+        partnerMembershipId: null
+        partnerDisplayName: null
+        partnerCharacterName: null
+        lastMessageAt: "2026-05-17T10:05:00Z"
+        unreadCount: 2
+
+    ChatConversationList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatConversationSummary"
+      example:
+        items:
+          - conversationKey: broadcast
+            kind: broadcast
+            partnerMembershipId: null
+            partnerDisplayName: null
+            partnerCharacterName: null
+            lastMessageAt: "2026-05-17T10:05:00Z"
+            unreadCount: 2
+
+    MarkReadRequest:
+      type: object
+      required: [lastReadAt]
+      properties:
+        lastReadAt:
+          type: string
+          format: date-time
+      example:
+        lastReadAt: "2026-05-17T10:05:00Z"
+
+    ChatBlockRequest:
+      type: object
+      required: [targetMembershipId]
+      properties:
+        targetMembershipId:
+          type: string
+      example:
+        targetMembershipId: cuid_mem02
+
+    ChatBlockSummary:
+      type: object
+      required: [targetMembershipId, createdAt]
+      properties:
+        targetMembershipId:
+          type: string
+        targetDisplayName:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      example:
+        targetMembershipId: cuid_mem02
+        targetDisplayName: "Trouble Maker"
+        createdAt: "2026-05-17T09:00:00Z"

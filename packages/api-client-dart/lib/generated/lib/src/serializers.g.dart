@@ -27,6 +27,14 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(CharacterStatusEnum.serializer)
       ..add(CharacterUpdate.serializer)
       ..add(CharacterUpdateStatusEnum.serializer)
+      ..add(ChatBlockRequest.serializer)
+      ..add(ChatBlockSummary.serializer)
+      ..add(ChatConversationList.serializer)
+      ..add(ChatConversationSummary.serializer)
+      ..add(ChatConversationSummaryKindEnum.serializer)
+      ..add(ChatMessage.serializer)
+      ..add(ChatMessageKind.serializer)
+      ..add(ChatMessageList.serializer)
       ..add(Combatant.serializer)
       ..add(CombatantCreate.serializer)
       ..add(CombatantList.serializer)
@@ -44,6 +52,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(DpEvent.serializer)
       ..add(DpEventList.serializer)
       ..add(DpSource.serializer)
+      ..add(EditChatMessageRequest.serializer)
       ..add(EncounterCreate.serializer)
       ..add(EncounterList.serializer)
       ..add(EncounterStatus.serializer)
@@ -98,6 +107,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(ItemWeaponUpdate.serializer)
       ..add(ItemWeaponUpdateTypeEnum.serializer)
       ..add(LinkMembershipCharacterRequest.serializer)
+      ..add(ListBlocks200Response.serializer)
+      ..add(MarkReadRequest.serializer)
       ..add(Me.serializer)
       ..add(MeExportBundle.serializer)
       ..add(MeExportBundleDollarSchemaVersionEnum.serializer)
@@ -118,6 +129,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(NpcMp.serializer)
       ..add(NpcUpdate.serializer)
       ..add(NpcUpdateHp.serializer)
+      ..add(PostChatMessageRequest.serializer)
+      ..add(PostChatMessageRequestKindEnum.serializer)
       ..add(Problem.serializer)
       ..add(RealtimeToken.serializer)
       ..add(Relationship.serializer)
@@ -192,6 +205,16 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(
               BuiltList, const [const FullType(MeExportGameSession)]),
           () => ListBuilder<MeExportGameSession>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(ChatBlockSummary)]),
+          () => ListBuilder<ChatBlockSummary>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(ChatConversationSummary)]),
+          () => ListBuilder<ChatConversationSummary>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(ChatMessage)]),
+          () => ListBuilder<ChatMessage>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(Combatant)]),
           () => ListBuilder<Combatant>())
@@ -326,7 +349,13 @@ Serializers _$serializers = (Serializers().toBuilder()
           () => ListBuilder<GameSessionMembership>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(int)]),
-          () => ListBuilder<int>()))
+          () => ListBuilder<int>())
+      ..addBuilderFactory(
+          const FullType(BuiltMap, const [
+            const FullType(String),
+            const FullType.nullable(JsonObject)
+          ]),
+          () => MapBuilder<String, JsonObject?>()))
     .build();
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
