@@ -11,7 +11,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
 - Spec: [docs/superpowers/specs/2026-05-15-phase-8-implementation-design.md](../../docs/superpowers/specs/2026-05-15-phase-8-implementation-design.md) §Stream D
 - Plan: [docs/superpowers/plans/2026-05-16-phase-8-stream-d.md](../../docs/superpowers/plans/2026-05-16-phase-8-stream-d.md)
 - Task inventory: T-11.5.1.a–i + T-11.6.1.a–b + T-11.6.2.d + T-11.6.3.a + T-11.7.1.a–d from `docs/IMPLEMENTATION_PLAN_PHASE_8.md`.
-- Result: PR to be opened on Forgejo (`code.homelab.local/kkucherenkov/coriolis_app`).
+- Result: [PR #28](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/28) on Forgejo — bundles Stream D + the parallel-agent README/screenshots work per user request.
 - Goal: ship the full chat surface across web (`@app/ui` + `apps/web`) and mobile (`apps/mobile/lib/features/sessions`) on top of the REST + Centrifugo + Prisma contract delivered in Stream C.
 - Acceptance — all met:
   - **11 `@app/ui` chat components**, each in the canonical 4-file shape (`*.vue + *.stories.ts + *.spec.ts + index.ts`): `AppChatAvatar`, `AppChatConnectionPip`, `AppChatPresenceDot`, `AppChatDayDivider`, `AppChatNewMessagesPill`, `AppChatMessage` (4 variants + kebab), `AppChatComposer` (⌘/Ctrl+Enter, char counter), `AppChatTab`, `AppChatTabStrip` (3 visible + overflow chip), `AppWhisperPicker`, `AppChatPanel` (primary + docked modes, 80px auto-scroll, new-messages pill).
