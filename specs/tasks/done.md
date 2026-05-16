@@ -10,6 +10,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
 - Branch: `feat/phase-8/stream-e-cleanup-characterIds`
 - Spec: [docs/superpowers/specs/2026-05-15-phase-8-implementation-design.md](../../docs/superpowers/specs/2026-05-15-phase-8-implementation-design.md) §Stream E
 - Task inventory: T-11.8.1.a–d from `docs/IMPLEMENTATION_PLAN_PHASE_8.md`.
+- Result: [PR #29](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/29) on Forgejo.
 - Goal: make `GameSessionMembership` the only source of truth for "who is at this table" by removing the legacy `GameSession.characterIds` array + the `CharacterGameSession` join + the GM-only assign/unassign endpoints.
 - Acceptance — all met:
   - `rg "characterIds" apps/backend/src apps/web/app apps/mobile/lib` returns only two doc comments referencing the prior name (no live code).
