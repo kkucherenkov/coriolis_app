@@ -2,6 +2,34 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-17-PHASE-7-MOBILE-OFFLINE-4 — NPC offline cache
+
+- Created: 2026-05-17
+- Completed: 2026-05-17
+- Owner: claude
+- Spec: PRD §11 Phase 7 — "Offline support (web SW + Flutter SQLite)" · IMPLEMENTATION_PLAN.md Feature 10.2; follow-up #1 from T-2026-05-17-PHASE-7-MOBILE-OFFLINE-3.
+- Result: [PR #24](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/24) on Forgejo — branch `feat/phase-7/mobile-offline-npc-cache`, single feature commit `cfda808` (17 files / +1238 / −11).
+- Goal: extend the OFFLINE-3 read-cache pattern to NPCs so the GM combat picker survives a network drop at the table.
+- Acceptance — all met:
+  - Offline `GET /npcs` falls back to last-cached list via `DioException.connectionError|connectionTimeout|sendTimeout|receiveTimeout`; empty cache returns `[]` (valid list-view offline state); non-network errors propagate.
+  - Drift `AppDatabase` `schemaVersion` 3 → 4; `onUpgrade` adds `NpcsCache`.
+  - `NpcsCacheInterceptor` write-through on `GET /npcs` 200; iterates `data.items` and writes each `api_client.Npc` to cache; all errors swallowed.
+  - DI: `LocalNpcCache` singleton + `CachedNpcRepository` decorator wired in `injector.dart`; `buildDio` installs the interceptor; `configureDependenciesForTesting` accepts the new optional cache.
+- Sub-blocks:
+  - [x] Block 1 — Drift schema v4 + `LocalNpcCache` port + `DriftNpcCache` adapter + 4 round-trip tests + schema smoke test bumped to v4.
+  - [x] Block 2 — `NpcApiMapper` extraction + `CachedNpcRepository` decorator + `NpcsCacheInterceptor` + DI wiring + ~12 tests.
+- Spec diff: none.
+- Codegen impact: no.
+- Design impact: none.
+- Tests: **17 new tests** (4 adapter + 1 mapper + 5 cached repo + 5 interceptor + 2 DI integration). Full sweep **428/428** green. Analyzer clean.
+- Notable decisions:
+  - **Wire DTO is `api_client.Npc`, not `NpcSummary`** — the list endpoint returns full `Npc` records; mobile domain model only uses `id` + `name` but caching the full payload future-proofs against domain expansion.
+  - **List semantics** — empty cache on fallback returns `[]` (NOT rethrow), matching `CachedPlayerSessionRepository.getMyMemberships`. An empty list is a valid offline state for a list view.
+  - **Cache writes delegated to interceptor** — decorator never round-trips domain → wire. Symmetric with `CachedPlayerSessionRepository`.
+  - **Fixture builder complexity** — `api_client.Npc` requires deeply-nested `Attributes` (4 fields), `Skills` (16 fields), `NpcHp` / `NpcMp` (2 fields each), plus three `BuiltList` fields. Reused the cascade-builder pattern from `drift_game_session_cache_test.dart`.
+- Status: shipped
+- Blockers: —
+
 ## T-2026-05-17-PHASE-7-MOBILE-OFFLINE-3 — Phase 7 / Feature 10.2 / extension — Offline read-caches for ships, game-sessions, player-memberships
 
 - Created: 2026-05-17
