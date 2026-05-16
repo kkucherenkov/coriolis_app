@@ -1,8 +1,20 @@
 # Coriolis Companion App
 
+![status: beta](https://img.shields.io/badge/status-beta-c8a76b)
+![phase: 7 complete](https://img.shields.io/badge/phase-7%20complete-5a83a4)
+
 Character sheets, ship sheets, dice, and GM tools for the _Coriolis: The
 Third Horizon_ tabletop RPG (Free League Publishing). A fan project — not
 affiliated with the publisher.
+
+> **Beta.** All seven planned phases (§11 of [`PRD.md`](docs/PRD.md)) shipped:
+> auth, character + ship sheets, dice + game sessions + Darkness Points,
+> GM tools, and hardening (offline read + write on web and mobile, JSON
+> export, Lighthouse + Grafana gates, tag-on-merge release workflow).
+> The remaining v1.0 launch checklist — production hosting, web Sentry
+> integration, full Grafana dashboard set, and the mobile cold-start
+> profile — is tracked in [`docs/done/phase-7.md`](docs/done/phase-7.md)
+> § "Deferred / open follow-ups".
 
 Three first-class clients on day one served by a single backend:
 
