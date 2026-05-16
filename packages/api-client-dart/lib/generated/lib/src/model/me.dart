@@ -17,6 +17,7 @@ part 'me.g.dart';
 /// * [displayName] - User-chosen display name shown in share-link banners and the avatar menu. Null when the user has not set one yet. 
 /// * [createdAt] - ISO-8601 instant when the account was created. Read-only via this API.
 /// * [theme] - UI theme preference. Synced across web + mobile so a player who toggles high-contrast on one device sees it everywhere. `dark` is the default; `high-contrast` increases colour contrast for users who need improved readability. 
+/// * [chatDockedCollapsed] - Persisted state of the GM session-detail chat dock collapse toggle. Replaces the prior localStorage `chat-docked-collapsed` fallback (Stream D shipped that as a placeholder; this is the canonical home). Synced across devices so a GM who collapses the dock on one client sees it collapsed on the next. 
 @BuiltValue()
 abstract class Me implements Built<Me, MeBuilder> {
   /// Opaque user identifier issued by Better Auth (cuid2)
@@ -40,13 +41,18 @@ abstract class Me implements Built<Me, MeBuilder> {
   MeThemeEnum? get theme;
   // enum themeEnum {  dark,  high-contrast,  };
 
+  /// Persisted state of the GM session-detail chat dock collapse toggle. Replaces the prior localStorage `chat-docked-collapsed` fallback (Stream D shipped that as a placeholder; this is the canonical home). Synced across devices so a GM who collapses the dock on one client sees it collapsed on the next. 
+  @BuiltValueField(wireName: r'chatDockedCollapsed')
+  bool? get chatDockedCollapsed;
+
   Me._();
 
   factory Me([void updates(MeBuilder b)]) = _$Me;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MeBuilder b) => b
-      ..theme = MeThemeEnum.valueOf('dark');
+      ..theme = MeThemeEnum.valueOf('dark')
+      ..chatDockedCollapsed = false;
 
   @BuiltValueSerializer(custom: true)
   static Serializer<Me> get serializer => _$MeSerializer();
@@ -89,6 +95,13 @@ class _$MeSerializer implements PrimitiveSerializer<Me> {
       yield serializers.serialize(
         object.theme,
         specifiedType: const FullType(MeThemeEnum),
+      );
+    }
+    if (object.chatDockedCollapsed != null) {
+      yield r'chatDockedCollapsed';
+      yield serializers.serialize(
+        object.chatDockedCollapsed,
+        specifiedType: const FullType(bool),
       );
     }
   }
@@ -150,6 +163,13 @@ class _$MeSerializer implements PrimitiveSerializer<Me> {
             specifiedType: const FullType(MeThemeEnum),
           ) as MeThemeEnum;
           result.theme = valueDes;
+          break;
+        case r'chatDockedCollapsed':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
+          result.chatDockedCollapsed = valueDes;
           break;
         default:
           unhandled.add(key);

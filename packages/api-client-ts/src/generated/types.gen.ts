@@ -2150,6 +2150,15 @@ export type Me = {
      *
      */
     theme?: 'dark' | 'high-contrast';
+    /**
+     * Persisted state of the GM session-detail chat dock collapse toggle.
+     * Replaces the prior localStorage `chat-docked-collapsed` fallback
+     * (Stream D shipped that as a placeholder; this is the canonical
+     * home). Synced across devices so a GM who collapses the dock on
+     * one client sees it collapsed on the next.
+     *
+     */
+    chatDockedCollapsed?: boolean;
 };
 
 /**
@@ -2171,6 +2180,12 @@ export type MeUpdate = {
      *
      */
     theme?: 'dark' | 'high-contrast';
+    /**
+     * Toggle persisted state of the GM session-detail chat dock collapse.
+     * Omitting the field preserves the current value.
+     *
+     */
+    chatDockedCollapsed?: boolean;
 };
 
 /**
