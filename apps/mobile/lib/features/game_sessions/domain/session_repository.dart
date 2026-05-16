@@ -3,11 +3,16 @@ import 'package:coriolis_companion/features/game_sessions/domain/invite.dart';
 
 /// Repository contract for game sessions (Phase 4 Features 7.2 + 7.3).
 ///
-/// Mobile leans player-first: the GM-only ops (`adjustDp`,
-/// `assign`/`unassign`) are exposed but the UI gates them on
+/// Mobile leans player-first: the GM-only ops (`adjustDp`, invite rotate
+/// / revoke) are exposed but the UI gates them on
 /// `me.id == session.ownerId`. The server is the authoritative
 /// permission boundary; the client gating is just to spare the user
 /// a 403 round-trip.
+///
+/// Character linking is membership-driven (Phase 8 Stream E): players
+/// link a PC during invite-accept; the GM's own membership.characterId
+/// is set via `PATCH /game-sessions/:id/members/:membershipId`. The
+/// legacy GM-only assign/unassign endpoints are gone.
 abstract class SessionRepository {
   /// Returns up to [limit] sessions filtered by [status]. Cursor
   /// pagination from the SDK is dropped on the floor for v1 — the
@@ -22,10 +27,6 @@ abstract class SessionRepository {
   Future<GameSession> setStatus(String id, String status);
 
   Future<void> delete(String id);
-
-  Future<GameSession> assignCharacter(String sessionId, String characterId);
-
-  Future<void> unassignCharacter(String sessionId, String characterId);
 
   /// Adjusts DP by [delta]. Positive: GM owner OR system (roll push).
   /// Negative: GM owner only. Server returns 422 DP_BELOW_ZERO when the

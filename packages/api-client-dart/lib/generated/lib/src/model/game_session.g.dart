@@ -27,9 +27,6 @@ abstract class GameSessionBuilder {
   int? get dpCount;
   set dpCount(int? dpCount);
 
-  ListBuilder<String> get characterIds;
-  set characterIds(ListBuilder<String>? characterIds);
-
   String? get shipId;
   set shipId(String? shipId);
 
@@ -57,8 +54,6 @@ class _$$GameSession extends $GameSession {
   @override
   final int dpCount;
   @override
-  final BuiltList<String> characterIds;
-  @override
   final String? shipId;
   @override
   final BuiltList<GameSessionMembership> memberships;
@@ -77,7 +72,6 @@ class _$$GameSession extends $GameSession {
       this.description,
       required this.status,
       required this.dpCount,
-      required this.characterIds,
       this.shipId,
       required this.memberships,
       required this.createdAt,
@@ -100,7 +94,6 @@ class _$$GameSession extends $GameSession {
         description == other.description &&
         status == other.status &&
         dpCount == other.dpCount &&
-        characterIds == other.characterIds &&
         shipId == other.shipId &&
         memberships == other.memberships &&
         createdAt == other.createdAt &&
@@ -116,7 +109,6 @@ class _$$GameSession extends $GameSession {
     _$hash = $jc(_$hash, description.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, dpCount.hashCode);
-    _$hash = $jc(_$hash, characterIds.hashCode);
     _$hash = $jc(_$hash, shipId.hashCode);
     _$hash = $jc(_$hash, memberships.hashCode);
     _$hash = $jc(_$hash, createdAt.hashCode);
@@ -134,7 +126,6 @@ class _$$GameSession extends $GameSession {
           ..add('description', description)
           ..add('status', status)
           ..add('dpCount', dpCount)
-          ..add('characterIds', characterIds)
           ..add('shipId', shipId)
           ..add('memberships', memberships)
           ..add('createdAt', createdAt)
@@ -172,12 +163,6 @@ class $GameSessionBuilder
   int? get dpCount => _$this._dpCount;
   set dpCount(covariant int? dpCount) => _$this._dpCount = dpCount;
 
-  ListBuilder<String>? _characterIds;
-  ListBuilder<String> get characterIds =>
-      _$this._characterIds ??= ListBuilder<String>();
-  set characterIds(covariant ListBuilder<String>? characterIds) =>
-      _$this._characterIds = characterIds;
-
   String? _shipId;
   String? get shipId => _$this._shipId;
   set shipId(covariant String? shipId) => _$this._shipId = shipId;
@@ -209,7 +194,6 @@ class $GameSessionBuilder
       _description = $v.description;
       _status = $v.status;
       _dpCount = $v.dpCount;
-      _characterIds = $v.characterIds.toBuilder();
       _shipId = $v.shipId;
       _memberships = $v.memberships.toBuilder();
       _createdAt = $v.createdAt;
@@ -248,7 +232,6 @@ class $GameSessionBuilder
                 status, r'$GameSession', 'status'),
             dpCount: BuiltValueNullFieldError.checkNotNull(
                 dpCount, r'$GameSession', 'dpCount'),
-            characterIds: characterIds.build(),
             shipId: shipId,
             memberships: memberships.build(),
             createdAt: BuiltValueNullFieldError.checkNotNull(
@@ -259,9 +242,6 @@ class $GameSessionBuilder
     } catch (_) {
       late String _$failedField;
       try {
-        _$failedField = 'characterIds';
-        characterIds.build();
-
         _$failedField = 'memberships';
         memberships.build();
       } catch (e) {

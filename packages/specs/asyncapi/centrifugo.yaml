@@ -150,19 +150,19 @@ components:
       name: chat.message.posted
       contentType: application/json
       payload:
-        $ref: "#/components/schemas/ChatMessage"
+        $ref: "#/components/schemas/RealtimeChatMessage"
 
     ChatMessageEdited:
       name: chat.message.edited
       contentType: application/json
       payload:
-        $ref: "#/components/schemas/ChatMessage"
+        $ref: "#/components/schemas/RealtimeChatMessage"
 
     ChatMessageDeleted:
       name: chat.message.deleted
       contentType: application/json
       payload:
-        $ref: "#/components/schemas/ChatMessageDeleted"
+        $ref: "#/components/schemas/RealtimeChatMessageDeleted"
 
     CombatUpdated:
       name: combat.updated
@@ -333,11 +333,12 @@ components:
           format: date-time
           description: Server timestamp when this snapshot was emitted.
 
-    ChatMessage:
+    RealtimeChatMessage:
       type: object
       description: |
-        Chat message payload mirroring the OpenAPI `ChatMessage` schema (OpenAPI 1.8.0).
-        Keep in sync when either schema changes.
+        Chat message payload mirroring the OpenAPI `ChatMessage` schema (OpenAPI 1.9.0).
+        Named with the `Realtime` prefix to avoid colliding with the SDK type when
+        re-exported from `@app/api-client-ts`. Keep in sync when either schema changes.
       required: [id, gameSessionId, authorMembershipId, targetMembershipId, kind, createdAt]
       properties:
         id:
@@ -375,7 +376,7 @@ components:
           type: ["string", "null"]
           format: date-time
 
-    ChatMessageDeleted:
+    RealtimeChatMessageDeleted:
       type: object
       required: [id, gameSessionId, deletedAt]
       properties:

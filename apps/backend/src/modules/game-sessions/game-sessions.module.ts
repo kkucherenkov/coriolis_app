@@ -18,10 +18,8 @@ import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
 import { RealtimeModule } from '../realtime/realtime.module';
-import { AssignCharacterHandler } from './commands/assign-character.handler';
 import { CreateGameSessionHandler } from './commands/create-game-session.handler';
 import { DeleteGameSessionHandler } from './commands/delete-game-session.handler';
-import { UnassignCharacterHandler } from './commands/unassign-character.handler';
 import { UpdateGameSessionHandler } from './commands/update-game-session.handler';
 import { UpdateDpHandler } from './dp/commands/update-dp.handler';
 import { DP_REPO } from './dp/domain/dp.ports';
@@ -42,8 +40,6 @@ import { ListGameSessionsHandler } from './queries/list-game-sessions.handler';
     CreateGameSessionHandler,
     UpdateGameSessionHandler,
     DeleteGameSessionHandler,
-    AssignCharacterHandler,
-    UnassignCharacterHandler,
     // DP commands
     UpdateDpHandler,
     // Queries

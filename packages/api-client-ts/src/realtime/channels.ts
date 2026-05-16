@@ -116,11 +116,12 @@ export interface CombatUpdated {
 }
 
 /**
- * Chat message payload mirroring the OpenAPI `ChatMessage` schema (OpenAPI 1.8.0).
- * Keep in sync when either schema changes.
+ * Chat message payload mirroring the OpenAPI `ChatMessage` schema (OpenAPI 1.9.0).
+ * Named with the `Realtime` prefix to avoid colliding with the SDK type when
+ * re-exported from `@app/api-client-ts`. Keep in sync when either schema changes.
  *
  */
-export interface ChatMessage {
+export interface RealtimeChatMessage {
   id: string;
   gameSessionId: string;
   /**
@@ -152,7 +153,7 @@ export interface ChatMessage {
   deletedAt?: string | null;
 }
 
-export interface ChatMessageDeleted {
+export interface RealtimeChatMessageDeleted {
   id: string;
   gameSessionId: string;
   targetMembershipId?: string | null;
@@ -168,8 +169,14 @@ export type RealtimeChannel =
 export interface RealtimeChannelPayloadMap {
   'system:health': HealthUpdate;
   'session.{gameSessionId}': DpChanged | RollPushed | CombatUpdated;
-  'session.{gameSessionId}.chat': ChatMessage | ChatMessage | ChatMessageDeleted;
-  'session.{gameSessionId}.member.{membershipId}': ChatMessage | ChatMessage | ChatMessageDeleted;
+  'session.{gameSessionId}.chat':
+    | RealtimeChatMessage
+    | RealtimeChatMessage
+    | RealtimeChatMessageDeleted;
+  'session.{gameSessionId}.member.{membershipId}':
+    | RealtimeChatMessage
+    | RealtimeChatMessage
+    | RealtimeChatMessageDeleted;
 }
 
 export type RealtimeChannelPayload<C extends RealtimeChannel> = RealtimeChannelPayloadMap[C];

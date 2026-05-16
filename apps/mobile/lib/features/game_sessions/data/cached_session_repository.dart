@@ -99,19 +99,6 @@ class CachedSessionRepository implements SessionRepository {
   }
 
   @override
-  Future<GameSession> assignCharacter(String sessionId, String characterId) async {
-    final updated = await _remote.assignCharacter(sessionId, characterId);
-    await _cache.delete(sessionId);
-    return updated;
-  }
-
-  @override
-  Future<void> unassignCharacter(String sessionId, String characterId) async {
-    await _remote.unassignCharacter(sessionId, characterId);
-    await _cache.delete(sessionId);
-  }
-
-  @override
   Future<GameSession> adjustDp(
     String sessionId, {
     required int delta,

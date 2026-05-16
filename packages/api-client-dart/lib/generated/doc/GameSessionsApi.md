@@ -10,7 +10,6 @@ All URIs are relative to *http://localhost:3010*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**adjustDp**](GameSessionsApi.md#adjustdp) | **POST** /api/v1/game-sessions/{id}/dp | Adjust Darkness Points for a game session
-[**assignCharacterToSession**](GameSessionsApi.md#assigncharactertosession) | **POST** /api/v1/game-sessions/{id}/characters | Assign a character to a game session
 [**blockMember**](GameSessionsApi.md#blockmember) | **POST** /api/v1/game-sessions/{id}/blocks | Block a session member
 [**createGameSession**](GameSessionsApi.md#creategamesession) | **POST** /api/v1/game-sessions | Create a new game session
 [**deleteGameSession**](GameSessionsApi.md#deletegamesession) | **DELETE** /api/v1/game-sessions/{id} | Delete a game session
@@ -28,7 +27,6 @@ Method | HTTP request | Description
 [**removeMembership**](GameSessionsApi.md#removemembership) | **DELETE** /api/v1/game-sessions/{id}/members/{membershipId} | Kick (GM) or leave (member) — soft delete
 [**revokeInvite**](GameSessionsApi.md#revokeinvite) | **DELETE** /api/v1/game-sessions/{id}/invite | Revoke the current invite (GM only)
 [**rotateInvite**](GameSessionsApi.md#rotateinvite) | **POST** /api/v1/game-sessions/{id}/invite/rotate | Rotate (or first-generate) the session&#39;s invite link (GM only)
-[**unassignCharacterFromSession**](GameSessionsApi.md#unassigncharacterfromsession) | **DELETE** /api/v1/game-sessions/{id}/characters/{characterId} | Remove a character from a game session
 [**unblockMember**](GameSessionsApi.md#unblockmember) | **DELETE** /api/v1/game-sessions/{id}/blocks/{targetMembershipId} | Unblock a session member
 [**updateGameSession**](GameSessionsApi.md#updategamesession) | **PATCH** /api/v1/game-sessions/{id} | Update a game session
 
@@ -66,55 +64,6 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **String**| Game session identifier (cuid2) | 
  **dpAdjustment** | [**DpAdjustment**](DpAdjustment.md)|  | 
-
-### Return type
-
-[**GameSession**](GameSession.md)
-
-### Authorization
-
-[cookieAuth](../README.md#cookieAuth), [bearerAuth](../README.md#bearerAuth)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json, application/problem+json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **assignCharacterToSession**
-> GameSession assignCharacterToSession(id, assignCharacterToSession)
-
-Assign a character to a game session
-
-Assigns one of the caller's own characters to the game session. The character must be owned by the same user as the session (GM). Assigning an already-assigned character is idempotent — returns the current session state without creating a duplicate. 
-
-### Example
-```dart
-import 'package:app_api_client/api.dart';
-// TODO Configure API key authorization: cookieAuth
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKeyPrefix = 'Bearer';
-
-final api = AppApiClient().getGameSessionsApi();
-final String id = id_example; // String | Game session identifier (cuid2)
-final AssignCharacterToSession assignCharacterToSession = {characterId=cuid_char01}; // AssignCharacterToSession | 
-
-try {
-    final response = api.assignCharacterToSession(id, assignCharacterToSession);
-    print(response);
-} on DioException catch (e) {
-    print('Exception when calling GameSessionsApi->assignCharacterToSession: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **id** | **String**| Game session identifier (cuid2) | 
- **assignCharacterToSession** | [**AssignCharacterToSession**](AssignCharacterToSession.md)|  | 
 
 ### Return type
 
@@ -950,54 +899,6 @@ Name | Type | Description  | Notes
 
  - **Content-Type**: Not defined
  - **Accept**: application/json, application/problem+json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **unassignCharacterFromSession**
-> unassignCharacterFromSession(id, characterId)
-
-Remove a character from a game session
-
-Removes the character from the session's character list. The session must be owned by the caller. Silently succeeds if the character was not assigned. 
-
-### Example
-```dart
-import 'package:app_api_client/api.dart';
-// TODO Configure API key authorization: cookieAuth
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookieAuth').apiKeyPrefix = 'Bearer';
-
-final api = AppApiClient().getGameSessionsApi();
-final String id = id_example; // String | Game session identifier (cuid2)
-final String characterId = characterId_example; // String | Character identifier (cuid2)
-
-try {
-    api.unassignCharacterFromSession(id, characterId);
-} on DioException catch (e) {
-    print('Exception when calling GameSessionsApi->unassignCharacterFromSession: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **id** | **String**| Game session identifier (cuid2) | 
- **characterId** | **String**| Character identifier (cuid2) | 
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-[cookieAuth](../README.md#cookieAuth), [bearerAuth](../README.md#bearerAuth)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/problem+json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

@@ -9,6 +9,10 @@ import 'package:equatable/equatable.dart';
 /// is the wire string ("active" | "archived") rather than an enum so
 /// the UI can render whatever the server returns even if the contract
 /// adds a new value before the mobile app catches up.
+///
+/// Phase 8 Stream E: the legacy `characterIds` list is gone — the crew
+/// roster (incl. PC linkage) is now exposed through the SDK's
+/// `memberships` array on the wire DTO, not duplicated here.
 class GameSession extends Equatable {
   const GameSession({
     required this.id,
@@ -16,7 +20,7 @@ class GameSession extends Equatable {
     required this.name,
     required this.status,
     required this.dpCount,
-    required this.characterIds,
+    required this.members,
     required this.createdAt,
     required this.updatedAt,
     this.description,
@@ -29,17 +33,27 @@ class GameSession extends Equatable {
   final String? description;
   final String status;
   final int dpCount;
-  final List<String> characterIds;
+
+  /// Active session members (incl. the GM). Single source of truth for
+  /// "who is at this table" since Phase 8 Stream E.
+  final List<GameSessionMember> members;
   final String? shipId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  /// Character ids linked through memberships — used by the combat tracker
+  /// to populate the PC picker.
+  List<String> get linkedCharacterIds => [
+        for (final m in members)
+          if (m.characterId != null) m.characterId!,
+      ];
+
   GameSession copyWith({
     int? dpCount,
-    List<String>? characterIds,
     String? status,
     String? name,
     String? description,
+    List<GameSessionMember>? members,
   }) {
     return GameSession(
       id: id,
@@ -48,7 +62,7 @@ class GameSession extends Equatable {
       description: description ?? this.description,
       status: status ?? this.status,
       dpCount: dpCount ?? this.dpCount,
-      characterIds: characterIds ?? this.characterIds,
+      members: members ?? this.members,
       shipId: shipId,
       createdAt: createdAt,
       updatedAt: updatedAt,
@@ -63,11 +77,41 @@ class GameSession extends Equatable {
         description,
         status,
         dpCount,
-        characterIds,
+        members,
         shipId,
         createdAt,
         updatedAt,
       ];
+}
+
+/// A row in the session's `GameSessionMembership` table, as the mobile UI
+/// sees it. Mirrors `api_client.GameSessionMembership` minus the wire-only
+/// `gameSessionId`/`leftAt` fields the UI never reads.
+class GameSessionMember extends Equatable {
+  const GameSessionMember({
+    required this.id,
+    required this.userId,
+    required this.role,
+    required this.joinedAt,
+    this.displayName,
+    this.characterId,
+    this.characterName,
+  });
+
+  final String id;
+  final String userId;
+
+  /// Wire string: "gm" | "player".
+  final String role;
+  final String? displayName;
+  final String? characterId;
+  final String? characterName;
+  final DateTime joinedAt;
+
+  bool get isGm => role == 'gm';
+
+  @override
+  List<Object?> get props => [id, userId, role, displayName, characterId, characterName, joinedAt];
 }
 
 /// Audit row for a single Darkness Points adjustment (Phase 4 Feature 7.3).

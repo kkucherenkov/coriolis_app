@@ -22,9 +22,8 @@ part 'me_export_game_session.g.dart';
 /// * [description] - Optional longer description
 /// * [status] 
 /// * [dpCount] - Darkness Points counter; mutated by Feature 7.3
-/// * [characterIds] - Character ids assigned to this session. Manage via the join endpoint (POST / DELETE on /game-sessions/{id}/characters). 
 /// * [shipId] - Optional ship linked to the session (Epic 8)
-/// * [memberships] - Active members of this session. Always includes the GM row. Phase 8: this replaces `characterIds` as the source of truth for \"who is at this table\" — `characterIds` is deprecated and will be removed in Stream E. 
+/// * [memberships] - Active members of this session. Always includes the GM row. Single source of truth for \"who is at this table\" since Phase 8 Stream E removed the legacy `characterIds` array. Each row optionally carries `characterId` — that's how a player (or GM) links a PC to their seat. 
 /// * [createdAt] 
 /// * [updatedAt] 
 /// * [encounters] 
@@ -70,11 +69,6 @@ class _$MeExportGameSessionSerializer implements PrimitiveSerializer<MeExportGam
     yield serializers.serialize(
       object.encounters,
       specifiedType: const FullType(BuiltList, [FullType(MeExportEncounter)]),
-    );
-    yield r'characterIds';
-    yield serializers.serialize(
-      object.characterIds,
-      specifiedType: const FullType(BuiltList, [FullType(String)]),
     );
     yield r'name';
     yield serializers.serialize(
@@ -163,13 +157,6 @@ class _$MeExportGameSessionSerializer implements PrimitiveSerializer<MeExportGam
             specifiedType: const FullType(BuiltList, [FullType(MeExportEncounter)]),
           ) as BuiltList<MeExportEncounter>;
           result.encounters.replace(valueDes);
-          break;
-        case r'characterIds':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
-          result.characterIds.replace(valueDes);
           break;
         case r'name':
           final valueDes = serializers.deserialize(

@@ -183,8 +183,8 @@ class _SessionCard extends StatelessWidget {
                 ),
                 Chip(
                   label: Text(
-                    '${session.characterIds.length} '
-                    '${session.characterIds.length == 1 ? "character" : "characters"}',
+                    '${session.members.length} '
+                    '${session.members.length == 1 ? "member" : "members"}',
                   ),
                   visualDensity: VisualDensity.compact,
                 ),

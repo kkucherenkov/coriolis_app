@@ -20,8 +20,6 @@ function makeSessionRepo(): IGameSessionRepo {
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
-    assignCharacter: vi.fn(),
-    unassignCharacter: vi.fn(),
   };
 }
 
@@ -40,7 +38,6 @@ function makeSession(overrides: Partial<GameSessionReadModel> = {}): GameSession
     description: null,
     status: 'active',
     dpCount: 3,
-    characterIds: [],
     memberships: [],
     shipId: null,
     createdAt: '2026-05-09T10:00:00.000Z',

@@ -25,7 +25,6 @@ api_client.GameSession _wireSession({
       ..name = name
       ..status = api_client.GameSessionStatus.active
       ..dpCount = 0
-      ..characterIds.replace(BuiltList<String>())
       ..memberships.replace(BuiltList<api_client.GameSessionMembership>())
       ..createdAt = DateTime.utc(2026, 5, 16)
       ..updatedAt = DateTime.utc(2026, 5, 17));
@@ -161,19 +160,6 @@ void main() {
       await sut.delete('session-1');
 
       verify(() => remote.delete('session-1')).called(1);
-      verify(() => cache.delete('session-1')).called(1);
-    });
-  });
-
-  group('assignCharacter', () {
-    test('success → cache.delete(sessionId) called once', () async {
-      final updated = _domainSession();
-      when(() => remote.assignCharacter('session-1', 'char-1'))
-          .thenAnswer((_) async => updated);
-      when(() => cache.delete('session-1')).thenAnswer((_) async {});
-
-      await sut.assignCharacter('session-1', 'char-1');
-
       verify(() => cache.delete('session-1')).called(1);
     });
   });

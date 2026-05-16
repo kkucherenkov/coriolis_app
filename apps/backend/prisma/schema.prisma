@@ -260,7 +260,6 @@ model Character {
   criticalInjuries    CriticalInjury[]
   shareLinks          ShareLink[]
   rolls               Roll[]
-  gameSessions        CharacterGameSession[]
   memberships         GameSessionMembership[]
   crewAssignments     CrewSlot[]
   createdAt           DateTime         @default(now())
@@ -418,9 +417,10 @@ enum DpSource {
 /// Design notes:
 /// - `dpCount` is always mutated atomically by UpdateDpCommand (Feature 7.3).
 ///   Never written directly from the PATCH endpoint.
-/// - Characters are linked via the `CharacterGameSession` join table so the
-///   many-to-many relation stays clean. The array of characterIds is assembled
-///   at read time by the repo.
+/// - Players (incl. the GM) are linked via `GameSessionMembership`. Each
+///   membership row optionally carries a `characterId` — that's how a PC is
+///   attached to a seat. (Phase 8 Stream E removed the legacy
+///   `CharacterGameSession` join table + `characterIds[]` array.)
 /// - `shipId` is a loose foreign-key string; the Ship model is added in Epic 8.
 ///   It is not declared as a Prisma relation here to avoid a circular dep on a
 ///   model that doesn't exist yet.
@@ -436,7 +436,6 @@ model GameSession {
   inviteTokenHash    String?               @db.Char(64) // SHA-256 hex; NULL = no active invite
   inviteRotatedAt    DateTime?
   inviteCreatedById  String?
-  characters         CharacterGameSession[]
   memberships        GameSessionMembership[]
   chatMessages       ChatMessage[]
   chatBlocks         ChatBlock[]
@@ -469,26 +468,11 @@ model DpEvent {
   @@map("dp_event")
 }
 
-/// Join table linking characters to game sessions.
-///
-/// The composite primary key prevents duplicate assignments.
-/// Cascade-deletes ensure the join row is removed when either side is deleted.
-model CharacterGameSession {
-  characterId   String
-  gameSessionId String
-  character     Character   @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  gameSession   GameSession @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
-  assignedAt    DateTime    @default(now())
-
-  @@id([characterId, gameSessionId])
-  @@index([gameSessionId])
-  @@map("character_game_session")
-}
-
-/// Phase 8 — a row per (user, gameSession). Source of truth for "who is at
-/// this table." Backfilled from existing owners by migration
-/// 20260516000001_add_memberships_and_invite. The legacy `characterIds`
-/// array on GameSession is deprecated and removed in Phase 8 Stream E.
+/// Phase 8 — a row per (user, gameSession). Single source of truth for "who
+/// is at this table" since Stream E removed the legacy
+/// `CharacterGameSession` join table + `GameSession.characterIds[]` array.
+/// Backfilled from existing owners by migration
+/// 20260516000001_add_memberships_and_invite.
 model GameSessionMembership {
   id            String       @id @default(cuid())
   gameSessionId String

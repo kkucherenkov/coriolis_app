@@ -5,8 +5,10 @@
  * The Prisma adapter in infra/ implements the interface.
  * Unit tests swap in vi.fn() mocks without bootstrapping a database.
  *
- * Read models match the OpenAPI GameSession schema exactly.
- * characterIds is assembled by the repo from the join table.
+ * Read models match the OpenAPI GameSession schema exactly. As of Phase 8
+ * Stream E, `GameSessionMembership` is the only source of truth for "who
+ * is at this table" — the legacy `characterIds` array + the GM-only
+ * assign/unassign join endpoints were dropped.
  */
 
 import type { MembershipReadModel } from '../../memberships/domain/membership.ports';
@@ -20,7 +22,6 @@ export interface GameSessionReadModel {
   description: string | null;
   status: GameSessionStatus;
   dpCount: number;
-  characterIds: string[]; // deprecated, removed in Stream E
   memberships: MembershipReadModel[];
   shipId: string | null;
   createdAt: string; // ISO-8601
@@ -62,15 +63,4 @@ export interface IGameSessionRepo {
   ): Promise<GameSessionReadModel>;
 
   delete(id: string): Promise<void>;
-
-  /**
-   * Assigns a character to a session. Idempotent — if already assigned, no
-   * duplicate row is created. Returns the updated session read model.
-   */
-  assignCharacter(gameSessionId: string, characterId: string): Promise<GameSessionReadModel>;
-
-  /**
-   * Removes a character from a session. Silently succeeds if not assigned.
-   */
-  unassignCharacter(gameSessionId: string, characterId: string): Promise<void>;
 }

@@ -4,18 +4,13 @@
  * This is the only file in the game-sessions bounded context that imports
  * PrismaService. Handlers inject IGameSessionRepo by the GAME_SESSION_REPO token.
  *
- * SELECT shapes are scoped to what the use case needs.
- * The characterIds array is assembled from the join table's characterId column.
- *
- * Character-ownership for the assign endpoint is checked in a single query
- * that looks up the character's ownerId and compares it to the session's ownerId.
- * If the character does not belong to the same user, CharacterNotOwnedError is
- * thrown at the repo layer so the handler stays free of DB concerns.
+ * SELECT shapes are scoped to what the use case needs. Since Phase 8 Stream E
+ * the only "who's at this table" data is the `memberships` relation; the
+ * legacy `characters` join table is gone.
  */
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../../common/prisma/prisma.service';
-import { CharacterNotOwnedError } from '../domain/game-session.errors';
 import { toMembershipReadModel } from '../../memberships/domain/membership.mapper';
 
 import type {
@@ -36,10 +31,6 @@ const GAME_SESSION_SELECT = {
   status: true,
   dpCount: true,
   shipId: true,
-  characters: {
-    select: { characterId: true },
-    orderBy: { assignedAt: 'asc' as const },
-  },
   memberships: {
     where: { leftAt: null },
     orderBy: { joinedAt: 'asc' as const },
@@ -79,7 +70,6 @@ interface PrismaGameSession {
   status: string;
   dpCount: number;
   shipId: string | null;
-  characters: { characterId: string }[];
   memberships: PrismaGameSessionMembershipRow[];
   createdAt: Date;
   updatedAt: Date;
@@ -100,7 +90,6 @@ function buildReadModel(
     description: row.description,
     status: toStatus(row.status),
     dpCount: row.dpCount,
-    characterIds: row.characters.map((c) => c.characterId),
     memberships,
     shipId: row.shipId,
     createdAt: row.createdAt.toISOString(),
@@ -202,51 +191,8 @@ export class GameSessionRepo implements IGameSessionRepo {
   }
 
   async delete(id: string): Promise<void> {
-    // Prisma cascades to character_game_session rows
+    // Prisma cascades to memberships, chat messages, dp events, encounters.
     await this.prisma.gameSession.delete({ where: { id } });
-  }
-
-  async assignCharacter(gameSessionId: string, characterId: string): Promise<GameSessionReadModel> {
-    // Verify the character exists and belongs to the same owner as the session.
-    // Done in a single query to minimise round trips.
-    const [session, character] = await Promise.all([
-      this.prisma.gameSession.findFirst({
-        where: { id: gameSessionId },
-        select: { ownerId: true },
-      }),
-      this.prisma.character.findFirst({ where: { id: characterId }, select: { ownerId: true } }),
-    ]);
-
-    // Session existence was already checked in the handler; guard anyway.
-    if (!session) {
-      throw new Error(`GameSession ${gameSessionId} not found during assignCharacter.`);
-    }
-
-    if (character?.ownerId !== session.ownerId) {
-      throw new CharacterNotOwnedError(characterId);
-    }
-
-    // Upsert is idempotent — no error if already assigned.
-    await this.prisma.characterGameSession.upsert({
-      where: {
-        characterId_gameSessionId: { characterId, gameSessionId },
-      },
-      create: { characterId, gameSessionId },
-      update: {}, // no-op on conflict
-    });
-
-    const row = await this.prisma.gameSession.findFirstOrThrow({
-      where: { id: gameSessionId },
-      select: GAME_SESSION_SELECT,
-    });
-    return buildReadModel(row, await this.mapMemberships(row.memberships));
-  }
-
-  async unassignCharacter(gameSessionId: string, characterId: string): Promise<void> {
-    // deleteMany is silent when no rows match — idempotent
-    await this.prisma.characterGameSession.deleteMany({
-      where: { characterId, gameSessionId },
-    });
   }
 
   private async mapMemberships(

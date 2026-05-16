@@ -7,12 +7,21 @@ void main() {
   final instance = AppApiClient().getGameSessionsApi();
 
   group(GameSessionsApi, () {
-    // Assign a character to a game session
+    // Adjust Darkness Points for a game session
     //
-    // Assigns one of the caller's own characters to the game session. The character must be owned by the same user as the session (GM). Assigning an already-assigned character is idempotent — returns the current session state without creating a duplicate. 
+    // Atomically adjusts the Darkness Points counter for the session.  **ACL rules:** - Negative `delta`: only the GM who owns the session may apply. - Positive `delta`: the GM owner may apply; the system applies   automatically via the roll-push pipeline.  **Error codes:** - `DP_INVALID_DELTA` (422) — `delta` is 0. - `DP_BELOW_ZERO` (422) — applying `delta` would take `dpCount` below 0. - `GAME_SESSION_NOT_OWNER` (403) — negative delta from non-owner. 
     //
-    //Future<GameSession> assignCharacterToSession(String id, AssignCharacterToSession assignCharacterToSession) async
-    test('test assignCharacterToSession', () async {
+    //Future<GameSession> adjustDp(String id, DpAdjustment dpAdjustment) async
+    test('test adjustDp', () async {
+      // TODO
+    });
+
+    // Block a session member
+    //
+    // Adds the target membership to the caller's block list for this session. Idempotent — blocking an already-blocked member is a no-op. Once blocked, the blocked member cannot whisper to the blocker. 
+    //
+    //Future blockMember(String id, ChatBlockRequest chatBlockRequest) async
+    test('test blockMember', () async {
       // TODO
     });
 
@@ -43,6 +52,60 @@ void main() {
       // TODO
     });
 
+    // Read invite metadata (GM only)
+    //
+    // Returns whether an invite is active for this session and when it was last rotated. Never returns the plaintext URL — that is revealed exactly once by POST /invite/rotate. 
+    //
+    //Future<InviteMetadata> getInviteMetadata(String id) async
+    test('test getInviteMetadata', () async {
+      // TODO
+    });
+
+    // Link or unlink a character to a membership
+    //
+    // The owner of the membership (the player or the GM themselves) can change which character is attached. The GM can also operate on any membership for moderation. Pass `characterId: null` to unlink. 
+    //
+    //Future<GameSessionMembership> linkMembershipCharacter(String id, String membershipId, LinkMembershipCharacterRequest linkMembershipCharacterRequest) async
+    test('test linkMembershipCharacter', () async {
+      // TODO
+    });
+
+    // List the caller's block list for a session
+    //
+    // Returns all memberships the caller has blocked in this session. 
+    //
+    //Future<ListBlocks200Response> listBlocks(String id) async
+    test('test listBlocks', () async {
+      // TODO
+    });
+
+    // List chat conversations for a session member
+    //
+    // Returns a summary of all conversations visible to the caller: the broadcast channel plus any whisper threads they participate in. Includes unread counts relative to the caller's read cursor. 
+    //
+    //Future<ChatConversationList> listChatConversations(String id) async
+    test('test listChatConversations', () async {
+      // TODO
+    });
+
+    // List chat messages for a session conversation
+    //
+    // Returns a cursor-paginated list of messages for the specified conversation. Pass `conversation=broadcast` (default) for the session broadcast channel, or pass a `membershipId` to read a whisper thread. Only the two participants of a whisper thread can see its messages. 
+    //
+    //Future<ChatMessageList> listChatMessages(String id, { String conversation, String cursor, int limit }) async
+    test('test listChatMessages', () async {
+      // TODO
+    });
+
+    // List Darkness Point audit events for a session
+    //
+    // Returns a cursor-paginated audit log of all DP adjustments made to the session, ordered newest-first. Only accessible by the GM owner. 
+    //
+    //Future<DpEventList> listDpEvents(String id, { String cursor, int limit }) async
+    test('test listDpEvents', () async {
+      // TODO
+    });
+
     // List the authenticated GM's game sessions
     //
     // Returns a cursor-paginated list of game sessions owned by the authenticated user. Pass `cursor` from a previous response's `nextCursor` to retrieve the following page. Results are ordered newest-first by `createdAt`. Optionally filter by `status`. 
@@ -52,12 +115,66 @@ void main() {
       // TODO
     });
 
-    // Remove a character from a game session
+    // List session members (GM or member)
     //
-    // Removes the character from the session's character list. The session must be owned by the caller. Silently succeeds if the character was not assigned. 
+    // Returns active memberships for this session. Available to the GM and to any active member. Leaver rows (with non-null leftAt) are excluded. 
     //
-    //Future unassignCharacterFromSession(String id, String characterId) async
-    test('test unassignCharacterFromSession', () async {
+    //Future<BuiltList<GameSessionMembership>> listMembers(String id) async
+    test('test listMembers', () async {
+      // TODO
+    });
+
+    // Mark a conversation as read up to a timestamp
+    //
+    // Upserts the caller's read cursor for the given conversation. The `conversationKey` is URL-encoded; use `broadcast` for the session broadcast or a membershipId for a whisper thread. 
+    //
+    //Future markChatConversationRead(String id, String conversationKey, MarkReadRequest markReadRequest) async
+    test('test markChatConversationRead', () async {
+      // TODO
+    });
+
+    // Post a chat message to a session
+    //
+    // Posts a broadcast (`targetMembershipId: null`) or whisper (`targetMembershipId: <membershipId>`) message. Returns 403 when the target has blocked the author. Returns 404 when the target is not an active session member. Rate-limited to 30 msg/min and 5/s burst per user. 
+    //
+    //Future<ChatMessage> postChatMessage(String id, PostChatMessageRequest postChatMessageRequest) async
+    test('test postChatMessage', () async {
+      // TODO
+    });
+
+    // Kick (GM) or leave (member) — soft delete
+    //
+    // Stamps `leftAt` on the membership. The GM can kick any non-GM member; a player can self-leave. The GM cannot kick themselves. 
+    //
+    //Future removeMembership(String id, String membershipId) async
+    test('test removeMembership', () async {
+      // TODO
+    });
+
+    // Revoke the current invite (GM only)
+    //
+    // Clears the invite hash on the session. Subsequent accept attempts return 410 Gone. Re-issuing requires POST /invite/rotate. 
+    //
+    //Future revokeInvite(String id) async
+    test('test revokeInvite', () async {
+      // TODO
+    });
+
+    // Rotate (or first-generate) the session's invite link (GM only)
+    //
+    // Generates a fresh 22-char URL-safe nanoid, stores its SHA-256 hash, and returns the plaintext URL exactly once. Any previously-issued invite immediately becomes invalid. 
+    //
+    //Future<InviteRotated> rotateInvite(String id) async
+    test('test rotateInvite', () async {
+      // TODO
+    });
+
+    // Unblock a session member
+    //
+    // Removes the target membership from the caller's block list. Idempotent — unblocking a member who was not blocked is a no-op. 
+    //
+    //Future unblockMember(String id, String targetMembershipId) async
+    test('test unblockMember', () async {
       // TODO
     });
 

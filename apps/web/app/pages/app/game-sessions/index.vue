@@ -161,7 +161,7 @@
     "archive": "Archive",
     "unarchive": "Unarchive",
     "dpCount": "{n} DP",
-    "characterCount": "{n} character | {n} characters",
+    "memberCount": "{n} member | {n} members",
     "createdLabel": "Created"
   },
   "ru": {
@@ -188,7 +188,7 @@
     "archive": "В архив",
     "unarchive": "Из архива",
     "dpCount": "{n} ПТ",
-    "characterCount": "{n} персонаж | {n} персонажа | {n} персонажей",
+    "memberCount": "{n} участник | {n} участника | {n} участников",
     "createdLabel": "Создана"
   },
   "uk": {
@@ -215,7 +215,7 @@
     "archive": "[uk-todo] Archive",
     "unarchive": "[uk-todo] Unarchive",
     "dpCount": "[uk-todo] {n} DP",
-    "characterCount": "[uk-todo] {n} characters",
+    "memberCount": "[uk-todo] {n} members",
     "createdLabel": "[uk-todo] Created"
   },
   "el": {
@@ -242,7 +242,7 @@
     "archive": "[el-todo] Archive",
     "unarchive": "[el-todo] Unarchive",
     "dpCount": "[el-todo] {n} DP",
-    "characterCount": "[el-todo] {n} characters",
+    "memberCount": "[el-todo] {n} members",
     "createdLabel": "[el-todo] Created"
   }
 }
@@ -353,7 +353,7 @@
                 {{ t('dpCount', { n: session.dpCount }) }}
               </AppBadge>
               <AppBadge variant="brass" size="sm">
-                {{ t('characterCount', { n: session.characterIds.length }) }}
+                {{ t('memberCount', { n: session.memberships.length }) }}
               </AppBadge>
             </div>
           </div>

@@ -4,7 +4,6 @@ import 'package:app_api_client/app_api_client.dart' as api_client
         GameSessionStatus,
         GameSessionCreate,
         GameSessionUpdate,
-        AssignCharacterToSession,
         DpAdjustment;
 
 import 'package:coriolis_companion/features/game_sessions/data/game_session_api_mapper.dart';
@@ -71,25 +70,6 @@ class SessionRepositoryImpl implements SessionRepository {
   @override
   Future<void> delete(String id) async {
     await _api.deleteGameSession(id: id);
-  }
-
-  @override
-  Future<GameSession> assignCharacter(String sessionId, String characterId) async {
-    final body = api_client.AssignCharacterToSession(
-      (b) => b..characterId = characterId,
-    );
-    final res = await _api.assignCharacterToSession(
-      id: sessionId,
-      assignCharacterToSession: body,
-    );
-    final s = res.data;
-    if (s == null) throw StateError('Assign-character returned empty body');
-    return GameSessionApiMapper.toDomain(s);
-  }
-
-  @override
-  Future<void> unassignCharacter(String sessionId, String characterId) async {
-    await _api.unassignCharacterFromSession(id: sessionId, characterId: characterId);
   }
 
   @override

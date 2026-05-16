@@ -5,12 +5,31 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:coriolis_companion/features/game_sessions/data/game_session_api_mapper.dart';
 import 'package:coriolis_companion/features/game_sessions/domain/game_session.dart';
 
+api_client.GameSessionMembership _wireMember({
+  String id = 'mem-1',
+  String userId = 'user-1',
+  api_client.GameSessionMemberRole role = api_client.GameSessionMemberRole.gm,
+  String? displayName,
+  String? characterId,
+  String? characterName,
+}) =>
+    api_client.GameSessionMembership((b) => b
+      ..id = id
+      ..gameSessionId = 'session-1'
+      ..userId = userId
+      ..role = role
+      ..displayName = displayName
+      ..characterId = characterId
+      ..characterName = characterName
+      ..joinedAt = DateTime.utc(2026, 5, 16));
+
 api_client.GameSession _wireSession({
   String id = 'session-1',
   String name = 'The Dying Ship',
   String? description,
   api_client.GameSessionStatus status = api_client.GameSessionStatus.active,
   int dpCount = 3,
+  List<api_client.GameSessionMembership>? memberships,
 }) =>
     api_client.$GameSession((b) => b
       ..id = id
@@ -19,8 +38,11 @@ api_client.GameSession _wireSession({
       ..description = description
       ..status = status
       ..dpCount = dpCount
-      ..characterIds.replace(BuiltList<String>.of(['char-1', 'char-2']))
-      ..memberships.replace(BuiltList<api_client.GameSessionMembership>())
+      ..memberships.replace(
+        BuiltList<api_client.GameSessionMembership>(
+          memberships ?? [_wireMember()],
+        ),
+      )
       ..createdAt = DateTime.utc(2026, 5, 16)
       ..updatedAt = DateTime.utc(2026, 5, 17));
 
@@ -54,10 +76,31 @@ void main() {
       expect(domain.dpCount, 3);
     });
 
-    test('maps characterIds list', () {
-      final domain = GameSessionApiMapper.toDomain(_wireSession());
+    test('maps memberships into members with role + character link', () {
+      final domain = GameSessionApiMapper.toDomain(
+        _wireSession(memberships: [
+          _wireMember(
+            id: 'mem-gm',
+            userId: 'user-gm',
+            role: api_client.GameSessionMemberRole.gm,
+            displayName: 'Zara',
+          ),
+          _wireMember(
+            id: 'mem-1',
+            userId: 'user-player',
+            role: api_client.GameSessionMemberRole.player,
+            displayName: 'Ravi',
+            characterId: 'char-1',
+            characterName: 'Mira Vance',
+          ),
+        ]),
+      );
 
-      expect(domain.characterIds, ['char-1', 'char-2']);
+      expect(domain.members, hasLength(2));
+      expect(domain.members.first.isGm, isTrue);
+      expect(domain.members.first.displayName, 'Zara');
+      expect(domain.members.last.characterName, 'Mira Vance');
+      expect(domain.linkedCharacterIds, ['char-1']);
     });
 
     test('maps archived status correctly', () {

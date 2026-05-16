@@ -2,6 +2,66 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-16-PHASE-8-STREAM-E — Phase 8 / Stream E — Cleanup of deprecated `characterIds`
+
+- Created: 2026-05-16
+- Completed: 2026-05-17
+- Owner: claude
+- Branch: `feat/phase-8/stream-e-cleanup-characterIds`
+- Spec: [docs/superpowers/specs/2026-05-15-phase-8-implementation-design.md](../../docs/superpowers/specs/2026-05-15-phase-8-implementation-design.md) §Stream E
+- Task inventory: T-11.8.1.a–d from `docs/IMPLEMENTATION_PLAN_PHASE_8.md`.
+- Result: [PR #29](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/29) on Forgejo.
+- Goal: make `GameSessionMembership` the only source of truth for "who is at this table" by removing the legacy `GameSession.characterIds` array + the `CharacterGameSession` join + the GM-only assign/unassign endpoints.
+- Acceptance — all met:
+  - `rg "characterIds" apps/backend/src apps/web/app apps/mobile/lib` returns only two doc comments referencing the prior name (no live code).
+  - OpenAPI bumped **1.8.0 → 1.9.0**; `GameSession.characterIds`, `AssignCharacterToSession`, and the two `/game-sessions/:id/characters[...]` routes are gone.
+  - Web GM "Characters" panel replaced by a "Crew" panel sourced from `session.memberships`; empty-state copy "Share your invite link to bring players to the table." in 4 locales.
+  - Web GM sessions-list badge: `characterCount` → `memberCount` (4 locales).
+  - Mobile session detail + list mirror the web change (`_CrewCard` driven by `members`; member-count chip on the list).
+  - Prisma migration `20260517000001_drop_character_game_session` applied via `prisma migrate deploy`; `to_regclass('public.character_game_session')` returns NULL after apply. Backfill step copies the GM's first-assigned-by-`assignedAt` character into the GM membership row's `characterId` when still NULL (no-op on local dev DB but exercised on production-shaped data).
+  - Codegen-drift clean; all test sweeps green.
+- Sub-blocks (chronological on this branch):
+  - [x] Block 1 — Branch + active.md entry (`a94d65c`)
+  - [x] Block 2a — OpenAPI 1.8.0 → 1.9.0 (`56a0cf5`)
+  - [x] Block 2b — Codegen + stale Dart stub cleanup (`e47debcc`)
+  - [x] Block 3 — Backend strip: handlers, commands, ports, controller routes, `GameSessionRepo`, `GameSessionAccessService` (members-driven), 7 fixture cleanups (`f59ee727`)
+  - [x] Block 4a — AsyncAPI `ChatMessage` → `RealtimeChatMessage` rename (closes Stream-D TS2308 follow-up) (`7fba784e`)
+  - [x] Block 4b — Web + mobile rewire: Crew panel, encounter PC picker, sessions-list, repository surface, fixtures (`82cc221d`)
+  - [x] Block 5 — Prisma migration: backfill GM membership.characterId + drop join table (`9c58e42f`)
+- Spec diff: OpenAPI `1.8.0` → `1.9.0` (1 schema field removed, 1 DTO removed, 2 routes removed). AsyncAPI: `ChatMessage`/`ChatMessageDeleted` schemas renamed to `RealtimeChatMessage`/`RealtimeChatMessageDeleted` — wire channel addresses + message names unchanged.
+- Codegen impact: yes. Both TS SDK + Dart client regenerated; stale `assign_character_to_session*` + test stubs deleted from Dart codegen. Channels module re-exports the renamed Realtime types.
+- Design impact: none (no tokens / no `@app/ui` components).
+- Tests delivered / changed:
+  - Backend: removed `assign-character.handler.spec.ts` + `unassign-character.handler.spec.ts` (~10 specs); purged `characterIds` fixture line + `assignCharacter`/`unassignCharacter` mock entries from 7 fixture builders; renamed one assertion to assert `memberships` shape. Final: **1097 / 1097 green** (Stream D was 1107, delta = -10 deleted).
+  - Web: rewrote one assertion in `use-encounters-api.spec.ts` to look for the new `crewHeading`/`crewEmpty` copy. Final: **536 / 536 green**.
+  - UI: unchanged surface; **1064 / 1064 green**.
+  - Mobile: rewrote mapper test to assert the new `members`/`linkedCharacterIds` shape; dropped the legacy `assignCharacter` cache spec; purged `characterIds` from 5 fixture builders. Final: **451 / 451 green** (Stream D was 452, delta = -1 deleted).
+  - Cross-stack: ~3148 tests green.
+  - Acceptance: `pnpm spec:validate` ✅; `pnpm spec:codegen` ✅; `pnpm check:i18n` ✅; backend `tsc --noEmit` ✅; web `nuxt typecheck` ✅; `flutter analyze` ✅ (24 info-only lints, pre-existing).
+- Notable decisions:
+  - **No domain on Postgres dropped the column** — the actual v1 schema never had `characterIds: String[]` as a column (it was always assembled at read time from the `CharacterGameSession` join). The plan's "drop the column" step translates to "drop the join table" in this codebase.
+  - **Backfill order** — `UPDATE membership` first, then `DROP TABLE`. Wrapped in a single SQL file; Prisma engine wraps each migration in its own transaction (no explicit `BEGIN`/`COMMIT`).
+  - **Backfill chooses oldest assignment, GM only** — when a GM session had multiple PCs in the legacy join, we copy the earliest-assigned to the GM's membership; players' character links were already set during invite-accept (Stream B), so they aren't touched.
+  - **AsyncAPI rename is namespace hygiene, not a wire change** — Centrifugo message names (`chat.message.posted` etc.) are unchanged; only the codegen interface names move out of the SDK's namespace.
+  - **`GameSessionMember` domain class on mobile** — surfacing `members` (with `displayName` / `characterId` / `characterName` / `isGm`) lets the Crew card render server-denormalised data without a second roundtrip; mirrors the web's `GameSessionMembership` consumption pattern.
+  - **`GameSessionAccessService.isMember` rewritten** to consult `GameSessionMembership` instead of the join. GM remains a member because Stream A's backfill created their row; no special-casing is needed.
+  - **Drive-by typing fixes on chat composer** — narrowed `composerPartnerDisplayName` to `string | undefined` (was leaking `null` via the optional `partnerCharacterName` fallback). Pre-existing red on `main`; fixed in the same files Stream E was already editing.
+  - **Stream-D follow-up closed** — TS2308 duplicate `ChatMessage` export is gone; the AsyncAPI rename resolved it without touching the SDK barrel.
+- Open follow-ups carried forward into Phase 8.5 backlog:
+  - `AppConfirm` primitive replacing `globalThis.confirm` (Stream A FU).
+  - GM "Kick member" UI on `/app/game-sessions/[id]` (backend route already wired in Stream A).
+  - `chatDockedCollapsed` from `localStorage` → `/me/settings` schema (Stream D FU).
+  - Inline-edit affordance for chat messages (Stream D FU).
+  - Web + mobile chat integration tests (Stream D FU).
+  - Presence wiring on `AppChatTab` (Stream D FU).
+  - `MarkReadRequest` derive `lastReadAt` from message `createdAt` (Stream D FU).
+  - Storybook a11y panel manual sweep against axe-core (Stream D FU).
+  - Redis-backed chat rate limiter (Stream C FU).
+  - Generic `RealtimeRouter` abstraction (Stream C FU).
+  - **Deep-link configuration** — still blocked on `APP_LINKS_HOST`; remains as `T-2026-05-17-DEEP-LINK-SETUP` in `active.md`.
+- Status: shipped
+- Blockers: —
+
 ## T-2026-05-16-PHASE-8-STREAM-D — Phase 8 / Stream D — Chat UI (web + mobile)
 
 - Created: 2026-05-16

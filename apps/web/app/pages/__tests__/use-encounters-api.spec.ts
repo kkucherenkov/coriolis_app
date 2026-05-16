@@ -536,8 +536,8 @@ describe('sessions/[id].vue — EncounterPanel mount', () => {
     expect(src).toContain('auditEmpty');
   });
 
-  it('existing character assignment is not disturbed', () => {
-    expect(src).toContain('assignHeading');
-    expect(src).toContain('charactersHeading');
+  it('Crew panel from memberships still mounted (Phase 8 Stream E)', () => {
+    expect(src).toContain('crewHeading');
+    expect(src).toContain('crewEmpty');
   });
 });

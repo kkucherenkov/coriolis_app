@@ -20,9 +20,8 @@ part 'game_session.g.dart';
 /// * [description] - Optional longer description
 /// * [status] 
 /// * [dpCount] - Darkness Points counter; mutated by Feature 7.3
-/// * [characterIds] - Character ids assigned to this session. Manage via the join endpoint (POST / DELETE on /game-sessions/{id}/characters). 
 /// * [shipId] - Optional ship linked to the session (Epic 8)
-/// * [memberships] - Active members of this session. Always includes the GM row. Phase 8: this replaces `characterIds` as the source of truth for \"who is at this table\" — `characterIds` is deprecated and will be removed in Stream E. 
+/// * [memberships] - Active members of this session. Always includes the GM row. Single source of truth for \"who is at this table\" since Phase 8 Stream E removed the legacy `characterIds` array. Each row optionally carries `characterId` — that's how a player (or GM) links a PC to their seat. 
 /// * [createdAt] 
 /// * [updatedAt] 
 @BuiltValue(instantiable: false)
@@ -51,15 +50,11 @@ abstract class GameSession  {
   @BuiltValueField(wireName: r'dpCount')
   int get dpCount;
 
-  /// Character ids assigned to this session. Manage via the join endpoint (POST / DELETE on /game-sessions/{id}/characters). 
-  @BuiltValueField(wireName: r'characterIds')
-  BuiltList<String> get characterIds;
-
   /// Optional ship linked to the session (Epic 8)
   @BuiltValueField(wireName: r'shipId')
   String? get shipId;
 
-  /// Active members of this session. Always includes the GM row. Phase 8: this replaces `characterIds` as the source of truth for \"who is at this table\" — `characterIds` is deprecated and will be removed in Stream E. 
+  /// Active members of this session. Always includes the GM row. Single source of truth for \"who is at this table\" since Phase 8 Stream E removed the legacy `characterIds` array. Each row optionally carries `characterId` — that's how a player (or GM) links a PC to their seat. 
   @BuiltValueField(wireName: r'memberships')
   BuiltList<GameSessionMembership> get memberships;
 
@@ -116,11 +111,6 @@ class _$GameSessionSerializer implements PrimitiveSerializer<GameSession> {
     yield serializers.serialize(
       object.dpCount,
       specifiedType: const FullType(int),
-    );
-    yield r'characterIds';
-    yield serializers.serialize(
-      object.characterIds,
-      specifiedType: const FullType(BuiltList, [FullType(String)]),
     );
     if (object.shipId != null) {
       yield r'shipId';
@@ -249,13 +239,6 @@ class _$$GameSessionSerializer implements PrimitiveSerializer<$GameSession> {
             specifiedType: const FullType(int),
           ) as int;
           result.dpCount = valueDes;
-          break;
-        case r'characterIds':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
-          result.characterIds.replace(valueDes);
           break;
         case r'shipId':
           final valueDes = serializers.deserialize(

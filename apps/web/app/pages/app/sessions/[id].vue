@@ -185,7 +185,7 @@
     const summary = chatStore.conversationsList.find(
       (c) => c.conversationKey === chatStore.activeConversationKey,
     );
-    return summary?.partnerDisplayName ?? summary?.partnerCharacterName;
+    return summary?.partnerDisplayName ?? summary?.partnerCharacterName ?? undefined;
   });
 
   const chatPanelBindings = computed(() => ({

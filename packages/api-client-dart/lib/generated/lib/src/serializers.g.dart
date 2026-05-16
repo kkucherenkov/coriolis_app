@@ -13,7 +13,6 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add($ShipModuleBase.serializer)
       ..add(AcceptInviteBody.serializer)
       ..add(AcceptInviteResponse.serializer)
-      ..add(AssignCharacterToSession.serializer)
       ..add(AssignCrewRequest.serializer)
       ..add(Attributes.serializer)
       ..add(Character.serializer)
@@ -249,6 +248,10 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(BuiltList, const [const FullType(GameSession)]),
           () => ListBuilder<GameSession>())
       ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(GameSessionMembership)]),
+          () => ListBuilder<GameSessionMembership>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(ItemArmor)]),
           () => ListBuilder<ItemArmor>())
       ..addBuilderFactory(
@@ -278,9 +281,6 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(MeExportEncounter)]),
           () => ListBuilder<MeExportEncounter>())
-      ..addBuilderFactory(
-          const FullType(BuiltList, const [const FullType(String)]),
-          () => ListBuilder<String>())
       ..addBuilderFactory(
           const FullType(
               BuiltList, const [const FullType(GameSessionMembership)]),
@@ -340,13 +340,6 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(String)]),
           () => ListBuilder<String>())
-      ..addBuilderFactory(
-          const FullType(BuiltList, const [const FullType(String)]),
-          () => ListBuilder<String>())
-      ..addBuilderFactory(
-          const FullType(
-              BuiltList, const [const FullType(GameSessionMembership)]),
-          () => ListBuilder<GameSessionMembership>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(int)]),
           () => ListBuilder<int>())
