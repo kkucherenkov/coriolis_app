@@ -438,6 +438,8 @@ model GameSession {
   inviteCreatedById  String?
   characters         CharacterGameSession[]
   memberships        GameSessionMembership[]
+  chatMessages       ChatMessage[]
+  chatBlocks         ChatBlock[]
   dpEvents           DpEvent[]
   encounters         Encounter[]
   createdAt          DateTime              @default(now())
@@ -497,6 +499,11 @@ model GameSessionMembership {
   character     Character?   @relation(fields: [characterId], references: [id], onDelete: SetNull)
   joinedAt      DateTime     @default(now())
   leftAt        DateTime?
+  authoredMessages   ChatMessage[]    @relation("ChatAuthor")
+  receivedWhispers   ChatMessage[]    @relation("ChatTarget")
+  chatReadCursors    ChatReadCursor[]
+  blocksAuthored     ChatBlock[]      @relation("ChatBlocker")
+  blocksReceived     ChatBlock[]      @relation("ChatBlocked")
 
   @@unique([gameSessionId, userId])
   @@index([userId])
@@ -862,4 +869,52 @@ model Combatant {
   @@unique([encounterId, npcId])
   @@index([encounterId])
   @@map("combatant")
+}
+
+// ----- Chat (Phase 8 / Stream C) -----
+
+model ChatMessage {
+  id                  String                 @id @default(cuid())
+  gameSessionId       String
+  gameSession         GameSession            @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+  authorMembershipId  String?
+  author              GameSessionMembership? @relation("ChatAuthor", fields: [authorMembershipId], references: [id], onDelete: SetNull)
+  targetMembershipId  String?
+  target              GameSessionMembership? @relation("ChatTarget", fields: [targetMembershipId], references: [id], onDelete: SetNull)
+  kind                String                 // "text" | "system"
+  body                String?
+  systemKey           String?
+  systemParams        Json?
+  createdAt           DateTime               @default(now())
+  editedAt            DateTime?
+  deletedAt           DateTime?
+
+  @@index([gameSessionId, createdAt])
+  @@index([gameSessionId, authorMembershipId, targetMembershipId, createdAt])
+  @@map("chat_message")
+}
+
+model ChatReadCursor {
+  membershipId    String
+  membership      GameSessionMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  conversationKey String
+  lastReadAt      DateTime
+
+  @@id([membershipId, conversationKey])
+  @@map("chat_read_cursor")
+}
+
+model ChatBlock {
+  id                  String                @id @default(cuid())
+  gameSessionId       String
+  gameSession         GameSession           @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+  blockerMembershipId String
+  blocker             GameSessionMembership @relation("ChatBlocker", fields: [blockerMembershipId], references: [id], onDelete: Cascade)
+  blockedMembershipId String
+  blocked             GameSessionMembership @relation("ChatBlocked", fields: [blockedMembershipId], references: [id], onDelete: Cascade)
+  createdAt           DateTime              @default(now())
+
+  @@unique([gameSessionId, blockerMembershipId, blockedMembershipId])
+  @@index([gameSessionId, blockedMembershipId])
+  @@map("chat_block")
 }
