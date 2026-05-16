@@ -5,14 +5,8 @@ import 'package:app_api_client/app_api_client.dart'
         ShipCreate,
         ShipUpdate,
         ShipUpdateHull,
-        ShipModule,
         ShipModuleCreate,
         ShipModuleUpdate,
-        ShipModuleHold,
-        ShipModuleSensor,
-        ShipModuleTorpedo,
-        ShipModuleWeapon,
-        ShipModuleOther,
         ShipModuleOtherCreate,
         ShipModuleOtherUpdate,
         ShipModuleHoldCreate,
@@ -30,12 +24,11 @@ import 'package:app_api_client/app_api_client.dart'
         ShipModuleSlot,
         AssignCrewRequest,
         CrewPosition,
-        CrewSlot,
         ShipWeaponRange;
 import 'package:one_of/one_of.dart';
-import 'package:app_api_client/app_api_client.dart' as api_client show Ship;
 import 'package:built_collection/built_collection.dart';
 
+import 'package:coriolis_companion/features/ships/data/ship_api_mapper.dart';
 import 'package:coriolis_companion/features/ships/domain/ship.dart';
 import 'package:coriolis_companion/features/ships/domain/ship_repository.dart';
 
@@ -46,106 +39,6 @@ class ShipRepositoryImpl implements ShipRepository {
 
   final ShipsApi _api;
 
-  // ── Mapping: API → Domain ────────────────────────────────────────────────
-
-  static Ship _toDomain(api_client.Ship src) => Ship(
-        id: src.id,
-        ownerId: src.ownerId,
-        name: src.name,
-        shipClass: src.class_.name,
-        model: src.model,
-        registry: src.registry,
-        hull: ShipPoints(current: src.hull.current, max: src.hull.max),
-        energy: ShipPoints(current: src.energy.current, max: src.energy.max),
-        armor: src.armor,
-        maneuverability: src.maneuverability,
-        signature: src.signature,
-        speed: src.speed,
-        cargoCapacity: src.cargoCapacity,
-        modules: src.modules.map(_moduleToDomain).toList(growable: false),
-        crew: src.crew.map(_crewToDomain).toList(growable: false),
-        problems: src.problems.toList(growable: false),
-        history: src.history,
-        notes: src.notes,
-        createdAt: src.createdAt,
-        updatedAt: src.updatedAt,
-      );
-
-  static ShipSummary _toSummary(api_client.Ship src) => ShipSummary(
-        id: src.id,
-        name: src.name,
-        shipClass: src.class_.name,
-        model: src.model,
-        registry: src.registry,
-      );
-
-  static DomainCrewSlot _crewToDomain(CrewSlot src) => DomainCrewSlot(
-        position: src.position.name,
-        assignedCharacterId: src.assignedCharacterId,
-      );
-
-  static DomainShipModule _moduleToDomain(ShipModule src) {
-    final raw = src.oneOf.value;
-    if (raw is ShipModuleWeapon) {
-      return DomainShipModule(
-        id: raw.id,
-        slot: raw.slot.name,
-        name: raw.name,
-        energyUse: raw.energyUse,
-        notes: raw.notes,
-        weaponDamage: raw.weaponDamage,
-        weaponBonus: raw.weaponBonus,
-        weaponRange: raw.weaponRange.name,
-        weaponCritThreshold: raw.weaponCritThreshold,
-      );
-    }
-    if (raw is ShipModuleHold) {
-      return DomainShipModule(
-        id: raw.id,
-        slot: raw.slot.name,
-        name: raw.name,
-        energyUse: raw.energyUse,
-        notes: raw.notes,
-        cargoTons: raw.cargoTons,
-        concealed: raw.concealed,
-      );
-    }
-    if (raw is ShipModuleTorpedo) {
-      return DomainShipModule(
-        id: raw.id,
-        slot: raw.slot.name,
-        name: raw.name,
-        energyUse: raw.energyUse,
-        notes: raw.notes,
-        torpedoCount: raw.torpedoCount,
-        mineCount: raw.mineCount,
-      );
-    }
-    if (raw is ShipModuleSensor) {
-      return DomainShipModule(
-        id: raw.id,
-        slot: raw.slot.name,
-        name: raw.name,
-        energyUse: raw.energyUse,
-        notes: raw.notes,
-        detectionBonus: raw.detectionBonus,
-      );
-    }
-    final other = raw as ShipModuleOther;
-    return DomainShipModule(
-      id: other.id,
-      slot: other.slot.name,
-      name: other.name,
-      energyUse: other.energyUse,
-      notes: other.notes,
-    );
-  }
-
-  // Unused imports guard — keeps the explicit `show` list aligned with the
-  // production wiring; the analyzer would otherwise flag them.
-  // ignore: unused_field
-  static const _kUsedRangeMarker = ShipWeaponRange;
-
   // ── ShipRepository ───────────────────────────────────────────────────────
 
   @override
@@ -153,7 +46,7 @@ class ShipRepositoryImpl implements ShipRepository {
     final response = await _api.listShips(limit: limit);
     final body = response.data;
     if (body == null) return [];
-    return body.items.map(_toSummary).toList(growable: false);
+    return body.items.map(ShipApiMapper.toSummary).toList(growable: false);
   }
 
   @override
@@ -161,7 +54,7 @@ class ShipRepositoryImpl implements ShipRepository {
     final response = await _api.getShip(id: id);
     final body = response.data;
     if (body == null) throw StateError('Empty response for ship $id');
-    return _toDomain(body);
+    return ShipApiMapper.toDomain(body);
   }
 
   @override
@@ -179,7 +72,7 @@ class ShipRepositoryImpl implements ShipRepository {
     final response = await _api.createShip(shipCreate: payload);
     final body = response.data;
     if (body == null) throw StateError('Empty response after create');
-    return _toDomain(body);
+    return ShipApiMapper.toDomain(body);
   }
 
   @override
@@ -225,7 +118,7 @@ class ShipRepositoryImpl implements ShipRepository {
     final response = await _api.updateShip(id: id, shipUpdate: payload);
     final body = response.data;
     if (body == null) throw StateError('Empty response after update');
-    return _toDomain(body);
+    return ShipApiMapper.toDomain(body);
   }
 
   @override
@@ -238,7 +131,7 @@ class ShipRepositoryImpl implements ShipRepository {
     final response = await _api.duplicateShip(id: id);
     final body = response.data;
     if (body == null) throw StateError('Empty response after duplicate');
-    return _toDomain(body);
+    return ShipApiMapper.toDomain(body);
   }
 
   @override
@@ -246,7 +139,7 @@ class ShipRepositoryImpl implements ShipRepository {
     final response = await _api.exportShip(id: id);
     final body = response.data;
     if (body == null) throw StateError('Empty response after export');
-    return _toDomain(body);
+    return ShipApiMapper.toDomain(body);
   }
 
   @override
@@ -349,7 +242,7 @@ class ShipRepositoryImpl implements ShipRepository {
     );
     final body = response.data;
     if (body == null) throw StateError('Empty response after addShipModule');
-    return _moduleToDomain(body);
+    return ShipApiMapper.moduleToDomain(body);
   }
 
   @override
@@ -384,7 +277,7 @@ class ShipRepositoryImpl implements ShipRepository {
     );
     final body = response.data;
     if (body == null) throw StateError('Empty response after addShipModule (WEAPON)');
-    return _moduleToDomain(body);
+    return ShipApiMapper.moduleToDomain(body);
   }
 
   @override
@@ -415,7 +308,7 @@ class ShipRepositoryImpl implements ShipRepository {
     );
     final body = response.data;
     if (body == null) throw StateError('Empty response after addShipModule (HOLD)');
-    return _moduleToDomain(body);
+    return ShipApiMapper.moduleToDomain(body);
   }
 
   @override
@@ -446,7 +339,7 @@ class ShipRepositoryImpl implements ShipRepository {
     );
     final body = response.data;
     if (body == null) throw StateError('Empty response after addShipModule (TORPEDO)');
-    return _moduleToDomain(body);
+    return ShipApiMapper.moduleToDomain(body);
   }
 
   @override
@@ -475,7 +368,7 @@ class ShipRepositoryImpl implements ShipRepository {
     );
     final body = response.data;
     if (body == null) throw StateError('Empty response after addShipModule (SENSOR)');
-    return _moduleToDomain(body);
+    return ShipApiMapper.moduleToDomain(body);
   }
 
   @override
@@ -502,7 +395,7 @@ class ShipRepositoryImpl implements ShipRepository {
     );
     final body = response.data;
     if (body == null) throw StateError('Empty response after updateShipModule');
-    return _moduleToDomain(body);
+    return ShipApiMapper.moduleToDomain(body);
   }
 
   @override
@@ -537,7 +430,7 @@ class ShipRepositoryImpl implements ShipRepository {
     );
     final body = response.data;
     if (body == null) throw StateError('Empty response after updateShipModule (WEAPON)');
-    return _moduleToDomain(body);
+    return ShipApiMapper.moduleToDomain(body);
   }
 
   @override
@@ -568,7 +461,7 @@ class ShipRepositoryImpl implements ShipRepository {
     );
     final body = response.data;
     if (body == null) throw StateError('Empty response after updateShipModule (HOLD)');
-    return _moduleToDomain(body);
+    return ShipApiMapper.moduleToDomain(body);
   }
 
   @override
@@ -599,7 +492,7 @@ class ShipRepositoryImpl implements ShipRepository {
     );
     final body = response.data;
     if (body == null) throw StateError('Empty response after updateShipModule (TORPEDO)');
-    return _moduleToDomain(body);
+    return ShipApiMapper.moduleToDomain(body);
   }
 
   @override
@@ -628,7 +521,7 @@ class ShipRepositoryImpl implements ShipRepository {
     );
     final body = response.data;
     if (body == null) throw StateError('Empty response after updateShipModule (SENSOR)');
-    return _moduleToDomain(body);
+    return ShipApiMapper.moduleToDomain(body);
   }
 
   @override

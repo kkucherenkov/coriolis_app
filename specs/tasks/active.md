@@ -1,5 +1,35 @@
 # Active tasks
 
+## T-2026-05-17-PHASE-7-MOBILE-OFFLINE-3 — Phase 7 / Feature 10.2 / extension — Offline read-caches for ships, game-sessions, player-memberships
+
+- Created: 2026-05-17
+- Owner: claude
+- Spec: PRD §11 Phase 7 — "Offline support (web SW + Flutter SQLite)" · IMPLEMENTATION_PLAN.md Feature 10.2 (follow-up to T-10.2.a)
+- Goal: extend the character read-cache pattern to the other entities a player or GM needs at the table (ship sheet, game-session view, "playing in" membership list), so a temporary network drop at the table doesn't blank the UI.
+- Acceptance:
+  - Offline `GET /ships/{id}` falls back to last-cached payload via `DioException.connectionError|connectionTimeout|sendTimeout|receiveTimeout`; 4xx/5xx propagate unchanged.
+  - Offline `GET /game-sessions/{id}` same fallback contract; DP / character / invite mutations invalidate the cached row on remote success.
+  - Offline `GET /me/memberships` returns last-cached list; `acceptInvite` and `leaveSession` invalidate the cache on success.
+  - Drift `AppDatabase` `schemaVersion` bumped 2 → 3 with `onUpgrade` that adds `ShipsCache`, `GameSessionsCache`, `PlayerMembershipsCache`.
+  - All cache I/O errors swallowed by interceptors (never break network response flow).
+  - **No NPCs cache in this iteration** — deferred to follow-up; NPCs feature exposes only `listNpcs` for the combat picker, low offline value.
+- Spec diff: none.
+- Codegen impact: no.
+- Design impact: none (banner + state UI already shipped in OFFLINE-2).
+- Tests:
+  - Block 1 — ~12 round-trip Drift tests (4 per cache × 3 caches), migration 2→3 test.
+  - Blocks 2–4 — ~28 mocktail tests (decorator read-fallback + write-invalidation per repo, interceptor write-through).
+  - Block 5 — ~3 DI integration tests; full mobile sweep must stay green (currently 333/333).
+- Sub-steps:
+  - [x] Block 1 — Drift schema v3 + 3 ports + 3 adapters + 16 tests (`9b14033`)
+  - [x] Drift `@DataClassName('PendingMutationsData')` fix — unblocks analyzer after build_runner singularization change (`6e23fc2`)
+  - [x] Block 2 — `ShipApiMapper` + `CachedShipRepository` + `ShipCacheInterceptor` + 19 tests (`afec825`)
+  - [x] Block 3 — `GameSessionApiMapper` + `CachedSessionRepository` + `GameSessionCacheInterceptor` + 25 tests (`5afe8ac`)
+  - [x] Block 4 — `CachedPlayerSessionRepository` + `PlayerMembershipsCacheInterceptor` + 18 tests + partial DI (`c13b60b`)
+  - [x] Block 5 — Ship + GameSession DI wiring + 3 integration tests (`8a8df60`)
+- Status: ready-for-review — stacked on PR #21 (`origin/feat/phase-7/mobile-offline-writequeue`); merge after PR #21
+- Blockers: PR #21 (Phase 7 mobile write-queue) must merge first; this branch's Drift schema migration `2 → 3` depends on PR #21's `1 → 2` (`PendingMutations` table).
+
 ## T-2026-05-17-DEEP-LINK-SETUP — Deep-link configuration (mobile + web)
 
 - Created: 2026-05-16
