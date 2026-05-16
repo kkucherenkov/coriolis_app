@@ -40,11 +40,10 @@
    *
    * Adds AppChatPanel (docked mode) in a collapsible right-rail.
    * myMembershipId resolves from listMembers by matching userId === me.value.id.
-   * chatDockedCollapsed is persisted to localStorage — no settings-schema key
-   * exists for it yet (deferred to Stream E).
+   * chatDockedCollapsed is persisted via PATCH /api/v1/me (synced across
+   * devices since OpenAPI 1.10.0); the localStorage placeholder shipped in
+   * Stream D was replaced when the Me schema gained the canonical field.
    */
-
-  const CHAT_DOCK_LS_KEY = 'chat-docked-collapsed';
 
   const { t, locale } = useI18n({ useScope: 'local' });
   const route = useRoute();
@@ -78,28 +77,25 @@
         .filter((id): id is string => Boolean(id)) ?? [],
   );
 
-  // ── Chat dock collapsed state (localStorage — no settings key yet) ────────
+  // ── Chat dock collapsed state (synced via PATCH /me) ──────────────────────
   //
-  // chatDockedCollapsed persists to localStorage('chat-docked-collapsed').
-  // The settings-schema extension for this key is deferred to Stream E.
+  // Initial value seeds from `me.chatDockedCollapsed` once /me has loaded.
+  // Toggle optimistically flips the local ref + PATCH /me; on PATCH error
+  // we roll back so the UI never drifts from the server.
 
   const chatDockCollapsed = ref<boolean>(false);
 
-  function loadChatDockState(): void {
+  async function toggleChatDock(): Promise<void> {
+    const previous = chatDockCollapsed.value;
+    const next = !previous;
+    chatDockCollapsed.value = next;
     try {
-      const raw = globalThis.localStorage.getItem(CHAT_DOCK_LS_KEY);
-      chatDockCollapsed.value = raw === 'true';
+      const updated = await meApi.update({ chatDockedCollapsed: next });
+      me.value = updated;
     } catch {
-      // localStorage unavailable (SSR guard — page is SPA but guard is cheap)
-    }
-  }
-
-  function toggleChatDock(): void {
-    chatDockCollapsed.value = !chatDockCollapsed.value;
-    try {
-      globalThis.localStorage.setItem(CHAT_DOCK_LS_KEY, String(chatDockCollapsed.value));
-    } catch {
-      // best-effort
+      // Server rejected the toggle — restore the previous local state so the
+      // header chevron and the panel stay in sync.
+      chatDockCollapsed.value = previous;
     }
   }
 
@@ -550,8 +546,10 @@
   }
 
   onMounted(async () => {
-    loadChatDockState();
     await loadSession();
+    if (me.value) {
+      chatDockCollapsed.value = me.value.chatDockedCollapsed ?? false;
+    }
     if (state.value === 'loaded') {
       void realtime.start();
       if (gmMembershipId.value) {

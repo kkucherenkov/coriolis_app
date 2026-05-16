@@ -28,6 +28,7 @@ function makeMeReadModel(overrides: Partial<MeReadModel> = {}): MeReadModel {
     displayName: null,
     createdAt: '2026-01-15T09:30:00.000Z',
     theme: 'dark',
+    chatDockedCollapsed: false,
     ...overrides,
   };
 }
