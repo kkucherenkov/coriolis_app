@@ -14,6 +14,7 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
+import { CharactersModule } from '../characters/characters.module';
 import { MembershipsModule } from '../memberships/memberships.module';
 import { RealtimeModule } from '../realtime/realtime.module';
 
@@ -35,6 +36,12 @@ import {
   ChatMessageEditedPublisher,
   ChatMessagePostedPublisher,
 } from './events/chat-realtime.publisher';
+import {
+  MemberJoinedSystemMessageSubscriber,
+  MemberKickedSystemMessageSubscriber,
+  MemberLeftSystemMessageSubscriber,
+  RollPushedSystemMessageSubscriber,
+} from './events/system-message.subscriber';
 import { ChatBlocksController } from './http/chat-blocks.controller';
 import { ChatConversationsController } from './http/chat-conversations.controller';
 import { ChatMessageController } from './http/chat-message.controller';
@@ -49,7 +56,7 @@ import { ListChatMessagesHandler } from './queries/list-chat-messages.handler';
 import { ListConversationsHandler } from './queries/list-conversations.handler';
 
 @Module({
-  imports: [CqrsModule, MembershipsModule, RealtimeModule],
+  imports: [CqrsModule, CharactersModule, MembershipsModule, RealtimeModule],
   controllers: [
     ChatMessagesController,
     ChatMessageController,
@@ -76,6 +83,12 @@ import { ListConversationsHandler } from './queries/list-conversations.handler';
     ChatMessagePostedPublisher,
     ChatMessageEditedPublisher,
     ChatMessageDeletedPublisher,
+
+    // System-message subscribers (Stream D)
+    MemberJoinedSystemMessageSubscriber,
+    MemberLeftSystemMessageSubscriber,
+    MemberKickedSystemMessageSubscriber,
+    RollPushedSystemMessageSubscriber,
 
     // Infra adapters (concrete classes)
     ChatMessageRepo,
