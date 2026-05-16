@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -59,44 +58,5 @@ void main() {
           ..where((t) => t.id.equals('char-ts')))
         .getSingle();
     expect(row.wireUpdatedAt.toUtc(), ts);
-  });
-
-  // ── Schema smoke: all six tables present at current version ─────────────
-
-  test('current schema exposes every cache table at v4', () async {
-    // Smoke-test the post-migration shape: a fresh in-memory database (which
-    // runs `onCreate` → `createAll()` for the latest `schemaVersion`) must
-    // expose `characters_cache`, `pending_mutations`, `ships_cache`,
-    // `game_sessions_cache`, `player_memberships_cache`, and `npcs_cache`.
-    //
-    // Real downgrade-and-upgrade testing (v1 → v2 → v3 → v4) requires Drift's
-    // `SchemaVerifier` from `drift_dev`, which is a separate dev dep — filed
-    // as a follow-up. For now `onCreate(createAll)` guarantees the table set
-    // matches the `@DriftDatabase(tables: [...])` annotation.
-    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
-    final freshDb = AppDatabase.forTesting(NativeDatabase.memory());
-
-    await freshDb.into(freshDb.charactersCache).insertOnConflictUpdate(
-          CharactersCacheCompanion.insert(
-            id: 'char-1',
-            payloadJson: '{}',
-            wireUpdatedAt: DateTime.utc(2026, 5, 16),
-            cachedAt: DateTime.utc(2026, 5, 16),
-          ),
-        );
-
-    final charRows = await freshDb.select(freshDb.charactersCache).get();
-    expect(charRows.length, 1);
-
-    expect(await freshDb.select(freshDb.shipsCache).get(), isEmpty);
-    expect(await freshDb.select(freshDb.gameSessionsCache).get(), isEmpty);
-    expect(
-      await freshDb.select(freshDb.playerMembershipsCache).get(),
-      isEmpty,
-    );
-    expect(await freshDb.select(freshDb.pendingMutations).get(), isEmpty);
-    expect(await freshDb.select(freshDb.npcsCache).get(), isEmpty);
-
-    await freshDb.close();
   });
 }

@@ -2,6 +2,58 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-17-PHASE-7-DRIFT-SCHEMA-VERIFIER — Real Drift migration tests via `SchemaVerifier`
+
+- Created: 2026-05-17
+- Completed: 2026-05-17
+- Owner: claude
+- Spec: PRD §11 Phase 7 — "Offline support (web SW + Flutter SQLite)"; follow-up #2 from T-2026-05-17-PHASE-7-MOBILE-OFFLINE-3.
+- Result: [PR #25](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/25) on Forgejo — branch `feat/phase-7/drift-schema-verifier`, three commits (`0aaf256` codegen + `105ad12` tests + analyzer cleanup).
+- Goal: replace the v4 schema "table presence" smoke test with real `SchemaVerifier`-based migration tests proving `onUpgrade` correctly migrates data from v1/v2/v3 to v4.
+- Acceptance — all met:
+  - `apps/mobile/drift_schemas/{drift_schema_v1.json,v2.json,v3.json,v4.json}` checked in (2.1K / 4.6K / 10.2K / 12.1K).
+  - Generated verifier file at `apps/mobile/test/shared/cache/generated/schema.dart` (+ `schema_vN.dart` per version) committed as codegen-only.
+  - `apps/mobile/test/shared/cache/app_database_migration_test.dart` — 4 tests (v1→v4 fresh, v2→v4, v3→v4, v3→v4 with mixed data).
+  - Old smoke test removed from `app_database_test.dart`.
+  - `analysis_options.yaml` excludes `test/shared/cache/generated/**` (drift_dev emits `TableInfo<Table, dynamic>` raw types that conflict with strict-raw-types).
+- Snapshot approach: `git worktree add` per canonical historical commit (`dfc3f8b` / `29769a8` / `687a75e` / HEAD) + `dart run drift_dev schema dump`. Worktrees succeeded first-try for all four versions; no hand-writing needed.
+- Sanity check: commenting out `await m.createTable(npcsCache)` in the v3→v4 `onUpgrade` arm caused all 4 migration tests to fail with `SchemaMismatch: comparing npcs_cache: The actual schema does not contain anything with this name`. Reverted, all green.
+- Tests: **431 total** (+4 migration tests, −1 deleted smoke test from 428).
+- Notable decisions:
+  - **`verifier.schemaAt(N)` not `startAt(N)`** — every test seeds data via raw SQL before migrating; `schemaAt` exposes the underlying `rawDatabase`, `startAt` doesn't.
+  - **No `--companions` flag on `schema generate`** — old-version generated insert helpers would be dead code; tests use raw `INSERT INTO ... VALUES (...)` SQL instead.
+  - **Codegen lives in its own commit** — per repo convention "spec/codegen artefacts in their own commit". The verifier `.dart` files + the snapshot `.json` files were dumped + generated, then committed as `chore(mobile): add Drift schema snapshots …` separately from the test file.
+- Status: shipped
+- Blockers: —
+
+## T-2026-05-17-PHASE-7-MOBILE-OFFLINE-4 — NPC offline cache
+
+- Created: 2026-05-17
+- Completed: 2026-05-17
+- Owner: claude
+- Spec: PRD §11 Phase 7 — "Offline support (web SW + Flutter SQLite)" · IMPLEMENTATION_PLAN.md Feature 10.2; follow-up #1 from T-2026-05-17-PHASE-7-MOBILE-OFFLINE-3.
+- Result: [PR #24](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/24) on Forgejo — branch `feat/phase-7/mobile-offline-npc-cache`, single feature commit `cfda808` (17 files / +1238 / −11).
+- Goal: extend the OFFLINE-3 read-cache pattern to NPCs so the GM combat picker survives a network drop at the table.
+- Acceptance — all met:
+  - Offline `GET /npcs` falls back to last-cached list via `DioException.connectionError|connectionTimeout|sendTimeout|receiveTimeout`; empty cache returns `[]` (valid list-view offline state); non-network errors propagate.
+  - Drift `AppDatabase` `schemaVersion` 3 → 4; `onUpgrade` adds `NpcsCache`.
+  - `NpcsCacheInterceptor` write-through on `GET /npcs` 200; iterates `data.items` and writes each `api_client.Npc` to cache; all errors swallowed.
+  - DI: `LocalNpcCache` singleton + `CachedNpcRepository` decorator wired in `injector.dart`; `buildDio` installs the interceptor; `configureDependenciesForTesting` accepts the new optional cache.
+- Sub-blocks:
+  - [x] Block 1 — Drift schema v4 + `LocalNpcCache` port + `DriftNpcCache` adapter + 4 round-trip tests + schema smoke test bumped to v4.
+  - [x] Block 2 — `NpcApiMapper` extraction + `CachedNpcRepository` decorator + `NpcsCacheInterceptor` + DI wiring + ~12 tests.
+- Spec diff: none.
+- Codegen impact: no.
+- Design impact: none.
+- Tests: **17 new tests** (4 adapter + 1 mapper + 5 cached repo + 5 interceptor + 2 DI integration). Full sweep **428/428** green. Analyzer clean.
+- Notable decisions:
+  - **Wire DTO is `api_client.Npc`, not `NpcSummary`** — the list endpoint returns full `Npc` records; mobile domain model only uses `id` + `name` but caching the full payload future-proofs against domain expansion.
+  - **List semantics** — empty cache on fallback returns `[]` (NOT rethrow), matching `CachedPlayerSessionRepository.getMyMemberships`. An empty list is a valid offline state for a list view.
+  - **Cache writes delegated to interceptor** — decorator never round-trips domain → wire. Symmetric with `CachedPlayerSessionRepository`.
+  - **Fixture builder complexity** — `api_client.Npc` requires deeply-nested `Attributes` (4 fields), `Skills` (16 fields), `NpcHp` / `NpcMp` (2 fields each), plus three `BuiltList` fields. Reused the cascade-builder pattern from `drift_game_session_cache_test.dart`.
+- Status: shipped
+- Blockers: —
+
 ## T-2026-05-17-PHASE-7-MOBILE-OFFLINE-3 — Phase 7 / Feature 10.2 / extension — Offline read-caches for ships, game-sessions, player-memberships
 
 - Created: 2026-05-17
