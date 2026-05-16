@@ -4,8 +4,10 @@
  * authenticated user is allowed to subscribe to.
  *
  * Channel allow list (embedded in the JWT `channels` claim):
- *  - session.<id>  for every GameSession the user has an active membership in
+ *  - session.<id>         for every GameSession the user has an active membership in
  *    (role = 'gm' OR 'player', leftAt IS NULL).
+ *  - session.<id>.chat    broadcast chat channel for the session.
+ *  - session.<id>.member.<membershipId>  per-member channel for whispers.
  *  - character.<id> placeholder is reserved for Epic 8/9 player subscriptions;
  *    it is not yet populated here.
  *
@@ -67,11 +69,22 @@ export class RealtimeService {
   /**
    * Builds the list of Centrifugo channel names this user may subscribe to.
    *
-   * All active memberships (GM or player, leftAt IS NULL) map to `session.<id>`.
+   * Per active membership (GM or player, leftAt IS NULL), three channel families
+   * are granted:
+   *   - session.<id>                     — DP / roll events (existing)
+   *   - session.<id>.chat                — broadcast chat channel (Stream C)
+   *   - session.<id>.member.<membId>     — per-member channel for whispers (Stream C)
+   *
    * Player character channels (`character.<id>`) are deferred to Epic 8/9.
    */
   private async buildAllowedChannels(userId: string): Promise<string[]> {
-    const sessionIds = await this.sessionAccess.findActiveSessionIdsForUser(userId);
-    return sessionIds.map((id) => `session.${id}`);
+    const memberships = await this.sessionAccess.findActiveMembershipsForUser(userId);
+    const channels: string[] = [];
+    for (const m of memberships) {
+      channels.push(`session.${m.gameSessionId}`);
+      channels.push(`session.${m.gameSessionId}.chat`);
+      channels.push(`session.${m.gameSessionId}.member.${m.membershipId}`);
+    }
+    return channels;
   }
 }

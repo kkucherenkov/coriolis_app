@@ -11,7 +11,7 @@ import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../../common/prisma/prisma.service';
 
-import type { ISessionAccessRepo } from '../domain/session-ownership.port';
+import type { ISessionAccessRepo, UserMembership } from '../domain/session-ownership.port';
 
 @Injectable()
 export class SessionAccessRepo implements ISessionAccessRepo {
@@ -23,5 +23,13 @@ export class SessionAccessRepo implements ISessionAccessRepo {
       select: { gameSessionId: true },
     });
     return rows.map((r) => r.gameSessionId);
+  }
+
+  async findActiveMembershipsForUser(userId: string): Promise<UserMembership[]> {
+    const rows = await this.prisma.gameSessionMembership.findMany({
+      where: { userId, leftAt: null },
+      select: { id: true, gameSessionId: true },
+    });
+    return rows.map((r) => ({ gameSessionId: r.gameSessionId, membershipId: r.id }));
   }
 }
