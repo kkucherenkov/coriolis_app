@@ -2,6 +2,18 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-17-PHASE-7-DRIFT-SCHEMA-VERIFIER — Real Drift migration tests via `SchemaVerifier`
+
+- Created: 2026-05-17
+- Completed: 2026-05-17
+- Owner: claude
+- Spec: PRD §11 Phase 7 — "Offline support (web SW + Flutter SQLite)"; follow-up #2 from T-2026-05-17-PHASE-7-MOBILE-OFFLINE-3.
+- Goal: replace the v4 schema "table presence" smoke test with real `SchemaVerifier`-based migration tests proving `onUpgrade` correctly migrates data from v1/v2/v3 to v4.
+- PR: feat/phase-7/mobile-offline-writequeue
+- Result: 431 tests pass (+4 migration tests, -1 smoke test).
+- Snapshot approach: `git worktree add` per historical commit + `dart run drift_dev schema dump` (worktrees succeeded for all four versions; no hand-writing needed).
+- Sanity check: commenting out `await m.createTable(npcsCache)` in onUpgrade caused all 4 migration tests to fail with `"comparing npcs_cache: The actual schema does not contain anything with this name"`. Reverted, all tests green.
+
 ## T-2026-05-17-PHASE-7-MOBILE-OFFLINE-4 — NPC offline cache
 
 - Created: 2026-05-17
