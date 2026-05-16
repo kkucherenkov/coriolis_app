@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 1.8.0
+  version: 1.9.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -40,7 +40,7 @@ tags:
   - name: sharing
     description: Share-link management for character owners (create, list, revoke)
   - name: game-sessions
-    description: GM campaign session containers — CRUD and character assignment
+    description: GM campaign session containers — CRUD and invite-link management
   - name: public
     description: Public read-only endpoints — no authentication required
   - name: dice
@@ -3728,9 +3728,17 @@ paths:
                         description: A campaign set in the Kua system.
                         status: active
                         dpCount: 0
-                        characterIds: []
                         shipId: null
-                        memberships: []
+                        memberships:
+                          - id: cuid_mem01
+                            gameSessionId: cuid_gs01
+                            userId: cuid_user01
+                            role: gm
+                            displayName: null
+                            characterId: null
+                            characterName: null
+                            joinedAt: "2026-05-08T10:00:00Z"
+                            leftAt: null
                         createdAt: "2026-05-08T10:00:00Z"
                         updatedAt: "2026-05-08T10:00:00Z"
                     nextCursor: null
@@ -3782,9 +3790,17 @@ paths:
                     description: A campaign set in the Kua system.
                     status: active
                     dpCount: 0
-                    characterIds: []
                     shipId: null
-                    memberships: []
+                    memberships:
+                      - id: cuid_mem01
+                        gameSessionId: cuid_gs01
+                        userId: cuid_user01
+                        role: gm
+                        displayName: null
+                        characterId: null
+                        characterName: null
+                        joinedAt: "2026-05-08T10:00:00Z"
+                        leftAt: null
                     createdAt: "2026-05-08T10:00:00Z"
                     updatedAt: "2026-05-08T10:00:00Z"
         "400":
@@ -3832,7 +3848,6 @@ paths:
                     description: null
                     status: active
                     dpCount: 0
-                    characterIds: [cuid_char01]
                     shipId: null
                     memberships:
                       - id: cuid_mem01
@@ -3840,8 +3855,8 @@ paths:
                         userId: cuid_user01
                         role: gm
                         displayName: null
-                        characterId: null
-                        characterName: null
+                        characterId: cuid_char01
+                        characterName: Yara Zenith
                         joinedAt: "2026-05-08T10:00:00Z"
                         leftAt: null
                     createdAt: "2026-05-08T10:00:00Z"
@@ -4015,133 +4030,16 @@ paths:
                     instance: /api/v1/game-sessions/cuid_gs01
                     code: GAME_SESSION_NOT_FOUND
 
-  /api/v1/game-sessions/{id}/characters:
-    post:
-      operationId: assignCharacterToSession
-      summary: Assign a character to a game session
-      description: |
-        Assigns one of the caller's own characters to the game session.
-        The character must be owned by the same user as the session (GM).
-        Assigning an already-assigned character is idempotent — returns the
-        current session state without creating a duplicate.
-      tags: [game-sessions]
-      security:
-        - cookieAuth: []
-        - bearerAuth: []
-      parameters:
-        - $ref: "#/components/parameters/GameSessionId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AssignCharacterToSession"
-            examples:
-              assign:
-                value:
-                  characterId: cuid_char01
-      responses:
-        "201":
-          description: Character assigned; returns updated session
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GameSession"
-              examples:
-                assigned:
-                  value:
-                    id: cuid_gs01
-                    ownerId: cuid_user01
-                    name: The Long Night
-                    description: null
-                    status: active
-                    dpCount: 0
-                    characterIds: [cuid_char01]
-                    shipId: null
-                    memberships: []
-                    createdAt: "2026-05-08T10:00:00Z"
-                    updatedAt: "2026-05-08T10:00:00Z"
-        "400":
-          description: |
-            Validation error. Possible codes:
-            - `CHARACTER_NOT_OWNED` — character does not belong to the caller.
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-              examples:
-                notOwned:
-                  value:
-                    type: https://coriolis.example.com/problems/forbidden
-                    title: Forbidden
-                    status: 403
-                    detail: Character cuid_char01 does not belong to you
-                    instance: /api/v1/game-sessions/cuid_gs01/characters
-                    code: CHARACTER_NOT_OWNED
-        "401":
-          description: No active session
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-        "403":
-          description: Caller does not own this session
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-        "404":
-          description: Game session or character not found
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-
-  /api/v1/game-sessions/{id}/characters/{characterId}:
-    delete:
-      operationId: unassignCharacterFromSession
-      summary: Remove a character from a game session
-      description: |
-        Removes the character from the session's character list.
-        The session must be owned by the caller. Silently succeeds if the
-        character was not assigned.
-      tags: [game-sessions]
-      security:
-        - cookieAuth: []
-        - bearerAuth: []
-      parameters:
-        - $ref: "#/components/parameters/GameSessionId"
-        - name: characterId
-          in: path
-          required: true
-          description: Character identifier (cuid2)
-          schema:
-            type: string
-      responses:
-        "204":
-          description: Character removed from session
-        "401":
-          description: No active session
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-        "403":
-          description: Caller does not own this session
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-        "404":
-          description: Game session not found
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-
   # ---------------------------------------------------------------------------
   # Game Session Invite (Phase 8 Stream A)
   # ---------------------------------------------------------------------------
+  #
+  # Phase 8 Stream E removed the GM-only character-assignment endpoints
+  # (POST/DELETE /game-sessions/{id}/characters) and the legacy
+  # `GameSession.characterIds` array. Character linking is now membership-
+  # driven: the GM's own character is set via
+  # PATCH /game-sessions/{id}/members/{membershipId}; players join via
+  # POST /invites/{token}/accept with an optional `characterId`.
 
   /api/v1/game-sessions/{id}/invite:
     get:
@@ -4479,9 +4377,17 @@ paths:
                     description: null
                     status: active
                     dpCount: 4
-                    characterIds: []
                     shipId: null
-                    memberships: []
+                    memberships:
+                      - id: cuid_mem01
+                        gameSessionId: cuid_gs01
+                        userId: cuid_user01
+                        role: gm
+                        displayName: null
+                        characterId: null
+                        characterName: null
+                        joinedAt: "2026-05-08T10:00:00Z"
+                        leftAt: null
                     createdAt: "2026-05-08T10:00:00Z"
                     updatedAt: "2026-05-09T10:00:00Z"
         "401":
@@ -10634,8 +10540,7 @@ components:
     GameSession:
       type: object
       description: A campaign session container owned by a GM.
-      required:
-        [id, ownerId, name, status, dpCount, characterIds, memberships, createdAt, updatedAt]
+      required: [id, ownerId, name, status, dpCount, memberships, createdAt, updatedAt]
       properties:
         id:
           type: string
@@ -10661,14 +10566,6 @@ components:
           minimum: 0
           readOnly: true
           description: Darkness Points counter; mutated by Feature 7.3
-        characterIds:
-          type: array
-          items:
-            type: string
-          readOnly: true
-          description: |
-            Character ids assigned to this session. Manage via the join
-            endpoint (POST / DELETE on /game-sessions/{id}/characters).
         shipId:
           type: ["string", "null"]
           description: Optional ship linked to the session (Epic 8)
@@ -10677,9 +10574,10 @@ components:
           readOnly: true
           description: |
             Active members of this session. Always includes the GM row.
-            Phase 8: this replaces `characterIds` as the source of truth
-            for "who is at this table" — `characterIds` is deprecated and
-            will be removed in Stream E.
+            Single source of truth for "who is at this table" since Phase 8
+            Stream E removed the legacy `characterIds` array. Each row
+            optionally carries `characterId` — that's how a player (or GM)
+            links a PC to their seat.
           items:
             $ref: "#/components/schemas/GameSessionMembership"
         createdAt:
@@ -10733,14 +10631,6 @@ components:
         nextCursor:
           type: ["string", "null"]
           description: Cursor for the next page; null when there are no more results
-
-    AssignCharacterToSession:
-      type: object
-      required: [characterId]
-      properties:
-        characterId:
-          type: string
-          description: Identifier of the character to assign
 
     GameSessionMembership:
       type: object
