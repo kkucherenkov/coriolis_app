@@ -1,14 +1,13 @@
 import 'package:app_api_client/app_api_client.dart' as api_client
     show
-        GameSession,
         GameSessionsApi,
         GameSessionStatus,
         GameSessionCreate,
         GameSessionUpdate,
         AssignCharacterToSession,
-        DpAdjustment,
-        DpEvent;
+        DpAdjustment;
 
+import 'package:coriolis_companion/features/game_sessions/data/game_session_api_mapper.dart';
 import 'package:coriolis_companion/features/game_sessions/domain/game_session.dart';
 import 'package:coriolis_companion/features/game_sessions/domain/invite.dart'
     as domain;
@@ -24,33 +23,6 @@ class SessionRepositoryImpl implements SessionRepository {
 
   final api_client.GameSessionsApi _api;
 
-  // ── Mapping ─────────────────────────────────────────────────────────────
-
-  static GameSession _toDomain(api_client.GameSession src) => GameSession(
-        id: src.id,
-        ownerId: src.ownerId,
-        name: src.name,
-        description: src.description,
-        status: src.status.name,
-        dpCount: src.dpCount,
-        characterIds: src.characterIds.toList(growable: false),
-        shipId: src.shipId,
-        createdAt: src.createdAt,
-        updatedAt: src.updatedAt,
-      );
-
-  static DpEvent _toDpEvent(api_client.DpEvent src) => DpEvent(
-        id: src.id,
-        gameSessionId: src.gameSessionId,
-        delta: src.delta,
-        // The Dart codegen renames `source` → `source_` (built_value
-        // collision avoidance). Wire name is unchanged.
-        source: src.source_.name,
-        reason: src.reason,
-        rollId: src.rollId,
-        createdAt: src.createdAt,
-      );
-
   // ── Implementation ──────────────────────────────────────────────────────
 
   @override
@@ -61,7 +33,7 @@ class SessionRepositoryImpl implements SessionRepository {
     );
     final list = res.data;
     if (list == null) return const [];
-    return list.items.map(_toDomain).toList(growable: false);
+    return list.items.map(GameSessionApiMapper.toDomain).toList(growable: false);
   }
 
   @override
@@ -69,7 +41,7 @@ class SessionRepositoryImpl implements SessionRepository {
     final res = await _api.getGameSession(id: id);
     final s = res.data;
     if (s == null) throw StateError('GET game-session returned empty body');
-    return _toDomain(s);
+    return GameSessionApiMapper.toDomain(s);
   }
 
   @override
@@ -82,7 +54,7 @@ class SessionRepositoryImpl implements SessionRepository {
     final res = await _api.createGameSession(gameSessionCreate: body);
     final s = res.data;
     if (s == null) throw StateError('POST game-session returned empty body');
-    return _toDomain(s);
+    return GameSessionApiMapper.toDomain(s);
   }
 
   @override
@@ -93,7 +65,7 @@ class SessionRepositoryImpl implements SessionRepository {
     final res = await _api.updateGameSession(id: id, gameSessionUpdate: body);
     final s = res.data;
     if (s == null) throw StateError('PATCH game-session returned empty body');
-    return _toDomain(s);
+    return GameSessionApiMapper.toDomain(s);
   }
 
   @override
@@ -112,7 +84,7 @@ class SessionRepositoryImpl implements SessionRepository {
     );
     final s = res.data;
     if (s == null) throw StateError('Assign-character returned empty body');
-    return _toDomain(s);
+    return GameSessionApiMapper.toDomain(s);
   }
 
   @override
@@ -130,7 +102,7 @@ class SessionRepositoryImpl implements SessionRepository {
     final res = await _api.adjustDp(id: sessionId, dpAdjustment: body);
     final s = res.data;
     if (s == null) throw StateError('Adjust-DP returned empty body');
-    return _toDomain(s);
+    return GameSessionApiMapper.toDomain(s);
   }
 
   @override
@@ -138,7 +110,7 @@ class SessionRepositoryImpl implements SessionRepository {
     final res = await _api.listDpEvents(id: sessionId, limit: limit);
     final list = res.data;
     if (list == null) return const [];
-    return list.items.map(_toDpEvent).toList(growable: false);
+    return list.items.map(GameSessionApiMapper.dpEventToDomain).toList(growable: false);
   }
 
   // ── Invite management (Phase 8 Stream A, GM only) ─────────────────────────
