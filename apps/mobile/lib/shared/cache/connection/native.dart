@@ -8,14 +8,15 @@ import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 
 /// Opens the production SQLite file under the platform-private docs dir.
 ///
-/// `applyWorkaroundToOpenSqlite3OnOldAndroidVersions` patches Android <11
-/// which ships an older sqlite3 without WAL — a no-op on modern devices.
+/// `applyWorkaroundToOpenSqlite3OnOldAndroidVersions` patches a library-loading
+/// failure on Android < API 23 (Android 6) where `dlopen` without an absolute
+/// path fails — a no-op on API 23+ and on all other platforms.
 QueryExecutor openConnection() {
   return LazyDatabase(() async {
     if (Platform.isAndroid) {
       await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
     }
-    final dir = await getApplicationDocumentsDirectory();
+    final dir = await getApplicationSupportDirectory();
     final file = File(p.join(dir.path, 'coriolis_companion_cache.sqlite'));
     return NativeDatabase.createInBackground(file);
   });

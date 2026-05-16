@@ -40,4 +40,23 @@ void main() {
     expect(rows.length, 1);
     expect(rows.first.payloadJson, contains('Tael'));
   });
+
+  test('wireUpdatedAt round-trips to second precision', () async {
+    // Drift's default DateTimeColumn maps to Unix integer seconds — sub-second
+    // resolution is silently truncated. Lock the contract in a test so a future
+    // wire format that needs millisecond precision can't regress silently.
+    final ts = DateTime.utc(2026, 5, 16, 12);
+    await db.into(db.charactersCache).insertOnConflictUpdate(
+          CharactersCacheCompanion.insert(
+            id: 'char-ts',
+            payloadJson: '{}',
+            wireUpdatedAt: ts,
+            cachedAt: ts,
+          ),
+        );
+    final row = await (db.select(db.charactersCache)
+          ..where((t) => t.id.equals('char-ts')))
+        .getSingle();
+    expect(row.wireUpdatedAt.toUtc(), ts);
+  });
 }
