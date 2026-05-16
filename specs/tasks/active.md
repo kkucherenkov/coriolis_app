@@ -21,13 +21,14 @@
   - Blocks 2–4 — ~28 mocktail tests (decorator read-fallback + write-invalidation per repo, interceptor write-through).
   - Block 5 — ~3 DI integration tests; full mobile sweep must stay green (currently 333/333).
 - Sub-steps:
-  - [ ] Block 1 — Drift schema + 3 Local*Cache ports + 3 Drift adapters + adapter tests
-  - [ ] Block 2 — `ShipApiMapper` extraction + `CachedShipRepository` + `ShipCacheInterceptor` + tests
-  - [ ] Block 3 — `GameSessionApiMapper` extraction + `CachedSessionRepository` + `GameSessionCacheInterceptor` + tests
-  - [ ] Block 4 — `CachedPlayerSessionRepository` + `PlayerMembershipsCacheInterceptor` + tests
-  - [ ] Block 5 — DI rewire (`injector.dart` + `buildDio` + `configureDependenciesForTesting`) + integration test
-- Status: in-progress
-- Blockers: —
+  - [x] Block 1 — Drift schema v3 + 3 ports + 3 adapters + 16 tests (`9b14033`)
+  - [x] Drift `@DataClassName('PendingMutationsData')` fix — unblocks analyzer after build_runner singularization change (`6e23fc2`)
+  - [x] Block 2 — `ShipApiMapper` + `CachedShipRepository` + `ShipCacheInterceptor` + 19 tests (`afec825`)
+  - [x] Block 3 — `GameSessionApiMapper` + `CachedSessionRepository` + `GameSessionCacheInterceptor` + 25 tests (`5afe8ac`)
+  - [x] Block 4 — `CachedPlayerSessionRepository` + `PlayerMembershipsCacheInterceptor` + 18 tests + partial DI (`c13b60b`)
+  - [x] Block 5 — Ship + GameSession DI wiring + 3 integration tests (`8a8df60`)
+- Status: ready-for-review — stacked on PR #21 (`origin/feat/phase-7/mobile-offline-writequeue`); merge after PR #21
+- Blockers: PR #21 (Phase 7 mobile write-queue) must merge first; this branch's Drift schema migration `2 → 3` depends on PR #21's `1 → 2` (`PendingMutations` table).
 
 ## T-2026-05-17-DEEP-LINK-SETUP — Deep-link configuration (mobile + web)
 
