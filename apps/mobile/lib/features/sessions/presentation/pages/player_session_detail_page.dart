@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 
 import 'package:coriolis_companion/features/sessions/domain/player_membership.dart';
 import 'package:coriolis_companion/features/sessions/domain/player_session_repository.dart';
+import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_bloc.dart';
+import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_event.dart';
+import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_repository.dart';
+import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_realtime_service.dart';
+import 'package:coriolis_companion/features/sessions/presentation/widgets/chat/chat_panel.dart';
+import 'package:coriolis_companion/i18n/strings.g.dart';
 
-/// Minimal player session detail page.
-///
-/// Resolves the session name from the membership list (no dedicated
-/// "get session detail" endpoint exists for mobile yet). Encounter
-/// content will be wired up in Stream D.
+/// Player session detail page with three bottom tabs:
+/// 0 = Chat (most-touched — leftmost per design notes)
+/// 1 = Encounter
+/// 2 = Me
 class PlayerSessionDetailPage extends StatefulWidget {
   const PlayerSessionDetailPage({
     required this.gameSessionId,
@@ -27,11 +35,24 @@ class _PlayerSessionDetailPageState extends State<PlayerSessionDetailPage> {
   PlayerMembership? _membership;
   bool _loading = true;
   String? _errorMessage;
+  int _selectedTab = 0;
+
+  late final ChatBloc _chatBloc;
 
   @override
   void initState() {
     super.initState();
+    _chatBloc = ChatBloc(
+      repository: GetIt.instance<ChatRepository>(),
+      realtimeService: GetIt.instance<ChatRealtimeService>(),
+    );
     _load();
+  }
+
+  @override
+  void dispose() {
+    _chatBloc.close();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -45,6 +66,12 @@ class _PlayerSessionDetailPageState extends State<PlayerSessionDetailPage> {
           _membership = match;
           _loading = false;
         });
+        if (match != null) {
+          _chatBloc.add(ChatHydrateRequested(
+            gameSessionId: widget.gameSessionId,
+            myMembershipId: match.membershipId,
+          ));
+        }
       }
     } on Object catch (e) {
       if (mounted) {
@@ -99,18 +126,45 @@ class _PlayerSessionDetailPageState extends State<PlayerSessionDetailPage> {
   Widget build(BuildContext context) {
     final sessionName = _membership?.sessionName ?? 'Session';
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(sessionName),
-        actions: [
-          if (_membership != null)
-            TextButton(
-              onPressed: _leaveSession,
-              child: const Text('Leave'),
+    return BlocProvider<ChatBloc>.value(
+      value: _chatBloc,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(sessionName),
+          actions: [
+            if (_membership != null)
+              TextButton(
+                onPressed: _leaveSession,
+                child: const Text('Leave'),
+              ),
+          ],
+        ),
+        body: _buildBody(),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _selectedTab,
+          onTap: (index) {
+            HapticFeedback.selectionClick();
+            setState(() => _selectedTab = index);
+          },
+          items: [
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.chat_bubble_outline),
+              activeIcon: const Icon(Icons.chat_bubble),
+              label: t.chat.tab.chat,
             ),
-        ],
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.shield_outlined),
+              activeIcon: const Icon(Icons.shield),
+              label: t.chat.tab.encounter,
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.person_outline),
+              activeIcon: const Icon(Icons.person),
+              label: t.chat.tab.me,
+            ),
+          ],
+        ),
       ),
-      body: _buildBody(),
     );
   }
 
@@ -123,9 +177,22 @@ class _PlayerSessionDetailPageState extends State<PlayerSessionDetailPage> {
       return const Center(child: Text('Session not found'));
     }
 
-    return const Center(
-      // Placeholder — encounter content arrives in Stream D.
-      child: Text('Encounter coming in Stream D'),
-    );
+    switch (_selectedTab) {
+      case 0:
+        return ChatPanel(
+          availableMembers: const [], // TODO: wire real member list.
+          myMembershipId: _membership!.membershipId,
+        );
+      case 1:
+        return const Center(
+          child: Text('Encounter coming in Stream D'),
+        );
+      case 2:
+        return const Center(
+          child: Text('Me tab coming soon'),
+        );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 }

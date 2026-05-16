@@ -1,0 +1,57 @@
+{
+  "connection": {
+    "connecting": "[uk-todo] Connecting…",
+    "subscribed": "[uk-todo] Live",
+    "unrecoverable": "[uk-todo] Reconnecting",
+    "disconnected": "[uk-todo] Offline"
+  },
+  "composer": {
+    "placeholder": {
+      "broadcast": "[uk-todo] Message everyone…",
+      "whisper": "[uk-todo] Whisper to {name}…"
+    },
+    "counter": "{count} / {max}"
+  },
+  "new_messages": {
+    "pill": "[uk-todo] {count} new messages ↓"
+  },
+  "tabs": {
+    "broadcast": "[uk-todo] Everyone",
+    "add_whisper": "[uk-todo] Whisper",
+    "overflow": "[uk-todo] +{count} more"
+  },
+  "message": {
+    "edited": "[uk-todo] edited",
+    "deleted": "[uk-todo] Message deleted",
+    "menu": {
+      "edit": "[uk-todo] Edit",
+      "delete": "[uk-todo] Delete",
+      "block": "[uk-todo] Block in this session"
+    }
+  },
+  "block": {
+    "confirm": {
+      "title": "[uk-todo] Block {name}?",
+      "body": "[uk-todo] {name} won't be able to whisper you.",
+      "confirm": "[uk-todo] Block"
+    }
+  },
+  "whisper_picker": {
+    "title": "[uk-todo] Whisper to…",
+    "empty": "[uk-todo] No one available."
+  },
+  "system": {
+    "member_joined": "[uk-todo] {displayName} joined the session.",
+    "member_left": "[uk-todo] {displayName} left the session.",
+    "member_kicked": "[uk-todo] {displayName} was removed.",
+    "roll_pushed": "[uk-todo] {characterName} pushed the roll ({pushedCount} dice, +{dpDelta} DP).",
+    "encounter_started": "[uk-todo] Encounter started.",
+    "round_advanced": "[uk-todo] Round {round}.",
+    "encounter_ended": "[uk-todo] Encounter ended."
+  },
+  "tab": {
+    "chat": "[uk-todo] Chat",
+    "encounter": "[uk-todo] Encounter",
+    "me": "[uk-todo] Me"
+  }
+}

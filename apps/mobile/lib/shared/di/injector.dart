@@ -1,6 +1,7 @@
 import 'package:app_api_client/app_api_client.dart'
     show
         CharactersApi,
+        ChatApi,
         DiceApi,
         EncountersApi,
         GameSessionsApi,
@@ -50,6 +51,10 @@ import 'package:coriolis_companion/features/sessions/data/drift_player_membershi
 import 'package:coriolis_companion/features/sessions/data/player_membership_cache.dart';
 import 'package:coriolis_companion/features/sessions/data/player_session_repository_impl.dart';
 import 'package:coriolis_companion/features/sessions/domain/player_session_repository.dart';
+import 'package:coriolis_companion/features/sessions/data/chat_realtime_service_impl.dart';
+import 'package:coriolis_companion/features/sessions/data/chat_repository_impl.dart';
+import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_realtime_service.dart';
+import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_repository.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/join_session/join_session_cubit.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/player_sessions_list/player_sessions_list_cubit.dart';
 import 'package:coriolis_companion/features/ships/data/cached_ship_repository.dart';
@@ -185,6 +190,9 @@ void configureDependencies() {
     )
     ..registerLazySingleton<MeApi>(
       () => MeApi(getIt<Dio>(), standardSerializers),
+    )
+    ..registerLazySingleton<ChatApi>(
+      () => ChatApi(getIt<Dio>(), standardSerializers),
     );
 
   // ── Characters domain ────────────────────────────────────────────────────
@@ -242,6 +250,21 @@ void configureDependencies() {
     )
     ..registerFactory<ShipCreateCubit>(
       () => ShipCreateCubit(repository: getIt<ShipRepository>()),
+    );
+
+  // ── Chat domain (Phase 8 Stream D) ──────────────────────────────────────
+  getIt
+    ..registerLazySingleton<ChatRepository>(
+      () => ChatRepositoryImpl(
+        chatApi: getIt<ChatApi>(),
+        gameSessionsApi: getIt<GameSessionsApi>(),
+      ),
+    )
+    ..registerFactory<ChatRealtimeService>(
+      () => ChatRealtimeServiceImpl(
+        realtimeApi: getIt<RealtimeApi>(),
+        config: getIt<AppConfig>(),
+      ),
     );
 
   // ── Player sessions domain (Phase 8 Stream B) ────────────────────────────

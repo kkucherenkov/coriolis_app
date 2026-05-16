@@ -1,0 +1,57 @@
+{
+  "connection": {
+    "connecting": "Σύνδεση…",
+    "subscribed": "Ζωντανά",
+    "unrecoverable": "Επανασύνδεση",
+    "disconnected": "Εκτός σύνδεσης"
+  },
+  "composer": {
+    "placeholder": {
+      "broadcast": "Μήνυμα σε όλους…",
+      "whisper": "Ψίθυρος στον/στην {name}…"
+    },
+    "counter": "{count} / {max}"
+  },
+  "new_messages": {
+    "pill": "{count} νέα μηνύματα ↓"
+  },
+  "tabs": {
+    "broadcast": "Όλοι",
+    "add_whisper": "Ψίθυρος",
+    "overflow": "+{count} ακόμα"
+  },
+  "message": {
+    "edited": "επεξεργάστηκε",
+    "deleted": "Το μήνυμα διαγράφηκε",
+    "menu": {
+      "edit": "Επεξεργασία",
+      "delete": "Διαγραφή",
+      "block": "Αποκλεισμός σε αυτή τη συνεδρία"
+    }
+  },
+  "block": {
+    "confirm": {
+      "title": "Αποκλεισμός {name};",
+      "body": "Ο/Η {name} δεν θα μπορεί να σας στείλει ψίθυρο σε αυτή τη συνεδρία. Το ιστορικό παραμένει.",
+      "confirm": "Αποκλεισμός"
+    }
+  },
+  "whisper_picker": {
+    "title": "Ψίθυρος σε…",
+    "empty": "Κανείς διαθέσιμος."
+  },
+  "system": {
+    "member_joined": "Ο/Η {displayName} εντάχθηκε στη συνεδρία.",
+    "member_left": "Ο/Η {displayName} αποχώρησε.",
+    "member_kicked": "Ο/Η {displayName} αφαιρέθηκε.",
+    "roll_pushed": "Ο/Η {characterName} ώθησε τη ρίψη ({pushedCount} ζάρια, +{dpDelta} DP).",
+    "encounter_started": "Η συνάντηση ξεκίνησε.",
+    "round_advanced": "Γύρος {round}.",
+    "encounter_ended": "Η συνάντηση τελείωσε."
+  },
+  "tab": {
+    "chat": "Συνομιλία",
+    "encounter": "Συνάντηση",
+    "me": "Εγώ"
+  }
+}

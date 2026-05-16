@@ -1,0 +1,57 @@
+{
+  "connection": {
+    "connecting": "Connecting…",
+    "subscribed": "Live",
+    "unrecoverable": "Reconnecting",
+    "disconnected": "Offline"
+  },
+  "composer": {
+    "placeholder": {
+      "broadcast": "Message everyone…",
+      "whisper": "Whisper to {name}…"
+    },
+    "counter": "{count} / {max}"
+  },
+  "new_messages": {
+    "pill": "{count} new messages ↓"
+  },
+  "tabs": {
+    "broadcast": "Everyone",
+    "add_whisper": "Whisper",
+    "overflow": "+{count} more"
+  },
+  "message": {
+    "edited": "edited",
+    "deleted": "Message deleted",
+    "menu": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "block": "Block in this session"
+    }
+  },
+  "block": {
+    "confirm": {
+      "title": "Block {name}?",
+      "body": "{name} won't be able to whisper you in this session. Existing history stays.",
+      "confirm": "Block"
+    }
+  },
+  "whisper_picker": {
+    "title": "Whisper to…",
+    "empty": "No one available."
+  },
+  "system": {
+    "member_joined": "{displayName} joined the session.",
+    "member_left": "{displayName} left the session.",
+    "member_kicked": "{displayName} was removed.",
+    "roll_pushed": "{characterName} pushed the roll ({pushedCount} dice, +{dpDelta} DP).",
+    "encounter_started": "Encounter started.",
+    "round_advanced": "Round {round}.",
+    "encounter_ended": "Encounter ended."
+  },
+  "tab": {
+    "chat": "Chat",
+    "encounter": "Encounter",
+    "me": "Me"
+  }
+}
