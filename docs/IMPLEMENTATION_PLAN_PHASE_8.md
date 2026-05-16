@@ -36,6 +36,7 @@ The existing GM client at `/app/game-sessions/*` keeps its current layout. Playe
 **Goal:** Split the session experience into two role-shaped clients — a **player client** that joins a GM's `GameSession` via invite link, and the existing **GM client** that runs it — and add bidirectional chat (broadcast + whispers) over Centrifugo, member-scoped, persisted.
 
 **Exit criteria:**
+
 - A GM rotates an invite link from the session detail page, copies it once, sends it out-of-band.
 - A player (signed in) opens the link, sees a session preview, picks one of their own characters, and becomes a `GameSessionMembership` row with role `player`.
 - The player lands on `/app/sessions/:id` (web) or the equivalent mobile route. They see the session's current DP, the active encounter (read-only), the chat panel, and a link to their own sheet.
@@ -218,7 +219,7 @@ The existing GM client at `/app/game-sessions/*` keeps its current layout. Playe
 
 - T-11.3.1.e Backend: validation. Body required and non-empty after trimming. Body stored as opaque text; rendering is plain text in v1 (Markdown deferred — the safety review for user-controlled Markdown is its own ticket).
 
-- T-11.3.1.f Backend: visibility rule, enforced in `ListChatMessagesQuery` and `GetChatMessageQuery` — a row with non-null `targetMembershipId` is visible **only** to its author and target. Any other member receives 404. The GM is *not* an exception.
+- T-11.3.1.f Backend: visibility rule, enforced in `ListChatMessagesQuery` and `GetChatMessageQuery` — a row with non-null `targetMembershipId` is visible **only** to its author and target. Any other member receives 404. The GM is _not_ an exception.
 
 - T-11.3.1.g Tests: pagination correctness on cursor edge cases (same-millisecond messages disambiguated by id), edit-window expiry, soft-delete visibility split, rate-limiter burst behavior, whisper visibility (a third member querying a whisper between two others gets 404 on direct read and never sees it in any listing).
 
@@ -333,9 +334,10 @@ Most of the whisper machinery is in Features 11.3–11.5. This feature ties the 
   - `DELETE /api/v1/game-sessions/:id/blocks/:targetMembershipId` → 204
   - `GET    /api/v1/game-sessions/:id/blocks` → list of memberships the caller has blocked
 
-- T-11.6.2.b Backend: `ChatBlockModule`. `PostChatMessageCommand` with `targetMembershipId` rejects (403) if the *target* has blocked the *author*. The author sees a generic "this member is not accepting messages" error — never confirmation that they specifically were blocked. (Standard anti-harassment pattern.)
+- T-11.6.2.b Backend: `ChatBlockModule`. `PostChatMessageCommand` with `targetMembershipId` rejects (403) if the _target_ has blocked the _author_. The author sees a generic "this member is not accepting messages" error — never confirmation that they specifically were blocked. (Standard anti-harassment pattern.)
 
 - T-11.6.2.c Prisma:
+
   ```prisma
   model ChatBlock {
     id                  String   @id @default(cuid())
@@ -404,11 +406,11 @@ Most of the whisper machinery is in Features 11.3–11.5. This feature ties the 
 
 These are deliberately not pre-decided. Pick before the spec lands.
 
-1. **One character per player per session, or many?** The schema above implies *one*: `(gameSessionId, userId)` is unique on `GameSessionMembership`. If you want a player to bring multiple PCs, drop the unique constraint and key the membership on `(gameSessionId, userId, characterId)`. Recommendation: stay with **one** for v1.1 — simpler chat attribution, simpler "my character" surface.
+1. **One character per player per session, or many?** The schema above implies _one_: `(gameSessionId, userId)` is unique on `GameSessionMembership`. If you want a player to bring multiple PCs, drop the unique constraint and key the membership on `(gameSessionId, userId, characterId)`. Recommendation: stay with **one** for v1.1 — simpler chat attribution, simpler "my character" surface.
 
 2. **GM "spectator" mode for whispers** — should a GM have an opt-in switch to read all whispers for moderation? This violates the privacy contract above and is **off by default** in this plan. If you want it, model as a per-session feature flag (`GameSession.gmSeesWhispers boolean`) that is visibly displayed to all members in the chat header — never silent.
 
-3. **Player visibility into other players' HP/MP.** The PRD says GMs can read player live sheets if shared (Epic H). Mirroring that for player ↔ player would need extending the `ShareLink` model with a session scope. Recommendation: **out of scope for Phase 8** — players see other linked-character *names* in this phase, nothing more.
+3. **Player visibility into other players' HP/MP.** The PRD says GMs can read player live sheets if shared (Epic H). Mirroring that for player ↔ player would need extending the `ShareLink` model with a session scope. Recommendation: **out of scope for Phase 8** — players see other linked-character _names_ in this phase, nothing more.
 
 4. **Invite-link unauth preview.** The plan exposes a public preview (`/api/v1/invites/:token/preview`) that returns only session name and GM display name — no member list, no session ID. Confirm this matches your privacy posture.
 
@@ -422,18 +424,18 @@ These are deliberately not pre-decided. Pick before the spec lands.
 
 Single full-stack engineer at the same pace as the rest of the plan:
 
-| Feature | Days |
-| --- | --- |
-| 11.1 Membership + single-invite flow | 4 |
-| 11.2 Player session client shell | 4 |
-| 11.3 Chat backend (broadcast + whisper data + REST) | 4 |
-| 11.4 Chat realtime (3 channel families, per-member ACL) | 3 |
-| 11.5 Chat UI (tabs, picker, unread cursors) | 5 |
-| 11.6 Whispers end-to-end + block list | 2 |
-| 11.7 System messages | 1 |
-| 11.8 `characterIds` cleanup | 1 |
-| Buffer (i18n parity, a11y, reduced-motion variants, integration tests) | 3 |
-| **Total** | **~27 working days (≈5 weeks)** |
+| Feature                                                                | Days                            |
+| ---------------------------------------------------------------------- | ------------------------------- |
+| 11.1 Membership + single-invite flow                                   | 4                               |
+| 11.2 Player session client shell                                       | 4                               |
+| 11.3 Chat backend (broadcast + whisper data + REST)                    | 4                               |
+| 11.4 Chat realtime (3 channel families, per-member ACL)                | 3                               |
+| 11.5 Chat UI (tabs, picker, unread cursors)                            | 5                               |
+| 11.6 Whispers end-to-end + block list                                  | 2                               |
+| 11.7 System messages                                                   | 1                               |
+| 11.8 `characterIds` cleanup                                            | 1                               |
+| Buffer (i18n parity, a11y, reduced-motion variants, integration tests) | 3                               |
+| **Total**                                                              | **~27 working days (≈5 weeks)** |
 
 ---
 

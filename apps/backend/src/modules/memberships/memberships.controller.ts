@@ -117,20 +117,24 @@ export class MembershipsController {
     @Param('membershipId') membershipId: string,
   ): Promise<void> {
     try {
-      return await this.commandBus.execute(
+      await this.commandBus.execute(
         new LeaveSessionCommand(gameSessionId, req.userId, membershipId),
       );
-    } catch (e) {
+      return;
+    } catch (error) {
       // If self-leave was refused (e.g. caller is not the owning user
       // OR it's the GM trying to kick a player), fall through to the
       // GM-kick path. KickMemberHandler will throw GameSessionNotOwnerError
       // for non-GM callers, which is the right surface here.
-      if (e instanceof Error && (e as { code?: string }).code === 'MEMBERSHIP_NOT_AUTHORIZED') {
+      if (
+        error instanceof Error &&
+        (error as { code?: string }).code === 'MEMBERSHIP_NOT_AUTHORIZED'
+      ) {
         return this.commandBus.execute(
           new KickMemberCommand(gameSessionId, req.userId, membershipId),
         );
       }
-      throw e;
+      throw error;
     }
   }
 }

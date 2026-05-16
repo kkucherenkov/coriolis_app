@@ -20,7 +20,7 @@ export class LeaveSessionHandler implements ICommandHandler<LeaveSessionCommand,
 
   async execute(cmd: LeaveSessionCommand): Promise<void> {
     const member = await this.repo.findById(cmd.membershipId);
-    if (!member || member.gameSessionId !== cmd.gameSessionId) {
+    if (member?.gameSessionId !== cmd.gameSessionId) {
       throw new MembershipNotFoundError(cmd.membershipId);
     }
     if (member.userId !== cmd.userId) throw new MembershipNotAuthorizedError();

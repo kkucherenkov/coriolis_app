@@ -19,7 +19,7 @@
     try {
       await navigator.clipboard.writeText(props.url);
       justCopied.value = true;
-      window.setTimeout(() => (justCopied.value = false), 1500);
+      globalThis.setTimeout(() => (justCopied.value = false), 1500);
     } catch {
       // Clipboard API unavailable — the visible URL is still selectable.
     }
@@ -37,7 +37,9 @@
     >
       {{ justCopied ? copiedLabel : copyLabel }}
     </button>
-    <p class="app-session-share-link-card__warning">{{ warning }}</p>
+    <p class="app-session-share-link-card__warning">
+      {{ warning }}
+    </p>
   </div>
 </template>
 

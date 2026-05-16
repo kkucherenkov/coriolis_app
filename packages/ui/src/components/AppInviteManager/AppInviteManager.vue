@@ -47,23 +47,13 @@
 </script>
 
 <template>
-  <section
-    class="app-invite-manager"
-    role="region"
-    aria-labelledby="app-invite-manager-title"
-  >
+  <section class="app-invite-manager" role="region" aria-labelledby="app-invite-manager-title">
     <!-- AppPanelTitle has no id prop; the id attr falls through to its root <div> via Vue's $attrs -->
-    <AppPanelTitle
-      id="app-invite-manager-title"
-      size="md"
-    >
+    <AppPanelTitle id="app-invite-manager-title" size="md">
       {{ labels.title }}
     </AppPanelTitle>
 
-    <div
-      v-if="state === 'none'"
-      class="app-invite-manager__body"
-    >
+    <div v-if="state === 'none'" class="app-invite-manager__body">
       <p class="app-invite-manager__blurb">
         {{ labels.blurbNone }}
       </p>
@@ -72,20 +62,11 @@
       </AppButton>
     </div>
 
-    <div
-      v-else-if="state === 'active'"
-      class="app-invite-manager__body"
-    >
+    <div v-else-if="state === 'active'" class="app-invite-manager__body">
       <div class="app-invite-manager__since">
-        <span
-          aria-hidden="true"
-          class="app-invite-manager__pulse"
-        />
+        <span aria-hidden="true" class="app-invite-manager__pulse" />
         <span class="app-invite-manager__since-label">{{ labels.labelActiveSince }}</span>
-        <time
-          class="app-invite-manager__since-time"
-          :datetime="rotatedAt ?? undefined"
-        >{{
+        <time class="app-invite-manager__since-time" :datetime="rotatedAt ?? undefined">{{
           rotatedAt
         }}</time>
       </div>
@@ -96,17 +77,10 @@
         <AppButton @click="emit('copy')">
           {{ labels.ctaCopy }}
         </AppButton>
-        <AppButton
-          variant="secondary"
-          @click="emit('rotate')"
-        >
+        <AppButton variant="secondary" @click="emit('rotate')">
           {{ labels.ctaRotate }}
         </AppButton>
-        <AppButton
-          variant="danger"
-          class="app-invite-manager__revoke"
-          @click="emit('revoke')"
-        >
+        <AppButton variant="danger" class="app-invite-manager__revoke" @click="emit('revoke')">
           {{ labels.ctaRevoke }}
         </AppButton>
       </div>
@@ -128,10 +102,7 @@
     >
       <div class="app-invite-manager__reveal-panel">
         <header class="app-invite-manager__reveal-header">
-          <h2
-            id="app-invite-manager-reveal-title"
-            class="app-invite-manager__reveal-title"
-          >
+          <h2 id="app-invite-manager-reveal-title" class="app-invite-manager__reveal-title">
             {{ revealTitle }}
           </h2>
         </header>

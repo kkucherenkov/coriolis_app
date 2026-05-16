@@ -23,7 +23,7 @@ export class KickMemberHandler implements ICommandHandler<KickMemberCommand, voi
   async execute(cmd: KickMemberCommand): Promise<void> {
     await this.iRepo.assertOwner(cmd.gameSessionId, cmd.callerUserId);
     const member = await this.mRepo.findById(cmd.membershipId);
-    if (!member || member.gameSessionId !== cmd.gameSessionId) {
+    if (member?.gameSessionId !== cmd.gameSessionId) {
       throw new MembershipNotFoundError(cmd.membershipId);
     }
     if (member.role === 'gm') throw new CannotKickGmError();

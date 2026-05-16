@@ -1,11 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { InviteNotFoundError, CharacterNotOwnedError } from '../domain/membership.errors';
-import { hashInviteToken } from '../domain/invite-token';
 
 import { AcceptInviteCommand } from './accept-invite.command';
 import { AcceptInviteHandler } from './accept-invite.handler';
-import { MemberJoinedEvent } from '../events/member-joined.event';
 
 import type { EventBus } from '@nestjs/cqrs';
 import type {

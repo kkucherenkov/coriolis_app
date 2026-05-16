@@ -34,7 +34,7 @@ export class LinkCharacterHandler implements ICommandHandler<
 
   async execute(cmd: LinkCharacterCommand): Promise<MembershipReadModel> {
     const member = await this.repo.findById(cmd.membershipId);
-    if (!member || member.gameSessionId !== cmd.gameSessionId) {
+    if (member?.gameSessionId !== cmd.gameSessionId) {
       throw new MembershipNotFoundError(cmd.membershipId);
     }
     if (member.userId !== cmd.callerUserId) throw new MembershipNotAuthorizedError();
