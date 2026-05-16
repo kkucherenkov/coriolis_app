@@ -79,6 +79,7 @@ describe('DeleteChatMessageHandler', () => {
       new ChatMessageDeletedEvent({
         id: 'msg-1',
         gameSessionId: 'gs-1',
+        authorMembershipId: 'mem-author',
         targetMembershipId: null,
         deletedAt: fixedNow.toISOString(),
       }),
@@ -121,6 +122,7 @@ describe('DeleteChatMessageHandler', () => {
       new ChatMessageDeletedEvent({
         id: 'msg-1',
         gameSessionId: 'gs-1',
+        authorMembershipId: 'mem-author',
         targetMembershipId: 'mem-target',
         deletedAt: fixedNow.toISOString(),
       }),

@@ -10,6 +10,7 @@ export class ChatMessageDeletedEvent {
     public readonly payload: {
       id: string;
       gameSessionId: string;
+      authorMembershipId: string | null;
       targetMembershipId: string | null;
       deletedAt: string;
     },

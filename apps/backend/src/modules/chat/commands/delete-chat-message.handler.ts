@@ -59,6 +59,7 @@ export class DeleteChatMessageHandler implements ICommandHandler<DeleteChatMessa
       new ChatMessageDeletedEvent({
         id: message.id,
         gameSessionId: message.gameSessionId,
+        authorMembershipId: message.authorMembershipId,
         targetMembershipId: message.targetMembershipId,
         deletedAt: now.toISOString(),
       }),
