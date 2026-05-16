@@ -208,4 +208,64 @@ describe('AppChatComposer', () => {
     });
     expect(wrapper.find('[data-testid="submit-btn"]').attributes('disabled')).toBeDefined();
   });
+
+  // ── Inline edit affordance ────────────────────────────────────────────────
+
+  it('renders no edit banner by default', () => {
+    const wrapper = mount(AppChatComposer, { props: BASE });
+    expect(wrapper.find('[data-testid="edit-banner"]').exists()).toBe(false);
+    expect(wrapper.classes()).not.toContain('app-chat-composer--editing');
+    expect(wrapper.find('[data-testid="submit-btn"]').text()).toBe('Send');
+  });
+
+  it('renders the edit banner + Save label when editingLabel is set', () => {
+    const wrapper = mount(AppChatComposer, {
+      props: {
+        ...BASE,
+        modelValue: 'updated body',
+        editingLabel: 'Editing message',
+        editingPreview: 'original body',
+      },
+    });
+    const banner = wrapper.find('[data-testid="edit-banner"]');
+    expect(banner.exists()).toBe(true);
+    expect(banner.text()).toContain('Editing message');
+    expect(banner.text()).toContain('original body');
+    expect(wrapper.classes()).toContain('app-chat-composer--editing');
+    expect(wrapper.find('[data-testid="submit-btn"]').text()).toBe('Save');
+  });
+
+  it('emits "cancel-edit" when the banner Cancel button is clicked', async () => {
+    const wrapper = mount(AppChatComposer, {
+      props: {
+        ...BASE,
+        modelValue: 'updated body',
+        editingLabel: 'Editing message',
+      },
+    });
+    await wrapper.find('[data-testid="cancel-edit-btn"]').trigger('click');
+    expect(wrapper.emitted('cancel-edit')).toHaveLength(1);
+  });
+
+  it('does not render the preview span when editingPreview is empty', () => {
+    const wrapper = mount(AppChatComposer, {
+      props: {
+        ...BASE,
+        editingLabel: 'Editing message',
+      },
+    });
+    expect(wrapper.find('.app-chat-composer__edit-banner-preview').exists()).toBe(false);
+  });
+
+  it('still emits "submit" via ⌘+Enter while in edit mode (parent routes the verb)', async () => {
+    const wrapper = mount(AppChatComposer, {
+      props: {
+        ...BASE,
+        modelValue: 'updated body',
+        editingLabel: 'Editing message',
+      },
+    });
+    await wrapper.find('textarea').trigger('keydown', { key: 'Enter', metaKey: true });
+    expect(wrapper.emitted('submit')).toHaveLength(1);
+  });
 });

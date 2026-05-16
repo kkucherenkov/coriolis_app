@@ -362,4 +362,39 @@ describe('AppChatPanel', () => {
     await msg.vm.$emit('block');
     expect(wrapper.emitted('block-author')).toEqual([['msg-77']]);
   });
+
+  // ── Spec 13: inline-edit forwarding ───────────────────────────────────────
+
+  it('forwards composerEditing* props to AppChatComposer', () => {
+    const wrapper = mount(AppChatPanel, {
+      props: {
+        ...defaultProps,
+        composerEditingLabel: 'Editing message',
+        composerEditingPreview: 'original body',
+        composerCancelEditLabel: 'Discard',
+      },
+      global: {
+        stubs: {
+          ...stubs,
+          // Render the real component (not stubbed) so we can read the
+          // banner text + Cancel-button label rather than reach for
+          // shallow attrs on a stub element.
+          AppChatComposer: false,
+        },
+      },
+    });
+    expect(wrapper.find('[data-testid="edit-banner"]').text()).toContain('Editing message');
+    expect(wrapper.find('[data-testid="edit-banner"]').text()).toContain('original body');
+    expect(wrapper.find('[data-testid="cancel-edit-btn"]').text()).toBe('Discard');
+  });
+
+  it('AppChatComposer @cancel-edit bubbles as cancel-edit', async () => {
+    const wrapper = mount(AppChatPanel, {
+      props: { ...defaultProps, composerEditingLabel: 'Editing message' },
+      global: { stubs },
+    });
+    const composer = wrapper.findComponent({ name: 'AppChatComposer' });
+    await composer.vm.$emit('cancel-edit');
+    expect(wrapper.emitted('cancel-edit')).toHaveLength(1);
+  });
 });

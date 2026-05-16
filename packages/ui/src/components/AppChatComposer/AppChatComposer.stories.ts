@@ -139,6 +139,30 @@ export const AtLimit: Story = {
   }),
 };
 
+// ── Editing — inline edit affordance ──────────────────────────────────────────
+
+export const Editing: Story = {
+  name: 'Editing — inline edit banner + Save label',
+  render: () => ({
+    components: { AppChatComposer },
+    setup() {
+      const value = ref('Updated message body — autosaved soon.');
+      return { value };
+    },
+    template: `
+      <div style="${bg()}">
+        <AppChatComposer
+          v-model="value"
+          conversationKind="broadcast"
+          editingLabel="Editing message"
+          editingPreview="Original message body that the user just edited."
+          cancelEditLabel="Cancel"
+        />
+      </div>
+    `,
+  }),
+};
+
 // ── Disabled ──────────────────────────────────────────────────────────────────
 
 export const Disabled: Story = {

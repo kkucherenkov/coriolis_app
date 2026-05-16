@@ -10,6 +10,13 @@
    *
    * Plain Enter inserts a newline. ⌘+Enter / Ctrl+Enter submits if the
    * trimmed value is non-empty.
+   *
+   * Inline edit mode — when `editingLabel` is set the composer renders a
+   * banner above the textarea with that label, the original body
+   * preview, and a Cancel button. The Send button is recoloured to flag
+   * the in-flight edit; submission semantics stay the same (parent
+   * routes the submit to the edit / send branch based on its own
+   * editing-state flag).
    */
 
   type Kind = 'broadcast' | 'whisper';
@@ -20,24 +27,48 @@
     partnerDisplayName?: string;
     maxLength?: number;
     disabled?: boolean;
+    /**
+     * Banner heading when the composer is in edit mode (e.g. "Editing message").
+     * The presence of this prop toggles the banner on; passing an empty
+     * string leaves it off so the prop is safe to bind unconditionally.
+     */
+    editingLabel?: string;
+    /**
+     * Optional one-line preview of the original message body shown next
+     * to the editing label. Long bodies are CSS-truncated.
+     */
+    editingPreview?: string;
+    /** Label for the Cancel button inside the edit banner. */
+    cancelEditLabel?: string;
   }
 
   const props = withDefaults(defineProps<Props>(), {
     partnerDisplayName: undefined,
     maxLength: 4096,
     disabled: false,
+    editingLabel: '',
+    editingPreview: '',
+    cancelEditLabel: 'Cancel',
   });
 
   const emit = defineEmits<{
     (e: 'update:modelValue', v: string): void;
     (e: 'submit'): void;
+    (e: 'cancel-edit'): void;
   }>();
+
+  const isEditing = computed(() => Boolean(props.editingLabel));
 
   const rootClasses = computed(() => [
     'app-chat-composer',
     `app-chat-composer--kind-${props.conversationKind}`,
     { 'app-chat-composer--disabled': props.disabled },
+    { 'app-chat-composer--editing': isEditing.value },
   ]);
+
+  function onCancelEdit(): void {
+    emit('cancel-edit');
+  }
 
   const placeholder = computed(() => {
     if (props.conversationKind === 'whisper') {
@@ -85,10 +116,29 @@
 </script>
 
 <template>
-  <div
-    :class="rootClasses"
-    data-testid="app-chat-composer"
-  >
+  <div :class="rootClasses" data-testid="app-chat-composer">
+    <div
+      v-if="isEditing"
+      class="app-chat-composer__edit-banner"
+      role="status"
+      aria-live="polite"
+      data-testid="edit-banner"
+    >
+      <div class="app-chat-composer__edit-banner-text">
+        <span class="app-chat-composer__edit-banner-label">{{ editingLabel }}</span>
+        <span
+          v-if="editingPreview"
+          class="app-chat-composer__edit-banner-preview"
+          :title="editingPreview"
+        >
+          {{ editingPreview }}
+        </span>
+      </div>
+      <AppButton variant="ghost" size="sm" data-testid="cancel-edit-btn" @click="onCancelEdit">
+        {{ cancelEditLabel }}
+      </AppButton>
+    </div>
+
     <textarea
       class="app-chat-composer__textarea"
       :value="modelValue"
@@ -101,11 +151,7 @@
     />
 
     <div class="app-chat-composer__footer">
-      <span
-        :class="counterClasses"
-        aria-live="polite"
-        data-testid="counter"
-      >
+      <span :class="counterClasses" aria-live="polite" data-testid="counter">
         {{ modelValue.length }} / {{ maxLength }}
       </span>
 
@@ -116,7 +162,7 @@
         data-testid="submit-btn"
         @click="onSubmitClick"
       >
-        Send
+        {{ isEditing ? 'Save' : 'Send' }}
       </AppButton>
     </div>
   </div>
@@ -144,6 +190,53 @@
 
       &:focus-within {
         border-color: var(--chat-whisper-accent);
+      }
+    }
+
+    // ── Edit-banner ────────────────────────────────────────────────────────────
+
+    &__edit-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      padding: var(--space-1) var(--space-2);
+      background: color-mix(in srgb, var(--brand-brass) 12%, transparent);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--brand-brass-deep);
+      color: var(--text-primary);
+      font-size: var(--type-body-sm-font-size);
+    }
+
+    &__edit-banner-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      gap: var(--space-1);
+    }
+
+    &__edit-banner-label {
+      font-weight: var(--font-weight-medium, 500);
+      color: var(--brand-brass);
+      letter-spacing: 0.02em;
+    }
+
+    &__edit-banner-preview {
+      color: var(--text-secondary);
+      font-style: italic;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    // ── State: editing ─────────────────────────────────────────────────────────
+    // Stronger border so users register the mode change at a glance.
+
+    &--editing {
+      border-color: var(--brand-brass);
+
+      &:focus-within {
+        border-color: var(--brand-brass);
       }
     }
 
