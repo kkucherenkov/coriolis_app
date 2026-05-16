@@ -2,6 +2,55 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-17-PHASE-8-STREAM-C — Phase 8 / Stream C — Chat backend (REST + Centrifugo + block list + read cursors)
+
+- Created: 2026-05-17
+- Completed: 2026-05-17
+- Owner: claude
+- Branch: `feat/phase-8/stream-c-chat-backend`
+- Spec: [docs/superpowers/specs/2026-05-15-phase-8-implementation-design.md](../../docs/superpowers/specs/2026-05-15-phase-8-implementation-design.md) §Stream C
+- Plan: [docs/superpowers/plans/2026-05-17-phase-8-stream-c.md](../../docs/superpowers/plans/2026-05-17-phase-8-stream-c.md) (10 tasks, subagent-driven; one block = one PR commit)
+- Task inventory: T-11.3.1.a–g + T-11.4.1.a–c + T-11.4.1.h + T-11.5.1.g + T-11.6.2.a–c + T-11.6.3.a from `docs/IMPLEMENTATION_PLAN_PHASE_8.md`.
+- Result: [PR #27](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/27) on Forgejo — 23 commits, branch `feat/phase-8/stream-c-chat-backend`.
+- Goal: ship the REST + Centrifugo + Prisma backend for session-scoped chat (broadcast + whispers + per-session block list + read cursors), so Stream D's UI can mount against a stable contract.
+- Acceptance — all met:
+  - **10 REST routes** under `/api/v1` (post / list / mark-read / list-conversations / get-by-id / edit / delete chat messages, plus post / list / delete blocks). All mapped at boot per `RouterExplorer`; unauth probes return 401 + `application/problem+json`.
+  - **2 new Centrifugo channel families**: `session.<id>.chat` (broadcast — any active member) and `session.<id>.member.<membershipId>` (whispers — only the owning member). Realtime ACL widened: `RealtimeService.buildAllowedChannels` issues all three channel families per active session.
+  - **3 new Prisma tables**: `ChatMessage` (with `(gameSessionId, createdAt)` + `(gameSessionId, authorMembershipId, targetMembershipId, createdAt)` indexes), `ChatReadCursor` (composite PK), `ChatBlock` (`(gameSessionId, blocker, blocked)` unique). Migration `20260516102812_add_chat_tables` hand-written + applied via `prisma migrate deploy` (shadow DB unavailable for `migrate dev` — pre-existing repo condition from Better Auth-managed tables).
+  - **Privacy contract — covered in code + tests + e2e**: third-party reading a whisper returns 404 (not 403); whispers never ride `session.<id>.chat`; GM has no whisper-moderation bypass (`DeleteChatMessageCommand` rejects on whispers if caller is not the author, and `GET /chat/messages/:id` returns 404 to non-author/target including the GM).
+  - **Rate limit**: in-memory token bucket per user (30/min, 5/s burst) via `ChatRateLimiterService` — single-node v1.1; Redis-backed limiter is a follow-up.
+- Sub-blocks (chronological commits on this branch):
+  - [x] Block 1 — OpenAPI 1.7.0→1.8.0 + AsyncAPI 0.11.0→0.12.0 + codegen (`6475d00` + `de72ce3`)
+  - [x] Block 2 — Prisma migration (ChatMessage + ChatReadCursor + ChatBlock) — `1c376f3`
+  - [x] Block 3 — ChatModule domain (errors, ports, read models, mapper, cursor codec, AppConfig.chat) — `cc74169`
+  - [x] Block 4 — ChatModule infra (3 Prisma repos + in-memory rate limiter) — `0de8051`, 21 specs
+  - [x] Block 5 — Commands TDD (7 commands + 3 event POJOs) — `b2d7a08`, `93fd1e6`, `7326f72`, `d11efde`, `c6c04bf`, `524a2e2`, `bb4ef38`, `46d85a1`
+  - [x] Block 6 — Queries TDD (4 queries + `countNewerThan` port extension) — `ebec281`, `c26c9e5`, `4cd890f`, `063cf8d`, `46e712f`
+  - [x] Block 7 — Realtime events + `ChatRealtimePublisher` + ACL widening — `c8799de` + `b257777`
+  - [x] Block 8 — Controllers + module wiring (10 REST routes) — `a96017e`
+  - [x] Block 9 — Integration specs + smoke recipe — `cbbea0f`
+- Spec diff: OpenAPI `1.7.0` → `1.8.0` (10 new operations, 10 new schemas); AsyncAPI `0.11.0` → `0.12.0` (2 new channels, 3 new message payloads). Both bundled cleanly; codegen drift-free.
+- Codegen impact: yes — TS SDK + Dart client + realtime channel constants. All generated artefacts landed in `de72ce3` (own commit, per repo convention).
+- Design impact: none (no @app/ui components or design tokens — Stream D ships those).
+- Tests: **1097 / 1097 backend unit tests green** (115 files; baseline 1016 → +81 net for chat module). Chat module total = **75 tests** (cursor codec / 3 repos / rate limiter / 7 commands / 4 queries / 6 publisher tests + 3 realtime service regression tests). Two new e2e specs: `chat-privacy.e2e-spec.ts` (7 REST assertions) + `chat-realtime.e2e-spec.ts` (whisper-not-on-broadcast assertion). Typecheck + lint clean.
+- Notable decisions:
+  - **Per-member channels for whispers (not server-side filter on shared channel)** — Centrifugo channel ACL is the security boundary; if whispers rode `session.<id>.chat` and were filtered client-side, the bodies would still be on the wire to all members. Per-member channels make non-disclosure a transport property.
+  - **404 over 403 for whisper privacy** — uniformly applied to `GET /chat/messages/:id`, `DELETE /chat/messages/:id`, and `GET /chat/messages?conversation=<membershipId>` (which returns `items: []` rather than 4xx). Non-existence over forbidden = no leak that "you're not allowed to see THIS specific thing".
+  - **`authorMembershipId` added to `ChatMessageDeletedEvent`** — the publisher needs both the author's and target's channels to fan out delete events for whispers (parity with posted/edited). One-line plumbing change in `DeleteChatMessageHandler`.
+  - **Cursor pagination via base64url-encoded `{createdAt, id}`** with strict `(createdAt DESC, id DESC)` ordering — same-millisecond ties broken deterministically by id. Invalid cursors silently treated as "no cursor" (friendlier than 400 + caller can detect end via `nextCursor === null`).
+  - **Cross-session pre-flight for single-message routes** — `chat-message.controller.ts` injects `CHAT_MESSAGE_REPO` directly to resolve `gameSessionId` from `:id` before the membership lookup, because the message id alone doesn't carry session context.
+  - **Migration via hand-written SQL + `prisma migrate deploy`** — pre-existing shadow-DB breakage for Better Auth-managed tables prevented `migrate dev --create-only` from running. Hand-written SQL passed the plan's verification checklist exactly (3 tables / 2 indexes on `chat_message` / unique + index on `chat_block` / composite PK on `chat_read_cursor` / correct `ON DELETE` clauses throughout).
+  - **`MembershipsModule` is imported by `ChatModule`** so `MEMBERSHIP_REPO` is accessible from the chat controllers' pre-flight membership resolution; `RealtimeModule` import added too because the chat realtime publisher needs `CENTRIFUGO_CLIENT` (token lives in `RealtimeModule`, not in a global Centrifugo module — matches `EncountersModule`'s wiring).
+- Open follow-ups (file as separate tasks when picked up):
+  - Stream D — chat UI components (web `@app/ui` + Flutter `app_ui`), `chat.*` i18n keys, system messages for member-join / roll-pushed / encounter-advanced, block-UI affordance.
+  - Redis-backed rate limiter for multi-node deploy.
+  - Search across chat history (full-text on `body`).
+  - Message reactions.
+  - Generic `RealtimeRouter` abstraction (currently the chat publisher and the DP publisher each call `centrifugo.publish` directly).
+  - Pre-existing e2e flakiness (combat-publisher / realtime-dp WS timeouts) — separate infra fix; not a Stream C regression.
+- Status: shipped
+- Blockers: —
+
 ## T-2026-05-17-PHASE-7-DRIFT-SCHEMA-VERIFIER — Real Drift migration tests via `SchemaVerifier`
 
 - Created: 2026-05-17
