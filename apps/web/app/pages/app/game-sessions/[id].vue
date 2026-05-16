@@ -4,6 +4,7 @@
   import {
     AppCard,
     AppButton,
+    AppConfirm,
     AppInput,
     AppField,
     AppBanner,
@@ -28,7 +29,7 @@
   } from '~/composables/useSessionRealtime';
   import { useSessionChatRealtime } from '~/composables/useSessionChatRealtime';
   import { useChatStore } from '~/stores/chat';
-  import { listMembers } from '@app/api-client-ts';
+  import { listMembers, removeMembership } from '@app/api-client-ts';
   import type { GameSession } from '~/composables/useGameSessionsApi';
   import type { DpEvent, DpSource } from '~/composables/useDpApi';
   import type { Me } from '~/composables/useMeApi';
@@ -320,6 +321,45 @@
   const inviteState = ref<InviteState>('none');
   const inviteRotatedAt = ref<string | null>(null);
   const revealUrl = ref<string>('');
+  const inviteRotateConfirmOpen = ref(false);
+  const inviteRotateBusy = ref(false);
+  const inviteRevokeConfirmOpen = ref(false);
+  const inviteRevokeBusy = ref(false);
+
+  // ── Kick member confirm ───────────────────────────────────────────────────
+  const kickConfirmOpen = ref(false);
+  const kickBusy = ref(false);
+  const kickTarget = ref<{ membershipId: string; displayName: string } | null>(null);
+  const kickError = ref('');
+
+  function onKickRequest(membershipId: string, displayName: string): void {
+    kickTarget.value = { membershipId, displayName };
+    kickError.value = '';
+    kickConfirmOpen.value = true;
+  }
+
+  async function onConfirmKick(): Promise<void> {
+    const target = kickTarget.value;
+    if (!target) return;
+    kickBusy.value = true;
+    kickError.value = '';
+    try {
+      const res = await removeMembership({
+        path: { id: sessionId.value, membershipId: target.membershipId },
+      });
+      if (res.error) {
+        const problem = res.error as { detail?: string };
+        kickError.value = problem.detail ?? t('crewKickError');
+        return;
+      }
+      // Soft-delete on the server side; refresh local member list.
+      sessionMembers.value = sessionMembers.value.filter((m) => m.id !== target.membershipId);
+      kickConfirmOpen.value = false;
+      kickTarget.value = null;
+    } finally {
+      kickBusy.value = false;
+    }
+  }
 
   async function loadInviteMetadata(): Promise<void> {
     if (!isGm.value) return;
@@ -344,40 +384,48 @@
     }
   }
 
-  async function onInviteRotate(): Promise<void> {
-    const ok = globalThis.confirm(
-      t('invite.confirmRotateTitle') + '\n' + t('invite.confirmRotateBody'),
-    );
-    if (!ok) return;
+  function onInviteRotate(): void {
+    inviteRotateConfirmOpen.value = true;
+  }
+
+  async function onConfirmInviteRotate(): Promise<void> {
+    inviteRotateBusy.value = true;
     try {
       const rotated = await inviteApi.rotate(sessionId.value);
       inviteRotatedAt.value = rotated.rotatedAt;
       revealUrl.value = rotated.url;
       inviteState.value = 'just-rotated';
+      inviteRotateConfirmOpen.value = false;
     } catch (error) {
       const problem = error as { detail?: string };
       console.error('Invite rotate failed:', problem.detail);
+    } finally {
+      inviteRotateBusy.value = false;
     }
   }
 
-  async function onInviteRevoke(): Promise<void> {
-    const ok = globalThis.confirm(
-      t('invite.confirmRevokeTitle') + '\n' + t('invite.confirmRevokeBody'),
-    );
-    if (!ok) return;
+  function onInviteRevoke(): void {
+    inviteRevokeConfirmOpen.value = true;
+  }
+
+  async function onConfirmInviteRevoke(): Promise<void> {
+    inviteRevokeBusy.value = true;
     try {
       await inviteApi.revoke(sessionId.value);
       inviteState.value = 'none';
       inviteRotatedAt.value = null;
       revealUrl.value = '';
+      inviteRevokeConfirmOpen.value = false;
     } catch (error) {
       const problem = error as { detail?: string };
       console.error('Invite revoke failed:', problem.detail);
+    } finally {
+      inviteRevokeBusy.value = false;
     }
   }
 
   function onInviteCopy(): void {
-    void onInviteRotate();
+    onInviteRotate();
   }
 
   function onInviteCloseReveal(): void {
@@ -615,6 +663,10 @@
     "crewHeading": "Crew",
     "crewEmpty": "Share your invite link to bring players to the table.",
     "crewRoleGm": "(GM)",
+    "crewKickButton": "Kick",
+    "crewKickConfirmTitle": "Remove {name} from the session?",
+    "crewKickConfirmBody": "They lose realtime access on their next token refresh (within 5 minutes). Their chat history stays. They can rejoin if you share a fresh invite link.",
+    "crewKickError": "Couldn't remove that member.",
     "gmBadge": "GM owner",
     "playerBadge": "Player view",
     "liveBadge": "Live",
@@ -643,7 +695,8 @@
       "confirmRevokeTitle": "Revoke invite?",
       "confirmRevokeBody": "Players who open the current link after revoking will see an empty state. Continue?",
       "confirmRotateTitle": "Rotate invite?",
-      "confirmRotateBody": "The current link will immediately stop working. You'll need to share the new one with every player."
+      "confirmRotateBody": "The current link will immediately stop working. You'll need to share the new one with every player.",
+      "confirmCancel": "Cancel"
     },
     "chat": {
       "dock": {
@@ -732,6 +785,10 @@
     "crewHeading": "Экипаж",
     "crewEmpty": "Поделитесь ссылкой-приглашением, чтобы пригласить игроков за стол.",
     "crewRoleGm": "(ГМ)",
+    "crewKickButton": "Удалить",
+    "crewKickConfirmTitle": "Удалить {name} из сессии?",
+    "crewKickConfirmBody": "Доступ к реалтайму пропадёт у игрока на следующем обновлении токена (в течение 5 минут). История чата остаётся. Игрок сможет вернуться, если вы пришлёте новую ссылку-приглашение.",
+    "crewKickError": "Не удалось удалить участника.",
     "gmBadge": "ГМ-владелец",
     "playerBadge": "Вид игрока",
     "liveBadge": "Live",
@@ -760,7 +817,8 @@
       "confirmRevokeTitle": "Отозвать приглашение?",
       "confirmRevokeBody": "После отзыва открывшие старую ссылку увидят пустой экран. Продолжить?",
       "confirmRotateTitle": "Сменить приглашение?",
-      "confirmRotateBody": "Старая ссылка немедленно перестанет работать. Новую нужно будет разослать всем игрокам."
+      "confirmRotateBody": "Старая ссылка немедленно перестанет работать. Новую нужно будет разослать всем игрокам.",
+      "confirmCancel": "Отмена"
     },
     "chat": {
       "dock": {
@@ -849,6 +907,10 @@
     "crewHeading": "[uk-todo] Crew",
     "crewEmpty": "[uk-todo] Share your invite link to bring players to the table.",
     "crewRoleGm": "[uk-todo] (GM)",
+    "crewKickButton": "[uk-todo] Kick",
+    "crewKickConfirmTitle": "[uk-todo] Remove {name} from the session?",
+    "crewKickConfirmBody": "[uk-todo] They lose realtime access on their next token refresh.",
+    "crewKickError": "[uk-todo] Couldn't remove that member.",
     "gmBadge": "[uk-todo] GM owner",
     "playerBadge": "[uk-todo] Player view",
     "liveBadge": "[uk-todo] Live",
@@ -877,7 +939,8 @@
       "confirmRevokeTitle": "Відкликати запрошення?",
       "confirmRevokeBody": "Після відкликання, хто відкриє старе посилання, побачить порожній екран. Продовжити?",
       "confirmRotateTitle": "Змінити запрошення?",
-      "confirmRotateBody": "Старе посилання негайно перестане працювати. Нове потрібно буде розіслати всім гравцям."
+      "confirmRotateBody": "Старе посилання негайно перестане працювати. Нове потрібно буде розіслати всім гравцям.",
+      "confirmCancel": "Скасувати"
     },
     "chat": {
       "dock": {
@@ -966,6 +1029,10 @@
     "crewHeading": "[el-todo] Crew",
     "crewEmpty": "[el-todo] Share your invite link to bring players to the table.",
     "crewRoleGm": "[el-todo] (GM)",
+    "crewKickButton": "[el-todo] Kick",
+    "crewKickConfirmTitle": "[el-todo] Remove {name} from the session?",
+    "crewKickConfirmBody": "[el-todo] They lose realtime access on their next token refresh.",
+    "crewKickError": "[el-todo] Couldn't remove that member.",
     "gmBadge": "[el-todo] GM owner",
     "playerBadge": "[el-todo] Player view",
     "liveBadge": "[el-todo] Live",
@@ -994,7 +1061,8 @@
       "confirmRevokeTitle": "Ανάκληση πρόσκλησης;",
       "confirmRevokeBody": "Όσοι ανοίξουν τον τρέχοντα σύνδεσμο μετά την ανάκληση θα δουν μια κενή οθόνη. Συνέχεια;",
       "confirmRotateTitle": "Αλλαγή πρόσκλησης;",
-      "confirmRotateBody": "Ο τρέχων σύνδεσμος θα σταματήσει να λειτουργεί αμέσως. Θα πρέπει να μοιραστείτε το νέο με κάθε παίκτη."
+      "confirmRotateBody": "Ο τρέχων σύνδεσμος θα σταματήσει να λειτουργεί αμέσως. Θα πρέπει να μοιραστείτε το νέο με κάθε παίκτη.",
+      "confirmCancel": "Άκυρο"
     },
     "chat": {
       "dock": {
@@ -1216,6 +1284,15 @@
                     — {{ member.characterName }}
                   </span>
                 </span>
+                <AppButton
+                  v-if="isGm && member.role !== 'gm'"
+                  variant="ghost"
+                  size="sm"
+                  :data-testid="`crew-kick-${member.id}`"
+                  @click="onKickRequest(member.id, member.displayName ?? member.userId)"
+                >
+                  {{ t('crewKickButton') }}
+                </AppButton>
               </li>
             </ul>
           </AppCard>
@@ -1388,6 +1465,46 @@
           </div>
         </div>
       </div>
+
+      <!-- Invite rotate confirm -->
+      <AppConfirm
+        v-model:open="inviteRotateConfirmOpen"
+        tone="danger"
+        :title="t('invite.confirmRotateTitle')"
+        :body="t('invite.confirmRotateBody')"
+        :confirm-label="t('invite.ctaRotate')"
+        :cancel-label="t('invite.confirmCancel')"
+        :loading="inviteRotateBusy"
+        @confirm="onConfirmInviteRotate"
+      />
+
+      <!-- Invite revoke confirm -->
+      <AppConfirm
+        v-model:open="inviteRevokeConfirmOpen"
+        tone="danger"
+        :title="t('invite.confirmRevokeTitle')"
+        :body="t('invite.confirmRevokeBody')"
+        :confirm-label="t('invite.ctaRevoke')"
+        :cancel-label="t('invite.confirmCancel')"
+        :loading="inviteRevokeBusy"
+        @confirm="onConfirmInviteRevoke"
+      />
+
+      <!-- Kick member confirm -->
+      <AppConfirm
+        v-model:open="kickConfirmOpen"
+        tone="danger"
+        :title="t('crewKickConfirmTitle', { name: kickTarget?.displayName ?? '' })"
+        :body="t('crewKickConfirmBody')"
+        :confirm-label="t('crewKickButton')"
+        :cancel-label="t('invite.confirmCancel')"
+        :loading="kickBusy"
+        data-testid="crew-kick-confirm"
+        @confirm="onConfirmKick"
+      />
+      <AppBanner v-if="kickError" tone="danger" role="alert">
+        {{ kickError }}
+      </AppBanner>
     </template>
   </section>
 </template>

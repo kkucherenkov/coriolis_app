@@ -27,6 +27,7 @@ export { AppChatTabStrip } from './components/AppChatTabStrip';
 export type { ChatTabModel } from './components/AppChatTabStrip';
 export { AppChip } from './components/AppChip';
 export { AppConditionPill } from './components/AppConditionPill';
+export { AppConfirm } from './components/AppConfirm';
 export { AppDie } from './components/AppDie';
 export { AppDiePool } from './components/AppDiePool';
 export { AppDivider } from './components/AppDivider';
