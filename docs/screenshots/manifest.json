@@ -1,0 +1,52 @@
+[
+  {
+    "name": "landing",
+    "desktop": "docs/screenshots/desktop/landing.png",
+    "mobile": "docs/screenshots/mobile/landing.png"
+  },
+  {
+    "name": "login",
+    "desktop": "docs/screenshots/desktop/login.png",
+    "mobile": "docs/screenshots/mobile/login.png"
+  },
+  {
+    "name": "signup",
+    "desktop": "docs/screenshots/desktop/signup.png",
+    "mobile": "docs/screenshots/mobile/signup.png"
+  },
+  {
+    "name": "dashboard",
+    "desktop": "docs/screenshots/desktop/dashboard.png",
+    "mobile": "docs/screenshots/mobile/dashboard.png"
+  },
+  {
+    "name": "characters-list",
+    "desktop": "docs/screenshots/desktop/characters-list.png",
+    "mobile": "docs/screenshots/mobile/characters-list.png"
+  },
+  {
+    "name": "character-sheet",
+    "desktop": "docs/screenshots/desktop/character-sheet.png",
+    "mobile": "docs/screenshots/mobile/character-sheet.png"
+  },
+  {
+    "name": "ship-sheet",
+    "desktop": "docs/screenshots/desktop/ship-sheet.png",
+    "mobile": "docs/screenshots/mobile/ship-sheet.png"
+  },
+  {
+    "name": "npc-editor",
+    "desktop": "docs/screenshots/desktop/npc-editor.png",
+    "mobile": "docs/screenshots/mobile/npc-editor.png"
+  },
+  {
+    "name": "game-session",
+    "desktop": "docs/screenshots/desktop/game-session.png",
+    "mobile": "docs/screenshots/mobile/game-session.png"
+  },
+  {
+    "name": "shared-character",
+    "desktop": "docs/screenshots/desktop/shared-character.png",
+    "mobile": "docs/screenshots/mobile/shared-character.png"
+  }
+]
