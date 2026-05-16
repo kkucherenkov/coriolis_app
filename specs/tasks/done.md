@@ -8,11 +8,23 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
 - Completed: 2026-05-17
 - Owner: claude
 - Spec: PRD §11 Phase 7 — "Offline support (web SW + Flutter SQLite)"; follow-up #2 from T-2026-05-17-PHASE-7-MOBILE-OFFLINE-3.
+- Result: [PR #25](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/25) on Forgejo — branch `feat/phase-7/drift-schema-verifier`, three commits (`0aaf256` codegen + `105ad12` tests + analyzer cleanup).
 - Goal: replace the v4 schema "table presence" smoke test with real `SchemaVerifier`-based migration tests proving `onUpgrade` correctly migrates data from v1/v2/v3 to v4.
-- PR: feat/phase-7/mobile-offline-writequeue
-- Result: 431 tests pass (+4 migration tests, -1 smoke test).
-- Snapshot approach: `git worktree add` per historical commit + `dart run drift_dev schema dump` (worktrees succeeded for all four versions; no hand-writing needed).
-- Sanity check: commenting out `await m.createTable(npcsCache)` in onUpgrade caused all 4 migration tests to fail with `"comparing npcs_cache: The actual schema does not contain anything with this name"`. Reverted, all tests green.
+- Acceptance — all met:
+  - `apps/mobile/drift_schemas/{drift_schema_v1.json,v2.json,v3.json,v4.json}` checked in (2.1K / 4.6K / 10.2K / 12.1K).
+  - Generated verifier file at `apps/mobile/test/shared/cache/generated/schema.dart` (+ `schema_vN.dart` per version) committed as codegen-only.
+  - `apps/mobile/test/shared/cache/app_database_migration_test.dart` — 4 tests (v1→v4 fresh, v2→v4, v3→v4, v3→v4 with mixed data).
+  - Old smoke test removed from `app_database_test.dart`.
+  - `analysis_options.yaml` excludes `test/shared/cache/generated/**` (drift_dev emits `TableInfo<Table, dynamic>` raw types that conflict with strict-raw-types).
+- Snapshot approach: `git worktree add` per canonical historical commit (`dfc3f8b` / `29769a8` / `687a75e` / HEAD) + `dart run drift_dev schema dump`. Worktrees succeeded first-try for all four versions; no hand-writing needed.
+- Sanity check: commenting out `await m.createTable(npcsCache)` in the v3→v4 `onUpgrade` arm caused all 4 migration tests to fail with `SchemaMismatch: comparing npcs_cache: The actual schema does not contain anything with this name`. Reverted, all green.
+- Tests: **431 total** (+4 migration tests, −1 deleted smoke test from 428).
+- Notable decisions:
+  - **`verifier.schemaAt(N)` not `startAt(N)`** — every test seeds data via raw SQL before migrating; `schemaAt` exposes the underlying `rawDatabase`, `startAt` doesn't.
+  - **No `--companions` flag on `schema generate`** — old-version generated insert helpers would be dead code; tests use raw `INSERT INTO ... VALUES (...)` SQL instead.
+  - **Codegen lives in its own commit** — per repo convention "spec/codegen artefacts in their own commit". The verifier `.dart` files + the snapshot `.json` files were dumped + generated, then committed as `chore(mobile): add Drift schema snapshots …` separately from the test file.
+- Status: shipped
+- Blockers: —
 
 ## T-2026-05-17-PHASE-7-MOBILE-OFFLINE-4 — NPC offline cache
 
