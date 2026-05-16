@@ -124,6 +124,28 @@
         "$type": "color",
         "$description": "The Darkness — corruption, dark points."
       }
+    },
+    "chat": {
+      "bubble-author-bg": {
+        "$value": "#2C2348",
+        "$type": "color",
+        "$description": "Chat bubble background for messages authored by the local user. Warm-violet, ~12% lighter than surface.night so author messages register without leaving brand. Pair: text on this is parchment-default."
+      },
+      "bubble-other-bg": {
+        "$value": "#1A1F47",
+        "$type": "color",
+        "$description": "Chat bubble background for messages authored by other members. Cool-indigo, sits between surface.night and surface.void. Pair: text on this is parchment-soft."
+      },
+      "system-fg": {
+        "$value": "#7E7FA8",
+        "$type": "color",
+        "$description": "Foreground for kind=system messages — desaturated mauve, low-contrast on surface.void. AA contrast 4.6:1 vs surface.void; below body-text contrast on purpose so system rows don't visually dominate chat."
+      },
+      "whisper-accent": {
+        "$value": "#C49AD4",
+        "$type": "color",
+        "$description": "Whisper accent — lavender highlight for whisper tab strip, bubble border, and the lock glyph. Distinct from brand brass so members can scan broadcast vs whisper at a glance."
+      }
     }
   },
   "theme": {

@@ -11,7 +11,7 @@ import {
   type TypographyValue,
 } from './types.ts';
 
-const COLOR_GROUPS: readonly ColorGroup[] = ['surface', 'brand', 'text', 'state'];
+const COLOR_GROUPS: readonly ColorGroup[] = ['surface', 'brand', 'text', 'state', 'chat'];
 
 function* leafEntries<T>(record: Record<string, T>): Iterable<[string, T]> {
   for (const [key, value] of Object.entries(record)) {

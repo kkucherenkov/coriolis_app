@@ -31,6 +31,10 @@ abstract final class AppColors {
   static const Color stateMysticTeal = Color(0xFF2BA3A0);
   static const Color stateSuccess = Color(0xFF5A8A3A);
   static const Color stateDarkness = Color(0xFF5B2A78);
+  static const Color chatBubbleAuthorBg = Color(0xFF2C2348);
+  static const Color chatBubbleOtherBg = Color(0xFF1A1F47);
+  static const Color chatSystemFg = Color(0xFF7E7FA8);
+  static const Color chatWhisperAccent = Color(0xFFC49AD4);
 }
 
 abstract final class AppColorsHighContrast {

@@ -54,7 +54,7 @@ export interface TransitionValue {
   timingFunction: string; // ease key (e.g. "standard") or literal cubic-bezier
 }
 
-export type ColorGroup = 'surface' | 'brand' | 'text' | 'state';
+export type ColorGroup = 'surface' | 'brand' | 'text' | 'state' | 'chat';
 
 export interface ColorFile {
   $schema?: string;
