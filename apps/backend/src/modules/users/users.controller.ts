@@ -56,7 +56,9 @@ export class UsersController {
     @Req() req: AuthenticatedRequest,
     @Body() body: UpdateMeDto,
   ): Promise<MeReadModel> {
-    return this.commandBus.execute(new UpdateMeCommand(req.userId, body.displayName, body.theme));
+    return this.commandBus.execute(
+      new UpdateMeCommand(req.userId, body.displayName, body.theme, body.chatDockedCollapsed),
+    );
   }
 
   /**

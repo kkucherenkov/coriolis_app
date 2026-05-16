@@ -64,11 +64,14 @@ class _$MeUpdate extends MeUpdate {
   final String? displayName;
   @override
   final MeUpdateThemeEnum? theme;
+  @override
+  final bool? chatDockedCollapsed;
 
   factory _$MeUpdate([void Function(MeUpdateBuilder)? updates]) =>
       (MeUpdateBuilder()..update(updates))._build();
 
-  _$MeUpdate._({this.displayName, this.theme}) : super._();
+  _$MeUpdate._({this.displayName, this.theme, this.chatDockedCollapsed})
+      : super._();
   @override
   MeUpdate rebuild(void Function(MeUpdateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -81,7 +84,8 @@ class _$MeUpdate extends MeUpdate {
     if (identical(other, this)) return true;
     return other is MeUpdate &&
         displayName == other.displayName &&
-        theme == other.theme;
+        theme == other.theme &&
+        chatDockedCollapsed == other.chatDockedCollapsed;
   }
 
   @override
@@ -89,6 +93,7 @@ class _$MeUpdate extends MeUpdate {
     var _$hash = 0;
     _$hash = $jc(_$hash, displayName.hashCode);
     _$hash = $jc(_$hash, theme.hashCode);
+    _$hash = $jc(_$hash, chatDockedCollapsed.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -97,7 +102,8 @@ class _$MeUpdate extends MeUpdate {
   String toString() {
     return (newBuiltValueToStringHelper(r'MeUpdate')
           ..add('displayName', displayName)
-          ..add('theme', theme))
+          ..add('theme', theme)
+          ..add('chatDockedCollapsed', chatDockedCollapsed))
         .toString();
   }
 }
@@ -113,6 +119,11 @@ class MeUpdateBuilder implements Builder<MeUpdate, MeUpdateBuilder> {
   MeUpdateThemeEnum? get theme => _$this._theme;
   set theme(MeUpdateThemeEnum? theme) => _$this._theme = theme;
 
+  bool? _chatDockedCollapsed;
+  bool? get chatDockedCollapsed => _$this._chatDockedCollapsed;
+  set chatDockedCollapsed(bool? chatDockedCollapsed) =>
+      _$this._chatDockedCollapsed = chatDockedCollapsed;
+
   MeUpdateBuilder() {
     MeUpdate._defaults(this);
   }
@@ -122,6 +133,7 @@ class MeUpdateBuilder implements Builder<MeUpdate, MeUpdateBuilder> {
     if ($v != null) {
       _displayName = $v.displayName;
       _theme = $v.theme;
+      _chatDockedCollapsed = $v.chatDockedCollapsed;
       _$v = null;
     }
     return this;
@@ -145,6 +157,7 @@ class MeUpdateBuilder implements Builder<MeUpdate, MeUpdateBuilder> {
         _$MeUpdate._(
           displayName: displayName,
           theme: theme,
+          chatDockedCollapsed: chatDockedCollapsed,
         );
     replace(_$result);
     return _$result;

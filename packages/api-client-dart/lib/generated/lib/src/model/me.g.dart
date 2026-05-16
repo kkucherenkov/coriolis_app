@@ -67,6 +67,8 @@ class _$Me extends Me {
   final DateTime? createdAt;
   @override
   final MeThemeEnum? theme;
+  @override
+  final bool? chatDockedCollapsed;
 
   factory _$Me([void Function(MeBuilder)? updates]) =>
       (MeBuilder()..update(updates))._build();
@@ -76,7 +78,8 @@ class _$Me extends Me {
       required this.email,
       this.displayName,
       this.createdAt,
-      this.theme})
+      this.theme,
+      this.chatDockedCollapsed})
       : super._();
   @override
   Me rebuild(void Function(MeBuilder) updates) =>
@@ -93,7 +96,8 @@ class _$Me extends Me {
         email == other.email &&
         displayName == other.displayName &&
         createdAt == other.createdAt &&
-        theme == other.theme;
+        theme == other.theme &&
+        chatDockedCollapsed == other.chatDockedCollapsed;
   }
 
   @override
@@ -104,6 +108,7 @@ class _$Me extends Me {
     _$hash = $jc(_$hash, displayName.hashCode);
     _$hash = $jc(_$hash, createdAt.hashCode);
     _$hash = $jc(_$hash, theme.hashCode);
+    _$hash = $jc(_$hash, chatDockedCollapsed.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -115,7 +120,8 @@ class _$Me extends Me {
           ..add('email', email)
           ..add('displayName', displayName)
           ..add('createdAt', createdAt)
-          ..add('theme', theme))
+          ..add('theme', theme)
+          ..add('chatDockedCollapsed', chatDockedCollapsed))
         .toString();
   }
 }
@@ -143,6 +149,11 @@ class MeBuilder implements Builder<Me, MeBuilder> {
   MeThemeEnum? get theme => _$this._theme;
   set theme(MeThemeEnum? theme) => _$this._theme = theme;
 
+  bool? _chatDockedCollapsed;
+  bool? get chatDockedCollapsed => _$this._chatDockedCollapsed;
+  set chatDockedCollapsed(bool? chatDockedCollapsed) =>
+      _$this._chatDockedCollapsed = chatDockedCollapsed;
+
   MeBuilder() {
     Me._defaults(this);
   }
@@ -155,6 +166,7 @@ class MeBuilder implements Builder<Me, MeBuilder> {
       _displayName = $v.displayName;
       _createdAt = $v.createdAt;
       _theme = $v.theme;
+      _chatDockedCollapsed = $v.chatDockedCollapsed;
       _$v = null;
     }
     return this;
@@ -181,6 +193,7 @@ class MeBuilder implements Builder<Me, MeBuilder> {
           displayName: displayName,
           createdAt: createdAt,
           theme: theme,
+          chatDockedCollapsed: chatDockedCollapsed,
         );
     replace(_$result);
     return _$result;

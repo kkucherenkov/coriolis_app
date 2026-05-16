@@ -14,6 +14,7 @@ export type UserTheme = 'dark' | 'high-contrast';
  * Read model returned by getMe / updateMe — maps exactly to the OpenAPI `Me` schema.
  * `displayName` is `null` when the user has not set one.
  * `theme` defaults to `dark` and is always present.
+ * `chatDockedCollapsed` defaults to `false` and is always present.
  */
 export interface MeReadModel {
   id: string;
@@ -21,6 +22,7 @@ export interface MeReadModel {
   displayName: string | null;
   createdAt: string; // ISO-8601
   theme: UserTheme;
+  chatDockedCollapsed: boolean;
 }
 
 /**
@@ -41,13 +43,17 @@ export interface IUserRepo {
   updateDisplayName(id: string, displayName: string | null): Promise<MeReadModel>;
 
   /**
-   * Update the `displayName` and/or `theme` fields on the user row.
-   * Only fields present in the payload are written; absent fields are preserved.
-   * Returns the refreshed read model.
+   * Update the `displayName`, `theme`, and/or `chatDockedCollapsed` fields on
+   * the user row. Only fields present in the payload are written; absent
+   * fields are preserved. Returns the refreshed read model.
    */
   updateProfile(
     id: string,
-    patch: { displayName?: string | null; theme?: UserTheme },
+    patch: {
+      displayName?: string | null;
+      theme?: UserTheme;
+      chatDockedCollapsed?: boolean;
+    },
   ): Promise<MeReadModel>;
 
   /**

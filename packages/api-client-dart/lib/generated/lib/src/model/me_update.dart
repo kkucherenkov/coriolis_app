@@ -14,6 +14,7 @@ part 'me_update.g.dart';
 /// Properties:
 /// * [displayName] - User-chosen display name. Must be 1–80 characters when non-null. Set to null to clear the field. 
 /// * [theme] - UI theme preference. Must be one of `dark` or `high-contrast`. Omitting the field preserves the current value. 
+/// * [chatDockedCollapsed] - Toggle persisted state of the GM session-detail chat dock collapse. Omitting the field preserves the current value. 
 @BuiltValue()
 abstract class MeUpdate implements Built<MeUpdate, MeUpdateBuilder> {
   /// User-chosen display name. Must be 1–80 characters when non-null. Set to null to clear the field. 
@@ -24,6 +25,10 @@ abstract class MeUpdate implements Built<MeUpdate, MeUpdateBuilder> {
   @BuiltValueField(wireName: r'theme')
   MeUpdateThemeEnum? get theme;
   // enum themeEnum {  dark,  high-contrast,  };
+
+  /// Toggle persisted state of the GM session-detail chat dock collapse. Omitting the field preserves the current value. 
+  @BuiltValueField(wireName: r'chatDockedCollapsed')
+  bool? get chatDockedCollapsed;
 
   MeUpdate._();
 
@@ -60,6 +65,13 @@ class _$MeUpdateSerializer implements PrimitiveSerializer<MeUpdate> {
       yield serializers.serialize(
         object.theme,
         specifiedType: const FullType(MeUpdateThemeEnum),
+      );
+    }
+    if (object.chatDockedCollapsed != null) {
+      yield r'chatDockedCollapsed';
+      yield serializers.serialize(
+        object.chatDockedCollapsed,
+        specifiedType: const FullType(bool),
       );
     }
   }
@@ -99,6 +111,13 @@ class _$MeUpdateSerializer implements PrimitiveSerializer<MeUpdate> {
             specifiedType: const FullType(MeUpdateThemeEnum),
           ) as MeUpdateThemeEnum;
           result.theme = valueDes;
+          break;
+        case r'chatDockedCollapsed':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
+          result.chatDockedCollapsed = valueDes;
           break;
         default:
           unhandled.add(key);

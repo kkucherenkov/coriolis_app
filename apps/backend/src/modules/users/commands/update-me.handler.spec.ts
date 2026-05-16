@@ -32,6 +32,7 @@ function makeMeReadModel(overrides: Partial<MeReadModel> = {}): MeReadModel {
     displayName: null,
     createdAt: '2026-01-15T09:30:00.000Z',
     theme: 'dark',
+    chatDockedCollapsed: false,
     ...overrides,
   };
 }
@@ -52,13 +53,14 @@ describe('UpdateMeHandler', () => {
     vi.mocked(repo.updateProfile).mockResolvedValue(updated);
 
     const result = await handler.execute(
-      new UpdateMeCommand('user-1', 'Kalim al-Rashid', undefined),
+      new UpdateMeCommand('user-1', 'Kalim al-Rashid', undefined, undefined),
     );
 
     expect(result).toEqual(updated);
     expect(repo.updateProfile).toHaveBeenCalledWith('user-1', {
       displayName: 'Kalim al-Rashid',
       theme: 'dark',
+      chatDockedCollapsed: false,
     });
   });
 
@@ -68,12 +70,13 @@ describe('UpdateMeHandler', () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(existing);
     vi.mocked(repo.updateProfile).mockResolvedValue(updated);
 
-    const result = await handler.execute(new UpdateMeCommand('user-1', null, undefined));
+    const result = await handler.execute(new UpdateMeCommand('user-1', null, undefined, undefined));
 
     expect(result.displayName).toBeNull();
     expect(repo.updateProfile).toHaveBeenCalledWith('user-1', {
       displayName: null,
       theme: 'dark',
+      chatDockedCollapsed: false,
     });
   });
 
@@ -83,12 +86,13 @@ describe('UpdateMeHandler', () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(existing);
     vi.mocked(repo.updateProfile).mockResolvedValue(updated);
 
-    await handler.execute(new UpdateMeCommand('user-1', undefined, undefined));
+    await handler.execute(new UpdateMeCommand('user-1', undefined, undefined, undefined));
 
     // When displayName is undefined the handler uses the existing value
     expect(repo.updateProfile).toHaveBeenCalledWith('user-1', {
       displayName: 'Existing Name',
       theme: 'dark',
+      chatDockedCollapsed: false,
     });
   });
 
@@ -105,7 +109,9 @@ describe('UpdateMeHandler', () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(existing);
     vi.mocked(repo.updateProfile).mockResolvedValue(updated);
 
-    const result = await handler.execute(new UpdateMeCommand('user-1', 'New Name', undefined));
+    const result = await handler.execute(
+      new UpdateMeCommand('user-1', 'New Name', undefined, undefined),
+    );
 
     expect(result.email).toBe('kalim@example.com');
     expect(result.createdAt).toBe('2026-01-15T09:30:00.000Z');
@@ -115,7 +121,7 @@ describe('UpdateMeHandler', () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(makeMeReadModel());
 
     await expect(
-      handler.execute(new UpdateMeCommand('user-1', '', undefined)),
+      handler.execute(new UpdateMeCommand('user-1', '', undefined, undefined)),
     ).rejects.toBeInstanceOf(DisplayNameEmptyError);
     // Should not reach the repo write
     expect(repo.updateProfile).not.toHaveBeenCalled();
@@ -125,7 +131,7 @@ describe('UpdateMeHandler', () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(makeMeReadModel());
 
     await expect(
-      handler.execute(new UpdateMeCommand('user-1', '', undefined)),
+      handler.execute(new UpdateMeCommand('user-1', '', undefined, undefined)),
     ).rejects.toMatchObject({
       status: 400,
       code: 'DISPLAY_NAME_EMPTY',
@@ -137,7 +143,7 @@ describe('UpdateMeHandler', () => {
     const tooLong = 'a'.repeat(81);
 
     await expect(
-      handler.execute(new UpdateMeCommand('user-1', tooLong, undefined)),
+      handler.execute(new UpdateMeCommand('user-1', tooLong, undefined, undefined)),
     ).rejects.toBeInstanceOf(DisplayNameTooLongError);
     expect(repo.updateProfile).not.toHaveBeenCalled();
   });
@@ -147,7 +153,7 @@ describe('UpdateMeHandler', () => {
     const tooLong = 'a'.repeat(81);
 
     await expect(
-      handler.execute(new UpdateMeCommand('user-1', tooLong, undefined)),
+      handler.execute(new UpdateMeCommand('user-1', tooLong, undefined, undefined)),
     ).rejects.toMatchObject({
       status: 400,
       code: 'DISPLAY_NAME_TOO_LONG',
@@ -158,7 +164,7 @@ describe('UpdateMeHandler', () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(null);
 
     await expect(
-      handler.execute(new UpdateMeCommand('missing', 'Name', undefined)),
+      handler.execute(new UpdateMeCommand('missing', 'Name', undefined, undefined)),
     ).rejects.toBeInstanceOf(UserNotFoundError);
   });
 
@@ -169,7 +175,9 @@ describe('UpdateMeHandler', () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(existing);
     vi.mocked(repo.updateProfile).mockResolvedValue(updated);
 
-    const result = await handler.execute(new UpdateMeCommand('user-1', maxLength, undefined));
+    const result = await handler.execute(
+      new UpdateMeCommand('user-1', maxLength, undefined, undefined),
+    );
 
     expect(result.displayName).toBe(maxLength);
   });
@@ -182,12 +190,15 @@ describe('UpdateMeHandler', () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(existing);
     vi.mocked(repo.updateProfile).mockResolvedValue(updated);
 
-    const result = await handler.execute(new UpdateMeCommand('user-1', undefined, 'high-contrast'));
+    const result = await handler.execute(
+      new UpdateMeCommand('user-1', undefined, 'high-contrast', undefined),
+    );
 
     expect(result.theme).toBe('high-contrast');
     expect(repo.updateProfile).toHaveBeenCalledWith('user-1', {
       displayName: null,
       theme: 'high-contrast',
+      chatDockedCollapsed: false,
     });
   });
 
@@ -197,11 +208,12 @@ describe('UpdateMeHandler', () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(existing);
     vi.mocked(repo.updateProfile).mockResolvedValue(updated);
 
-    await handler.execute(new UpdateMeCommand('user-1', undefined, undefined));
+    await handler.execute(new UpdateMeCommand('user-1', undefined, undefined, undefined));
 
     expect(repo.updateProfile).toHaveBeenCalledWith('user-1', {
       displayName: null,
       theme: 'high-contrast',
+      chatDockedCollapsed: false,
     });
   });
 
@@ -211,11 +223,12 @@ describe('UpdateMeHandler', () => {
     vi.mocked(repo.findActiveById).mockResolvedValue(existing);
     vi.mocked(repo.updateProfile).mockResolvedValue(updated);
 
-    await handler.execute(new UpdateMeCommand('user-1', undefined, undefined));
+    await handler.execute(new UpdateMeCommand('user-1', undefined, undefined, undefined));
 
     expect(repo.updateProfile).toHaveBeenCalledWith('user-1', {
       displayName: null,
       theme: 'dark',
+      chatDockedCollapsed: false,
     });
   });
 
@@ -225,8 +238,40 @@ describe('UpdateMeHandler', () => {
 
     await expect(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- intentional invalid input for defence-in-depth test
-      handler.execute(new UpdateMeCommand('user-1', undefined, 'neon' as any)),
+      handler.execute(new UpdateMeCommand('user-1', undefined, 'neon' as any, undefined)),
     ).rejects.toBeInstanceOf(InvalidThemeError);
     expect(repo.updateProfile).not.toHaveBeenCalled();
+  });
+
+  // ── chatDockedCollapsed field tests ─────────────────────────────────────────
+
+  it('sets chatDockedCollapsed=true when provided', async () => {
+    const existing = makeMeReadModel({ chatDockedCollapsed: false });
+    const updated = makeMeReadModel({ chatDockedCollapsed: true });
+    vi.mocked(repo.findActiveById).mockResolvedValue(existing);
+    vi.mocked(repo.updateProfile).mockResolvedValue(updated);
+
+    const result = await handler.execute(new UpdateMeCommand('user-1', undefined, undefined, true));
+
+    expect(result.chatDockedCollapsed).toBe(true);
+    expect(repo.updateProfile).toHaveBeenCalledWith('user-1', {
+      displayName: null,
+      theme: 'dark',
+      chatDockedCollapsed: true,
+    });
+  });
+
+  it('preserves existing chatDockedCollapsed when omitted (undefined)', async () => {
+    const existing = makeMeReadModel({ chatDockedCollapsed: true });
+    const updated = makeMeReadModel({ chatDockedCollapsed: true });
+    vi.mocked(repo.findActiveById).mockResolvedValue(existing);
+    vi.mocked(repo.updateProfile).mockResolvedValue(updated);
+
+    await handler.execute(new UpdateMeCommand('user-1', undefined, undefined, undefined));
+
+    expect(repo.updateProfile).toHaveBeenCalledWith(
+      'user-1',
+      expect.objectContaining({ chatDockedCollapsed: true }),
+    );
   });
 });

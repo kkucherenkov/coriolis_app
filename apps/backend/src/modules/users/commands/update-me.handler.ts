@@ -36,7 +36,7 @@ export class UpdateMeHandler implements ICommandHandler<UpdateMeCommand, MeReadM
   constructor(@Inject(USER_REPO) private readonly repo: IUserRepo) {}
 
   async execute(command: UpdateMeCommand): Promise<MeReadModel> {
-    const { userId, displayName, theme } = command;
+    const { userId, displayName, theme, chatDockedCollapsed } = command;
 
     // Defence-in-depth validation (DTO layer already enforces these via
     // class-validator, but programmatic callers may bypass the pipe).
@@ -62,12 +62,14 @@ export class UpdateMeHandler implements ICommandHandler<UpdateMeCommand, MeReadM
     // `displayName` undefined means the field was omitted from the PATCH body —
     // preserve the existing value.
     const nextDisplayName = displayName === undefined ? existing.displayName : displayName;
-
     const nextTheme: UserTheme = theme ?? existing.theme;
+    const nextChatDockedCollapsed =
+      chatDockedCollapsed === undefined ? existing.chatDockedCollapsed : chatDockedCollapsed;
 
     return this.repo.updateProfile(userId, {
       displayName: nextDisplayName,
       theme: nextTheme,
+      chatDockedCollapsed: nextChatDockedCollapsed,
     });
   }
 }

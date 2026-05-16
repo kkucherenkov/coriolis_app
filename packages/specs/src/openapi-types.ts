@@ -3796,6 +3796,15 @@ export interface components {
        * @enum {string}
        */
       theme: 'dark' | 'high-contrast';
+      /**
+       * @description Persisted state of the GM session-detail chat dock collapse toggle.
+       *     Replaces the prior localStorage `chat-docked-collapsed` fallback
+       *     (Stream D shipped that as a placeholder; this is the canonical
+       *     home). Synced across devices so a GM who collapses the dock on
+       *     one client sees it collapsed on the next.
+       * @default false
+       */
+      chatDockedCollapsed: boolean;
     };
     /**
      * @description Partial update payload for PATCH /api/v1/me. `displayName` and `theme`
@@ -3814,6 +3823,11 @@ export interface components {
        * @enum {string}
        */
       theme?: 'dark' | 'high-contrast';
+      /**
+       * @description Toggle persisted state of the GM session-detail chat dock collapse.
+       *     Omitting the field preserves the current value.
+       */
+      chatDockedCollapsed?: boolean;
     };
     /**
      * @description Minimal user envelope for the JSON export. Intentionally excludes

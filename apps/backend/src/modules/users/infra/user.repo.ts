@@ -27,6 +27,7 @@ export class UserRepo implements IUserRepo {
         displayName: true,
         createdAt: true,
         theme: true,
+        chatDockedCollapsed: true,
       },
     });
     if (!row) return null;
@@ -43,6 +44,7 @@ export class UserRepo implements IUserRepo {
         displayName: true,
         createdAt: true,
         theme: true,
+        chatDockedCollapsed: true,
       },
     });
     return this.toReadModel(row);
@@ -50,7 +52,11 @@ export class UserRepo implements IUserRepo {
 
   async updateProfile(
     id: string,
-    patch: { displayName?: string | null; theme?: UserTheme },
+    patch: {
+      displayName?: string | null;
+      theme?: UserTheme;
+      chatDockedCollapsed?: boolean;
+    },
   ): Promise<MeReadModel> {
     const row = await this.prisma.user.update({
       where: { id },
@@ -61,6 +67,7 @@ export class UserRepo implements IUserRepo {
         displayName: true,
         createdAt: true,
         theme: true,
+        chatDockedCollapsed: true,
       },
     });
     return this.toReadModel(row);
@@ -86,6 +93,7 @@ export class UserRepo implements IUserRepo {
     displayName: string | null;
     createdAt: Date;
     theme: string | null;
+    chatDockedCollapsed: boolean;
   }): MeReadModel {
     return {
       id: row.id,
@@ -94,6 +102,7 @@ export class UserRepo implements IUserRepo {
       createdAt: row.createdAt.toISOString(),
       // Coerce stored string to UserTheme; DB constraint prevents invalid values.
       theme: (row.theme as UserTheme | null) ?? 'dark',
+      chatDockedCollapsed: row.chatDockedCollapsed,
     };
   }
 }
