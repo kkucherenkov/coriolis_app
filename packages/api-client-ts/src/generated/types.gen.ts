@@ -2264,20 +2264,15 @@ export type GameSession = {
      */
     readonly dpCount: number;
     /**
-     * Character ids assigned to this session. Manage via the join
-     * endpoint (POST / DELETE on /game-sessions/{id}/characters).
-     *
-     */
-    readonly characterIds: Array<string>;
-    /**
      * Optional ship linked to the session (Epic 8)
      */
     shipId?: string | null;
     /**
      * Active members of this session. Always includes the GM row.
-     * Phase 8: this replaces `characterIds` as the source of truth
-     * for "who is at this table" — `characterIds` is deprecated and
-     * will be removed in Stream E.
+     * Single source of truth for "who is at this table" since Phase 8
+     * Stream E removed the legacy `characterIds` array. Each row
+     * optionally carries `characterId` — that's how a player (or GM)
+     * links a PC to their seat.
      *
      */
     readonly memberships: Array<GameSessionMembership>;
@@ -2310,13 +2305,6 @@ export type GameSessionList = {
      * Cursor for the next page; null when there are no more results
      */
     nextCursor: string | null;
-};
-
-export type AssignCharacterToSession = {
-    /**
-     * Identifier of the character to assign
-     */
-    characterId: string;
 };
 
 /**
@@ -5825,92 +5813,6 @@ export type UpdateGameSessionResponses = {
 };
 
 export type UpdateGameSessionResponse = UpdateGameSessionResponses[keyof UpdateGameSessionResponses];
-
-export type AssignCharacterToSessionData = {
-    body: AssignCharacterToSession;
-    path: {
-        /**
-         * Game session identifier (cuid2)
-         */
-        id: string;
-    };
-    query?: never;
-    url: '/api/v1/game-sessions/{id}/characters';
-};
-
-export type AssignCharacterToSessionErrors = {
-    /**
-     * Validation error. Possible codes:
-     * - `CHARACTER_NOT_OWNED` — character does not belong to the caller.
-     *
-     */
-    400: Problem;
-    /**
-     * No active session
-     */
-    401: Problem;
-    /**
-     * Caller does not own this session
-     */
-    403: Problem;
-    /**
-     * Game session or character not found
-     */
-    404: Problem;
-};
-
-export type AssignCharacterToSessionError = AssignCharacterToSessionErrors[keyof AssignCharacterToSessionErrors];
-
-export type AssignCharacterToSessionResponses = {
-    /**
-     * Character assigned; returns updated session
-     */
-    201: GameSession;
-};
-
-export type AssignCharacterToSessionResponse = AssignCharacterToSessionResponses[keyof AssignCharacterToSessionResponses];
-
-export type UnassignCharacterFromSessionData = {
-    body?: never;
-    path: {
-        /**
-         * Game session identifier (cuid2)
-         */
-        id: string;
-        /**
-         * Character identifier (cuid2)
-         */
-        characterId: string;
-    };
-    query?: never;
-    url: '/api/v1/game-sessions/{id}/characters/{characterId}';
-};
-
-export type UnassignCharacterFromSessionErrors = {
-    /**
-     * No active session
-     */
-    401: Problem;
-    /**
-     * Caller does not own this session
-     */
-    403: Problem;
-    /**
-     * Game session not found
-     */
-    404: Problem;
-};
-
-export type UnassignCharacterFromSessionError = UnassignCharacterFromSessionErrors[keyof UnassignCharacterFromSessionErrors];
-
-export type UnassignCharacterFromSessionResponses = {
-    /**
-     * Character removed from session
-     */
-    204: void;
-};
-
-export type UnassignCharacterFromSessionResponse = UnassignCharacterFromSessionResponses[keyof UnassignCharacterFromSessionResponses];
 
 export type RevokeInviteData = {
     body?: never;

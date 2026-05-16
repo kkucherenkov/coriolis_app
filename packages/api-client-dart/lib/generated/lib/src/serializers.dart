@@ -16,7 +16,6 @@ import 'package:app_api_client/src/model/date.dart';
 
 import 'package:app_api_client/src/model/accept_invite_body.dart';
 import 'package:app_api_client/src/model/accept_invite_response.dart';
-import 'package:app_api_client/src/model/assign_character_to_session.dart';
 import 'package:app_api_client/src/model/assign_crew_request.dart';
 import 'package:app_api_client/src/model/attributes.dart';
 import 'package:app_api_client/src/model/character.dart';
@@ -174,7 +173,6 @@ part 'serializers.g.dart';
 @SerializersFor([
   AcceptInviteBody,
   AcceptInviteResponse,
-  AssignCharacterToSession,
   AssignCrewRequest,
   Attributes,
   Character,

@@ -804,51 +804,6 @@ export interface paths {
     patch: operations['updateGameSession'];
     trace?: never;
   };
-  '/api/v1/game-sessions/{id}/characters': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * Assign a character to a game session
-     * @description Assigns one of the caller's own characters to the game session.
-     *     The character must be owned by the same user as the session (GM).
-     *     Assigning an already-assigned character is idempotent — returns the
-     *     current session state without creating a duplicate.
-     */
-    post: operations['assignCharacterToSession'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/game-sessions/{id}/characters/{characterId}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * Remove a character from a game session
-     * @description Removes the character from the session's character list.
-     *     The session must be owned by the caller. Silently succeeds if the
-     *     character was not assigned.
-     */
-    delete: operations['unassignCharacterFromSession'];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   '/api/v1/game-sessions/{id}/invite': {
     parameters: {
       query?: never;
@@ -3931,18 +3886,14 @@ export interface components {
       status: components['schemas']['GameSessionStatus'];
       /** @description Darkness Points counter; mutated by Feature 7.3 */
       readonly dpCount: number;
-      /**
-       * @description Character ids assigned to this session. Manage via the join
-       *     endpoint (POST / DELETE on /game-sessions/{id}/characters).
-       */
-      readonly characterIds: string[];
       /** @description Optional ship linked to the session (Epic 8) */
       shipId?: string | null;
       /**
        * @description Active members of this session. Always includes the GM row.
-       *     Phase 8: this replaces `characterIds` as the source of truth
-       *     for "who is at this table" — `characterIds` is deprecated and
-       *     will be removed in Stream E.
+       *     Single source of truth for "who is at this table" since Phase 8
+       *     Stream E removed the legacy `characterIds` array. Each row
+       *     optionally carries `characterId` — that's how a player (or GM)
+       *     links a PC to their seat.
        */
       readonly memberships: components['schemas']['GameSessionMembership'][];
       /** Format: date-time */
@@ -3967,10 +3918,6 @@ export interface components {
       items: components['schemas']['GameSession'][];
       /** @description Cursor for the next page; null when there are no more results */
       nextCursor: string | null;
-    };
-    AssignCharacterToSession: {
-      /** @description Identifier of the character to assign */
-      characterId: string;
     };
     /**
      * @description A row in the GameSessionMembership join table. Identifies a user's
@@ -7139,122 +7086,6 @@ export interface operations {
         content: {
           'application/problem+json': components['schemas']['Problem'];
         };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this session */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Game session not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  assignCharacterToSession: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Game session identifier (cuid2) */
-        id: components['parameters']['GameSessionId'];
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['AssignCharacterToSession'];
-      };
-    };
-    responses: {
-      /** @description Character assigned; returns updated session */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['GameSession'];
-        };
-      };
-      /**
-       * @description Validation error. Possible codes:
-       *     - `CHARACTER_NOT_OWNED` — character does not belong to the caller.
-       */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description No active session */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Caller does not own this session */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-      /** @description Game session or character not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/problem+json': components['schemas']['Problem'];
-        };
-      };
-    };
-  };
-  unassignCharacterFromSession: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Game session identifier (cuid2) */
-        id: components['parameters']['GameSessionId'];
-        /** @description Character identifier (cuid2) */
-        characterId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Character removed from session */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
       };
       /** @description No active session */
       401: {

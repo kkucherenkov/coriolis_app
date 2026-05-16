@@ -14,9 +14,8 @@ Name | Type | Description | Notes
 **description** | **String** | Optional longer description | [optional] 
 **status** | [**GameSessionStatus**](GameSessionStatus.md) |  | 
 **dpCount** | **int** | Darkness Points counter; mutated by Feature 7.3 | 
-**characterIds** | **BuiltList&lt;String&gt;** | Character ids assigned to this session. Manage via the join endpoint (POST / DELETE on /game-sessions/{id}/characters).  | 
 **shipId** | **String** | Optional ship linked to the session (Epic 8) | [optional] 
-**memberships** | [**BuiltList&lt;GameSessionMembership&gt;**](GameSessionMembership.md) | Active members of this session. Always includes the GM row. Phase 8: this replaces `characterIds` as the source of truth for \"who is at this table\" — `characterIds` is deprecated and will be removed in Stream E.  | 
+**memberships** | [**BuiltList&lt;GameSessionMembership&gt;**](GameSessionMembership.md) | Active members of this session. Always includes the GM row. Single source of truth for \"who is at this table\" since Phase 8 Stream E removed the legacy `characterIds` array. Each row optionally carries `characterId` — that's how a player (or GM) links a PC to their seat.  | 
 **createdAt** | [**DateTime**](DateTime.md) |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 **encounters** | [**BuiltList&lt;MeExportEncounter&gt;**](MeExportEncounter.md) |  | 

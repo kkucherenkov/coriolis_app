@@ -27,7 +27,6 @@ export 'package:app_api_client/src/api/users_api.dart';
 
 export 'package:app_api_client/src/model/accept_invite_body.dart';
 export 'package:app_api_client/src/model/accept_invite_response.dart';
-export 'package:app_api_client/src/model/assign_character_to_session.dart';
 export 'package:app_api_client/src/model/assign_crew_request.dart';
 export 'package:app_api_client/src/model/attributes.dart';
 export 'package:app_api_client/src/model/character.dart';
