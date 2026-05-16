@@ -2,6 +2,50 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-17-PHASE-7-MOBILE-OFFLINE-3 — Phase 7 / Feature 10.2 / extension — Offline read-caches for ships, game-sessions, player-memberships
+
+- Created: 2026-05-17
+- Completed: 2026-05-17
+- Owner: claude
+- Spec: PRD §11 Phase 7 — "Offline support (web SW + Flutter SQLite)" · IMPLEMENTATION_PLAN.md Feature 10.2 (follow-up to T-10.2.a)
+- Result: [PR #22](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/22) on Forgejo — branch `feat/phase-7/mobile-offline-caches`, 8 commits, rebased onto `main` after PR #21 merged.
+- Goal: extend the character read-cache pattern (PR #20) to the other entities a player or GM needs at the table (ship sheet, game-session view, "playing in" membership list), so a temporary network drop at the table doesn't blank the UI.
+- Acceptance — all met:
+  - Offline `GET /ships/{id}` falls back to last-cached payload via `DioException.connectionError|connectionTimeout|sendTimeout|receiveTimeout`; 4xx/5xx propagate unchanged.
+  - Offline `GET /game-sessions/{id}` same fallback contract; DP / character / invite mutations invalidate the cached row on remote success.
+  - Offline `GET /me/memberships` returns last-cached list; `acceptInvite` clears the cache, `leaveSession` deletes the affected row. Empty cache on fallback returns `[]` (valid offline state for a list view) instead of rethrowing.
+  - Drift `AppDatabase` `schemaVersion` bumped 2 → 3; `onUpgrade` adds `ShipsCache`, `GameSessionsCache`, `PlayerMembershipsCache` next to PR #21's `1 → 2` `PendingMutations` arm.
+  - All cache I/O errors swallowed by interceptors (never break network response flow).
+  - **No NPCs cache** — deferred; NPCs feature exposes only `listNpcs` for the GM combat picker, low offline value.
+- Sub-blocks (post-rebase SHAs):
+  - [x] Preflight — design inventory + active.md (`103c661`)
+  - [x] Block 1 — Drift schema v3 + 3 Local*Cache ports + 3 Drift adapters + **16 round-trip tests** (`34bce2e`)
+  - [x] Drift `@DataClassName('PendingMutationsData')` fix — pins the row class name so newer build_runner singularization doesn't collide with the domain `PendingMutation` class (`687a75e`)
+  - [x] Block 2 — `ShipApiMapper` extraction + `CachedShipRepository` + `ShipCacheInterceptor` + **19 tests** (`e5fe6cd`)
+  - [x] Block 3 — `GameSessionApiMapper` extraction + `CachedSessionRepository` + `GameSessionCacheInterceptor` + **25 tests** (`7f5ec65`)
+  - [x] Block 4 — `CachedPlayerSessionRepository` + `PlayerMembershipsCacheInterceptor` + **18 tests** + partial DI (`96dc59d`)
+  - [x] Block 5 — Ship + GameSession DI wiring + `configureDependenciesForTesting` extension + **3 integration tests** (`47c57ef`)
+  - [x] Block 6 — archive (`cace520`)
+- Spec diff: none.
+- Codegen impact: no.
+- Design impact: none (banner + state UI already shipped in OFFLINE-2). Preflight added 4 orphan inventory rows in `specs/design/README.md` (`AppInviteManager`, `AppSessionHeader`, `AppSessionJoinCard`, `AppSessionShareLinkCard`) — debt from Phase 8 Stream B; `pnpm design:audit` now clean.
+- Tests: **81 new tests**. Full sweep **411/411 green** (was 333 pre-PR). `flutter analyze` clean.
+- Notable decisions:
+  - **NPC cache deferred.** Single `listNpcs` endpoint for the combat picker; minimal offline payoff vs adding a fourth cache table + decorator + interceptor.
+  - **`listDpEvents` / `getInviteMetadata` not cached.** Sub-resources of GameSession; a stale DP audit log misleads the GM, and invite metadata is only actionable live (`rotateInvite` is the only path that returns the URL).
+  - **List fallback ignores filter args.** `CachedSessionRepository.list({status})` doesn't filter by status on the cache fallback path. The cache holds a last-known snapshot; silently dropping sessions via a client-side filter on a potentially incomplete set is worse than returning everything.
+  - **PlayerMembership decorator does NOT write-through.** Write-through is delegated entirely to `PlayerMembershipsCacheInterceptor`. Same pattern as `CachedCharacterRepository.list()`; keeps the decorator from round-tripping domain → wire.
+  - **Drift `@DataClassName` is a root-cause fix.** Newer build_runner versions singularize `PendingMutations` → `PendingMutation`, colliding with the domain port class. Pinning to `PendingMutationsData` matches what the existing `drift_mutation_queue.dart` call sites expect — not a workaround.
+  - **Stacked PR.** Branched off `feat/phase-7/mobile-offline-writequeue` (PR #21) because the Drift schema bump `2 → 3` depended on PR #21's `1 → 2` migration arm. Rebased cleanly onto `main` after PR #21 merged.
+  - **Block 4 captured partial DI.** The PlayerMembership subagent went beyond its block scope and added `LocalPlayerMembershipCache` registration + `buildDio` parameter + interceptor wiring. Accepted as-is (well-scoped, tested); Block 5 added the remaining Ship + GameSession DI.
+- Open follow-ups (file as separate tasks when picked up):
+  - NPC offline cache.
+  - Real Drift schema downgrade-and-upgrade verification via `SchemaVerifier` from `drift_dev` — current migration test is a "table presence at v3" smoke test only.
+  - Mobile cold-start profile (Feature 10.4.c, target ≤ 2.0s).
+  - `docs/done/phase-7.md` + README beta badge + `phase-7-complete` tag (Feature 10.5.e).
+- Status: shipped
+- Blockers: —
+
 ## T-2026-05-17-PHASE-7-MOBILE-OFFLINE-2 — Phase 7 / Feature 10.2 / T-10.2.b — Mobile offline write-queue
 
 - Created: 2026-05-17
