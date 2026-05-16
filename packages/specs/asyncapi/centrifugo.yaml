@@ -1,7 +1,7 @@
 asyncapi: 3.1.0
 info:
   title: App Realtime API
-  version: 0.11.0
+  version: 0.12.0
   description: |
     Real-time channels delivered via Centrifugo. Clients connect with a
     short-lived JWT issued by the backend (`POST /api/v1/realtime/token`)
@@ -52,6 +52,46 @@ channels:
       The combat.updated payload mirrors the OpenAPI `Encounter` schema plus
       the snapshotted combatants array — clients re-render from the full
       snapshot rather than computing diffs.
+
+  sessionChatChannel:
+    address: "session.{gameSessionId}.chat"
+    parameters:
+      gameSessionId:
+        description: GameSession id.
+        location: $message.payload#/gameSessionId
+    messages:
+      chatMessagePosted:
+        $ref: "#/components/messages/ChatMessagePosted"
+      chatMessageEdited:
+        $ref: "#/components/messages/ChatMessageEdited"
+      chatMessageDeleted:
+        $ref: "#/components/messages/ChatMessageDeleted"
+    description: |
+      Per-session broadcast chat channel. All active session members subscribe.
+      Only broadcast messages (targetMembershipId=null) are published here.
+      Whispers are routed exclusively to the per-member channel.
+
+  sessionMemberChannel:
+    address: "session.{gameSessionId}.member.{membershipId}"
+    parameters:
+      gameSessionId:
+        description: GameSession id.
+        location: $message.payload#/gameSessionId
+      membershipId:
+        description: GameSessionMembership id.
+        location: $message.payload#/membershipId
+    messages:
+      chatMessagePosted:
+        $ref: "#/components/messages/ChatMessagePosted"
+      chatMessageEdited:
+        $ref: "#/components/messages/ChatMessageEdited"
+      chatMessageDeleted:
+        $ref: "#/components/messages/ChatMessageDeleted"
+    description: |
+      Per-member private channel. Each session member subscribes only to their
+      own member channel. Whisper messages are published here for the author
+      and for the target (two publish calls). The channel is also used for
+      future per-member notifications (read receipts, typing indicators, etc.).
 
 operations:
   receiveHealthUpdate:
@@ -105,6 +145,24 @@ components:
       contentType: application/json
       payload:
         $ref: "#/components/schemas/RollPushed"
+
+    ChatMessagePosted:
+      name: chat.message.posted
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/ChatMessage"
+
+    ChatMessageEdited:
+      name: chat.message.edited
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/ChatMessage"
+
+    ChatMessageDeleted:
+      name: chat.message.deleted
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/ChatMessageDeleted"
 
     CombatUpdated:
       name: combat.updated
@@ -274,6 +332,62 @@ components:
           type: string
           format: date-time
           description: Server timestamp when this snapshot was emitted.
+
+    ChatMessage:
+      type: object
+      description: |
+        Chat message payload mirroring the OpenAPI `ChatMessage` schema (OpenAPI 1.8.0).
+        Keep in sync when either schema changes.
+      required: [id, gameSessionId, authorMembershipId, targetMembershipId, kind, createdAt]
+      properties:
+        id:
+          type: string
+        gameSessionId:
+          type: string
+        authorMembershipId:
+          type: ["string", "null"]
+          description: "GameSessionMembership.id; null for system messages"
+        authorDisplayName:
+          type: ["string", "null"]
+          description: Denormalised at read time
+        targetMembershipId:
+          type: ["string", "null"]
+          description: "null = broadcast; non-null = whisper"
+        kind:
+          type: string
+          enum: [text, system]
+        body:
+          type: ["string", "null"]
+          description: "null for kind=system; non-empty trimmed text for kind=text"
+        systemKey:
+          type: ["string", "null"]
+          description: "i18n key for kind=system, e.g. chat.system.member_joined"
+        systemParams:
+          type: ["object", "null"]
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        editedAt:
+          type: ["string", "null"]
+          format: date-time
+        deletedAt:
+          type: ["string", "null"]
+          format: date-time
+
+    ChatMessageDeleted:
+      type: object
+      required: [id, gameSessionId, deletedAt]
+      properties:
+        id:
+          type: string
+        gameSessionId:
+          type: string
+        targetMembershipId:
+          type: ["string", "null"]
+        deletedAt:
+          type: string
+          format: date-time
 
   securitySchemes:
     connectionJwt:
