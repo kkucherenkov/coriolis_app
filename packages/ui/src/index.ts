@@ -13,6 +13,14 @@ export { AppChatConnectionPip } from './components/AppChatConnectionPip';
 export { AppChatDayDivider } from './components/AppChatDayDivider';
 export { AppChatMessage } from './components/AppChatMessage';
 export { AppChatNewMessagesPill } from './components/AppChatNewMessagesPill';
+export { AppChatPanel } from './components/AppChatPanel';
+export type {
+  AppChatPanelMode,
+  AppChatPanelConnectionStatus,
+  AppChatPanelRow,
+  AppChatPanelMessagePayload,
+  AppChatPanelDayDividerPayload,
+} from './components/AppChatPanel';
 export { AppChatPresenceDot } from './components/AppChatPresenceDot';
 export { AppChatTab } from './components/AppChatTab';
 export { AppChatTabStrip } from './components/AppChatTabStrip';
