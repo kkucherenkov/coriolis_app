@@ -2,6 +2,43 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-17-PHASE-7-MOBILE-OFFLINE-2 — Phase 7 / Feature 10.2 / T-10.2.b — Mobile offline write-queue
+
+- Created: 2026-05-17
+- Completed: 2026-05-17
+- Owner: claude
+- Spec: PRD §11 Phase 7 — "Offline support (web SW + Flutter SQLite)" · IMPLEMENTATION_PLAN.md Feature 10.2 (T-10.2.b)
+- Contract mirror: web T-2026-05-11-008 (`apps/web/app/utils/offlineQueue.ts` + `apps/web/app/composables/useOfflineQueue.ts` + `apps/web/app/plugins/api-client.client.ts`).
+- Result: [PR #21](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/21) on Forgejo — branch `feat/phase-7/mobile-offline-writequeue`, single commit `29769a8`. 22 files / +2902 / −22.
+- Goal: PATCH / PUT / DELETE attempted while offline (or that fail with a network `DioException` mid-flight) get persisted to a Drift-backed FIFO queue and replayed sequentially on reconnect, so a player editing their character without connectivity doesn't lose work.
+- Acceptance — all met:
+  - **Queueable methods only.** PATCH / PUT / DELETE enqueue. POST / GET passthrough.
+  - **Synthetic 200 `{}`** returned on enqueue so optimistic UI does not roll back.
+  - **Authorization stripped on persist** — auth interceptor re-injects fresh bearer at replay time.
+  - **Queue survives process restart** (Drift on-disk).
+  - **FIFO drain** on `Connectivity.onConnectivityChanged` transition to non-`none`. 2xx removes the entry; non-2xx leaves it and surfaces `status: 'error'`.
+  - **Reactive state** — `pending` count + `status` (`idle` | `syncing` | `synced` | `error`); `synced` pulses ~2 s after a clean drain.
+  - **Banner widget** in app shell renders the four states. en + ru populated; uk + el `[*-todo]`.
+  - **Drainer's own replays bypass the interceptor** via `RequestOptions.extra['skipMutationQueue'] = true` — no recursive re-enqueue.
+- Sub-blocks:
+  - [x] Block 1 — connectivity_plus dep, `PendingMutations` Drift table (schemaVersion 1→2 + `onUpgrade`), `LocalMutationQueue` port, `DriftMutationQueue` adapter, **11 round-trip tests**.
+  - [x] Block 2 — `MutationQueueInterceptor` (Dio): enqueue on offline OR on network-type `DioException`; synthetic 200 via `handler.resolve`; bypass marker honoured. **15 mocktail tests**.
+  - [x] Block 3 — `MutationQueueDrainer` (ValueNotifier `pending` + `status`); FIFO drain via shared Dio with bypass marker; 2 s `synced` pulse via `Timer`; `_draining` re-entrancy guard. **13 fake_async + mocktail tests**.
+  - [x] Block 4 — `OfflineQueueBanner` widget + slang i18n entries (en + ru real; uk + el `[*-todo]`); mounted globally via `MaterialApp.builder` with `isRegistered` guard. **7 widget tests**.
+  - [x] Block 5 — DI in `injector.dart` (`Connectivity`, `LocalMutationQueue`, `MutationQueueDrainer`); interceptor inserted into `buildDio` between auth and `CharacterCacheInterceptor`; `configureDependenciesForTesting` accepts new mocks; boot-time `drainer.start()` in `main.dart`. **1 DI integration test**.
+- Spec diff: none.
+- Codegen impact: no (drift `.g.dart` + slang `strings_*.g.dart` regenerate by build_runner; no OpenAPI changes).
+- Design impact: one new screen-level widget (`OfflineQueueBanner`). Lives in `lib/shared/queue/` — not a `@app/ui` component because it has no `apps/web` counterpart pattern to match (web uses inline `<AppBanner>`).
+- Tests: **47 new tests**. Full sweep 333/333 green. `flutter analyze` clean for new code.
+- Notable decisions:
+  - **Drainer reuses the shared Dio** + per-request bypass marker, not a second Dio. Keeps auth interceptor in the replay chain (fresh bearer) without re-engaging the queue interceptor.
+  - **`unawaited(drainer.start())` at boot.** Idempotent; never throws. Skipping `await` keeps the splash path fast.
+  - **MaterialApp.builder over a custom layout shell.** The banner needs to render above every screen including `WelcomeScreen` / `_SplashScreen`; a layout wrapper would mean threading through `Scaffold(body:)` everywhere. `builder` is one diff in `main.dart`.
+  - **Latent DI bug fixed.** `configureDependencies()` did not guard `AppDatabase` registration against pre-registration from `configureDependenciesForTesting(appDatabase: …)`. The new Block 5 wiring surfaced the double-registration error; added the missing `isRegistered` guard symmetric with the other infra singletons.
+  - **No connectivity-only "offline + empty queue" banner state** (web shows it via `navigator.onLine`). The mobile drainer does not expose connectivity to the UI in this iteration; the banner only renders when the queue is non-empty or actively syncing. Filed implicitly as an open follow-up — see PR description.
+- Status: shipped
+- Blockers: —
+
 ## T-2026-05-16-PHASE-7-MOBILE-OFFLINE-1 — Phase 7 / Feature 10.2 block 1 — Drift + character read-cache
 
 - Created: 2026-05-16
