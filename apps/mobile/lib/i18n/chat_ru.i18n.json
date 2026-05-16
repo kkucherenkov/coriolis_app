@@ -1,0 +1,57 @@
+{
+  "connection": {
+    "connecting": "Подключение…",
+    "subscribed": "Онлайн",
+    "unrecoverable": "Переподключение",
+    "disconnected": "Не в сети"
+  },
+  "composer": {
+    "placeholder": {
+      "broadcast": "Написать всем…",
+      "whisper": "Шёпотом к {name}…"
+    },
+    "counter": "{count} / {max}"
+  },
+  "new_messages": {
+    "pill": "{count} новых сообщений ↓"
+  },
+  "tabs": {
+    "broadcast": "Все",
+    "add_whisper": "Шёпот",
+    "overflow": "+{count} ещё"
+  },
+  "message": {
+    "edited": "изм.",
+    "deleted": "Сообщение удалено",
+    "menu": {
+      "edit": "Изменить",
+      "delete": "Удалить",
+      "block": "Заблокировать в этой сессии"
+    }
+  },
+  "block": {
+    "confirm": {
+      "title": "Заблокировать {name}?",
+      "body": "{name} не сможет писать вам шёпотом в этой сессии. Существующая история останется видимой.",
+      "confirm": "Заблокировать"
+    }
+  },
+  "whisper_picker": {
+    "title": "Кому шепнуть",
+    "empty": "Нет доступных участников."
+  },
+  "system": {
+    "member_joined": "{displayName} вошёл в сессию.",
+    "member_left": "{displayName} вышел из сессии.",
+    "member_kicked": "{displayName} удалён из сессии.",
+    "roll_pushed": "{characterName} перебросил ({pushedCount} кубов, +{dpDelta} DP).",
+    "encounter_started": "Столкновение началось.",
+    "round_advanced": "Раунд {round}.",
+    "encounter_ended": "Столкновение завершено."
+  },
+  "tab": {
+    "chat": "Чат",
+    "encounter": "Столкновение",
+    "me": "Я"
+  }
+}

@@ -8,7 +8,7 @@ import type {
   TypographyValue,
 } from './types.ts';
 
-const COLOR_GROUPS: readonly ColorGroup[] = ['surface', 'brand', 'text', 'state'];
+const COLOR_GROUPS: readonly ColorGroup[] = ['surface', 'brand', 'text', 'state', 'chat'];
 
 function colorMap(entries: Record<string, DtcgLeaf<string>>): Record<string, string> {
   const out: Record<string, string> = {};

@@ -7,6 +7,24 @@ export { AppBadge } from './components/AppBadge';
 export { AppBanner } from './components/AppBanner';
 export { AppButton } from './components/AppButton';
 export { AppCard } from './components/AppCard';
+export { AppChatAvatar } from './components/AppChatAvatar';
+export { AppChatComposer } from './components/AppChatComposer';
+export { AppChatConnectionPip } from './components/AppChatConnectionPip';
+export { AppChatDayDivider } from './components/AppChatDayDivider';
+export { AppChatMessage } from './components/AppChatMessage';
+export { AppChatNewMessagesPill } from './components/AppChatNewMessagesPill';
+export { AppChatPanel } from './components/AppChatPanel';
+export type {
+  AppChatPanelMode,
+  AppChatPanelConnectionStatus,
+  AppChatPanelRow,
+  AppChatPanelMessagePayload,
+  AppChatPanelDayDividerPayload,
+} from './components/AppChatPanel';
+export { AppChatPresenceDot } from './components/AppChatPresenceDot';
+export { AppChatTab } from './components/AppChatTab';
+export { AppChatTabStrip } from './components/AppChatTabStrip';
+export type { ChatTabModel } from './components/AppChatTabStrip';
 export { AppChip } from './components/AppChip';
 export { AppConditionPill } from './components/AppConditionPill';
 export { AppDie } from './components/AppDie';
@@ -50,6 +68,8 @@ export { AppSwitch } from './components/AppSwitch';
 export { AppTab } from './components/AppTab';
 export { AppTextarea } from './components/AppTextarea';
 export { AppTooltip } from './components/AppTooltip';
+export { AppWhisperPicker } from './components/AppWhisperPicker';
+export type { WhisperPickerMember } from './components/AppWhisperPicker';
 export { AppWordmark } from './components/AppWordmark';
 export { UserMenu } from './components/UserMenu';
 export type { Locale, MenuLabels, UserMenuProps } from './components/UserMenu';

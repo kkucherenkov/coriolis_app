@@ -27,6 +27,102 @@ The product spec is [`docs/PRD.md`](docs/PRD.md). The design language is
 [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md). The agent
 operating manual is [`AGENTS.md`](AGENTS.md).
 
+🇷🇺 Russian summary: [`README.ru.md`](README.ru.md).
+
+## Screenshots
+
+> Captured against the local dev stack with
+> [`scripts/screenshots/capture.ts`](scripts/screenshots/capture.ts). Run
+> `pnpm screenshots:capture` to regenerate.
+
+### Character sheet
+
+The product's centre of gravity: attributes (1–5), the four-tier skill
+list, talents, gear, conditions, encumbrance, and the share / push-roll
+controls — all on one page, dark Coriolis palette throughout.
+
+![Character sheet — desktop](docs/screenshots/desktop/character-sheet.png)
+
+### Around the app
+
+<table>
+  <tr>
+    <td width="50%"><a href="docs/screenshots/desktop/dashboard.png"><img src="docs/screenshots/desktop/dashboard.png" alt="Dashboard"></a><br/><sub><b>Bridge</b> — today's session at a glance.</sub></td>
+    <td width="50%"><a href="docs/screenshots/desktop/characters-list.png"><img src="docs/screenshots/desktop/characters-list.png" alt="Characters list"></a><br/><sub><b>Characters</b> — your roster.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="docs/screenshots/desktop/game-session.png"><img src="docs/screenshots/desktop/game-session.png" alt="Game sessions"></a><br/><sub><b>Game sessions</b> — DP tracker, members, archive.</sub></td>
+    <td width="50%"><a href="docs/screenshots/desktop/npc-editor.png"><img src="docs/screenshots/desktop/npc-editor.png" alt="NPC editor"></a><br/><sub><b>NPC editor</b> — GM-side enemies and allies.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="docs/screenshots/desktop/shared-character.png"><img src="docs/screenshots/desktop/shared-character.png" alt="Public share view"></a><br/><sub><b>Public share</b> — read-only link with the GM-notes opt-out.</sub></td>
+    <td width="50%"><a href="docs/screenshots/desktop/landing.png"><img src="docs/screenshots/desktop/landing.png" alt="Landing"></a><br/><sub><b>Landing</b> — three pillars: Sheet · Share · Run.</sub></td>
+  </tr>
+</table>
+
+### Mobile (web-responsive at 414 × 896)
+
+<table>
+  <tr>
+    <td width="25%"><img src="docs/screenshots/mobile/landing.png" alt="Landing"></td>
+    <td width="25%"><img src="docs/screenshots/mobile/character-sheet.png" alt="Character sheet"></td>
+    <td width="25%"><img src="docs/screenshots/mobile/dashboard.png" alt="Dashboard"></td>
+    <td width="25%"><img src="docs/screenshots/mobile/game-session.png" alt="Game sessions"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Landing</sub></td>
+    <td align="center"><sub>Character sheet</sub></td>
+    <td align="center"><sub>Bridge</sub></td>
+    <td align="center"><sub>Sessions</sub></td>
+  </tr>
+</table>
+
+> The native Flutter client (`apps/mobile`) renders the same data through
+> Material widgets bound to the shared design tokens. Native screenshots
+> are tracked in [`docs/done/phase-7.md`](docs/done/phase-7.md) and will
+> be added once the cold-start profile lands.
+
+## Features
+
+### For players
+
+- **Character sheets** — Coriolis-faithful: nine icons, concept,
+  upbringing, attributes (1–5), the general / advanced skill split,
+  talents, gear, conditions, encumbrance, critical injuries.
+- **Dice rolls** — D6 pool with [`push`][rules-push] support; sixes are
+  successes, ones unlock GM Darkness Points when the roll is pushed.
+- **Public share links** — one-tap read-only view of your sheet for the
+  rest of the table, with an opt-in GM-notes toggle and revoke.
+- **JSON export** — your sheet, ship, and history exportable through
+  `GET /api/v1/me/export` for sidecar tools and backups.
+- **Offline** — read everywhere, write on web (ServiceWorker queue) and
+  mobile (Hive cache); changes reconcile when you're back online.
+
+### For game masters
+
+- **Ship sheets** — 20 ship classes (ST3001 ГЛАВА 7), modules, crew
+  positions, hull / energy / signature / armor, problem tracking.
+- **Game sessions** — invite links, member roles, archive, the active
+  Darkness Points tracker with history.
+- **NPCs and encounters** — pre-genned and custom NPCs, encounter
+  builder with initiative, round and turn advance.
+- **Real-time table** — dice rolls, DP changes, and chat broadcast over
+  Centrifugo; everyone at the table sees the same state.
+
+### Across all clients
+
+- **Three first-class clients** — Nuxt 4 SPA, Flutter 3.41
+  (iOS / Android), and a NestJS 11 backend, all generated from the same
+  OpenAPI + AsyncAPI specs.
+- **Four locales** — English, Russian, Ukrainian, Greek. Locale parity
+  is CI-enforced.
+- **Branded design system** — `@app/ui` for Vue, `app_ui` for Flutter,
+  driven by a single token pipeline (`specs/design/tokens/*.json`).
+- **Observability** — OpenTelemetry → local Grafana / LGTM stack, Sentry
+  on backend and mobile.
+
+[rules-push]: https://frialigan.se/en/store/coriolis-rpg/
+
 ## Why these guardrails
 
 This codebase is built for an **agent-driven workflow** (Claude Design →

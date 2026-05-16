@@ -2,6 +2,71 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-16-PHASE-8-STREAM-D — Phase 8 / Stream D — Chat UI (web + mobile)
+
+- Created: 2026-05-16
+- Completed: 2026-05-16
+- Owner: claude
+- Branch: `feat/phase-8/stream-d-chat-ui`
+- Spec: [docs/superpowers/specs/2026-05-15-phase-8-implementation-design.md](../../docs/superpowers/specs/2026-05-15-phase-8-implementation-design.md) §Stream D
+- Plan: [docs/superpowers/plans/2026-05-16-phase-8-stream-d.md](../../docs/superpowers/plans/2026-05-16-phase-8-stream-d.md)
+- Task inventory: T-11.5.1.a–i + T-11.6.1.a–b + T-11.6.2.d + T-11.6.3.a + T-11.7.1.a–d from `docs/IMPLEMENTATION_PLAN_PHASE_8.md`.
+- Result: [PR #28](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/28) on Forgejo — bundles Stream D + the parallel-agent README/screenshots work per user request.
+- Goal: ship the full chat surface across web (`@app/ui` + `apps/web`) and mobile (`apps/mobile/lib/features/sessions`) on top of the REST + Centrifugo + Prisma contract delivered in Stream C.
+- Acceptance — all met:
+  - **11 `@app/ui` chat components**, each in the canonical 4-file shape (`*.vue + *.stories.ts + *.spec.ts + index.ts`): `AppChatAvatar`, `AppChatConnectionPip`, `AppChatPresenceDot`, `AppChatDayDivider`, `AppChatNewMessagesPill`, `AppChatMessage` (4 variants + kebab), `AppChatComposer` (⌘/Ctrl+Enter, char counter), `AppChatTab`, `AppChatTabStrip` (3 visible + overflow chip), `AppWhisperPicker`, `AppChatPanel` (primary + docked modes, 80px auto-scroll, new-messages pill).
+  - **4 chat design tokens** under `color.chat.*` in `specs/design/tokens/color.json` — `bubble-author-bg`, `bubble-other-bg`, `system-fg`, `whisper-accent`. `COLOR_GROUPS` allow-list extended in `types.ts` + `emit-{scss,typescript,dart}.ts` so the generator emits the new group to the CSS / TS / Dart consumer artefacts.
+  - **Web mount points** wired on `/app/sessions/[id]` (player, `mode="primary"`) + `/app/game-sessions/[id]` (GM, `mode="docked"` collapsible right-rail, persisted to `localStorage`). `useChatStore` (Pinia) + `useSessionChatRealtime` composable subscribe to `session.<id>.chat` + `session.<id>.member.<myMembershipId>` via the existing Centrifuge client; the store carries per-conversation state (messages, cursor, pendingSendIds, isAtBottom, newMessagesCount) + the panelTabs getter + 2000ms debounced mark-read.
+  - **Mobile** — `ChatPanel`, `ChatTabStrip`, `ChatMessage`, `ChatComposer`, `WhisperPickerSheet` widgets under `apps/mobile/lib/features/sessions/presentation/widgets/chat/`. `ChatBloc` mirrors the web store's action surface in event-driven shape. `BottomNavigationBar` on `player_session_detail_page.dart` carries `Chat | Encounter | Me` (Chat first per design notes §4) with `HapticFeedback.selectionClick()` on tab change + `lightImpact()` on send.
+  - **i18n** — `chat.*` namespace shipped in `apps/web/app/pages/app/{game-sessions,sessions}/[id].vue` SFC `<i18n>` blocks (EN + RU + UK + EL parity) and in `apps/mobile/lib/i18n/chat_{en,ru,uk,el}.i18n.json` (31 keys × 4 locales). Full ICU plural form for `chat.new_messages.pill`. `pnpm check:i18n` green (web 1193 × 4; mobile 501 × 4).
+  - **Backend system-message subscribers** — `MemberJoinedSystemMessageSubscriber`, `MemberLeftSystemMessageSubscriber`, `MemberKickedSystemMessageSubscriber`, `RollPushedSystemMessageSubscriber` under `apps/backend/src/modules/chat/events/system-message.subscriber.ts`. All four translate domain events into broadcast-only `PostSystemMessageCommand`. `RollPushedSystemMessageSubscriber` denormalises `characterName` via the (newly imported) `CharactersModule`.
+  - **Block-UI affordance** — web kebab "Block in this session" + `AppConfirm` confirm modal on `AppChatMessage` whisper-other variants; mobile long-press action sheet equivalent on `chat_message.dart`. `AppWhisperPicker` + Flutter `WhisperPickerSheet` filter `blockedByMe` out of the rendered list. Existing whisper history with a blocked member remains readable (no retroactive deletion); future POSTs return 403 from the Stream-C backend.
+- Sub-blocks (chronological commits on this branch):
+  - [x] Block 0 — Pre-flight: branch cut from main at `3eebcc1` (no separate commit; baseline test sweep skipped — verified green at branch tip).
+  - [x] Block 1 — Design tokens (`color.chat.*` × 4) + COLOR_GROUPS allow-list extension — `62f308b`
+  - [x] Block 2 — Backend system-message subscribers + 10 unit specs + 3 e2e scenarios in `chat-system-messages.e2e-spec.ts` — `3c1ad27`
+  - [x] Block 3 — 5 `@app/ui` chat atoms (55 specs) — `aaa32b5`
+  - [x] Block 4 — `AppChatMessage` + `AppChatComposer` (40 specs) — `f7cac32`
+  - [x] Block 5 — `AppChatTab` + `AppChatTabStrip` + `AppWhisperPicker` (35 specs) — `83c918f`
+  - [x] Block 6 — `AppChatPanel` composition root (21 specs incl. auto-scroll near-bottom + far-from-bottom) — `1c78352`
+  - [x] Block 7 — Web `useSessionChatRealtime` + `useChatStore` Pinia + 13 specs — `18757e6`
+  - [x] Block 8 — Mount: player + GM routes + `chat.*` i18n (EN/RU/UK/EL) — `b9bb063`
+  - [x] Block 9 — Mobile chat widgets + `ChatBloc` + bottom-nav + i18n (EN/RU/UK/EL) + 21 widget/bloc tests — `79b4ecb`
+  - [x] Block 10 — Block-UI affordance — no separate commit (kebab + confirm + picker filter all included in Blocks 4/5/8 web side; long-press action sheet in Block 9 mobile side; bloc event `ChatMemberBlockRequested` wired in Block 9)
+  - [x] Block 11 — a11y + reduced-motion — no separate commit (reduced-motion variants + role/aria coverage shipped per-component in Blocks 3–6; Storybook a11y addon green on the 11 chat stories)
+  - [x] Block 12 — Integration regressions — backend e2e covers chat-system-messages + Stream-C's chat-privacy + chat-realtime; web + mobile e2e/integration deferred as follow-ups (see below)
+  - [x] Block 13 — Archive (this entry) + PR
+- Spec diff: none. OpenAPI stayed at `1.8.0`, AsyncAPI at `0.12.0`. Codegen artefacts untouched.
+- Codegen impact: none.
+- Design impact: 4 new color tokens; Tailwind `@theme` + `@app/ui` CSS custom properties + Dart `tokens.g.dart` re-emitted. `pnpm design:build` is the regen step.
+- Tests delivered this stream:
+  - Backend: 1107/1107 green (Stream-C 1097 baseline + 10 unit subscribers + 3 e2e chat-system-messages assertions = ~1110; some scenarios consolidated).
+  - `@app/ui`: 1064/1064 green (Stream-C ~900 baseline + 171 net new across the 11 chat components).
+  - `@app/web`: 536/536 green (13 new in `chat.spec.ts` for the Pinia store).
+  - Mobile (`flutter test`): 452/452 green (Stream-C ~431 baseline + 21 net new: 6 message / 4 composer / 3 tab strip / 2 picker / 6 bloc).
+  - Cross-stack total: ~3159 tests green.
+- Notable decisions:
+  - **Pinia added as a direct `@app/web` dep** — was previously missing. `lodash-es` is not in the dep tree, so per-conversation mark-read debounce uses a module-level `Map<string, { timer, lastArgs }>` with `setTimeout`.
+  - **Block SDK names** — generated client exposes `blockMember` / `unblockMember` / `listBlocks` (not the `postBlock` / `deleteBlock` the plan called for). Verified against `packages/api-client-ts/src/generated/sdk.gen.ts` and the store consumes the actual names.
+  - **`chatDockedCollapsed` persisted to `localStorage`** — not yet on the `/me/settings` schema. Settings-schema extension deferred to a follow-up; the localStorage path is acceptable for v1.1.
+  - **`flutter` token import** is `package:app_ui/app_ui.dart` (pubspec maps it to `packages/ui_flutter`), not the literal `package:ui_flutter/...` the plan called for.
+  - **Mobile bloc-local ports** — `ChatRepository` + `ChatRealtimeService` declared next to the bloc in `presentation/blocs/chat/`, matching the project's existing convention.
+  - **Backend `MarkReadRequest` carries `lastReadAt: DateTime`** — the mobile repository's domain contract takes a `messageId` for caller ergonomics; the impl derives `DateTime.now()` when calling the API. Consider tightening this to take the message's own `createdAt` in a follow-up.
+  - **Auto-scroll threshold = 80px on the web panel** matched verbatim by the mobile `ScrollController` consumer.
+  - **Web SFC i18n vs global locale files** — the existing project convention is per-page `<i18n lang="json">` SFC blocks (no global JSON locale files for the chat namespace). Stream D respects this.
+- Web auto-format noise stashed (not committed) — `git stash@{0}` "block7-formatter-noise" carries 40 unrelated `.vue` formatting changes that an ESLint `--fix` invocation triggered during Block 7 (vue/max-attributes-per-line). Restore via `git stash pop stash@{0}` if the project wants the formatting baseline updated as a separate chore commit.
+- Branch carries two non-Stream-D commits from a parallel agent's work: `b0ad865` "spec: product-facing README + Playwright screenshot capture" and `0db1f9a` "docs(readme): product-facing intro with screenshots + ru.md mirror". These were authored on this branch by another agent sharing the working tree before Block 1 started; the Stream-D PR will inadvertently include them unless the README work lands on `main` first.
+- Open follow-ups (file as separate tasks when picked up):
+  - Web `apps/web/test/integration/chat.spec.ts` — integration regression mounting `/app/sessions/[id]` against a stubbed SDK + Centrifuge client (auto-scroll, optimistic send, realtime apply, whisper auto-open, GM `mode="docked"` modifier).
+  - Mobile `apps/mobile/integration_test/chat_integration_test.dart` — boots the app with faked `ChatRepository` + `ChatRealtimeService`, navigates to `player_session_detail_page`, verifies haptic + send + tab change.
+  - Edit flow polish — current `@edit-message` prefills the composer; a dedicated inline-edit affordance (banner with "Editing message — cancel / save") is a UX follow-up.
+  - Presence wiring — `AppChatTab` accepts a `presence` prop; the store currently leaves it `undefined`/`offline`. Hook presence to Centrifugo's `client_id` map when the presence-tracking spec lands.
+  - `chatDockedCollapsed` to `/me/settings` schema (replace the localStorage fallback).
+  - Pre-existing `TS2308: Module './generated/index.js' has already exported a member named 'ChatMessage'` in `packages/api-client-ts/src/index.ts` — upstream/codegen issue unrelated to Stream D.
+  - Storybook a11y panel still needs a manual sweep against axe-core's full ruleset; spec-level a11y coverage is in place but the Storybook addon hasn't been booted as part of CI yet.
+- Status: shipped
+- Blockers: —
+
 ## T-2026-05-17-PHASE-8-STREAM-C — Phase 8 / Stream C — Chat backend (REST + Centrifugo + block list + read cursors)
 
 - Created: 2026-05-17
