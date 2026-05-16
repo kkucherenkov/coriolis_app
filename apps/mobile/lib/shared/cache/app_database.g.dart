@@ -330,12 +330,8 @@ class CharactersCacheCompanion extends UpdateCompanion<CharactersCacheData> {
   }
 }
 
-// **************************************************************************
-// PendingMutations table
-// **************************************************************************
-
 class $PendingMutationsTable extends PendingMutations
-    with TableInfo<$PendingMutationsTable, PendingMutationsData> {
+    with TableInfo<$PendingMutationsTable, PendingMutation> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -414,7 +410,7 @@ class $PendingMutationsTable extends PendingMutations
   static const String $name = 'pending_mutations';
   @override
   VerificationContext validateIntegrity(
-    Insertable<PendingMutationsData> instance, {
+    Insertable<PendingMutation> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -471,9 +467,9 @@ class $PendingMutationsTable extends PendingMutations
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  PendingMutationsData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  PendingMutation map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return PendingMutationsData(
+    return PendingMutation(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -507,15 +503,14 @@ class $PendingMutationsTable extends PendingMutations
   }
 }
 
-class PendingMutationsData extends DataClass
-    implements Insertable<PendingMutationsData> {
+class PendingMutation extends DataClass implements Insertable<PendingMutation> {
   final String id;
   final String method;
   final String path;
   final String? body;
   final String headersJson;
   final DateTime createdAt;
-  const PendingMutationsData({
+  const PendingMutation({
     required this.id,
     required this.method,
     required this.path,
@@ -548,12 +543,12 @@ class PendingMutationsData extends DataClass
     );
   }
 
-  factory PendingMutationsData.fromJson(
+  factory PendingMutation.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return PendingMutationsData(
+    return PendingMutation(
       id: serializer.fromJson<String>(json['id']),
       method: serializer.fromJson<String>(json['method']),
       path: serializer.fromJson<String>(json['path']),
@@ -575,14 +570,14 @@ class PendingMutationsData extends DataClass
     };
   }
 
-  PendingMutationsData copyWith({
+  PendingMutation copyWith({
     String? id,
     String? method,
     String? path,
     Value<String?> body = const Value.absent(),
     String? headersJson,
     DateTime? createdAt,
-  }) => PendingMutationsData(
+  }) => PendingMutation(
     id: id ?? this.id,
     method: method ?? this.method,
     path: path ?? this.path,
@@ -590,8 +585,8 @@ class PendingMutationsData extends DataClass
     headersJson: headersJson ?? this.headersJson,
     createdAt: createdAt ?? this.createdAt,
   );
-  PendingMutationsData copyWithCompanion(PendingMutationsCompanion data) {
-    return PendingMutationsData(
+  PendingMutation copyWithCompanion(PendingMutationsCompanion data) {
+    return PendingMutation(
       id: data.id.present ? data.id.value : this.id,
       method: data.method.present ? data.method.value : this.method,
       path: data.path.present ? data.path.value : this.path,
@@ -605,7 +600,7 @@ class PendingMutationsData extends DataClass
 
   @override
   String toString() {
-    return (StringBuffer('PendingMutationsData(')
+    return (StringBuffer('PendingMutation(')
           ..write('id: $id, ')
           ..write('method: $method, ')
           ..write('path: $path, ')
@@ -622,7 +617,7 @@ class PendingMutationsData extends DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is PendingMutationsData &&
+      (other is PendingMutation &&
           other.id == this.id &&
           other.method == this.method &&
           other.path == this.path &&
@@ -631,8 +626,7 @@ class PendingMutationsData extends DataClass
           other.createdAt == this.createdAt);
 }
 
-class PendingMutationsCompanion
-    extends UpdateCompanion<PendingMutationsData> {
+class PendingMutationsCompanion extends UpdateCompanion<PendingMutation> {
   final Value<String> id;
   final Value<String> method;
   final Value<String> path;
@@ -662,7 +656,7 @@ class PendingMutationsCompanion
        path = Value(path),
        headersJson = Value(headersJson),
        createdAt = Value(createdAt);
-  static Insertable<PendingMutationsData> custom({
+  static Insertable<PendingMutation> custom({
     Expression<String>? id,
     Expression<String>? method,
     Expression<String>? path,
@@ -744,9 +738,992 @@ class PendingMutationsCompanion
   }
 }
 
-// **************************************************************************
-// Abstract database
-// **************************************************************************
+class $ShipsCacheTable extends ShipsCache
+    with TableInfo<$ShipsCacheTable, ShipsCacheData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ShipsCacheTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _payloadJsonMeta = const VerificationMeta(
+    'payloadJson',
+  );
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+    'payload_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _wireUpdatedAtMeta = const VerificationMeta(
+    'wireUpdatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> wireUpdatedAt =
+      GeneratedColumn<DateTime>(
+        'wire_updated_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _cachedAtMeta = const VerificationMeta(
+    'cachedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
+    'cached_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    payloadJson,
+    wireUpdatedAt,
+    cachedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ships_cache';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ShipsCacheData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+        _payloadJsonMeta,
+        payloadJson.isAcceptableOrUnknown(
+          data['payload_json']!,
+          _payloadJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_payloadJsonMeta);
+    }
+    if (data.containsKey('wire_updated_at')) {
+      context.handle(
+        _wireUpdatedAtMeta,
+        wireUpdatedAt.isAcceptableOrUnknown(
+          data['wire_updated_at']!,
+          _wireUpdatedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_wireUpdatedAtMeta);
+    }
+    if (data.containsKey('cached_at')) {
+      context.handle(
+        _cachedAtMeta,
+        cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cachedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ShipsCacheData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ShipsCacheData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      payloadJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payload_json'],
+      )!,
+      wireUpdatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}wire_updated_at'],
+      )!,
+      cachedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}cached_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ShipsCacheTable createAlias(String alias) {
+    return $ShipsCacheTable(attachedDatabase, alias);
+  }
+}
+
+class ShipsCacheData extends DataClass implements Insertable<ShipsCacheData> {
+  final String id;
+  final String payloadJson;
+  final DateTime wireUpdatedAt;
+  final DateTime cachedAt;
+  const ShipsCacheData({
+    required this.id,
+    required this.payloadJson,
+    required this.wireUpdatedAt,
+    required this.cachedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['payload_json'] = Variable<String>(payloadJson);
+    map['wire_updated_at'] = Variable<DateTime>(wireUpdatedAt);
+    map['cached_at'] = Variable<DateTime>(cachedAt);
+    return map;
+  }
+
+  ShipsCacheCompanion toCompanion(bool nullToAbsent) {
+    return ShipsCacheCompanion(
+      id: Value(id),
+      payloadJson: Value(payloadJson),
+      wireUpdatedAt: Value(wireUpdatedAt),
+      cachedAt: Value(cachedAt),
+    );
+  }
+
+  factory ShipsCacheData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ShipsCacheData(
+      id: serializer.fromJson<String>(json['id']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+      wireUpdatedAt: serializer.fromJson<DateTime>(json['wireUpdatedAt']),
+      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+      'wireUpdatedAt': serializer.toJson<DateTime>(wireUpdatedAt),
+      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+    };
+  }
+
+  ShipsCacheData copyWith({
+    String? id,
+    String? payloadJson,
+    DateTime? wireUpdatedAt,
+    DateTime? cachedAt,
+  }) => ShipsCacheData(
+    id: id ?? this.id,
+    payloadJson: payloadJson ?? this.payloadJson,
+    wireUpdatedAt: wireUpdatedAt ?? this.wireUpdatedAt,
+    cachedAt: cachedAt ?? this.cachedAt,
+  );
+  ShipsCacheData copyWithCompanion(ShipsCacheCompanion data) {
+    return ShipsCacheData(
+      id: data.id.present ? data.id.value : this.id,
+      payloadJson: data.payloadJson.present
+          ? data.payloadJson.value
+          : this.payloadJson,
+      wireUpdatedAt: data.wireUpdatedAt.present
+          ? data.wireUpdatedAt.value
+          : this.wireUpdatedAt,
+      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ShipsCacheData(')
+          ..write('id: $id, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('wireUpdatedAt: $wireUpdatedAt, ')
+          ..write('cachedAt: $cachedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, payloadJson, wireUpdatedAt, cachedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ShipsCacheData &&
+          other.id == this.id &&
+          other.payloadJson == this.payloadJson &&
+          other.wireUpdatedAt == this.wireUpdatedAt &&
+          other.cachedAt == this.cachedAt);
+}
+
+class ShipsCacheCompanion extends UpdateCompanion<ShipsCacheData> {
+  final Value<String> id;
+  final Value<String> payloadJson;
+  final Value<DateTime> wireUpdatedAt;
+  final Value<DateTime> cachedAt;
+  final Value<int> rowid;
+  const ShipsCacheCompanion({
+    this.id = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.wireUpdatedAt = const Value.absent(),
+    this.cachedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ShipsCacheCompanion.insert({
+    required String id,
+    required String payloadJson,
+    required DateTime wireUpdatedAt,
+    required DateTime cachedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       payloadJson = Value(payloadJson),
+       wireUpdatedAt = Value(wireUpdatedAt),
+       cachedAt = Value(cachedAt);
+  static Insertable<ShipsCacheData> custom({
+    Expression<String>? id,
+    Expression<String>? payloadJson,
+    Expression<DateTime>? wireUpdatedAt,
+    Expression<DateTime>? cachedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (wireUpdatedAt != null) 'wire_updated_at': wireUpdatedAt,
+      if (cachedAt != null) 'cached_at': cachedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ShipsCacheCompanion copyWith({
+    Value<String>? id,
+    Value<String>? payloadJson,
+    Value<DateTime>? wireUpdatedAt,
+    Value<DateTime>? cachedAt,
+    Value<int>? rowid,
+  }) {
+    return ShipsCacheCompanion(
+      id: id ?? this.id,
+      payloadJson: payloadJson ?? this.payloadJson,
+      wireUpdatedAt: wireUpdatedAt ?? this.wireUpdatedAt,
+      cachedAt: cachedAt ?? this.cachedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (wireUpdatedAt.present) {
+      map['wire_updated_at'] = Variable<DateTime>(wireUpdatedAt.value);
+    }
+    if (cachedAt.present) {
+      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ShipsCacheCompanion(')
+          ..write('id: $id, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('wireUpdatedAt: $wireUpdatedAt, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $GameSessionsCacheTable extends GameSessionsCache
+    with TableInfo<$GameSessionsCacheTable, GameSessionsCacheData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $GameSessionsCacheTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _payloadJsonMeta = const VerificationMeta(
+    'payloadJson',
+  );
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+    'payload_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _wireUpdatedAtMeta = const VerificationMeta(
+    'wireUpdatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> wireUpdatedAt =
+      GeneratedColumn<DateTime>(
+        'wire_updated_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _cachedAtMeta = const VerificationMeta(
+    'cachedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
+    'cached_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    payloadJson,
+    wireUpdatedAt,
+    cachedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'game_sessions_cache';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<GameSessionsCacheData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+        _payloadJsonMeta,
+        payloadJson.isAcceptableOrUnknown(
+          data['payload_json']!,
+          _payloadJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_payloadJsonMeta);
+    }
+    if (data.containsKey('wire_updated_at')) {
+      context.handle(
+        _wireUpdatedAtMeta,
+        wireUpdatedAt.isAcceptableOrUnknown(
+          data['wire_updated_at']!,
+          _wireUpdatedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_wireUpdatedAtMeta);
+    }
+    if (data.containsKey('cached_at')) {
+      context.handle(
+        _cachedAtMeta,
+        cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cachedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  GameSessionsCacheData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return GameSessionsCacheData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      payloadJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payload_json'],
+      )!,
+      wireUpdatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}wire_updated_at'],
+      )!,
+      cachedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}cached_at'],
+      )!,
+    );
+  }
+
+  @override
+  $GameSessionsCacheTable createAlias(String alias) {
+    return $GameSessionsCacheTable(attachedDatabase, alias);
+  }
+}
+
+class GameSessionsCacheData extends DataClass
+    implements Insertable<GameSessionsCacheData> {
+  final String id;
+  final String payloadJson;
+  final DateTime wireUpdatedAt;
+  final DateTime cachedAt;
+  const GameSessionsCacheData({
+    required this.id,
+    required this.payloadJson,
+    required this.wireUpdatedAt,
+    required this.cachedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['payload_json'] = Variable<String>(payloadJson);
+    map['wire_updated_at'] = Variable<DateTime>(wireUpdatedAt);
+    map['cached_at'] = Variable<DateTime>(cachedAt);
+    return map;
+  }
+
+  GameSessionsCacheCompanion toCompanion(bool nullToAbsent) {
+    return GameSessionsCacheCompanion(
+      id: Value(id),
+      payloadJson: Value(payloadJson),
+      wireUpdatedAt: Value(wireUpdatedAt),
+      cachedAt: Value(cachedAt),
+    );
+  }
+
+  factory GameSessionsCacheData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return GameSessionsCacheData(
+      id: serializer.fromJson<String>(json['id']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+      wireUpdatedAt: serializer.fromJson<DateTime>(json['wireUpdatedAt']),
+      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+      'wireUpdatedAt': serializer.toJson<DateTime>(wireUpdatedAt),
+      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+    };
+  }
+
+  GameSessionsCacheData copyWith({
+    String? id,
+    String? payloadJson,
+    DateTime? wireUpdatedAt,
+    DateTime? cachedAt,
+  }) => GameSessionsCacheData(
+    id: id ?? this.id,
+    payloadJson: payloadJson ?? this.payloadJson,
+    wireUpdatedAt: wireUpdatedAt ?? this.wireUpdatedAt,
+    cachedAt: cachedAt ?? this.cachedAt,
+  );
+  GameSessionsCacheData copyWithCompanion(GameSessionsCacheCompanion data) {
+    return GameSessionsCacheData(
+      id: data.id.present ? data.id.value : this.id,
+      payloadJson: data.payloadJson.present
+          ? data.payloadJson.value
+          : this.payloadJson,
+      wireUpdatedAt: data.wireUpdatedAt.present
+          ? data.wireUpdatedAt.value
+          : this.wireUpdatedAt,
+      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GameSessionsCacheData(')
+          ..write('id: $id, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('wireUpdatedAt: $wireUpdatedAt, ')
+          ..write('cachedAt: $cachedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, payloadJson, wireUpdatedAt, cachedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is GameSessionsCacheData &&
+          other.id == this.id &&
+          other.payloadJson == this.payloadJson &&
+          other.wireUpdatedAt == this.wireUpdatedAt &&
+          other.cachedAt == this.cachedAt);
+}
+
+class GameSessionsCacheCompanion
+    extends UpdateCompanion<GameSessionsCacheData> {
+  final Value<String> id;
+  final Value<String> payloadJson;
+  final Value<DateTime> wireUpdatedAt;
+  final Value<DateTime> cachedAt;
+  final Value<int> rowid;
+  const GameSessionsCacheCompanion({
+    this.id = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.wireUpdatedAt = const Value.absent(),
+    this.cachedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  GameSessionsCacheCompanion.insert({
+    required String id,
+    required String payloadJson,
+    required DateTime wireUpdatedAt,
+    required DateTime cachedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       payloadJson = Value(payloadJson),
+       wireUpdatedAt = Value(wireUpdatedAt),
+       cachedAt = Value(cachedAt);
+  static Insertable<GameSessionsCacheData> custom({
+    Expression<String>? id,
+    Expression<String>? payloadJson,
+    Expression<DateTime>? wireUpdatedAt,
+    Expression<DateTime>? cachedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (wireUpdatedAt != null) 'wire_updated_at': wireUpdatedAt,
+      if (cachedAt != null) 'cached_at': cachedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  GameSessionsCacheCompanion copyWith({
+    Value<String>? id,
+    Value<String>? payloadJson,
+    Value<DateTime>? wireUpdatedAt,
+    Value<DateTime>? cachedAt,
+    Value<int>? rowid,
+  }) {
+    return GameSessionsCacheCompanion(
+      id: id ?? this.id,
+      payloadJson: payloadJson ?? this.payloadJson,
+      wireUpdatedAt: wireUpdatedAt ?? this.wireUpdatedAt,
+      cachedAt: cachedAt ?? this.cachedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (wireUpdatedAt.present) {
+      map['wire_updated_at'] = Variable<DateTime>(wireUpdatedAt.value);
+    }
+    if (cachedAt.present) {
+      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GameSessionsCacheCompanion(')
+          ..write('id: $id, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('wireUpdatedAt: $wireUpdatedAt, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PlayerMembershipsCacheTable extends PlayerMembershipsCache
+    with TableInfo<$PlayerMembershipsCacheTable, PlayerMembershipsCacheData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PlayerMembershipsCacheTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _payloadJsonMeta = const VerificationMeta(
+    'payloadJson',
+  );
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+    'payload_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _wireUpdatedAtMeta = const VerificationMeta(
+    'wireUpdatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> wireUpdatedAt =
+      GeneratedColumn<DateTime>(
+        'wire_updated_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _cachedAtMeta = const VerificationMeta(
+    'cachedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
+    'cached_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    payloadJson,
+    wireUpdatedAt,
+    cachedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'player_memberships_cache';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PlayerMembershipsCacheData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+        _payloadJsonMeta,
+        payloadJson.isAcceptableOrUnknown(
+          data['payload_json']!,
+          _payloadJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_payloadJsonMeta);
+    }
+    if (data.containsKey('wire_updated_at')) {
+      context.handle(
+        _wireUpdatedAtMeta,
+        wireUpdatedAt.isAcceptableOrUnknown(
+          data['wire_updated_at']!,
+          _wireUpdatedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_wireUpdatedAtMeta);
+    }
+    if (data.containsKey('cached_at')) {
+      context.handle(
+        _cachedAtMeta,
+        cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cachedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PlayerMembershipsCacheData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PlayerMembershipsCacheData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      payloadJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payload_json'],
+      )!,
+      wireUpdatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}wire_updated_at'],
+      )!,
+      cachedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}cached_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PlayerMembershipsCacheTable createAlias(String alias) {
+    return $PlayerMembershipsCacheTable(attachedDatabase, alias);
+  }
+}
+
+class PlayerMembershipsCacheData extends DataClass
+    implements Insertable<PlayerMembershipsCacheData> {
+  final String id;
+  final String payloadJson;
+  final DateTime wireUpdatedAt;
+  final DateTime cachedAt;
+  const PlayerMembershipsCacheData({
+    required this.id,
+    required this.payloadJson,
+    required this.wireUpdatedAt,
+    required this.cachedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['payload_json'] = Variable<String>(payloadJson);
+    map['wire_updated_at'] = Variable<DateTime>(wireUpdatedAt);
+    map['cached_at'] = Variable<DateTime>(cachedAt);
+    return map;
+  }
+
+  PlayerMembershipsCacheCompanion toCompanion(bool nullToAbsent) {
+    return PlayerMembershipsCacheCompanion(
+      id: Value(id),
+      payloadJson: Value(payloadJson),
+      wireUpdatedAt: Value(wireUpdatedAt),
+      cachedAt: Value(cachedAt),
+    );
+  }
+
+  factory PlayerMembershipsCacheData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PlayerMembershipsCacheData(
+      id: serializer.fromJson<String>(json['id']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+      wireUpdatedAt: serializer.fromJson<DateTime>(json['wireUpdatedAt']),
+      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+      'wireUpdatedAt': serializer.toJson<DateTime>(wireUpdatedAt),
+      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+    };
+  }
+
+  PlayerMembershipsCacheData copyWith({
+    String? id,
+    String? payloadJson,
+    DateTime? wireUpdatedAt,
+    DateTime? cachedAt,
+  }) => PlayerMembershipsCacheData(
+    id: id ?? this.id,
+    payloadJson: payloadJson ?? this.payloadJson,
+    wireUpdatedAt: wireUpdatedAt ?? this.wireUpdatedAt,
+    cachedAt: cachedAt ?? this.cachedAt,
+  );
+  PlayerMembershipsCacheData copyWithCompanion(
+    PlayerMembershipsCacheCompanion data,
+  ) {
+    return PlayerMembershipsCacheData(
+      id: data.id.present ? data.id.value : this.id,
+      payloadJson: data.payloadJson.present
+          ? data.payloadJson.value
+          : this.payloadJson,
+      wireUpdatedAt: data.wireUpdatedAt.present
+          ? data.wireUpdatedAt.value
+          : this.wireUpdatedAt,
+      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlayerMembershipsCacheData(')
+          ..write('id: $id, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('wireUpdatedAt: $wireUpdatedAt, ')
+          ..write('cachedAt: $cachedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, payloadJson, wireUpdatedAt, cachedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PlayerMembershipsCacheData &&
+          other.id == this.id &&
+          other.payloadJson == this.payloadJson &&
+          other.wireUpdatedAt == this.wireUpdatedAt &&
+          other.cachedAt == this.cachedAt);
+}
+
+class PlayerMembershipsCacheCompanion
+    extends UpdateCompanion<PlayerMembershipsCacheData> {
+  final Value<String> id;
+  final Value<String> payloadJson;
+  final Value<DateTime> wireUpdatedAt;
+  final Value<DateTime> cachedAt;
+  final Value<int> rowid;
+  const PlayerMembershipsCacheCompanion({
+    this.id = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.wireUpdatedAt = const Value.absent(),
+    this.cachedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PlayerMembershipsCacheCompanion.insert({
+    required String id,
+    required String payloadJson,
+    required DateTime wireUpdatedAt,
+    required DateTime cachedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       payloadJson = Value(payloadJson),
+       wireUpdatedAt = Value(wireUpdatedAt),
+       cachedAt = Value(cachedAt);
+  static Insertable<PlayerMembershipsCacheData> custom({
+    Expression<String>? id,
+    Expression<String>? payloadJson,
+    Expression<DateTime>? wireUpdatedAt,
+    Expression<DateTime>? cachedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (wireUpdatedAt != null) 'wire_updated_at': wireUpdatedAt,
+      if (cachedAt != null) 'cached_at': cachedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PlayerMembershipsCacheCompanion copyWith({
+    Value<String>? id,
+    Value<String>? payloadJson,
+    Value<DateTime>? wireUpdatedAt,
+    Value<DateTime>? cachedAt,
+    Value<int>? rowid,
+  }) {
+    return PlayerMembershipsCacheCompanion(
+      id: id ?? this.id,
+      payloadJson: payloadJson ?? this.payloadJson,
+      wireUpdatedAt: wireUpdatedAt ?? this.wireUpdatedAt,
+      cachedAt: cachedAt ?? this.cachedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (wireUpdatedAt.present) {
+      map['wire_updated_at'] = Variable<DateTime>(wireUpdatedAt.value);
+    }
+    if (cachedAt.present) {
+      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlayerMembershipsCacheCompanion(')
+          ..write('id: $id, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('wireUpdatedAt: $wireUpdatedAt, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
 
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
@@ -757,6 +1734,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PendingMutationsTable pendingMutations = $PendingMutationsTable(
     this,
   );
+  late final $ShipsCacheTable shipsCache = $ShipsCacheTable(this);
+  late final $GameSessionsCacheTable gameSessionsCache =
+      $GameSessionsCacheTable(this);
+  late final $PlayerMembershipsCacheTable playerMembershipsCache =
+      $PlayerMembershipsCacheTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -764,12 +1746,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     charactersCache,
     pendingMutations,
+    shipsCache,
+    gameSessionsCache,
+    playerMembershipsCache,
   ];
 }
-
-// **************************************************************************
-// CharactersCache table manager
-// **************************************************************************
 
 typedef $$CharactersCacheTableCreateCompanionBuilder =
     CharactersCacheCompanion Function({
@@ -966,11 +1947,6 @@ typedef $$CharactersCacheTableProcessedTableManager =
       CharactersCacheData,
       PrefetchHooks Function()
     >;
-
-// **************************************************************************
-// PendingMutations table manager
-// **************************************************************************
-
 typedef $$PendingMutationsTableCreateCompanionBuilder =
     PendingMutationsCompanion Function({
       required String id,
@@ -1107,21 +2083,21 @@ class $$PendingMutationsTableTableManager
         RootTableManager<
           _$AppDatabase,
           $PendingMutationsTable,
-          PendingMutationsData,
+          PendingMutation,
           $$PendingMutationsTableFilterComposer,
           $$PendingMutationsTableOrderingComposer,
           $$PendingMutationsTableAnnotationComposer,
           $$PendingMutationsTableCreateCompanionBuilder,
           $$PendingMutationsTableUpdateCompanionBuilder,
           (
-            PendingMutationsData,
+            PendingMutation,
             BaseReferences<
               _$AppDatabase,
               $PendingMutationsTable,
-              PendingMutationsData
+              PendingMutation
             >,
           ),
-          PendingMutationsData,
+          PendingMutation,
           PrefetchHooks Function()
         > {
   $$PendingMutationsTableTableManager(
@@ -1136,10 +2112,7 @@ class $$PendingMutationsTableTableManager
           createOrderingComposer: () =>
               $$PendingMutationsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$PendingMutationsTableAnnotationComposer(
-                $db: db,
-                $table: table,
-              ),
+              $$PendingMutationsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -1188,21 +2161,604 @@ typedef $$PendingMutationsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
       $PendingMutationsTable,
-      PendingMutationsData,
+      PendingMutation,
       $$PendingMutationsTableFilterComposer,
       $$PendingMutationsTableOrderingComposer,
       $$PendingMutationsTableAnnotationComposer,
       $$PendingMutationsTableCreateCompanionBuilder,
       $$PendingMutationsTableUpdateCompanionBuilder,
       (
-        PendingMutationsData,
+        PendingMutation,
+        BaseReferences<_$AppDatabase, $PendingMutationsTable, PendingMutation>,
+      ),
+      PendingMutation,
+      PrefetchHooks Function()
+    >;
+typedef $$ShipsCacheTableCreateCompanionBuilder =
+    ShipsCacheCompanion Function({
+      required String id,
+      required String payloadJson,
+      required DateTime wireUpdatedAt,
+      required DateTime cachedAt,
+      Value<int> rowid,
+    });
+typedef $$ShipsCacheTableUpdateCompanionBuilder =
+    ShipsCacheCompanion Function({
+      Value<String> id,
+      Value<String> payloadJson,
+      Value<DateTime> wireUpdatedAt,
+      Value<DateTime> cachedAt,
+      Value<int> rowid,
+    });
+
+class $$ShipsCacheTableFilterComposer
+    extends Composer<_$AppDatabase, $ShipsCacheTable> {
+  $$ShipsCacheTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get wireUpdatedAt => $composableBuilder(
+    column: $table.wireUpdatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ShipsCacheTableOrderingComposer
+    extends Composer<_$AppDatabase, $ShipsCacheTable> {
+  $$ShipsCacheTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get wireUpdatedAt => $composableBuilder(
+    column: $table.wireUpdatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ShipsCacheTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ShipsCacheTable> {
+  $$ShipsCacheTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get wireUpdatedAt => $composableBuilder(
+    column: $table.wireUpdatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get cachedAt =>
+      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+}
+
+class $$ShipsCacheTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ShipsCacheTable,
+          ShipsCacheData,
+          $$ShipsCacheTableFilterComposer,
+          $$ShipsCacheTableOrderingComposer,
+          $$ShipsCacheTableAnnotationComposer,
+          $$ShipsCacheTableCreateCompanionBuilder,
+          $$ShipsCacheTableUpdateCompanionBuilder,
+          (
+            ShipsCacheData,
+            BaseReferences<_$AppDatabase, $ShipsCacheTable, ShipsCacheData>,
+          ),
+          ShipsCacheData,
+          PrefetchHooks Function()
+        > {
+  $$ShipsCacheTableTableManager(_$AppDatabase db, $ShipsCacheTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ShipsCacheTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ShipsCacheTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ShipsCacheTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> payloadJson = const Value.absent(),
+                Value<DateTime> wireUpdatedAt = const Value.absent(),
+                Value<DateTime> cachedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ShipsCacheCompanion(
+                id: id,
+                payloadJson: payloadJson,
+                wireUpdatedAt: wireUpdatedAt,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String payloadJson,
+                required DateTime wireUpdatedAt,
+                required DateTime cachedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ShipsCacheCompanion.insert(
+                id: id,
+                payloadJson: payloadJson,
+                wireUpdatedAt: wireUpdatedAt,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ShipsCacheTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ShipsCacheTable,
+      ShipsCacheData,
+      $$ShipsCacheTableFilterComposer,
+      $$ShipsCacheTableOrderingComposer,
+      $$ShipsCacheTableAnnotationComposer,
+      $$ShipsCacheTableCreateCompanionBuilder,
+      $$ShipsCacheTableUpdateCompanionBuilder,
+      (
+        ShipsCacheData,
+        BaseReferences<_$AppDatabase, $ShipsCacheTable, ShipsCacheData>,
+      ),
+      ShipsCacheData,
+      PrefetchHooks Function()
+    >;
+typedef $$GameSessionsCacheTableCreateCompanionBuilder =
+    GameSessionsCacheCompanion Function({
+      required String id,
+      required String payloadJson,
+      required DateTime wireUpdatedAt,
+      required DateTime cachedAt,
+      Value<int> rowid,
+    });
+typedef $$GameSessionsCacheTableUpdateCompanionBuilder =
+    GameSessionsCacheCompanion Function({
+      Value<String> id,
+      Value<String> payloadJson,
+      Value<DateTime> wireUpdatedAt,
+      Value<DateTime> cachedAt,
+      Value<int> rowid,
+    });
+
+class $$GameSessionsCacheTableFilterComposer
+    extends Composer<_$AppDatabase, $GameSessionsCacheTable> {
+  $$GameSessionsCacheTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get wireUpdatedAt => $composableBuilder(
+    column: $table.wireUpdatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$GameSessionsCacheTableOrderingComposer
+    extends Composer<_$AppDatabase, $GameSessionsCacheTable> {
+  $$GameSessionsCacheTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get wireUpdatedAt => $composableBuilder(
+    column: $table.wireUpdatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$GameSessionsCacheTableAnnotationComposer
+    extends Composer<_$AppDatabase, $GameSessionsCacheTable> {
+  $$GameSessionsCacheTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get wireUpdatedAt => $composableBuilder(
+    column: $table.wireUpdatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get cachedAt =>
+      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+}
+
+class $$GameSessionsCacheTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $GameSessionsCacheTable,
+          GameSessionsCacheData,
+          $$GameSessionsCacheTableFilterComposer,
+          $$GameSessionsCacheTableOrderingComposer,
+          $$GameSessionsCacheTableAnnotationComposer,
+          $$GameSessionsCacheTableCreateCompanionBuilder,
+          $$GameSessionsCacheTableUpdateCompanionBuilder,
+          (
+            GameSessionsCacheData,
+            BaseReferences<
+              _$AppDatabase,
+              $GameSessionsCacheTable,
+              GameSessionsCacheData
+            >,
+          ),
+          GameSessionsCacheData,
+          PrefetchHooks Function()
+        > {
+  $$GameSessionsCacheTableTableManager(
+    _$AppDatabase db,
+    $GameSessionsCacheTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$GameSessionsCacheTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GameSessionsCacheTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GameSessionsCacheTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> payloadJson = const Value.absent(),
+                Value<DateTime> wireUpdatedAt = const Value.absent(),
+                Value<DateTime> cachedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => GameSessionsCacheCompanion(
+                id: id,
+                payloadJson: payloadJson,
+                wireUpdatedAt: wireUpdatedAt,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String payloadJson,
+                required DateTime wireUpdatedAt,
+                required DateTime cachedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => GameSessionsCacheCompanion.insert(
+                id: id,
+                payloadJson: payloadJson,
+                wireUpdatedAt: wireUpdatedAt,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$GameSessionsCacheTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $GameSessionsCacheTable,
+      GameSessionsCacheData,
+      $$GameSessionsCacheTableFilterComposer,
+      $$GameSessionsCacheTableOrderingComposer,
+      $$GameSessionsCacheTableAnnotationComposer,
+      $$GameSessionsCacheTableCreateCompanionBuilder,
+      $$GameSessionsCacheTableUpdateCompanionBuilder,
+      (
+        GameSessionsCacheData,
         BaseReferences<
           _$AppDatabase,
-          $PendingMutationsTable,
-          PendingMutationsData
+          $GameSessionsCacheTable,
+          GameSessionsCacheData
         >,
       ),
-      PendingMutationsData,
+      GameSessionsCacheData,
+      PrefetchHooks Function()
+    >;
+typedef $$PlayerMembershipsCacheTableCreateCompanionBuilder =
+    PlayerMembershipsCacheCompanion Function({
+      required String id,
+      required String payloadJson,
+      required DateTime wireUpdatedAt,
+      required DateTime cachedAt,
+      Value<int> rowid,
+    });
+typedef $$PlayerMembershipsCacheTableUpdateCompanionBuilder =
+    PlayerMembershipsCacheCompanion Function({
+      Value<String> id,
+      Value<String> payloadJson,
+      Value<DateTime> wireUpdatedAt,
+      Value<DateTime> cachedAt,
+      Value<int> rowid,
+    });
+
+class $$PlayerMembershipsCacheTableFilterComposer
+    extends Composer<_$AppDatabase, $PlayerMembershipsCacheTable> {
+  $$PlayerMembershipsCacheTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get wireUpdatedAt => $composableBuilder(
+    column: $table.wireUpdatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PlayerMembershipsCacheTableOrderingComposer
+    extends Composer<_$AppDatabase, $PlayerMembershipsCacheTable> {
+  $$PlayerMembershipsCacheTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get wireUpdatedAt => $composableBuilder(
+    column: $table.wireUpdatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PlayerMembershipsCacheTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PlayerMembershipsCacheTable> {
+  $$PlayerMembershipsCacheTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get wireUpdatedAt => $composableBuilder(
+    column: $table.wireUpdatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get cachedAt =>
+      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+}
+
+class $$PlayerMembershipsCacheTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PlayerMembershipsCacheTable,
+          PlayerMembershipsCacheData,
+          $$PlayerMembershipsCacheTableFilterComposer,
+          $$PlayerMembershipsCacheTableOrderingComposer,
+          $$PlayerMembershipsCacheTableAnnotationComposer,
+          $$PlayerMembershipsCacheTableCreateCompanionBuilder,
+          $$PlayerMembershipsCacheTableUpdateCompanionBuilder,
+          (
+            PlayerMembershipsCacheData,
+            BaseReferences<
+              _$AppDatabase,
+              $PlayerMembershipsCacheTable,
+              PlayerMembershipsCacheData
+            >,
+          ),
+          PlayerMembershipsCacheData,
+          PrefetchHooks Function()
+        > {
+  $$PlayerMembershipsCacheTableTableManager(
+    _$AppDatabase db,
+    $PlayerMembershipsCacheTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PlayerMembershipsCacheTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$PlayerMembershipsCacheTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$PlayerMembershipsCacheTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> payloadJson = const Value.absent(),
+                Value<DateTime> wireUpdatedAt = const Value.absent(),
+                Value<DateTime> cachedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PlayerMembershipsCacheCompanion(
+                id: id,
+                payloadJson: payloadJson,
+                wireUpdatedAt: wireUpdatedAt,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String payloadJson,
+                required DateTime wireUpdatedAt,
+                required DateTime cachedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => PlayerMembershipsCacheCompanion.insert(
+                id: id,
+                payloadJson: payloadJson,
+                wireUpdatedAt: wireUpdatedAt,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PlayerMembershipsCacheTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PlayerMembershipsCacheTable,
+      PlayerMembershipsCacheData,
+      $$PlayerMembershipsCacheTableFilterComposer,
+      $$PlayerMembershipsCacheTableOrderingComposer,
+      $$PlayerMembershipsCacheTableAnnotationComposer,
+      $$PlayerMembershipsCacheTableCreateCompanionBuilder,
+      $$PlayerMembershipsCacheTableUpdateCompanionBuilder,
+      (
+        PlayerMembershipsCacheData,
+        BaseReferences<
+          _$AppDatabase,
+          $PlayerMembershipsCacheTable,
+          PlayerMembershipsCacheData
+        >,
+      ),
+      PlayerMembershipsCacheData,
       PrefetchHooks Function()
     >;
 
@@ -1213,4 +2769,13 @@ class $AppDatabaseManager {
       $$CharactersCacheTableTableManager(_db, _db.charactersCache);
   $$PendingMutationsTableTableManager get pendingMutations =>
       $$PendingMutationsTableTableManager(_db, _db.pendingMutations);
+  $$ShipsCacheTableTableManager get shipsCache =>
+      $$ShipsCacheTableTableManager(_db, _db.shipsCache);
+  $$GameSessionsCacheTableTableManager get gameSessionsCache =>
+      $$GameSessionsCacheTableTableManager(_db, _db.gameSessionsCache);
+  $$PlayerMembershipsCacheTableTableManager get playerMembershipsCache =>
+      $$PlayerMembershipsCacheTableTableManager(
+        _db,
+        _db.playerMembershipsCache,
+      );
 }

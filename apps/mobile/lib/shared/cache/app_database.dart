@@ -49,7 +49,54 @@ class PendingMutations extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [CharactersCache, PendingMutations])
+/// Cached wire payload for a single ship.
+///
+/// Same shape as [CharactersCache] — id PK, JSON payload, server-side
+/// `updatedAt` for staleness, and local `cachedAt` for diagnostics.
+class ShipsCache extends Table {
+  TextColumn get id => text()();
+  TextColumn get payloadJson => text()();
+  DateTimeColumn get wireUpdatedAt => dateTime()();
+  DateTimeColumn get cachedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+/// Cached wire payload for a single game session.
+///
+/// `wireUpdatedAt` stores `GameSession.updatedAt` from the server.
+class GameSessionsCache extends Table {
+  TextColumn get id => text()();
+  TextColumn get payloadJson => text()();
+  DateTimeColumn get wireUpdatedAt => dateTime()();
+  DateTimeColumn get cachedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+/// Cached wire payload for a single player membership.
+///
+/// `MyMembershipSummary` has no `updatedAt` field; `wireUpdatedAt` is set
+/// to the same value as `cachedAt` (local clock at write time).
+class PlayerMembershipsCache extends Table {
+  TextColumn get id => text()();
+  TextColumn get payloadJson => text()();
+  DateTimeColumn get wireUpdatedAt => dateTime()();
+  DateTimeColumn get cachedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@DriftDatabase(tables: [
+  CharactersCache,
+  PendingMutations,
+  ShipsCache,
+  GameSessionsCache,
+  PlayerMembershipsCache,
+])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(conn.openConnection());
 
@@ -58,7 +105,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -66,6 +113,11 @@ class AppDatabase extends _$AppDatabase {
         onUpgrade: (m, from, to) async {
           if (from < 2) {
             await m.createTable(pendingMutations);
+          }
+          if (from < 3) {
+            await m.createTable(shipsCache);
+            await m.createTable(gameSessionsCache);
+            await m.createTable(playerMembershipsCache);
           }
         },
       );
