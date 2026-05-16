@@ -1,13 +1,20 @@
 import 'package:dio/dio.dart';
 
+import 'package:coriolis_companion/features/characters/data/character_cache.dart';
 import 'package:coriolis_companion/shared/auth/token_storage.dart';
+import 'package:coriolis_companion/shared/cache/character_cache_interceptor.dart';
 import 'package:coriolis_companion/shared/config/app_config.dart';
 
-/// Builds the shared [Dio] with a bearer-token interceptor.
+/// Builds the shared [Dio] with a bearer-token interceptor and an optional
+/// write-through cache interceptor for `GET /characters/{id}` responses.
 ///
 /// Registered in `lib/shared/di/injector.dart`; domain and presentation code
 /// must never import `dio` directly — only `features/*/data/` consumes this.
-Dio buildDio({required AppConfig config, required TokenStorage tokenStorage}) {
+Dio buildDio({
+  required AppConfig config,
+  required TokenStorage tokenStorage,
+  required LocalCharacterCache characterCache,
+}) {
   final dio = Dio(
     BaseOptions(
       baseUrl: config.apiBaseUrl,
@@ -36,6 +43,8 @@ Dio buildDio({required AppConfig config, required TokenStorage tokenStorage}) {
       },
     ),
   );
+
+  dio.interceptors.add(CharacterCacheInterceptor(cache: characterCache));
 
   return dio;
 }
