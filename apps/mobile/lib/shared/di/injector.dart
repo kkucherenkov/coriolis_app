@@ -39,6 +39,9 @@ import 'package:coriolis_companion/features/game_sessions/data/session_repositor
 import 'package:coriolis_companion/features/game_sessions/domain/session_repository.dart';
 import 'package:coriolis_companion/features/game_sessions/presentation/blocs/session_detail/session_detail_cubit.dart';
 import 'package:coriolis_companion/features/game_sessions/presentation/blocs/sessions_list/sessions_list_cubit.dart';
+import 'package:coriolis_companion/features/sessions/data/cached_player_session_repository.dart';
+import 'package:coriolis_companion/features/sessions/data/drift_player_membership_cache.dart';
+import 'package:coriolis_companion/features/sessions/data/player_membership_cache.dart';
 import 'package:coriolis_companion/features/sessions/data/player_session_repository_impl.dart';
 import 'package:coriolis_companion/features/sessions/domain/player_session_repository.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/join_session/join_session_cubit.dart';
@@ -85,6 +88,10 @@ void configureDependencies() {
     () => DriftCharacterCache(getIt<AppDatabase>()),
   );
 
+  getIt.registerLazySingleton<LocalPlayerMembershipCache>(
+    () => DriftPlayerMembershipCache(getIt<AppDatabase>()),
+  );
+
   // Connectivity singleton — shared by the queue interceptor and the drainer.
   // May have been pre-registered by configureDependenciesForTesting.
   if (!getIt.isRegistered<Connectivity>()) {
@@ -105,6 +112,7 @@ void configureDependencies() {
         config: getIt<AppConfig>(),
         tokenStorage: getIt<TokenStorage>(),
         characterCache: getIt<LocalCharacterCache>(),
+        membershipCache: getIt<LocalPlayerMembershipCache>(),
         mutationQueue: getIt<LocalMutationQueue>(),
         connectivity: getIt<Connectivity>(),
       ),
@@ -206,10 +214,13 @@ void configureDependencies() {
   // ── Player sessions domain (Phase 8 Stream B) ────────────────────────────
   getIt
     ..registerLazySingleton<PlayerSessionRepository>(
-      () => PlayerSessionRepositoryImpl(
-        membershipsApi: getIt<MembershipsApi>(),
-        meApi: getIt<MeApi>(),
-        gameSessionsApi: getIt<GameSessionsApi>(),
+      () => CachedPlayerSessionRepository(
+        remote: PlayerSessionRepositoryImpl(
+          membershipsApi: getIt<MembershipsApi>(),
+          meApi: getIt<MeApi>(),
+          gameSessionsApi: getIt<GameSessionsApi>(),
+        ),
+        cache: getIt<LocalPlayerMembershipCache>(),
       ),
     )
     ..registerFactory<PlayerSessionsListCubit>(
