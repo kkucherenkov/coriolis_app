@@ -330,18 +330,446 @@ class CharactersCacheCompanion extends UpdateCompanion<CharactersCacheData> {
   }
 }
 
+// **************************************************************************
+// PendingMutations table
+// **************************************************************************
+
+class $PendingMutationsTable extends PendingMutations
+    with TableInfo<$PendingMutationsTable, PendingMutationsData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PendingMutationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _methodMeta = const VerificationMeta('method');
+  @override
+  late final GeneratedColumn<String> method = GeneratedColumn<String>(
+    'method',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pathMeta = const VerificationMeta('path');
+  @override
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
+    'path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bodyMeta = const VerificationMeta('body');
+  @override
+  late final GeneratedColumn<String> body = GeneratedColumn<String>(
+    'body',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _headersJsonMeta = const VerificationMeta(
+    'headersJson',
+  );
+  @override
+  late final GeneratedColumn<String> headersJson = GeneratedColumn<String>(
+    'headers_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    method,
+    path,
+    body,
+    headersJson,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pending_mutations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PendingMutationsData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('method')) {
+      context.handle(
+        _methodMeta,
+        method.isAcceptableOrUnknown(data['method']!, _methodMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_methodMeta);
+    }
+    if (data.containsKey('path')) {
+      context.handle(
+        _pathMeta,
+        path.isAcceptableOrUnknown(data['path']!, _pathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pathMeta);
+    }
+    if (data.containsKey('body')) {
+      context.handle(
+        _bodyMeta,
+        body.isAcceptableOrUnknown(data['body']!, _bodyMeta),
+      );
+    }
+    if (data.containsKey('headers_json')) {
+      context.handle(
+        _headersJsonMeta,
+        headersJson.isAcceptableOrUnknown(
+          data['headers_json']!,
+          _headersJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_headersJsonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PendingMutationsData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PendingMutationsData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      method: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}method'],
+      )!,
+      path: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}path'],
+      )!,
+      body: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}body'],
+      ),
+      headersJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}headers_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PendingMutationsTable createAlias(String alias) {
+    return $PendingMutationsTable(attachedDatabase, alias);
+  }
+}
+
+class PendingMutationsData extends DataClass
+    implements Insertable<PendingMutationsData> {
+  final String id;
+  final String method;
+  final String path;
+  final String? body;
+  final String headersJson;
+  final DateTime createdAt;
+  const PendingMutationsData({
+    required this.id,
+    required this.method,
+    required this.path,
+    this.body,
+    required this.headersJson,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['method'] = Variable<String>(method);
+    map['path'] = Variable<String>(path);
+    if (!nullToAbsent || body != null) {
+      map['body'] = Variable<String>(body);
+    }
+    map['headers_json'] = Variable<String>(headersJson);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  PendingMutationsCompanion toCompanion(bool nullToAbsent) {
+    return PendingMutationsCompanion(
+      id: Value(id),
+      method: Value(method),
+      path: Value(path),
+      body: body == null && nullToAbsent ? const Value.absent() : Value(body),
+      headersJson: Value(headersJson),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory PendingMutationsData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PendingMutationsData(
+      id: serializer.fromJson<String>(json['id']),
+      method: serializer.fromJson<String>(json['method']),
+      path: serializer.fromJson<String>(json['path']),
+      body: serializer.fromJson<String?>(json['body']),
+      headersJson: serializer.fromJson<String>(json['headersJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'method': serializer.toJson<String>(method),
+      'path': serializer.toJson<String>(path),
+      'body': serializer.toJson<String?>(body),
+      'headersJson': serializer.toJson<String>(headersJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  PendingMutationsData copyWith({
+    String? id,
+    String? method,
+    String? path,
+    Value<String?> body = const Value.absent(),
+    String? headersJson,
+    DateTime? createdAt,
+  }) => PendingMutationsData(
+    id: id ?? this.id,
+    method: method ?? this.method,
+    path: path ?? this.path,
+    body: body.present ? body.value : this.body,
+    headersJson: headersJson ?? this.headersJson,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  PendingMutationsData copyWithCompanion(PendingMutationsCompanion data) {
+    return PendingMutationsData(
+      id: data.id.present ? data.id.value : this.id,
+      method: data.method.present ? data.method.value : this.method,
+      path: data.path.present ? data.path.value : this.path,
+      body: data.body.present ? data.body.value : this.body,
+      headersJson: data.headersJson.present
+          ? data.headersJson.value
+          : this.headersJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PendingMutationsData(')
+          ..write('id: $id, ')
+          ..write('method: $method, ')
+          ..write('path: $path, ')
+          ..write('body: $body, ')
+          ..write('headersJson: $headersJson, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, method, path, body, headersJson, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PendingMutationsData &&
+          other.id == this.id &&
+          other.method == this.method &&
+          other.path == this.path &&
+          other.body == this.body &&
+          other.headersJson == this.headersJson &&
+          other.createdAt == this.createdAt);
+}
+
+class PendingMutationsCompanion
+    extends UpdateCompanion<PendingMutationsData> {
+  final Value<String> id;
+  final Value<String> method;
+  final Value<String> path;
+  final Value<String?> body;
+  final Value<String> headersJson;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const PendingMutationsCompanion({
+    this.id = const Value.absent(),
+    this.method = const Value.absent(),
+    this.path = const Value.absent(),
+    this.body = const Value.absent(),
+    this.headersJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PendingMutationsCompanion.insert({
+    required String id,
+    required String method,
+    required String path,
+    this.body = const Value.absent(),
+    required String headersJson,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       method = Value(method),
+       path = Value(path),
+       headersJson = Value(headersJson),
+       createdAt = Value(createdAt);
+  static Insertable<PendingMutationsData> custom({
+    Expression<String>? id,
+    Expression<String>? method,
+    Expression<String>? path,
+    Expression<String>? body,
+    Expression<String>? headersJson,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (method != null) 'method': method,
+      if (path != null) 'path': path,
+      if (body != null) 'body': body,
+      if (headersJson != null) 'headers_json': headersJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PendingMutationsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? method,
+    Value<String>? path,
+    Value<String?>? body,
+    Value<String>? headersJson,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return PendingMutationsCompanion(
+      id: id ?? this.id,
+      method: method ?? this.method,
+      path: path ?? this.path,
+      body: body ?? this.body,
+      headersJson: headersJson ?? this.headersJson,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (method.present) {
+      map['method'] = Variable<String>(method.value);
+    }
+    if (path.present) {
+      map['path'] = Variable<String>(path.value);
+    }
+    if (body.present) {
+      map['body'] = Variable<String>(body.value);
+    }
+    if (headersJson.present) {
+      map['headers_json'] = Variable<String>(headersJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PendingMutationsCompanion(')
+          ..write('id: $id, ')
+          ..write('method: $method, ')
+          ..write('path: $path, ')
+          ..write('body: $body, ')
+          ..write('headersJson: $headersJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+// **************************************************************************
+// Abstract database
+// **************************************************************************
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $CharactersCacheTable charactersCache = $CharactersCacheTable(
     this,
   );
+  late final $PendingMutationsTable pendingMutations = $PendingMutationsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [charactersCache];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    charactersCache,
+    pendingMutations,
+  ];
 }
+
+// **************************************************************************
+// CharactersCache table manager
+// **************************************************************************
 
 typedef $$CharactersCacheTableCreateCompanionBuilder =
     CharactersCacheCompanion Function({
@@ -539,9 +967,250 @@ typedef $$CharactersCacheTableProcessedTableManager =
       PrefetchHooks Function()
     >;
 
+// **************************************************************************
+// PendingMutations table manager
+// **************************************************************************
+
+typedef $$PendingMutationsTableCreateCompanionBuilder =
+    PendingMutationsCompanion Function({
+      required String id,
+      required String method,
+      required String path,
+      Value<String?> body,
+      required String headersJson,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$PendingMutationsTableUpdateCompanionBuilder =
+    PendingMutationsCompanion Function({
+      Value<String> id,
+      Value<String> method,
+      Value<String> path,
+      Value<String?> body,
+      Value<String> headersJson,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$PendingMutationsTableFilterComposer
+    extends Composer<_$AppDatabase, $PendingMutationsTable> {
+  $$PendingMutationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get method => $composableBuilder(
+    column: $table.method,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get path => $composableBuilder(
+    column: $table.path,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get headersJson => $composableBuilder(
+    column: $table.headersJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PendingMutationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PendingMutationsTable> {
+  $$PendingMutationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get method => $composableBuilder(
+    column: $table.method,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get path => $composableBuilder(
+    column: $table.path,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get headersJson => $composableBuilder(
+    column: $table.headersJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PendingMutationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PendingMutationsTable> {
+  $$PendingMutationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get method =>
+      $composableBuilder(column: $table.method, builder: (column) => column);
+
+  GeneratedColumn<String> get path =>
+      $composableBuilder(column: $table.path, builder: (column) => column);
+
+  GeneratedColumn<String> get body =>
+      $composableBuilder(column: $table.body, builder: (column) => column);
+
+  GeneratedColumn<String> get headersJson => $composableBuilder(
+    column: $table.headersJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$PendingMutationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PendingMutationsTable,
+          PendingMutationsData,
+          $$PendingMutationsTableFilterComposer,
+          $$PendingMutationsTableOrderingComposer,
+          $$PendingMutationsTableAnnotationComposer,
+          $$PendingMutationsTableCreateCompanionBuilder,
+          $$PendingMutationsTableUpdateCompanionBuilder,
+          (
+            PendingMutationsData,
+            BaseReferences<
+              _$AppDatabase,
+              $PendingMutationsTable,
+              PendingMutationsData
+            >,
+          ),
+          PendingMutationsData,
+          PrefetchHooks Function()
+        > {
+  $$PendingMutationsTableTableManager(
+    _$AppDatabase db,
+    $PendingMutationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PendingMutationsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PendingMutationsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PendingMutationsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> method = const Value.absent(),
+                Value<String> path = const Value.absent(),
+                Value<String?> body = const Value.absent(),
+                Value<String> headersJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PendingMutationsCompanion(
+                id: id,
+                method: method,
+                path: path,
+                body: body,
+                headersJson: headersJson,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String method,
+                required String path,
+                Value<String?> body = const Value.absent(),
+                required String headersJson,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => PendingMutationsCompanion.insert(
+                id: id,
+                method: method,
+                path: path,
+                body: body,
+                headersJson: headersJson,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PendingMutationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PendingMutationsTable,
+      PendingMutationsData,
+      $$PendingMutationsTableFilterComposer,
+      $$PendingMutationsTableOrderingComposer,
+      $$PendingMutationsTableAnnotationComposer,
+      $$PendingMutationsTableCreateCompanionBuilder,
+      $$PendingMutationsTableUpdateCompanionBuilder,
+      (
+        PendingMutationsData,
+        BaseReferences<
+          _$AppDatabase,
+          $PendingMutationsTable,
+          PendingMutationsData
+        >,
+      ),
+      PendingMutationsData,
+      PrefetchHooks Function()
+    >;
+
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
   $$CharactersCacheTableTableManager get charactersCache =>
       $$CharactersCacheTableTableManager(_db, _db.charactersCache);
+  $$PendingMutationsTableTableManager get pendingMutations =>
+      $$PendingMutationsTableTableManager(_db, _db.pendingMutations);
 }

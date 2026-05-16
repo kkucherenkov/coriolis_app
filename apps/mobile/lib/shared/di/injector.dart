@@ -10,6 +10,7 @@ import 'package:app_api_client/app_api_client.dart'
         RealtimeApi,
         ShipsApi,
         standardSerializers;
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 
@@ -50,6 +51,9 @@ import 'package:coriolis_companion/features/ships/presentation/blocs/ships_list/
 import 'package:coriolis_companion/shared/auth/token_storage.dart';
 import 'package:coriolis_companion/shared/config/app_config.dart';
 import 'package:coriolis_companion/shared/network/api_client.dart';
+import 'package:coriolis_companion/shared/queue/drift_mutation_queue.dart';
+import 'package:coriolis_companion/shared/queue/mutation_queue.dart';
+import 'package:coriolis_companion/shared/queue/mutation_queue_drainer.dart';
 import 'package:coriolis_companion/shared/realtime/session_realtime.dart';
 
 /// Global service locator. All runtime dependencies register here; widgets
@@ -70,16 +74,46 @@ void configureDependencies() {
   // ── Infra singletons ────────────────────────────────────────────────────
   getIt
     ..registerLazySingleton<AppConfig>(AppConfig.fromEnv)
-    ..registerLazySingleton<TokenStorage>(SecureTokenStorage.new)
-    ..registerLazySingleton<AppDatabase>(AppDatabase.new)
-    ..registerLazySingleton<LocalCharacterCache>(
-      () => DriftCharacterCache(getIt<AppDatabase>()),
-    )
+    ..registerLazySingleton<TokenStorage>(SecureTokenStorage.new);
+
+  // AppDatabase may have been pre-registered by configureDependenciesForTesting.
+  if (!getIt.isRegistered<AppDatabase>()) {
+    getIt.registerLazySingleton<AppDatabase>(AppDatabase.new);
+  }
+
+  getIt.registerLazySingleton<LocalCharacterCache>(
+    () => DriftCharacterCache(getIt<AppDatabase>()),
+  );
+
+  // Connectivity singleton — shared by the queue interceptor and the drainer.
+  // May have been pre-registered by configureDependenciesForTesting.
+  if (!getIt.isRegistered<Connectivity>()) {
+    getIt.registerLazySingleton<Connectivity>(Connectivity.new);
+  }
+
+  // Offline mutation queue (Phase 7 / Feature 10.2 / T-10.2.b).
+  // May have been pre-registered by configureDependenciesForTesting.
+  if (!getIt.isRegistered<LocalMutationQueue>()) {
+    getIt.registerLazySingleton<LocalMutationQueue>(
+      () => DriftMutationQueue(getIt<AppDatabase>()),
+    );
+  }
+
+  getIt
     ..registerLazySingleton<Dio>(
       () => buildDio(
         config: getIt<AppConfig>(),
         tokenStorage: getIt<TokenStorage>(),
         characterCache: getIt<LocalCharacterCache>(),
+        mutationQueue: getIt<LocalMutationQueue>(),
+        connectivity: getIt<Connectivity>(),
+      ),
+    )
+    ..registerLazySingleton<MutationQueueDrainer>(
+      () => MutationQueueDrainer(
+        queue: getIt<LocalMutationQueue>(),
+        dio: getIt<Dio>(),
+        connectivity: getIt<Connectivity>(),
       ),
     );
 
@@ -227,12 +261,26 @@ void configureDependencies() {
 
 /// Test-only DI bootstrap.
 ///
-/// Allows tests to supply an in-memory [AppDatabase] before the normal
-/// composition root runs. Pass an `AppDatabase.forTesting(NativeDatabase.memory())`
-/// instance to avoid touching the filesystem.
-void configureDependenciesForTesting({AppDatabase? appDatabase}) {
+/// Allows tests to supply in-memory / mock substitutes before the normal
+/// composition root runs. All parameters are optional; callers that only need
+/// a [appDatabase] override keep compiling without changes.
+///
+/// - [appDatabase]: in-memory Drift DB (`AppDatabase.forTesting(NativeDatabase.memory())`).
+/// - [connectivity]: mock connectivity (avoids platform-channel access in unit tests).
+/// - [mutationQueue]: in-memory queue implementation (avoids disk I/O in unit tests).
+void configureDependenciesForTesting({
+  AppDatabase? appDatabase,
+  Connectivity? connectivity,
+  LocalMutationQueue? mutationQueue,
+}) {
   if (appDatabase != null && !getIt.isRegistered<AppDatabase>()) {
     getIt.registerSingleton<AppDatabase>(appDatabase);
+  }
+  if (connectivity != null && !getIt.isRegistered<Connectivity>()) {
+    getIt.registerSingleton<Connectivity>(connectivity);
+  }
+  if (mutationQueue != null && !getIt.isRegistered<LocalMutationQueue>()) {
+    getIt.registerSingleton<LocalMutationQueue>(mutationQueue);
   }
   configureDependencies();
 }

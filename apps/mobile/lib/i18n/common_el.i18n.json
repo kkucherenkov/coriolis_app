@@ -6,6 +6,14 @@
   "localeRu": "Ρωσικά",
   "localeEl": "Ελληνικά",
   "localeUk": "Ουκρανικά",
+  "offline": {
+    "idle": "[el-todo] Offline — edits will sync when you reconnect",
+    "pending": "[el-todo] Offline — {count} edits waiting to sync",
+    "syncing": "[el-todo] Syncing your changes…",
+    "synced": "[el-todo] All changes saved",
+    "error": "[el-todo] Couldn't sync {count} changes",
+    "retry": "[el-todo] Retry"
+  },
   "shell": {
     "navHome": "Αρχική",
     "navBookings": "Κρατήσεις",
