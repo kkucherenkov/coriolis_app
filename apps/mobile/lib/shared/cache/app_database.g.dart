@@ -331,7 +331,7 @@ class CharactersCacheCompanion extends UpdateCompanion<CharactersCacheData> {
 }
 
 class $PendingMutationsTable extends PendingMutations
-    with TableInfo<$PendingMutationsTable, PendingMutation> {
+    with TableInfo<$PendingMutationsTable, PendingMutationsData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -410,7 +410,7 @@ class $PendingMutationsTable extends PendingMutations
   static const String $name = 'pending_mutations';
   @override
   VerificationContext validateIntegrity(
-    Insertable<PendingMutation> instance, {
+    Insertable<PendingMutationsData> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -467,9 +467,9 @@ class $PendingMutationsTable extends PendingMutations
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  PendingMutation map(Map<String, dynamic> data, {String? tablePrefix}) {
+  PendingMutationsData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return PendingMutation(
+    return PendingMutationsData(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -503,14 +503,15 @@ class $PendingMutationsTable extends PendingMutations
   }
 }
 
-class PendingMutation extends DataClass implements Insertable<PendingMutation> {
+class PendingMutationsData extends DataClass
+    implements Insertable<PendingMutationsData> {
   final String id;
   final String method;
   final String path;
   final String? body;
   final String headersJson;
   final DateTime createdAt;
-  const PendingMutation({
+  const PendingMutationsData({
     required this.id,
     required this.method,
     required this.path,
@@ -543,12 +544,12 @@ class PendingMutation extends DataClass implements Insertable<PendingMutation> {
     );
   }
 
-  factory PendingMutation.fromJson(
+  factory PendingMutationsData.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return PendingMutation(
+    return PendingMutationsData(
       id: serializer.fromJson<String>(json['id']),
       method: serializer.fromJson<String>(json['method']),
       path: serializer.fromJson<String>(json['path']),
@@ -570,14 +571,14 @@ class PendingMutation extends DataClass implements Insertable<PendingMutation> {
     };
   }
 
-  PendingMutation copyWith({
+  PendingMutationsData copyWith({
     String? id,
     String? method,
     String? path,
     Value<String?> body = const Value.absent(),
     String? headersJson,
     DateTime? createdAt,
-  }) => PendingMutation(
+  }) => PendingMutationsData(
     id: id ?? this.id,
     method: method ?? this.method,
     path: path ?? this.path,
@@ -585,8 +586,8 @@ class PendingMutation extends DataClass implements Insertable<PendingMutation> {
     headersJson: headersJson ?? this.headersJson,
     createdAt: createdAt ?? this.createdAt,
   );
-  PendingMutation copyWithCompanion(PendingMutationsCompanion data) {
-    return PendingMutation(
+  PendingMutationsData copyWithCompanion(PendingMutationsCompanion data) {
+    return PendingMutationsData(
       id: data.id.present ? data.id.value : this.id,
       method: data.method.present ? data.method.value : this.method,
       path: data.path.present ? data.path.value : this.path,
@@ -600,7 +601,7 @@ class PendingMutation extends DataClass implements Insertable<PendingMutation> {
 
   @override
   String toString() {
-    return (StringBuffer('PendingMutation(')
+    return (StringBuffer('PendingMutationsData(')
           ..write('id: $id, ')
           ..write('method: $method, ')
           ..write('path: $path, ')
@@ -617,7 +618,7 @@ class PendingMutation extends DataClass implements Insertable<PendingMutation> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is PendingMutation &&
+      (other is PendingMutationsData &&
           other.id == this.id &&
           other.method == this.method &&
           other.path == this.path &&
@@ -626,7 +627,7 @@ class PendingMutation extends DataClass implements Insertable<PendingMutation> {
           other.createdAt == this.createdAt);
 }
 
-class PendingMutationsCompanion extends UpdateCompanion<PendingMutation> {
+class PendingMutationsCompanion extends UpdateCompanion<PendingMutationsData> {
   final Value<String> id;
   final Value<String> method;
   final Value<String> path;
@@ -656,7 +657,7 @@ class PendingMutationsCompanion extends UpdateCompanion<PendingMutation> {
        path = Value(path),
        headersJson = Value(headersJson),
        createdAt = Value(createdAt);
-  static Insertable<PendingMutation> custom({
+  static Insertable<PendingMutationsData> custom({
     Expression<String>? id,
     Expression<String>? method,
     Expression<String>? path,
@@ -2083,21 +2084,21 @@ class $$PendingMutationsTableTableManager
         RootTableManager<
           _$AppDatabase,
           $PendingMutationsTable,
-          PendingMutation,
+          PendingMutationsData,
           $$PendingMutationsTableFilterComposer,
           $$PendingMutationsTableOrderingComposer,
           $$PendingMutationsTableAnnotationComposer,
           $$PendingMutationsTableCreateCompanionBuilder,
           $$PendingMutationsTableUpdateCompanionBuilder,
           (
-            PendingMutation,
+            PendingMutationsData,
             BaseReferences<
               _$AppDatabase,
               $PendingMutationsTable,
-              PendingMutation
+              PendingMutationsData
             >,
           ),
-          PendingMutation,
+          PendingMutationsData,
           PrefetchHooks Function()
         > {
   $$PendingMutationsTableTableManager(
@@ -2161,17 +2162,21 @@ typedef $$PendingMutationsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
       $PendingMutationsTable,
-      PendingMutation,
+      PendingMutationsData,
       $$PendingMutationsTableFilterComposer,
       $$PendingMutationsTableOrderingComposer,
       $$PendingMutationsTableAnnotationComposer,
       $$PendingMutationsTableCreateCompanionBuilder,
       $$PendingMutationsTableUpdateCompanionBuilder,
       (
-        PendingMutation,
-        BaseReferences<_$AppDatabase, $PendingMutationsTable, PendingMutation>,
+        PendingMutationsData,
+        BaseReferences<
+          _$AppDatabase,
+          $PendingMutationsTable,
+          PendingMutationsData
+        >,
       ),
-      PendingMutation,
+      PendingMutationsData,
       PrefetchHooks Function()
     >;
 typedef $$ShipsCacheTableCreateCompanionBuilder =

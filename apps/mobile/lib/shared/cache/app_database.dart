@@ -37,6 +37,11 @@ class CharactersCache extends Table {
 ///
 /// `createdAt` drives FIFO ordering; consumers sort ascending on this column
 /// so earlier mutations are replayed first (preserving causal order).
+///
+/// Row class is pinned to `PendingMutationsData` (instead of Drift's default
+/// singularization to `PendingMutation`) to avoid colliding with the domain
+/// `PendingMutation` class in `shared/queue/mutation_queue.dart`.
+@DataClassName('PendingMutationsData')
 class PendingMutations extends Table {
   TextColumn get id => text()();
   TextColumn get method => text()();
