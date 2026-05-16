@@ -27,13 +27,11 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 
 import { SessionGuard } from '../../common/auth/auth.guard';
 
-import { AssignCharacterCommand, AssignCharacterDto } from './commands/assign-character.command';
 import {
   CreateGameSessionCommand,
   CreateGameSessionDto,
 } from './commands/create-game-session.command';
 import { DeleteGameSessionCommand } from './commands/delete-game-session.command';
-import { UnassignCharacterCommand } from './commands/unassign-character.command';
 import {
   UpdateGameSessionCommand,
   UpdateGameSessionDto,
@@ -104,28 +102,6 @@ export class GameSessionsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<void> {
     return this.commandBus.execute(new DeleteGameSessionCommand(id, req.userId));
-  }
-
-  /** POST /api/v1/game-sessions/:id/characters */
-  @Post(':id/characters')
-  @HttpCode(HttpStatus.CREATED)
-  async assignCharacter(
-    @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
-    @Body() body: AssignCharacterDto,
-  ): Promise<GameSessionReadModel> {
-    return this.commandBus.execute(new AssignCharacterCommand(id, req.userId, body.characterId));
-  }
-
-  /** DELETE /api/v1/game-sessions/:id/characters/:characterId */
-  @Delete(':id/characters/:characterId')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async unassignCharacter(
-    @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
-    @Param('characterId') characterId: string,
-  ): Promise<void> {
-    return this.commandBus.execute(new UnassignCharacterCommand(id, req.userId, characterId));
   }
 
   /** POST /api/v1/game-sessions/:id/dp */

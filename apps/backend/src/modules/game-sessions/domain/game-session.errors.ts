@@ -51,21 +51,6 @@ export class GameSessionNameTooLongError extends DomainError {
 }
 
 /**
- * Thrown when a character being assigned to a session does not belong to
- * the caller. Cross-user assignment is forbidden in v1.
- */
-export class CharacterNotOwnedError extends DomainError {
-  constructor(characterId: string) {
-    super({
-      code: 'CHARACTER_NOT_OWNED',
-      status: 403,
-      title: 'Forbidden',
-      detail: `Character ${characterId} does not belong to you.`,
-    });
-  }
-}
-
-/**
  * Thrown when a status transition is attempted that is not permitted.
  * Both active → archived and archived → active are allowed; anything
  * else (e.g. providing an unknown string) hits this error.

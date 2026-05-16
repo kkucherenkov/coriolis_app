@@ -4,7 +4,9 @@
  * Checks whether a caller is owner or member of a game session without
  * duplicating the SQL from game-sessions/infra/game-session.repo.ts.
  *
- * member = ownerId OR has a character assigned via CharacterGameSession join table.
+ * Since Phase 8 Stream E, `member` = active row in `GameSessionMembership`
+ * for (sessionId, userId). The GM is always a member (backfilled on the
+ * Stream A migration); the legacy `CharacterGameSession` join table is gone.
  */
 import { Injectable } from '@nestjs/common';
 
@@ -25,23 +27,11 @@ export class GameSessionAccessService implements IGameSessionAccess {
   }
 
   async isMember(sessionId: string, userId: string): Promise<boolean> {
-    // Owner always counts as a member.
-    const session = await this.prisma.gameSession.findFirst({
-      where: { id: sessionId },
-      select: {
-        ownerId: true,
-        characters: {
-          where: {
-            character: { ownerId: userId },
-          },
-          select: { characterId: true },
-          take: 1,
-        },
-      },
+    const membership = await this.prisma.gameSessionMembership.findFirst({
+      where: { gameSessionId: sessionId, userId, leftAt: null },
+      select: { id: true },
     });
-    if (!session) return false;
-    if (session.ownerId === userId) return true;
-    return session.characters.length > 0;
+    return membership !== null;
   }
 
   async getOwnerId(sessionId: string): Promise<string | null> {

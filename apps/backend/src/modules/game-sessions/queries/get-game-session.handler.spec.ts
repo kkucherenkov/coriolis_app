@@ -17,8 +17,6 @@ function makeRepo(): IGameSessionRepo {
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
-    assignCharacter: vi.fn(),
-    unassignCharacter: vi.fn(),
   };
 }
 
@@ -30,7 +28,6 @@ function makeSession(overrides: Partial<GameSessionReadModel> = {}): GameSession
     description: null,
     status: 'active',
     dpCount: 0,
-    characterIds: [],
     memberships: [],
     shipId: null,
     createdAt: '2026-05-09T10:00:00.000Z',
@@ -71,14 +68,5 @@ describe('GetGameSessionHandler', () => {
     await expect(handler.execute(new GetGameSessionQuery('gs-1', 'user-1'))).rejects.toBeInstanceOf(
       GameSessionNotOwnerError,
     );
-  });
-
-  it('returns session with assigned characterIds', async () => {
-    const session = makeSession({ characterIds: ['char-1', 'char-2'] });
-    vi.mocked(repo.findById).mockResolvedValue(session);
-
-    const result = await handler.execute(new GetGameSessionQuery('gs-1', 'user-1'));
-
-    expect(result.characterIds).toEqual(['char-1', 'char-2']);
   });
 });
