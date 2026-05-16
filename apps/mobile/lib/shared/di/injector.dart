@@ -16,8 +16,12 @@ import 'package:get_it/get_it.dart';
 import 'package:coriolis_companion/features/auth/data/auth_api.dart';
 import 'package:coriolis_companion/features/auth/domain/auth_repository.dart';
 import 'package:coriolis_companion/features/auth/presentation/bloc/auth_cubit.dart';
+import 'package:coriolis_companion/features/characters/data/cached_character_repository.dart';
+import 'package:coriolis_companion/features/characters/data/character_cache.dart';
 import 'package:coriolis_companion/features/characters/data/character_repository_impl.dart';
+import 'package:coriolis_companion/features/characters/data/drift_character_cache.dart';
 import 'package:coriolis_companion/features/characters/domain/character_repository.dart';
+import 'package:coriolis_companion/shared/cache/app_database.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_sheet/character_sheet_cubit.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/character_wizard/character_wizard_cubit.dart';
 import 'package:coriolis_companion/features/characters/presentation/blocs/characters_list/characters_list_cubit.dart';
@@ -67,10 +71,15 @@ void configureDependencies() {
   getIt
     ..registerLazySingleton<AppConfig>(AppConfig.fromEnv)
     ..registerLazySingleton<TokenStorage>(SecureTokenStorage.new)
+    ..registerLazySingleton<AppDatabase>(AppDatabase.new)
+    ..registerLazySingleton<LocalCharacterCache>(
+      () => DriftCharacterCache(getIt<AppDatabase>()),
+    )
     ..registerLazySingleton<Dio>(
       () => buildDio(
         config: getIt<AppConfig>(),
         tokenStorage: getIt<TokenStorage>(),
+        characterCache: getIt<LocalCharacterCache>(),
       ),
     );
 
@@ -114,7 +123,10 @@ void configureDependencies() {
 
   // ── Characters domain ────────────────────────────────────────────────────
   getIt.registerLazySingleton<CharacterRepository>(
-    () => CharacterRepositoryImpl(api: getIt<CharactersApi>()),
+    () => CachedCharacterRepository(
+      remote: CharacterRepositoryImpl(api: getIt<CharactersApi>()),
+      cache: getIt<LocalCharacterCache>(),
+    ),
   );
 
   // ── Rolls domain (Phase 4 Feature 7.1) ───────────────────────────────────
@@ -211,6 +223,18 @@ void configureDependencies() {
         ),
       ),
     );
+}
+
+/// Test-only DI bootstrap.
+///
+/// Allows tests to supply an in-memory [AppDatabase] before the normal
+/// composition root runs. Pass an `AppDatabase.forTesting(NativeDatabase.memory())`
+/// instance to avoid touching the filesystem.
+void configureDependenciesForTesting({AppDatabase? appDatabase}) {
+  if (appDatabase != null && !getIt.isRegistered<AppDatabase>()) {
+    getIt.registerSingleton<AppDatabase>(appDatabase);
+  }
+  configureDependencies();
 }
 
 /// Test-only reset hook. Call in `tearDown` to drop singletons between cases.
