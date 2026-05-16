@@ -5,6 +5,9 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:coriolis_companion/features/game_sessions/data/cached_session_repository.dart';
 import 'package:coriolis_companion/features/game_sessions/data/game_session_cache.dart';
+import 'package:coriolis_companion/features/npcs/data/cached_npc_repository.dart';
+import 'package:coriolis_companion/features/npcs/data/npc_cache.dart';
+import 'package:coriolis_companion/features/npcs/domain/npc_repository.dart';
 import 'package:coriolis_companion/features/ships/data/cached_ship_repository.dart';
 import 'package:coriolis_companion/features/ships/data/ship_cache.dart';
 import 'package:coriolis_companion/features/game_sessions/domain/session_repository.dart';
@@ -45,5 +48,14 @@ void main() {
   test('SessionRepository resolves as CachedSessionRepository', () {
     final repo = getIt<SessionRepository>();
     expect(repo, isA<CachedSessionRepository>());
+  });
+
+  test('LocalNpcCache is registered', () {
+    expect(getIt<LocalNpcCache>(), isNotNull);
+  });
+
+  test('NpcRepository resolves as CachedNpcRepository', () {
+    final repo = getIt<NpcRepository>();
+    expect(repo, isA<CachedNpcRepository>());
   });
 }
