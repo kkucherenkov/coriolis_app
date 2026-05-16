@@ -312,6 +312,49 @@ export class ChatMessageRepo implements IChatMessageRepo {
   }
 
   // ---------------------------------------------------------------------------
+  // countNewerThan  (used by ListConversationsHandler for unread counts + lastMessageAt)
+  // ---------------------------------------------------------------------------
+
+  async countNewerThan(args: {
+    gameSessionId: string;
+    conversation: import('../domain/chat.ports').ConversationKey;
+    callerMembershipId: string;
+    after: Date | null;
+  }): Promise<{ count: number; lastMessageAt: Date | null }> {
+    const { gameSessionId, conversation, callerMembershipId, after } = args;
+
+    // Build the same base where clause as list()
+    let baseWhere: Prisma.ChatMessageWhereInput;
+    if (conversation === 'broadcast') {
+      baseWhere = { gameSessionId, targetMembershipId: null, deletedAt: null };
+    } else {
+      const partnerMembershipId = conversation;
+      baseWhere = {
+        gameSessionId,
+        deletedAt: null,
+        OR: [
+          { authorMembershipId: callerMembershipId, targetMembershipId: partnerMembershipId },
+          { authorMembershipId: partnerMembershipId, targetMembershipId: callerMembershipId },
+        ],
+      };
+    }
+
+    const where: Prisma.ChatMessageWhereInput =
+      after !== null ? { ...baseWhere, createdAt: { gt: after } } : baseWhere;
+
+    // Run count and max in parallel
+    const [count, agg] = await Promise.all([
+      this.prisma.chatMessage.count({ where }),
+      this.prisma.chatMessage.aggregate({
+        where: after !== null ? (baseWhere as Prisma.ChatMessageWhereInput) : baseWhere,
+        _max: { createdAt: true },
+      }),
+    ]);
+
+    return { count, lastMessageAt: agg._max.createdAt };
+  }
+
+  // ---------------------------------------------------------------------------
   // Private helpers
   // ---------------------------------------------------------------------------
 

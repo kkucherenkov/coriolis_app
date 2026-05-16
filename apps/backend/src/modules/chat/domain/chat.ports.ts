@@ -71,6 +71,21 @@ export interface IChatMessageRepo {
     gameSessionId: string;
     callerMembershipId: string;
   }): Promise<ConversationSummaryReadModel[]>;
+
+  /**
+   * Returns the count of non-deleted messages in a conversation that were created
+   * strictly after `after`. When `after` is null, counts ALL non-deleted messages.
+   *
+   * Design decision: returning `{ count, lastMessageAt }` in one call avoids a
+   * separate `getLastAt` round-trip when prepending the synthetic broadcast row
+   * in ListConversationsHandler — both values come from the same Prisma query.
+   */
+  countNewerThan(args: {
+    gameSessionId: string;
+    conversation: ConversationKey;
+    callerMembershipId: string;
+    after: Date | null;
+  }): Promise<{ count: number; lastMessageAt: Date | null }>;
 }
 
 export const CHAT_READ_CURSOR_REPO = Symbol('CHAT_READ_CURSOR_REPO');

@@ -22,6 +22,8 @@ function makePrismaMock() {
       update: vi.fn(),
       findMany: vi.fn(),
       groupBy: vi.fn(),
+      count: vi.fn(),
+      aggregate: vi.fn(),
     },
     gameSessionMembership: {
       findMany: vi.fn(),
@@ -270,5 +272,77 @@ describe('ChatMessageRepo', () => {
       }),
     );
     expect(result.deletedAt).toBe(deletedAt.toISOString());
+  });
+
+  // -------------------------------------------------------------------------
+  // countNewerThan
+  // -------------------------------------------------------------------------
+
+  it('countNewerThan: returns count of broadcast messages newer than cursor', async () => {
+    vi.mocked(prisma.chatMessage.count).mockResolvedValue(3);
+    const lastAt = new Date('2026-05-17T10:05:00.000Z');
+    vi.mocked(prisma.chatMessage.aggregate).mockResolvedValue({
+      _max: { createdAt: lastAt },
+    } as never);
+
+    const after = new Date('2026-05-17T10:00:00.000Z');
+    const result = await repo.countNewerThan({
+      gameSessionId: 'gs-1',
+      conversation: 'broadcast',
+      callerMembershipId: 'mem-1',
+      after,
+    });
+
+    expect(result.count).toBe(3);
+    expect(result.lastMessageAt).toBe(lastAt);
+    // count query uses the after-filtered where
+    const countCall = vi.mocked(prisma.chatMessage.count).mock.calls[0]![0]!;
+    expect(countCall.where).toMatchObject({ createdAt: { gt: after } });
+    // aggregate query uses the base where (no after filter) — for lastMessageAt of all messages
+    const aggCall = vi.mocked(prisma.chatMessage.aggregate).mock.calls[0]![0]!;
+    expect(aggCall.where).not.toHaveProperty('createdAt');
+  });
+
+  it('countNewerThan: with null after counts all messages and returns lastMessageAt', async () => {
+    const lastAt = new Date('2026-05-17T09:00:00.000Z');
+    vi.mocked(prisma.chatMessage.count).mockResolvedValue(10);
+    vi.mocked(prisma.chatMessage.aggregate).mockResolvedValue({
+      _max: { createdAt: lastAt },
+    } as never);
+
+    const result = await repo.countNewerThan({
+      gameSessionId: 'gs-1',
+      conversation: 'broadcast',
+      callerMembershipId: 'mem-1',
+      after: null,
+    });
+
+    expect(result.count).toBe(10);
+    expect(result.lastMessageAt).toBe(lastAt);
+    // Neither count nor aggregate should have createdAt filter when after is null
+    const countCall = vi.mocked(prisma.chatMessage.count).mock.calls[0]![0]!;
+    expect(countCall.where).not.toHaveProperty('createdAt');
+  });
+
+  it('countNewerThan: whisper conversation uses OR clause in where', async () => {
+    vi.mocked(prisma.chatMessage.count).mockResolvedValue(0);
+    vi.mocked(prisma.chatMessage.aggregate).mockResolvedValue({
+      _max: { createdAt: null },
+    } as never);
+
+    await repo.countNewerThan({
+      gameSessionId: 'gs-1',
+      conversation: 'mem-partner',
+      callerMembershipId: 'mem-caller',
+      after: null,
+    });
+
+    const countCall = vi.mocked(prisma.chatMessage.count).mock.calls[0]![0]!;
+    expect(countCall.where).toMatchObject({
+      OR: [
+        { authorMembershipId: 'mem-caller', targetMembershipId: 'mem-partner' },
+        { authorMembershipId: 'mem-partner', targetMembershipId: 'mem-caller' },
+      ],
+    });
   });
 });
