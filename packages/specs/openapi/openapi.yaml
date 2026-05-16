@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Coriolis Companion API
-  version: 1.9.0
+  version: 1.10.0
   description: |
     Spec-first HTTP API for the Coriolis Companion App. Paths include the
     versioned prefix (`/api/v1`) so generated clients can be used without
@@ -10411,6 +10411,15 @@ components:
             toggles high-contrast on one device sees it everywhere.
             `dark` is the default; `high-contrast` increases colour contrast
             for users who need improved readability.
+        chatDockedCollapsed:
+          type: boolean
+          default: false
+          description: |
+            Persisted state of the GM session-detail chat dock collapse toggle.
+            Replaces the prior localStorage `chat-docked-collapsed` fallback
+            (Stream D shipped that as a placeholder; this is the canonical
+            home). Synced across devices so a GM who collapses the dock on
+            one client sees it collapsed on the next.
 
     MeUpdate:
       type: object
@@ -10431,6 +10440,11 @@ components:
           enum: [dark, high-contrast]
           description: |
             UI theme preference. Must be one of `dark` or `high-contrast`.
+            Omitting the field preserves the current value.
+        chatDockedCollapsed:
+          type: boolean
+          description: |
+            Toggle persisted state of the GM session-detail chat dock collapse.
             Omitting the field preserves the current value.
 
     # -------------------------------------------------------------------------
