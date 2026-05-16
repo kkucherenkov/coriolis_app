@@ -3,19 +3,19 @@
  * Feature 7.2).
  *
  * GameSessions are owned by a GM and host the live state for a play
- * session: a Darkness Points counter, the assigned PCs, and the audit
- * trail of DP adjustments. Players join via the GM assigning their
- * character (POST /game-sessions/{id}/characters); the actual DP +
- * roll-pushed events are layered in Block 4 / 5.
+ * session: a Darkness Points counter, the membership roster, and the audit
+ * trail of DP adjustments. Players join via an invite link
+ * (POST /invites/{token}/accept) and link a character through their own
+ * membership (PATCH /game-sessions/{id}/members/{membershipId}). The
+ * Stream-A legacy GM-only assign/unassign endpoints were removed in
+ * Phase 8 Stream E.
  *
  * API surface:
- *   GET    /api/v1/game-sessions                            → listSessions
- *   POST   /api/v1/game-sessions                            → createSession
- *   GET    /api/v1/game-sessions/{id}                       → getSession
- *   PATCH  /api/v1/game-sessions/{id}                       → updateSession
- *   DELETE /api/v1/game-sessions/{id}                       → deleteSession
- *   POST   /api/v1/game-sessions/{id}/characters            → assignCharacter
- *   DELETE /api/v1/game-sessions/{id}/characters/{charId}   → unassignCharacter
+ *   GET    /api/v1/game-sessions               → listSessions
+ *   POST   /api/v1/game-sessions               → createSession
+ *   GET    /api/v1/game-sessions/{id}          → getSession
+ *   PATCH  /api/v1/game-sessions/{id}          → updateSession
+ *   DELETE /api/v1/game-sessions/{id}          → deleteSession
  *
  * Errors are thrown as the raw `Problem` object (RFC 9457). Callers
  * inspect `problem.status` / `problem.detail` for inline messaging.
@@ -27,8 +27,6 @@ import {
   getGameSession,
   updateGameSession,
   deleteGameSession,
-  assignCharacterToSession,
-  unassignCharacterFromSession,
 } from '@app/api-client-ts';
 import type {
   GameSession,
@@ -55,8 +53,6 @@ export interface GameSessionsApiClient {
   getSession(id: string): Promise<GameSession>;
   updateSession(id: string, body: GameSessionUpdate): Promise<GameSession>;
   deleteSession(id: string): Promise<void>;
-  assignCharacter(sessionId: string, characterId: string): Promise<void>;
-  unassignCharacter(sessionId: string, characterId: string): Promise<void>;
 }
 
 export function useGameSessionsApi(): GameSessionsApiClient {
@@ -91,23 +87,6 @@ export function useGameSessionsApi(): GameSessionsApiClient {
 
     async deleteSession(id) {
       const res = await deleteGameSession({ path: { id } });
-      // eslint-disable-next-line @typescript-eslint/only-throw-error
-      if (res.error) throw res.error as Problem;
-    },
-
-    async assignCharacter(sessionId, characterId) {
-      const res = await assignCharacterToSession({
-        path: { id: sessionId },
-        body: { characterId },
-      });
-      // eslint-disable-next-line @typescript-eslint/only-throw-error
-      if (res.error) throw res.error as Problem;
-    },
-
-    async unassignCharacter(sessionId, characterId) {
-      const res = await unassignCharacterFromSession({
-        path: { id: sessionId, characterId },
-      });
       // eslint-disable-next-line @typescript-eslint/only-throw-error
       if (res.error) throw res.error as Problem;
     },

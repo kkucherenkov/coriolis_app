@@ -14,7 +14,7 @@ GameSession _session({int dpCount = 3}) => GameSession(
       name: 'Bridge',
       status: 'active',
       dpCount: dpCount,
-      characterIds: const [],
+      members: const [],
       createdAt: DateTime(2026, 5, 15),
       updatedAt: DateTime(2026, 5, 15),
     );

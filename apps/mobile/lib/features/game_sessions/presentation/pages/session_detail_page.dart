@@ -320,10 +320,10 @@ class _DetailContentState extends State<_DetailContent> {
           sessionId: s.id,
           isGm: widget.isGm,
           dpCount: s.dpCount,
-          sessionCharacterIds: s.characterIds,
+          sessionCharacterIds: s.linkedCharacterIds,
         ),
         const SizedBox(height: 12),
-        _CharactersCard(characterIds: s.characterIds),
+        _CrewCard(members: s.members),
         if (widget.isGm) ...[
           const SizedBox(height: 12),
           _AuditCard(events: widget.dpEvents),
@@ -452,42 +452,45 @@ class _DpCard extends StatelessWidget {
   }
 }
 
-class _CharactersCard extends StatelessWidget {
-  const _CharactersCard({required this.characterIds});
+class _CrewCard extends StatelessWidget {
+  const _CrewCard({required this.members});
 
-  final List<String> characterIds;
+  final List<GameSessionMember> members;
 
   @override
   Widget build(BuildContext context) {
+    final hasPlayers = members.any((m) => !m.isGm);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Characters',
+            Text('Crew',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       letterSpacing: 1.2,
                     )),
             const SizedBox(height: 8),
-            if (characterIds.isEmpty)
+            if (!hasPlayers)
               Text(
-                'No characters assigned yet.',
+                'Share your invite link to bring players to the table.',
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontStyle: FontStyle.italic,
                 ),
               )
             else
-              for (final id in characterIds)
+              for (final m in members)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Text('• #$id',
-                      style: const TextStyle(fontFamily: 'monospace')),
+                  child: Text(
+                    [
+                      '• ${m.displayName ?? m.userId}',
+                      if (m.isGm) ' (GM)',
+                      if (m.characterName != null) ' — ${m.characterName}',
+                    ].join(),
+                  ),
                 ),
-            // Note: assignment from mobile is deliberately a follow-up;
-            // the GM uses the web UI for the heavy "set up the
-            // session" workflow. This page is glance-and-tweak.
           ],
         ),
       ),

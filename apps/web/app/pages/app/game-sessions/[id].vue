@@ -19,7 +19,6 @@
   import { useGameSessionsApi } from '~/composables/useGameSessionsApi';
   import { useDpApi } from '~/composables/useDpApi';
   import { useMeApi } from '~/composables/useMeApi';
-  import { useCharactersApi } from '~/composables/useCharactersApi';
   import { useInviteApi } from '~/composables/useInviteApi';
   import {
     useSessionRealtime,
@@ -33,7 +32,7 @@
   import type { GameSession } from '~/composables/useGameSessionsApi';
   import type { DpEvent, DpSource } from '~/composables/useDpApi';
   import type { Me } from '~/composables/useMeApi';
-  import type { Character, Problem, GameSessionMembership } from '@app/api-client-ts';
+  import type { Problem, GameSessionMembership } from '@app/api-client-ts';
 
   /**
    * Session detail (Phase 8 Stream D, Block 8).
@@ -51,7 +50,6 @@
   const sessionsApi = useGameSessionsApi();
   const dpApi = useDpApi();
   const meApi = useMeApi();
-  const charactersApi = useCharactersApi();
   const inviteApi = useInviteApi();
 
   const sessionId = computed<string>(() => route.params.id as string);
@@ -61,26 +59,23 @@
   const state = ref<LoadState>('loading');
   const session = ref<GameSession | null>(null);
   const me = ref<Me | null>(null);
-  const myCharacters = ref<Character[]>([]);
   const dpEvents = ref<DpEvent[]>([]);
   const errorMsg = ref('');
 
   // GM's own membershipId (resolved after session + me load)
   const gmMembershipId = ref<string | null>(null);
-  // All session members (for whisper picker)
+  // All session members (for whisper picker + Crew panel)
   const sessionMembers = ref<GameSessionMembership[]>([]);
 
   const isGm = computed(() => Boolean(me.value && me.value.id === session.value?.ownerId));
 
-  const assignedCharacters = computed<readonly Character[]>(() => {
-    const ids = new Set(session.value?.characterIds);
-    return myCharacters.value.filter((c) => ids.has(c.id));
-  });
-
-  const assignableCharacters = computed<readonly Character[]>(() => {
-    const ids = new Set(session.value?.characterIds);
-    return myCharacters.value.filter((c) => !ids.has(c.id) && c.status === 'active');
-  });
+  // Character ids linked through memberships — drives the encounter "import linked PCs" picker.
+  const linkedCharacterIds = computed<readonly string[]>(
+    () =>
+      session.value?.memberships
+        ?.map((m) => m.characterId)
+        .filter((id): id is string => Boolean(id)) ?? [],
+  );
 
   // ── Chat dock collapsed state (localStorage — no settings key yet) ────────
   //
@@ -221,7 +216,7 @@
     const summary = chatStore.conversationsList.find(
       (c) => c.conversationKey === chatStore.activeConversationKey,
     );
-    return summary?.partnerDisplayName ?? summary?.partnerCharacterName;
+    return summary?.partnerDisplayName ?? summary?.partnerCharacterName ?? undefined;
   });
 
   const chatPanelBindings = computed(() => ({
@@ -397,11 +392,6 @@
   const dpError = ref('');
   const dpDeltaValid = computed(() => dpDelta.value !== 0);
 
-  // ── Character assignment ─────────────────────────────────────────────────
-  const assignSelected = ref<string>('');
-  const assignBusy = ref(false);
-  const assignError = ref('');
-
   // ── Realtime (Phase 4 Feature 7.4) ───────────────────────────────────────
   const realtime = useSessionRealtime(sessionId.value);
 
@@ -472,17 +462,15 @@
     state.value = 'loading';
     errorMsg.value = '';
     try {
-      const [s, profile, chars] = await Promise.all([
+      const [s, profile] = await Promise.all([
         sessionsApi.getSession(sessionId.value),
         meApi.get(),
-        charactersApi.list({ limit: 100 }),
       ]);
       session.value = s;
       me.value = profile;
-      myCharacters.value = [...chars.items];
       state.value = 'loaded';
 
-      // Load session members to resolve GM's membershipId and populate whisper picker
+      // Load session members to resolve GM's membershipId and populate whisper picker + Crew panel.
       const membersRes = await listMembers({ path: { id: sessionId.value } });
       if (!membersRes.error) {
         const members = membersRes.data as GameSessionMembership[];
@@ -568,33 +556,6 @@
     await applyDelta(dpDelta.value);
   }
 
-  async function onAssign(): Promise<void> {
-    if (!assignSelected.value) return;
-    assignError.value = '';
-    assignBusy.value = true;
-    try {
-      await sessionsApi.assignCharacter(sessionId.value, assignSelected.value);
-      session.value = await sessionsApi.getSession(sessionId.value);
-      assignSelected.value = '';
-    } catch (error) {
-      const problem = error as Problem;
-      assignError.value = problem.detail ?? t('errorAssign');
-    } finally {
-      assignBusy.value = false;
-    }
-  }
-
-  async function onUnassign(characterId: string): Promise<void> {
-    assignError.value = '';
-    try {
-      await sessionsApi.unassignCharacter(sessionId.value, characterId);
-      session.value = await sessionsApi.getSession(sessionId.value);
-    } catch (error) {
-      const problem = error as Problem;
-      assignError.value = problem.detail ?? t('errorUnassign');
-    }
-  }
-
   function formatEventTime(iso: string): string {
     return new Date(iso).toLocaleString(locale.value, {
       month: 'short',
@@ -638,8 +599,6 @@
     "errorDpAdjust": "Couldn't adjust DP.",
     "errorDpDeltaInvalid": "Delta must be non-zero.",
     "errorAuditLoad": "Couldn't load DP audit log.",
-    "errorAssign": "Couldn't assign that character.",
-    "errorUnassign": "Couldn't remove that character.",
     "notFoundHeading": "Session not found",
     "notFoundBody": "It may have been deleted, or you don't have permission to view it.",
     "dpLabel": "Darkness Points",
@@ -653,13 +612,9 @@
     "dpApplyButton": "Apply",
     "auditHeading": "Audit log",
     "auditEmpty": "No DP events yet — adjust above to start the trail.",
-    "charactersHeading": "Characters",
-    "charactersEmpty": "No characters assigned yet.",
-    "assignHeading": "Assign character",
-    "assignNoneLeft": "All your active characters are already assigned.",
-    "assignButton": "Assign",
-    "assignSelectPlaceholder": "Pick a character",
-    "removeButton": "Remove",
+    "crewHeading": "Crew",
+    "crewEmpty": "Share your invite link to bring players to the table.",
+    "crewRoleGm": "(GM)",
     "gmBadge": "GM owner",
     "playerBadge": "Player view",
     "liveBadge": "Live",
@@ -761,8 +716,6 @@
     "errorDpAdjust": "Не удалось изменить ПТ.",
     "errorDpDeltaInvalid": "Дельта должна быть ненулевой.",
     "errorAuditLoad": "Не удалось загрузить журнал ПТ.",
-    "errorAssign": "Не удалось назначить персонажа.",
-    "errorUnassign": "Не удалось снять персонажа.",
     "notFoundHeading": "Сессия не найдена",
     "notFoundBody": "Возможно, она была удалена или у вас нет к ней доступа.",
     "dpLabel": "Пункты тьмы",
@@ -776,13 +729,9 @@
     "dpApplyButton": "Применить",
     "auditHeading": "Журнал событий",
     "auditEmpty": "Событий ПТ ещё нет — измените значение выше, чтобы начать журнал.",
-    "charactersHeading": "Персонажи",
-    "charactersEmpty": "Ни одного персонажа ещё не назначено.",
-    "assignHeading": "Назначить персонажа",
-    "assignNoneLeft": "Все ваши активные персонажи уже в сессии.",
-    "assignButton": "Назначить",
-    "assignSelectPlaceholder": "Выберите персонажа",
-    "removeButton": "Снять",
+    "crewHeading": "Экипаж",
+    "crewEmpty": "Поделитесь ссылкой-приглашением, чтобы пригласить игроков за стол.",
+    "crewRoleGm": "(ГМ)",
     "gmBadge": "ГМ-владелец",
     "playerBadge": "Вид игрока",
     "liveBadge": "Live",
@@ -884,8 +833,6 @@
     "errorDpAdjust": "[uk-todo] Couldn't adjust DP",
     "errorDpDeltaInvalid": "[uk-todo] Delta must be non-zero",
     "errorAuditLoad": "[uk-todo] Couldn't load audit",
-    "errorAssign": "[uk-todo] Couldn't assign",
-    "errorUnassign": "[uk-todo] Couldn't unassign",
     "notFoundHeading": "[uk-todo] Session not found",
     "notFoundBody": "[uk-todo] May have been deleted",
     "dpLabel": "[uk-todo] Darkness Points",
@@ -899,13 +846,9 @@
     "dpApplyButton": "[uk-todo] Apply",
     "auditHeading": "[uk-todo] Audit log",
     "auditEmpty": "[uk-todo] No events yet",
-    "charactersHeading": "[uk-todo] Characters",
-    "charactersEmpty": "[uk-todo] None assigned yet",
-    "assignHeading": "[uk-todo] Assign character",
-    "assignNoneLeft": "[uk-todo] All assigned",
-    "assignButton": "[uk-todo] Assign",
-    "assignSelectPlaceholder": "[uk-todo] Pick a character",
-    "removeButton": "[uk-todo] Remove",
+    "crewHeading": "[uk-todo] Crew",
+    "crewEmpty": "[uk-todo] Share your invite link to bring players to the table.",
+    "crewRoleGm": "[uk-todo] (GM)",
     "gmBadge": "[uk-todo] GM owner",
     "playerBadge": "[uk-todo] Player view",
     "liveBadge": "[uk-todo] Live",
@@ -1007,8 +950,6 @@
     "errorDpAdjust": "[el-todo] Couldn't adjust DP",
     "errorDpDeltaInvalid": "[el-todo] Delta must be non-zero",
     "errorAuditLoad": "[el-todo] Couldn't load audit",
-    "errorAssign": "[el-todo] Couldn't assign",
-    "errorUnassign": "[el-todo] Couldn't unassign",
     "notFoundHeading": "[el-todo] Session not found",
     "notFoundBody": "[el-todo] May have been deleted",
     "dpLabel": "[el-todo] Darkness Points",
@@ -1022,13 +963,9 @@
     "dpApplyButton": "[el-todo] Apply",
     "auditHeading": "[el-todo] Audit log",
     "auditEmpty": "[el-todo] No events yet",
-    "charactersHeading": "[el-todo] Characters",
-    "charactersEmpty": "[el-todo] None assigned yet",
-    "assignHeading": "[el-todo] Assign character",
-    "assignNoneLeft": "[el-todo] All assigned",
-    "assignButton": "[el-todo] Assign",
-    "assignSelectPlaceholder": "[el-todo] Pick a character",
-    "removeButton": "[el-todo] Remove",
+    "crewHeading": "[el-todo] Crew",
+    "crewEmpty": "[el-todo] Share your invite link to bring players to the table.",
+    "crewRoleGm": "[el-todo] (GM)",
     "gmBadge": "[el-todo] GM owner",
     "playerBadge": "[el-todo] Player view",
     "liveBadge": "[el-todo] Live",
@@ -1161,7 +1098,8 @@
           {{
             t('rollPushedToast', {
               character:
-                assignedCharacters.find((c) => c.id === recentRollPushed?.characterId)?.name ?? '#',
+                sessionMembers.find((m) => m.characterId === recentRollPushed?.characterId)
+                  ?.characterName ?? '#',
               hits: recentRollPushed.hits,
             })
           }}
@@ -1253,73 +1191,33 @@
             </AppCard>
           </div>
 
-          <AppCard class="page-session-detail__panel">
+          <AppCard class="page-session-detail__panel" data-testid="crew-panel">
             <h3 class="page-session-detail__panel-title">
-              {{ t('charactersHeading') }}
+              {{ t('crewHeading') }}
             </h3>
-            <AppBanner v-if="assignError" tone="danger" role="alert">
-              {{ assignError }}
-            </AppBanner>
             <p
-              v-if="(session.characterIds.length ?? 0) === 0"
+              v-if="sessionMembers.filter((m) => m.role !== 'gm').length === 0"
               class="page-session-detail__panel-hint"
             >
-              {{ t('charactersEmpty') }}
+              {{ t('crewEmpty') }}
             </p>
             <ul v-else class="page-session-detail__char-list" role="list">
               <li
-                v-for="characterId in session.characterIds"
-                :key="characterId"
+                v-for="member in sessionMembers"
+                :key="member.id"
                 class="page-session-detail__char-row"
               >
                 <span class="page-session-detail__char-name">
-                  {{
-                    assignedCharacters.find((c) => c.id === characterId)?.name ?? `#${characterId}`
-                  }}
+                  {{ member.displayName ?? member.userId }}
+                  <span v-if="member.role === 'gm'" class="page-session-detail__crew-role">
+                    {{ t('crewRoleGm') }}
+                  </span>
+                  <span v-if="member.characterName" class="page-session-detail__crew-character">
+                    — {{ member.characterName }}
+                  </span>
                 </span>
-                <AppButton v-if="isGm" variant="ghost" size="sm" @click="onUnassign(characterId)">
-                  {{ t('removeButton') }}
-                </AppButton>
               </li>
             </ul>
-
-            <div v-if="isGm" class="page-session-detail__assign">
-              <h4 class="page-session-detail__panel-subtitle">
-                {{ t('assignHeading') }}
-              </h4>
-              <p v-if="assignableCharacters.length === 0" class="page-session-detail__panel-hint">
-                {{ t('assignNoneLeft') }}
-              </p>
-              <form
-                v-else
-                class="page-session-detail__assign-form"
-                novalidate
-                @submit.prevent="onAssign"
-              >
-                <select
-                  v-model="assignSelected"
-                  class="page-session-detail__assign-select"
-                  :disabled="assignBusy"
-                  :aria-label="t('assignHeading')"
-                >
-                  <option value="" disabled>
-                    {{ t('assignSelectPlaceholder') }}
-                  </option>
-                  <option v-for="c in assignableCharacters" :key="c.id" :value="c.id">
-                    {{ c.name }}
-                  </option>
-                </select>
-                <AppButton
-                  type="submit"
-                  variant="primary"
-                  size="sm"
-                  :loading="assignBusy"
-                  :disabled="!assignSelected || assignBusy"
-                >
-                  {{ t('assignButton') }}
-                </AppButton>
-              </form>
-            </div>
           </AppCard>
 
           <AppCard v-if="isGm" class="page-session-detail__panel">
@@ -1388,7 +1286,7 @@
           <EncounterPanel
             v-if="isGm"
             :session-id="sessionId"
-            :session-character-ids="session?.characterIds ?? []"
+            :session-character-ids="linkedCharacterIds"
             :is-gm="isGm"
             :combat-snapshot="lastCombatSnapshot"
             data-testid="encounter-panel-section"

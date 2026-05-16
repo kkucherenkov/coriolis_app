@@ -26,8 +26,8 @@
 
   const props = defineProps<{
     sessionId: string;
-    /** IDs of Characters assigned to this session — forwarded to CombatTracker for the PC picker. */
-    sessionCharacterIds?: string[];
+    /** IDs of Characters linked through session memberships — forwarded to CombatTracker for the PC picker. */
+    sessionCharacterIds?: readonly string[];
     /** True when the current user is the session GM. Forwarded to CombatTracker for GM-only buttons. */
     isGm?: boolean;
     /**
@@ -483,7 +483,7 @@
           v-if="openEncounterId === encounter.id"
           class="encounter-panel__tracker"
           :encounter-id="encounter.id"
-          :session-character-ids="sessionCharacterIds ?? []"
+          :session-character-ids="[...(sessionCharacterIds ?? [])]"
           :active-combatant-id="encounter.activeCombatantId"
           :encounter-status="encounter.status"
           :is-gm="isGm ?? false"

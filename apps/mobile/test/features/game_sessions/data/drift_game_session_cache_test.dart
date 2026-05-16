@@ -16,7 +16,6 @@ api_client.GameSession _wire({
       ..name = name
       ..status = api_client.GameSessionStatus.active
       ..dpCount = 0
-      ..characterIds.replace(BuiltList<String>())
       ..memberships.replace(BuiltList<api_client.GameSessionMembership>())
       ..createdAt = DateTime.utc(2026, 5, 16)
       ..updatedAt = DateTime.utc(2026, 5, 16));
