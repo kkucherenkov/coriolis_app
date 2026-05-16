@@ -35,6 +35,9 @@ import 'package:coriolis_companion/features/combat/domain/combat_repository.dart
 import 'package:coriolis_companion/features/npcs/data/npc_repository_impl.dart';
 import 'package:coriolis_companion/features/npcs/domain/npc_repository.dart';
 import 'package:coriolis_companion/features/combat/presentation/blocs/active_combat/active_combat_cubit.dart';
+import 'package:coriolis_companion/features/game_sessions/data/cached_session_repository.dart';
+import 'package:coriolis_companion/features/game_sessions/data/drift_game_session_cache.dart';
+import 'package:coriolis_companion/features/game_sessions/data/game_session_cache.dart';
 import 'package:coriolis_companion/features/game_sessions/data/session_repository_impl.dart';
 import 'package:coriolis_companion/features/game_sessions/domain/session_repository.dart';
 import 'package:coriolis_companion/features/game_sessions/presentation/blocs/session_detail/session_detail_cubit.dart';
@@ -46,6 +49,9 @@ import 'package:coriolis_companion/features/sessions/data/player_session_reposit
 import 'package:coriolis_companion/features/sessions/domain/player_session_repository.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/join_session/join_session_cubit.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/player_sessions_list/player_sessions_list_cubit.dart';
+import 'package:coriolis_companion/features/ships/data/cached_ship_repository.dart';
+import 'package:coriolis_companion/features/ships/data/drift_ship_cache.dart';
+import 'package:coriolis_companion/features/ships/data/ship_cache.dart';
 import 'package:coriolis_companion/features/ships/data/ship_repository_impl.dart';
 import 'package:coriolis_companion/features/ships/domain/ship_repository.dart';
 import 'package:coriolis_companion/features/ships/presentation/blocs/ship_create/ship_create_cubit.dart';
@@ -92,6 +98,14 @@ void configureDependencies() {
     () => DriftPlayerMembershipCache(getIt<AppDatabase>()),
   );
 
+  getIt.registerLazySingleton<LocalShipCache>(
+    () => DriftShipCache(getIt<AppDatabase>()),
+  );
+
+  getIt.registerLazySingleton<LocalGameSessionCache>(
+    () => DriftGameSessionCache(getIt<AppDatabase>()),
+  );
+
   // Connectivity singleton — shared by the queue interceptor and the drainer.
   // May have been pre-registered by configureDependenciesForTesting.
   if (!getIt.isRegistered<Connectivity>()) {
@@ -113,6 +127,8 @@ void configureDependencies() {
         tokenStorage: getIt<TokenStorage>(),
         characterCache: getIt<LocalCharacterCache>(),
         membershipCache: getIt<LocalPlayerMembershipCache>(),
+        shipCache: getIt<LocalShipCache>(),
+        gameSessionCache: getIt<LocalGameSessionCache>(),
         mutationQueue: getIt<LocalMutationQueue>(),
         connectivity: getIt<Connectivity>(),
       ),
@@ -178,7 +194,10 @@ void configureDependencies() {
 
   // ── Sessions domain (Phase 4 Features 7.2 + 7.3) ─────────────────────────
   getIt.registerLazySingleton<SessionRepository>(
-    () => SessionRepositoryImpl(api: getIt<GameSessionsApi>()),
+    () => CachedSessionRepository(
+      remote: SessionRepositoryImpl(api: getIt<GameSessionsApi>()),
+      cache: getIt<LocalGameSessionCache>(),
+    ),
   );
 
   // ── NPCs domain (T-MOBILE-NPC-PICKER) ────────────────────────────────────
@@ -197,7 +216,10 @@ void configureDependencies() {
 
   // ── Ships domain (T-MOBILE-SHIP-SHEET, T-2026-05-14-005) ─────────────────
   getIt.registerLazySingleton<ShipRepository>(
-    () => ShipRepositoryImpl(api: getIt<ShipsApi>()),
+    () => CachedShipRepository(
+      remote: ShipRepositoryImpl(api: getIt<ShipsApi>()),
+      cache: getIt<LocalShipCache>(),
+    ),
   );
 
   getIt
@@ -279,10 +301,14 @@ void configureDependencies() {
 /// - [appDatabase]: in-memory Drift DB (`AppDatabase.forTesting(NativeDatabase.memory())`).
 /// - [connectivity]: mock connectivity (avoids platform-channel access in unit tests).
 /// - [mutationQueue]: in-memory queue implementation (avoids disk I/O in unit tests).
+/// - [shipCache]: override for [LocalShipCache] (avoids disk I/O in unit tests).
+/// - [gameSessionCache]: override for [LocalGameSessionCache] (avoids disk I/O in unit tests).
 void configureDependenciesForTesting({
   AppDatabase? appDatabase,
   Connectivity? connectivity,
   LocalMutationQueue? mutationQueue,
+  LocalShipCache? shipCache,
+  LocalGameSessionCache? gameSessionCache,
 }) {
   if (appDatabase != null && !getIt.isRegistered<AppDatabase>()) {
     getIt.registerSingleton<AppDatabase>(appDatabase);
@@ -292,6 +318,12 @@ void configureDependenciesForTesting({
   }
   if (mutationQueue != null && !getIt.isRegistered<LocalMutationQueue>()) {
     getIt.registerSingleton<LocalMutationQueue>(mutationQueue);
+  }
+  if (shipCache != null && !getIt.isRegistered<LocalShipCache>()) {
+    getIt.registerSingleton<LocalShipCache>(shipCache);
+  }
+  if (gameSessionCache != null && !getIt.isRegistered<LocalGameSessionCache>()) {
+    getIt.registerSingleton<LocalGameSessionCache>(gameSessionCache);
   }
   configureDependencies();
 }
