@@ -2,6 +2,39 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-16-PHASE-7-MOBILE-OFFLINE-1 — Phase 7 / Feature 10.2 block 1 — Drift + character read-cache
+
+- Created: 2026-05-16
+- Completed: 2026-05-16
+- Owner: claude
+- Spec: PRD §11 Phase 7 — "Offline support (web SW + Flutter SQLite)" · IMPLEMENTATION_PLAN.md Feature 10.2 (T-10.2.a)
+- Plan: [docs/superpowers/plans/2026-05-16-phase-7-mobile-offline-foundation.md](../../docs/superpowers/plans/2026-05-16-phase-7-mobile-offline-foundation.md)
+- Result: [PR #20](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/20) on Forgejo — branch `feat/phase-7/mobile-offline-foundation`, merged fast-forward into `main` at `d130ce5`. 11 commits.
+- Goal: a player who loses connectivity at the table can still open any character they had loaded once.
+- Acceptance:
+  - Drift-backed `AppDatabase` + `characters_cache` table — schemaVersion 1; payload stored as JSON-encoded wire DTO; `cachedAt` + `wireUpdatedAt` timestamps.
+  - `LocalCharacterCache` port + `DriftCharacterCache` adapter — verified by 4 round-trip tests against in-memory Drift.
+  - `CachedCharacterRepository` decorator — read-fallback on `DioException` of type `{connectionError, connectionTimeout, sendTimeout, receiveTimeout}`; non-network errors propagate; mutations invalidate the cached row on success only. Verified by 10 mocktail tests.
+  - `CharacterCacheInterceptor` — fire-and-forget write-through on `GET /characters/{id}` 200 responses; cache errors swallowed (never break request flow). 6 tests.
+  - `CharacterApiMapper` — shared wire→domain mapper; 80/80 existing character tests still green after extraction.
+  - DI: `AppDatabase` + cache registered before `Dio`; `CharacterRepository` binding swapped to decorator; `configureDependenciesForTesting` overload accepts in-memory DB.
+  - **Manual offline smoke** — confirmed by merge.
+- Sub-steps:
+  - [x] Task 1 — Drift deps (`0b67829`)
+  - [x] Task 2 — `AppDatabase` + `CharactersCache` table (`bcf6c9d` + `01c63ef` + `dfc3f8b`)
+  - [x] Task 3 — `CharacterApiMapper` extracted (`8c89d23`)
+  - [x] Task 4 — port + Drift adapter (`60f160d`)
+  - [x] Task 5 — decorator (`ecbbf59`)
+  - [x] Task 5b — Dio interceptor (`a4f6e2d`)
+  - [x] Task 6 — DI rewire (`e5f6a32`) — **284/284 mobile tests green, analyzer clean**
+  - [x] Task 7 — manual offline smoke (confirmed by merge)
+  - [x] Task 8 — archive + PR merged
+- Follow-up blocks for Phase 7 closeout (file as separate tasks when picked up):
+  - Mobile offline **write-queue** (mirrors web T-2026-05-11-008)
+  - Offline caches for ships / NPCs / game sessions / player sessions
+  - Mobile cold-start profile (Feature 10.4.c, target ≤ 2.0s)
+  - `docs/done/phase-7.md` + README beta badge + `phase-7-complete` tag (Feature 10.5.e)
+
 ## T-2026-05-16-PHASE-8-STREAM-B — Phase 8 / Stream B — Player shell + realtime ACL
 
 - Created: 2026-05-16
