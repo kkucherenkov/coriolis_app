@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -8,6 +10,8 @@ import 'package:coriolis_companion/app/routes.dart';
 import 'package:coriolis_companion/i18n/strings.g.dart';
 import 'package:coriolis_companion/shared/di/injector.dart';
 import 'package:coriolis_companion/shared/notifications/push_notification_service.dart';
+import 'package:coriolis_companion/shared/queue/mutation_queue_drainer.dart';
+import 'package:coriolis_companion/shared/queue/offline_queue_banner.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +23,10 @@ Future<void> main() async {
   await PushNotificationService.registerBackgroundHandler();
 
   configureDependencies();
+
+  // Hydrate `pending` from disk and subscribe to connectivity changes.
+  // Fire-and-forget — start() is idempotent and never throws.
+  unawaited(getIt<MutationQueueDrainer>().start());
 
   const sentryDsn = String.fromEnvironment('SENTRY_DSN');
   if (sentryDsn.isNotEmpty) {
@@ -64,6 +72,18 @@ class App extends StatelessWidget {
       // AuthGate is the home for the session-restore-on-boot flow.
       home: const AuthGate(),
       onGenerateRoute: onGenerateRoute,
+      builder: (context, child) {
+        if (child == null) return const SizedBox.shrink();
+        if (!getIt.isRegistered<MutationQueueDrainer>()) return child;
+        final drainer = getIt<MutationQueueDrainer>();
+        return Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            OfflineQueueBanner(drainer: drainer),
+            Expanded(child: child),
+          ],
+        );
+      },
     );
   }
 }

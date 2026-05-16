@@ -23,7 +23,33 @@ class CharactersCache extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [CharactersCache])
+/// FIFO queue of mutations that failed to reach the server while offline.
+///
+/// Each row represents one PATCH / PUT / DELETE request that the
+/// `MutationQueueInterceptor` (Block 2) could not deliver. Rows are
+/// consumed and removed by the `MutationQueueDrainer` (Block 3) once
+/// connectivity is restored.
+///
+/// `headersJson` holds a JSON-encoded `Map<String, String>` of the original
+/// request headers. The Authorization header is stripped by the interceptor
+/// before the entry is written here — it is re-injected at replay time so a
+/// stale token is never replayed verbatim.
+///
+/// `createdAt` drives FIFO ordering; consumers sort ascending on this column
+/// so earlier mutations are replayed first (preserving causal order).
+class PendingMutations extends Table {
+  TextColumn get id => text()();
+  TextColumn get method => text()();
+  TextColumn get path => text()();
+  TextColumn get body => text().nullable()();
+  TextColumn get headersJson => text()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@DriftDatabase(tables: [CharactersCache, PendingMutations])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(conn.openConnection());
 
@@ -32,5 +58,15 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.createTable(pendingMutations);
+          }
+        },
+      );
 }
