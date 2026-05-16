@@ -1522,6 +1522,164 @@ export interface paths {
     patch: operations['pushRoll'];
     trace?: never;
   };
+  '/api/v1/chat/messages/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get a single chat message by ID
+     * @description Returns the message if the caller has visibility. Broadcast messages
+     *     are visible to any active session member. Whisper messages are visible
+     *     only to the author and the target — any other caller, including the GM,
+     *     receives 404 (privacy contract: non-existence over forbidden).
+     */
+    get: operations['getChatMessage'];
+    put?: never;
+    post?: never;
+    /**
+     * Delete (soft) a chat message
+     * @description Stamps `deletedAt` on the message. Authors may always delete their own
+     *     broadcast messages. GMs may delete any broadcast. Whispers may only be
+     *     deleted by the author — GM has no visibility into whispers and receives
+     *     404 rather than 403 (privacy contract).
+     */
+    delete: operations['deleteChatMessage'];
+    options?: never;
+    head?: never;
+    /**
+     * Edit a chat message body
+     * @description Replaces the message body. Only the original author may edit.
+     *     Returns 422 when the edit window (5 min) has expired.
+     *     Returns 403 when the caller is not the author.
+     */
+    patch: operations['editChatMessage'];
+    trace?: never;
+  };
+  '/api/v1/game-sessions/{id}/chat/messages': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List chat messages for a session conversation
+     * @description Returns a cursor-paginated list of messages for the specified conversation.
+     *     Pass `conversation=broadcast` (default) for the session broadcast channel,
+     *     or pass a `membershipId` to read a whisper thread. Only the two participants
+     *     of a whisper thread can see its messages.
+     */
+    get: operations['listChatMessages'];
+    put?: never;
+    /**
+     * Post a chat message to a session
+     * @description Posts a broadcast (`targetMembershipId: null`) or whisper
+     *     (`targetMembershipId: <membershipId>`) message. Returns 403 when the
+     *     target has blocked the author. Returns 404 when the target is not an
+     *     active session member. Rate-limited to 30 msg/min and 5/s burst per
+     *     user.
+     */
+    post: operations['postChatMessage'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/game-sessions/{id}/chat/conversations': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List chat conversations for a session member
+     * @description Returns a summary of all conversations visible to the caller: the
+     *     broadcast channel plus any whisper threads they participate in.
+     *     Includes unread counts relative to the caller's read cursor.
+     */
+    get: operations['listChatConversations'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/game-sessions/{id}/chat/conversations/{conversationKey}/read': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Mark a conversation as read up to a timestamp
+     * @description Upserts the caller's read cursor for the given conversation. The
+     *     `conversationKey` is URL-encoded; use `broadcast` for the session
+     *     broadcast or a membershipId for a whisper thread.
+     */
+    post: operations['markChatConversationRead'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/game-sessions/{id}/blocks': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List the caller's block list for a session
+     * @description Returns all memberships the caller has blocked in this session.
+     */
+    get: operations['listBlocks'];
+    put?: never;
+    /**
+     * Block a session member
+     * @description Adds the target membership to the caller's block list for this session.
+     *     Idempotent — blocking an already-blocked member is a no-op.
+     *     Once blocked, the blocked member cannot whisper to the blocker.
+     */
+    post: operations['blockMember'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/game-sessions/{id}/blocks/{targetMembershipId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Unblock a session member
+     * @description Removes the target membership from the caller's block list.
+     *     Idempotent — unblocking a member who was not blocked is a no-op.
+     */
+    delete: operations['unblockMember'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4575,6 +4733,157 @@ export interface components {
        *     round.
        */
       isNewRound: boolean;
+    };
+    /**
+     * @description Discriminates user-authored text messages from server-generated system messages.
+     * @enum {string}
+     */
+    ChatMessageKind: 'text' | 'system';
+    /**
+     * @example {
+     *       "id": "cuid_msg01",
+     *       "gameSessionId": "cuid_gs01",
+     *       "authorMembershipId": "cuid_mem01",
+     *       "authorDisplayName": "Tariq",
+     *       "targetMembershipId": null,
+     *       "kind": "text",
+     *       "body": "Ready when you are, captain.",
+     *       "systemKey": null,
+     *       "systemParams": null,
+     *       "createdAt": "2026-05-17T10:00:00Z",
+     *       "editedAt": null,
+     *       "deletedAt": null
+     *     }
+     */
+    ChatMessage: {
+      id: string;
+      gameSessionId: string;
+      /** @description GameSessionMembership.id; null for system messages */
+      authorMembershipId: string | null;
+      /** @description Denormalised at read time */
+      authorDisplayName?: string | null;
+      /** @description null = broadcast; non-null = whisper */
+      targetMembershipId: string | null;
+      kind: components['schemas']['ChatMessageKind'];
+      /** @description null for kind=system; non-empty trimmed text for kind=text */
+      body?: string | null;
+      /** @description i18n key for kind=system, e.g. chat.system.member_joined */
+      systemKey?: string | null;
+      systemParams?: {
+        [key: string]: unknown;
+      } | null;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      editedAt?: string | null;
+      /** Format: date-time */
+      deletedAt?: string | null;
+    };
+    /**
+     * @example {
+     *       "items": [],
+     *       "nextCursor": null
+     *     }
+     */
+    ChatMessageList: {
+      items: components['schemas']['ChatMessage'][];
+      /** @description Opaque base64url cursor; null = end of results */
+      nextCursor: string | null;
+    };
+    /**
+     * @example {
+     *       "kind": "text",
+     *       "body": "Ready when you are, captain."
+     *     }
+     */
+    PostChatMessageRequest: {
+      /**
+       * @description Client-submitted messages must be of kind=text; system messages are server-generated only.
+       * @enum {string}
+       */
+      kind: 'text';
+      body: string;
+      /** @description null or omitted = broadcast; non-null = whisper to this membership */
+      targetMembershipId?: string | null;
+    };
+    /**
+     * @example {
+     *       "body": "Corrected text."
+     *     }
+     */
+    EditChatMessageRequest: {
+      body: string;
+    };
+    /**
+     * @example {
+     *       "conversationKey": "broadcast",
+     *       "kind": "broadcast",
+     *       "partnerMembershipId": null,
+     *       "partnerDisplayName": null,
+     *       "partnerCharacterName": null,
+     *       "lastMessageAt": "2026-05-17T10:05:00Z",
+     *       "unreadCount": 2
+     *     }
+     */
+    ChatConversationSummary: {
+      /** @description 'broadcast' or a membershipId */
+      conversationKey: string;
+      /** @enum {string} */
+      kind: 'broadcast' | 'whisper';
+      partnerMembershipId?: string | null;
+      partnerDisplayName?: string | null;
+      partnerCharacterName?: string | null;
+      /** Format: date-time */
+      lastMessageAt: string | null;
+      unreadCount: number;
+    };
+    /**
+     * @example {
+     *       "items": [
+     *         {
+     *           "conversationKey": "broadcast",
+     *           "kind": "broadcast",
+     *           "partnerMembershipId": null,
+     *           "partnerDisplayName": null,
+     *           "partnerCharacterName": null,
+     *           "lastMessageAt": "2026-05-17T10:05:00Z",
+     *           "unreadCount": 2
+     *         }
+     *       ]
+     *     }
+     */
+    ChatConversationList: {
+      items: components['schemas']['ChatConversationSummary'][];
+    };
+    /**
+     * @example {
+     *       "lastReadAt": "2026-05-17T10:05:00Z"
+     *     }
+     */
+    MarkReadRequest: {
+      /** Format: date-time */
+      lastReadAt: string;
+    };
+    /**
+     * @example {
+     *       "targetMembershipId": "cuid_mem02"
+     *     }
+     */
+    ChatBlockRequest: {
+      targetMembershipId: string;
+    };
+    /**
+     * @example {
+     *       "targetMembershipId": "cuid_mem02",
+     *       "targetDisplayName": "Trouble Maker",
+     *       "createdAt": "2026-05-17T09:00:00Z"
+     *     }
+     */
+    ChatBlockSummary: {
+      targetMembershipId: string;
+      targetDisplayName?: string | null;
+      /** Format: date-time */
+      createdAt: string;
     };
   };
   responses: {
@@ -8545,6 +8854,518 @@ export interface operations {
       };
       /** @description Roll cannot be pushed (already pushed or character is exhausted) */
       422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  getChatMessage: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Chat message identifier (cuid2) */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Chat message */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatMessage'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Message not found or not visible to caller */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  deleteChatMessage: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Chat message identifier (cuid2) */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Message soft-deleted */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller is not authorised to delete this message */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Message not found or not visible to caller */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  editChatMessage: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Chat message identifier (cuid2) */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['EditChatMessageRequest'];
+      };
+    };
+    responses: {
+      /** @description Updated message */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatMessage'];
+        };
+      };
+      /** @description Validation error */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller is not the message author */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Message not found or not visible to caller */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Edit window has expired (CHAT_EDIT_WINDOW_EXPIRED) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  listChatMessages: {
+    parameters: {
+      query?: {
+        /** @description 'broadcast' or a membershipId (whisper partner) */
+        conversation?: string;
+        /** @description Opaque cursor from the previous page's nextCursor */
+        cursor?: string;
+        /** @description Number of messages to return (1–100, default 50) */
+        limit?: number;
+      };
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Paginated message list */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatMessageList'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller is not an active session member */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  postChatMessage: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PostChatMessageRequest'];
+      };
+    };
+    responses: {
+      /** @description Message created and published */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatMessage'];
+        };
+      };
+      /** @description Validation error */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Target has blocked the author (CHAT_TARGET_BLOCKED) */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Target membership not found in session (CHAT_TARGET_NOT_MEMBER) */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Rate limit exceeded (CHAT_RATE_LIMITED) */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  listChatConversations: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Conversation list */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ChatConversationList'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller is not an active session member */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  markChatConversationRead: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+        /** @description 'broadcast' or a membershipId (URL-encoded) */
+        conversationKey: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MarkReadRequest'];
+      };
+    };
+    responses: {
+      /** @description Read cursor upserted */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation error */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller is not an active session member */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  listBlocks: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Block list */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            items: components['schemas']['ChatBlockSummary'][];
+          };
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller is not an active session member */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  blockMember: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ChatBlockRequest'];
+      };
+    };
+    responses: {
+      /** @description Member blocked (or already blocked — idempotent) */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation error */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller is not an active session member */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  unblockMember: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Game session identifier (cuid2) */
+        id: components['parameters']['GameSessionId'];
+        /** @description Membership identifier of the member to unblock (cuid2) */
+        targetMembershipId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Member unblocked (or was not blocked — idempotent) */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description No active session */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description Caller is not an active session member */
+      403: {
         headers: {
           [name: string]: unknown;
         };

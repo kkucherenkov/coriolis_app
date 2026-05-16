@@ -10,6 +10,7 @@ import 'package:app_api_client/src/auth/basic_auth.dart';
 import 'package:app_api_client/src/auth/bearer_auth.dart';
 import 'package:app_api_client/src/auth/oauth.dart';
 import 'package:app_api_client/src/api/characters_api.dart';
+import 'package:app_api_client/src/api/chat_api.dart';
 import 'package:app_api_client/src/api/dice_api.dart';
 import 'package:app_api_client/src/api/encounters_api.dart';
 import 'package:app_api_client/src/api/game_sessions_api.dart';
@@ -81,6 +82,12 @@ class AppApiClient {
   /// by doing that all interceptors will not be executed
   CharactersApi getCharactersApi() {
     return CharactersApi(dio, serializers);
+  }
+
+  /// Get ChatApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  ChatApi getChatApi() {
+    return ChatApi(dio, serializers);
   }
 
   /// Get DiceApi instance, base route and serializer can be overridden by a given but be careful,

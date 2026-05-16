@@ -27,6 +27,13 @@ import 'package:app_api_client/src/model/character_hp.dart';
 import 'package:app_api_client/src/model/character_list.dart';
 import 'package:app_api_client/src/model/character_mp.dart';
 import 'package:app_api_client/src/model/character_update.dart';
+import 'package:app_api_client/src/model/chat_block_request.dart';
+import 'package:app_api_client/src/model/chat_block_summary.dart';
+import 'package:app_api_client/src/model/chat_conversation_list.dart';
+import 'package:app_api_client/src/model/chat_conversation_summary.dart';
+import 'package:app_api_client/src/model/chat_message.dart';
+import 'package:app_api_client/src/model/chat_message_kind.dart';
+import 'package:app_api_client/src/model/chat_message_list.dart';
 import 'package:app_api_client/src/model/combatant.dart';
 import 'package:app_api_client/src/model/combatant_create.dart';
 import 'package:app_api_client/src/model/combatant_list.dart';
@@ -44,6 +51,7 @@ import 'package:app_api_client/src/model/dp_adjustment.dart';
 import 'package:app_api_client/src/model/dp_event.dart';
 import 'package:app_api_client/src/model/dp_event_list.dart';
 import 'package:app_api_client/src/model/dp_source.dart';
+import 'package:app_api_client/src/model/edit_chat_message_request.dart';
 import 'package:app_api_client/src/model/encounter.dart';
 import 'package:app_api_client/src/model/encounter_create.dart';
 import 'package:app_api_client/src/model/encounter_list.dart';
@@ -89,6 +97,8 @@ import 'package:app_api_client/src/model/item_weapon.dart';
 import 'package:app_api_client/src/model/item_weapon_create.dart';
 import 'package:app_api_client/src/model/item_weapon_update.dart';
 import 'package:app_api_client/src/model/link_membership_character_request.dart';
+import 'package:app_api_client/src/model/list_blocks200_response.dart';
+import 'package:app_api_client/src/model/mark_read_request.dart';
 import 'package:app_api_client/src/model/me.dart';
 import 'package:app_api_client/src/model/me_export_bundle.dart';
 import 'package:app_api_client/src/model/me_export_encounter.dart';
@@ -106,6 +116,7 @@ import 'package:app_api_client/src/model/npc_list.dart';
 import 'package:app_api_client/src/model/npc_mp.dart';
 import 'package:app_api_client/src/model/npc_update.dart';
 import 'package:app_api_client/src/model/npc_update_hp.dart';
+import 'package:app_api_client/src/model/post_chat_message_request.dart';
 import 'package:app_api_client/src/model/problem.dart';
 import 'package:app_api_client/src/model/realtime_token.dart';
 import 'package:app_api_client/src/model/relationship.dart';
@@ -174,6 +185,13 @@ part 'serializers.g.dart';
   CharacterList,
   CharacterMp,
   CharacterUpdate,
+  ChatBlockRequest,
+  ChatBlockSummary,
+  ChatConversationList,
+  ChatConversationSummary,
+  ChatMessage,
+  ChatMessageKind,
+  ChatMessageList,
   Combatant,
   CombatantCreate,
   CombatantList,
@@ -191,6 +209,7 @@ part 'serializers.g.dart';
   DpEvent,
   DpEventList,
   DpSource,
+  EditChatMessageRequest,
   Encounter,$Encounter,
   EncounterCreate,
   EncounterList,
@@ -236,6 +255,8 @@ part 'serializers.g.dart';
   ItemWeaponCreate,
   ItemWeaponUpdate,
   LinkMembershipCharacterRequest,
+  ListBlocks200Response,
+  MarkReadRequest,
   Me,
   MeExportBundle,
   MeExportEncounter,
@@ -253,6 +274,7 @@ part 'serializers.g.dart';
   NpcMp,
   NpcUpdate,
   NpcUpdateHp,
+  PostChatMessageRequest,
   Problem,
   RealtimeToken,
   Relationship,
