@@ -1,5 +1,6 @@
 import 'package:app_api_client/app_api_client.dart' show NpcsApi;
 
+import 'package:coriolis_companion/features/npcs/data/npc_api_mapper.dart';
 import 'package:coriolis_companion/features/npcs/domain/npc_repository.dart';
 import 'package:coriolis_companion/features/npcs/domain/npc_summary.dart';
 
@@ -18,7 +19,7 @@ class NpcRepositoryImpl implements NpcRepository {
     final body = response.data;
     if (body == null) throw StateError('listNpcs returned empty body');
     return body.items
-        .map((n) => NpcSummary(id: n.id, name: n.name))
+        .map(NpcApiMapper.fromWire)
         .toList(growable: false);
   }
 }

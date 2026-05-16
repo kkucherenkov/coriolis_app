@@ -61,15 +61,15 @@ void main() {
     expect(row.wireUpdatedAt.toUtc(), ts);
   });
 
-  // ── Schema smoke: all five tables present at current version ─────────────
+  // ── Schema smoke: all six tables present at current version ─────────────
 
-  test('current schema exposes every cache table at v3', () async {
+  test('current schema exposes every cache table at v4', () async {
     // Smoke-test the post-migration shape: a fresh in-memory database (which
     // runs `onCreate` → `createAll()` for the latest `schemaVersion`) must
     // expose `characters_cache`, `pending_mutations`, `ships_cache`,
-    // `game_sessions_cache`, and `player_memberships_cache`.
+    // `game_sessions_cache`, `player_memberships_cache`, and `npcs_cache`.
     //
-    // Real downgrade-and-upgrade testing (v1 → v2 → v3) requires Drift's
+    // Real downgrade-and-upgrade testing (v1 → v2 → v3 → v4) requires Drift's
     // `SchemaVerifier` from `drift_dev`, which is a separate dev dep — filed
     // as a follow-up. For now `onCreate(createAll)` guarantees the table set
     // matches the `@DriftDatabase(tables: [...])` annotation.
@@ -95,6 +95,7 @@ void main() {
       isEmpty,
     );
     expect(await freshDb.select(freshDb.pendingMutations).get(), isEmpty);
+    expect(await freshDb.select(freshDb.npcsCache).get(), isEmpty);
 
     await freshDb.close();
   });

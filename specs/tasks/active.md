@@ -16,9 +16,9 @@
 - Design impact: none.
 - Tests: 4 Drift round-trip + 1 mapper + ~5 cached repo + ~5 interceptor + 1 DI integration = ~16 new tests.
 - Sub-steps:
-  - [ ] Block 1 — Drift schema v4 + `LocalNpcCache` port + `DriftNpcCache` adapter + 4 round-trip tests + schema smoke test bumped to v4
-  - [ ] Block 2 — `NpcApiMapper` extraction + `CachedNpcRepository` decorator + `NpcsCacheInterceptor` + DI wiring + ~12 tests
-- Status: in-progress
+  - [x] Block 1 — Drift schema v4 + `LocalNpcCache` port + `DriftNpcCache` adapter + 4 round-trip tests + schema smoke test bumped to v4
+  - [x] Block 2 — `NpcApiMapper` extraction + `CachedNpcRepository` decorator + `NpcsCacheInterceptor` + DI wiring + ~12 tests
+- Status: done — 428/428 tests pass
 - Blockers: —
 
 ## T-2026-05-17-DEEP-LINK-SETUP — Deep-link configuration (mobile + web)

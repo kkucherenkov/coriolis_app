@@ -95,12 +95,26 @@ class PlayerMembershipsCache extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+/// Cached wire payload for a single NPC.
+///
+/// `wireUpdatedAt` stores `Npc.updatedAt` from the server.
+class NpcsCache extends Table {
+  TextColumn get id => text()();
+  TextColumn get payloadJson => text()();
+  DateTimeColumn get wireUpdatedAt => dateTime()();
+  DateTimeColumn get cachedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DriftDatabase(tables: [
   CharactersCache,
   PendingMutations,
   ShipsCache,
   GameSessionsCache,
   PlayerMembershipsCache,
+  NpcsCache,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(conn.openConnection());
@@ -110,7 +124,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -123,6 +137,9 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(shipsCache);
             await m.createTable(gameSessionsCache);
             await m.createTable(playerMembershipsCache);
+          }
+          if (from < 4) {
+            await m.createTable(npcsCache);
           }
         },
       );

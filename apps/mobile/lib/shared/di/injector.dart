@@ -32,6 +32,9 @@ import 'package:coriolis_companion/features/rolls/presentation/blocs/dice_roller
 import 'package:coriolis_companion/features/rolls/presentation/blocs/roll_history/roll_history_cubit.dart';
 import 'package:coriolis_companion/features/combat/data/combat_repository_impl.dart';
 import 'package:coriolis_companion/features/combat/domain/combat_repository.dart';
+import 'package:coriolis_companion/features/npcs/data/cached_npc_repository.dart';
+import 'package:coriolis_companion/features/npcs/data/drift_npc_cache.dart';
+import 'package:coriolis_companion/features/npcs/data/npc_cache.dart';
 import 'package:coriolis_companion/features/npcs/data/npc_repository_impl.dart';
 import 'package:coriolis_companion/features/npcs/domain/npc_repository.dart';
 import 'package:coriolis_companion/features/combat/presentation/blocs/active_combat/active_combat_cubit.dart';
@@ -106,6 +109,10 @@ void configureDependencies() {
     () => DriftGameSessionCache(getIt<AppDatabase>()),
   );
 
+  getIt.registerLazySingleton<LocalNpcCache>(
+    () => DriftNpcCache(getIt<AppDatabase>()),
+  );
+
   // Connectivity singleton — shared by the queue interceptor and the drainer.
   // May have been pre-registered by configureDependenciesForTesting.
   if (!getIt.isRegistered<Connectivity>()) {
@@ -129,6 +136,7 @@ void configureDependencies() {
         membershipCache: getIt<LocalPlayerMembershipCache>(),
         shipCache: getIt<LocalShipCache>(),
         gameSessionCache: getIt<LocalGameSessionCache>(),
+        npcCache: getIt<LocalNpcCache>(),
         mutationQueue: getIt<LocalMutationQueue>(),
         connectivity: getIt<Connectivity>(),
       ),
@@ -200,9 +208,12 @@ void configureDependencies() {
     ),
   );
 
-  // ── NPCs domain (T-MOBILE-NPC-PICKER) ────────────────────────────────────
+  // ── NPCs domain (T-MOBILE-NPC-PICKER, T-2026-05-17-PHASE-7-MOBILE-OFFLINE-4) ─
   getIt.registerLazySingleton<NpcRepository>(
-    () => NpcRepositoryImpl(api: getIt<NpcsApi>()),
+    () => CachedNpcRepository(
+      remote: NpcRepositoryImpl(api: getIt<NpcsApi>()),
+      cache: getIt<LocalNpcCache>(),
+    ),
   );
 
   // ── Combat domain (Phase 6 Block 1) ──────────────────────────────────────
@@ -303,12 +314,14 @@ void configureDependencies() {
 /// - [mutationQueue]: in-memory queue implementation (avoids disk I/O in unit tests).
 /// - [shipCache]: override for [LocalShipCache] (avoids disk I/O in unit tests).
 /// - [gameSessionCache]: override for [LocalGameSessionCache] (avoids disk I/O in unit tests).
+/// - [npcCache]: override for [LocalNpcCache] (avoids disk I/O in unit tests).
 void configureDependenciesForTesting({
   AppDatabase? appDatabase,
   Connectivity? connectivity,
   LocalMutationQueue? mutationQueue,
   LocalShipCache? shipCache,
   LocalGameSessionCache? gameSessionCache,
+  LocalNpcCache? npcCache,
 }) {
   if (appDatabase != null && !getIt.isRegistered<AppDatabase>()) {
     getIt.registerSingleton<AppDatabase>(appDatabase);
@@ -324,6 +337,9 @@ void configureDependenciesForTesting({
   }
   if (gameSessionCache != null && !getIt.isRegistered<LocalGameSessionCache>()) {
     getIt.registerSingleton<LocalGameSessionCache>(gameSessionCache);
+  }
+  if (npcCache != null && !getIt.isRegistered<LocalNpcCache>()) {
+    getIt.registerSingleton<LocalNpcCache>(npcCache);
   }
   configureDependencies();
 }
