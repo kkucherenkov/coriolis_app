@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
-import 'connection/native.dart' as conn;
+import 'package:coriolis_companion/shared/cache/connection/native.dart'
+    as conn;
 
 part 'app_database.g.dart';
 
@@ -28,7 +29,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// Test-only constructor — accepts a pre-built executor (e.g.
   /// `NativeDatabase.memory()`).
-  AppDatabase.forTesting(QueryExecutor executor) : super(executor);
+  AppDatabase.forTesting(super.executor);
 
   @override
   int get schemaVersion => 1;
