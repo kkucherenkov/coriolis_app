@@ -9,16 +9,16 @@
 - Goal: a player who loses connectivity at the table can still open any character they had loaded once. Drift-backed local cache + Dio interceptor for write-through + repository decorator for read-fallback.
 - Codegen impact: no (no spec changes)
 - Sub-steps:
-  - [ ] Task 1 — add `drift` / `drift_flutter` / `sqlite3_flutter_libs` / `path_provider` / `drift_dev` deps
-  - [ ] Task 2 — `AppDatabase` + `CharactersCache` table + Drift in-memory smoke
-  - [ ] Task 3 — extract `CharacterApiMapper` (shared wire→domain)
-  - [ ] Task 4 — `LocalCharacterCache` port + `DriftCharacterCache` adapter
-  - [ ] Task 5 — `CachedCharacterRepository` decorator (read fallback + write-side invalidation)
-  - [ ] Task 5b — `CharacterCacheInterceptor` (write-through `GET /characters/{id}` → Drift)
-  - [ ] Task 6 — DI wiring + test overload
-  - [ ] Task 7 — manual offline smoke on emulator
-  - [ ] Task 8 — archive to done.md + push
-- Status: planned (this session = plan + task push only; per `feedback_block_workflow`, execution starts in a fresh session)
+  - [x] Task 1 — add `drift` / `drift_flutter` / `sqlite3_flutter_libs` / `path_provider` / `drift_dev` deps (`0b67829`)
+  - [x] Task 2 — `AppDatabase` + `CharactersCache` table + Drift in-memory smoke (`bcf6c9d` + `01c63ef` + `dfc3f8b`)
+  - [x] Task 3 — extract `CharacterApiMapper` (`8c89d23`)
+  - [x] Task 4 — `LocalCharacterCache` port + `DriftCharacterCache` adapter (`60f160d`)
+  - [x] Task 5 — `CachedCharacterRepository` decorator (`ecbbf59`)
+  - [x] Task 5b — `CharacterCacheInterceptor` (`a4f6e2d`)
+  - [x] Task 6 — DI wiring + test overload (`e5f6a32`)
+  - [ ] Task 7 — manual offline smoke on emulator (pending human run)
+  - [ ] Task 8 — archive to done.md + push + open PR
+- Status: in-review — implementation complete (284/284 mobile tests green, analyzer clean); awaiting manual offline smoke on a device before archive
 - Blockers: —
 - Follow-up blocks for Phase 7 closeout (file as separate tasks when this block ships):
   - Mobile offline write-queue (mirrors web T-2026-05-11-008)
