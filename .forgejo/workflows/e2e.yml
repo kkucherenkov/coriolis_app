@@ -42,15 +42,11 @@ jobs:
       - name: Prisma generate
         run: pnpm --filter @app/backend prisma:generate
 
-      # Force-pull external images (centrifugo, postgres, redis, otel-lgtm).
-      # The act_runner's docker daemon caches images by tag; a stale
-      # `centrifugo:v6` cache caused run #1693 to fail healthcheck because
-      # the older revision lacked BusyBox `wget`. `docker compose pull`
-      # defaults to "always" for non-buildable services in compose v2, so
-      # no extra flag needed; this makes the step deterministic regardless
-      # of the runner's image-cache age.
+      # Force-pull external images (postgres, redis, otel-lgtm).
+      # Centrifugo is now buildable (see docker/centrifugo/Dockerfile) and
+      # comes through `--build` below; its FROM base is pulled then.
       - name: Pull external images
-        run: docker compose -f docker/compose.yml pull --quiet postgres redis centrifugo otel-lgtm
+        run: docker compose -f docker/compose.yml pull --quiet postgres redis otel-lgtm
 
       - name: Bring up docker stack
         run: docker compose -f docker/compose.yml up -d --build
