@@ -761,9 +761,6 @@
         "editing": "Editing message",
         "editingCancel": "Cancel"
       },
-      "new_messages": {
-        "pill": "{count, plural, one {# new message} other {# new messages}} ↓"
-      },
       "tabs": {
         "broadcast": "Everyone",
         "add_whisper": "Whisper",
@@ -884,9 +881,6 @@
         "counter": "{count} / {max}",
         "editing": "Редактирование сообщения",
         "editingCancel": "Отмена"
-      },
-      "new_messages": {
-        "pill": "{count, plural, one {# новое сообщение} few {# новых сообщения} many {# новых сообщений} other {# новых сообщений}} ↓"
       },
       "tabs": {
         "broadcast": "Все",
@@ -1009,9 +1003,6 @@
         "editing": "[uk-todo] Editing message",
         "editingCancel": "[uk-todo] Cancel"
       },
-      "new_messages": {
-        "pill": "[uk-todo] {count} new messages ↓"
-      },
       "tabs": {
         "broadcast": "[uk-todo] Everyone",
         "add_whisper": "[uk-todo] Whisper",
@@ -1132,9 +1123,6 @@
         "counter": "{count} / {max}",
         "editing": "[el-todo] Editing message",
         "editingCancel": "[el-todo] Cancel"
-      },
-      "new_messages": {
-        "pill": "[el-todo] {count} new messages ↓"
       },
       "tabs": {
         "broadcast": "[el-todo] Everyone",

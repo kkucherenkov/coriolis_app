@@ -1,4 +1,4 @@
-import { onBeforeUnmount, onMounted, readonly, ref } from 'vue';
+import { onBeforeUnmount, onMounted, readonly, ref, type Ref } from 'vue';
 
 /**
  * Reactive `navigator.onLine`.
@@ -11,7 +11,7 @@ import { onBeforeUnmount, onMounted, readonly, ref } from 'vue';
  * OS thinks there's a network, not that the API is reachable. Pair with
  * actual fetch errors when deciding whether to disable mutations.
  */
-export function useOnline() {
+export function useOnline(): { online: Readonly<Ref<boolean>> } {
   const online = ref(true);
 
   function update(): void {

@@ -35,26 +35,23 @@ const { mockFonts } = vi.hoisted(() => {
   const nodePath = require('node:path') as typeof import('node:path');
 
   // Geist-Regular ships with @vercel/og (re-exported by next); permissive SIL OFL.
+  // Discover the font version-agnostically: walk `.pnpm/next@*` directories so
+  // the spec stays valid across next bumps (no hard-coded peer-hash suffixes).
   const basePath = nodePath.resolve(
     __dirname, // eslint-disable-line unicorn/prefer-module
     '../../../../../../node_modules/.pnpm',
   );
-  const candidates = [
-    nodePath.join(
-      basePath,
-      'next@16.2.4_@opentelemetry+api@1.9.1_@playwright+test@1.59.1_react-dom@19.2.5_react@19.2.6__react@19.2.6_sass@1.99.0/node_modules/next/dist/compiled/@vercel/og/Geist-Regular.ttf',
-    ),
-    nodePath.join(
-      basePath,
-      'next@16.2.4_@opentelemetry+api@1.9.1_@playwright+test@1.59.1_react-dom@19.2.5_react@19.2.5__react@19.2.5_sass@1.99.0/node_modules/next/dist/compiled/@vercel/og/Geist-Regular.ttf',
-    ),
-  ];
+  const relFontPath = 'node_modules/next/dist/compiled/@vercel/og/Geist-Regular.ttf';
 
   let geistBuf: Buffer | null = null;
-  for (const p of candidates) {
-    if (fs.existsSync(p)) {
-      geistBuf = fs.readFileSync(p);
-      break;
+  if (fs.existsSync(basePath)) {
+    for (const entry of fs.readdirSync(basePath)) {
+      if (!entry.startsWith('next@')) continue;
+      const candidate = nodePath.join(basePath, entry, relFontPath);
+      if (fs.existsSync(candidate)) {
+        geistBuf = fs.readFileSync(candidate);
+        break;
+      }
     }
   }
 

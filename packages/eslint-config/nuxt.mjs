@@ -1,6 +1,7 @@
 import vue from 'eslint-plugin-vue';
 import vueParser from 'vue-eslint-parser';
 import tseslint from 'typescript-eslint';
+import prettier from 'eslint-config-prettier';
 
 import base from './base.mjs';
 
@@ -56,4 +57,11 @@ export default [
       ],
     },
   },
+  // Must come AFTER vue.configs['flat/recommended'] — that preset re-enables
+  // vue/* formatting rules (max-attributes-per-line, html-closing-bracket-newline,
+  // html-indent, singleline-html-element-content-newline) that conflict with
+  // Prettier. eslint-config-prettier turns them off; without re-importing here
+  // the disabler in base.mjs is overridden by the preset and ESLint --fix /
+  // Prettier ping-pong each other's output.
+  prettier,
 ];
