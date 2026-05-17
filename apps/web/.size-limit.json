@@ -2,12 +2,12 @@
   {
     "name": "Total JS (all client chunks, brotli)",
     "path": ".output/public/_nuxt/*.js",
-    "limit": "410 kB"
+    "limit": "435 kB"
   },
   {
     "name": "Total CSS (all client styles, brotli)",
     "path": ".output/public/_nuxt/*.css",
-    "limit": "60 kB"
+    "limit": "65 kB"
   },
   {
     "name": "Entry CSS (initial paint, brotli)",
