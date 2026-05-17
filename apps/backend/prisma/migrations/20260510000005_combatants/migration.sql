@@ -1,9 +1,13 @@
+-- Statements ordered so every FK references an already-created table.
+-- An earlier revision of this file ALTERed `encounter` with a FK to
+-- `combatant` BEFORE creating the `combatant` table. That works on a
+-- dev DB where `combatant` was pre-existing via `prisma db push`, but
+-- fails on a fresh database (and therefore in CI / a clean prod deploy)
+-- with `relation "combatant" does not exist`. Reordered so the FKs
+-- come last, after every referenced table exists.
+
 -- CreateEnum
 CREATE TYPE "combatant_type" AS ENUM ('PC', 'NPC');
-
--- AlterTable: wire activeCombatantId as a real FK with onDelete:SetNull
-ALTER TABLE "encounter" ADD CONSTRAINT "encounter_activeCombatantId_fkey"
-  FOREIGN KEY ("activeCombatantId") REFERENCES "combatant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- CreateTable
 CREATE TABLE "combatant" (
@@ -46,3 +50,9 @@ CREATE UNIQUE INDEX "combatant_encounterId_npcId_key"
 -- AddForeignKey: combatant → encounter
 ALTER TABLE "combatant" ADD CONSTRAINT "combatant_encounterId_fkey"
   FOREIGN KEY ("encounterId") REFERENCES "encounter"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey: encounter → combatant
+-- (wires activeCombatantId as a real FK with onDelete:SetNull; the
+-- column was created in 20260510000004_encounters as a plain TEXT.)
+ALTER TABLE "encounter" ADD CONSTRAINT "encounter_activeCombatantId_fkey"
+  FOREIGN KEY ("activeCombatantId") REFERENCES "combatant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
