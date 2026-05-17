@@ -1,0 +1,104 @@
+# CI overrides for docker/compose.yml.
+#
+# Why this file exists: the act_runner on Forgejo runs the job inside a
+# container that issues `docker compose` against the host docker daemon
+# (via socket mount). Relative bind mounts in compose.yml resolve to
+# absolute paths inside the runner container — paths that do NOT exist on
+# the host docker daemon. The host daemon then creates empty directories
+# at those mount targets, and the container sees garbage instead of the
+# source files / configs it expected.
+#
+# This override:
+#   1. Switches postgres to a build that bakes init.sql into the image
+#      (see docker/postgres/Dockerfile).
+#   2. Switches backend to the production Dockerfile (apps/backend/Dockerfile)
+#      which COPYs the full source into the image and runs the compiled
+#      Nest app with `prisma migrate deploy` at startup. Drops the
+#      `..:/workspace` bind mount.
+#   3. Switches web to the production Dockerfile (apps/web/Dockerfile)
+#      which generates the static SPA at build time and serves it via
+#      nginx. Drops bind mounts; remaps port 3001 host → 8080 container
+#      (production web listens on :8080); sets the `APP_*` env vars the
+#      production runtime-config entrypoint expects.
+#
+# centrifugo is already buildable from docker/centrifugo/Dockerfile in
+# the base compose.yml, so no override needed here.
+#
+# Usage in CI:
+#   docker compose -f docker/compose.yml -f docker/compose.ci.yml up -d --build
+#
+# Local dev is unaffected — use only compose.yml.
+
+services:
+  postgres:
+    # Bake init.sql into the image. The base compose.yml still has the
+    # bind-mount entry; `!override` replaces the merged volumes list with
+    # just the named pgdata volume so the broken bind mount drops out.
+    build:
+      context: ./postgres
+    image: coriolis-companion-postgres:ci
+    volumes: !override
+      - pgdata:/var/lib/postgresql
+
+  backend:
+    # Production image — COPYs source, builds, runs `prisma migrate
+    # deploy && node dist/main.js`. No bind mounts. Image tagged for
+    # cache reuse across runs.
+    build:
+      context: ..
+      dockerfile: apps/backend/Dockerfile
+    image: coriolis-companion-backend:ci
+    # !override drops the dev `..:/workspace` mount AND the two anonymous
+    # node_modules volumes (no host source / no live install in CI).
+    volumes: !override []
+    # The prod image's CMD uses relative paths
+    # (`./node_modules/prisma/build/index.js`) and its Dockerfile sets
+    # `WORKDIR /app`. The base compose.yml forces `working_dir: /workspace`
+    # because the dev image's WORKDIR is /workspace (where the bind
+    # mount lands). Override back to /app or Node fails with
+    # `Cannot find module '/workspace/node_modules/prisma/build/index.js'`.
+    working_dir: /app
+    # The prod image uses NODE_ENV=production by default. Keep that.
+    environment:
+      NODE_ENV: production
+    # CMD inherits from the prod Dockerfile:
+    #   prisma migrate deploy && node dist/main.js
+    # The baseline migration (`20260508000000_baseline`, landed in #39)
+    # makes `migrate deploy` succeed against a fresh database — no
+    # CI-specific override needed here.
+
+  web:
+    # Production image — Nuxt generate at build, nginx serves the static
+    # SPA on :8080 with /_app-config.js generated at boot from APP_*
+    # env vars (see apps/web/docker-entrypoint.sh).
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    image: coriolis-companion-web:ci
+    volumes: !override []
+    # Same WORKDIR rationale as backend above — base compose.yml forces
+    # /workspace for the dev Nuxt server; prod nginx works regardless of
+    # cwd (it reads absolute paths from its config) but be explicit so
+    # `docker compose config` doesn't ship a /workspace cwd that confuses
+    # log readers.
+    working_dir: /
+    # Production web binds to :8080. Remap so the e2e step's
+    # `curl http://localhost:3001/` still works.
+    ports: !override
+      - "3001:8080"
+    # APP_* env vars consumed by docker-entrypoint.sh to materialise
+    # /_app-config.js for the SPA's runtime-config plugin. The browser
+    # running Playwright tests resolves http://localhost:* against the
+    # host runner, so api/auth point at host ports.
+    environment:
+      APP_API_BASE_URL: http://localhost:3010/api/v1
+      APP_AUTH_BASE_URL: http://localhost:3010
+      APP_REALTIME_WS_URL: ws://localhost:8000/connection/websocket
+    # Production web has a healthcheck on /_app-config.js — keep it
+    # consistent with release.yml.
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/_app-config.js"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 15s
