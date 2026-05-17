@@ -43,12 +43,24 @@
     composerPartnerDisplayName?: string;
     composerDisabled: boolean;
     newMessagesCount: number;
+    /**
+     * When non-empty the composer enters inline-edit mode: shows a banner
+     * with this label + the (optional) original body preview + a Cancel
+     * button. Submit semantics stay the same — the parent inspects its
+     * own editing state to route to edit() vs send().
+     */
+    composerEditingLabel?: string;
+    composerEditingPreview?: string;
+    composerCancelEditLabel?: string;
   }
 
   // Object-form defineEmits avoids @typescript-eslint/unified-signatures false positives
   // that arise when call-signature overloads share the same parameter type.
   const props = withDefaults(defineProps<Props>(), {
     composerPartnerDisplayName: undefined,
+    composerEditingLabel: '',
+    composerEditingPreview: '',
+    composerCancelEditLabel: 'Cancel',
   });
 
   defineEmits<{
@@ -61,6 +73,7 @@
     'delete-message': [id: string];
     'block-author': [id: string];
     'jump-to-newest': [];
+    'cancel-edit': [];
   }>();
 
   const AUTO_SCROLL_THRESHOLD_PX = 80;
@@ -137,8 +150,12 @@
         :conversation-kind="composerKind"
         :partner-display-name="composerPartnerDisplayName"
         :disabled="composerDisabled"
+        :editing-label="composerEditingLabel"
+        :editing-preview="composerEditingPreview"
+        :cancel-edit-label="composerCancelEditLabel"
         @update:model-value="(v) => $emit('update:composer-value', v)"
         @submit="$emit('submit')"
+        @cancel-edit="$emit('cancel-edit')"
       />
     </footer>
   </div>

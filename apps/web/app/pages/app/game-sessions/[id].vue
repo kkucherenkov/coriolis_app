@@ -227,6 +227,9 @@
     composerPartnerDisplayName: composerPartnerDisplayName.value,
     composerDisabled: chatRealtime.status.value === 'unrecoverable',
     newMessagesCount: chatStore.activeNewMessagesCount,
+    composerEditingLabel: editingMessageId.value ? t('chat.composer.editing') : '',
+    composerEditingPreview: editingPreview.value,
+    composerCancelEditLabel: t('chat.composer.editingCancel'),
   }));
 
   // ── Pickable members ──────────────────────────────────────────────────────
@@ -261,15 +264,57 @@
     const key = chatStore.activeConversationKey;
     const conv = chatStore.conversations[key];
     if (conv) conv.composerValue = '';
+
+    // If editing, route to the edit verb; the realtime echo will patch
+    // the existing row's body + editedAt. Otherwise send a new message.
+    if (editingMessageId.value) {
+      const idToEdit = editingMessageId.value;
+      editingMessageId.value = null;
+      editingPreview.value = '';
+      await chatStore.edit(idToEdit, body);
+      return;
+    }
+
     await chatStore.send(key, body);
   }
+
+  // ── Inline edit affordance ──────────────────────────────────────────────
+  //
+  // editingMessageId tracks which message the composer is editing. While
+  // non-null:
+  //   - AppChatPanel shows the edit-banner above the composer
+  //   - onComposerSubmit routes to chatStore.edit() instead of send()
+  //   - switching tabs cancels the edit (parent watches activeKey)
+  const editingMessageId = ref<string | null>(null);
+  const editingPreview = ref<string>('');
 
   function onEditMessage(id: string): void {
     const msg = chatStore.activeMessages.find((m) => m.id === id);
     if (!msg?.body) return;
     const conv = chatStore.conversations[chatStore.activeConversationKey];
-    if (conv) conv.composerValue = msg.body;
+    if (!conv) return;
+    editingMessageId.value = id;
+    editingPreview.value = msg.body;
+    conv.composerValue = msg.body;
   }
+
+  function onCancelEdit(): void {
+    const conv = chatStore.conversations[chatStore.activeConversationKey];
+    if (conv) conv.composerValue = '';
+    editingMessageId.value = null;
+    editingPreview.value = '';
+  }
+
+  // Cancel an in-flight edit if the user switches conversations — the
+  // editing-banner would otherwise lie about which thread it belongs to.
+  watch(
+    () => chatStore.activeConversationKey,
+    (_next, prev) => {
+      if (prev !== undefined && editingMessageId.value !== null) {
+        onCancelEdit();
+      }
+    },
+  );
 
   function onDeleteMessage(id: string): void {
     confirmDeleteId.value = id;
@@ -712,7 +757,9 @@
           "broadcast": "Message everyone…",
           "whisper": "Whisper to {name}…"
         },
-        "counter": "{count} / {max}"
+        "counter": "{count} / {max}",
+        "editing": "Editing message",
+        "editingCancel": "Cancel"
       },
       "new_messages": {
         "pill": "{count, plural, one {# new message} other {# new messages}} ↓"
@@ -834,7 +881,9 @@
           "broadcast": "Написать всем…",
           "whisper": "Шёпотом к {name}…"
         },
-        "counter": "{count} / {max}"
+        "counter": "{count} / {max}",
+        "editing": "Редактирование сообщения",
+        "editingCancel": "Отмена"
       },
       "new_messages": {
         "pill": "{count, plural, one {# новое сообщение} few {# новых сообщения} many {# новых сообщений} other {# новых сообщений}} ↓"
@@ -956,7 +1005,9 @@
           "broadcast": "[uk-todo] Message everyone…",
           "whisper": "[uk-todo] Whisper to {name}…"
         },
-        "counter": "{count} / {max}"
+        "counter": "{count} / {max}",
+        "editing": "[uk-todo] Editing message",
+        "editingCancel": "[uk-todo] Cancel"
       },
       "new_messages": {
         "pill": "[uk-todo] {count} new messages ↓"
@@ -1078,7 +1129,9 @@
           "broadcast": "[el-todo] Message everyone…",
           "whisper": "[el-todo] Whisper to {name}…"
         },
-        "counter": "{count} / {max}"
+        "counter": "{count} / {max}",
+        "editing": "[el-todo] Editing message",
+        "editingCancel": "[el-todo] Cancel"
       },
       "new_messages": {
         "pill": "[el-todo] {count} new messages ↓"
@@ -1392,6 +1445,7 @@
             @update:composer-value="onComposerUpdate"
             @submit="onComposerSubmit"
             @edit-message="onEditMessage"
+            @cancel-edit="onCancelEdit"
             @delete-message="onDeleteMessage"
             @block-author="onBlockAuthor"
             @jump-to-newest="onJumpToNewest"
