@@ -78,6 +78,29 @@ docker compose -f docker/compose.yml logs -f web --tail=100
 docker compose -f docker/compose.yml restart backend
 ```
 
+## Forge (Forgejo) interactions — always via `tea`
+
+The remote is a self-hosted Forgejo at `code.homelab.local`; **`gh` does not
+work against it**. Use the [`tea`](https://gitea.com/gitea/tea) CLI for every
+PR / issue / branch / release operation. Login profile is already configured
+as `homelab` (`tea login list` to confirm).
+
+| Goal                 | Command                                                                           |
+| -------------------- | --------------------------------------------------------------------------------- |
+| Open PR              | `tea pr create --login homelab --title "…" --description "…"`                     |
+| List open PRs        | `tea pr list --login homelab --state open`                                        |
+| Show PR              | `tea pr <id> --login homelab` (also: `tea pr checkout <id>`)                      |
+| Merge PR             | `tea pr merge <id> --login homelab --style squash` (or `rebase`, `merge`)         |
+| Comment on PR/issue  | `tea comment <id> --login homelab "…"`                                            |
+| List issues          | `tea issue list --login homelab`                                                  |
+| Open issue           | `tea issue create --login homelab --title "…" --description "…"`                  |
+| Show branch/repo URL | `tea pulls list` honours the current repo; `tea open` opens the repo in a browser |
+
+Keep PR descriptions multi-line via a HEREDOC into `--description "$(cat <<'EOF' … EOF)"`
+— `tea` accepts the same multi-line strings `gh pr create --body` does.
+Never call `gh pr …` / `gh api …` against `code.homelab.local`; it will fail
+and waste a permission prompt.
+
 ## Fix root causes, not symptoms
 
 When a toolchain error appears, prefer a structural fix over a workaround:
