@@ -51,6 +51,13 @@ services:
     # !override drops the dev `..:/workspace` mount AND the two anonymous
     # node_modules volumes (no host source / no live install in CI).
     volumes: !override []
+    # The prod image's CMD uses relative paths
+    # (`./node_modules/prisma/build/index.js`) and its Dockerfile sets
+    # `WORKDIR /app`. The base compose.yml forces `working_dir: /workspace`
+    # because the dev image's WORKDIR is /workspace (where the bind
+    # mount lands). Override back to /app or Node fails with
+    # `Cannot find module '/workspace/node_modules/prisma/build/index.js'`.
+    working_dir: /app
     # The prod image uses NODE_ENV=production by default. Keep that.
     environment:
       NODE_ENV: production
@@ -64,6 +71,12 @@ services:
       dockerfile: apps/web/Dockerfile
     image: coriolis-companion-web:ci
     volumes: !override []
+    # Same WORKDIR rationale as backend above — base compose.yml forces
+    # /workspace for the dev Nuxt server; prod nginx works regardless of
+    # cwd (it reads absolute paths from its config) but be explicit so
+    # `docker compose config` doesn't ship a /workspace cwd that confuses
+    # log readers.
+    working_dir: /
     # Production web binds to :8080. Remap so the e2e step's
     # `curl http://localhost:3001/` still works.
     ports: !override
