@@ -1,7 +1,7 @@
 # Coriolis Companion App
 
 ![status: beta](https://img.shields.io/badge/status-beta-c8a76b)
-![phase: 7 complete](https://img.shields.io/badge/phase-7%20complete-5a83a4)
+![phase: 8 complete](https://img.shields.io/badge/phase-8%20complete-5a83a4)
 
 Character sheets, ship sheets, dice, and GM tools for the _Coriolis: The
 Third Horizon_ tabletop RPG (Free League Publishing). A fan project — not
@@ -15,6 +15,14 @@ affiliated with the publisher.
 > integration, full Grafana dashboard set, and the mobile cold-start
 > profile — is tracked in [`docs/done/phase-7.md`](docs/done/phase-7.md)
 > § "Deferred / open follow-ups".
+>
+> **Phase 8 (v1.1) shipped on top of Beta:** two-role split (GM keeps
+> `/app/game-sessions/*`; players get `/app/sessions/*` + a `features/sessions/`
+> folder on mobile), single-invite-link join flow with `GameSessionMembership`
+> as the canonical "who is at this table" contract, and bidirectional
+> chat — session-wide broadcast plus per-member whispers, persisted +
+> paginated + realtime over Centrifugo, with a per-session block list
+> and inline system messages. See [`docs/done/phase-8.md`](docs/done/phase-8.md).
 
 Three first-class clients on day one served by a single backend:
 
