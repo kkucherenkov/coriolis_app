@@ -71,5 +71,11 @@ export type {
   ItemShipModuleUpdate,
   ItemOtherUpdate,
   ItemRangeEnum,
-  ShipModuleSlot,
 } from '@app/api-client-ts';
+
+// ShipModuleSlot is NOT re-exported here on purpose — useShipModulesApi owns
+// the auto-import to avoid Nuxt's "Duplicated imports" warning. Consumers
+// that need the type alongside item types must import it directly from
+// '@app/api-client-ts'. (Comment lives outside the export block because
+// Nuxt's auto-import codegen inlines `export { ... }` and would treat a
+// comment inside as a line-comment that truncates the rest of the export.)

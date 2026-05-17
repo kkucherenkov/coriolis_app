@@ -95,5 +95,5 @@ test-results
 specs/local-dev.md
 architecture.pptx
 
-# repowise API keys (local)
-.repowise/.env
+# repowise — local index, cache, mcp config (user-specific paths)
+.repowise/

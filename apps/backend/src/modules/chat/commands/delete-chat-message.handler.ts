@@ -20,7 +20,7 @@ export class DeleteChatMessageHandler implements ICommandHandler<DeleteChatMessa
 
     // 1. Load message — 404 if missing or already deleted
     const message = await this.chatRepo.findById(cmd.messageId);
-    if (message === null || message.deletedAt !== null) {
+    if (message?.deletedAt !== null) {
       throw new ChatMessageNotFoundError();
     }
 

@@ -82,24 +82,11 @@
     @update:open="onModalUpdate"
   >
     <div class="app-whisper-picker">
-      <h2 class="app-whisper-picker__title">
-        Whisper to&hellip;
-      </h2>
+      <h2 class="app-whisper-picker__title">Whisper to&hellip;</h2>
 
-      <p
-        v-if="visibleMembers.length === 0"
-        class="app-whisper-picker__empty"
-      >
-        No one available.
-      </p>
+      <p v-if="visibleMembers.length === 0" class="app-whisper-picker__empty">No one available.</p>
 
-      <ul
-        v-else
-        class="app-whisper-picker__list"
-        role="listbox"
-        tabindex="0"
-        @keydown="onKeydown"
-      >
+      <ul v-else class="app-whisper-picker__list" role="listbox" tabindex="0" @keydown="onKeydown">
         <li
           v-for="(member, i) in visibleMembers"
           :key="member.membershipId"
@@ -110,15 +97,9 @@
           :class="{ 'app-whisper-picker__item--focused': i === focusedIndex }"
           @click="onRowClick(member.membershipId)"
         >
-          <AppChatPresenceDot
-            :presence="member.presence"
-            class="app-whisper-picker__dot"
-          />
+          <AppChatPresenceDot :presence="member.presence" class="app-whisper-picker__dot" />
           <span class="app-whisper-picker__name">{{ member.displayName }}</span>
-          <span
-            v-if="member.characterName"
-            class="app-whisper-picker__character"
-          >
+          <span v-if="member.characterName" class="app-whisper-picker__character">
             {{ member.characterName }}
           </span>
         </li>

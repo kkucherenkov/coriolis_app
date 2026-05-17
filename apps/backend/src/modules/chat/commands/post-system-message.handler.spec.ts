@@ -77,8 +77,6 @@ describe('PostSystemMessageHandler', () => {
   it('throws when called with a non-null targetMembershipId (defensive guard)', async () => {
     // System messages are always broadcast — callers must not pass a target.
     // This is a programming error guard, not a user-facing validation.
-    const cmd = new PostSystemMessageCommand('gs-1', 'chat.system.member_joined', null);
-
     // Inject a targetMembershipId by constructing the command with a hack —
     // we test the handler's defensive branch directly via an extended command object.
     const illegalCmd = Object.assign(

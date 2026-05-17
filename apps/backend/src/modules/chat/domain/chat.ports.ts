@@ -4,9 +4,11 @@
  * All interfaces are pure TypeScript — no framework or Prisma imports.
  * Adapters live in infra/ and are registered via DI tokens.
  */
-import type { ChatRateLimitedError } from './chat.errors';
 
-export type ConversationKey = 'broadcast' | string; // 'broadcast' or membershipId
+// 'broadcast' or a membershipId — kept as `string` because membershipId values
+// are not statically known. The 'broadcast' literal is documented intent, not
+// a type constraint.
+export type ConversationKey = string;
 
 export type ChatMessageKind = 'text' | 'system';
 
@@ -132,4 +134,5 @@ export interface IChatRateLimiter {
 
 // Re-export the error type so callers can reference the thrown type without
 // reaching into chat.errors directly.
-export type { ChatRateLimitedError };
+
+export { type ChatRateLimitedError } from './chat.errors';

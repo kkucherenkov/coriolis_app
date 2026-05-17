@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  ChatMessageNotAuthorizedError,
-  ChatNotMemberError,
-  ChatTargetNotMemberError,
-} from '../domain/chat.errors';
+import { ChatMessageNotAuthorizedError, ChatNotMemberError } from '../domain/chat.errors';
 
 import { BlockMemberCommand } from './block-member.command';
 import { BlockMemberHandler } from './block-member.handler';

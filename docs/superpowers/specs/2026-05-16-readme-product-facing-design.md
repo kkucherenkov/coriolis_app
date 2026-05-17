@@ -11,7 +11,7 @@
 
 `README.md` today reads like a dev handbook (drift protections, codegen,
 CI gates). Visitors landing on the GitHub page can't tell at a glance
-*what the product does*. No screenshots exist anywhere in the repo, so
+_what the product does_. No screenshots exist anywhere in the repo, so
 the visual quality of the work is invisible.
 
 Goal: bring product-first content to the top while preserving the
@@ -58,18 +58,18 @@ Standalone Playwright (TypeScript, run via `pnpm tsx`).
 
 ### Screens captured
 
-| # | Slug                | Path                              | Auth | Notes                |
-|---|---------------------|-----------------------------------|------|----------------------|
-| 1 | landing             | `/`                               | —    | marketing page       |
-| 2 | login               | `/login`                          | —    | email + password     |
-| 3 | signup              | `/signup`                         | —    | empty form           |
-| 4 | dashboard           | `/app/dashboard`                  | yes  | post-login           |
-| 5 | characters-list     | `/app/characters`                 | yes  | one seeded char      |
-| 6 | character-sheet     | `/app/characters/{id}`            | yes  | hero of the README   |
-| 7 | ship-sheet          | `/app/ships/{id}`                 | yes  |                      |
-| 8 | npc-editor          | `/app/npcs/{id}`                  | yes  |                      |
-| 9 | game-session        | `/app/game-sessions/{id}`         | yes  | DP=3, 1 roll visible |
-| 10| shared-character    | `/shared/character/{slug}`        | —    | public view          |
+| #   | Slug             | Path                       | Auth | Notes                |
+| --- | ---------------- | -------------------------- | ---- | -------------------- |
+| 1   | landing          | `/`                        | —    | marketing page       |
+| 2   | login            | `/login`                   | —    | email + password     |
+| 3   | signup           | `/signup`                  | —    | empty form           |
+| 4   | dashboard        | `/app/dashboard`           | yes  | post-login           |
+| 5   | characters-list  | `/app/characters`          | yes  | one seeded char      |
+| 6   | character-sheet  | `/app/characters/{id}`     | yes  | hero of the README   |
+| 7   | ship-sheet       | `/app/ships/{id}`          | yes  |                      |
+| 8   | npc-editor       | `/app/npcs/{id}`           | yes  |                      |
+| 9   | game-session     | `/app/game-sessions/{id}`  | yes  | DP=3, 1 roll visible |
+| 10  | shared-character | `/shared/character/{slug}` | —    | public view          |
 
 Each captured twice → 20 PNG. Total ~3–6 MB committed.
 
@@ -123,15 +123,15 @@ capture.ts ──► POST /auth/sign-up/email ──► cookie
 
 ## Files to create / edit
 
-| Action  | Path                                                         |
-|---------|--------------------------------------------------------------|
-| edit    | `README.md`                                                  |
-| create  | `README.ru.md`                                               |
-| create  | `scripts/screenshots/capture.ts`                             |
-| create  | `scripts/screenshots/README.md`                              |
-| create  | `docs/screenshots/desktop/*.png` × 10                        |
-| create  | `docs/screenshots/mobile/*.png` × 10                         |
-| edit    | `package.json` (root) — add `screenshots:capture` script     |
+| Action | Path                                                     |
+| ------ | -------------------------------------------------------- |
+| edit   | `README.md`                                              |
+| create | `README.ru.md`                                           |
+| create | `scripts/screenshots/capture.ts`                         |
+| create | `scripts/screenshots/README.md`                          |
+| create | `docs/screenshots/desktop/*.png` × 10                    |
+| create | `docs/screenshots/mobile/*.png` × 10                     |
+| edit   | `package.json` (root) — add `screenshots:capture` script |
 
 ## Error handling
 

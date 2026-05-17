@@ -123,6 +123,9 @@
 </template>
 
 <style scoped lang="scss">
+  $pulse-size: 8px;
+  $reveal-panel-max-width: 520px;
+
   .app-invite-manager {
     background: var(--surface-night);
     border: 1px solid var(--brand-brass-deep);
@@ -152,8 +155,8 @@
     }
 
     &__pulse {
-      width: 8px;
-      height: 8px;
+      width: $pulse-size;
+      height: $pulse-size;
       border-radius: 50%;
       background: var(--state-success);
       box-shadow: 0 0 8px var(--state-success);
@@ -199,7 +202,7 @@
 
     &__reveal-panel {
       width: 100%;
-      max-width: 520px;
+      max-width: $reveal-panel-max-width;
       max-height: calc(100vh - var(--space-8));
       overflow-y: auto;
       display: flex;

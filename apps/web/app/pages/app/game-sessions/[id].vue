@@ -73,8 +73,8 @@
   const linkedCharacterIds = computed<readonly string[]>(
     () =>
       session.value?.memberships
-        ?.map((m) => m.characterId)
-        .filter((id): id is string => Boolean(id)) ?? [],
+        .map((m) => m.characterId)
+        .filter((id): id is string => typeof id === 'string' && id.length > 0) ?? [],
   );
 
   // ── Chat dock collapsed state (synced via PATCH /me) ──────────────────────
@@ -309,8 +309,8 @@
   // editing-banner would otherwise lie about which thread it belongs to.
   watch(
     () => chatStore.activeConversationKey,
-    (_next, prev) => {
-      if (prev !== undefined && editingMessageId.value !== null) {
+    () => {
+      if (editingMessageId.value !== null) {
         onCancelEdit();
       }
     },
@@ -761,9 +761,6 @@
         "editing": "Editing message",
         "editingCancel": "Cancel"
       },
-      "new_messages": {
-        "pill": "{count, plural, one {# new message} other {# new messages}} ↓"
-      },
       "tabs": {
         "broadcast": "Everyone",
         "add_whisper": "Whisper",
@@ -884,9 +881,6 @@
         "counter": "{count} / {max}",
         "editing": "Редактирование сообщения",
         "editingCancel": "Отмена"
-      },
-      "new_messages": {
-        "pill": "{count, plural, one {# новое сообщение} few {# новых сообщения} many {# новых сообщений} other {# новых сообщений}} ↓"
       },
       "tabs": {
         "broadcast": "Все",
@@ -1009,9 +1003,6 @@
         "editing": "[uk-todo] Editing message",
         "editingCancel": "[uk-todo] Cancel"
       },
-      "new_messages": {
-        "pill": "[uk-todo] {count} new messages ↓"
-      },
       "tabs": {
         "broadcast": "[uk-todo] Everyone",
         "add_whisper": "[uk-todo] Whisper",
@@ -1132,9 +1123,6 @@
         "counter": "{count} / {max}",
         "editing": "[el-todo] Editing message",
         "editingCancel": "[el-todo] Cancel"
-      },
-      "new_messages": {
-        "pill": "[el-todo] {count} new messages ↓"
       },
       "tabs": {
         "broadcast": "[el-todo] Everyone",
@@ -1469,7 +1457,9 @@
         :aria-label="t('chat.message.menu.delete')"
       >
         <div class="page-session-detail__confirm-box">
-          <p class="page-session-detail__confirm-msg">{{ t('chat.message.deleted') }}</p>
+          <p class="page-session-detail__confirm-msg">
+            {{ t('chat.message.deleted') }}
+          </p>
           <div class="page-session-detail__confirm-btns">
             <button
               class="page-session-detail__confirm-btn page-session-detail__confirm-btn--cancel"
@@ -1565,6 +1555,7 @@
   $page-max-width: 1200px;
   $chat-rail-width: 340px;
   $chat-rail-collapsed-width: 28px;
+  $confirm-box-max-width: 420px;
 
   .page-session-detail {
     display: flex;
@@ -1639,7 +1630,7 @@
       flex-direction: row;
       align-items: flex-start;
       gap: 0;
-      transition: width 0.2s ease;
+      transition: width var(--motion-duration) var(--motion-ease-standard);
       height: 80vh;
 
       &--collapsed {
@@ -1918,7 +1909,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 100;
+      z-index: var(--z-modal);
     }
 
     &__confirm-box {
@@ -1926,7 +1917,7 @@
       border: 1px solid var(--brand-brass-deep);
       border-radius: var(--radius-md);
       padding: var(--space-5);
-      max-width: 420px;
+      max-width: $confirm-box-max-width;
       width: 90%;
       display: flex;
       flex-direction: column;
@@ -1973,10 +1964,10 @@
       &--danger {
         background: var(--status-danger);
         border-color: var(--status-danger);
-        color: var(--text-on-danger, #fff);
+        color: var(--text-primary);
 
         &:hover {
-          background: color-mix(in srgb, var(--status-danger) 80%, #000);
+          background: color-mix(in srgb, var(--status-danger) 80%, var(--surface-void));
         }
       }
     }

@@ -16,7 +16,7 @@
  * `error` means at least one replay failed and entries are still in IDB.
  */
 
-import { readonly, ref } from 'vue';
+import { readonly, ref, type Ref } from 'vue';
 
 import { listQueue, removeEntry, type QueueEntry } from '~/utils/offlineQueue';
 import { readBearerToken } from '~/composables/useAuth';
@@ -116,7 +116,12 @@ function initIfNeeded(): void {
   }
 }
 
-export function useOfflineQueue() {
+export function useOfflineQueue(): {
+  pending: Readonly<Ref<number>>;
+  status: Readonly<Ref<OfflineQueueStatus>>;
+  refresh: () => Promise<void>;
+  drainNow: () => Promise<void>;
+} {
   initIfNeeded();
   return {
     pending: readonly(pending),

@@ -11,13 +11,8 @@
   import type { AppSelectOption } from '@app/ui';
   import { ref, computed, watch } from 'vue';
   import { useItemsApi } from '~/composables/useItemsApi';
-  import type {
-    Item,
-    ItemCreate,
-    ItemUpdate,
-    ItemRangeEnum,
-    ShipModuleSlot,
-  } from '~/composables/useItemsApi';
+  import type { Item, ItemCreate, ItemUpdate, ItemRangeEnum } from '~/composables/useItemsApi';
+  import type { ShipModuleSlot } from '@app/api-client-ts';
   import type { Problem } from '~/composables/useTalentsApi';
 
   const props = defineProps<Props>();

@@ -55,7 +55,7 @@ export class PostChatMessageHandler implements ICommandHandler<
     // 3. If whisper: validate target membership + block check
     if (cmd.targetMembershipId !== null) {
       const target = await this.membershipRepo.findById(cmd.targetMembershipId);
-      if (target === null || target.leftAt !== null || target.gameSessionId !== cmd.gameSessionId) {
+      if (target?.leftAt !== null || target.gameSessionId !== cmd.gameSessionId) {
         throw new ChatTargetNotMemberError();
       }
 

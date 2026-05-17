@@ -48,12 +48,12 @@ export class ChatBlockRepo implements IChatBlockRepo {
           blockedMembershipId: args.blockedMembershipId,
         },
       });
-    } catch (err) {
+    } catch (error) {
       // P2002: unique constraint violation → block already exists; treat as no-op
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
         return;
       }
-      throw err;
+      throw error;
     }
   }
 
@@ -72,12 +72,12 @@ export class ChatBlockRepo implements IChatBlockRepo {
           },
         },
       });
-    } catch (err) {
+    } catch (error) {
       // P2025: record not found → block did not exist; treat as no-op (idempotent unblock)
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
         return;
       }
-      throw err;
+      throw error;
     }
   }
 

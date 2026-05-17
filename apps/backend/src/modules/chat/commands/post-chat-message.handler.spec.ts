@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   ChatBodyEmptyError,
   ChatBodyTooLargeError,
-  ChatMessageNotAuthorizedError,
   ChatRateLimitedError,
   ChatTargetBlockedError,
   ChatTargetNotMemberError,

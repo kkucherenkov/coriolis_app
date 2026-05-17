@@ -63,8 +63,7 @@ export class UpdateMeHandler implements ICommandHandler<UpdateMeCommand, MeReadM
     // preserve the existing value.
     const nextDisplayName = displayName === undefined ? existing.displayName : displayName;
     const nextTheme: UserTheme = theme ?? existing.theme;
-    const nextChatDockedCollapsed =
-      chatDockedCollapsed === undefined ? existing.chatDockedCollapsed : chatDockedCollapsed;
+    const nextChatDockedCollapsed = chatDockedCollapsed ?? existing.chatDockedCollapsed;
 
     return this.repo.updateProfile(userId, {
       displayName: nextDisplayName,

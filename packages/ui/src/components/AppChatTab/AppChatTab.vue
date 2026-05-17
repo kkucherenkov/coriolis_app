@@ -54,15 +54,8 @@
 
     <span class="app-chat-tab__label">{{ label }}</span>
 
-    <AppBadge
-      v-if="showBadge"
-      variant="crimson"
-      size="sm"
-      class="app-chat-tab__badge"
-    >
-      {{
-        unreadCount
-      }}
+    <AppBadge v-if="showBadge" variant="crimson" size="sm" class="app-chat-tab__badge">
+      {{ unreadCount }}
     </AppBadge>
 
     <button

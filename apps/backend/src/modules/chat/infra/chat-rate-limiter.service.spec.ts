@@ -100,7 +100,7 @@ describe('ChatRateLimiterService', () => {
     await service.consume('user-1', advance(t0, 0));
     await service.consume('user-1', advance(t0, 500));
     // This would fail in the same window
-    await expect(service.consume('user-1', advance(t0, 1_000))).rejects.toBeInstanceOf(
+    await expect(service.consume('user-1', advance(t0, 1000))).rejects.toBeInstanceOf(
       ChatRateLimitedError,
     );
 
