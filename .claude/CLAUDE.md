@@ -34,6 +34,43 @@ docker/         local stack (postgres 18.1, redis 8.6, centrifugo v6)
 4. Consume in `apps/web` / `apps/mobile` via the regenerated client.
 5. Land codegen artefacts in their own commit.
 
+## Prisma migrations — `migrate dev`, never `db push` for new schema
+
+Every schema change MUST land as a real migration:
+
+```sh
+pnpm --filter @app/backend prisma migrate dev --name <slug>
+```
+
+**Never** edit `schema.prisma` and rely on `pnpm prisma:db:push` alone to sync.
+`db push` syncs without recording — the next `migrate dev` produces an
+incremental migration that ALTERS tables the migration history never CREATEd.
+That's exactly how this repo entered the broken state where
+`prisma migrate deploy` against a fresh DB failed on the first migration
+(`20260508000001_character_status` ALTERed `character` before any migration
+created it). The fix was a manually-generated baseline at
+`apps/backend/prisma/migrations/20260508000000_baseline/` — once is enough,
+but never again.
+
+When `db push` is acceptable:
+
+- Local exploration on a throwaway DB before you're ready to commit a name.
+  As soon as the shape is settled: `migrate dev` and commit the migration.
+- Inside `apps/backend/Dockerfile.dev`'s entrypoint, which deliberately
+  syncs schema for hot-reload — production never runs that path.
+
+Verification before committing a schema change:
+
+```sh
+docker compose -f docker/compose.yml down -v        # wipe DB
+docker compose -f docker/compose.yml up -d postgres
+pnpm --filter @app/backend prisma migrate deploy    # MUST succeed on empty DB
+```
+
+If `migrate deploy` errors with `relation "<table>" does not exist` or
+`type "<enum>" already exists`, the migration history is incomplete and
+must be repaired (baseline regen) before merge.
+
 ## Auto-format before done
 
 After editing `.ts` / `.vue` / `.scss` / `.css` / `.json` / `.md`, run in order:
