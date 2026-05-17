@@ -61,26 +61,11 @@ services:
     # The prod image uses NODE_ENV=production by default. Keep that.
     environment:
       NODE_ENV: production
-    # The prod Dockerfile's CMD runs `prisma migrate deploy` — but the
-    # migrations folder has no baseline CREATE TABLE for the domain
-    # models (the very first migration `20260508000001_character_status`
-    # already does ALTER TABLE "character"). Dev workflow side-steps
-    # this by using `prisma db push` (see apps/backend/package.json
-    # `db:push` script) which syncs schema.prisma directly to the
-    # DB without consulting the migration history. For CI's
-    # fresh-on-every-run database the same path is the only one that
-    # works. Override the prod CMD accordingly. Follow-up: land a
-    # baseline migration so production fresh deploys also work via
-    # `migrate deploy`.
-    command:
-      - sh
-      - -c
-      - |
-        node ./node_modules/prisma/build/index.js db push \
-          --schema=./prisma/schema.prisma \
-          --accept-data-loss \
-          --skip-generate \
-          && exec node ./dist/main.js
+    # CMD inherits from the prod Dockerfile:
+    #   prisma migrate deploy && node dist/main.js
+    # The baseline migration (`20260508000000_baseline`, landed in #39)
+    # makes `migrate deploy` succeed against a fresh database — no
+    # CI-specific override needed here.
 
   web:
     # Production image — Nuxt generate at build, nginx serves the static
