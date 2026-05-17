@@ -1,7 +1,7 @@
 # Coriolis Companion App
 
 ![status: beta](https://img.shields.io/badge/status-beta-c8a76b)
-![phase: 7 complete](https://img.shields.io/badge/phase-7%20complete-5a83a4)
+![phase: 8 complete](https://img.shields.io/badge/phase-8%20complete-5a83a4)
 
 Листы персонажей и кораблей, кубы и инструменты ведущего для настольной
 ролевой игры _Coriolis: The Third Horizon_ (Free League Publishing).

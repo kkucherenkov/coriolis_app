@@ -678,6 +678,12 @@ Each phase ends with a green CI run (lint / typecheck / test / spec-validate / c
 
 Total: ~19 weeks for a single full-stack engineer at a steady pace. Faster with a team of two splitting backend (NestJS + Prisma) from frontend (Nuxt + Flutter sharing the generated clients).
 
+### v1.1 expansion — shipped post-Beta
+
+| Phase                                             | Scope                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Effort  |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| **Phase 8 — Player Client + Multiplayer Chat** ✅ | Two-role split: GM keeps `/app/game-sessions/*`, player gets `/app/sessions/*` (web) + `features/sessions/` (mobile). Single canonical invite link per session (rotate / revoke). `GameSessionMembership` replaces `characterIds` as the "who is at this table" contract. Bidirectional chat: session-wide broadcast + per-member whispers, persisted, paginated, realtime over Centrifugo, per-session block list, system messages. See `docs/done/phase-8.md` and `docs/IMPLEMENTATION_PLAN_PHASE_8.md`. | ~6 days |
+
 ---
 
 ## 12. Quality Gates & CI
