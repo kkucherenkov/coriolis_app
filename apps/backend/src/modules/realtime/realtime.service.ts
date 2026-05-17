@@ -81,9 +81,11 @@ export class RealtimeService {
     const memberships = await this.sessionAccess.findActiveMembershipsForUser(userId);
     const channels: string[] = [];
     for (const m of memberships) {
-      channels.push(`session.${m.gameSessionId}`);
-      channels.push(`session.${m.gameSessionId}.chat`);
-      channels.push(`session.${m.gameSessionId}.member.${m.membershipId}`);
+      channels.push(
+        `session.${m.gameSessionId}`,
+        `session.${m.gameSessionId}.chat`,
+        `session.${m.gameSessionId}.member.${m.membershipId}`,
+      );
     }
     return channels;
   }

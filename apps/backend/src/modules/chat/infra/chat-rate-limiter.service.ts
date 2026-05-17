@@ -35,11 +35,18 @@ export class ChatRateLimiterService implements IChatRateLimiter {
 
   constructor(private readonly config: AppConfig) {}
 
-  async consume(userId: string, now: Date): Promise<void> {
-    const nowMs = now.getTime();
-    const { maxMessagesPerMinute, burst } = this.config.chat;
-    this.tick(this.minuteBuckets, userId, nowMs, 60_000, maxMessagesPerMinute);
-    this.tick(this.burstBuckets, userId, nowMs, 1_000, burst);
+  consume(userId: string, now: Date): Promise<void> {
+    // Sync work wrapped to honour the Promise<void> port contract and ensure
+    // throws from `tick()` surface as rejected promises (callers `await`).
+    try {
+      const nowMs = now.getTime();
+      const { maxMessagesPerMinute, burst } = this.config.chat;
+      this.tick(this.minuteBuckets, userId, nowMs, 60_000, maxMessagesPerMinute);
+      this.tick(this.burstBuckets, userId, nowMs, 1000, burst);
+      return Promise.resolve();
+    } catch (error) {
+      return Promise.reject(error instanceof Error ? error : new Error(String(error)));
+    }
   }
 
   /**

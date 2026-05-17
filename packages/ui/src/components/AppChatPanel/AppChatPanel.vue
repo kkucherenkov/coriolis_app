@@ -162,6 +162,9 @@
 </template>
 
 <style lang="scss" scoped>
+  $scrollbar-thickness: 4px;
+  $docked-panel-width: 340px;
+
   .app-chat-panel {
     position: relative;
     display: flex;
@@ -194,7 +197,7 @@
       scrollbar-color: var(--brand-brass-deep) transparent;
 
       &::-webkit-scrollbar {
-        width: 4px;
+        width: $scrollbar-thickness;
       }
 
       &::-webkit-scrollbar-track {
@@ -216,7 +219,7 @@
       bottom: calc(var(--chat-composer-height, 7.5rem) + var(--space-2));
       left: 50%;
       transform: translateX(-50%);
-      z-index: 2;
+      z-index: var(--z-raised);
     }
 
     // ── Composer ──────────────────────────────────────────────────────────────
@@ -237,7 +240,7 @@
     // ── Mode: docked ──────────────────────────────────────────────────────────
 
     &--mode-docked {
-      width: 340px;
+      width: $docked-panel-width;
       height: 100%;
     }
   }

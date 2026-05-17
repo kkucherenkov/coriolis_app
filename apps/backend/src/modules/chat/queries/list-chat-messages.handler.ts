@@ -11,7 +11,10 @@ import {
 
 import { ListChatMessagesQuery } from './list-chat-messages.query';
 
-type ListResult = { items: ChatMessageReadModel[]; nextCursor: string | null };
+interface ListResult {
+  items: ChatMessageReadModel[];
+  nextCursor: string | null;
+}
 
 @QueryHandler(ListChatMessagesQuery)
 export class ListChatMessagesHandler implements IQueryHandler<ListChatMessagesQuery, ListResult> {
@@ -47,7 +50,7 @@ export class ListChatMessagesHandler implements IQueryHandler<ListChatMessagesQu
     }
 
     // Step 3: Clamp limit to [1, 100]; default 50 when null/undefined/NaN
-    const clampedLimit = Math.min(100, Math.max(1, isFinite(q.limit) ? q.limit : 50));
+    const clampedLimit = Math.min(100, Math.max(1, Number.isFinite(q.limit) ? q.limit : 50));
 
     return this.chatRepo.list({
       gameSessionId: q.gameSessionId,

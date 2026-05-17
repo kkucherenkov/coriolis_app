@@ -42,32 +42,36 @@
 </script>
 
 <template>
-  <div
-    class="app-chat-tab-strip"
-    role="tablist"
-  >
-    <!-- Pinned broadcast tab -->
-    <AppChatTab
-      v-if="broadcastTab"
-      :label="broadcastTab.label"
-      kind="broadcast"
-      :unread-count="broadcastTab.unreadCount"
-      :active="activeKey === broadcastTab.key"
-      @select="emit('select', broadcastTab.key)"
-    />
+  <div class="app-chat-tab-strip">
+    <!--
+      ARIA: tablist must only contain role="tab" children (axe
+      aria-required-children). Keep the overflow popover and add button
+      as siblings of the tablist, not descendants.
+    -->
+    <div class="app-chat-tab-strip__tablist" role="tablist">
+      <!-- Pinned broadcast tab -->
+      <AppChatTab
+        v-if="broadcastTab"
+        :label="broadcastTab.label"
+        kind="broadcast"
+        :unread-count="broadcastTab.unreadCount"
+        :active="activeKey === broadcastTab.key"
+        @select="emit('select', broadcastTab.key)"
+      />
 
-    <!-- Inline whisper tabs (up to visibleWhisperLimit) -->
-    <AppChatTab
-      v-for="tab in visibleWhispers"
-      :key="tab.key"
-      :label="tab.label"
-      kind="whisper"
-      :unread-count="tab.unreadCount"
-      :presence="tab.presence"
-      :active="activeKey === tab.key"
-      @select="emit('select', tab.key)"
-      @close="emit('close', tab.key)"
-    />
+      <!-- Inline whisper tabs (up to visibleWhisperLimit) -->
+      <AppChatTab
+        v-for="tab in visibleWhispers"
+        :key="tab.key"
+        :label="tab.label"
+        kind="whisper"
+        :unread-count="tab.unreadCount"
+        :presence="tab.presence"
+        :active="activeKey === tab.key"
+        @select="emit('select', tab.key)"
+        @close="emit('close', tab.key)"
+      />
+    </div>
 
     <!-- Overflow chip -->
     <AppPopover
@@ -88,10 +92,7 @@
       </template>
 
       <!-- Overflow list -->
-      <ul
-        class="app-chat-tab-strip__overflow-list"
-        role="list"
-      >
+      <ul class="app-chat-tab-strip__overflow-list" role="list">
         <li
           v-for="tab in overflowWhispers"
           :key="tab.key"
@@ -135,6 +136,9 @@
 </template>
 
 <style lang="scss" scoped>
+  $scrollbar-thickness: 4px;
+  $add-button-size: 24px;
+
   .app-chat-tab-strip {
     display: flex;
     align-items: stretch;
@@ -145,7 +149,7 @@
 
     // Prevent layout shift from scrollbar appearance.
     &::-webkit-scrollbar {
-      height: 4px;
+      height: $scrollbar-thickness;
     }
 
     &::-webkit-scrollbar-track {
@@ -155,6 +159,17 @@
     &::-webkit-scrollbar-thumb {
       background: var(--brand-brass-deep);
       border-radius: var(--radius-pill);
+    }
+
+    // ── Tablist (role="tablist") ─────────────────────────────────────────────
+    // Inner container scoped to actual tab buttons so axe's
+    // aria-required-children rule is satisfied. Overflow chip and add
+    // button live outside this element.
+
+    &__tablist {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
     }
 
     // ── Overflow chip ────────────────────────────────────────────────────────
@@ -258,8 +273,8 @@
       background: transparent;
       border: 1px solid var(--brand-brass-deep);
       border-radius: var(--radius-sm);
-      width: 24px;
-      height: 24px;
+      width: $add-button-size;
+      height: $add-button-size;
       margin-inline: var(--space-1);
       color: var(--text-secondary);
       font-size: var(--type-body-md-font-size);

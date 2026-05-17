@@ -16,20 +16,10 @@
 </script>
 
 <template>
-  <div
-    class="app-chat-day-divider"
-    role="separator"
-    data-testid="app-chat-day-divider"
-  >
-    <span
-      class="app-chat-day-divider__line"
-      aria-hidden="true"
-    />
+  <div class="app-chat-day-divider" role="separator" data-testid="app-chat-day-divider">
+    <span class="app-chat-day-divider__line" aria-hidden="true" />
     <span class="app-chat-day-divider__label">{{ label }}</span>
-    <span
-      class="app-chat-day-divider__line"
-      aria-hidden="true"
-    />
+    <span class="app-chat-day-divider__line" aria-hidden="true" />
   </div>
 </template>
 

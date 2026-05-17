@@ -35,11 +35,7 @@ export class BlockMemberHandler implements ICommandHandler<BlockMemberCommand, v
 
     // 3. Validate target membership exists in same session and is active
     const targetMembership = await this.membershipRepo.findById(cmd.targetMembershipId);
-    if (
-      targetMembership === null ||
-      targetMembership.leftAt !== null ||
-      targetMembership.gameSessionId !== cmd.gameSessionId
-    ) {
+    if (targetMembership?.leftAt !== null || targetMembership.gameSessionId !== cmd.gameSessionId) {
       throw new ChatTargetNotMemberError();
     }
 

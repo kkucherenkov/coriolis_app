@@ -44,6 +44,9 @@
 </template>
 
 <style scoped lang="scss">
+  $btn-min-width: 88px;
+  $btn-min-height: 44px;
+
   .app-session-share-link-card {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -76,8 +79,8 @@
       border: none;
       border-radius: var(--radius-sm);
       cursor: pointer;
-      min-width: 88px;
-      min-height: 44px;
+      min-width: $btn-min-width;
+      min-height: $btn-min-height;
     }
 
     &__warning {

@@ -13,7 +13,6 @@
 import type { Prisma } from '@prisma/client';
 
 import type {
-  ChatBlockSummaryReadModel,
   ChatMessageKind,
   ChatMessageReadModel,
   ConversationKey,

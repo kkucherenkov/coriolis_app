@@ -81,7 +81,7 @@ export class ChatMessagesController {
         req.userId,
         conversation ?? 'broadcast',
         cursor ?? null,
-        parseInt(limit ?? '50', 10),
+        Number.parseInt(limit ?? '50', 10),
       ),
     );
   }

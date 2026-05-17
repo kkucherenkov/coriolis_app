@@ -65,9 +65,9 @@ export class ChatMessageRepo implements IChatMessageRepo {
         body: data.body,
         systemKey: data.systemKey,
         systemParams:
-          data.systemParams !== null
-            ? (data.systemParams as Prisma.InputJsonValue)
-            : Prisma.JsonNull,
+          data.systemParams === null
+            ? Prisma.JsonNull
+            : (data.systemParams as Prisma.InputJsonValue),
       },
       select: CHAT_MESSAGE_SELECT,
     });
@@ -204,8 +204,10 @@ export class ChatMessageRepo implements IChatMessageRepo {
     const pageRows = hasMore ? rows.slice(0, limit) : rows;
     if (hasMore) {
       // rows[limit] is the (limit+1)th item — it exists because hasMore === rows.length > limit
-      const last = rows[limit]!;
-      nextCursor = encodeCursor({ createdAt: last.createdAt.toISOString(), id: last.id });
+      const last = rows[limit];
+      if (last) {
+        nextCursor = encodeCursor({ createdAt: last.createdAt.toISOString(), id: last.id });
+      }
     }
 
     // Resolve display names for all author memberships in the page
@@ -340,13 +342,13 @@ export class ChatMessageRepo implements IChatMessageRepo {
     }
 
     const where: Prisma.ChatMessageWhereInput =
-      after !== null ? { ...baseWhere, createdAt: { gt: after } } : baseWhere;
+      after === null ? baseWhere : { ...baseWhere, createdAt: { gt: after } };
 
     // Run count and max in parallel
     const [count, agg] = await Promise.all([
       this.prisma.chatMessage.count({ where }),
       this.prisma.chatMessage.aggregate({
-        where: after !== null ? (baseWhere as Prisma.ChatMessageWhereInput) : baseWhere,
+        where: after === null ? baseWhere : baseWhere,
         _max: { createdAt: true },
       }),
     ]);

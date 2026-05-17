@@ -59,9 +59,7 @@
         "is_virtual": false,
         "without_rowid": false,
         "constraints": [],
-        "explicit_pk": [
-          "id"
-        ]
+        "explicit_pk": ["id"]
       }
     }
   ],

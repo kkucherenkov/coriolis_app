@@ -14,7 +14,9 @@ import {
 
 import { ListConversationsQuery } from './list-conversations.query';
 
-type ListConversationsResult = { items: ConversationSummaryReadModel[] };
+interface ListConversationsResult {
+  items: ConversationSummaryReadModel[];
+}
 
 @QueryHandler(ListConversationsQuery)
 export class ListConversationsHandler implements IQueryHandler<

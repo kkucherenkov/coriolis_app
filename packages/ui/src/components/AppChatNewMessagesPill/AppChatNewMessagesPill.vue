@@ -31,10 +31,7 @@
     data-testid="app-chat-new-messages-pill"
     @click="onClick"
   >
-    <span
-      class="app-chat-new-messages-pill__arrow"
-      aria-hidden="true"
-    >↓</span>
+    <span class="app-chat-new-messages-pill__arrow" aria-hidden="true">↓</span>
     <span class="app-chat-new-messages-pill__label">{{ count }} new messages</span>
   </button>
 </template>

@@ -32,8 +32,7 @@ export class MarkConversationReadHandler implements ICommandHandler<
     if (cmd.conversationKey !== 'broadcast') {
       const partnerMembership = await this.membershipRepo.findById(cmd.conversationKey);
       if (
-        partnerMembership === null ||
-        partnerMembership.leftAt !== null ||
+        partnerMembership?.leftAt !== null ||
         partnerMembership.gameSessionId !== cmd.gameSessionId
       ) {
         throw new ChatTargetNotMemberError();

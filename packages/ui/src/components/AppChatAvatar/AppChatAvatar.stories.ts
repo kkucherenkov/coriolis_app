@@ -51,8 +51,8 @@ export const Matrix: Story = {
         <table style="border-collapse:separate;border-spacing:24px;">
           <thead>
             <tr>
-              <th></th>
-              <th v-for="p in presences" :key="p" style="font-family:var(--font-body);font-size:12px;color:var(--text-secondary);text-align:center;">{{ p }}</th>
+              <th scope="col"><span style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">Size</span></th>
+              <th v-for="p in presences" :key="p" scope="col" style="font-family:var(--font-body);font-size:12px;color:var(--text-secondary);text-align:center;">{{ p }}</th>
             </tr>
           </thead>
           <tbody>
