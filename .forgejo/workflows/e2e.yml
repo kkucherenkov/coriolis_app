@@ -42,14 +42,21 @@ jobs:
       - name: Prisma generate
         run: pnpm --filter @app/backend prisma:generate
 
-      # Force-pull external images (postgres, redis, otel-lgtm).
-      # Centrifugo is now buildable (see docker/centrifugo/Dockerfile) and
-      # comes through `--build` below; its FROM base is pulled then.
+      # Force-pull only the truly external images (redis, otel-lgtm).
+      # postgres + centrifugo are now buildable (compose.ci.yml + base
+      # compose.yml respectively); backend + web are built from
+      # apps/*/Dockerfile production images via compose.ci.yml. All
+      # buildable services pull their FROM bases during `--build` below.
       - name: Pull external images
-        run: docker compose -f docker/compose.yml pull --quiet postgres redis otel-lgtm
+        run: docker compose -f docker/compose.yml -f docker/compose.ci.yml pull --quiet redis otel-lgtm
 
+      # CI override (docker/compose.ci.yml) replaces dev-mode bind-mount
+      # services with production-shaped builds. The base compose.yml is
+      # the dev-mode stack; running both files merges them with the
+      # override winning on overlapping keys. See compose.ci.yml's
+      # header comment for the full DinD root-cause writeup.
       - name: Bring up docker stack
-        run: docker compose -f docker/compose.yml up -d --build
+        run: docker compose -f docker/compose.yml -f docker/compose.ci.yml up -d --build
 
       - name: Wait for backend health
         run: |
@@ -91,10 +98,10 @@ jobs:
         run: |
           for svc in centrifugo postgres redis otel-lgtm backend web; do
             echo "===== $svc ====="
-            docker compose -f docker/compose.yml logs --tail=200 "$svc" 2>&1 || true
+            docker compose -f docker/compose.yml -f docker/compose.ci.yml logs --tail=200 "$svc" 2>&1 || true
             echo
             echo "----- $svc inspect (health, exit code, …) -----"
-            cid="$(docker compose -f docker/compose.yml ps -q "$svc" 2>/dev/null || true)"
+            cid="$(docker compose -f docker/compose.yml -f docker/compose.ci.yml ps -q "$svc" 2>/dev/null || true)"
             if [ -n "$cid" ]; then
               docker inspect "$cid" --format '{{json .State}}' 2>&1 | head -c 4000 || true
               echo
@@ -104,4 +111,4 @@ jobs:
 
       - name: Tear down
         if: always()
-        run: docker compose -f docker/compose.yml down -v
+        run: docker compose -f docker/compose.yml -f docker/compose.ci.yml down -v
