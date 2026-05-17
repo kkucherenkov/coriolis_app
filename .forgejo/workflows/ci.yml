@@ -50,6 +50,14 @@ jobs:
       - name: Validate + bundle specs
         run: pnpm spec:validate && pnpm spec:bundle
 
+      # oxlint pre-pass — runs in ~0.5 s on the whole repo and fails fast on
+      # common bugs (correctness category from the typescript / unicorn / oxc
+      # / vue / vitest / promise / import / jsx-a11y plugins). ESLint remains
+      # authoritative; this just shortcuts the obvious failures so we don't
+      # wait 20-30 s on `pnpm run lint` for a typo.
+      - name: Lint (fast — oxlint pre-pass)
+        run: pnpm lint:fast
+
       - name: Lint
         run: |
           pnpm --filter @app/backend run lint

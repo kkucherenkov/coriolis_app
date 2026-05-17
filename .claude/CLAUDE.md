@@ -73,10 +73,31 @@ Containers mount the repo as a volume — edits reach the running container auto
 pnpm spec:validate && pnpm spec:bundle && pnpm spec:codegen
 pnpm --filter @app/ui storybook          # :6006
 turbo run lint test typecheck
+pnpm lint:fast                            # oxlint pre-pass (~0.4 s)
+pnpm lint:fast:fix                        # oxlint auto-fix
 docker compose -f docker/compose.yml up -d
 docker compose -f docker/compose.yml logs -f web --tail=100
 docker compose -f docker/compose.yml restart backend
 ```
+
+## Lint layers (fast → strict)
+
+The repo runs **two complementary linters**:
+
+| Layer         | Tool                           | Speed (full repo) | Coverage                                                                                                                                                                                           |
+| ------------- | ------------------------------ | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pre-pass      | `pnpm lint:fast` (oxlint)      | ~0.4 s            | Common-bug catches (correctness + typescript + unicorn + vue + vitest + jsx-a11y). Runs in lint-staged before ESLint and as a CI shortcut.                                                         |
+| Authoritative | `pnpm lint` (ESLint via turbo) | ~20-30 s          | Full ESLint config — `typescript-eslint` strict-type-checked, all `eslint-plugin-vue` rules, project-specific `no-restricted-syntax` (CLAUDE.md bans), `unicorn` full set. Final word on every PR. |
+
+Config:
+
+- `.oxlintrc.json` — oxlint config (kebab-case rule ids, plugin list, ignore patterns).
+- `packages/eslint-config/{base,nuxt}.mjs` — ESLint flat config. `eslint-config-prettier` is the **last** entry in both presets so it disables formatting rules Prettier owns (without it `vue/max-attributes-per-line` and Prettier ping-pong).
+
+When ESLint and oxlint disagree:
+
+- Formatting: trust Prettier (ESLint should already be silent on it; oxlint doesn't format).
+- Bug catches: trust ESLint (more rules, type-aware). Use oxlint findings as a hint, not as authority.
 
 ## Forge (Forgejo) interactions — always via `tea`
 

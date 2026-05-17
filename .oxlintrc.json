@@ -1,0 +1,55 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "import", "promise", "vue", "vitest", "jsx-a11y"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "rules": {
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-unused-vars": "off",
+    "no-underscore-dangle": "off",
+    "no-await-in-loop": "warn",
+    "import/no-unassigned-import": "off",
+    "typescript/no-extraneous-class": "off",
+    "unicorn/consistent-function-scoping": "off",
+    "vitest/require-mock-type-parameters": "off",
+    "vitest/require-to-throw-message": "off",
+    "vitest/no-conditional-expect": "warn",
+    "vue/return-in-computed-property": "off"
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.nuxt/**",
+    "**/.output/**",
+    "**/.turbo/**",
+    "**/coverage/**",
+    "**/storybook-static/**",
+    "packages/api-client-ts/src/generated/**",
+    "packages/api-client-dart/lib/generated/**",
+    "packages/ui/src/tokens.generated.css",
+    "apps/web/app/design-tokens.generated.ts",
+    "apps/web/app/assets/css/tokens.generated.css",
+    "**/*.generated.{css,ts,scss}",
+    "apps/mobile/**",
+    "packages/ui_flutter/**",
+    "**/*.dart"
+  ],
+  "overrides": [
+    {
+      "files": ["**/*.spec.ts", "**/*.test.ts", "**/*.spec.tsx", "**/*.test.tsx", "**/e2e/**"],
+      "rules": {
+        "typescript/no-non-null-assertion": "off",
+        "typescript/no-explicit-any": "off"
+      }
+    },
+    {
+      "files": ["**/*.config.{js,mjs,cjs,ts,mts,cts}", "**/eslint.config.{js,mjs,cjs,ts}"],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
+}

@@ -13,6 +13,8 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint -- --fix",
+    "lint:fast": "oxlint",
+    "lint:fast:fix": "oxlint --fix",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,vue,json,md,yaml,yml}\"",
@@ -41,9 +43,10 @@
     "eslint": "^10.2.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
-    "prettier": "^3.4.2",
+    "oxlint": "^1.65.0",
     "postcss-html": "^1.8.0",
     "postcss-scss": "^4.0.9",
+    "prettier": "^3.4.2",
     "stylelint": "^17.8.0",
     "stylelint-config-recommended-scss": "^17.0.1",
     "stylelint-config-recommended-vue": "^1.6.1",
@@ -52,6 +55,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,cjs,vue}": [
+      "oxlint --fix",
       "eslint --fix",
       "prettier --write"
     ],
