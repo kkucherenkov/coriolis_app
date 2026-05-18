@@ -66,6 +66,12 @@ services:
       # throws if RESEND_API_KEY is unset. CI has no Resend credentials
       # and doesn't test real email — pin to the mock adapter.
       MAILER_PROVIDER: mock
+      # Same DinD-host-vs-job-container-localhost rationale as the web
+      # service below. `E2E_HOST` is set by the workflow to the docker
+      # bridge gateway IP so the browser-driven URLs land on the host
+      # where compose published the ports.
+      BETTER_AUTH_URL: "http://${E2E_HOST:-localhost}:3010"
+      CORS_ORIGINS: "http://${E2E_HOST:-localhost}:3001"
     # CMD inherits from the prod Dockerfile:
     #   prisma migrate deploy && node dist/main.js
     # The baseline migration (`20260508000000_baseline`, landed in #39)
@@ -92,13 +98,17 @@ services:
     ports: !override
       - "3001:8080"
     # APP_* env vars consumed by docker-entrypoint.sh to materialise
-    # /_app-config.js for the SPA's runtime-config plugin. The browser
-    # running Playwright tests resolves http://localhost:* against the
-    # host runner, so api/auth point at host ports.
+    # /_app-config.js for the SPA's runtime-config plugin.
+    #
+    # In a DinD CI environment the job container's `localhost` is NOT
+    # the same as the host where compose published the port mappings.
+    # The e2e workflow sets `E2E_HOST` to the docker bridge default
+    # gateway (which IS the host from the job container's perspective);
+    # local dev leaves it unset and gets `localhost`.
     environment:
-      APP_API_BASE_URL: http://localhost:3010/api/v1
-      APP_AUTH_BASE_URL: http://localhost:3010
-      APP_REALTIME_WS_URL: ws://localhost:8000/connection/websocket
+      APP_API_BASE_URL: "http://${E2E_HOST:-localhost}:3010/api/v1"
+      APP_AUTH_BASE_URL: "http://${E2E_HOST:-localhost}:3010"
+      APP_REALTIME_WS_URL: "ws://${E2E_HOST:-localhost}:8000/connection/websocket"
     # Production web has a healthcheck on /_app-config.js — keep it
     # consistent with release.yml.
     healthcheck:

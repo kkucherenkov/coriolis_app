@@ -50,6 +50,23 @@ jobs:
       - name: Pull external images
         run: docker compose -f docker/compose.yml -f docker/compose.ci.yml pull --quiet redis otel-lgtm
 
+      # The act_runner runs this workflow inside a job container, whose
+      # `localhost` is NOT the same as the host docker daemon's. The
+      # compose stack publishes ports on the host; from the job
+      # container we reach them via the docker bridge default gateway
+      # (which IS the host). E2E_HOST gets propagated into compose so
+      # every URL the browser / SPA / Better Auth produces lands on
+      # something reachable from inside the job container too.
+      - name: Detect docker bridge gateway (host from inside the job container)
+        run: |
+          set -e
+          HOST_IP="$(ip route show default | awk '/default/ { print $3 }')"
+          if [ -z "$HOST_IP" ]; then
+            echo "could not detect default gateway"; exit 1
+          fi
+          echo "E2E_HOST=$HOST_IP" >> "$GITHUB_ENV"
+          echo "Using E2E_HOST=$HOST_IP"
+
       # CI override (docker/compose.ci.yml) replaces dev-mode bind-mount
       # services with production-shaped builds. The base compose.yml is
       # the dev-mode stack; running both files merges them with the
@@ -67,16 +84,19 @@ jobs:
 
       - name: Verify backend health from host port
         run: |
-          curl -fsS http://localhost:3010/api/v1/health
+          curl -fsS "http://${E2E_HOST}:3010/api/v1/health"
           echo
 
       - name: Verify web from host port
         run: |
-          curl -fsS http://localhost:3001/ > /dev/null
-          echo "web reachable on :3001"
+          curl -fsS "http://${E2E_HOST}:3001/" > /dev/null
+          echo "web reachable on :3001 (via ${E2E_HOST})"
 
       - name: Run Playwright smoke
-        run: pnpm e2e
+        run: |
+          export E2E_WEB_URL="http://${E2E_HOST}:3001"
+          export E2E_BACKEND_URL="http://${E2E_HOST}:3010"
+          pnpm e2e
 
       - name: Upload Playwright report
         if: always()
