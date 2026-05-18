@@ -143,9 +143,18 @@
     align-items: center;
     gap: var(--space-4);
     width: 100%;
+    max-width: 100%;
     padding: var(--space-5) var(--space-7);
     background: var(--surface-night);
     border-bottom: 1px solid var(--brand-brass-shadow);
+
+    // On phones the header has 1) hamburger 2) brand wordmark 3) user menu
+    // with a potentially long email — the desktop gap+padding pushes the
+    // user menu off-screen. Shrink both, and let the nav slot collapse.
+    @media (max-width: 768px) {
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-3);
+    }
 
     // ── Hamburger ────────────────────────────────────────────────────────────
 
@@ -209,6 +218,18 @@
 
     &__brand-name {
       white-space: nowrap;
+
+      // On phones the brand wordmark is the largest fixed-width text in the
+      // header — let it ellipsize so the user menu always has room.
+      @media (max-width: 768px) {
+        max-width: 11rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      @media (max-width: 420px) {
+        max-width: 8rem;
+      }
     }
 
     // ── Centre navigation ───────────────────────────────────────────────────
@@ -271,8 +292,13 @@
       display: inline-flex;
       align-items: center;
       gap: var(--space-3);
-      flex-shrink: 0;
+      flex-shrink: 1;
+      min-width: 0;
       margin-left: auto;
+
+      @media (max-width: 768px) {
+        gap: var(--space-2);
+      }
     }
   }
 </style>

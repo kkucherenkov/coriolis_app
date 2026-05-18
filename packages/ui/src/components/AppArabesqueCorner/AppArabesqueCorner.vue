@@ -11,28 +11,24 @@
   });
 
   /**
-   * The canonical arabesque path is drawn for the TL (top-left) orientation
-   * on a 100×100 internal canvas. It traces a flowing arc from the left edge
-   * inward to the top edge, with a small inward flourish at the tip — matching
-   * the `ArabesqueCorner` helper used throughout the JSX mockups (landing,
-   * sheet-desktop, dice-roller).
+   * The canonical arabesque corner ornament — drawn for the TL (top-left)
+   * orientation on a 100×100 internal canvas. The geometry mirrors the
+   * handoff helper in `specs/design/mockups/primitives.jsx` (the
+   * `ArabesqueCorner` factory). It is composed of five glyphs:
    *
-   * Design decision: since the mockup JSX does not expose the actual path data
-   * (it's an abstract React component name), we author a representative arabesque
-   * arc that:
-   *   1. Starts at the left edge midpoint (0, 50).
-   *   2. Curves through a quarter-arc toward the top-right.
-   *   3. Ends at the top edge midpoint (50, 0).
-   *   4. Has a small inward loop near the center of the corner to suggest
-   *      the arabesque flourish character.
-   *   5. Is stroke-only (fill:none) per DESIGN §4.1.
+   *   1. An L-shaped corner border (`pathCorner`).
+   *   2. An outer flowing curve sweeping from left edge down toward the
+   *      top edge (`pathSweep`).
+   *   3. A central loop suggesting the arabesque flourish (`pathLoop`).
+   *   4. A small "X" of crossing ticks where the sweep meets the corner
+   *      (`pathTicks`).
+   *   5. Two end-cap dots at the visual ends of the sweep (`<circle>` x2).
    *
-   * The path is "one stroke" not a closed shape — consumer never sees a fill.
-   * All four orientations are derived from this single path via SVG transform
-   * (rotate + translate) applied to the inner group, keeping the outer SVG
-   * dimensions fixed and the stroke-width consistent.
+   * Coordinates are the original 64×64 helper scaled by 100/64 ≈ 1.5625 and
+   * rounded to whole units, keeping the design crisp at the three exported
+   * sizes (sm = 36, md = 64, lg = 96 CSS px).
    *
-   * Rotation matrix per orientation (pivot = 50,50 on 100x100 canvas):
+   * Rotation per orientation (pivot = 50,50 on the 100×100 canvas):
    *   tl →   0deg (canonical)
    *   tr →  90deg
    *   br → 180deg
@@ -45,21 +41,14 @@
     bl: 270,
   };
 
-  /**
-   * The arabesque path on a 100×100 viewBox, TL orientation.
-   *
-   * Segment breakdown:
-   *   M 0 60      — start on left edge, 60% down
-   *   C 0 30, 20 10, 40 5   — main sweep curving toward top-left corner area
-   *   C 50 2, 55 8, 48 18   — inward flourish curl at the corner
-   *   C 42 28, 55 35, 50 50 — small arabesque loop body
-   *   M 50 50     — move to center for the second arm
-   *   C 65 45, 70 30, 65 0  — arm sweeping up to top edge (not used — single-arm design)
-   *
-   * Final simplified single-arm design that reads well at all three sizes:
-   */
-  const ARABESQUE_PATH =
-    'M 0 55 C 0 25, 15 10, 30 5 C 40 2, 48 8, 42 18 C 35 28, 45 32, 40 42 C 36 50, 42 52, 50 50 M 50 50 C 58 48, 62 40, 58 30 C 54 20, 58 10, 68 5 C 76 1, 88 0, 100 0';
+  // L-corner border running up the left edge then right along the top edge.
+  const PATH_CORNER = 'M 3 34 L 3 3 L 34 3';
+  // Outer sweep curving from the left edge inward toward the top edge.
+  const PATH_SWEEP = 'M 3 47 Q 3 22, 22 13 Q 34 6, 47 3';
+  // Central arabesque loop (the "leaf").
+  const PATH_LOOP = 'M 13 25 Q 22 19, 28 19 Q 34 19, 34 25 Q 34 31, 28 31 Q 22 31, 22 25';
+  // Small ticks bridging sweep ↔ corner — two short crossing strokes.
+  const PATH_TICKS = 'M 22 6 L 28 13 M 34 13 L 41 6';
 
   // Pixel dimensions per size token — SCSS vars below mirror these.
   const SIZE_PX: Record<ArabesqueSize, number> = {
@@ -83,7 +72,7 @@
    * of the 100×100 viewBox (50, 50) to produce the four orientations.
    */
   const groupTransform = computed(() =>
-    rotation.value === 0 ? undefined : `rotate(${rotation.value} 50 50)`,
+    rotation.value === 0 ? undefined : `rotate(${String(rotation.value)} 50 50)`,
   );
 
   const classes = computed(() => [
@@ -106,7 +95,12 @@
       class="app-arabesque-corner__svg"
     >
       <g :transform="groupTransform">
-        <path :d="ARABESQUE_PATH" class="app-arabesque-corner__path" />
+        <path :d="PATH_CORNER" class="app-arabesque-corner__path" />
+        <path :d="PATH_SWEEP" class="app-arabesque-corner__path" />
+        <path :d="PATH_LOOP" class="app-arabesque-corner__path" />
+        <path :d="PATH_TICKS" class="app-arabesque-corner__path" />
+        <circle cx="50" cy="3" r="2" class="app-arabesque-corner__dot" />
+        <circle cx="3" cy="50" r="2" class="app-arabesque-corner__dot" />
       </g>
     </svg>
   </span>
@@ -156,6 +150,11 @@
       stroke-width: 1.5;
       stroke-linecap: round;
       stroke-linejoin: round;
+    }
+
+    &__dot {
+      fill: currentColor;
+      stroke: none;
     }
 
     // ── Color modifiers ───────────────────────────────────────────────────────

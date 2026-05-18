@@ -56,6 +56,10 @@
       justify-content: center;
       padding: var(--space-5) var(--space-7);
       border-bottom: 1px solid var(--brand-brass-shadow);
+
+      @media (max-width: 768px) {
+        padding: var(--space-4) var(--space-4);
+      }
     }
 
     &__wordmark {
@@ -72,12 +76,24 @@
       display: flex;
       flex-direction: column;
       padding: var(--space-7) var(--space-8);
+
+      @media (max-width: 768px) {
+        padding: var(--space-5) var(--space-4);
+      }
+
+      @media (max-width: 420px) {
+        padding: var(--space-4) var(--space-3);
+      }
     }
 
     &__footer {
       padding: var(--space-6) var(--space-8);
       text-align: center;
       border-top: 1px solid var(--brand-brass-shadow);
+
+      @media (max-width: 768px) {
+        padding: var(--space-5) var(--space-4);
+      }
     }
 
     &__disclaimer {

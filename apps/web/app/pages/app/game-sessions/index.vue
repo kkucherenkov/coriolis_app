@@ -399,6 +399,12 @@
     flex-direction: column;
     gap: var(--space-5);
     padding: var(--space-6);
+    // The layout-app main is a flex column with cross-axis margin auto on
+    // this child; without an explicit width the page collapses to the
+    // grid's min-content (one 280px column) on desktop, leaving acres of
+    // empty space. `width: 100%` makes it claim the available space up to
+    // the cap.
+    width: 100%;
     max-width: $page-max-width;
     margin: 0 auto;
 

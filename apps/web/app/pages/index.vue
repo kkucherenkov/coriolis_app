@@ -250,6 +250,12 @@
   $hero-max-width: 640px;
   $features-max-width: 1080px;
   $corner-inset: 16px;
+  // Phone-shrunken corner ornament — lg (96px) is too dominant under 540px.
+  $corner-mobile-size: 56px;
+  // Mobile-scaled wordmark elements (CSS clamp() needs literal bounds).
+  $wordmark-brand-mobile-clamp: clamp(40px, 12vw, 72px);
+  $wordmark-eyebrow-mobile-clamp: clamp(10px, 2.4vw, 14px);
+  $wordmark-swash-mobile-clamp: clamp(96px, 28vw, 180px);
   // Starfield density + cycle vars — tuned for ambience without distraction.
   $starfield-density: 240px;
   $starfield-twinkle: 8s;
@@ -327,6 +333,20 @@
         bottom: $corner-inset;
         right: $corner-inset;
       }
+
+      // Scale the lg (96px) ornament down on phones so the corners stay
+      // decorative instead of devouring half of each side.
+      @media (max-width: 540px) {
+        :deep(.app-arabesque-corner) {
+          width: $corner-mobile-size;
+          height: $corner-mobile-size;
+        }
+
+        :deep(.app-arabesque-corner__svg) {
+          width: $corner-mobile-size;
+          height: $corner-mobile-size;
+        }
+      }
     }
 
     // ── Top nav ────────────────────────────────────────────────────────────────
@@ -337,6 +357,13 @@
       display: flex;
       justify-content: flex-end;
       padding: var(--space-5) var(--space-7) 0;
+
+      @media (max-width: 540px) {
+        // Centre the locale pill on phones; right-justified it collides
+        // with the top-right arabesque corner.
+        justify-content: center;
+        padding: var(--space-4) var(--space-3) 0;
+      }
     }
 
     &__locales {
@@ -391,15 +418,46 @@
       justify-content: center;
       gap: var(--space-10);
       padding: var(--space-9) var(--space-7);
+
+      @media (max-width: 768px) {
+        gap: var(--space-7);
+        padding: var(--space-7) var(--space-4);
+      }
+
+      @media (max-width: 420px) {
+        gap: var(--space-6);
+        padding: var(--space-6) var(--space-3);
+      }
     }
 
     &__hero {
+      width: 100%;
       max-width: $hero-max-width;
       text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: var(--space-6);
+    }
+
+    // AppWordmark renders at a fixed pixel size (88 for landing hero).
+    // On narrow viewports the canonical "CORIOLIS" wordmark + 0.1em tracking
+    // overflows the screen — scale the inner brand text down via :deep()
+    // overrides so the lockup always fits without touching the shared
+    // component contract.
+    @media (max-width: 540px) {
+      :deep(.app-wordmark__brand) {
+        font-size: $wordmark-brand-mobile-clamp;
+      }
+
+      :deep(.app-wordmark__eyebrow) {
+        font-size: $wordmark-eyebrow-mobile-clamp;
+      }
+
+      :deep(.app-wordmark__swash) svg {
+        width: $wordmark-swash-mobile-clamp;
+        height: auto;
+      }
     }
 
     &__tagline {

@@ -1562,8 +1562,14 @@
     flex-direction: column;
     gap: var(--space-5);
     padding: var(--space-6);
+    width: 100%;
     max-width: $page-max-width;
     margin: 0 auto;
+    min-width: 0;
+
+    @media (max-width: 768px) {
+      padding: var(--space-4) var(--space-3);
+    }
 
     &__back {
       align-self: flex-start;
