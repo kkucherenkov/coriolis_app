@@ -134,4 +134,12 @@ class CachedSessionRepository implements SessionRepository {
     await _remote.revokeInvite(sessionId);
     await _cache.delete(sessionId);
   }
+
+  @override
+  Future<void> removeMember(String sessionId, String membershipId) async {
+    await _remote.removeMember(sessionId, membershipId);
+    // The membership lives inside the cached session row; invalidate so the
+    // next `get()` re-fetches the canonical member list from the server.
+    await _cache.delete(sessionId);
+  }
 }

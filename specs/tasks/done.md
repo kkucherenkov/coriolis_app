@@ -2,6 +2,26 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-18-005 — Mobile GM "Kick member" parity for `/app/game-sessions/[id]`
+
+- Created: 2026-05-18
+- Completed: 2026-05-18
+- Owner: claude
+- Branch: `feat/mobile-kick-member`
+- Trigger: Phase 8.5 follow-up #4 from `docs/done/phase-8.md` — the backend `DELETE /game-sessions/:id/members/:membershipId` endpoint shipped in Stream A; web's GM-side button was already wired during the AppConfirm sweep / Stream A finale; mobile parity was the gap.
+- What landed:
+  - **`SessionRepository.removeMember(sessionId, membershipId)`** added to the domain interface, with impl in `SessionRepositoryImpl` calling `_api.removeMembership(...)` (same SDK method `PlayerSessionRepository.leaveSession` already uses — server gates kick-others on `ownerId == requester.id`) and a `CachedSessionRepository` wrapper that invalidates the cache row on success.
+  - **`SessionDetailCubit.kickMember(membershipId)`** action and matching `kickBusyMembershipId` + `kickError` fields on `SessionDetailState` (plus `clearKickBusy` / `clearKickError` copyWith flags). Happy path emits a busy state on the affected row, awaits the remove, then refetches the session so the canonical roster repopulates the Crew list. Error path clears the busy flag and surfaces the message inline.
+  - **`_CrewCard` widget** now takes `isGm` + a kick callback + the busy/error state from the cubit. For every non-GM member when `isGm` is true, it renders a trailing `_KickButton` (`Icons.person_remove_outlined`). Tapping opens an `AlertDialog` confirm; on confirm the callback fires. The per-row icon swaps to a `CircularProgressIndicator` while the kick is in flight, and a single inline error renders under the list on failure.
+  - **`_DetailContent`** prop list widened to forward the kick props from the cubit state down to `_CrewCard`.
+  - **`apps/mobile/test/features/game_sessions/session_detail_cubit_kick_test.dart`** — three bloc_test cases covering the happy path (busy → refetched session without the kicked member), the error path (busy → kickError populated), and the noop guard when no session is loaded yet. Mocks the `SessionRepository`, stubs `SessionRealtime.dispose()` so the cubit's `close()` resolves.
+- Verification:
+  - `flutter test test/features/game_sessions/session_detail_cubit_kick_test.dart` → 3/3 pass.
+  - `flutter test` (full mobile suite) → **454/454** pass.
+  - `flutter analyze` clean on every file this task touched (25 pre-existing infos in unrelated combat-tracker test files remain).
+  - Backend untouched; the same `DELETE /api/v1/game-sessions/:id/members/:membershipId` endpoint already has its own server-side spec coverage.
+- Result: PR `feat/mobile-kick-member` on Forgejo (link pending PR open).
+
 ## T-2026-05-18-004 — Ship-class response codec — Prisma TS identifier leaks past response validation
 
 - Created: 2026-05-18

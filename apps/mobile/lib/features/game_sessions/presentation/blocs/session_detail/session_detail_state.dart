@@ -18,6 +18,8 @@ class SessionDetailState extends Equatable {
     this.errorMessage,
     this.dpError,
     this.dpSubmitting = false,
+    this.kickBusyMembershipId,
+    this.kickError,
   });
 
   final SessionDetailStatus status;
@@ -27,6 +29,13 @@ class SessionDetailState extends Equatable {
   final String? dpError;
   final bool dpSubmitting;
 
+  /// The membership id currently being kicked (drives the per-row spinner).
+  /// `null` when no kick is in flight.
+  final String? kickBusyMembershipId;
+
+  /// Last kick failure, surfaced as an inline error under the Crew card.
+  final String? kickError;
+
   SessionDetailState copyWith({
     SessionDetailStatus? status,
     GameSession? session,
@@ -34,8 +43,12 @@ class SessionDetailState extends Equatable {
     String? errorMessage,
     String? dpError,
     bool? dpSubmitting,
+    String? kickBusyMembershipId,
+    String? kickError,
     bool clearError = false,
     bool clearDpError = false,
+    bool clearKickBusy = false,
+    bool clearKickError = false,
   }) {
     return SessionDetailState(
       status: status ?? this.status,
@@ -44,10 +57,22 @@ class SessionDetailState extends Equatable {
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       dpError: clearDpError ? null : (dpError ?? this.dpError),
       dpSubmitting: dpSubmitting ?? this.dpSubmitting,
+      kickBusyMembershipId: clearKickBusy
+          ? null
+          : (kickBusyMembershipId ?? this.kickBusyMembershipId),
+      kickError: clearKickError ? null : (kickError ?? this.kickError),
     );
   }
 
   @override
-  List<Object?> get props =>
-      [status, session, dpEvents, errorMessage, dpError, dpSubmitting];
+  List<Object?> get props => [
+        status,
+        session,
+        dpEvents,
+        errorMessage,
+        dpError,
+        dpSubmitting,
+        kickBusyMembershipId,
+        kickError,
+      ];
 }
