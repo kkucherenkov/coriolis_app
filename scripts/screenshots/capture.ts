@@ -248,28 +248,12 @@ async function seed(jar: CookieJar): Promise<SeedOutput> {
     attributes: { strength: 4, agility: 4, wits: 3, empathy: 3 },
   });
 
-  // Ship POST currently triggers a response-codec mismatch in the local
-  // backend (kebab-case enum round-trip). Skip gracefully so the rest of
-  // the inventory captures cleanly; ship-sheet PNG is omitted in that case.
   log('seed: POST /ships');
-  let shipId: string | null = null;
-  const shipRes = await fetch(`${API_BASE}/api/v1/ships`, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      accept: 'application/json',
-      origin: WEB_BASE,
-      cookie: jar.header(),
-      ...(BEARER ? { authorization: `Bearer ${BEARER}` } : {}),
-    },
-    body: JSON.stringify({ name: 'Madara', class: 'courier-yacht' }),
+  const ship = await api<{ id: string }>(jar, 'POST', '/api/v1/ships', {
+    name: 'Madara',
+    class: 'courier-yacht',
   });
-  if (shipRes.ok) {
-    const created = (await shipRes.json()) as { id: string };
-    shipId = created.id;
-  } else {
-    warn(`ship seed failed (${shipRes.status}) — ship-sheet skipped`);
-  }
+  const shipId: string = ship.id;
 
   log('seed: POST /npcs');
   const npc = await api<{ id: string }>(jar, 'POST', '/api/v1/npcs', {
