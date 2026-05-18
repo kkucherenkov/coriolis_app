@@ -50,6 +50,7 @@ COPY . .
 # boot from /_app-config.js. @app/api-client-ts has no build step (it
 # exports `./src/index.ts` directly), so it's consumed by Nuxt as-is.
 RUN pnpm --filter @app/specs bundle \
+    && pnpm --filter @app/specs build \
     && pnpm design:build \
     && NUXT_PUBLIC_API_BASE_URL=__RUNTIME__ \
        NUXT_PUBLIC_AUTH_BASE_URL=__RUNTIME__ \
