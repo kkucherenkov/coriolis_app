@@ -95,7 +95,7 @@ Tokens, never literals. All `px`, `ms`, and `z-index` values inside `apps/web` a
 
 ## 3. Typography
 
-v1 ships two locales: **English and Russian (en / ru)**. Every typeface below carries **Latin + Cyrillic** glyphs. The boilerplate also wires uk and el; the body and mono families below already cover uk, but the display face does not cover Greek — if `el` is populated in a later release, the display face will need a re-pick (see §3.1).
+v1 ships two locales: **English and Russian (en / ru)**. Every typeface below carries **Latin + Cyrillic** glyphs. Forum (the display face) doesn't cover Greek or CJK — if a future locale demands one of those scripts the display face will need a re-pick (see §3.1).
 
 | Role                   | Family             | Weights            | Scripts                                             | Notes                                                                                                                                                                       |
 | ---------------------- | ------------------ | ------------------ | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -113,7 +113,7 @@ Forum carries the same ceremonial Roman-capital authority Cinzel did, with the s
 - Tracking (`letter-spacing`) of `0.04em–0.10em` thickens presence without bolding.
 - For cases where typographic emphasis is essential alongside Forum (e.g., a UI heading with a descriptor), pair Forum (display) with Inter Semibold (descriptor) rather than reaching for a non-existent Forum Bold.
 
-If a future locale demands a script Forum doesn't carry, we re-evaluate the display face wholesale — partial fallback (Forum for `en`/`ru`, something else for the other locale) is brittle. Forum doesn't subset Greek; if `el` is ever populated, expect to swap to Cormorant Garamond or EB Garamond, both of which cover Latin + Cyrillic + Greek across multiple weights. Ukrainian (`uk`) is fine — Forum's Cyrillic subset includes the Ukrainian-specific letters (ї, є, ґ, і).
+If a future locale demands a script Forum doesn't carry, we re-evaluate the display face wholesale — partial fallback (Forum for `en`/`ru`, something else for the other locale) is brittle. Forum doesn't subset Greek; if Greek is ever added, expect to swap to Cormorant Garamond or EB Garamond, both of which cover Latin + Cyrillic + Greek across multiple weights. Ukrainian is fine — Forum's Cyrillic subset includes the Ukrainian-specific letters (ї, є, ґ, і).
 
 ### 3.2 Type scale (token names)
 

@@ -2,6 +2,36 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-18-003 — Drop `uk` + `el` locale stubs from the entire monorepo
+
+- Created: 2026-05-18
+- Completed: 2026-05-18
+- Owner: claude
+- Branch: `chore/drop-uk-el-locales`
+- Trigger: User request — strip `uk` (Ukrainian) and `el` (Greek) locales. They were wired as `[uk-todo]/[el-todo]` placeholder stubs since the boilerplate and never populated. PRD §6 always specified en/ru as the v1 active locales; the stubs only existed so `pnpm check:i18n` had four columns of placeholders to compare.
+- Goal: zero references to `uk` / `el` / `[uk-todo]` / `[el-todo]` in the source tree (build artefacts and gitignored generated outputs excepted). `CatalogLocale` narrows to `'en' | 'ru'`.
+- What landed:
+  - **Nuxt config** — `apps/web/nuxt.config.ts` `i18n.locales` dropped from 4 entries to `[en, ru]`; comment updated to point at this task.
+  - **Web `<i18n>` blocks** — wrote a throwaway Node script (`/tmp/strip-locales.mjs`) that JSON-parsed every `<i18n lang="json">` block in the 40 affected `.vue` files, deleted top-level `uk` + `el` keys, re-serialised with 2-space indent. Verified by `pnpm format` (no diffs) and `pnpm check:i18n` (`2 locale(s) × 1201 keys`).
+  - **TS locale unions** — `CatalogLocale = 'en' | 'ru' | 'uk' | 'el'` → `'en' | 'ru'` in `packages/specs/src/talents.ts`; `SUPPORTED_LOCALES` array trimmed; `UK_TODO` / `EL_TODO` constants removed; all `uk:` / `el:` entries in `LocalizedString` literals stripped from `talents.ts` (108 lines) and `starter-kits.ts` (2 lines). `apps/web/app/pages/index.vue` + `apps/web/app/components/wizard/Step8Gear.vue` cast targets narrowed. Comment cleanup in `apps/web/app/components/wizard/Step6Talents.vue`.
+  - **Web settings page** — `localeUk` / `localeEl` i18n keys removed from en + ru blocks in `apps/web/app/pages/app/settings.vue`.
+  - **Web test** — `apps/web/app/pages/__tests__/use-encounters-api.spec.ts` placeholder-parity assertions for `uk` / `el` removed.
+  - **Mobile slang corpus** — `rm apps/mobile/lib/i18n/*_uk.i18n.json apps/mobile/lib/i18n/*_el.i18n.json` (14 files); regenerated via `dart run slang` (`mobile: 2 locale(s) × 501 keys`); stale `strings_uk.g.dart` / `strings_el.g.dart` build outputs removed (not git-tracked).
+  - **Mobile settings dropdown** — `apps/mobile/lib/features/settings/presentation/settings_screen.dart` `DropdownButton<String>` items reduced to `en` + `ru`.
+  - **Mobile starter kits** — `apps/mobile/lib/features/characters/data/starter_kits_catalog.dart` 165 inline `{'en', 'ru', 'uk', 'el'}` map literals stripped via `sd` regex; doc-comment narrowed. Test `apps/mobile/test/features/characters/data/starter_kits_catalog_test.dart` "uk placeholder" assertion swapped for an EN-fallback assertion on an unknown locale code.
+  - **Backend** — `apps/backend/src/modules/rules-engine/talents-catalog.spec.ts` "uk + el placeholder marker" test removed; `findCatalogTalentByName` cross-locale test narrowed to en+ru.
+  - **Docs** — `docs/PRD.md` (§6 line 37, §7 line 250, §14 line 726) updated to drop the "four locales wired" framing and explain the add-a-locale procedure instead. `AGENTS.md` rule #5 trimmed. `docs/DESIGN.md` §3 + §3.1 narrowed to en + ru with Forum's Greek/CJK limitation noted as a future concern. `.claude/docs/i18n.md` opening narrowed.
+- Verification:
+  - `pnpm check:i18n` — `mobile: 2 locale(s) × 501 key(s)`, `web: 2 locale(s) × 1201 key(s)`.
+  - `pnpm --filter @app/specs typecheck` + `build` clean.
+  - `pnpm --filter @app/backend typecheck` clean; `test` → 1098/1098 pass.
+  - `pnpm --filter @app/web vitest run` → 534/534 pass.
+  - `pnpm --filter @app/ui vitest run` → 1081/1081 pass.
+  - `flutter test apps/mobile/test/features/characters/data/starter_kits_catalog_test.dart` → 13/13 pass.
+  - `pnpm stylelint:fix` + `pnpm format` clean.
+  - `rg '\[uk-todo\]|\[el-todo\]'` against `apps/web/app apps/mobile/lib packages/specs/src` returns zero hits (build artefacts excluded).
+- Result: [PR #46](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/46) on Forgejo.
+
 ## T-2026-05-18-002 — AppConfirm sweep on remaining native-confirm + bespoke-overlay sites
 
 - Created: 2026-05-18

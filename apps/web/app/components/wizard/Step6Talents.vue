@@ -32,13 +32,10 @@
 
   const { t, locale } = useI18n({ useScope: 'local' });
 
-  // Catalog ships en/ru with [uk-todo]/[el-todo] placeholders. Resolve the
-  // localised string for the active i18n locale; if Nuxt boots into an unknown
-  // locale (shouldn't happen), fall back to en.
-  function l10n(field: { en: string; ru: string; uk: string; el: string }): string {
+  // Resolve the localised catalog string for the active i18n locale; if
+  // Nuxt boots into an unknown locale (shouldn't happen), fall back to en.
+  function l10n(field: { en: string; ru: string }): string {
     const code = locale.value as CatalogLocale;
-    // The catalog ships every supported locale, but the runtime locale list
-    // could drift in the future — fall back to en defensively.
     return code in field ? field[code] : field.en;
   }
 
@@ -159,60 +156,6 @@
       "counter": "Выбрано {count} / 1"
     },
     "pickedBadge": "Выбрано"
-  },
-  "uk": {
-    "intro": "[uk-todo] Three starting talents.",
-    "personal": {
-      "title": "[uk-todo] Personal talent",
-      "help": "[uk-todo] Pick one talent.",
-      "counter": "[uk-todo] {count} / 1 selected",
-      "filterRecommendedLabel": "[uk-todo] Only recommended for amplua",
-      "filterPoolMeta": "[uk-todo] {shown} / {total}",
-      "noConceptHint": "[uk-todo] Pick an amplua on Step 1."
-    },
-    "crew": {
-      "title": "[uk-todo] Crew talent",
-      "help": "[uk-todo] Shared by team. Pick one of three talents from {label}.",
-      "noCrew": "[uk-todo] Pick crew on Step 2."
-    },
-    "iconGift": {
-      "title": "[uk-todo] Icon gift",
-      "help": "[uk-todo] Derived from chosen Icon.",
-      "noIcon": "[uk-todo] Pick Icon on Step 3."
-    },
-    "stigma": {
-      "title": "[uk-todo] Stigma",
-      "help": "[uk-todo] Mutants pick one stigma.",
-      "counter": "[uk-todo] {count} / 1 selected"
-    },
-    "pickedBadge": "[uk-todo] Picked"
-  },
-  "el": {
-    "intro": "[el-todo] Three starting talents.",
-    "personal": {
-      "title": "[el-todo] Personal talent",
-      "help": "[el-todo] Pick one talent.",
-      "counter": "[el-todo] {count} / 1 selected",
-      "filterRecommendedLabel": "[el-todo] Only recommended for amplua",
-      "filterPoolMeta": "[el-todo] {shown} / {total}",
-      "noConceptHint": "[el-todo] Pick an amplua on Step 1."
-    },
-    "crew": {
-      "title": "[el-todo] Crew talent",
-      "help": "[el-todo] Shared by team. Pick one of three talents from {label}.",
-      "noCrew": "[el-todo] Pick crew on Step 2."
-    },
-    "iconGift": {
-      "title": "[el-todo] Icon gift",
-      "help": "[el-todo] Derived from chosen Icon.",
-      "noIcon": "[el-todo] Pick Icon on Step 3."
-    },
-    "stigma": {
-      "title": "[el-todo] Stigma",
-      "help": "[el-todo] Mutants pick one stigma.",
-      "counter": "[el-todo] {count} / 1 selected"
-    },
-    "pickedBadge": "[el-todo] Picked"
   }
 }
 </i18n>

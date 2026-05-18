@@ -86,14 +86,9 @@ describe('talent catalog (@app/specs)', () => {
     }
   });
 
-  it('uk + el locales carry the agreed [uk-todo]/[el-todo] placeholder marker', () => {
-    for (const entry of TALENT_CATALOG) {
-      expect(entry.name.uk, `name.uk for ${entry.id}`).toContain('[uk-todo]');
-      expect(entry.name.el, `name.el for ${entry.id}`).toContain('[el-todo]');
-      expect(entry.description.uk, `description.uk for ${entry.id}`).toContain('[uk-todo]');
-      expect(entry.description.el, `description.el for ${entry.id}`).toContain('[el-todo]');
-    }
-  });
+  // Note: the `uk`/`el` placeholder-parity test was removed when those locales
+  // were dropped (see T-2026-05-18-003). Add a new locale here when extending
+  // `CatalogLocale` and shipping its translations.
 
   it('every rankCap is between 1 and 3 inclusive', () => {
     for (const entry of TALENT_CATALOG) {
@@ -124,10 +119,8 @@ describe('talent catalog (@app/specs)', () => {
       const traveler = getIconGiftByIconId('traveler');
       const fromEn = findCatalogTalentByName(traveler.name.en, 'iconGift');
       const fromRu = findCatalogTalentByName(traveler.name.ru, 'iconGift');
-      const fromUk = findCatalogTalentByName(traveler.name.uk, 'iconGift');
       expect(fromEn?.id).toBe('gift-traveler');
       expect(fromRu?.id).toBe('gift-traveler');
-      expect(fromUk?.id).toBe('gift-traveler');
     });
 
     it('findCatalogTalentByName is case-insensitive and trims whitespace', () => {

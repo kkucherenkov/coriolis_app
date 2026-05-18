@@ -42,7 +42,7 @@ Don't try to work around any of these. They fail PRs at merge time.
 2. **Tokens-first.** No hex literals in `apps/web` or `packages/ui` SCSS. No raw `200ms` in component code — use `var(--motion-duration)`. No `!important`. No inline `style=""` with literals. Stylelint blocks all four.
 3. **Component contract.** Every `@app/ui` component folder has `*.vue + *.stories.ts + *.spec.ts + index.ts`. CI rejects misses. Storybook `addon-a11y` panel must be clean.
 4. **AppConfig only.** No `process.env.X` access outside `AppConfig`. Adding a config key means: `AppConfig` + `.env.example` + deploy config, all in the same PR.
-5. **i18n parity.** `pnpm check:i18n` enforces key parity across `en` and `ru` (active v1 locales) for backend, web, and mobile. `uk` and `el` are wired but not populated at v1.
+5. **i18n parity.** `pnpm check:i18n` enforces key parity across `en` and `ru` (active v1 locales) for backend, web, and mobile.
 6. **`GameSession`, never `Session`.** Better Auth reserves `Session` for its bearer-token table. The GM-side concept is always `GameSession` — in code, in URLs, in the schema.
 7. **No secrets in diff.** TruffleHog runs in CI.
 8. **License hygiene.** `license-checker` blocks anything outside the OSI-permissive allowlist.

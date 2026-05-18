@@ -34,7 +34,7 @@ This document defines the product, user experience, and technical architecture i
 - Give GMs a single screen to run encounters: initiative, HP/MP tracking, Darkness Points, and quick NPC reference.
 - Support ship sheets for crew-owned vessels with the same fidelity as character sheets.
 - Stay rules-faithful to the Coriolis core book and Atlas Compendium.
-- Ship in two locales (en / ru) at v1. The boilerplate's i18n pipeline already wires four locales (en / ru / uk / el); we populate two and leave the uk / el stubs for a later release.
+- Ship in two locales (en / ru) at v1. Additional locales are easy to add: register in `nuxt.config.ts` (web) + drop `*_<locale>.i18n.json` files into `apps/mobile/lib/i18n/` (mobile); `pnpm check:i18n` enforces key parity.
 
 ### 2.2 Non-Goals (v1)
 
@@ -247,7 +247,7 @@ A roll history (last 50 rolls per character) is kept for player and GM review. S
 - **Security:** OWASP Top 10 baseline. CSRF is N/A under pure bearer auth (no auto-attached credentials); strict CORS allowlist is required instead. All write endpoints validate the `Authorization` header and decode the JWT against the cached JWKS. `express-openapi-validator` rejects any request body not matching the spec — defense-in-depth against shape drift. Rate limit auth endpoints (5/min/IP via `@nestjs/throttler`) and apply per-user rate limits on roll / auto-save endpoints. Session tokens are stored hashed (Better Auth managed). Share slugs are random (≥ 24 chars) and not enumerable. Strict Content Security Policy on the Nuxt app to mitigate the XSS-vs-localStorage exposure. Secret scanning (TruffleHog) runs on every PR.
 - **Privacy:** Email is the only PII collected. No third-party trackers. Share-link view counts are anonymized. The mobile app uses Sentry Flutter and the backend uses Sentry + OpenTelemetry; both are scrubbed of email/IP via Sentry's `beforeSend` hook.
 - **Errors:** All API errors are RFC 9457 `application/problem+json`. The `title` and `detail` fields stay English-canonical; user-visible localization happens in the client via i18n keys triggered by the error `type`.
-- **Internationalization:** v1 ships **English and Russian (en / ru)**. The boilerplate's i18n pipeline already wires four locales (en / ru / uk / el) across web (@nuxtjs/i18n with colocated `<i18n lang="json">` blocks), mobile (slang with `auth` / `common` / `settings` / `coriolis` namespaces), and backend (nestjs-i18n with `<locale>/<namespace>.json`); for v1 we populate two and leave the uk / el stubs for a later release. No string ships as a literal — `pnpm check:i18n` enforces key parity for the active locales at CI.
+- **Internationalization:** v1 ships **English and Russian (en / ru)**. The i18n pipeline runs across web (@nuxtjs/i18n with colocated `<i18n lang="json">` blocks), mobile (slang with `auth` / `common` / `settings` / `coriolis` namespaces), and backend (nestjs-i18n with `<locale>/<namespace>.json`). Adding a new locale: register it in `nuxt.config.ts` + add `*_<locale>.i18n.json` files in `apps/mobile/lib/i18n/` + populate every `<i18n>` block in the web .vue files. No string ships as a literal — `pnpm check:i18n` enforces key parity for the active locales at CI.
 - **Offline:** the character sheet view is read-cached on both clients (service worker on web; SQLite + repository pattern on mobile) so a player who loses connectivity at the table can still see their sheet. Edits queue and sync on reconnect.
 - **Data export:** any user can export all their characters and ships as JSON from settings (GDPR / portability), via `GET /api/v1/me/export`.
 - **Observability:** every backend HTTP request emits an OTLP span; Centrifugo publishes are spanned with the originating request as parent. Grafana dashboards (local: `:3200`) show p95 latency, error rate, and DP-event volume per session.
@@ -723,4 +723,4 @@ The boilerplate's CI already enforces these — no v1 PR merges without:
 - Mobile push notifications for "your turn" alerts during combat (Firebase Messaging is wired but unused in v1).
 - iOS / Android store submission (binaries build; store presence is a v1.1 concern).
 - True multiplayer editing (CRDT).
-- Localization beyond en / ru in v1. The boilerplate has uk / el stubs already wired in the i18n pipeline; populating them is a v1.1+ task.
+- Localization beyond en / ru in v1. Additional locales (e.g. uk, el) are a v1.1+ task — register in `nuxt.config.ts` + add per-locale `.i18n.json` files for mobile + populate every `<i18n>` block.

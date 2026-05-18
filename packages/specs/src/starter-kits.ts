@@ -137,8 +137,6 @@ function rowLabel(n: number): LocalizedString {
   return {
     en: `Row ${s}`,
     ru: `Ряд ${s}`,
-    uk: `[uk-todo] Row ${s}`,
-    el: `[el-todo] Row ${s}`,
   };
 }
 
@@ -146,8 +144,6 @@ function withTodo(en: string, ru: string): LocalizedString {
   return {
     en,
     ru,
-    uk: `[uk-todo] ${en}`,
-    el: `[el-todo] ${en}`,
   };
 }
 

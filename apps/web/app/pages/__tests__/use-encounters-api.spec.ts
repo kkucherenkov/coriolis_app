@@ -486,14 +486,6 @@ describe('EncounterPanel.vue — structural wiring', () => {
     );
   });
 
-  it('has uk placeholder translations', () => {
-    expect(src).toContain('"heading": "[uk-todo] Encounters"');
-  });
-
-  it('has el placeholder translations', () => {
-    expect(src).toContain('"heading": "[el-todo] Encounters"');
-  });
-
   it('toggles open state inline rather than emitting (Block 4 inline expansion)', () => {
     // Block 4 changed the Open button from emit('open') to toggleEncounter(id).
     // The CombatTracker is now mounted inline inside EncounterPanel.

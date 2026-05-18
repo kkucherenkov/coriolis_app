@@ -133,44 +133,6 @@
       "wits": "РАЗ",
       "empathy": "ЭМП"
     }
-  },
-  "uk": {
-    "pointsRemaining": "[uk-todo] Points remaining",
-    "allSpent": "[uk-todo] All points spent",
-    "hint": "[uk-todo] Distribute {total} points.",
-    "incrementAria": "[uk-todo] Increase {attr}",
-    "decrementAria": "[uk-todo] Decrease {attr}",
-    "attr": {
-      "strength": "[uk-todo] Strength",
-      "agility": "[uk-todo] Agility",
-      "wits": "[uk-todo] Wits",
-      "empathy": "[uk-todo] Empathy"
-    },
-    "badge": {
-      "strength": "STR",
-      "agility": "AGI",
-      "wits": "WIT",
-      "empathy": "EMP"
-    }
-  },
-  "el": {
-    "pointsRemaining": "[el-todo] Points remaining",
-    "allSpent": "[el-todo] All points spent",
-    "hint": "[el-todo] Distribute {total} points.",
-    "incrementAria": "[el-todo] Increase {attr}",
-    "decrementAria": "[el-todo] Decrease {attr}",
-    "attr": {
-      "strength": "[el-todo] Strength",
-      "agility": "[el-todo] Agility",
-      "wits": "[el-todo] Wits",
-      "empathy": "[el-todo] Empathy"
-    },
-    "badge": {
-      "strength": "STR",
-      "agility": "AGI",
-      "wits": "WIT",
-      "empathy": "EMP"
-    }
   }
 }
 </i18n>

@@ -37,7 +37,7 @@
   );
 
   async function onLocaleChange(code: string): Promise<void> {
-    await setLocale(code as 'en' | 'ru' | 'uk' | 'el');
+    await setLocale(code as 'en' | 'ru');
   }
 
   // Three-feature grid keys. Order matches the handoff: Sheet → Share → Run.
@@ -96,54 +96,6 @@
     "footer": {
       "fan": "Неофициальный фан-проект по Coriolis: Третий Горизонт. Не аффилирован с Free League Publishing.",
       "ip": "Coriolis и связанные знаки принадлежат Fria Ligan / Free League Publishing."
-    }
-  },
-  "uk": {
-    "tagline": "[uk-todo] tagline for landing hero",
-    "signIn": "[uk-todo] sign in",
-    "createAccount": "[uk-todo] create account",
-    "localeSwitcherLabel": "[uk-todo] Choose language",
-    "feature": {
-      "sheet": {
-        "title": "[uk-todo] Sheet",
-        "blurb": "[uk-todo] Create a character with rules-faithful guidance."
-      },
-      "share": {
-        "title": "[uk-todo] Share",
-        "blurb": "[uk-todo] Publish a read-only sheet over a short link."
-      },
-      "run": {
-        "title": "[uk-todo] Run",
-        "blurb": "[uk-todo] Roll dice, push, track combat."
-      }
-    },
-    "footer": {
-      "fan": "[uk-todo] Unofficial fan project. Not affiliated with Free League Publishing.",
-      "ip": "[uk-todo] Coriolis marks belong to Fria Ligan / Free League Publishing."
-    }
-  },
-  "el": {
-    "tagline": "[el-todo] tagline for landing hero",
-    "signIn": "[el-todo] sign in",
-    "createAccount": "[el-todo] create account",
-    "localeSwitcherLabel": "[el-todo] Choose language",
-    "feature": {
-      "sheet": {
-        "title": "[el-todo] Sheet",
-        "blurb": "[el-todo] Create a character with rules-faithful guidance."
-      },
-      "share": {
-        "title": "[el-todo] Share",
-        "blurb": "[el-todo] Publish a read-only sheet over a short link."
-      },
-      "run": {
-        "title": "[el-todo] Run",
-        "blurb": "[el-todo] Roll dice, push, track combat."
-      }
-    },
-    "footer": {
-      "fan": "[el-todo] Unofficial fan project. Not affiliated with Free League Publishing.",
-      "ip": "[el-todo] Coriolis marks belong to Fria Ligan / Free League Publishing."
     }
   }
 }

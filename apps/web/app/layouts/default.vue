@@ -11,14 +11,6 @@
   "ru": {
     "wordmark": "Coriolis · Companion",
     "disclaimer": "Фан-проект · Не связан с издателем настольной ролевой игры Coriolis."
-  },
-  "uk": {
-    "wordmark": "Coriolis · Companion",
-    "disclaimer": "[uk-todo] Coriolis Companion fan project disclaimer"
-  },
-  "el": {
-    "wordmark": "Coriolis · Companion",
-    "disclaimer": "[el-todo] Coriolis Companion fan project disclaimer"
   }
 }
 </i18n>

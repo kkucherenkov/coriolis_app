@@ -95,64 +95,6 @@
     },
     "selected": "Выбрано",
     "ariaGrid": "Сетка Девяти Икон"
-  },
-  "uk": {
-    "choosePrompt": "[uk-todo] Select the Icon who walks beside you.",
-    "rollLabel": "[uk-todo] Roll d66 for me",
-    "rollHint": "[uk-todo] Let the rulebook decide.",
-    "iconName": {
-      "lady-of-tears": "[uk-todo] Lady of Tears",
-      "traveler": "[uk-todo] The Traveler",
-      "messenger": "[uk-todo] The Messenger",
-      "merchant": "[uk-todo] The Merchant",
-      "dancer": "[uk-todo] The Dancer",
-      "gambler": "[uk-todo] The Gambler",
-      "judge": "[uk-todo] The Judge",
-      "faceless-one": "[uk-todo] The Faceless One",
-      "deckhand": "[uk-todo] The Deckhand"
-    },
-    "iconDomain": {
-      "lady-of-tears": "[uk-todo] Sorrow",
-      "traveler": "[uk-todo] Journey",
-      "messenger": "[uk-todo] Words",
-      "merchant": "[uk-todo] Trade",
-      "dancer": "[uk-todo] Art",
-      "gambler": "[uk-todo] Luck",
-      "judge": "[uk-todo] Law",
-      "faceless-one": "[uk-todo] Mystery",
-      "deckhand": "[uk-todo] Labour"
-    },
-    "selected": "[uk-todo] Chosen",
-    "ariaGrid": "[uk-todo] Nine Icons grid"
-  },
-  "el": {
-    "choosePrompt": "[el-todo] Select the Icon who walks beside you.",
-    "rollLabel": "[el-todo] Roll d66 for me",
-    "rollHint": "[el-todo] Let the rulebook decide.",
-    "iconName": {
-      "lady-of-tears": "[el-todo] Lady of Tears",
-      "traveler": "[el-todo] The Traveler",
-      "messenger": "[el-todo] The Messenger",
-      "merchant": "[el-todo] The Merchant",
-      "dancer": "[el-todo] The Dancer",
-      "gambler": "[el-todo] The Gambler",
-      "judge": "[el-todo] The Judge",
-      "faceless-one": "[el-todo] The Faceless One",
-      "deckhand": "[el-todo] The Deckhand"
-    },
-    "iconDomain": {
-      "lady-of-tears": "[el-todo] Sorrow",
-      "traveler": "[el-todo] Journey",
-      "messenger": "[el-todo] Words",
-      "merchant": "[el-todo] Trade",
-      "dancer": "[el-todo] Art",
-      "gambler": "[el-todo] Luck",
-      "judge": "[el-todo] Law",
-      "faceless-one": "[el-todo] Mystery",
-      "deckhand": "[el-todo] Labour"
-    },
-    "selected": "[el-todo] Chosen",
-    "ariaGrid": "[el-todo] Nine Icons grid"
   }
 }
 </i18n>

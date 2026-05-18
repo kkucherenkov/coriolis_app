@@ -86,24 +86,6 @@
     "confirmLabel": "Подтвердить",
     "cancelLabel": "Отмена",
     "errorPatchFailed": "Не удалось сохранить роль. Попробуйте ещё раз."
-  },
-  "uk": {
-    "bannerText": "[uk-todo] This character pre-dates role-tracking. Confirm your role to keep your skill-cap math canon-aligned.",
-    "cta": "[uk-todo] Confirm role",
-    "dialogHeading": "[uk-todo] Confirm your role",
-    "dialogDescription": "[uk-todo] Choose one of the three canonical roles for your concept.",
-    "confirmLabel": "[uk-todo] Confirm",
-    "cancelLabel": "[uk-todo] Cancel",
-    "errorPatchFailed": "[uk-todo] Failed to save role. Please try again."
-  },
-  "el": {
-    "bannerText": "[el-todo] This character pre-dates role-tracking. Confirm your role to keep your skill-cap math canon-aligned.",
-    "cta": "[el-todo] Confirm role",
-    "dialogHeading": "[el-todo] Confirm your role",
-    "dialogDescription": "[el-todo] Choose one of the three canonical roles for your concept.",
-    "confirmLabel": "[el-todo] Confirm",
-    "cancelLabel": "[el-todo] Cancel",
-    "errorPatchFailed": "[el-todo] Failed to save role. Please try again."
   }
 }
 </i18n>

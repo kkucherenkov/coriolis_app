@@ -163,48 +163,6 @@
       "yesterday": "вчера",
       "days": "{n} дн назад"
     }
-  },
-  "uk": {
-    "header": "[uk-todo] History",
-    "loading": "[uk-todo] Loading rolls",
-    "empty": "[uk-todo] No rolls yet",
-    "errorLoad": "[uk-todo] Couldn't load history",
-    "hits": "[uk-todo] {n} hits",
-    "pushed": "[uk-todo] Pushed",
-    "modalTitle": "[uk-todo] Roll detail",
-    "modalLabel": "[uk-todo] Label",
-    "modalPool": "[uk-todo] Pool",
-    "modalHits": "[uk-todo] Hits",
-    "modalRolledAt": "[uk-todo] Rolled at",
-    "modalClose": "[uk-todo] Close",
-    "relative": {
-      "justNow": "[uk-todo] just now",
-      "minutes": "[uk-todo] {n}m ago",
-      "hours": "[uk-todo] {n}h ago",
-      "yesterday": "[uk-todo] yesterday",
-      "days": "[uk-todo] {n}d ago"
-    }
-  },
-  "el": {
-    "header": "[el-todo] History",
-    "loading": "[el-todo] Loading rolls",
-    "empty": "[el-todo] No rolls yet",
-    "errorLoad": "[el-todo] Couldn't load history",
-    "hits": "[el-todo] {n} hits",
-    "pushed": "[el-todo] Pushed",
-    "modalTitle": "[el-todo] Roll detail",
-    "modalLabel": "[el-todo] Label",
-    "modalPool": "[el-todo] Pool",
-    "modalHits": "[el-todo] Hits",
-    "modalRolledAt": "[el-todo] Rolled at",
-    "modalClose": "[el-todo] Close",
-    "relative": {
-      "justNow": "[el-todo] just now",
-      "minutes": "[el-todo] {n}m ago",
-      "hours": "[el-todo] {n}h ago",
-      "yesterday": "[el-todo] yesterday",
-      "days": "[el-todo] {n}d ago"
-    }
   }
 }
 </i18n>

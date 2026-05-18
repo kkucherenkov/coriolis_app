@@ -86,32 +86,6 @@
     "revokedBack": "На главную",
     "errorHeading": "Что-то пошло не так",
     "loadingLabel": "Загрузка персонажа…"
-  },
-  "uk": {
-    "metaTitleLoading": "[uk-todo] Loading…",
-    "metaDescriptionDefault": "[uk-todo] A shared Coriolis character.",
-    "errorLoad": "[uk-todo] Failed to load character.",
-    "notFoundHeading": "[uk-todo] Character not found",
-    "notFoundBody": "[uk-todo] This share link does not exist.",
-    "notFoundBack": "[uk-todo] Go to home",
-    "revokedHeading": "[uk-todo] Share link revoked",
-    "revokedBody": "[uk-todo] The owner has revoked this share link.",
-    "revokedBack": "[uk-todo] Go to home",
-    "errorHeading": "[uk-todo] Something went wrong",
-    "loadingLabel": "[uk-todo] Loading…"
-  },
-  "el": {
-    "metaTitleLoading": "[el-todo] Loading…",
-    "metaDescriptionDefault": "[el-todo] A shared Coriolis character.",
-    "errorLoad": "[el-todo] Failed to load character.",
-    "notFoundHeading": "[el-todo] Character not found",
-    "notFoundBody": "[el-todo] This share link does not exist.",
-    "notFoundBack": "[el-todo] Go to home",
-    "revokedHeading": "[el-todo] Share link revoked",
-    "revokedBody": "[el-todo] The owner has revoked this share link.",
-    "revokedBack": "[el-todo] Go to home",
-    "errorHeading": "[el-todo] Something went wrong",
-    "loadingLabel": "[el-todo] Loading…"
   }
 }
 </i18n>

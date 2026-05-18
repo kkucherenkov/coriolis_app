@@ -184,38 +184,6 @@
     "noRollYet": "Бросков ещё нет — опиши бросок выше.",
     "errorRoll": "Не удалось бросить. Попробуй ещё раз.",
     "errorPush": "Не удалось дожать."
-  },
-  "uk": {
-    "labelLabel": "[uk-todo] Label",
-    "labelHint": "[uk-todo] What you're rolling for",
-    "poolLabel": "[uk-todo] Pool",
-    "poolDecrement": "[uk-todo] Decrease pool",
-    "poolIncrement": "[uk-todo] Increase pool",
-    "rollButton": "[uk-todo] Roll",
-    "pushButton": "[uk-todo] Push",
-    "pushedBadge": "[uk-todo] Pushed",
-    "pushFailLine": "[uk-todo] No new successes",
-    "pushSuccessLine": "[uk-todo] +{count} new successes",
-    "exhaustedHint": "[uk-todo] Exhausted",
-    "noRollYet": "[uk-todo] No roll yet",
-    "errorRoll": "[uk-todo] Roll failed",
-    "errorPush": "[uk-todo] Push failed"
-  },
-  "el": {
-    "labelLabel": "[el-todo] Label",
-    "labelHint": "[el-todo] What you're rolling for",
-    "poolLabel": "[el-todo] Pool",
-    "poolDecrement": "[el-todo] Decrease pool",
-    "poolIncrement": "[el-todo] Increase pool",
-    "rollButton": "[el-todo] Roll",
-    "pushButton": "[el-todo] Push",
-    "pushedBadge": "[el-todo] Pushed",
-    "pushFailLine": "[el-todo] No new successes",
-    "pushSuccessLine": "[el-todo] +{count} new successes",
-    "exhaustedHint": "[el-todo] Exhausted",
-    "noRollYet": "[el-todo] No roll yet",
-    "errorRoll": "[el-todo] Roll failed",
-    "errorPush": "[el-todo] Push failed"
   }
 }
 </i18n>

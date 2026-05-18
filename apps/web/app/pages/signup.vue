@@ -108,48 +108,6 @@
     "errorEmailTaken": "Аккаунт с таким email уже существует.",
     "errorPasswordWeak": "Слишком слабый пароль. Используйте более длинный.",
     "errorGeneric": "Что-то пошло не так. Попробуйте ещё раз."
-  },
-  "uk": {
-    "wordmark": "Coriolis Companion",
-    "title": "[uk-todo] Create account",
-    "subtitle": "[uk-todo] Sign up with email and password",
-    "emailLabel": "[uk-todo] Email",
-    "emailHint": "[uk-todo] Email hint",
-    "passwordLabel": "[uk-todo] Password",
-    "passwordHint": "[uk-todo] Password hint",
-    "confirmLabel": "[uk-todo] Confirm password",
-    "confirmHint": "[uk-todo] Confirm hint",
-    "signUpButton": "[uk-todo] Create account",
-    "haveAccount": "[uk-todo] Have account",
-    "signInLink": "[uk-todo] Sign in",
-    "legalFootnote": "[uk-todo] Legal",
-    "errorEmailInvalid": "[uk-todo] Invalid email",
-    "errorPasswordTooShort": "[uk-todo] Password too short",
-    "errorPasswordMismatch": "[uk-todo] Passwords mismatch",
-    "errorEmailTaken": "[uk-todo] Email taken",
-    "errorPasswordWeak": "[uk-todo] Password weak",
-    "errorGeneric": "[uk-todo] Generic error"
-  },
-  "el": {
-    "wordmark": "Coriolis Companion",
-    "title": "[el-todo] Create account",
-    "subtitle": "[el-todo] Sign up with email and password",
-    "emailLabel": "[el-todo] Email",
-    "emailHint": "[el-todo] Email hint",
-    "passwordLabel": "[el-todo] Password",
-    "passwordHint": "[el-todo] Password hint",
-    "confirmLabel": "[el-todo] Confirm password",
-    "confirmHint": "[el-todo] Confirm hint",
-    "signUpButton": "[el-todo] Create account",
-    "haveAccount": "[el-todo] Have account",
-    "signInLink": "[el-todo] Sign in",
-    "legalFootnote": "[el-todo] Legal",
-    "errorEmailInvalid": "[el-todo] Invalid email",
-    "errorPasswordTooShort": "[el-todo] Password too short",
-    "errorPasswordMismatch": "[el-todo] Passwords mismatch",
-    "errorEmailTaken": "[el-todo] Email taken",
-    "errorPasswordWeak": "[el-todo] Password weak",
-    "errorGeneric": "[el-todo] Generic error"
   }
 }
 </i18n>
