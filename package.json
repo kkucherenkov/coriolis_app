@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "@app/eslint-config": "workspace:*",
+    "@axe-core/playwright": "^4.11.3",
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
     "@playwright/test": "^1.49.1",

@@ -8,7 +8,7 @@
  *
  * Execution: `pnpm e2e --grep a11y` (requires local Docker stack on :3001).
  */
-import AxeBuilder from 'axe-playwright';
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 // ── Helper ─────────────────────────────────────────────────────────────────────
