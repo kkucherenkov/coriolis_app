@@ -119,4 +119,9 @@ class SessionRepositoryImpl implements SessionRepository {
   Future<void> revokeInvite(String sessionId) async {
     await _api.revokeInvite(id: sessionId);
   }
+
+  @override
+  Future<void> removeMember(String sessionId, String membershipId) async {
+    await _api.removeMembership(id: sessionId, membershipId: membershipId);
+  }
 }

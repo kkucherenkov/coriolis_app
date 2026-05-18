@@ -100,6 +100,30 @@ class SessionDetailCubit extends Cubit<SessionDetailState> {
     }
   }
 
+  /// GM-only: removes a non-self membership from the session. Backed by the
+  /// same Stream A endpoint `PlayerSessionRepository.leaveSession` uses —
+  /// the server enforces the `kick-others requires GM` gate. On success the
+  /// session is refetched so the Crew list reflects the canonical roster
+  /// without us trying to splice the membership out ourselves.
+  Future<void> kickMember(String membershipId) async {
+    final session = state.session;
+    if (session == null) return;
+    emit(state.copyWith(
+      kickBusyMembershipId: membershipId,
+      clearKickError: true,
+    ));
+    try {
+      await _repository.removeMember(session.id, membershipId);
+      final refreshed = await _repository.get(session.id);
+      emit(state.copyWith(session: refreshed, clearKickBusy: true));
+    } on Object catch (e) {
+      emit(state.copyWith(
+        clearKickBusy: true,
+        kickError: e.toString(),
+      ));
+    }
+  }
+
   /// Centrifugo subscription handler. Patches the visible counter
   /// directly — the audit list refetches on the next adjust to pick
   /// up the canonical row (the websocket payload doesn't carry the

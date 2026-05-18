@@ -142,6 +142,10 @@ class _SessionDetailBodyState extends State<_SessionDetailBody> {
                 dpEvents: state.dpEvents,
                 dpError: state.dpError,
                 dpSubmitting: state.dpSubmitting,
+                kickBusyMembershipId: state.kickBusyMembershipId,
+                kickError: state.kickError,
+                onKickRequested: (membershipId) =>
+                    context.read<SessionDetailCubit>().kickMember(membershipId),
               );
           }
         },
@@ -173,6 +177,9 @@ class _DetailContent extends StatefulWidget {
     required this.dpEvents,
     required this.dpError,
     required this.dpSubmitting,
+    required this.kickBusyMembershipId,
+    required this.kickError,
+    required this.onKickRequested,
   });
 
   final GameSession session;
@@ -180,6 +187,9 @@ class _DetailContent extends StatefulWidget {
   final List<DpEvent> dpEvents;
   final String? dpError;
   final bool dpSubmitting;
+  final String? kickBusyMembershipId;
+  final String? kickError;
+  final void Function(String membershipId) onKickRequested;
 
   @override
   State<_DetailContent> createState() => _DetailContentState();
@@ -323,7 +333,13 @@ class _DetailContentState extends State<_DetailContent> {
           sessionCharacterIds: s.linkedCharacterIds,
         ),
         const SizedBox(height: 12),
-        _CrewCard(members: s.members),
+        _CrewCard(
+          members: s.members,
+          isGm: widget.isGm,
+          kickBusyMembershipId: widget.kickBusyMembershipId,
+          kickError: widget.kickError,
+          onKickRequested: widget.onKickRequested,
+        ),
         if (widget.isGm) ...[
           const SizedBox(height: 12),
           _AuditCard(events: widget.dpEvents),
@@ -453,9 +469,19 @@ class _DpCard extends StatelessWidget {
 }
 
 class _CrewCard extends StatelessWidget {
-  const _CrewCard({required this.members});
+  const _CrewCard({
+    required this.members,
+    required this.isGm,
+    required this.kickBusyMembershipId,
+    required this.kickError,
+    required this.onKickRequested,
+  });
 
   final List<GameSessionMember> members;
+  final bool isGm;
+  final String? kickBusyMembershipId;
+  final String? kickError;
+  final void Function(String membershipId) onKickRequested;
 
   @override
   Widget build(BuildContext context) {
@@ -483,17 +509,110 @@ class _CrewCard extends StatelessWidget {
               for (final m in members)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Text(
-                    [
-                      '• ${m.displayName ?? m.userId}',
-                      if (m.isGm) ' (GM)',
-                      if (m.characterName != null) ' — ${m.characterName}',
-                    ].join(),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          [
+                            '• ${m.displayName ?? m.userId}',
+                            if (m.isGm) ' (GM)',
+                            if (m.characterName != null) ' — ${m.characterName}',
+                          ].join(),
+                        ),
+                      ),
+                      if (isGm && !m.isGm)
+                        _KickButton(
+                          memberId: m.id,
+                          memberLabel: m.displayName ?? m.userId,
+                          busy: kickBusyMembershipId == m.id,
+                          onKickRequested: onKickRequested,
+                        ),
+                    ],
                   ),
                 ),
+            if (kickError != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                "Couldn't remove that member: $kickError",
+                key: const Key('crew-kick-error'),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Per-row remove button + confirm dialog. Extracted so the spinner state
+/// stays scoped to the affected row and the confirm flow doesn't bleed into
+/// `_CrewCard`'s build.
+class _KickButton extends StatelessWidget {
+  const _KickButton({
+    required this.memberId,
+    required this.memberLabel,
+    required this.busy,
+    required this.onKickRequested,
+  });
+
+  final String memberId;
+  final String memberLabel;
+  final bool busy;
+  final void Function(String membershipId) onKickRequested;
+
+  @override
+  Widget build(BuildContext context) {
+    if (busy) {
+      return const SizedBox(
+        width: 32,
+        height: 32,
+        child: Padding(
+          padding: EdgeInsets.all(6),
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+    return IconButton(
+      key: Key('crew-kick-$memberId'),
+      tooltip: 'Remove $memberLabel from the session',
+      icon: const Icon(Icons.person_remove_outlined, size: 20),
+      onPressed: () async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) {
+            return AlertDialog(
+              title: Text('Remove $memberLabel from the session?'),
+              content: const Text(
+                "They lose realtime access on their next token refresh (within "
+                '5 minutes). Their chat history stays. They can rejoin if you '
+                'share a fresh invite link.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton.tonal(
+                  key: const Key('crew-kick-confirm'),
+                  style: FilledButton.styleFrom(
+                    foregroundColor: Theme.of(dialogContext).colorScheme.onErrorContainer,
+                    backgroundColor: Theme.of(dialogContext).colorScheme.errorContainer,
+                  ),
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: const Text('Remove'),
+                ),
+              ],
+            );
+          },
+        );
+        if (confirmed == true) {
+          onKickRequested(memberId);
+        }
+      },
     );
   }
 }

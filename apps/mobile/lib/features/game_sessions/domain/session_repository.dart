@@ -48,4 +48,11 @@ abstract class SessionRepository {
 
   /// Clears the invite hash. Subsequent accept attempts return 410.
   Future<void> revokeInvite(String sessionId);
+
+  /// GM-only kick. The server backs this with
+  /// `DELETE /api/v1/game-sessions/:id/members/:membershipId`. A player who
+  /// wants to leave their own membership calls the same endpoint via
+  /// `PlayerSessionRepository.leaveSession` — server gates kick-others on
+  /// `ownerId == requester.id`.
+  Future<void> removeMember(String sessionId, String membershipId);
 }
