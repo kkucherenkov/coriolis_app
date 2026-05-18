@@ -59,7 +59,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
     reported defects are gone. One unrelated seed regression (POST
     `/ships` returning 400) still skips `ship-sheet`; flagged in
     follow-ups but out of scope here.
-- Result: PR `fix/ui-screenshot-bugs` on Forgejo (link pending PR open).
+- Result: [PR #44](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/44) on Forgejo.
 
 ## T-2026-05-16-PHASE-8-STREAM-E — Phase 8 / Stream E — Cleanup of deprecated `characterIds`
 
