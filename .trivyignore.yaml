@@ -11,3 +11,9 @@ misconfigurations:
     paths:
       - "apps/backend/Dockerfile.dev"
       - "apps/web/Dockerfile.dev"
+      # Postgres official image bootstraps as root in docker-entrypoint.sh
+      # (chown of /var/lib/postgresql, replay of /docker-entrypoint-initdb.d/),
+      # then drops to the `postgres` user via gosu. Adding an early USER
+      # directive breaks the init sequence. Standard practice for the
+      # postgres official image.
+      - "docker/postgres/Dockerfile"

@@ -47,8 +47,16 @@ jobs:
       - name: Build design tokens
         run: pnpm design:build
 
-      - name: Validate + bundle specs
-        run: pnpm spec:validate && pnpm spec:bundle
+      # `spec:bundle` writes dist/openapi.json (consumed by the runtime
+      # express-openapi-validator). `@app/specs#build` compiles src/*.ts
+      # to dist/src/*.js (consumed at import time by @app/backend, @app/web,
+      # and the e2e suite). Without the second step every `import { foo }
+      # from '@app/specs'` resolves to a missing path, ESLint flags everything
+      # consumed from @app/specs as `any` ("unsafe call"), and Vite's
+      # commonjs resolver fails `nuxt generate` with "Failed to resolve
+      # entry for package @app/specs".
+      - name: Validate + bundle + build specs
+        run: pnpm spec:validate && pnpm spec:bundle && pnpm --filter @app/specs build
 
       # oxlint pre-pass — runs in ~0.5 s on the whole repo and fails fast on
       # common bugs (correctness category from the typescript / unicorn / oxc
@@ -140,6 +148,11 @@ jobs:
 
       - name: Build design tokens
         run: pnpm design:build
+
+      # Same rationale as the Checks job — Nuxt's Vite needs dist/src/ to
+      # resolve @app/specs at `nuxt generate` time.
+      - name: Build @app/specs
+        run: pnpm --filter @app/specs bundle && pnpm --filter @app/specs build
 
       - name: Build Storybook static
         env:

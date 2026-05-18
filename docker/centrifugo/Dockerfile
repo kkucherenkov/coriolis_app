@@ -19,3 +19,9 @@
 FROM centrifugo/centrifugo:v6
 
 COPY config.json /centrifugo/config.json
+
+# The upstream base image already runs as the non-root `centrifugo` user,
+# but Trivy's misconfig scan only sees the Dockerfile and flags missing
+# explicit USER directives (DS-0002). Restate the inherited user so the
+# scanner is satisfied and intent is explicit at the Dockerfile level.
+USER centrifugo
