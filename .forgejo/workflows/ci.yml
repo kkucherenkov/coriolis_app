@@ -192,5 +192,9 @@ jobs:
       - name: Dependency vulnerability scan
         run: pnpm audit --audit-level=critical
 
+      # MPL-2.0 is on the allowlist for the axe-core toolchain
+      # (@axe-core/playwright + axe-core itself). It's a weak-copyleft
+      # license — file-level reciprocity only, doesn't affect linked
+      # consumers — and is standard for accessibility tooling.
       - name: License compliance check
-        run: pnpm dlx license-checker --excludePrivatePackages --onlyAllow 'MIT;ISC;Apache-2.0;BSD-2-Clause;BSD-3-Clause;0BSD;CC0-1.0;Unlicense;Python-2.0;CC-BY-3.0;CC-BY-4.0'
+        run: pnpm dlx license-checker --excludePrivatePackages --onlyAllow 'MIT;ISC;Apache-2.0;BSD-2-Clause;BSD-3-Clause;0BSD;CC0-1.0;Unlicense;Python-2.0;CC-BY-3.0;CC-BY-4.0;MPL-2.0'
