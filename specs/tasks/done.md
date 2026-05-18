@@ -2,6 +2,29 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-18-004 — Ship-class response codec — Prisma TS identifier leaks past response validation
+
+- Created: 2026-05-18
+- Completed: 2026-05-18
+- Owner: claude
+- Branch: `fix/ship-class-response-codec`
+- Trigger: `POST /api/v1/ships` returned `400 Bad Request` against the demo seeder during `pnpm screenshots:capture` (flagged as a known unrelated regression in PR #44).
+- Root cause: Prisma's per-value `@map` (e.g. `courier_yacht @map("courier-yacht")`) writes the **kebab** value to the database, but the Prisma TS client reads the column back as the **TS identifier** (`courier_yacht`). The mapper's WHY comment had it backwards — it assumed the read returned the wire format and cast the underscore string directly to `ShipClass`. `express-openapi-validator` then rejected the response with `enum.openapi.validation` on `/response/class`. Same shape problem latent on `ShipModuleSlot` (`ESCAPE_PODS` vs `ESCAPE-PODS`, `CONCEALED_HOLD`, `PROXY_DECK`) — `findModuleById` / `addModule` / `updateModule` returned the underscore form too.
+- What landed:
+  - **`apps/backend/src/modules/ships/infra/ship.mapper.ts`** — added `fromDbShipClass(c)` + `fromDbSlot(s)` (underscore → kebab) and applied them in `toShipReadModel`; `CrewPosition` left alone (its enum has no per-value `@map`, identifier ≡ wire value). Rewrote the WHY comment so the next reader doesn't repeat the same mistake.
+  - **`apps/backend/src/modules/ships/infra/ship.repo.ts`** — `findModuleById`, `addModule`, `updateModule` now call `fromDbSlot(row.slot)` before returning. Write-side `toDbSlot` / `toDbShipClass` are unchanged; the internal DB-to-DB module copy in `duplicate()` stays on the underscore form since it never crosses the API boundary.
+  - **`apps/backend/src/modules/ships/infra/ship.mapper.spec.ts`** (new) — 20-case round-trip table for `fromDbShipClass` covering every value that contains an underscore (plus identity cases), 5 cases for `fromDbSlot`, and an integration-style `toShipReadModel` test that builds a Prisma-shaped row and asserts the response shape matches the OpenAPI wire format on `class`, `modules[i].slot`, and `crew[i].position`.
+  - **`scripts/screenshots/capture.ts`** — removed the apologetic "Ship POST currently triggers a response-codec mismatch" block; ship seed now uses the same `api()` helper as every other seed call.
+- Verification:
+  - `pnpm --filter @app/backend vitest run src/modules/ships/infra/ship.mapper.spec.ts` → 28/28 pass.
+  - `pnpm --filter @app/backend test` → **1126/1126** pass (was 1098 before the new spec).
+  - `pnpm --filter @app/backend typecheck` clean.
+  - `pnpm --filter @app/web vitest run` → 534/534 pass.
+  - `pnpm format` clean.
+  - Live repro inside the local Docker stack: `docker compose restart backend` then `POST /api/v1/ships` with `{"name":"Madara","class":"courier-yacht"}` returns **201** with `class: "courier-yacht"` in the response payload (was previously 400 `enum.openapi.validation`).
+  - `pnpm screenshots:capture` — all 20 PNGs render including the previously-skipped `ship-sheet`.
+- Result: PR `fix/ship-class-response-codec` on Forgejo (link pending PR open).
+
 ## T-2026-05-18-003 — Drop `uk` + `el` locale stubs from the entire monorepo
 
 - Created: 2026-05-18

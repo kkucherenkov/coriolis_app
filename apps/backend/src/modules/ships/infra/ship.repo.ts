@@ -17,7 +17,7 @@ import {
 } from '@prisma/client';
 
 import { PrismaService } from '../../../common/prisma/prisma.service';
-import { toShipReadModel } from './ship.mapper';
+import { fromDbSlot, toShipReadModel } from './ship.mapper';
 
 import type {
   IShipRepo,
@@ -235,7 +235,7 @@ export class ShipRepo implements IShipRepo {
     return {
       id: row.id,
       shipId: row.shipId,
-      slot: row.slot,
+      slot: fromDbSlot(row.slot),
       name: row.name,
       energyUse: row.energyUse,
       data: (row.data ?? {}) as Record<string, unknown>,
@@ -255,7 +255,7 @@ export class ShipRepo implements IShipRepo {
     });
     return {
       id: row.id,
-      slot: row.slot,
+      slot: fromDbSlot(row.slot),
       name: row.name,
       energyUse: row.energyUse,
       data: (row.data ?? {}) as Record<string, unknown>,
@@ -276,7 +276,7 @@ export class ShipRepo implements IShipRepo {
     });
     return {
       id: row.id,
-      slot: row.slot,
+      slot: fromDbSlot(row.slot),
       name: row.name,
       energyUse: row.energyUse,
       data: (row.data ?? {}) as Record<string, unknown>,
