@@ -76,26 +76,6 @@
     "retry": "Попробовать снова",
     "iconLabel": "Икона",
     "skeletonAria": "Загрузка персонажей…"
-  },
-  "uk": {
-    "pageTitle": "[uk-todo] Characters",
-    "newCharacter": "[uk-todo] New character",
-    "emptyHeading": "[uk-todo] No characters yet",
-    "emptyBody": "[uk-todo] Create your first character",
-    "errorLoad": "[uk-todo] Failed to load characters",
-    "retry": "[uk-todo] Try again",
-    "iconLabel": "[uk-todo] Icon",
-    "skeletonAria": "[uk-todo] Loading characters"
-  },
-  "el": {
-    "pageTitle": "[el-todo] Characters",
-    "newCharacter": "[el-todo] New character",
-    "emptyHeading": "[el-todo] No characters yet",
-    "emptyBody": "[el-todo] Create your first character",
-    "errorLoad": "[el-todo] Failed to load characters",
-    "retry": "[el-todo] Try again",
-    "iconLabel": "[el-todo] Icon",
-    "skeletonAria": "[el-todo] Loading characters"
   }
 }
 </i18n>

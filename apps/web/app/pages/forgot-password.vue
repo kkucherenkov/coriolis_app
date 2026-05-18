@@ -70,32 +70,6 @@
     "backToSignIn": "Вернуться ко входу",
     "errorEmailInvalid": "Введите корректный email.",
     "errorGeneric": "Что-то пошло не так. Попробуйте ещё раз."
-  },
-  "uk": {
-    "wordmark": "Coriolis Companion",
-    "title": "[uk-todo] Reset password",
-    "subtitle": "[uk-todo] Enter email to receive a reset link",
-    "emailLabel": "[uk-todo] Email",
-    "emailHint": "[uk-todo] Where to send the reset link",
-    "submitButton": "[uk-todo] Send reset link",
-    "successTitle": "[uk-todo] Check your inbox",
-    "successBody": "[uk-todo] If the account exists a link is on its way (1 h).",
-    "backToSignIn": "[uk-todo] Back to sign in",
-    "errorEmailInvalid": "[uk-todo] Invalid email",
-    "errorGeneric": "[uk-todo] Generic error"
-  },
-  "el": {
-    "wordmark": "Coriolis Companion",
-    "title": "[el-todo] Reset password",
-    "subtitle": "[el-todo] Enter email to receive a reset link",
-    "emailLabel": "[el-todo] Email",
-    "emailHint": "[el-todo] Where to send the reset link",
-    "submitButton": "[el-todo] Send reset link",
-    "successTitle": "[el-todo] Check your inbox",
-    "successBody": "[el-todo] If the account exists a link is on its way (1 h).",
-    "backToSignIn": "[el-todo] Back to sign in",
-    "errorEmailInvalid": "[el-todo] Invalid email",
-    "errorGeneric": "[el-todo] Generic error"
   }
 }
 </i18n>

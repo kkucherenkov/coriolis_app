@@ -21,18 +21,6 @@
     "comingSoonTitle": "Обмен кораблями скоро появится",
     "comingSoonBody": "Листы кораблей можно будет открыть для общего доступа в будущем обновлении. Следите за новостями!",
     "backToHome": "На главную"
-  },
-  "uk": {
-    "pageTitle": "[uk-todo] Ship — Coriolis Companion",
-    "comingSoonTitle": "[uk-todo] Ship sharing coming soon",
-    "comingSoonBody": "[uk-todo] Ship character sheets will be available to share in a future update.",
-    "backToHome": "[uk-todo] Go to home"
-  },
-  "el": {
-    "pageTitle": "[el-todo] Ship — Coriolis Companion",
-    "comingSoonTitle": "[el-todo] Ship sharing coming soon",
-    "comingSoonBody": "[el-todo] Ship character sheets will be available to share in a future update.",
-    "backToHome": "[el-todo] Go to home"
   }
 }
 </i18n>

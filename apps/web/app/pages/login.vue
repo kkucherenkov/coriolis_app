@@ -88,42 +88,6 @@
     "errorPasswordTooShort": "Пароль должен содержать не менее 8 символов.",
     "errorCredentials": "Неверный email или пароль. Попробуйте ещё раз.",
     "errorGeneric": "Что-то пошло не так. Попробуйте ещё раз."
-  },
-  "uk": {
-    "wordmark": "Coriolis Companion",
-    "title": "[uk-todo] Sign in",
-    "subtitle": "[uk-todo] Enter email and password",
-    "emailLabel": "[uk-todo] Email",
-    "emailHint": "[uk-todo] Email hint",
-    "passwordLabel": "[uk-todo] Password",
-    "passwordHint": "[uk-todo] Password hint",
-    "signInButton": "[uk-todo] Sign in",
-    "forgotLink": "[uk-todo] Forgot password",
-    "noAccount": "[uk-todo] No account",
-    "signUpLink": "[uk-todo] Sign up",
-    "legalFootnote": "[uk-todo] Legal",
-    "errorEmailInvalid": "[uk-todo] Invalid email",
-    "errorPasswordTooShort": "[uk-todo] Password too short",
-    "errorCredentials": "[uk-todo] Bad credentials",
-    "errorGeneric": "[uk-todo] Generic error"
-  },
-  "el": {
-    "wordmark": "Coriolis Companion",
-    "title": "[el-todo] Sign in",
-    "subtitle": "[el-todo] Enter email and password",
-    "emailLabel": "[el-todo] Email",
-    "emailHint": "[el-todo] Email hint",
-    "passwordLabel": "[el-todo] Password",
-    "passwordHint": "[el-todo] Password hint",
-    "signInButton": "[el-todo] Sign in",
-    "forgotLink": "[el-todo] Forgot password",
-    "noAccount": "[el-todo] No account",
-    "signUpLink": "[el-todo] Sign up",
-    "legalFootnote": "[el-todo] Legal",
-    "errorEmailInvalid": "[el-todo] Invalid email",
-    "errorPasswordTooShort": "[el-todo] Password too short",
-    "errorCredentials": "[el-todo] Bad credentials",
-    "errorGeneric": "[el-todo] Generic error"
   }
 }
 </i18n>

@@ -228,60 +228,6 @@
     },
     "decrementAria": "Уменьшить {skill}",
     "incrementAria": "Увеличить {skill}"
-  },
-  "uk": {
-    "generalTitle": "[uk-todo] General Skills",
-    "advancedTitle": "[uk-todo] Advanced Skills",
-    "pointsLeft": "[uk-todo] Points left",
-    "hint": "[uk-todo] {pool} skill points · Key skills up to {max}, others up to {nonKeyMax}.",
-    "keySkillsForRole": "[uk-todo] Key skills for your role: {skills} (max {max} each).",
-    "skill": {
-      "force": "[uk-todo] Force",
-      "meleeCombat": "[uk-todo] Melee Combat",
-      "dexterity": "[uk-todo] Dexterity",
-      "infiltration": "[uk-todo] Infiltration",
-      "rangedCombat": "[uk-todo] Ranged Combat",
-      "observation": "[uk-todo] Observation",
-      "survival": "[uk-todo] Survival",
-      "manipulation": "[uk-todo] Manipulation",
-      "command": "[uk-todo] Command",
-      "culture": "[uk-todo] Culture",
-      "dataDjinn": "[uk-todo] Data Djinn",
-      "medicurgy": "[uk-todo] Medicurgy",
-      "mysticPowers": "[uk-todo] Mystic Powers",
-      "pilot": "[uk-todo] Pilot",
-      "science": "[uk-todo] Science!",
-      "technology": "[uk-todo] Technology"
-    },
-    "decrementAria": "[uk-todo] Decrease {skill}",
-    "incrementAria": "[uk-todo] Increase {skill}"
-  },
-  "el": {
-    "generalTitle": "[el-todo] General Skills",
-    "advancedTitle": "[el-todo] Advanced Skills",
-    "pointsLeft": "[el-todo] Points left",
-    "hint": "[el-todo] {pool} skill points · Key skills up to {max}, others up to {nonKeyMax}.",
-    "keySkillsForRole": "[el-todo] Key skills for your role: {skills} (max {max} each).",
-    "skill": {
-      "force": "[el-todo] Force",
-      "meleeCombat": "[el-todo] Melee Combat",
-      "dexterity": "[el-todo] Dexterity",
-      "infiltration": "[el-todo] Infiltration",
-      "rangedCombat": "[el-todo] Ranged Combat",
-      "observation": "[el-todo] Observation",
-      "survival": "[el-todo] Survival",
-      "manipulation": "[el-todo] Manipulation",
-      "command": "[el-todo] Command",
-      "culture": "[el-todo] Culture",
-      "dataDjinn": "[el-todo] Data Djinn",
-      "medicurgy": "[el-todo] Medicurgy",
-      "mysticPowers": "[el-todo] Mystic Powers",
-      "pilot": "[el-todo] Pilot",
-      "science": "[el-todo] Science!",
-      "technology": "[el-todo] Technology"
-    },
-    "decrementAria": "[el-todo] Decrease {skill}",
-    "incrementAria": "[el-todo] Increase {skill}"
   }
 }
 </i18n>

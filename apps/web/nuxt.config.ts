@@ -69,17 +69,17 @@ export default defineNuxtConfig({
   // global config only to enumerate locales + drive the switcher — no global
   // message files. `useI18n({ useScope: 'local' })` on every component.
   //
-  // PRD §6: en + ru are active for v1. uk + el are wired (so `pnpm check:i18n`
-  // sees their key namespaces) but not populated; populating them is a v1.1+
-  // task. Browser detection only opts into the active locales.
+  // PRD §6: en + ru are the active v1 locales. uk + el were previously stubbed
+  // out as `[uk-todo]` / `[el-todo]` placeholders so `pnpm check:i18n` could
+  // see their namespaces — they have been removed (see T-2026-05-18-003).
+  // Adding a new locale: append to `locales` here and add `<i18n>` entries
+  // across all .vue files; `pnpm check:i18n` will then enforce parity.
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'en',
     locales: [
       { code: 'en', language: 'en-US', name: 'English' },
       { code: 'ru', language: 'ru-RU', name: 'Русский' },
-      { code: 'uk', language: 'uk-UA', name: 'Українська' },
-      { code: 'el', language: 'el-GR', name: 'Ελληνικά' },
     ],
     detectBrowserLanguage: {
       useCookie: true,

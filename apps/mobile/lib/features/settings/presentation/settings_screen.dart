@@ -53,8 +53,6 @@ class _SettingsView extends StatelessWidget {
               items: const [
                 DropdownMenuItem(value: 'en', child: Text('English')),
                 DropdownMenuItem(value: 'ru', child: Text('Русский')),
-                DropdownMenuItem(value: 'el', child: Text('Ελληνικά')),
-                DropdownMenuItem(value: 'uk', child: Text('Українська')),
               ],
               onChanged: (String? code) {
                 if (code == null) return;

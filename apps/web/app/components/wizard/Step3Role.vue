@@ -28,14 +28,6 @@
   "ru": {
     "headline": "Выберите роль",
     "placeholderNoConcept": "Сначала выберите амплуа, чтобы увидеть доступные роли."
-  },
-  "uk": {
-    "headline": "[uk-todo] Choose your role",
-    "placeholderNoConcept": "[uk-todo] Pick a concept first to see your role options."
-  },
-  "el": {
-    "headline": "[el-todo] Choose your role",
-    "placeholderNoConcept": "[el-todo] Pick a concept first to see your role options."
   }
 }
 </i18n>

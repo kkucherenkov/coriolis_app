@@ -70,28 +70,6 @@
     "characterLabel": "Персонаж",
     "noCharacter": "Персонаж не привязан",
     "goToSession": "Открыть"
-  },
-  "uk": {
-    "heading": "[uk-todo] My sessions",
-    "loading": "[uk-todo] Loading sessions…",
-    "errorLoad": "[uk-todo] Couldn't load sessions.",
-    "empty": "[uk-todo] Not playing in any sessions yet.",
-    "roleGm": "[uk-todo] GM",
-    "rolePlayer": "[uk-todo] Player",
-    "characterLabel": "[uk-todo] Character",
-    "noCharacter": "[uk-todo] No character linked",
-    "goToSession": "[uk-todo] Open"
-  },
-  "el": {
-    "heading": "[el-todo] My sessions",
-    "loading": "[el-todo] Loading sessions…",
-    "errorLoad": "[el-todo] Couldn't load sessions.",
-    "empty": "[el-todo] Not playing in any sessions yet.",
-    "roleGm": "[el-todo] GM",
-    "rolePlayer": "[el-todo] Player",
-    "characterLabel": "[el-todo] Character",
-    "noCharacter": "[el-todo] No character linked",
-    "goToSession": "[el-todo] Open"
   }
 }
 </i18n>

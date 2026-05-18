@@ -114,10 +114,10 @@ void main() {
       expect(pickStarterKitItemName(railPistol, 'ru'), 'Рельсовый пистолет');
     });
 
-    test('uk placeholder contains [uk-todo]', () {
+    test('falls back to EN for an unknown locale code', () {
       final kit = findStarterKit('pilot', 'ace')!;
       final item = kit.choices[0].options[0];
-      expect(pickStarterKitItemName(item, 'uk'), contains('[uk-todo]'));
+      expect(pickStarterKitItemName(item, 'xx'), pickStarterKitItemName(item, 'en'));
     });
   });
 }

@@ -33,8 +33,8 @@
   const totalRows = computed<number>(() => kit.value?.choices.length ?? 0);
 
   function itemName(item: StarterKitItem): string {
-    // locale.value is 'en' | 'ru' | 'uk' | 'el' — matches CatalogLocale.
-    return pickStarterKitItemName(item, locale.value as 'en' | 'ru' | 'uk' | 'el');
+    // locale.value is 'en' | 'ru' — matches CatalogLocale.
+    return pickStarterKitItemName(item, locale.value as 'en' | 'ru');
   }
 
   function kindLabel(kind: StarterKitItem['template']['kind']): string {
@@ -85,32 +85,6 @@
       "gear": "Снаряжение",
       "cybernetic": "Имплант",
       "other": "Прочее"
-    }
-  },
-  "uk": {
-    "title": "[uk-todo] Outfit the cycle ahead",
-    "blurb": "[uk-todo] Choose one item from each row.",
-    "placeholderNoConcept": "[uk-todo] Pick a concept and role first.",
-    "progress": "[uk-todo] Picked {picked} of {total}",
-    "kind": {
-      "weapon": "[uk-todo] Weapon",
-      "armor": "[uk-todo] Armor",
-      "gear": "[uk-todo] Gear",
-      "cybernetic": "[uk-todo] Implant",
-      "other": "[uk-todo] Other"
-    }
-  },
-  "el": {
-    "title": "[el-todo] Outfit the cycle ahead",
-    "blurb": "[el-todo] Choose one item from each row.",
-    "placeholderNoConcept": "[el-todo] Pick a concept and role first.",
-    "progress": "[el-todo] Picked {picked} of {total}",
-    "kind": {
-      "weapon": "[el-todo] Weapon",
-      "armor": "[el-todo] Armor",
-      "gear": "[el-todo] Gear",
-      "cybernetic": "[el-todo] Implant",
-      "other": "[el-todo] Other"
     }
   }
 }

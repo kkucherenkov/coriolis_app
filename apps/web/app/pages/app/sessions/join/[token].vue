@@ -186,40 +186,6 @@
     "errorJoin": "Не удалось присоединиться к сессии. Попробуйте ещё раз.",
     "loading": "Загружаем приглашение…",
     "errorLoad": "Что-то пошло не так. Попробуйте ещё раз."
-  },
-  "uk": {
-    "titleValid": "Вас запрошено",
-    "titleRevoked": "[uk-todo] Invite no longer valid",
-    "titleAlreadyMember": "[uk-todo] Already in this session",
-    "titleNotSignedIn": "[uk-todo] Sign in to join",
-    "sessionLabel": "[uk-todo] Session",
-    "gmLabel": "[uk-todo] GM",
-    "ctaJoin": "[uk-todo] Join session",
-    "ctaJoining": "[uk-todo] Joining…",
-    "ctaSignIn": "[uk-todo] Sign in",
-    "ctaGoToSession": "[uk-todo] Go to session",
-    "revokedMessage": "[uk-todo] This invite link has expired or been revoked.",
-    "alreadyMemberMessage": "[uk-todo] You are already a member of this session.",
-    "errorJoin": "[uk-todo] Couldn't join the session.",
-    "loading": "[uk-todo] Loading invite…",
-    "errorLoad": "[uk-todo] Something went wrong."
-  },
-  "el": {
-    "titleValid": "Έχετε προσκληθεί",
-    "titleRevoked": "[el-todo] Invite no longer valid",
-    "titleAlreadyMember": "[el-todo] Already in this session",
-    "titleNotSignedIn": "[el-todo] Sign in to join",
-    "sessionLabel": "[el-todo] Session",
-    "gmLabel": "[el-todo] GM",
-    "ctaJoin": "[el-todo] Join session",
-    "ctaJoining": "[el-todo] Joining…",
-    "ctaSignIn": "[el-todo] Sign in",
-    "ctaGoToSession": "[el-todo] Go to session",
-    "revokedMessage": "[el-todo] This invite link has expired or been revoked.",
-    "alreadyMemberMessage": "[el-todo] You are already a member of this session.",
-    "errorJoin": "[el-todo] Couldn't join the session.",
-    "loading": "[el-todo] Loading invite…",
-    "errorLoad": "[el-todo] Something went wrong."
   }
 }
 </i18n>

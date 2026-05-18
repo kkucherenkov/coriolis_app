@@ -117,46 +117,6 @@
     "errorPasswordMismatch": "Пароли не совпадают.",
     "errorPasswordWeak": "Слишком слабый пароль. Используйте более длинный.",
     "errorGeneric": "Что-то пошло не так. Попробуйте ещё раз."
-  },
-  "uk": {
-    "wordmark": "Coriolis Companion",
-    "title": "[uk-todo] Set new password",
-    "subtitle": "[uk-todo] Choose a new password",
-    "passwordLabel": "[uk-todo] New password",
-    "passwordHint": "[uk-todo] At least 8 characters",
-    "confirmLabel": "[uk-todo] Confirm new password",
-    "confirmHint": "[uk-todo] Repeat the password",
-    "submitButton": "[uk-todo] Set password",
-    "successBody": "[uk-todo] Password updated, redirecting…",
-    "tokenMissingTitle": "[uk-todo] Reset link incomplete",
-    "tokenMissingBody": "[uk-todo] Re-open from email or request new",
-    "requestNew": "[uk-todo] Request a new link",
-    "errorTokenMissing": "[uk-todo] Token missing",
-    "errorTokenInvalid": "[uk-todo] Token invalid or expired",
-    "errorPasswordTooShort": "[uk-todo] Password too short",
-    "errorPasswordMismatch": "[uk-todo] Passwords do not match",
-    "errorPasswordWeak": "[uk-todo] Password too weak",
-    "errorGeneric": "[uk-todo] Generic error"
-  },
-  "el": {
-    "wordmark": "Coriolis Companion",
-    "title": "[el-todo] Set new password",
-    "subtitle": "[el-todo] Choose a new password",
-    "passwordLabel": "[el-todo] New password",
-    "passwordHint": "[el-todo] At least 8 characters",
-    "confirmLabel": "[el-todo] Confirm new password",
-    "confirmHint": "[el-todo] Repeat the password",
-    "submitButton": "[el-todo] Set password",
-    "successBody": "[el-todo] Password updated, redirecting…",
-    "tokenMissingTitle": "[el-todo] Reset link incomplete",
-    "tokenMissingBody": "[el-todo] Re-open from email or request new",
-    "requestNew": "[el-todo] Request a new link",
-    "errorTokenMissing": "[el-todo] Token missing",
-    "errorTokenInvalid": "[el-todo] Token invalid or expired",
-    "errorPasswordTooShort": "[el-todo] Password too short",
-    "errorPasswordMismatch": "[el-todo] Passwords do not match",
-    "errorPasswordWeak": "[el-todo] Password too weak",
-    "errorGeneric": "[el-todo] Generic error"
   }
 }
 </i18n>
