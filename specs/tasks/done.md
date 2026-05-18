@@ -30,7 +30,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
   - `flutter test apps/mobile/test/features/characters/data/starter_kits_catalog_test.dart` → 13/13 pass.
   - `pnpm stylelint:fix` + `pnpm format` clean.
   - `rg '\[uk-todo\]|\[el-todo\]'` against `apps/web/app apps/mobile/lib packages/specs/src` returns zero hits (build artefacts excluded).
-- Result: PR `chore/drop-uk-el-locales` on Forgejo (link pending PR open).
+- Result: [PR #46](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/46) on Forgejo.
 
 ## T-2026-05-18-002 — AppConfirm sweep on remaining native-confirm + bespoke-overlay sites
 
