@@ -69,6 +69,25 @@ final class ChatMessageSendRequested extends ChatEvent {
   List<Object?> get props => [body, targetMembershipId];
 }
 
+/// User tapped "Edit" on a message — open the banner + prefill composer.
+final class ChatEditStarted extends ChatEvent {
+  const ChatEditStarted({
+    required this.messageId,
+    required this.body,
+  });
+
+  final String messageId;
+  final String body;
+
+  @override
+  List<Object?> get props => [messageId, body];
+}
+
+/// User tapped "Cancel" in the editing banner.
+final class ChatEditCancelled extends ChatEvent {
+  const ChatEditCancelled();
+}
+
 /// User committed an inline edit.
 final class ChatMessageEditRequested extends ChatEvent {
   const ChatMessageEditRequested({

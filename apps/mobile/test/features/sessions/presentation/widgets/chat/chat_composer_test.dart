@@ -11,6 +11,13 @@ Widget _wrap({
   required VoidCallback onSubmit,
   required ValueChanged<String> onChanged,
   int maxLength = kChatMaxLength,
+  bool isEditing = false,
+  String editingPreview = '',
+  String editingLabel = 'Editing message',
+  String cancelEditLabel = 'Cancel',
+  String sendTooltip = 'Send',
+  String saveTooltip = 'Save',
+  VoidCallback? onCancelEdit,
 }) =>
     TranslationProvider(
       child: MaterialApp(
@@ -21,6 +28,13 @@ Widget _wrap({
             onSubmit: onSubmit,
             onChanged: onChanged,
             maxLength: maxLength,
+            isEditing: isEditing,
+            editingPreview: editingPreview,
+            editingLabel: editingLabel,
+            cancelEditLabel: cancelEditLabel,
+            sendTooltip: sendTooltip,
+            saveTooltip: saveTooltip,
+            onCancelEdit: onCancelEdit,
           ),
         ),
       ),
@@ -80,6 +94,93 @@ void main() {
       );
       expect(btn.onPressed, isNotNull);
     });
+
+    testWidgets('editing banner hidden by default', (tester) async {
+      final controller = TextEditingController(text: 'hello');
+
+      await tester.pumpWidget(_wrap(
+        controller: controller,
+        value: 'hello',
+        onSubmit: () {},
+        onChanged: (_) {},
+      ));
+
+      expect(find.byKey(const Key('editing_banner')), findsNothing);
+      // Default Send icon, not the Save check.
+      expect(find.byIcon(Icons.send), findsOneWidget);
+      expect(find.byIcon(Icons.check), findsNothing);
+    });
+
+    testWidgets(
+      'editing banner renders label + preview when isEditing is true',
+      (tester) async {
+        final controller = TextEditingController(text: 'Original');
+
+        await tester.pumpWidget(_wrap(
+          controller: controller,
+          value: 'Original',
+          onSubmit: () {},
+          onChanged: (_) {},
+          isEditing: true,
+          editingPreview: 'Original',
+          editingLabel: 'Editing message',
+          cancelEditLabel: 'Cancel',
+        ));
+
+        expect(find.byKey(const Key('editing_banner')), findsOneWidget);
+        expect(find.text('Editing message'), findsOneWidget);
+        expect(find.byKey(const Key('editing_banner_preview')), findsOneWidget);
+        expect(find.text('Original'), findsWidgets);
+        // Send icon swaps to check.
+        expect(find.byIcon(Icons.check), findsOneWidget);
+        expect(find.byIcon(Icons.send), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'tapping editing-banner Cancel fires onCancelEdit',
+      (tester) async {
+        final controller = TextEditingController(text: 'Original');
+        var cancelled = 0;
+
+        await tester.pumpWidget(_wrap(
+          controller: controller,
+          value: 'Original',
+          onSubmit: () {},
+          onChanged: (_) {},
+          isEditing: true,
+          editingPreview: 'Original',
+          onCancelEdit: () => cancelled++,
+        ));
+
+        await tester.tap(find.byKey(const Key('editing_banner_cancel')));
+        await tester.pump();
+        expect(cancelled, 1);
+      },
+    );
+
+    testWidgets(
+      'submit-button tooltip flips to saveTooltip while editing',
+      (tester) async {
+        final controller = TextEditingController(text: 'Updated');
+
+        await tester.pumpWidget(_wrap(
+          controller: controller,
+          value: 'Updated',
+          onSubmit: () {},
+          onChanged: (_) {},
+          isEditing: true,
+          editingPreview: 'Original',
+          sendTooltip: 'Send',
+          saveTooltip: 'Save',
+        ));
+
+        final btn = tester.widget<IconButton>(
+          find.byKey(const Key('send_button')),
+        );
+        expect(btn.tooltip, 'Save');
+      },
+    );
 
     testWidgets('counter renders when near max length', (tester) async {
       final controller = TextEditingController(text: 'a');

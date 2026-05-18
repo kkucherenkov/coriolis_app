@@ -75,6 +75,8 @@ final class ChatReady extends ChatState {
     required this.connectionStatus,
     required this.composerValue,
     this.atBottom = true,
+    this.editingMessageId,
+    this.editingPreview = '',
   });
 
   final String gameSessionId;
@@ -97,6 +99,15 @@ final class ChatReady extends ChatState {
 
   /// True when scroll is at (or within 80px of) the bottom.
   final bool atBottom;
+
+  /// Message id currently being edited via the composer banner. `null` when
+  /// not editing. Mirrors `editingMessageId` on web
+  /// (`apps/web/app/pages/app/game-sessions/[id].vue`).
+  final String? editingMessageId;
+
+  /// Snapshot of the original message body displayed inside the
+  /// "Editing message" banner. Empty string when not editing.
+  final String editingPreview;
 
   // ── Derived helpers ────────────────────────────────────────────────────────
 
@@ -131,6 +142,9 @@ final class ChatReady extends ChatState {
     ChatConnectionStatus? connectionStatus,
     String? composerValue,
     bool? atBottom,
+    String? editingMessageId,
+    String? editingPreview,
+    bool clearEditing = false,
   }) =>
       ChatReady(
         gameSessionId: gameSessionId ?? this.gameSessionId,
@@ -142,6 +156,10 @@ final class ChatReady extends ChatState {
         connectionStatus: connectionStatus ?? this.connectionStatus,
         composerValue: composerValue ?? this.composerValue,
         atBottom: atBottom ?? this.atBottom,
+        editingMessageId:
+            clearEditing ? null : (editingMessageId ?? this.editingMessageId),
+        editingPreview:
+            clearEditing ? '' : (editingPreview ?? this.editingPreview),
       );
 
   @override
@@ -155,5 +173,7 @@ final class ChatReady extends ChatState {
         connectionStatus,
         composerValue,
         atBottom,
+        editingMessageId,
+        editingPreview,
       ];
 }

@@ -10,7 +10,11 @@
       "broadcast": "Написать всем…",
       "whisper": "Шёпотом к {name}…"
     },
-    "counter": "{count} / {max}"
+    "counter": "{count} / {max}",
+    "editing": "Редактирование сообщения",
+    "editing_cancel": "Отмена",
+    "send": "Отправить",
+    "save": "Сохранить"
   },
   "new_messages": {
     "pill": "{count} новых сообщений ↓"
