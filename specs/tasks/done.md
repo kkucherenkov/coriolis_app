@@ -23,7 +23,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
   - `pnpm format` clean.
   - Live repro inside the local Docker stack: `docker compose restart backend` then `POST /api/v1/ships` with `{"name":"Madara","class":"courier-yacht"}` returns **201** with `class: "courier-yacht"` in the response payload (was previously 400 `enum.openapi.validation`).
   - `pnpm screenshots:capture` — all 20 PNGs render including the previously-skipped `ship-sheet`.
-- Result: PR `fix/ship-class-response-codec` on Forgejo (link pending PR open).
+- Result: [PR #47](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/47) on Forgejo.
 
 ## T-2026-05-18-003 — Drop `uk` + `el` locale stubs from the entire monorepo
 
