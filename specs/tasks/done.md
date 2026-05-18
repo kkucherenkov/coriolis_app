@@ -20,7 +20,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
   - `flutter test` (full mobile suite) → **454/454** pass.
   - `flutter analyze` clean on every file this task touched (25 pre-existing infos in unrelated combat-tracker test files remain).
   - Backend untouched; the same `DELETE /api/v1/game-sessions/:id/members/:membershipId` endpoint already has its own server-side spec coverage.
-- Result: PR `feat/mobile-kick-member` on Forgejo (link pending PR open).
+- Result: [PR #48](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/48) on Forgejo.
 
 ## T-2026-05-18-004 — Ship-class response codec — Prisma TS identifier leaks past response validation
 
