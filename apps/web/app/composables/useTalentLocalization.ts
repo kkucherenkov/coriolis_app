@@ -22,9 +22,13 @@
  * read-only viewer (`AppShareViewer`).
  */
 import { findCatalogTalentByName, pickLocalized } from '@app/specs';
+import type { CatalogLocale } from '@app/specs';
 import type { Talent } from '@app/api-client-ts';
 
-const CATALOG_LOCALES = ['en', 'ru', 'uk', 'el'] as const;
+// Track the catalog's active locale set. Keep this in sync with
+// `CatalogLocale` in `packages/specs/src/talents.ts` — drifting will surface
+// as a TS error on the `entry.description[l]` access below, not a runtime bug.
+const CATALOG_LOCALES = ['en', 'ru'] as const satisfies readonly CatalogLocale[];
 
 function normalizeForCatalogMatch(s: string): string {
   return s.trim().toLowerCase();
