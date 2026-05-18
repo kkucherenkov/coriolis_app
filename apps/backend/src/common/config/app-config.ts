@@ -141,8 +141,17 @@ export class AppConfig {
   get mailer(): MailerConfig {
     const isProduction = this.runtime.nodeEnv === 'production';
     const rawProvider = this.config.get<string>('MAILER_PROVIDER') ?? '';
+    // Honour an explicit MAILER_PROVIDER value either way; only fall back to
+    // the env-aware default when the env var is unset / unrecognised. The
+    // previous logic ignored an explicit `MAILER_PROVIDER=mock` in production
+    // (it would still pick `resend` and then throw on a missing API key),
+    // contradicting the message thrown a few lines below.
     const provider: MailerProvider =
-      rawProvider === 'resend' ? 'resend' : isProduction ? 'resend' : 'mock';
+      rawProvider === 'resend' || rawProvider === 'mock'
+        ? rawProvider
+        : isProduction
+          ? 'resend'
+          : 'mock';
 
     const resendApiKey = this.config.get<string>('RESEND_API_KEY') ?? '';
     if (provider === 'resend' && resendApiKey.length === 0) {
