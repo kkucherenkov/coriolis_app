@@ -58,9 +58,14 @@ services:
     # mount lands). Override back to /app or Node fails with
     # `Cannot find module '/workspace/node_modules/prisma/build/index.js'`.
     working_dir: /app
-    # The prod image uses NODE_ENV=production by default. Keep that.
     environment:
+      # The prod image uses NODE_ENV=production by default. Keep that so
+      # CI exercises the production codepaths.
       NODE_ENV: production
+      # In production mode, AppConfig.mailer defaults to `resend` and
+      # throws if RESEND_API_KEY is unset. CI has no Resend credentials
+      # and doesn't test real email — pin to the mock adapter.
+      MAILER_PROVIDER: mock
     # CMD inherits from the prod Dockerfile:
     #   prisma migrate deploy && node dist/main.js
     # The baseline migration (`20260508000000_baseline`, landed in #39)
