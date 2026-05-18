@@ -25,7 +25,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
   - `pnpm stylelint:fix` clean; `pnpm format` no diffs.
   - `pnpm -F @app/web eslint app/pages/app/sessions/[id].vue app/pages/app/game-sessions/[id].vue app/pages/app/characters/[id].vue app/components/ItemEditor.vue` — 14 errors remain but are 100 % pre-existing (`definePageMeta`, `useRoute`, `route.params.id`, `navigateTo` resolve as `any` under the current TS config); verified by stashing the diff and re-running.
   - `rg 'if \(!confirm\(|^\s*confirm\(|=\s*confirm\('` on `apps/web/app` returns zero hits — no native `confirm()` callers left.
-- Result: PR `fix/app-confirm-sweep` on Forgejo (link pending PR open).
+- Result: [PR #45](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/45) on Forgejo.
 
 ## T-2026-05-18-001 — Fix UI bugs surfaced by the README screenshot run
 
