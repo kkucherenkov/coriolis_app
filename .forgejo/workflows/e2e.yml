@@ -55,28 +55,25 @@ jobs:
       # the dev-mode stack; running both files merges them with the
       # override winning on overlapping keys. See compose.ci.yml's
       # header comment for the full DinD root-cause writeup.
+      #
+      # `--wait` blocks until every service with a healthcheck is healthy
+      # (or hits its retry budget). `--wait-timeout 600` gives backend up
+      # to 10 minutes for `prisma migrate deploy` (26 migrations on cold
+      # postgres) + Nest bootstrap + first /health probe to flip green.
+      # The previous manual wait loop (60 × 2s = 120s) was too tight for
+      # a cold-cache prod-image rebuild + first-boot migration apply.
       - name: Bring up docker stack
-        run: docker compose -f docker/compose.yml -f docker/compose.ci.yml up -d --build
+        run: docker compose -f docker/compose.yml -f docker/compose.ci.yml up -d --build --wait --wait-timeout 600
 
-      - name: Wait for backend health
+      - name: Verify backend health from host port
         run: |
-          for i in {1..60}; do
-            if curl -fsS http://localhost:3010/api/v1/health >/dev/null; then
-              echo "backend ready"; exit 0
-            fi
-            sleep 2
-          done
-          echo "backend failed to become healthy"; exit 1
+          curl -fsS http://localhost:3010/api/v1/health
+          echo
 
-      - name: Wait for web
+      - name: Verify web from host port
         run: |
-          for i in {1..60}; do
-            if curl -fsS http://localhost:3001/ >/dev/null; then
-              echo "web ready"; exit 0
-            fi
-            sleep 2
-          done
-          echo "web failed to become healthy"; exit 1
+          curl -fsS http://localhost:3001/ > /dev/null
+          echo "web reachable on :3001"
 
       - name: Run Playwright smoke
         run: pnpm e2e
