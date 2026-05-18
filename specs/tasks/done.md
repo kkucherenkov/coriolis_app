@@ -2,6 +2,65 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-18-001 — Fix UI bugs surfaced by the README screenshot run
+
+- Created: 2026-05-18
+- Completed: 2026-05-18
+- Owner: claude
+- Branch: `fix/ui-screenshot-bugs`
+- Trigger: README screenshot capture pass revealed six visible defects across
+  desktop + mobile renders (`docs/screenshots/{desktop,mobile}/*.png`).
+- Goal: make the captured screens match the design handoff at
+  `specs/design/mockups/*.jsx` and stop the layout overflow on phones.
+- Fixes:
+  - **Arabesque corner ornament** — `AppArabesqueCorner.vue` was a single
+    wavy stroke; replaced with the canonical L-corner + outer sweep +
+    central loop + two end-cap dots + crossing ticks per
+    `specs/design/mockups/primitives.jsx` (`ArabesqueCorner` factory),
+    rescaled from the 64×64 helper to the component's 100×100 viewBox.
+  - **App header overflow on phones** — `AppHeader.vue` now collapses
+    gap / padding under 768 px and truncates the brand wordmark with
+    ellipsis (`max-width: 11rem` → 8 rem under 420 px). `UserMenu.vue`
+    trigger gets `max-width: 100%; min-width: 0` and the name label is
+    capped at 14 / 8 / 5 rem across the three breakpoints so a long email
+    no longer pushes the chevron off-screen.
+  - **Default layout horizontal padding** — `layouts/default.vue` now
+    drops from `space-7 space-8` to `space-5 space-4` (≤768 px) and
+    `space-4 space-3` (≤420 px). Fixes the "auth pages feel narrow"
+    complaint for `signup` / `login` / `forgot-password` / `reset-password`.
+  - **Landing wordmark + corners on mobile** — `pages/index.vue` wraps the
+    `AppWordmark` brand line in a `clamp(40px, 12vw, 72px)` override via
+    `:deep()` (the component takes a fixed numeric size); arabesque
+    corners scale 96 → 56 px under 540 px; locale switcher centred on
+    phones so it stops colliding with the top-right corner.
+  - **Signup / login / forgot / reset card padding on mobile** — outer
+    page padding dropped to `space-5 0`; inner card padding from
+    `space-10 space-9` → `space-7 space-5` so the form fields actually
+    breathe inside a 414 px viewport.
+  - **Game-sessions desktop "single narrow column"** — `.page-sessions`
+    (and the analogous `.page-ships`, `.page-npcs`, `.page-sessions` on
+    `/app/sessions`) used `max-width + margin: 0 auto` inside a flex
+    column without `width: 100%`; the auto margins overrode
+    `align-items: stretch` and collapsed the container to the grid's
+    `min-content` (one 280 px track). Added `width: 100%`.
+  - **NPC editor overflow on mobile** — `pages/app/npcs/[id].vue` now
+    `width: 100%; min-width: 0`; the page title uses
+    `overflow-wrap: anywhere` and drops to `--type-body-lg-font-size`
+    under 540 px so "Elite Corsair Captain" wraps instead of forcing a
+    horizontal scroll; stepper inputs go to `width: 100%` inside the
+    2-column grid so the buttons stop overflowing the cell. Same
+    `width: 100%; min-width: 0` applied to `/app/ships/[id]` and
+    `/app/game-sessions/[id]` for parity.
+- Verification:
+  - `pnpm --filter @app/ui vitest run AppArabesqueCorner AppHeader UserMenu` → 71/71 green.
+  - `pnpm stylelint:fix` clean; `pnpm format` clean.
+  - `pnpm screenshots:capture` (against the local Docker stack) re-
+    rendered every `docs/screenshots/{desktop,mobile}/*.png` and the six
+    reported defects are gone. One unrelated seed regression (POST
+    `/ships` returning 400) still skips `ship-sheet`; flagged in
+    follow-ups but out of scope here.
+- Result: [PR #44](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/44) on Forgejo.
+
 ## T-2026-05-16-PHASE-8-STREAM-E — Phase 8 / Stream E — Cleanup of deprecated `characterIds`
 
 - Created: 2026-05-16

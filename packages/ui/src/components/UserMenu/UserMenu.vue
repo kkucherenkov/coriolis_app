@@ -285,6 +285,8 @@
       display: inline-flex;
       align-items: center;
       gap: var(--space-2);
+      max-width: 100%;
+      min-width: 0;
       padding: var(--space-1) var(--space-2);
       background: transparent;
       border: 1px solid var(--brand-brass-deep);
@@ -341,11 +343,23 @@
     // ── Name label ──────────────────────────────────────────────────────────
 
     &__name {
-      flex: 1;
+      flex: 0 1 auto;
       min-width: 0;
+      max-width: 14rem;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+
+      // On phones the email / display-name is the worst overflow offender —
+      // clamp it so the trigger never widens past about a third of the
+      // viewport.
+      @media (max-width: 768px) {
+        max-width: 8rem;
+      }
+
+      @media (max-width: 420px) {
+        max-width: 5rem;
+      }
     }
 
     // ── Chevron indicator ───────────────────────────────────────────────────

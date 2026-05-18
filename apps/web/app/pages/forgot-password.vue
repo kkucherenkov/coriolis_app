@@ -182,6 +182,10 @@
     padding: var(--space-9) var(--space-6);
     background: var(--surface-bg);
 
+    @media (max-width: 540px) {
+      padding: var(--space-5) 0;
+    }
+
     &__shell {
       width: 100%;
       max-width: $card-max-width;
@@ -209,6 +213,10 @@
       border-radius: var(--radius-xl);
       padding: var(--space-10) var(--space-9);
       box-shadow: var(--shadow-md);
+
+      @media (max-width: 540px) {
+        padding: var(--space-7) var(--space-5);
+      }
     }
 
     &__header {

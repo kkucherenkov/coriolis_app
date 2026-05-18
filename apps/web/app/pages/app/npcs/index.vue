@@ -474,6 +474,7 @@
     flex-direction: column;
     gap: var(--space-5);
     padding: var(--space-6);
+    width: 100%;
     max-width: $page-max-width;
     margin: 0 auto;
 

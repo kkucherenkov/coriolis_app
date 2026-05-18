@@ -1065,8 +1065,17 @@
     flex-direction: column;
     gap: var(--space-5);
     padding: var(--space-6);
+    width: 100%;
     max-width: $page-max-width;
     margin: 0 auto;
+    // Without `min-width: 0` a long single-word NPC name (Forum 40px)
+    // forces a flex parent to its min-content size, which on phones is
+    // wider than the viewport — the whole sheet then scrolls horizontally.
+    min-width: 0;
+
+    @media (max-width: 768px) {
+      padding: var(--space-4) var(--space-3);
+    }
 
     // ── Back link ──────────────────────────────────────────────────────────────
 
@@ -1139,6 +1148,15 @@
       font-size: var(--type-display-md-font-size);
       letter-spacing: var(--type-display-md-letter-spacing);
       color: var(--brand-brass-light);
+      // Let long names wrap inside the flex header instead of pushing the
+      // page past the viewport.
+      overflow-wrap: anywhere;
+      min-width: 0;
+
+      @media (max-width: 540px) {
+        font-size: var(--type-body-lg-font-size);
+        letter-spacing: 0.04em;
+      }
     }
 
     // ── Cards shared ───────────────────────────────────────────────────────────
@@ -1243,16 +1261,32 @@
     &__stat-input {
       width: $stat-input-width;
       text-align: center;
+
+      // Narrow grid cells on phones can't fit a 72px input + two sm
+      // buttons; let the input collapse to fill the available space and
+      // tighten the steppers.
+      @media (max-width: 540px) {
+        width: 100%;
+        min-width: 0;
+      }
     }
 
     &__stat-stepper {
       display: flex;
       align-items: center;
       gap: var(--space-2);
+
+      @media (max-width: 540px) {
+        gap: var(--space-1);
+      }
     }
 
     &__stepper-btn {
       flex-shrink: 0;
+
+      @media (max-width: 540px) {
+        padding: var(--space-1) var(--space-2);
+      }
     }
 
     // ── Equipment card ─────────────────────────────────────────────────────────
