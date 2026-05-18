@@ -9,6 +9,7 @@
     AppStatBlock,
     AppPopover,
     AppModal,
+    AppConfirm,
     AppDots,
     AppDivider,
     AppConditionPill,
@@ -637,17 +638,40 @@
     }
   }
 
-  async function deleteTalentConfirm(talent: Talent): Promise<void> {
-    // v1: native confirm() — AppModal primitive is a separate batch
-    if (!confirm(t('talentDeleteConfirm', { name: displayTalentName(talent) }))) return;
+  // Two-step talent delete. The "Remove" button in the talent editor opens
+  // the AppConfirm; the real removeTalent call fires from onConfirmDeleteTalent.
+  const talentDeleteConfirmOpen = ref(false);
+  const talentDeletePending = ref<Talent | null>(null);
+  const talentDeleting = ref(false);
+
+  const talentDeleteName = computed(() =>
+    talentDeletePending.value ? displayTalentName(talentDeletePending.value) : '',
+  );
+
+  function deleteTalentConfirm(talent: Talent): void {
+    talentDeletePending.value = talent;
+    talentDeleteConfirmOpen.value = true;
+  }
+
+  async function onConfirmDeleteTalent(): Promise<void> {
+    const talent = talentDeletePending.value;
+    if (!talent) {
+      talentDeleteConfirmOpen.value = false;
+      return;
+    }
+    talentDeleting.value = true;
     talentEditorError.value = '';
     try {
       await talentsApi.removeTalent(talent.id);
-      localTalents.value = localTalents.value.filter((t) => t.id !== talent.id);
+      localTalents.value = localTalents.value.filter((tt) => tt.id !== talent.id);
       closeTalentEditor();
     } catch (error) {
       const problem = error as Problem;
       talentEditorError.value = problem.detail ?? t('errorTalentDelete');
+    } finally {
+      talentDeleting.value = false;
+      talentDeleteConfirmOpen.value = false;
+      talentDeletePending.value = null;
     }
   }
 
@@ -783,6 +807,7 @@
     "talentSave": "Save",
     "talentCancel": "Cancel",
     "talentDelete": "Remove talent",
+    "talentDeleteConfirmTitle": "Remove this talent?",
     "talentDeleteConfirm": "Remove talent \"{name}\"? This cannot be undone.",
     "noTalents": "No talents yet.",
     "errorTalentSave": "Failed to save talent.",
@@ -918,6 +943,7 @@
     "talentSave": "Сохранить",
     "talentCancel": "Отмена",
     "talentDelete": "Удалить талант",
+    "talentDeleteConfirmTitle": "Удалить талант?",
     "talentDeleteConfirm": "Удалить талант «{name}»? Это необратимо.",
     "noTalents": "Нет талантов.",
     "errorTalentSave": "Не удалось сохранить талант.",
@@ -1053,6 +1079,7 @@
     "talentSave": "[uk-todo] Save",
     "talentCancel": "[uk-todo] Cancel",
     "talentDelete": "[uk-todo] Remove talent",
+    "talentDeleteConfirmTitle": "[uk-todo] Remove this talent?",
     "talentDeleteConfirm": "[uk-todo] Remove talent \"{name}\"?",
     "noTalents": "[uk-todo] No talents yet.",
     "errorTalentSave": "[uk-todo] Failed to save talent.",
@@ -1188,6 +1215,7 @@
     "talentSave": "[el-todo] Save",
     "talentCancel": "[el-todo] Cancel",
     "talentDelete": "[el-todo] Remove talent",
+    "talentDeleteConfirmTitle": "[el-todo] Remove this talent?",
     "talentDeleteConfirm": "[el-todo] Remove talent \"{name}\"?",
     "noTalents": "[el-todo] No talents yet.",
     "errorTalentSave": "[el-todo] Failed to save talent.",
@@ -2086,6 +2114,18 @@
       @update:open="itemEditorOpen = $event"
       @saved="onItemSaved"
       @deleted="onItemDeleted"
+    />
+
+    <!-- ── Talent delete confirm (used by the talent editor footer) ───────── -->
+    <AppConfirm
+      v-model:open="talentDeleteConfirmOpen"
+      tone="danger"
+      :title="t('talentDeleteConfirmTitle')"
+      :body="t('talentDeleteConfirm', { name: talentDeleteName })"
+      :confirm-label="t('talentDelete')"
+      :cancel-label="t('talentCancel')"
+      :loading="talentDeleting"
+      @confirm="onConfirmDeleteTalent"
     />
   </section>
 </template>

@@ -5,7 +5,7 @@
   });
 
   import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
-  import { AppSessionHeader, AppBanner, AppChatPanel, AppWhisperPicker } from '@app/ui';
+  import { AppSessionHeader, AppBanner, AppChatPanel, AppConfirm, AppWhisperPicker } from '@app/ui';
   import type { AppSessionHeaderLabels, AppChatPanelRow, WhisperPickerMember } from '@app/ui';
   import { useGameSessionsApi } from '~/composables/useGameSessionsApi';
   import { useMyMembershipsApi } from '~/composables/useMyMembershipsApi';
@@ -434,8 +434,13 @@
           "edit": "Edit",
           "delete": "Delete",
           "block": "Block in this session"
+        },
+        "delete_confirm": {
+          "title": "Delete this message?",
+          "body": "Everyone in the conversation will see 'Message deleted' instead. This can't be undone."
         }
       },
+      "confirm_cancel": "Cancel",
       "block": {
         "confirm": {
           "title": "Block {name}?",
@@ -498,8 +503,13 @@
           "edit": "Изменить",
           "delete": "Удалить",
           "block": "Заблокировать в этой сессии"
+        },
+        "delete_confirm": {
+          "title": "Удалить сообщение?",
+          "body": "Все участники беседы увидят вместо него «Сообщение удалено». Действие необратимо."
         }
       },
+      "confirm_cancel": "Отмена",
       "block": {
         "confirm": {
           "title": "Заблокировать {name}?",
@@ -562,8 +572,13 @@
           "edit": "[uk-todo] Edit",
           "delete": "[uk-todo] Delete",
           "block": "[uk-todo] Block in this session"
+        },
+        "delete_confirm": {
+          "title": "[uk-todo] Delete this message?",
+          "body": "[uk-todo] Everyone in the conversation will see 'Message deleted' instead."
         }
       },
+      "confirm_cancel": "[uk-todo] Cancel",
       "block": {
         "confirm": {
           "title": "[uk-todo] Block {name}?",
@@ -626,8 +641,13 @@
           "edit": "[el-todo] Edit",
           "delete": "[el-todo] Delete",
           "block": "[el-todo] Block in this session"
+        },
+        "delete_confirm": {
+          "title": "[el-todo] Delete this message?",
+          "body": "[el-todo] Everyone in the conversation will see 'Message deleted' instead."
         }
       },
+      "confirm_cancel": "[el-todo] Cancel",
       "block": {
         "confirm": {
           "title": "[el-todo] Block {name}?",
@@ -717,75 +737,32 @@
       />
 
       <!-- Delete confirm -->
-      <div
-        v-if="confirmDeleteOpen"
-        class="session-player__confirm-overlay"
-        role="dialog"
-        :aria-label="t('chat.message.menu.delete')"
-      >
-        <div class="session-player__confirm-box">
-          <p class="session-player__confirm-msg">
-            {{ t('chat.message.deleted') }}
-          </p>
-          <div class="session-player__confirm-actions">
-            <AppBanner tone="danger" role="none" class="session-player__confirm-warn">
-              {{ t('chat.message.menu.delete') }}?
-            </AppBanner>
-            <div class="session-player__confirm-btns">
-              <button
-                class="session-player__confirm-btn session-player__confirm-btn--cancel"
-                @click="confirmDeleteOpen = false"
-              >
-                ✕
-              </button>
-              <button
-                class="session-player__confirm-btn session-player__confirm-btn--danger"
-                @click="onConfirmDelete"
-              >
-                {{ t('chat.message.menu.delete') }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AppConfirm
+        v-model:open="confirmDeleteOpen"
+        tone="danger"
+        :title="t('chat.message.delete_confirm.title')"
+        :body="t('chat.message.delete_confirm.body')"
+        :confirm-label="t('chat.message.menu.delete')"
+        :cancel-label="t('chat.confirm_cancel')"
+        @confirm="onConfirmDelete"
+      />
 
       <!-- Block confirm -->
-      <div
-        v-if="confirmBlockOpen"
-        class="session-player__confirm-overlay"
-        role="dialog"
-        :aria-label="t('chat.block.confirm.title', { name: blockTargetName })"
-      >
-        <div class="session-player__confirm-box">
-          <p class="session-player__confirm-title">
-            {{ t('chat.block.confirm.title', { name: blockTargetName }) }}
-          </p>
-          <p class="session-player__confirm-msg">
-            {{ t('chat.block.confirm.body', { name: blockTargetName }) }}
-          </p>
-          <div class="session-player__confirm-btns">
-            <button
-              class="session-player__confirm-btn session-player__confirm-btn--cancel"
-              @click="confirmBlockOpen = false"
-            >
-              ✕
-            </button>
-            <button
-              class="session-player__confirm-btn session-player__confirm-btn--danger"
-              @click="onConfirmBlock"
-            >
-              {{ t('chat.block.confirm.confirm') }}
-            </button>
-          </div>
-        </div>
-      </div>
+      <AppConfirm
+        v-model:open="confirmBlockOpen"
+        tone="danger"
+        :title="t('chat.block.confirm.title', { name: blockTargetName })"
+        :body="t('chat.block.confirm.body', { name: blockTargetName })"
+        :confirm-label="t('chat.block.confirm.confirm')"
+        :cancel-label="t('chat.confirm_cancel')"
+        @confirm="onConfirmBlock"
+      />
     </template>
   </div>
 </template>
 
 <style lang="scss" scoped>
   $chat-min-height: 400px;
-  $confirm-box-max-width: 420px;
 
   .session-player {
     display: flex;
@@ -854,86 +831,6 @@
       font-style: italic;
     }
 
-    // ── Inline confirm dialogs ─────────────────────────────────────────────
-
-    &__confirm-overlay {
-      position: fixed;
-      inset: 0;
-      background: color-mix(in srgb, var(--surface-void) 80%, transparent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: var(--z-modal);
-    }
-
-    &__confirm-box {
-      background: var(--surface-night);
-      border: 1px solid var(--brand-brass-deep);
-      border-radius: var(--radius-md);
-      padding: var(--space-5);
-      max-width: $confirm-box-max-width;
-      width: 90%;
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-4);
-    }
-
-    &__confirm-title {
-      margin: 0;
-      font-family: var(--font-display);
-      font-size: var(--type-body-lg-font-size);
-      color: var(--brand-brass-light);
-    }
-
-    &__confirm-msg {
-      margin: 0;
-      font-family: var(--font-body);
-      color: var(--text-secondary);
-    }
-
-    &__confirm-actions {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-3);
-    }
-
-    &__confirm-warn {
-      margin: 0;
-    }
-
-    &__confirm-btns {
-      display: flex;
-      justify-content: flex-end;
-      gap: var(--space-2);
-    }
-
-    &__confirm-btn {
-      padding: var(--space-2) var(--space-4);
-      border-radius: var(--radius-sm);
-      font-family: var(--font-body);
-      font-size: var(--type-body-sm-font-size);
-      cursor: pointer;
-      border: 1px solid var(--brand-brass-shadow);
-      background: transparent;
-      color: var(--text-primary);
-
-      &:hover {
-        background: color-mix(in srgb, var(--brand-brass-shadow) 20%, transparent);
-      }
-
-      &--cancel {
-        color: var(--text-secondary);
-      }
-
-      &--danger {
-        background: var(--status-danger);
-        border-color: var(--status-danger);
-        color: var(--text-primary);
-
-        &:hover {
-          background: color-mix(in srgb, var(--status-danger) 80%, var(--surface-void));
-        }
-      }
-    }
+    // Inline confirm-dialog styles removed — AppConfirm primitive owns this now.
   }
 </style>

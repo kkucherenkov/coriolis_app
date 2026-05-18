@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {
     AppModal,
+    AppConfirm,
     AppSegControl,
     AppInput,
     AppTextarea,
@@ -344,9 +345,20 @@
     }
   }
 
-  async function deleteItem(): Promise<void> {
+  // Two-step destructive flow: clicking Delete opens the AppConfirm; the
+  // real remove call fires only after the user confirms.
+  const deleteConfirmOpen = ref(false);
+
+  function deleteItem(): void {
     if (!props.item) return;
-    if (!confirm(t('deleteConfirm', { name: props.item.name }))) return;
+    deleteConfirmOpen.value = true;
+  }
+
+  async function onConfirmDelete(): Promise<void> {
+    if (!props.item) {
+      deleteConfirmOpen.value = false;
+      return;
+    }
     deleting.value = true;
     errorMsg.value = '';
     try {
@@ -358,6 +370,7 @@
       errorMsg.value = problem.detail ?? t('errorDelete');
     } finally {
       deleting.value = false;
+      deleteConfirmOpen.value = false;
     }
   }
 
@@ -413,7 +426,9 @@
     "slotOther": "Other",
     "save": "Save",
     "cancel": "Cancel",
+    "delete": "Remove",
     "deleteItem": "Remove item",
+    "deleteConfirmTitle": "Remove this item?",
     "deleteConfirm": "Remove \"{name}\"? This cannot be undone.",
     "errorSave": "Failed to save item.",
     "errorDelete": "Failed to remove item.",
@@ -464,7 +479,9 @@
     "slotOther": "Другое",
     "save": "Сохранить",
     "cancel": "Отмена",
+    "delete": "Удалить",
     "deleteItem": "Удалить предмет",
+    "deleteConfirmTitle": "Удалить предмет?",
     "deleteConfirm": "Удалить «{name}»? Это необратимо.",
     "errorSave": "Не удалось сохранить предмет.",
     "errorDelete": "Не удалось удалить предмет.",
@@ -515,7 +532,9 @@
     "slotOther": "[uk-todo] Other",
     "save": "[uk-todo] Save",
     "cancel": "[uk-todo] Cancel",
+    "delete": "[uk-todo] Remove",
     "deleteItem": "[uk-todo] Remove item",
+    "deleteConfirmTitle": "[uk-todo] Remove this item?",
     "deleteConfirm": "[uk-todo] Remove \"{name}\"?",
     "errorSave": "[uk-todo] Failed to save item.",
     "errorDelete": "[uk-todo] Failed to remove item.",
@@ -566,7 +585,9 @@
     "slotOther": "[el-todo] Other",
     "save": "[el-todo] Save",
     "cancel": "[el-todo] Cancel",
+    "delete": "[el-todo] Remove",
     "deleteItem": "[el-todo] Remove item",
+    "deleteConfirmTitle": "[el-todo] Remove this item?",
     "deleteConfirm": "[el-todo] Remove \"{name}\"?",
     "errorSave": "[el-todo] Failed to save item.",
     "errorDelete": "[el-todo] Failed to remove item.",
@@ -840,6 +861,18 @@
       </div>
     </template>
   </AppModal>
+
+  <AppConfirm
+    v-if="props.item"
+    v-model:open="deleteConfirmOpen"
+    tone="danger"
+    :title="t('deleteConfirmTitle')"
+    :body="t('deleteConfirm', { name: props.item.name })"
+    :confirm-label="t('delete')"
+    :cancel-label="t('cancel')"
+    :loading="deleting"
+    @confirm="onConfirmDelete"
+  />
 </template>
 
 <style lang="scss" scoped>

@@ -2,6 +2,31 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-18-002 — AppConfirm sweep on remaining native-confirm + bespoke-overlay sites
+
+- Created: 2026-05-18
+- Completed: 2026-05-18
+- Owner: claude
+- Branch: `fix/app-confirm-sweep`
+- Trigger: Phase 8.5 follow-up #3 from `docs/done/phase-8.md` — "5-min sweep, primitive available".
+- Goal: every destructive-action confirm in `apps/web` goes through `AppConfirm`; no `globalThis.confirm` and no bespoke `<div role="dialog">` overlays.
+- What landed:
+  - `apps/web/app/pages/app/game-sessions/[id].vue` — chat-message **delete** + chat-block bespoke `<div role="dialog">` overlays → two `<AppConfirm>` instances; the page's 70-line `&__confirm-*` SCSS block removed and the no-longer-needed `$confirm-box-max-width` SCSS var dropped.
+  - `apps/web/app/pages/app/sessions/[id].vue` — same migration for the player-view chat delete + block; same SCSS cleanup; `AppConfirm` added to the `@app/ui` named imports.
+  - `apps/web/app/components/ItemEditor.vue` — `if (!confirm(...)) return;` replaced with reactive `deleteConfirmOpen` + an `<AppConfirm>` at the modal root; the real `removeItem` call moved to `onConfirmDelete`. `loading` prop wired to existing `deleting` ref so the CTA spins.
+  - `apps/web/app/pages/app/characters/[id].vue` — `deleteTalentConfirm()` switched from native `confirm()` to a two-step flow: opening the AppConfirm parks the pending `Talent` in `talentDeletePending`, `onConfirmDeleteTalent` runs the actual `removeTalent`. Reuses existing `talentDelete` + `talentCancel` labels.
+  - New i18n keys, en/ru/uk(-todo)/el(-todo) parity:
+    - `chat.message.delete_confirm.{title, body}` and `chat.confirm_cancel` in both session pages.
+    - `delete`, `deleteConfirmTitle` in `ItemEditor.vue`.
+    - `talentDeleteConfirmTitle` in `characters/[id].vue`.
+- Verification:
+  - `pnpm --filter @app/ui vitest run AppConfirm AppModal` → 29/29 green.
+  - `pnpm --filter @app/web vitest run` → 536/536 green.
+  - `pnpm stylelint:fix` clean; `pnpm format` no diffs.
+  - `pnpm -F @app/web eslint app/pages/app/sessions/[id].vue app/pages/app/game-sessions/[id].vue app/pages/app/characters/[id].vue app/components/ItemEditor.vue` — 14 errors remain but are 100 % pre-existing (`definePageMeta`, `useRoute`, `route.params.id`, `navigateTo` resolve as `any` under the current TS config); verified by stashing the diff and re-running.
+  - `rg 'if \(!confirm\(|^\s*confirm\(|=\s*confirm\('` on `apps/web/app` returns zero hits — no native `confirm()` callers left.
+- Result: [PR #45](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/45) on Forgejo.
+
 ## T-2026-05-18-001 — Fix UI bugs surfaced by the README screenshot run
 
 - Created: 2026-05-18
