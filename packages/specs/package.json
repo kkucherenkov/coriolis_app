@@ -5,10 +5,13 @@
   "license": "UNLICENSED",
   "description": "Single source of truth for API contracts (OpenAPI + AsyncAPI)",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    },
     "./openapi.json": "./dist/openapi.json"
   },
   "files": [
@@ -18,6 +21,7 @@
     "dist"
   ],
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "validate": "node --experimental-strip-types scripts/validate.ts",
     "bundle": "node --experimental-strip-types scripts/bundle.ts",
     "codegen": "node --experimental-strip-types scripts/codegen.ts",

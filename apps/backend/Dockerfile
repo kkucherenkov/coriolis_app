@@ -54,6 +54,7 @@ COPY . .
 # @app/api-client-ts has no build step — it publishes TS source directly
 # (`main: ./src/index.ts`), so it's consumed as-is by the Nest compile.
 RUN pnpm --filter @app/specs bundle \
+    && pnpm --filter @app/specs build \
     && pnpm --filter @app/backend prisma:generate \
     && pnpm --filter @app/backend build
 

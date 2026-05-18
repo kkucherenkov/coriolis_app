@@ -16,6 +16,7 @@ EXPOSE 3000
 CMD ["sh", "-lc", "\
   pnpm install --frozen-lockfile=false && \
   pnpm --filter @app/specs bundle && \
+  pnpm --filter @app/specs build && \
   pnpm --filter @app/backend prisma:generate && \
   pnpm --filter @app/backend prisma:db:push && \
   pnpm --filter @app/backend dev \

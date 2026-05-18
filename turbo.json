@@ -4,25 +4,25 @@
   "globalEnv": ["NODE_ENV"],
   "tasks": {
     "build": {
-      "dependsOn": ["^build", "@app/specs#codegen", "@app/design-tokens#build"],
+      "dependsOn": ["^build", "@app/specs#codegen", "@app/specs#build", "@app/design-tokens#build"],
       "outputs": ["dist/**", ".output/**", ".nuxt/**", "build/**"],
       "inputs": ["$TURBO_DEFAULT$", "!**/*.md"]
     },
     "dev": {
-      "dependsOn": ["@app/specs#codegen", "@app/design-tokens#build"],
+      "dependsOn": ["@app/specs#codegen", "@app/specs#build", "@app/design-tokens#build"],
       "cache": false,
       "persistent": true
     },
     "lint": {
-      "dependsOn": ["@app/specs#codegen", "@app/design-tokens#build"],
+      "dependsOn": ["@app/specs#codegen", "@app/specs#build", "@app/design-tokens#build"],
       "outputs": []
     },
     "test": {
-      "dependsOn": ["^build", "@app/specs#codegen", "@app/design-tokens#build"],
+      "dependsOn": ["^build", "@app/specs#codegen", "@app/specs#build", "@app/design-tokens#build"],
       "outputs": ["coverage/**"]
     },
     "typecheck": {
-      "dependsOn": ["^build", "@app/specs#codegen", "@app/design-tokens#build"],
+      "dependsOn": ["^build", "@app/specs#codegen", "@app/specs#build", "@app/design-tokens#build"],
       "outputs": ["*.tsbuildinfo"]
     },
     "audit:components": {
@@ -39,6 +39,10 @@
     "@app/specs#codegen": {
       "dependsOn": ["@app/specs#bundle"],
       "outputs": ["../api-client-ts/src/generated/**", "../api-client-dart/lib/generated/**"]
+    },
+    "@app/specs#build": {
+      "inputs": ["src/**/*.ts", "tsconfig.json", "tsconfig.build.json"],
+      "outputs": ["dist/src/**"]
     },
     "@app/specs#contract-test": {
       "dependsOn": ["@app/specs#bundle"],
