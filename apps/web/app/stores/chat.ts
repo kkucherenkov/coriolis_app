@@ -82,6 +82,13 @@ export interface ChatTabModel {
   kind: 'broadcast' | 'whisper';
   /** Unread message count from the conversation summary. */
   unreadCount: number;
+  /**
+   * Live presence indicator for whisper tabs. Mirrors the same field on
+   * `@app/ui`'s `ChatTabModel` (packages/ui/src/components/AppChatTabStrip/types.ts).
+   * Not set by the store itself — injected by the page layer after merging
+   * with the online set from `useSessionPresence`.
+   */
+  presence?: 'online' | 'idle' | 'offline';
 }
 
 // ─── Realtime event shape (discriminated union) ───────────────────────────────
