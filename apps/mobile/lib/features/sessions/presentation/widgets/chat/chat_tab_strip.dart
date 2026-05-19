@@ -13,6 +13,11 @@ const int kMaxVisibleWhispers = 3;
 /// - Whispers beyond [kMaxVisibleWhispers] collapse into a "+N more" chip that
 ///   shows a [PopupMenuButton] on tap.
 /// - `+` button calls [onAddWhisper].
+/// - Each whisper tab renders an [AppChatPresenceDot] to the right of the label
+///   when the partner's membershipId is in [onlineMembershipIds] (online) or
+///   when it is not (offline). Broadcast tabs never render a dot.
+///   Always rendering the dot (varying state, not existence) matches the web
+///   component's approach — consistent hit-box and no layout shift on join/leave.
 class ChatTabStrip extends StatelessWidget {
   const ChatTabStrip({
     super.key,
@@ -22,6 +27,7 @@ class ChatTabStrip extends StatelessWidget {
     required this.onSelect,
     required this.onAddWhisper,
     this.onOverflowSelect,
+    this.onlineMembershipIds = const <String>{},
   });
 
   final List<ChatConversationData> conversations;
@@ -30,6 +36,9 @@ class ChatTabStrip extends StatelessWidget {
   final ValueChanged<String> onSelect;
   final VoidCallback onAddWhisper;
   final ValueChanged<String>? onOverflowSelect;
+
+  /// Online membershipIds forwarded from [ChatReady.onlineMembershipIds].
+  final Set<String> onlineMembershipIds;
 
   @override
   Widget build(BuildContext context) {
@@ -61,15 +70,23 @@ class ChatTabStrip extends StatelessWidget {
                       unreadCount: c.unreadCount,
                       onTap: () => onSelect(c.summary.conversationKey),
                     )),
-                ...visibleWhispers.map((c) => _TabChip(
-                      key: Key('tab_${c.summary.conversationKey}'),
-                      label: c.summary.partnerDisplayName ??
-                          c.summary.partnerMembershipId ??
-                          '?',
-                      isActive: activeKey == c.summary.conversationKey,
-                      unreadCount: c.unreadCount,
-                      onTap: () => onSelect(c.summary.conversationKey),
-                    )),
+                ...visibleWhispers.map((c) {
+                  final partnerId = c.summary.partnerMembershipId;
+                  final presence = partnerId != null &&
+                          onlineMembershipIds.contains(partnerId)
+                      ? AppChatPresence.online
+                      : AppChatPresence.offline;
+                  return _TabChip(
+                    key: Key('tab_${c.summary.conversationKey}'),
+                    label: c.summary.partnerDisplayName ??
+                        c.summary.partnerMembershipId ??
+                        '?',
+                    isActive: activeKey == c.summary.conversationKey,
+                    unreadCount: c.unreadCount,
+                    presence: presence,
+                    onTap: () => onSelect(c.summary.conversationKey),
+                  );
+                }),
                 if (overflowWhispers.isNotEmpty)
                   _OverflowChip(
                     key: const Key('overflow_chip'),
@@ -117,12 +134,18 @@ class _TabChip extends StatelessWidget {
     required this.isActive,
     required this.unreadCount,
     required this.onTap,
+    this.presence,
   });
 
   final String label;
   final bool isActive;
   final int unreadCount;
   final VoidCallback onTap;
+
+  /// When non-null, an [AppChatPresenceDot] is rendered to the right of the
+  /// label with a 4 px gap. Whisper tabs supply this; broadcast tab leaves it
+  /// null so no dot is shown.
+  final AppChatPresence? presence;
 
   @override
   Widget build(BuildContext context) {
@@ -155,6 +178,10 @@ class _TabChip extends StatelessWidget {
                     : AppColors.textSecondary,
               ),
             ),
+            if (presence != null) ...[
+              const SizedBox(width: 4),
+              AppChatPresenceDot(presence: presence!),
+            ],
             if (unreadCount > 0) ...[
               const SizedBox(width: 4),
               Container(

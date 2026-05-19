@@ -4,6 +4,7 @@ import 'package:app_api_client/app_api_client.dart'
     show ChatConversationSummary, ChatConversationSummaryKindEnum;
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:coriolis_companion/features/sessions/domain/chat_presence_service.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_event.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_realtime_service.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_repository.dart';
@@ -13,11 +14,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ChatBloc({
     required ChatRepository repository,
     required ChatRealtimeService realtimeService,
+    required ChatPresenceService presenceService,
   })  : _repository = repository,
         _realtimeService = realtimeService,
+        _presenceService = presenceService,
         super(const ChatInitial()) {
     on<ChatHydrateRequested>(_onHydrate);
     on<ChatRealtimeEventReceived>(_onRealtimeEvent);
+    on<ChatPresenceUpdated>(_onPresenceUpdated);
     on<ChatMessageSendRequested>(_onSend);
     on<ChatEditStarted>(_onEditStarted);
     on<ChatEditCancelled>(_onEditCancelled);
@@ -36,7 +40,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   final ChatRepository _repository;
   final ChatRealtimeService _realtimeService;
+  final ChatPresenceService _presenceService;
   StreamSubscription<ChatRealtimeEvent>? _realtimeSub;
+  StreamSubscription<Set<String>>? _presenceSub;
 
   // ── Hydrate ──────────────────────────────────────────────────────────────
 
@@ -83,13 +89,22 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           .where((k) => k != 'broadcast')
           .toSet();
 
-      // 6. Start realtime
+      // 6. Start realtime (chat publications)
       await _realtimeService.start(
         gameSessionId: event.gameSessionId,
         myMembershipId: event.myMembershipId,
       );
       _realtimeSub = _realtimeService.events.listen(
         (e) => add(ChatRealtimeEventReceived(e)),
+      );
+
+      // 7. Start presence subscription (join/leave events on session channel)
+      await _presenceService.start(
+        gameSessionId: event.gameSessionId,
+        myMembershipId: event.myMembershipId,
+      );
+      _presenceSub = _presenceService.onlineIds.listen(
+        (ids) => add(ChatPresenceUpdated(ids)),
       );
 
       emit(ChatReady(
@@ -160,6 +175,17 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         }
         emit(s.copyWith(conversations: convs));
     }
+  }
+
+  // ── Presence ─────────────────────────────────────────────────────────────
+
+  void _onPresenceUpdated(
+    ChatPresenceUpdated event,
+    Emitter<ChatState> emit,
+  ) {
+    final s = state;
+    if (s is! ChatReady) return;
+    emit(s.copyWith(onlineMembershipIds: event.ids));
   }
 
   // ── Send ─────────────────────────────────────────────────────────────────
@@ -504,7 +530,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   @override
   Future<void> close() async {
     await _realtimeSub?.cancel();
+    await _presenceSub?.cancel();
     await _realtimeService.dispose();
+    await _presenceService.dispose();
     return super.close();
   }
 }

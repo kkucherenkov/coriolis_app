@@ -51,8 +51,10 @@ import 'package:coriolis_companion/features/sessions/data/drift_player_membershi
 import 'package:coriolis_companion/features/sessions/data/player_membership_cache.dart';
 import 'package:coriolis_companion/features/sessions/data/player_session_repository_impl.dart';
 import 'package:coriolis_companion/features/sessions/domain/player_session_repository.dart';
+import 'package:coriolis_companion/features/sessions/data/chat_presence_service_impl.dart';
 import 'package:coriolis_companion/features/sessions/data/chat_realtime_service_impl.dart';
 import 'package:coriolis_companion/features/sessions/data/chat_repository_impl.dart';
+import 'package:coriolis_companion/features/sessions/domain/chat_presence_service.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_realtime_service.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_repository.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/join_session/join_session_cubit.dart';
@@ -262,6 +264,12 @@ void configureDependencies() {
     )
     ..registerFactory<ChatRealtimeService>(
       () => ChatRealtimeServiceImpl(
+        realtimeApi: getIt<RealtimeApi>(),
+        config: getIt<AppConfig>(),
+      ),
+    )
+    ..registerFactory<ChatPresenceService>(
+      () => ChatPresenceServiceImpl(
         realtimeApi: getIt<RealtimeApi>(),
         config: getIt<AppConfig>(),
       ),

@@ -77,6 +77,7 @@ final class ChatReady extends ChatState {
     this.atBottom = true,
     this.editingMessageId,
     this.editingPreview = '',
+    this.onlineMembershipIds = const <String>{},
   });
 
   final String gameSessionId;
@@ -108,6 +109,14 @@ final class ChatReady extends ChatState {
   /// Snapshot of the original message body displayed inside the
   /// "Editing message" banner. Empty string when not editing.
   final String editingPreview;
+
+  /// MembershipIds currently online in this session as reported by Centrifugo
+  /// presence on the `session.<gameSessionId>` channel.
+  ///
+  /// A membershipId is present in this set if ≥1 active Centrifugo client_id
+  /// maps to it via the JWT `info.memberships` claim. Updated on every join /
+  /// leave event and on initial presence snapshot.
+  final Set<String> onlineMembershipIds;
 
   // ── Derived helpers ────────────────────────────────────────────────────────
 
@@ -145,6 +154,7 @@ final class ChatReady extends ChatState {
     String? editingMessageId,
     String? editingPreview,
     bool clearEditing = false,
+    Set<String>? onlineMembershipIds,
   }) =>
       ChatReady(
         gameSessionId: gameSessionId ?? this.gameSessionId,
@@ -160,6 +170,7 @@ final class ChatReady extends ChatState {
             clearEditing ? null : (editingMessageId ?? this.editingMessageId),
         editingPreview:
             clearEditing ? '' : (editingPreview ?? this.editingPreview),
+        onlineMembershipIds: onlineMembershipIds ?? this.onlineMembershipIds,
       );
 
   @override
@@ -175,5 +186,6 @@ final class ChatReady extends ChatState {
         atBottom,
         editingMessageId,
         editingPreview,
+        onlineMembershipIds,
       ];
 }

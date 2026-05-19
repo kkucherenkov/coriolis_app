@@ -7,6 +7,7 @@ import 'package:coriolis_companion/features/sessions/domain/player_membership.da
 import 'package:coriolis_companion/features/sessions/domain/player_session_repository.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_bloc.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_event.dart';
+import 'package:coriolis_companion/features/sessions/domain/chat_presence_service.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_repository.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_realtime_service.dart';
 import 'package:coriolis_companion/features/sessions/presentation/widgets/chat/chat_panel.dart';
@@ -45,6 +46,7 @@ class _PlayerSessionDetailPageState extends State<PlayerSessionDetailPage> {
     _chatBloc = ChatBloc(
       repository: GetIt.instance<ChatRepository>(),
       realtimeService: GetIt.instance<ChatRealtimeService>(),
+      presenceService: GetIt.instance<ChatPresenceService>(),
     );
     _load();
   }
