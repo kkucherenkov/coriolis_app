@@ -10,7 +10,11 @@
       "broadcast": "Message everyone…",
       "whisper": "Whisper to {name}…"
     },
-    "counter": "{count} / {max}"
+    "counter": "{count} / {max}",
+    "editing": "Editing message",
+    "editing_cancel": "Cancel",
+    "send": "Send",
+    "save": "Save"
   },
   "new_messages": {
     "pill": "{count} new messages ↓"

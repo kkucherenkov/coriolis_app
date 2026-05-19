@@ -19,6 +19,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<ChatHydrateRequested>(_onHydrate);
     on<ChatRealtimeEventReceived>(_onRealtimeEvent);
     on<ChatMessageSendRequested>(_onSend);
+    on<ChatEditStarted>(_onEditStarted);
+    on<ChatEditCancelled>(_onEditCancelled);
     on<ChatMessageEditRequested>(_onEdit);
     on<ChatMessageDeleteRequested>(_onDelete);
     on<ChatConversationSelected>(_onConversationSelected);
@@ -195,7 +197,31 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
-  // ── Edit ─────────────────────────────────────────────────────────────────
+  // ── Edit banner lifecycle ────────────────────────────────────────────────
+
+  void _onEditStarted(
+    ChatEditStarted event,
+    Emitter<ChatState> emit,
+  ) {
+    final s = state;
+    if (s is! ChatReady) return;
+    emit(s.copyWith(
+      editingMessageId: event.messageId,
+      editingPreview: event.body,
+      composerValue: event.body,
+    ));
+  }
+
+  void _onEditCancelled(
+    ChatEditCancelled event,
+    Emitter<ChatState> emit,
+  ) {
+    final s = state;
+    if (s is! ChatReady) return;
+    emit(s.copyWith(clearEditing: true, composerValue: ''));
+  }
+
+  // ── Edit submit ──────────────────────────────────────────────────────────
 
   Future<void> _onEdit(
     ChatMessageEditRequested event,
@@ -204,18 +230,26 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     final s = state;
     if (s is! ChatReady) return;
 
+    // Close the banner optimistically — mirrors the web flow where the
+    // composer clears + editingMessageId resets before the await
+    // (`apps/web/app/pages/app/game-sessions/[id].vue:266-276`). The realtime
+    // echo or the awaited response patches the message body in place.
+    emit(s.copyWith(clearEditing: true, composerValue: ''));
+
     try {
       final msg =
           await _repository.editMessage(event.messageId, body: event.body);
+      final after = state;
+      if (after is! ChatReady) return;
       final key = msg.targetMembershipId ?? 'broadcast';
-      final existing = s.conversations[key];
+      final existing = after.conversations[key];
       if (existing == null) return;
       final msgs = existing.messages.map((m) {
         return m.id == msg.id ? msg : m;
       }).toList();
-      emit(s.copyWith(
+      emit(after.copyWith(
         conversations: {
-          ...s.conversations,
+          ...after.conversations,
           key: existing.copyWith(messages: msgs),
         },
       ));
@@ -260,6 +294,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     final s = state;
     if (s is! ChatReady) return;
 
+    // Cancel any in-flight edit before switching — the banner would
+    // otherwise lie about which thread it belongs to. Mirrors
+    // `apps/web/app/pages/app/game-sessions/[id].vue:310-317`.
+    final clearEditing = s.editingMessageId != null;
+    final resetComposer = clearEditing;
+
     // Lazy-load messages if this conversation has none yet.
     if (s.conversations[event.conversationKey]?.messages.isEmpty ?? true) {
       try {
@@ -275,6 +315,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
               ...s.conversations,
               event.conversationKey: existing.copyWith(messages: msgs),
             },
+            clearEditing: clearEditing,
+            composerValue: resetComposer ? '' : null,
           ));
           return;
         }
@@ -283,7 +325,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       }
     }
 
-    emit(s.copyWith(activeKey: event.conversationKey));
+    emit(s.copyWith(
+      activeKey: event.conversationKey,
+      clearEditing: clearEditing,
+      composerValue: resetComposer ? '' : null,
+    ));
   }
 
   // ── Whisper open / close ─────────────────────────────────────────────────

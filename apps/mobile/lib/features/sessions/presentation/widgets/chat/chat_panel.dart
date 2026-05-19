@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_bloc.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_event.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_state.dart';
+import 'package:coriolis_companion/i18n/strings.g.dart';
 import 'package:coriolis_companion/features/sessions/presentation/widgets/chat/chat_composer.dart';
 import 'package:coriolis_companion/features/sessions/presentation/widgets/chat/chat_message.dart';
 import 'package:coriolis_companion/features/sessions/presentation/widgets/chat/chat_tab_strip.dart';
@@ -188,9 +189,12 @@ class _ChatPanelState extends State<ChatPanel> {
                         onDelete: () => context.read<ChatBloc>().add(
                               ChatMessageDeleteRequested(msg.id),
                             ),
-                        onEdit: () {
-                          // TODO: show inline edit UI in a follow-up.
-                        },
+                        onEdit: () => context.read<ChatBloc>().add(
+                              ChatEditStarted(
+                                messageId: msg.id,
+                                body: msg.body ?? '',
+                              ),
+                            ),
                         onBlock: () => context.read<ChatBloc>().add(
                               ChatMemberBlockRequested(
                                 msg.authorMembershipId ?? '',
@@ -234,11 +238,27 @@ class _ChatPanelState extends State<ChatPanel> {
               controller: _composerController,
               value: state.composerValue,
               placeholder: placeholder,
+              isEditing: state.editingMessageId != null,
+              editingPreview: state.editingPreview,
+              editingLabel: t.chat.composer.editing,
+              cancelEditLabel: t.chat.composer.editing_cancel,
+              sendTooltip: t.chat.composer.send,
+              saveTooltip: t.chat.composer.save,
+              onCancelEdit: () =>
+                  context.read<ChatBloc>().add(const ChatEditCancelled()),
               onChanged: (v) =>
                   context.read<ChatBloc>().add(ChatComposerChanged(v)),
               onSubmit: () {
                 final text = state.composerValue.trim();
                 if (text.isEmpty) return;
+                final editingId = state.editingMessageId;
+                if (editingId != null) {
+                  context.read<ChatBloc>().add(ChatMessageEditRequested(
+                        messageId: editingId,
+                        body: text,
+                      ));
+                  return;
+                }
                 context.read<ChatBloc>().add(ChatMessageSendRequested(
                       body: text,
                       targetMembershipId: state.activeKey == 'broadcast'
