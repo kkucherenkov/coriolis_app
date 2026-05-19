@@ -2,6 +2,75 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-18-006 — Mobile chat edit-message inline banner parity
+
+- Created: 2026-05-18
+- Completed: 2026-05-19
+- Owner: claude
+- Branch: `feat/mobile-chat-edit-banner`
+- Trigger: Phase 8.5 follow-up #5 from `docs/done/phase-8.md` — web already
+  had the "Editing message — cancel / save" banner above the chat
+  composer (`AppChatComposer.vue:120-140` + state in
+  `apps/web/app/pages/app/game-sessions/[id].vue:280-317`). Mobile parity
+  was the gap: `chat_panel.dart:191` had
+  `onEdit: () { TODO: show inline edit UI in a follow-up. }` and the
+  `ChatMessageEditRequested` event was defined but never dispatched from
+  the UI.
+- What landed:
+  - **`ChatReady` state** gains `editingMessageId` (`String?`) +
+    `editingPreview` (`String`) with a `clearEditing` boolean flag on
+    `copyWith` (mirrors `clearKickBusy` pattern shipped in
+    T-2026-05-18-005).
+  - **`ChatEditStarted(messageId, body)` + `ChatEditCancelled`** events.
+    `ChatBloc` registers both handlers. `_onEdit` (the existing
+    `ChatMessageEditRequested` handler) now closes the banner
+    optimistically before awaiting `ChatRepository.editMessage` so the
+    realtime echo lands into a clean composer. `_onConversationSelected`
+    auto-cancels any in-flight edit so the banner cannot lie about which
+    thread it belongs to (mirrors web's `watch(activeConversationKey)`
+    at `apps/web/.../[id].vue:310-317`).
+  - **`ChatComposer`** takes `isEditing` / `editingPreview` /
+    `editingLabel` / `cancelEditLabel` / `sendTooltip` / `saveTooltip` /
+    `onCancelEdit` props. New `_EditingBanner` widget renders above the
+    textfield with a one-line truncated preview of the original body +
+    a Cancel `TextButton`. The submit icon flips
+    `Icons.send` → `Icons.check` and the tooltip flips Send → Save
+    while editing.
+  - **`chat_panel.dart`** wires `onEdit` → `ChatEditStarted`, threads the
+    editing props into `ChatComposer`, and routes `onSubmit` to
+    `ChatMessageEditRequested` vs `ChatMessageSendRequested` based on
+    `state.editingMessageId`.
+  - **`chat_{en,ru}.i18n.json`** gain `composer.editing` /
+    `composer.editing_cancel` / `composer.send` / `composer.save`
+    (4 new keys × 2 locales). `dart run slang` regenerated locally.
+  - **`apps/mobile/test/features/sessions/presentation/blocs/chat/chat_bloc_edit_banner_test.dart`** —
+    6 bloc_test cases: edit-start populates state + composer; edit-cancel
+    clears; edit-submit happy path closes banner optimistically then
+    patches the message body in place after await; edit-submit swallows
+    422 from server but keeps banner closed; tab-switch auto-cancels an
+    in-flight edit; tab-switch leaves the composer alone when not
+    editing.
+  - **`apps/mobile/test/features/sessions/presentation/widgets/chat/chat_composer_test.dart`** —
+    4 new widget cases: banner hidden by default (Send icon visible);
+    banner renders label + preview + check icon when `isEditing` is
+    true; Cancel button taps fire `onCancelEdit`; submit-button tooltip
+    flips to `saveTooltip` while editing.
+- Verification:
+  - `flutter test test/features/sessions/presentation/blocs/chat/chat_bloc_edit_banner_test.dart` → 6/6 pass.
+  - `flutter test test/features/sessions/presentation/widgets/chat/chat_composer_test.dart` → 8/8 pass.
+  - `flutter test` (full mobile suite) → **464/464** pass (was 454
+    before, +10 new cases).
+  - `flutter analyze` clean on every file this task touched (25
+    pre-existing infos in unrelated `combat_tracker_page_test.dart`
+    remain — same baseline as PR #48).
+  - `pnpm check:i18n` — `mobile: 2 locale(s) × 505 key(s)` (was 501,
+    +4 new keys).
+  - `pnpm format` clean.
+  - Backend untouched; `PATCH /api/v1/chat/messages/:id` already wired
+    through `ChatRepository.editMessage` and covered by server-side
+    specs.
+- Result: [PR #49](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/49) on Forgejo.
+
 ## T-2026-05-18-005 — Mobile GM "Kick member" parity for `/app/game-sessions/[id]`
 
 - Created: 2026-05-18
