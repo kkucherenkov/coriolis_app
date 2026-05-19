@@ -37,7 +37,7 @@
 
   // ── Locale ────────────────────────────────────────────────────────────────
 
-  const SUPPORTED_LOCALES = ['en', 'ru', 'uk', 'el'] as const;
+  const SUPPORTED_LOCALES = ['en', 'ru'] as const;
   type LocaleCode = (typeof SUPPORTED_LOCALES)[number];
 
   const currentLocale = ref<string>(locale.value);
