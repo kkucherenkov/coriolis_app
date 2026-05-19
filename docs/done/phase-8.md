@@ -186,7 +186,7 @@ are explicit Phase 8 carry-forwards into the Phase 8.5 backlog:
    `mocktail`-stubbed repository + realtime + presence services. The
    mobile test lives under `test/` rather than `integration_test/`
    because the project has no macOS/web shell and `flutter test
-   integration_test/` requires a real device.
+integration_test/` requires a real device.
 
 9. **Storybook a11y addon manual sweep.** Per-component a11y assertions
    shipped; the Storybook a11y addon hasn't been booted as part of
