@@ -2,6 +2,51 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-19-002 — Phase 8.5 follow-up #6 / Block 2: chat presence (web)
+
+- Created: 2026-05-19
+- Completed: 2026-05-19
+- Owner: claude
+- Branch: `feat/realtime-presence-block-2-web`
+- Result: PR #51 — http://code.homelab.local/kkucherenkov/coriolis_app/pulls/51
+- Trigger: Block 1 (PR #50) landed backend presence support. This block wires
+  the Centrifugo presence API into the web client so `AppChatTab` can show a
+  live online dot for whisper partners.
+- Scope: **Block 2 of 3** — web only. Block 3 (mobile) ships as a separate follow-up.
+- What landed:
+  - **`apps/web/app/composables/useSessionPresence.ts`** — new composable that
+    subscribes to `session.{gameSessionId}`, calls `subscription.presence()` on
+    `subscribed` for the initial snapshot, then maintains a reactive
+    `Set<membershipId>` via `join`/`leave` events. Multiple client_ids mapping
+    to the same membershipId (same user on phone + laptop) count as one online
+    member. Malformed `connInfo` is skipped silently. Local `RealtimeConnectInfo`
+    interface mirrors AsyncAPI 0.13.0 schema without touching generated clients.
+    Separate composable (vs. extending `useSessionRealtime`) keeps concerns
+    orthogonal; design choice documented in file header.
+  - **`apps/web/app/stores/chat.ts`** — `ChatTabModel` gains optional `presence?`
+    field aligned with `@app/ui`'s `ChatTabModel`. The store itself does not set
+    it; the page layer injects it to avoid coupling store to realtime composable.
+  - **`apps/web/app/pages/app/game-sessions/[id].vue`** — `chatPanelBindings.tabs`
+    now maps `panelTabs` with derived `presence: 'online' | 'offline' | undefined`
+    from `sessionPresence.onlineSet`. `pickableMembers` replaces hardcoded
+    `'offline'` with live set lookup. `sessionPresence.start()`/`stop()` wired
+    in `onMounted`/`onBeforeUnmount`.
+  - **`apps/web/tests/unit/useSessionPresence.spec.ts`** — 10 vitest specs:
+    snapshot filtering by session, join, leave (single and multi-client),
+    four malformed-connInfo variants, stop/clear, and presence() rejection.
+- Test totals at task exit:
+  - `vue-tsc --noEmit` — no new errors on changed files; pre-existing errors
+    in `app.vue` / middleware unchanged.
+  - `oxlint` — 0 warnings, 0 errors on all changed files.
+  - `prettier` — no formatting changes needed.
+  - 10 new vitest specs added. Full suite verification runs in CI on merge.
+- Sharp edges:
+  - The worktree environment has no `node_modules` so tests must be run from
+    the main project or by symlinking. The async IIFE pattern (vs `.then()`)
+    was adopted to satisfy the `promise/always-return` oxlint rule.
+  - `presence: 'online' | 'offline'` literal type must be declared with an
+    explicit typed variable — a bare ternary inside a spread widens to `string`.
+
 ## T-2026-05-19-003 — Phase 8.5 follow-up #6 / Block 3: chat presence (mobile)
 
 - Created: 2026-05-19
