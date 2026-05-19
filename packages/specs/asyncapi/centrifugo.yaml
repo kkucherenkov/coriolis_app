@@ -1,7 +1,7 @@
 asyncapi: 3.1.0
 info:
   title: App Realtime API
-  version: 0.12.0
+  version: 0.13.0
   description: |
     Real-time channels delivered via Centrifugo. Clients connect with a
     short-lived JWT issued by the backend (`POST /api/v1/realtime/token`)
@@ -14,6 +14,17 @@ info:
 
     Tokens have a 5-minute TTL; clients must refresh before expiry using
     `POST /api/v1/realtime/token`.
+
+    ## Connection info — presence wiring
+
+    The connection JWT also carries an `info` claim shaped as
+    `RealtimeConnectInfo`. Centrifugo propagates this verbatim into the
+    `connInfo` field of every presence / join / leave event for every
+    channel the connection subscribes to.
+
+    Clients use `info.memberships` to map a presence entry to the
+    membershipId in the session they are looking at — see the
+    `sessionChannel` description for the consumer-side wiring.
 defaultContentType: application/json
 servers:
   centrifugo:
@@ -52,6 +63,19 @@ channels:
       The combat.updated payload mirrors the OpenAPI `Encounter` schema plus
       the snapshotted combatants array — clients re-render from the full
       snapshot rather than computing diffs.
+
+      ## Presence
+
+      The Centrifugo `session` namespace has `presence`, `join_leave`, and
+      `force_push_join_leave` enabled. Clients reach the presence map via
+      `subscription.presence()` and listen to `subscription.on('join'|'leave')`.
+      Each presence entry carries `connInfo` shaped as `RealtimeConnectInfo`
+      (see `#/components/schemas/RealtimeConnectInfo`).
+
+      Consumers filter `connInfo.memberships` by the current `gameSessionId`
+      to derive the `membershipId` for an "online" presence dot on the chat
+      tab strip (web + mobile). A member is considered online if at least one
+      client_id with their `membershipId` is present on this channel.
 
   sessionChatChannel:
     address: "session.{gameSessionId}.chat"
@@ -389,6 +413,34 @@ components:
         deletedAt:
           type: string
           format: date-time
+
+    RealtimeConnectInfo:
+      type: object
+      description: |
+        Shape of the connection JWT `info` claim. Centrifugo propagates this
+        verbatim to other subscribers via the `connInfo` field on presence /
+        join / leave events for every channel the connection subscribes to.
+
+        Frontend clients filter `memberships` by the current `gameSessionId`
+        to map a presence entry to its membershipId — the basis for the
+        AppChatTab presence dot (Phase 8.5 follow-up #6).
+      required: [memberships]
+      properties:
+        memberships:
+          type: array
+          description: |
+            One entry per active membership (role = gm OR player,
+            leftAt IS NULL) the user has at token-issue time. Mirrors the
+            `session.<gameSessionId>` channel allow-list and is empty when
+            the user has no active memberships.
+          items:
+            type: object
+            required: [gameSessionId, membershipId]
+            properties:
+              gameSessionId:
+                type: string
+              membershipId:
+                type: string
 
   securitySchemes:
     connectionJwt:

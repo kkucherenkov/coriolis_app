@@ -49,10 +49,23 @@ function makeRequest() {
   return {} as never;
 }
 
+interface DecodedRealtimeJwt {
+  sub: string;
+  exp: number;
+  channels: string[];
+  info: {
+    memberships: { gameSessionId: string; membershipId: string }[];
+  };
+}
+
+/** Decode the JWT and return the full payload. */
+function decodeToken(token: string, secret: string): DecodedRealtimeJwt {
+  return jwt.verify(token, secret) as DecodedRealtimeJwt;
+}
+
 /** Decode the JWT and return the `channels` claim. */
 function decodeChannels(token: string, secret: string): string[] {
-  const decoded = jwt.verify(token, secret) as { channels: string[] };
-  return decoded.channels;
+  return decodeToken(token, secret).channels;
 }
 
 // ---------------------------------------------------------------------------
@@ -115,5 +128,71 @@ describe('RealtimeService — buildAllowedChannels (Stream C/7)', () => {
     const bChannels = channels.filter((c) => c.startsWith('session.gs-B'));
     expect(bChannels).toHaveLength(0);
     expect(channels).toHaveLength(3);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 8.5 follow-up #6 — connection info claim for presence wiring.
+// Centrifugo propagates the JWT `info` claim verbatim into the `connInfo`
+// field on presence / join / leave events for every channel the connection
+// subscribes to. Web + mobile clients read this to map a presence entry to
+// its membershipId.
+// ---------------------------------------------------------------------------
+
+describe('RealtimeService — info claim (Phase 8.5 follow-up #6)', () => {
+  it('embeds one info.memberships entry per active membership', async () => {
+    const memberships: UserMembership[] = [
+      { gameSessionId: 'gs-A', membershipId: 'mem-A' },
+      { gameSessionId: 'gs-B', membershipId: 'mem-B' },
+    ];
+
+    const service = new RealtimeService(
+      makeConfig(),
+      makeAuth('user-1') as never,
+      makeI18n(),
+      makeSessionAccess(memberships),
+    );
+
+    const { token } = await service.issueToken(makeRequest());
+    const decoded = decodeToken(token, 'test-secret');
+
+    expect(decoded.info.memberships).toEqual([
+      { gameSessionId: 'gs-A', membershipId: 'mem-A' },
+      { gameSessionId: 'gs-B', membershipId: 'mem-B' },
+    ]);
+  });
+
+  it('embeds an empty info.memberships array for users with no active memberships', async () => {
+    const service = new RealtimeService(
+      makeConfig(),
+      makeAuth('orphan-user') as never,
+      makeI18n(),
+      makeSessionAccess([]),
+    );
+
+    const { token } = await service.issueToken(makeRequest());
+    const decoded = decodeToken(token, 'test-secret');
+
+    expect(decoded.info).toEqual({ memberships: [] });
+    expect(decoded.channels).toHaveLength(0);
+  });
+
+  it('info.memberships only carries (gameSessionId, membershipId) — no other fields leak', async () => {
+    const service = new RealtimeService(
+      makeConfig(),
+      makeAuth('user-1') as never,
+      makeI18n(),
+      makeSessionAccess([{ gameSessionId: 'gs-A', membershipId: 'mem-A' }]),
+    );
+
+    const { token } = await service.issueToken(makeRequest());
+    const decoded = decodeToken(token, 'test-secret');
+
+    expect(Object.keys(decoded.info)).toEqual(['memberships']);
+    expect(decoded.info.memberships).toHaveLength(1);
+    expect(Object.keys(decoded.info.memberships[0]!).toSorted()).toEqual([
+      'gameSessionId',
+      'membershipId',
+    ]);
   });
 });
