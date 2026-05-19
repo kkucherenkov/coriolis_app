@@ -2,6 +2,80 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-19-001 — Phase 8.5 follow-up #6 / Block 1: Centrifugo presence (backend + spec)
+
+- Created: 2026-05-19
+- Completed: 2026-05-19
+- Owner: claude
+- Branch: `feat/realtime-presence-block-1`
+- Result: PR #50 — http://code.homelab.local/kkucherenkov/coriolis_app/pulls/50
+- Trigger: Phase 8.5 follow-up #6 from `docs/done/phase-8.md` —
+  `AppChatTab` accepts a `presence` prop but the store stubs it to
+  `'offline'` on every call site. The follow-up note said to "hook to
+  Centrifugo's `client_id` map when the presence-tracking spec lands"
+  — this block is that spec + the backend half of the wiring.
+- Scope: **Block 1 of 3** — backend + spec only. Block 2 (web) and
+  Block 3 (mobile) ship as separate follow-ups.
+- What landed:
+  - **`docker/centrifugo/config.json`** — flip `presence`, `join_leave`,
+    `force_push_join_leave` to `true` on the `session` namespace. The
+    `system` namespace is unchanged. Without `join_leave` +
+    `force_push_join_leave`, clients only see the initial
+    `subscription.presence()` snapshot — no live join/leave events — so
+    the chat tab strip would never react to a member coming online
+    mid-session.
+  - **`apps/backend/src/modules/realtime/realtime.service.ts`** —
+    the connection JWT now carries an `info` claim shaped as
+    `RealtimeConnectInfo`
+    (`{ memberships: [{ gameSessionId, membershipId }] }`). Centrifugo
+    propagates `info` verbatim into the `connInfo` field on presence /
+    join / leave events for every channel the connection subscribes to,
+    which is how the chat tab strip will map a presence entry back to
+    its membershipId (Centrifugo presence is keyed by `client_id`, not
+    by `membershipId`). The channel-list builder was extracted to a
+    pure helper alongside a new `buildConnectInfo` helper so the two
+    derivations from the membership list stay aligned.
+  - **`packages/specs/asyncapi/centrifugo.yaml`** — bumped to 0.13.0;
+    added a `RealtimeConnectInfo` schema component and documented
+    presence on the `sessionChannel` (where to read it, how it maps to
+    membershipId, what "online" means). The schema is documentation-
+    only — `codegen-asyncapi.ts` iterates channel → message → payload
+    schemas, and `info` lives in the JWT, not in a message; clients
+    will redeclare the type to match the spec in Blocks 2 / 3.
+  - **`apps/backend/src/modules/realtime/realtime.service.spec.ts`** —
+    three new specs on `RealtimeService.issueToken`: full
+    `info.memberships` shape across two sessions, empty array for users
+    with no active memberships, and a no-field-leak guard
+    (`Object.keys(decoded.info) === ['memberships']`). 6/6 green.
+  - **Drive-by `fix(web)`**: trim `SUPPORTED_LOCALES` on
+    `apps/web/app/pages/app/settings.vue` to `['en','ru']`. The
+    `el` / `uk` stubs were removed from `@nuxtjs/i18n` in `a2d4a58`
+    but the type narrowing on this page was left at four entries,
+    which broke `nuxt typecheck` on `main` (`'el'|'uk'` no longer
+    assignable to the i18n `setLocale` parameter type). Shipped in
+    its own commit (`916070a`) so the follow-up is bisectable.
+- Test totals at task exit:
+  - Backend: **1129 / 1129** green (+3 new specs on the info claim).
+  - `pnpm typecheck` — 12 / 12 packages green (was 11 / 12 on `main`
+    pre-fix; the drive-by locale fix unblocked `@app/web`).
+  - `pnpm lint` — exit 0, no new findings on the touched files. The
+    pre-existing 57 errors across ~30 unrelated files (mostly story
+    JSX + a few legacy `.vue` components) are baseline and not
+    surfaced by this task.
+- Follow-ups (carried forward as separate tasks):
+  - **Block 2 — `apps/web`**: `useSessionChatRealtime` reads
+    `subscription.presence()` + listens to
+    `subscription.on('join'|'leave')`, filters
+    `connInfo.memberships` by the current `gameSessionId`, maintains a
+    `Set<membershipId>` keyed presence map, plumbs into
+    `AppChatTab.presence` via the existing `ChatTabModel.presence`
+    field on `AppChatTabStrip` (currently stubbed to `'offline'`).
+  - **Block 3 — `apps/mobile`**: parity via the Flutter
+    `centrifuge_dart` SDK; also needs an `AppChatPresenceDot`
+    equivalent in `packages/ui_flutter` — the Flutter library does
+    not yet have a presence-dot atom (web has
+    `AppChatPresenceDot.vue` + `AppChatTab.vue --presence`).
+
 ## T-2026-05-18-006 — Mobile chat edit-message inline banner parity
 
 - Created: 2026-05-18
