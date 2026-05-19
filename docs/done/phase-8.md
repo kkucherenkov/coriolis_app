@@ -148,6 +148,7 @@ are explicit Phase 8 carry-forwards into the Phase 8.5 backlog:
 3. **`globalThis.confirm` → `AppConfirm` on the remaining call sites.**
    Invite revoke (Stream A leftover) and chat-message delete (Stream D).
    Both flows have the primitive available; this is a 5-min sweep.
+   **Status:** ✅ Shipped — verified done in prior PRs (no follow-up code change needed).
 
 4. **GM "Kick member" UI on `/app/game-sessions/[id]`.** Backend
    `DELETE /game-sessions/:id/members/:membershipId` shipped in
@@ -186,6 +187,10 @@ are explicit Phase 8 carry-forwards into the Phase 8.5 backlog:
 11. **System messages for `encounter.advanced` and `encounter.ended`.**
     4 of 5 originally-listed events shipped; these two were
     out-of-scope for Stream D and remain follow-ups.
+    **Status:** ✅ Shipped in PR #52 — three new domain events
+    (`EncounterStartedEvent`, `RoundAdvancedEvent`, `EncounterEndedEvent`),
+    emit sites in `UpdateEncounterHandler` and `AdvanceRoundHandler`, three
+    new subscribers in `ChatModule`, +11 unit specs, +3 e2e scenarios.
 
 12. **Generic `RealtimeRouter` abstraction.** Chat publisher and DP
     publisher each call `centrifugo.publish` directly. A small

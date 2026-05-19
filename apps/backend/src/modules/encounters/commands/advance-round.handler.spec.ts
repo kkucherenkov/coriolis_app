@@ -13,6 +13,7 @@ import {
 import { AdvanceRoundCommand } from './advance-round.command';
 import { AdvanceRoundHandler } from './advance-round.handler';
 
+import type { EventBus } from '@nestjs/cqrs';
 import type { ICombatantRepo, CombatantReadModel } from '../../combatants/domain/combatant.ports';
 import type { IGameSessionAccess } from '../domain/game-session-access.ports';
 import type {
@@ -66,6 +67,10 @@ function makeCombatPublisher(): ICombatPublisher {
   return { publishUpdated: vi.fn().mockResolvedValue(undefined) };
 }
 
+function makeEventBus(): Pick<EventBus, 'publish'> {
+  return { publish: vi.fn() };
+}
+
 function makeEncounter(overrides: Partial<EncounterReadModel> = {}): EncounterReadModel {
   return {
     id: 'enc-1',
@@ -109,6 +114,7 @@ describe('AdvanceRoundHandler', () => {
   let combatantRepo: ICombatantRepo;
   let initiativeRepo: IInitiativeRepo;
   let combatPublisher: ICombatPublisher;
+  let eventBus: Pick<EventBus, 'publish'>;
   let handler: AdvanceRoundHandler;
 
   beforeEach(() => {
@@ -117,7 +123,15 @@ describe('AdvanceRoundHandler', () => {
     combatantRepo = makeCombatantRepo();
     initiativeRepo = makeInitiativeRepo();
     combatPublisher = makeCombatPublisher();
-    handler = new AdvanceRoundHandler(repo, access, combatantRepo, initiativeRepo, combatPublisher);
+    eventBus = makeEventBus();
+    handler = new AdvanceRoundHandler(
+      repo,
+      access,
+      combatantRepo,
+      initiativeRepo,
+      combatPublisher,
+      eventBus as EventBus,
+    );
 
     vi.mocked(access.getOwnerId).mockResolvedValue('user-1');
     vi.mocked(initiativeRepo.advanceTurn).mockResolvedValue(undefined);
@@ -241,5 +255,40 @@ describe('AdvanceRoundHandler', () => {
     expect(result.activeCombatantId).toBe('cb-1');
     expect(result.round).toBe(2);
     expect(result.isNewRound).toBe(true);
+  });
+
+  it('publishes RoundAdvancedEvent with correct encounterId, gameSessionId, and new round', async () => {
+    vi.mocked(repo.findById).mockResolvedValueOnce(
+      makeEncounter({ activeCombatantId: 'cb-2', round: 4, gameSessionId: 'gs-1' }),
+    );
+    vi.mocked(combatantRepo.listByEncounter).mockResolvedValue([
+      makeCombatant('cb-1', 0),
+      makeCombatant('cb-2', 1),
+    ]);
+    vi.mocked(repo.findById).mockResolvedValueOnce(
+      makeEncounter({ activeCombatantId: 'cb-1', round: 5 }),
+    );
+
+    await handler.execute(new AdvanceRoundCommand('enc-1', 'user-1'));
+
+    expect(eventBus.publish).toHaveBeenCalledOnce();
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ encounterId: 'enc-1', gameSessionId: 'gs-1', round: 5 }),
+    );
+  });
+
+  it('publishes RoundAdvancedEvent even when combatPublisher throws', async () => {
+    vi.mocked(repo.findById).mockResolvedValueOnce(
+      makeEncounter({ activeCombatantId: 'cb-2', round: 1 }),
+    );
+    vi.mocked(combatantRepo.listByEncounter).mockResolvedValue([makeCombatant('cb-1', 0)]);
+    vi.mocked(repo.findById).mockResolvedValueOnce(null); // post-commit re-fetch returns null
+    vi.mocked(combatPublisher.publishUpdated).mockRejectedValueOnce(new Error('Centrifugo down'));
+
+    await handler.execute(new AdvanceRoundCommand('enc-1', 'user-1'));
+
+    // RoundAdvancedEvent should still be published
+    expect(eventBus.publish).toHaveBeenCalledOnce();
+    expect(eventBus.publish).toHaveBeenCalledWith(expect.objectContaining({ round: 2 }));
   });
 });

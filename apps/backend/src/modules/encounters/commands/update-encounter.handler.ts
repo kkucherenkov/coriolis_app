@@ -1,11 +1,13 @@
 import { Inject, Logger } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 
 import { COMBATANT_COUNT, COMBATANT_REPO } from '../../combatants/domain/combatant.ports';
 import { EncounterAccessDeniedError, EncounterNotFoundError } from '../domain/encounter.errors';
 import { GAME_SESSION_ACCESS } from '../domain/game-session-access.ports';
 import { ENCOUNTER_REPO } from '../domain/encounter.ports';
 import { guardTransition, requiresCombatants } from '../domain/encounter.state-machine';
+import { EncounterEndedEvent } from '../events/encounter-ended.event';
+import { EncounterStartedEvent } from '../events/encounter-started.event';
 import { COMBAT_PUBLISHER } from '../infra/combat.publisher';
 
 import { UpdateEncounterCommand } from './update-encounter.command';
@@ -32,6 +34,7 @@ export class UpdateEncounterHandler implements ICommandHandler<
     @Inject(COMBATANT_COUNT) private readonly combatantCount: ICombatantCount,
     @Inject(COMBATANT_REPO) private readonly combatantRepo: ICombatantRepo,
     @Inject(COMBAT_PUBLISHER) private readonly combatPublisher: ICombatPublisher,
+    private readonly eventBus: EventBus,
   ) {}
 
   async execute(command: UpdateEncounterCommand): Promise<EncounterReadModel> {
@@ -48,6 +51,10 @@ export class UpdateEncounterHandler implements ICommandHandler<
 
     // State machine guard
     const patch: EncounterUpdateData = {};
+
+    // Capture previous status before patching — used after DB commit to decide
+    // which lifecycle event (if any) to publish.
+    const previousStatus = encounter.status;
 
     if (dto.status !== undefined && dto.status !== encounter.status) {
       // Only count combatants when the transition actually requires it (setup → active).
@@ -79,6 +86,16 @@ export class UpdateEncounterHandler implements ICommandHandler<
       this.logger.error(
         `Failed to fetch combatants for combat.updated publish (encounter ${id}): ${String(error)}`,
       );
+    }
+
+    // Publish lifecycle events after the combat snapshot so the system message
+    // arrives after the realtime combat state update.
+    if (patch.status !== undefined) {
+      if (previousStatus === 'setup' && patch.status === 'active') {
+        this.eventBus.publish(new EncounterStartedEvent(id, updated.gameSessionId));
+      } else if (previousStatus === 'active' && patch.status === 'ended') {
+        this.eventBus.publish(new EncounterEndedEvent(id, updated.gameSessionId));
+      }
     }
 
     return updated;

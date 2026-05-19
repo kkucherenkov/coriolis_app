@@ -13,6 +13,7 @@ import {
 import { UpdateEncounterCommand, UpdateEncounterDto } from './update-encounter.command';
 import { UpdateEncounterHandler } from './update-encounter.handler';
 
+import type { EventBus } from '@nestjs/cqrs';
 import type {
   ICombatantCount,
   ICombatantRepo,
@@ -61,6 +62,10 @@ function makeCombatPublisher(): ICombatPublisher {
   return { publishUpdated: vi.fn().mockResolvedValue(undefined) };
 }
 
+function makeEventBus(): Pick<EventBus, 'publish'> {
+  return { publish: vi.fn() };
+}
+
 function makeEncounter(overrides: Partial<EncounterReadModel> = {}): EncounterReadModel {
   return {
     id: 'enc-1',
@@ -86,6 +91,7 @@ describe('UpdateEncounterHandler', () => {
   let combatantCount: ICombatantCount;
   let combatantRepo: ICombatantRepo;
   let combatPublisher: ICombatPublisher;
+  let eventBus: Pick<EventBus, 'publish'>;
   let handler: UpdateEncounterHandler;
 
   beforeEach(() => {
@@ -94,12 +100,14 @@ describe('UpdateEncounterHandler', () => {
     combatantCount = makeCombatantCount(0);
     combatantRepo = makeCombatantRepo();
     combatPublisher = makeCombatPublisher();
+    eventBus = makeEventBus();
     handler = new UpdateEncounterHandler(
       repo,
       access,
       combatantCount,
       combatantRepo,
       combatPublisher,
+      eventBus as EventBus,
     );
     vi.mocked(access.getOwnerId).mockResolvedValue('user-1');
   });
@@ -330,5 +338,64 @@ describe('UpdateEncounterHandler', () => {
     );
 
     expect(result).toEqual(updated);
+  });
+
+  it('publishes EncounterStartedEvent on setup → active transition', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter({ status: 'setup' }));
+    vi.mocked(combatantCount.countByEncounter).mockResolvedValue(2);
+    vi.mocked(repo.update).mockResolvedValue(makeEncounter({ status: 'active' }));
+
+    await handler.execute(
+      new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ status: 'active' })),
+    );
+
+    expect(eventBus.publish).toHaveBeenCalledOnce();
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ encounterId: 'enc-1', gameSessionId: 'gs-1' }),
+    );
+  });
+
+  it('publishes EncounterEndedEvent on active → ended transition', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(
+      makeEncounter({ status: 'active', activeCombatantId: 'cb-1' }),
+    );
+    vi.mocked(repo.update).mockResolvedValue(
+      makeEncounter({ status: 'ended', activeCombatantId: null }),
+    );
+
+    await handler.execute(
+      new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ status: 'ended' })),
+    );
+
+    expect(eventBus.publish).toHaveBeenCalledOnce();
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ encounterId: 'enc-1', gameSessionId: 'gs-1' }),
+    );
+  });
+
+  it('does not publish any lifecycle event for a name-only update', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter());
+    vi.mocked(repo.update).mockResolvedValue(makeEncounter({ name: 'Renamed' }));
+
+    await handler.execute(
+      new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ name: 'Renamed' })),
+    );
+
+    expect(eventBus.publish).not.toHaveBeenCalled();
+  });
+
+  it('publishes lifecycle event even when combatPublisher throws', async () => {
+    vi.mocked(repo.findById).mockResolvedValue(makeEncounter({ status: 'setup' }));
+    vi.mocked(combatantCount.countByEncounter).mockResolvedValue(1);
+    vi.mocked(repo.update).mockResolvedValue(makeEncounter({ status: 'active' }));
+    vi.mocked(combatantRepo.listByEncounter).mockResolvedValue([]);
+    vi.mocked(combatPublisher.publishUpdated).mockRejectedValueOnce(new Error('Centrifugo down'));
+
+    await handler.execute(
+      new UpdateEncounterCommand('enc-1', 'user-1', makeDto({ status: 'active' })),
+    );
+
+    // Event must still fire despite publisher failure
+    expect(eventBus.publish).toHaveBeenCalledOnce();
   });
 });

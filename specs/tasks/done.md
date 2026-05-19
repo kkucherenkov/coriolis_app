@@ -2,6 +2,22 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-19-004 — Phase 8.5 follow-up #11: encounter lifecycle system messages (backend)
+
+- Created: 2026-05-19
+- Completed: 2026-05-19
+- Owner: claude
+- Branch: `feat/chat-system-encounter-events`
+- Result: PR #53 — http://code.homelab.local/kkucherenkov/coriolis_app/pulls/53
+- What landed:
+  - Three new domain events: `EncounterStartedEvent`, `RoundAdvancedEvent`, `EncounterEndedEvent` in `apps/backend/src/modules/encounters/events/`.
+  - `UpdateEncounterHandler` now publishes `EncounterStartedEvent` on setup→active and `EncounterEndedEvent` on active→ended, after the Centrifugo combat snapshot, using injected `EventBus`.
+  - `AdvanceRoundHandler` publishes `RoundAdvancedEvent` (with `encounterId`, `gameSessionId`, `newRound`) after step 7 (combat snapshot), regardless of publisher success.
+  - Three new `@EventsHandler` subscribers in `system-message.subscriber.ts`: `EncounterStartedSystemMessageSubscriber`, `RoundAdvancedSystemMessageSubscriber`, `EncounterEndedSystemMessageSubscriber` — no repo lookups needed, events carry `gameSessionId` directly.
+  - All three subscribers registered in `ChatModule`.
+  - +7 subscriber unit specs, +4 UpdateEncounterHandler specs, +3 AdvanceRoundHandler specs; +3 e2e scenarios in `chat-system-messages.e2e-spec.ts`.
+  - Doc tick for follow-up #3 and #11 in `docs/done/phase-8.md`.
+
 ## T-2026-05-19-002 — Phase 8.5 follow-up #6 / Block 2: chat presence (web)
 
 - Created: 2026-05-19
