@@ -17,12 +17,18 @@ import { MemberJoinedEvent } from '../../memberships/events/member-joined.event'
 import { MemberKickedEvent } from '../../memberships/events/member-kicked.event';
 import { MemberLeftEvent } from '../../memberships/events/member-left.event';
 import { RollPushedEvent } from '../../dice/events/roll-pushed.event';
+import { EncounterEndedEvent } from '../../encounters/events/encounter-ended.event';
+import { EncounterStartedEvent } from '../../encounters/events/encounter-started.event';
+import { RoundAdvancedEvent } from '../../encounters/events/round-advanced.event';
 import { PostSystemMessageCommand } from '../commands/post-system-message.command';
 import {
+  EncounterEndedSystemMessageSubscriber,
+  EncounterStartedSystemMessageSubscriber,
   MemberJoinedSystemMessageSubscriber,
   MemberKickedSystemMessageSubscriber,
   MemberLeftSystemMessageSubscriber,
   RollPushedSystemMessageSubscriber,
+  RoundAdvancedSystemMessageSubscriber,
 } from './system-message.subscriber';
 
 import type { CommandBus } from '@nestjs/cqrs';
@@ -229,6 +235,121 @@ describe('RollPushedSystemMessageSubscriber', () => {
 
   it('calls CommandBus.execute exactly once per in-session roll', async () => {
     await sut.handle(new RollPushedEvent('roll-3', 'char-1', 'gs-5', 0));
+    expect(bus.execute).toHaveBeenCalledOnce();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// EncounterStartedSystemMessageSubscriber
+// ---------------------------------------------------------------------------
+
+describe('EncounterStartedSystemMessageSubscriber', () => {
+  let bus: Pick<CommandBus, 'execute'>;
+  let sut: EncounterStartedSystemMessageSubscriber;
+
+  beforeEach(() => {
+    bus = makeBus();
+    sut = new EncounterStartedSystemMessageSubscriber(bus as CommandBus);
+  });
+
+  it('dispatches PostSystemMessageCommand with key=chat.system.encounter_started and empty params', async () => {
+    const event = new EncounterStartedEvent('enc-1', 'gs-10');
+
+    await sut.handle(event);
+
+    expect(bus.execute).toHaveBeenCalledOnce();
+    expect(bus.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        gameSessionId: 'gs-10',
+        systemKey: 'chat.system.encounter_started',
+        systemParams: {},
+      }),
+    );
+    const cmd = vi.mocked(bus.execute).mock.calls[0]![0] as PostSystemMessageCommand;
+    expect(cmd).toBeInstanceOf(PostSystemMessageCommand);
+  });
+
+  it('calls CommandBus.execute exactly once per event', async () => {
+    await sut.handle(new EncounterStartedEvent('enc-1', 'gs-10'));
+    expect(bus.execute).toHaveBeenCalledOnce();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// RoundAdvancedSystemMessageSubscriber
+// ---------------------------------------------------------------------------
+
+describe('RoundAdvancedSystemMessageSubscriber', () => {
+  let bus: Pick<CommandBus, 'execute'>;
+  let sut: RoundAdvancedSystemMessageSubscriber;
+
+  beforeEach(() => {
+    bus = makeBus();
+    sut = new RoundAdvancedSystemMessageSubscriber(bus as CommandBus);
+  });
+
+  it('dispatches PostSystemMessageCommand with key=chat.system.round_advanced and round param', async () => {
+    const event = new RoundAdvancedEvent('enc-2', 'gs-11', 3);
+
+    await sut.handle(event);
+
+    expect(bus.execute).toHaveBeenCalledOnce();
+    expect(bus.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        gameSessionId: 'gs-11',
+        systemKey: 'chat.system.round_advanced',
+        systemParams: { round: 3 },
+      }),
+    );
+    const cmd = vi.mocked(bus.execute).mock.calls[0]![0] as PostSystemMessageCommand;
+    expect(cmd).toBeInstanceOf(PostSystemMessageCommand);
+  });
+
+  it('forwards the round number correctly for round 1', async () => {
+    await sut.handle(new RoundAdvancedEvent('enc-2', 'gs-11', 1));
+
+    const cmd = vi.mocked(bus.execute).mock.calls[0]![0] as PostSystemMessageCommand;
+    expect(cmd.systemParams).toEqual({ round: 1 });
+  });
+
+  it('calls CommandBus.execute exactly once per event', async () => {
+    await sut.handle(new RoundAdvancedEvent('enc-2', 'gs-11', 2));
+    expect(bus.execute).toHaveBeenCalledOnce();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// EncounterEndedSystemMessageSubscriber
+// ---------------------------------------------------------------------------
+
+describe('EncounterEndedSystemMessageSubscriber', () => {
+  let bus: Pick<CommandBus, 'execute'>;
+  let sut: EncounterEndedSystemMessageSubscriber;
+
+  beforeEach(() => {
+    bus = makeBus();
+    sut = new EncounterEndedSystemMessageSubscriber(bus as CommandBus);
+  });
+
+  it('dispatches PostSystemMessageCommand with key=chat.system.encounter_ended and empty params', async () => {
+    const event = new EncounterEndedEvent('enc-3', 'gs-12');
+
+    await sut.handle(event);
+
+    expect(bus.execute).toHaveBeenCalledOnce();
+    expect(bus.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        gameSessionId: 'gs-12',
+        systemKey: 'chat.system.encounter_ended',
+        systemParams: {},
+      }),
+    );
+    const cmd = vi.mocked(bus.execute).mock.calls[0]![0] as PostSystemMessageCommand;
+    expect(cmd).toBeInstanceOf(PostSystemMessageCommand);
+  });
+
+  it('calls CommandBus.execute exactly once per event', async () => {
+    await sut.handle(new EncounterEndedEvent('enc-3', 'gs-12'));
     expect(bus.execute).toHaveBeenCalledOnce();
   });
 });

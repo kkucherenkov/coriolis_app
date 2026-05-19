@@ -213,6 +213,79 @@ async function pollForSystemMessage(
   throw new Error(`pollForSystemMessage timed out after ${timeoutMs.toString()}ms`);
 }
 
+// ─── Encounter helpers ────────────────────────────────────────────────────────
+
+async function createEncounter(token: string, gameSessionId: string): Promise<string> {
+  const res = await fetch(`${BASE}/game-sessions/${gameSessionId}/encounters`, {
+    method: 'POST',
+    headers: { ...auth(token), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 'System message e2e encounter' }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`createEncounter failed: ${res.status.toString()} — ${body}`);
+  }
+  const body = (await res.json()) as { id: string };
+  return body.id;
+}
+
+async function addCombatant(token: string, encounterId: string): Promise<void> {
+  const res = await fetch(`${BASE}/encounters/${encounterId}/combatants`, {
+    method: 'POST',
+    headers: { ...auth(token), 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      combatantType: 'npc',
+      displayName: 'Test Guard',
+      hpMax: 4,
+      initiative: 5,
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`addCombatant failed: ${res.status.toString()} — ${body}`);
+  }
+}
+
+async function updateEncounterStatus(
+  token: string,
+  encounterId: string,
+  status: 'setup' | 'active' | 'ended',
+): Promise<void> {
+  const res = await fetch(`${BASE}/encounters/${encounterId}`, {
+    method: 'PATCH',
+    headers: { ...auth(token), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`updateEncounterStatus(${status}) failed: ${res.status.toString()} — ${body}`);
+  }
+}
+
+async function rollInitiative(token: string, encounterId: string): Promise<void> {
+  const res = await fetch(`${BASE}/encounters/${encounterId}/initiative/roll`, {
+    method: 'POST',
+    headers: auth(token),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`rollInitiative failed: ${res.status.toString()} — ${body}`);
+  }
+}
+
+async function advanceRound(token: string, encounterId: string): Promise<number> {
+  const res = await fetch(`${BASE}/encounters/${encounterId}/round/advance`, {
+    method: 'POST',
+    headers: auth(token),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`advanceRound failed: ${res.status.toString()} — ${body}`);
+  }
+  const body = (await res.json()) as { round: number };
+  return body.round;
+}
+
 // ─── Test state ───────────────────────────────────────────────────────────────
 
 const run = `${Date.now().toString(36)}`;
@@ -339,5 +412,95 @@ describe('Chat system messages — join / leave / roll-pushed', () => {
     expect((msg['systemParams'] as Record<string, unknown>)?.['displayName']).toBe(
       playerDisplayName,
     );
+  });
+});
+
+// ─── Encounter lifecycle system messages ─────────────────────────────────────
+
+/**
+ * These tests share a fresh game session (GM-only — no player invite needed)
+ * and a single encounter that progresses: setup → active → round 2 → ended.
+ * Each transition produces one system message in the broadcast channel.
+ *
+ * The encounter tests are isolated from the join/leave suite above to avoid
+ * ordering dependencies (the beforeAll there finishes with a left player).
+ */
+
+let encounterGmToken = '';
+let encounterSessionId = '';
+let encounterId = '';
+let encounterBackendUp = false;
+
+beforeAll(async () => {
+  encounterBackendUp = backendUp;
+  if (!encounterBackendUp) return;
+
+  const gm = await signUp(`sysmsg-enc-gm-${run}@e2e.test`, 'Test1234!', `EncSysMsgGM-${run}`);
+  encounterGmToken = gm.token;
+
+  encounterSessionId = await createSession(encounterGmToken, `EncSysMsg E2E — ${run}`);
+  const inv = await rotateInvite(encounterGmToken, encounterSessionId);
+  await acceptInvite(encounterGmToken, inv);
+
+  encounterId = await createEncounter(encounterGmToken, encounterSessionId);
+  await addCombatant(encounterGmToken, encounterId);
+}, 30_000);
+
+describe('Chat system messages — encounter lifecycle (follow-up #11)', () => {
+  it('4 — encounter_started system message created when encounter transitions setup → active', async () => {
+    if (!encounterBackendUp) return;
+
+    await updateEncounterStatus(encounterGmToken, encounterId, 'active');
+
+    const msg = await pollForSystemMessage(
+      encounterGmToken,
+      encounterSessionId,
+      (m) => m['kind'] === 'system' && m['systemKey'] === 'chat.system.encounter_started',
+    );
+
+    expect(msg['kind']).toBe('system');
+    expect(msg['systemKey']).toBe('chat.system.encounter_started');
+    expect(msg['body']).toBeNull();
+    expect(msg['authorMembershipId']).toBeNull();
+    expect(msg['targetMembershipId']).toBeNull();
+  });
+
+  it('5 — round_advanced system message created when GM advances round', async () => {
+    if (!encounterBackendUp) return;
+
+    // Roll initiative first so activeCombatantId is set (required by AdvanceRoundHandler)
+    await rollInitiative(encounterGmToken, encounterId);
+    const newRound = await advanceRound(encounterGmToken, encounterId);
+
+    const msg = await pollForSystemMessage(
+      encounterGmToken,
+      encounterSessionId,
+      (m) =>
+        m['kind'] === 'system' &&
+        m['systemKey'] === 'chat.system.round_advanced' &&
+        (m['systemParams'] as Record<string, unknown>)?.['round'] === newRound,
+    );
+
+    expect(msg['kind']).toBe('system');
+    expect(msg['systemKey']).toBe('chat.system.round_advanced');
+    expect((msg['systemParams'] as Record<string, unknown>)?.['round']).toBe(newRound);
+  });
+
+  it('6 — encounter_ended system message created when encounter transitions active → ended', async () => {
+    if (!encounterBackendUp) return;
+
+    await updateEncounterStatus(encounterGmToken, encounterId, 'ended');
+
+    const msg = await pollForSystemMessage(
+      encounterGmToken,
+      encounterSessionId,
+      (m) => m['kind'] === 'system' && m['systemKey'] === 'chat.system.encounter_ended',
+    );
+
+    expect(msg['kind']).toBe('system');
+    expect(msg['systemKey']).toBe('chat.system.encounter_ended');
+    expect(msg['body']).toBeNull();
+    expect(msg['authorMembershipId']).toBeNull();
+    expect(msg['targetMembershipId']).toBeNull();
   });
 });
