@@ -198,8 +198,8 @@ export function useSessionPresence(gameSessionId: string): SessionPresenceHandle
 
       sub.subscribe();
       centrifuge.connect();
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : String(err);
+    } catch (error_) {
+      error.value = error_ instanceof Error ? error_.message : String(error_);
       if (centrifuge) {
         centrifuge.disconnect();
         centrifuge = null;

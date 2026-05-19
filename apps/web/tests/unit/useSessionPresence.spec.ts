@@ -79,7 +79,13 @@ const mockCentrifuge = {
 };
 
 vi.mock('centrifuge', () => ({
-  Centrifuge: vi.fn(() => mockCentrifuge),
+  // vitest 4.x: `vi.fn(() => obj)` constructors with `new` do not return `obj`.
+  // Use a class with a constructor that returns the mock instance instead.
+  Centrifuge: class {
+    constructor() {
+      return mockCentrifuge as never;
+    }
+  },
 }));
 
 // ─── Import after mocks ───────────────────────────────────────────────────────
