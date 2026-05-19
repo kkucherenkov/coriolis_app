@@ -176,6 +176,18 @@ are explicit Phase 8 carry-forwards into the Phase 8.5 backlog:
    stubbed SDK + Centrifuge client, and a mobile `integration_test/`
    counterpart, are the next layer.
 
+   **Status:** Shipped in PR #55. Web: route-level vitest spec at
+   `apps/web/app/pages/__tests__/game-session-chat-integration.spec.ts`
+   (4 scenarios: mount / send / whisper-switch / presence flip) mounts
+   a chat-surface harness against stubbed `@app/api-client-ts` SDK +
+   Centrifuge mock. Mobile: page-level widget test at
+   `apps/mobile/test/features/sessions/presentation/pages/chat_panel_integration_test.dart`
+   (4 scenarios) wires `PlayerSessionDetailPage` end-to-end against
+   `mocktail`-stubbed repository + realtime + presence services. The
+   mobile test lives under `test/` rather than `integration_test/`
+   because the project has no macOS/web shell and `flutter test
+integration_test/` requires a real device.
+
 9. **Storybook a11y addon manual sweep.** Per-component a11y assertions
    shipped; the Storybook a11y addon hasn't been booted as part of
    CI yet (deferred — addon scaffolding noted in `quality` job
