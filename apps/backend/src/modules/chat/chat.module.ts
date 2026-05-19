@@ -37,10 +37,13 @@ import {
   ChatMessagePostedPublisher,
 } from './events/chat-realtime.publisher';
 import {
+  EncounterEndedSystemMessageSubscriber,
+  EncounterStartedSystemMessageSubscriber,
   MemberJoinedSystemMessageSubscriber,
   MemberKickedSystemMessageSubscriber,
   MemberLeftSystemMessageSubscriber,
   RollPushedSystemMessageSubscriber,
+  RoundAdvancedSystemMessageSubscriber,
 } from './events/system-message.subscriber';
 import { ChatBlocksController } from './http/chat-blocks.controller';
 import { ChatConversationsController } from './http/chat-conversations.controller';
@@ -89,6 +92,11 @@ import { ListConversationsHandler } from './queries/list-conversations.handler';
     MemberLeftSystemMessageSubscriber,
     MemberKickedSystemMessageSubscriber,
     RollPushedSystemMessageSubscriber,
+
+    // System-message subscribers (Phase 8.5 follow-up #11 — encounter lifecycle)
+    EncounterStartedSystemMessageSubscriber,
+    RoundAdvancedSystemMessageSubscriber,
+    EncounterEndedSystemMessageSubscriber,
 
     // Infra adapters (concrete classes)
     ChatMessageRepo,

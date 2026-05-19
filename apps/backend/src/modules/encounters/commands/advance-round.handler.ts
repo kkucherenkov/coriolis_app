@@ -13,7 +13,7 @@
  * 8. Return TurnAdvanceResult with isNewRound always true.
  */
 import { Inject, Logger } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 
 import { COMBATANT_REPO } from '../../combatants/domain/combatant.ports';
 import {
@@ -24,6 +24,7 @@ import {
 } from '../domain/encounter.errors';
 import { GAME_SESSION_ACCESS } from '../domain/game-session-access.ports';
 import { ENCOUNTER_REPO, INITIATIVE_REPO } from '../domain/encounter.ports';
+import { RoundAdvancedEvent } from '../events/round-advanced.event';
 import { COMBAT_PUBLISHER } from '../infra/combat.publisher';
 
 import { AdvanceRoundCommand } from './advance-round.command';
@@ -46,6 +47,7 @@ export class AdvanceRoundHandler implements ICommandHandler<
     @Inject(COMBATANT_REPO) private readonly combatantRepo: ICombatantRepo,
     @Inject(INITIATIVE_REPO) private readonly initiativeRepo: IInitiativeRepo,
     @Inject(COMBAT_PUBLISHER) private readonly combatPublisher: ICombatPublisher,
+    private readonly eventBus: EventBus,
   ) {}
 
   async execute(command: AdvanceRoundCommand): Promise<TurnAdvanceResult> {
@@ -112,6 +114,10 @@ export class AdvanceRoundHandler implements ICommandHandler<
         `Failed to publish combat.updated for encounter ${encounterId}: ${String(error)}`,
       );
     }
+
+    // Publish RoundAdvancedEvent after the combat snapshot. Uses the gameSessionId
+    // from the pre-advance encounter load (gameSessionId never changes on an encounter).
+    this.eventBus.publish(new RoundAdvancedEvent(encounterId, encounter.gameSessionId, newRound));
 
     // 8. Return result
     return result;

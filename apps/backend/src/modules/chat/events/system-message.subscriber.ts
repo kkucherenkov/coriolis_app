@@ -23,6 +23,9 @@ import { MemberKickedEvent } from '../../memberships/events/member-kicked.event'
 import { MemberLeftEvent } from '../../memberships/events/member-left.event';
 import { MEMBERSHIP_REPO, type IMembershipRepo } from '../../memberships/domain/membership.ports';
 import { RollPushedEvent } from '../../dice/events/roll-pushed.event';
+import { EncounterEndedEvent } from '../../encounters/events/encounter-ended.event';
+import { EncounterStartedEvent } from '../../encounters/events/encounter-started.event';
+import { RoundAdvancedEvent } from '../../encounters/events/round-advanced.event';
 import { PostSystemMessageCommand } from '../commands/post-system-message.command';
 
 // ---------------------------------------------------------------------------
@@ -118,6 +121,53 @@ export class RollPushedSystemMessageSubscriber implements IEventHandler<RollPush
         // `hits` (final hit count after push) as the available numeric param.
         { characterName, hits: event.hits },
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// EncounterStartedSystemMessageSubscriber
+// ---------------------------------------------------------------------------
+
+@EventsHandler(EncounterStartedEvent)
+export class EncounterStartedSystemMessageSubscriber implements IEventHandler<EncounterStartedEvent> {
+  constructor(private readonly bus: CommandBus) {}
+
+  async handle(event: EncounterStartedEvent): Promise<void> {
+    await this.bus.execute(
+      new PostSystemMessageCommand(event.gameSessionId, 'chat.system.encounter_started', {}),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// RoundAdvancedSystemMessageSubscriber
+// ---------------------------------------------------------------------------
+
+@EventsHandler(RoundAdvancedEvent)
+export class RoundAdvancedSystemMessageSubscriber implements IEventHandler<RoundAdvancedEvent> {
+  constructor(private readonly bus: CommandBus) {}
+
+  async handle(event: RoundAdvancedEvent): Promise<void> {
+    await this.bus.execute(
+      new PostSystemMessageCommand(event.gameSessionId, 'chat.system.round_advanced', {
+        round: event.round,
+      }),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// EncounterEndedSystemMessageSubscriber
+// ---------------------------------------------------------------------------
+
+@EventsHandler(EncounterEndedEvent)
+export class EncounterEndedSystemMessageSubscriber implements IEventHandler<EncounterEndedEvent> {
+  constructor(private readonly bus: CommandBus) {}
+
+  async handle(event: EncounterEndedEvent): Promise<void> {
+    await this.bus.execute(
+      new PostSystemMessageCommand(event.gameSessionId, 'chat.system.encounter_ended', {}),
     );
   }
 }
