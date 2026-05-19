@@ -11,6 +11,13 @@
  *  - character.<id> placeholder is reserved for Epic 8/9 player subscriptions;
  *    it is not yet populated here.
  *
+ * The JWT also carries a connection-level `info` claim:
+ *   { memberships: [{ gameSessionId, membershipId }] }
+ * Centrifugo propagates `info` into the `connInfo` field on presence /
+ * join / leave events for every channel the connection subscribes to.
+ * The chat tab strip (web + mobile) reads this to map presence entries
+ * back to membershipId — see the Phase 8.5 follow-up #6 wiring.
+ *
  * ISessionAccessRepo is injected via SESSION_ACCESS_REPO to avoid a
  * circular module dependency: GameSessionsModule imports RealtimeModule (for
  * CENTRIFUGO_CLIENT), so RealtimeModule cannot import GameSessionsModule in
@@ -23,7 +30,11 @@ import { I18nService } from 'nestjs-i18n';
 import { AuthService } from '../../common/auth/auth.service';
 import { AppConfig } from '../../common/config/app-config';
 import { RealtimeAuthError } from './domain/realtime.errors';
-import { SESSION_ACCESS_REPO, type ISessionAccessRepo } from './domain/session-ownership.port';
+import {
+  SESSION_ACCESS_REPO,
+  type ISessionAccessRepo,
+  type UserMembership,
+} from './domain/session-ownership.port';
 
 import type { Request } from 'express';
 
@@ -49,7 +60,9 @@ export class RealtimeService {
     }
 
     const userId = session.user.id;
-    const allowedChannels = await this.buildAllowedChannels(userId);
+    const memberships = await this.sessionAccess.findActiveMembershipsForUser(userId);
+    const allowedChannels = buildAllowedChannels(memberships);
+    const info = buildConnectInfo(memberships);
 
     const { tokenHmacSecret, tokenTtlSeconds } = this.config.centrifugo;
     const expSeconds = Math.floor(Date.now() / 1000) + tokenTtlSeconds;
@@ -58,6 +71,7 @@ export class RealtimeService {
         sub: userId,
         exp: expSeconds,
         channels: allowedChannels,
+        info,
       },
       tokenHmacSecret,
       { algorithm: 'HS256' },
@@ -65,28 +79,53 @@ export class RealtimeService {
 
     return { token, expiresAt: new Date(expSeconds * 1000).toISOString() };
   }
+}
 
-  /**
-   * Builds the list of Centrifugo channel names this user may subscribe to.
-   *
-   * Per active membership (GM or player, leftAt IS NULL), three channel families
-   * are granted:
-   *   - session.<id>                     — DP / roll events (existing)
-   *   - session.<id>.chat                — broadcast chat channel (Stream C)
-   *   - session.<id>.member.<membId>     — per-member channel for whispers (Stream C)
-   *
-   * Player character channels (`character.<id>`) are deferred to Epic 8/9.
-   */
-  private async buildAllowedChannels(userId: string): Promise<string[]> {
-    const memberships = await this.sessionAccess.findActiveMembershipsForUser(userId);
-    const channels: string[] = [];
-    for (const m of memberships) {
-      channels.push(
-        `session.${m.gameSessionId}`,
-        `session.${m.gameSessionId}.chat`,
-        `session.${m.gameSessionId}.member.${m.membershipId}`,
-      );
-    }
-    return channels;
+/**
+ * Connection-level `info` claim payload embedded in the realtime JWT.
+ *
+ * Centrifugo propagates this verbatim to other subscribers via the
+ * `connInfo` field on presence / join / leave events. Frontend clients
+ * (web + mobile) read it to map a presence entry to its membershipId.
+ *
+ * Schema mirrored in `packages/specs/asyncapi/centrifugo.yaml`
+ * (`RealtimeConnectInfo`).
+ */
+export interface RealtimeConnectInfo {
+  memberships: {
+    gameSessionId: string;
+    membershipId: string;
+  }[];
+}
+
+/**
+ * Builds the list of Centrifugo channel names this user may subscribe to.
+ *
+ * Per active membership (GM or player, leftAt IS NULL), three channel families
+ * are granted:
+ *   - session.<id>                     — DP / roll events (existing)
+ *   - session.<id>.chat                — broadcast chat channel (Stream C)
+ *   - session.<id>.member.<membId>     — per-member channel for whispers (Stream C)
+ *
+ * Player character channels (`character.<id>`) are deferred to Epic 8/9.
+ */
+function buildAllowedChannels(memberships: readonly UserMembership[]): string[] {
+  const channels: string[] = [];
+  for (const m of memberships) {
+    channels.push(
+      `session.${m.gameSessionId}`,
+      `session.${m.gameSessionId}.chat`,
+      `session.${m.gameSessionId}.member.${m.membershipId}`,
+    );
   }
+  return channels;
+}
+
+function buildConnectInfo(memberships: readonly UserMembership[]): RealtimeConnectInfo {
+  return {
+    memberships: memberships.map((m) => ({
+      gameSessionId: m.gameSessionId,
+      membershipId: m.membershipId,
+    })),
+  };
 }
