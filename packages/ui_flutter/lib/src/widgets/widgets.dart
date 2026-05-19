@@ -5,6 +5,7 @@ export 'app_badge/app_badge.dart';
 export 'app_banner/app_banner.dart';
 export 'app_button/app_button.dart';
 export 'app_card/app_card.dart';
+export 'app_chat_presence_dot/app_chat_presence_dot.dart';
 export 'app_chip/app_chip.dart';
 export 'app_divider/app_divider.dart';
 export 'app_dots/app_dots.dart';
