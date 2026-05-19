@@ -28,6 +28,7 @@
     type CombatUpdatedPayload,
   } from '~/composables/useSessionRealtime';
   import { useSessionChatRealtime } from '~/composables/useSessionChatRealtime';
+  import { useSessionPresence } from '~/composables/useSessionPresence';
   import { useChatStore } from '~/stores/chat';
   import { listMembers, removeMembership } from '@app/api-client-ts';
   import type { GameSession } from '~/composables/useGameSessionsApi';
@@ -117,6 +118,13 @@
     gameSessionId: sessionId,
     myMembershipId: gmMembershipIdRef,
   });
+
+  // ── Presence (Phase 8.5 follow-up #6 / Block 2) ───────────────────────────
+  // Subscribes to the same `session.{id}` channel as `useSessionRealtime` and
+  // exposes a reactive Set<membershipId> of online partners. The page layer
+  // (not the store) merges it into `tabs` and `pickableMembers` so the store
+  // stays free of realtime coupling.
+  const sessionPresence = useSessionPresence(sessionId.value);
 
   watch(chatRealtime.lastPosted, (m) => {
     if (m) chatStore.applyRealtime({ type: 'chat.message.posted', message: m as never });
@@ -219,7 +227,15 @@
   const chatPanelBindings = computed(() => ({
     mode: 'docked' as const,
     connectionStatus: chatRealtime.status.value,
-    tabs: chatStore.panelTabs,
+    tabs: chatStore.panelTabs.map((tab) => {
+      const presence: 'online' | 'offline' | undefined =
+        tab.kind === 'whisper'
+          ? sessionPresence.onlineSet.value.has(tab.key)
+            ? 'online'
+            : 'offline'
+          : undefined;
+      return { ...tab, presence };
+    }),
     activeKey: chatStore.activeConversationKey,
     messages: chatPanelMessages.value,
     composerValue: composerValue.value,
@@ -246,7 +262,9 @@
         membershipId: m.id,
         displayName: m.displayName ?? m.id,
         characterName: m.characterName ?? null,
-        presence: 'offline' as const,
+        presence: sessionPresence.onlineSet.value.has(m.id)
+          ? ('online' as const)
+          : ('offline' as const),
         blockedByMe: false,
       })),
   );
@@ -597,6 +615,7 @@
     }
     if (state.value === 'loaded') {
       void realtime.start();
+      void sessionPresence.start();
       if (gmMembershipId.value) {
         await chatStore.hydrate({
           gameSessionId: sessionId.value,
@@ -610,6 +629,7 @@
   onBeforeUnmount(() => {
     void realtime.stop();
     chatRealtime.stop();
+    sessionPresence.stop();
   });
 
   watch(isGm, (now, before) => {
