@@ -1,20 +1,5 @@
 # Active tasks
 
-## T-2026-05-19-006 — Phase 8.5 follow-up #8: chat route-level integration tests (web + mobile)
-
-- Created: 2026-05-19
-- Owner: claude
-- Goal: Add page/route-level integration tests for the chat surface inside the session-detail page on both web (vitest, happy-dom) and mobile (Flutter `integration_test`). Stubs at SDK + Centrifuge / repository + presence boundaries only — no real network or websocket.
-- Spec diff: none — tests-only block.
-- Codegen impact: none.
-- Sub-steps:
-  - [ ] Web: scaffold `apps/web/app/pages/__tests__/game-session-chat-integration.spec.ts` with the four scenarios (mount, broadcast send, whisper switch, presence dot).
-  - [ ] Mobile: scaffold `apps/mobile/integration_test/chat_panel_integration_test.dart` (folder + entry) with the three scenarios (boot, send, switch).
-  - [ ] Verify web vitest + mobile flutter test green; no spec drift.
-  - [ ] Mark Phase 8.5 follow-up #8 shipped in `docs/done/phase-8.md`.
-- Status: in-progress
-- Blockers: —
-
 ## T-2026-05-17-DEEP-LINK-SETUP — Deep-link configuration (mobile + web)
 
 - Created: 2026-05-16

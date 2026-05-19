@@ -176,7 +176,7 @@ are explicit Phase 8 carry-forwards into the Phase 8.5 backlog:
    stubbed SDK + Centrifuge client, and a mobile `integration_test/`
    counterpart, are the next layer.
 
-   **Status:** Shipped in PR #TBD. Web: route-level vitest spec at
+   **Status:** Shipped in PR #55. Web: route-level vitest spec at
    `apps/web/app/pages/__tests__/game-session-chat-integration.spec.ts`
    (4 scenarios: mount / send / whisper-switch / presence flip) mounts
    a chat-surface harness against stubbed `@app/api-client-ts` SDK +

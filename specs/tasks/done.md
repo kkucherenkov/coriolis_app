@@ -2,6 +2,29 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-19-006 — Phase 8.5 follow-up #8: chat route-level integration tests (web + mobile)
+
+- Created: 2026-05-19
+- Completed: 2026-05-19
+- Owner: claude
+- Branch: `feat/chat-route-integration-tests`
+- Result: PR #55 — http://code.homelab.local/kkucherenkov/coriolis_app/pulls/55
+- Trigger: Per-component / per-cubit specs cover the chat primitives (171 new on web, 21 on mobile in Streams D). What was missing was a route-level test that mounts the actual session-detail surface against stubbed SDK + Centrifuge and exercises composer → store → realtime echo → list-render end-to-end.
+- Scope: tests-only — no production wire-format / runtime change. One testability touch-up: registered `@vitejs/plugin-vue` in `apps/web/vitest.config.ts` so route-level specs can mount real `@app/ui` SFCs without exploding on import analysis.
+- What landed:
+  - **Web** — `apps/web/app/pages/__tests__/game-session-chat-integration.spec.ts`. Mounts a `HarnessPage` SFC that reproduces the chat-surface composition from `app/pages/app/game-sessions/[id].vue` (Pinia chat store + `useSessionChatRealtime` + `useSessionPresence` + `AppChatPanel` wired through the same `chatPanelBindings` shape). The page SFC itself is unmounted because it uses Nuxt-only auto-imports (`useRoute`, layout middleware, inline i18n block) that require a full Nuxt runtime — the harness exercises the same composables / store / SDK call graph faithfully. Four scenarios: mount + broadcast tab default state, composer submit calls `postChatMessage` and renders the realtime echo, opening a whisper tab re-fetches `listChatMessages` for the partner, Centrifugo `join` event flips the partner tab's presence dot to `online`.
+  - **Mobile** — `apps/mobile/test/features/sessions/presentation/pages/chat_panel_integration_test.dart`. Mounts `PlayerSessionDetailPage` end-to-end with `GetIt` wired to mocktail stubs for `ChatRepository` + `ChatRealtimeService` + `ChatPresenceService`; the `PlayerSessionRepository` is passed via constructor. Four scenarios mirror the web ones: boot + broadcast active, send + render, whisper-tab switch + re-fetch, presence event flips the whisper tab's `AppChatPresenceDot`. Lives under `test/` rather than `integration_test/` because the repo has no macOS/web shell and `flutter test integration_test/` aborts without a connected device — `WidgetTester` is the same primitive either way, the file runs as part of `flutter test apps/mobile/`.
+  - **Phase 8.5 follow-up #8** marked **Shipped in PR #55** in `docs/done/phase-8.md`.
+- Verification:
+  - `pnpm --filter @app/web test` — 548/548 (was 532; +4 new + 12 from `Step8Gear.spec.ts` once `@app/specs` is built).
+  - `pnpm --filter @app/web lint` and `typecheck` — both clean.
+  - `cd apps/mobile && flutter test` — 491/491 (was 487; +4 new).
+  - `cd apps/mobile && flutter analyze` — no new findings in the added file.
+  - `pnpm spec:validate` + `pnpm spec:codegen` — clean, no drift.
+- Sharp edges:
+  - The existing `apps/web/app/components/wizard/__tests__/Step8Gear.spec.ts` requires `@app/specs/dist/src/index.js` to exist. The worktree was missing it on first run; `pnpm --filter @app/specs build` (or any prior `pnpm dev` boot) restores it. Not introduced by this PR.
+  - `@vitejs/plugin-vue` had to be added to `apps/web/devDependencies` for the new spec to mount real `@app/ui` SFCs. Was already transitively present via the workspace.
+
 ## T-2026-05-19-005 — Phase 8.5 follow-up #10: mobile `chatDockedCollapsed` from `/me/settings`
 
 - Created: 2026-05-19
