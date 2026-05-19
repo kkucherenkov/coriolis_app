@@ -184,6 +184,8 @@ are explicit Phase 8 carry-forwards into the Phase 8.5 backlog:
 10. **`chatDockedCollapsed` on mobile from `/me/settings`.** Mobile
     side of the localStorage → settings migration (web is done).
 
+    **Status:** Shipped in PR #51.
+
 11. **System messages for `encounter.advanced` and `encounter.ended`.**
     4 of 5 originally-listed events shipped; these two were
     out-of-scope for Stream D and remain follow-ups.

@@ -11,6 +11,8 @@ import 'package:app_api_client/app_api_client.dart'
         RealtimeApi,
         ShipsApi,
         standardSerializers;
+import 'package:coriolis_companion/features/me/data/me_repository_impl.dart';
+import 'package:coriolis_companion/features/me/domain/me_repository.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
@@ -162,6 +164,10 @@ void configureDependencies() {
       dio: getIt<Dio>(),
       tokenStorage: getIt<TokenStorage>(),
     ),
+  );
+
+  getIt.registerLazySingleton<MeRepository>(
+    () => MeRepositoryImpl(dio: getIt<Dio>()),
   );
 
   // ── Generated API singletons ─────────────────────────────────────────────

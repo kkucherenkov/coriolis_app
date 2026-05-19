@@ -3,10 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
+import 'package:coriolis_companion/features/me/domain/me_repository.dart';
 import 'package:coriolis_companion/features/sessions/domain/player_membership.dart';
 import 'package:coriolis_companion/features/sessions/domain/player_session_repository.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_bloc.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_event.dart';
+import 'package:coriolis_companion/features/sessions/presentation/blocs/chat_dock/chat_dock_cubit.dart';
+import 'package:coriolis_companion/features/sessions/presentation/blocs/chat_dock/chat_dock_state.dart';
 import 'package:coriolis_companion/features/sessions/domain/chat_presence_service.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_repository.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_realtime_service.dart';
@@ -39,6 +42,7 @@ class _PlayerSessionDetailPageState extends State<PlayerSessionDetailPage> {
   int _selectedTab = 0;
 
   late final ChatBloc _chatBloc;
+  late final ChatDockCubit _chatDockCubit;
 
   @override
   void initState() {
@@ -48,16 +52,23 @@ class _PlayerSessionDetailPageState extends State<PlayerSessionDetailPage> {
       realtimeService: GetIt.instance<ChatRealtimeService>(),
       presenceService: GetIt.instance<ChatPresenceService>(),
     );
+    _chatDockCubit = ChatDockCubit(
+      repository: GetIt.instance<MeRepository>(),
+    );
     _load();
   }
 
   @override
   void dispose() {
     _chatBloc.close();
+    _chatDockCubit.close();
     super.dispose();
   }
 
   Future<void> _load() async {
+    // Hydrate dock state from /me in parallel with membership load.
+    unawaited(_chatDockCubit.hydrate());
+
     try {
       final memberships = await widget.repository.getMyMemberships();
       final match = memberships
@@ -128,8 +139,11 @@ class _PlayerSessionDetailPageState extends State<PlayerSessionDetailPage> {
   Widget build(BuildContext context) {
     final sessionName = _membership?.sessionName ?? 'Session';
 
-    return BlocProvider<ChatBloc>.value(
-      value: _chatBloc,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<ChatBloc>.value(value: _chatBloc),
+        BlocProvider<ChatDockCubit>.value(value: _chatDockCubit),
+      ],
       child: Scaffold(
         appBar: AppBar(
           title: Text(sessionName),
@@ -181,9 +195,14 @@ class _PlayerSessionDetailPageState extends State<PlayerSessionDetailPage> {
 
     switch (_selectedTab) {
       case 0:
-        return ChatPanel(
-          availableMembers: const [], // TODO: wire real member list.
-          myMembershipId: _membership!.membershipId,
+        return BlocBuilder<ChatDockCubit, ChatDockState>(
+          builder: (context, dockState) => ChatPanel(
+            availableMembers: const [], // TODO: wire real member list.
+            myMembershipId: _membership!.membershipId,
+            dockCollapsed: dockState.collapsed,
+            onToggleDock: () =>
+                context.read<ChatDockCubit>().toggle(),
+          ),
         );
       case 1:
         return const Center(
@@ -198,3 +217,7 @@ class _PlayerSessionDetailPageState extends State<PlayerSessionDetailPage> {
     }
   }
 }
+
+/// Fire-and-forget helper — silence "unawaited Future" lint for intentional
+/// parallel kicks.
+void unawaited(Future<void> future) {}
