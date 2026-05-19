@@ -2,6 +2,39 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-19-003 — Phase 8.5 follow-up #6 / Block 3: chat presence (mobile)
+
+- Created: 2026-05-19
+- Completed: 2026-05-19
+- Owner: claude
+- Branch: `feat/realtime-presence-block-3-mobile`
+- Result: PR #52 — http://code.homelab.local/kkucherenkov/coriolis_app/pulls/52
+- Depends-on: PR #50 (Block 1 — backend presence config + JWT info claim).
+- What landed:
+  - **`packages/ui_flutter`** — `AppChatPresenceDot` atom with `AppChatPresence`
+    enum (online/idle/offline). 8 px round indicator; brass fill for online,
+    `textSecondary` fill for idle, transparent fill + `textSecondary` border
+    for offline. `Semantics(label: presence.name)` for a11y. Exported from
+    `widgets.dart`. 5 widget tests.
+  - **`apps/mobile/lib/features/sessions/domain/chat_presence_service.dart`** —
+    `ChatPresenceService` interface exposing `Stream<Set<String>> onlineIds`.
+  - **`apps/mobile/lib/features/sessions/data/chat_presence_service_impl.dart`** —
+    Centrifugo-backed impl. Subscribes to `session.<gameSessionId>`, fetches
+    initial presence snapshot, listens to join/leave events. Decodes JWT
+    `connInfo` bytes (UTF-8 JSON) to extract membershipId by matching
+    `gameSessionId` in the `memberships` array. Malformed bytes silently
+    skipped. `@visibleForTesting` hooks for unit testing. 15 tests.
+  - **`ChatBloc`** — `ChatPresenceUpdated` event; `onlineMembershipIds: Set<String>`
+    in `ChatReady`; presence service started alongside chat realtime in hydrate;
+    `close()` cancels both subscriptions. 4 new bloc tests; existing tests updated.
+  - **`ChatTabStrip`** — `onlineMembershipIds` parameter; whisper tabs always
+    render `AppChatPresenceDot` (state varies, not existence — no layout shift);
+    broadcast tab never renders a dot. 4 widget tests.
+  - **`ChatPanel`** — forwards `state.onlineMembershipIds` to `ChatTabStrip`.
+  - **DI** — `ChatPresenceService` registered as factory; `PlayerSessionDetailPage`
+    updated.
+- Test totals: mobile 487 (+23), ui_flutter 219 (+5).
+
 ## T-2026-05-19-001 — Phase 8.5 follow-up #6 / Block 1: Centrifugo presence (backend + spec)
 
 - Created: 2026-05-19
