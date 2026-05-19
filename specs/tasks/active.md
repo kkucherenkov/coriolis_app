@@ -1,22 +1,5 @@
 # Active tasks
 
-## T-2026-05-19-005 — Phase 8.5 follow-up #10: mobile `chatDockedCollapsed` from `/me/settings`
-
-- Created: 2026-05-19
-- Status: in-progress
-- Goal: Mobile reads/writes `chatDockedCollapsed` via `GET /api/v1/me` + `PATCH /api/v1/me`, replacing any local-only fallback. Debounced write (~600ms), silent-on-failure, in-memory cache update.
-- Scope: `apps/mobile` only — backend, web, specs already done.
-- Checklist:
-  - [ ] `features/me/domain/` — `MeProfile` entity + `MeRepository` interface
-  - [ ] `features/me/data/` — `MeRepositoryImpl` (Dio direct, GET + PATCH /me)
-  - [ ] `features/sessions/presentation/blocs/chat_dock/` — `ChatDockCubit` + `ChatDockState`
-  - [ ] Wire cubit into `PlayerSessionDetailPage` — hydrate + toggle
-  - [ ] Register `MeRepository` + `ChatDockCubit` in injector
-  - [ ] Unit tests: hydrate, debounced write, offline-safe
-  - [ ] Widget test: dock control reflects cubit state
-  - [ ] `flutter analyze` clean
-  - [ ] `flutter test` green
-
 ## T-2026-05-17-DEEP-LINK-SETUP — Deep-link configuration (mobile + web)
 
 - Created: 2026-05-16

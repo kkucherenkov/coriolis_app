@@ -2,6 +2,24 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-19-005 — Phase 8.5 follow-up #10: mobile `chatDockedCollapsed` from `/me/settings`
+
+- Created: 2026-05-19
+- Completed: 2026-05-19
+- Owner: claude
+- Branch: `feat/mobile-chat-dock-collapsed-from-me`
+- Result: PR #54 — http://code.homelab.local/kkucherenkov/coriolis_app/pulls/54
+- Checklist:
+  - [x] `features/me/domain/` — `MeProfile` entity + `MeRepository` interface
+  - [x] `features/me/data/` — `MeRepositoryImpl` (Dio direct, GET + PATCH /me)
+  - [x] `features/sessions/presentation/blocs/chat_dock/` — `ChatDockCubit` + `ChatDockState`
+  - [x] Wire cubit into `PlayerSessionDetailPage` — hydrate + toggle
+  - [x] Register `MeRepository` lazy singleton in injector
+  - [x] Unit tests: hydrate, debounced write, offline-safe (7 tests)
+  - [x] Widget test: dock control rendering/toggling (3 tests)
+  - [x] `flutter analyze` clean (0 errors)
+  - [x] `flutter test` green (497 / 497)
+
 ## T-2026-05-19-004 — Phase 8.5 follow-up #11: encounter lifecycle system messages (backend)
 
 - Created: 2026-05-19
