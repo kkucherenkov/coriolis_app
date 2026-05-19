@@ -10,6 +10,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:coriolis_companion/features/sessions/domain/chat_presence_service.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_bloc.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_event.dart';
 import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/chat_realtime_service.dart';
@@ -19,6 +20,8 @@ import 'package:coriolis_companion/features/sessions/presentation/blocs/chat/cha
 class _MockChatRepository extends Mock implements ChatRepository {}
 
 class _MockChatRealtimeService extends Mock implements ChatRealtimeService {}
+
+class _MockChatPresenceService extends Mock implements ChatPresenceService {}
 
 ChatConversationSummary _broadcastSummary() => ChatConversationSummary((b) => b
   ..conversationKey = 'broadcast'
@@ -81,24 +84,33 @@ ChatReady _seedReady({
 void main() {
   late _MockChatRepository repo;
   late _MockChatRealtimeService realtime;
+  late _MockChatPresenceService presence;
   late StreamController<ChatRealtimeEvent> eventsCtrl;
+  late StreamController<Set<String>> presenceCtrl;
 
   setUp(() {
     repo = _MockChatRepository();
     realtime = _MockChatRealtimeService();
+    presence = _MockChatPresenceService();
     eventsCtrl = StreamController<ChatRealtimeEvent>.broadcast();
+    presenceCtrl = StreamController<Set<String>>.broadcast();
 
     when(() => realtime.events).thenAnswer((_) => eventsCtrl.stream);
     when(() => realtime.dispose()).thenAnswer((_) async {});
+
+    when(() => presence.onlineIds).thenAnswer((_) => presenceCtrl.stream);
+    when(() => presence.dispose()).thenAnswer((_) async {});
   });
 
   tearDown(() async {
     await eventsCtrl.close();
+    await presenceCtrl.close();
   });
 
   ChatBloc buildBloc() => ChatBloc(
         repository: repo,
         realtimeService: realtime,
+        presenceService: presence,
       );
 
   group('ChatBloc edit-banner flow', () {

@@ -133,6 +133,7 @@ class _ChatPanelState extends State<ChatPanel> {
               conversations: state.conversationsList,
               activeKey: state.activeKey,
               openWhisperKeys: state.openWhisperKeys,
+              onlineMembershipIds: state.onlineMembershipIds,
               onSelect: (key) =>
                   context.read<ChatBloc>().add(ChatConversationSelected(key)),
               onAddWhisper: () => showWhisperPickerSheet(

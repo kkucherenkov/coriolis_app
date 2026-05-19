@@ -192,3 +192,16 @@ final class ChatRealtimeEventReceived extends ChatEvent {
   @override
   List<Object?> get props => [event];
 }
+
+/// Presence snapshot updated from the `session.<gameSessionId>` channel.
+///
+/// Dispatched whenever [ChatPresenceService.onlineIds] emits a new set.
+final class ChatPresenceUpdated extends ChatEvent {
+  const ChatPresenceUpdated(this.ids);
+
+  /// Current set of online membershipIds (immutable snapshot).
+  final Set<String> ids;
+
+  @override
+  List<Object?> get props => [ids];
+}
