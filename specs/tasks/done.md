@@ -2,6 +2,27 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-20-003 — Phase 8.5 follow-up #12: backend RealtimeRouter abstraction
+
+- Created: 2026-05-20
+- Completed: 2026-05-20
+- Owner: claude
+- Branch: `feat/backend-realtime-router`
+- Result: PR #57 — http://code.homelab.local/kkucherenkov/coriolis_app/pulls/57
+- Goal: Introduce `RealtimeRouter` injectable that centralises channel-name construction and payload envelopes. Refactor `ChatRealtimePublisher`, `CentrifugoCombatPublisher`, `UpdateDpHandler`, and `RollPushedDpHandler` to delegate to it. Add unit spec for the router.
+- Scope: `apps/backend` only — no spec changes, no client changes.
+- [x] Create branch `feat/backend-realtime-router`
+- [x] Commit 1: `RealtimeRouter` + channel helpers + unit spec (29 new specs)
+- [x] Commit 2: refactor `ChatRealtimePublisher` to delegate
+- [x] Commit 3: refactor `CentrifugoCombatPublisher` to delegate
+- [x] Commit 4: refactor `UpdateDpHandler` + `RollPushedDpHandler` to delegate
+- [x] Fix E2E spec compilation error (combat-publisher.e2e-spec.ts)
+- [x] Lint + prettier follow-up commit (CI surfaced `unicorn/no-unreadable-array-destructuring` on triple-comma destructures + prettier drift across three new specs)
+- [x] Docs tick + task move
+- Sharp edges:
+  - `RollPushed` AsyncAPI schema requires `kind` field; existing handler omits it. Preserved byte-identical; tracked as FIXME(T-2026-05-20-004) in realtime-router.ts.
+  - 9 pre-existing failing test files in worktree (Prisma not generated, @app/specs not built) — unrelated to this change.
+
 ## T-2026-05-20-001 — Phase 8.5 follow-up #7: mobile MarkReadRequest derives lastReadAt from message createdAt
 
 - Created: 2026-05-20

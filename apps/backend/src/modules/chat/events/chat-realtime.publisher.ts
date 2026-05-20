@@ -14,11 +14,15 @@
  * All Centrifugo publishes are non-fatal: a failure is logged and swallowed so
  * that command handlers already returning 201/204 are unaffected. This matches
  * the pattern established in roll-pushed.handler.ts.
+ *
+ * Channel construction and envelope serialisation are delegated to RealtimeRouter
+ * (apps/backend/src/modules/realtime/realtime-router.ts) — the single source of
+ * truth for all Centrifugo channel names and payload shapes in the backend.
  */
-import { Inject, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 
-import { CENTRIFUGO_CLIENT, type ICentrifugoClient } from '../../realtime/centrifugo.client';
+import { RealtimeRouter } from '../../realtime/realtime-router';
 import { ChatMessageDeletedEvent } from './chat-message-deleted.event';
 import { ChatMessageEditedEvent } from './chat-message-edited.event';
 import { ChatMessagePostedEvent } from './chat-message-posted.event';
@@ -26,63 +30,22 @@ import { ChatMessagePostedEvent } from './chat-message-posted.event';
 import type { ChatMessageReadModel } from '../domain/chat.ports';
 
 // ---------------------------------------------------------------------------
-// Shared routing helpers
-// ---------------------------------------------------------------------------
-
-function buildChannels(
-  gameSessionId: string,
-  authorMembershipId: string | null,
-  targetMembershipId: string | null,
-): string[] {
-  if (targetMembershipId === null) {
-    return [`session.${gameSessionId}.chat`];
-  }
-
-  // Whisper — publish to both member channels; dedupe when author === target.
-  const channels: string[] = [`session.${gameSessionId}.member.${targetMembershipId}`];
-  if (authorMembershipId !== null && authorMembershipId !== targetMembershipId) {
-    channels.push(`session.${gameSessionId}.member.${authorMembershipId}`);
-  } else if (authorMembershipId !== null && authorMembershipId === targetMembershipId) {
-    // Self-whisper: only the single member channel is needed (already added above).
-  }
-  return channels;
-}
-
-async function publishToChannels(
-  centrifugo: ICentrifugoClient,
-  logger: Logger,
-  channels: string[],
-  payload: Record<string, unknown>,
-  context: string,
-): Promise<void> {
-  for (const channel of channels) {
-    try {
-      await centrifugo.publish(channel, payload);
-    } catch (error) {
-      logger.error(`Failed to publish ${context} to ${channel}: ${String(error)}`);
-    }
-  }
-}
-
-// ---------------------------------------------------------------------------
 // PostedEvent handler
 // ---------------------------------------------------------------------------
 
+@Injectable()
 @EventsHandler(ChatMessagePostedEvent)
 export class ChatMessagePostedPublisher implements IEventHandler<ChatMessagePostedEvent> {
-  private readonly logger = new Logger(ChatMessagePostedPublisher.name);
-
-  constructor(@Inject(CENTRIFUGO_CLIENT) private readonly centrifugo: ICentrifugoClient) {}
+  constructor(private readonly realtimeRouter: RealtimeRouter) {}
 
   async handle(event: ChatMessagePostedEvent): Promise<void> {
     const msg: ChatMessageReadModel = event.message;
-    const channels = buildChannels(
+    await this.realtimeRouter.publishChatMessage(
       msg.gameSessionId,
       msg.authorMembershipId,
       msg.targetMembershipId,
+      msg,
     );
-    const payload = msg as unknown as Record<string, unknown>;
-    await publishToChannels(this.centrifugo, this.logger, channels, payload, 'chat.message.posted');
   }
 }
 
@@ -90,21 +53,19 @@ export class ChatMessagePostedPublisher implements IEventHandler<ChatMessagePost
 // EditedEvent handler
 // ---------------------------------------------------------------------------
 
+@Injectable()
 @EventsHandler(ChatMessageEditedEvent)
 export class ChatMessageEditedPublisher implements IEventHandler<ChatMessageEditedEvent> {
-  private readonly logger = new Logger(ChatMessageEditedPublisher.name);
-
-  constructor(@Inject(CENTRIFUGO_CLIENT) private readonly centrifugo: ICentrifugoClient) {}
+  constructor(private readonly realtimeRouter: RealtimeRouter) {}
 
   async handle(event: ChatMessageEditedEvent): Promise<void> {
     const msg: ChatMessageReadModel = event.message;
-    const channels = buildChannels(
+    await this.realtimeRouter.publishChatMessage(
       msg.gameSessionId,
       msg.authorMembershipId,
       msg.targetMembershipId,
+      msg,
     );
-    const payload = msg as unknown as Record<string, unknown>;
-    await publishToChannels(this.centrifugo, this.logger, channels, payload, 'chat.message.edited');
   }
 }
 
@@ -112,22 +73,18 @@ export class ChatMessageEditedPublisher implements IEventHandler<ChatMessageEdit
 // DeletedEvent handler
 // ---------------------------------------------------------------------------
 
+@Injectable()
 @EventsHandler(ChatMessageDeletedEvent)
 export class ChatMessageDeletedPublisher implements IEventHandler<ChatMessageDeletedEvent> {
-  private readonly logger = new Logger(ChatMessageDeletedPublisher.name);
-
-  constructor(@Inject(CENTRIFUGO_CLIENT) private readonly centrifugo: ICentrifugoClient) {}
+  constructor(private readonly realtimeRouter: RealtimeRouter) {}
 
   async handle(event: ChatMessageDeletedEvent): Promise<void> {
     const { id, gameSessionId, authorMembershipId, targetMembershipId, deletedAt } = event.payload;
-    const channels = buildChannels(gameSessionId, authorMembershipId, targetMembershipId);
-    const payload: Record<string, unknown> = { id, gameSessionId, targetMembershipId, deletedAt };
-    await publishToChannels(
-      this.centrifugo,
-      this.logger,
-      channels,
-      payload,
-      'chat.message.deleted',
+    await this.realtimeRouter.publishChatMessageDeleted(
+      gameSessionId,
+      authorMembershipId,
+      targetMembershipId,
+      { id, gameSessionId, targetMembershipId, deletedAt },
     );
   }
 }

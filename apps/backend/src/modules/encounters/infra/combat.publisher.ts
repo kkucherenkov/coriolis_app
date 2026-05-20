@@ -8,18 +8,18 @@
  * and never re-thrown. The DB write is never rolled back because of a publish
  * failure.
  *
+ * Channel construction, combatant mapping, and payload serialisation are
+ * delegated to RealtimeRouter (apps/backend/src/modules/realtime/realtime-router.ts)
+ * — the single source of truth for all Centrifugo channel names and payload
+ * shapes in the backend.
+ *
  * Channel: session.{gameSessionId}
- * Payload shape: matches the AsyncAPI CombatUpdated schema (centrifugo.yaml
- * lines 165-257). additionalProperties is open per AsyncAPI default, so sending
- * the full CombatantReadModel is fine — the AsyncAPI-required subset is mapped
- * explicitly to satisfy the required[] constraint.
+ * Payload shape: matches the AsyncAPI CombatUpdated schema (centrifugo.yaml).
  */
-import { Injectable, Logger } from '@nestjs/common';
-import { Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
-import { CENTRIFUGO_CLIENT } from '../../realtime/centrifugo.client';
+import { RealtimeRouter } from '../../realtime/realtime-router';
 
-import type { ICentrifugoClient } from '../../realtime/centrifugo.client';
 import type { EncounterReadModel } from '../domain/encounter.ports';
 import type { CombatantReadModel } from '../../combatants/domain/combatant.ports';
 
@@ -41,63 +41,15 @@ export interface ICombatPublisher {
 
 // --------------- Adapter ---------------
 
-/** Maps CombatantReadModel to the AsyncAPI combatants[] item shape. */
-function mapCombatant(c: CombatantReadModel): Record<string, unknown> {
-  return {
-    id: c.id,
-    encounterId: c.encounterId,
-    combatantType: c.combatantType,
-    name: c.displayName, // AsyncAPI uses "name"; read-model uses "displayName"
-    referenceId: c.sourceId, // AsyncAPI uses "referenceId"; read-model uses "sourceId"
-    initiative: c.initiative,
-    turnOrder: c.turnOrder,
-    hpCurrent: c.hpCurrent,
-    hpMax: c.hpMax,
-    statusFlags: c.statusFlags,
-  };
-}
-
 @Injectable()
 export class CentrifugoCombatPublisher implements ICombatPublisher {
-  private readonly logger = new Logger(CentrifugoCombatPublisher.name);
-
-  constructor(@Inject(CENTRIFUGO_CLIENT) private readonly centrifugo: ICentrifugoClient) {}
+  constructor(private readonly realtimeRouter: RealtimeRouter) {}
 
   async publishUpdated(
     gameSessionId: string,
     encounter: EncounterReadModel,
     combatants: CombatantReadModel[],
   ): Promise<void> {
-    // Sort combatants by turnOrder ascending; nulls last (pre-initiative state)
-    const ordered = [...combatants].toSorted((a, b) => {
-      if (a.turnOrder === null && b.turnOrder === null) return 0;
-      if (a.turnOrder === null) return 1;
-      if (b.turnOrder === null) return -1;
-      return a.turnOrder - b.turnOrder;
-    });
-
-    try {
-      await this.centrifugo.publish(`session.${gameSessionId}`, {
-        gameSessionId,
-        encounterId: encounter.id,
-        encounter: {
-          id: encounter.id,
-          gameSessionId: encounter.gameSessionId,
-          name: encounter.name,
-          notes: encounter.notes,
-          status: encounter.status,
-          round: encounter.round,
-          activeCombatantId: encounter.activeCombatantId,
-          createdAt: encounter.createdAt,
-          updatedAt: encounter.updatedAt,
-        },
-        combatants: ordered.map((c) => mapCombatant(c)),
-        at: new Date().toISOString(),
-      });
-    } catch (error) {
-      this.logger.error(
-        `Failed to publish combat.updated for session ${gameSessionId} / encounter ${encounter.id}: ${String(error)}`,
-      );
-    }
+    await this.realtimeRouter.publishCombatUpdated(gameSessionId, encounter, combatants);
   }
 }

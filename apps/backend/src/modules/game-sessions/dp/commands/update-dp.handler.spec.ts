@@ -9,8 +9,8 @@
  *  - Would go below zero → 422 DP_BELOW_ZERO.
  *  - Internal caller (source ROLL_PUSH) bypasses GM-owner ACL.
  *
- * T-7.4.1.c: dp.changed is published to Centrifugo after a successful write;
- *  a publish failure does not roll back the DB result.
+ * T-7.4.1.c: dp.changed is published to Centrifugo via RealtimeRouter after
+ *  a successful write; a publish failure does not roll back the DB result.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -23,8 +23,8 @@ import { UpdateDpCommand } from './update-dp.command';
 import { UpdateDpHandler } from './update-dp.handler';
 
 import type { GameSessionReadModel, IGameSessionRepo } from '../../domain/game-session.ports';
-import type { ICentrifugoClient } from '../../../realtime/centrifugo.client';
 import type { IDpRepo } from '../domain/dp.ports';
+import type { RealtimeRouter } from '../../../realtime/realtime-router';
 
 function makeSessionRepo(): IGameSessionRepo {
   return {
@@ -43,8 +43,14 @@ function makeDpRepo(): IDpRepo {
   };
 }
 
-function makeCentrifugoClient(): ICentrifugoClient {
-  return { publish: vi.fn().mockResolvedValue(undefined) };
+function makeRouter(): RealtimeRouter {
+  return {
+    publishDpChanged: vi.fn().mockResolvedValue(undefined),
+    publishRollPushed: vi.fn().mockResolvedValue(undefined),
+    publishCombatUpdated: vi.fn().mockResolvedValue(undefined),
+    publishChatMessage: vi.fn().mockResolvedValue(undefined),
+    publishChatMessageDeleted: vi.fn().mockResolvedValue(undefined),
+  } as unknown as RealtimeRouter;
 }
 
 function makeSession(overrides: Partial<GameSessionReadModel> = {}): GameSessionReadModel {
@@ -66,14 +72,14 @@ function makeSession(overrides: Partial<GameSessionReadModel> = {}): GameSession
 describe('UpdateDpHandler', () => {
   let sessionRepo: IGameSessionRepo;
   let dpRepo: IDpRepo;
-  let centrifugo: ICentrifugoClient;
+  let router: RealtimeRouter;
   let handler: UpdateDpHandler;
 
   beforeEach(() => {
     sessionRepo = makeSessionRepo();
     dpRepo = makeDpRepo();
-    centrifugo = makeCentrifugoClient();
-    handler = new UpdateDpHandler(sessionRepo, dpRepo, centrifugo);
+    router = makeRouter();
+    handler = new UpdateDpHandler(sessionRepo, dpRepo, router);
   });
 
   it('adds DP and returns updated session (GM_MANUAL +5)', async () => {
@@ -96,7 +102,7 @@ describe('UpdateDpHandler', () => {
     expect(result.dpCount).toBe(8);
   });
 
-  it('publishes dp.changed with correct shape after successful write', async () => {
+  it('publishes dp.changed via router with correct shape after successful write', async () => {
     const session = makeSession({ dpCount: 3 });
     const updated = makeSession({ dpCount: 8 });
     vi.mocked(sessionRepo.findById).mockResolvedValueOnce(session).mockResolvedValueOnce(updated);
@@ -104,29 +110,24 @@ describe('UpdateDpHandler', () => {
 
     await handler.execute(new UpdateDpCommand('gs-1', 'user-gm', 5, 'GM_MANUAL', null));
 
-    expect(centrifugo.publish).toHaveBeenCalledOnce();
-    const [channel, data] = (centrifugo.publish as ReturnType<typeof vi.fn>).mock.calls[0] as [
-      string,
-      Record<string, unknown>,
-    ];
-    expect(channel).toBe('session.gs-1');
-    expect(data).toMatchObject({
+    expect(router.publishDpChanged).toHaveBeenCalledOnce();
+    const [payload] = vi.mocked(router.publishDpChanged).mock.calls[0]!;
+    expect(payload).toMatchObject({
       gameSessionId: 'gs-1',
       dpCount: 8,
       delta: 5,
       source: 'gm-manual',
     });
-    expect(typeof data['at']).toBe('string');
+    expect(typeof payload.at).toBe('string');
   });
 
-  it('does not roll back DB result when publish throws', async () => {
+  it('does not roll back DB result when router.publishDpChanged resolves (always resolves)', async () => {
     const session = makeSession({ dpCount: 3 });
     const updated = makeSession({ dpCount: 4 });
     vi.mocked(sessionRepo.findById).mockResolvedValueOnce(session).mockResolvedValueOnce(updated);
     vi.mocked(dpRepo.applyDelta).mockResolvedValue(4);
-    vi.mocked(centrifugo.publish).mockRejectedValue(new Error('centrifugo down'));
 
-    // Must not reject — DB write was successful
+    // Router never re-throws — this just confirms the handler awaits correctly.
     const result = await handler.execute(
       new UpdateDpCommand('gs-1', 'user-gm', 1, 'GM_MANUAL', null),
     );
@@ -154,7 +155,7 @@ describe('UpdateDpHandler', () => {
       handler.execute(new UpdateDpCommand('gs-1', 'user-gm', 0, 'GM_MANUAL', null)),
     ).rejects.toBeInstanceOf(DpInvalidDeltaError);
     expect(dpRepo.applyDelta).not.toHaveBeenCalled();
-    expect(centrifugo.publish).not.toHaveBeenCalled();
+    expect(router.publishDpChanged).not.toHaveBeenCalled();
   });
 
   it('throws GAME_SESSION_NOT_FOUND when session does not exist', async () => {
@@ -174,13 +175,12 @@ describe('UpdateDpHandler', () => {
     expect(dpRepo.applyDelta).not.toHaveBeenCalled();
   });
 
-  it('allows positive delta from non-owner (HTTP callers are always the owner; test confirms ACL is only on negative)', async () => {
+  it('allows positive delta from non-owner (ACL only blocks negative)', async () => {
     const session = makeSession({ ownerId: 'other-gm', dpCount: 2 });
     const updated = makeSession({ ownerId: 'other-gm', dpCount: 3 });
     vi.mocked(sessionRepo.findById).mockResolvedValueOnce(session).mockResolvedValueOnce(updated);
     vi.mocked(dpRepo.applyDelta).mockResolvedValue(3);
 
-    // Positive delta from a non-owner — not blocked by ACL
     await expect(
       handler.execute(new UpdateDpCommand('gs-1', 'user-gm', 1, 'GM_MANUAL', null)),
     ).resolves.toBeDefined();
@@ -197,7 +197,6 @@ describe('UpdateDpHandler', () => {
   });
 
   it('internal=true ROLL_PUSH bypasses GM-owner ACL on negative delta', async () => {
-    // Even a negative delta from a non-owner is allowed when internal=true
     const session = makeSession({ ownerId: 'different-gm', dpCount: 5 });
     const updated = makeSession({ ownerId: 'different-gm', dpCount: 4 });
     vi.mocked(sessionRepo.findById).mockResolvedValueOnce(session).mockResolvedValueOnce(updated);
@@ -230,7 +229,7 @@ describe('UpdateDpHandler', () => {
     });
   });
 
-  it('maps ROLL_PUSH source to roll-push in dp.changed publish', async () => {
+  it('maps ROLL_PUSH source to roll-push in publishDpChanged payload', async () => {
     const session = makeSession({ dpCount: 0 });
     const updated = makeSession({ dpCount: 1 });
     vi.mocked(sessionRepo.findById).mockResolvedValueOnce(session).mockResolvedValueOnce(updated);
@@ -240,10 +239,7 @@ describe('UpdateDpHandler', () => {
       new UpdateDpCommand('gs-1', 'system', 1, 'ROLL_PUSH', null, true, 'roll-1'),
     );
 
-    const [, data] = (centrifugo.publish as ReturnType<typeof vi.fn>).mock.calls[0] as [
-      string,
-      Record<string, unknown>,
-    ];
-    expect(data['source']).toBe('roll-push');
+    const [payload] = vi.mocked(router.publishDpChanged).mock.calls[0]!;
+    expect(payload.source).toBe('roll-push');
   });
 });

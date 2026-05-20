@@ -200,7 +200,11 @@ integration_test/` requires a real device.
 10. **Generic `RealtimeRouter` abstraction.** Chat publisher and DP
     publisher each call `centrifugo.publish` directly. A small
     router would centralize topic naming + payload shape contracts;
-    not blocking but reduces drift risk as more channels shift.
+    not blocking but reduces drift risk as more channels ship.
+    **Status:** ✅ Shipped in PR #57. `RealtimeRouter` injectable owns all
+    channel-name builders and payload envelopes; `ChatRealtimePublisher`,
+    `CentrifugoCombatPublisher`, `UpdateDpHandler`, and `RollPushedDpHandler`
+    delegate to it. +29 new router unit specs.
 
 None of the above blocks the `phase-8-complete` tag.
 
