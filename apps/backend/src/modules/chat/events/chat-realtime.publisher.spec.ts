@@ -70,12 +70,7 @@ describe('ChatMessagePostedPublisher', () => {
     await publisher.handle(new ChatMessagePostedEvent(msg));
 
     expect(router.publishChatMessage).toHaveBeenCalledOnce();
-    expect(router.publishChatMessage).toHaveBeenCalledWith(
-      'gs-1',
-      'mem-author',
-      null,
-      msg,
-    );
+    expect(router.publishChatMessage).toHaveBeenCalledWith('gs-1', 'mem-author', null, msg);
   });
 
   it('delegates whisper posted to router.publishChatMessage with both membership ids', async () => {
@@ -83,19 +78,14 @@ describe('ChatMessagePostedPublisher', () => {
     await publisher.handle(new ChatMessagePostedEvent(msg));
 
     expect(router.publishChatMessage).toHaveBeenCalledOnce();
-    expect(router.publishChatMessage).toHaveBeenCalledWith(
-      'gs-1',
-      'mem-author',
-      'mem-target',
-      msg,
-    );
+    expect(router.publishChatMessage).toHaveBeenCalledWith('gs-1', 'mem-author', 'mem-target', msg);
   });
 
   it('passes the message read model as payload', async () => {
     const msg = makeMessage({ body: 'Important message' });
     await publisher.handle(new ChatMessagePostedEvent(msg));
 
-    const [, , , payload] = vi.mocked(router.publishChatMessage).mock.calls[0]!;
+    const payload = vi.mocked(router.publishChatMessage).mock.calls[0]?.[3];
     expect(payload).toBe(msg);
   });
 
@@ -132,19 +122,14 @@ describe('ChatMessageEditedPublisher', () => {
     await publisher.handle(new ChatMessageEditedEvent(msg));
 
     expect(router.publishChatMessage).toHaveBeenCalledOnce();
-    expect(router.publishChatMessage).toHaveBeenCalledWith(
-      'gs-1',
-      'mem-author',
-      null,
-      msg,
-    );
+    expect(router.publishChatMessage).toHaveBeenCalledWith('gs-1', 'mem-author', null, msg);
   });
 
   it('passes updated message fields through to router', async () => {
     const msg = makeMessage({ body: 'Edited', editedAt: '2026-05-17T10:05:00.000Z' });
     await publisher.handle(new ChatMessageEditedEvent(msg));
 
-    const [, , , payload] = vi.mocked(router.publishChatMessage).mock.calls[0]!;
+    const payload = vi.mocked(router.publishChatMessage).mock.calls[0]?.[3];
     expect((payload as ChatMessageReadModel).body).toBe('Edited');
     expect((payload as ChatMessageReadModel).editedAt).toBe('2026-05-17T10:05:00.000Z');
   });
@@ -174,12 +159,12 @@ describe('ChatMessageDeletedPublisher', () => {
     await publisher.handle(event);
 
     expect(router.publishChatMessageDeleted).toHaveBeenCalledOnce();
-    expect(router.publishChatMessageDeleted).toHaveBeenCalledWith(
-      'gs-1',
-      'mem-author',
-      null,
-      { id: 'msg-1', gameSessionId: 'gs-1', targetMembershipId: null, deletedAt: '2026-05-17T10:10:00.000Z' },
-    );
+    expect(router.publishChatMessageDeleted).toHaveBeenCalledWith('gs-1', 'mem-author', null, {
+      id: 'msg-1',
+      gameSessionId: 'gs-1',
+      targetMembershipId: null,
+      deletedAt: '2026-05-17T10:10:00.000Z',
+    });
   });
 
   it('delegates whisper deleted to router with both membership ids', async () => {

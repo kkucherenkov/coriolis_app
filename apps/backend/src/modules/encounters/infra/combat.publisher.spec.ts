@@ -89,9 +89,7 @@ describe('CentrifugoCombatPublisher', () => {
   });
 
   it('resolves without error when router resolves', async () => {
-    await expect(
-      publisher.publishUpdated('gs-1', makeEncounter(), []),
-    ).resolves.toBeUndefined();
+    await expect(publisher.publishUpdated('gs-1', makeEncounter(), [])).resolves.toBeUndefined();
   });
 
   it('resolves without error when router rejects (router handles internally)', async () => {

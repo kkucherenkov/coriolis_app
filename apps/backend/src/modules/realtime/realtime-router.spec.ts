@@ -379,9 +379,7 @@ describe('RealtimeRouter.publishCombatUpdated', () => {
     vi.mocked(client.publish).mockRejectedValue(new Error('Centrifugo unreachable'));
     const errorSpy = vi.spyOn(Logger.prototype, 'error');
 
-    await expect(
-      router.publishCombatUpdated('gs-1', makeEncounter(), []),
-    ).resolves.toBeUndefined();
+    await expect(router.publishCombatUpdated('gs-1', makeEncounter(), [])).resolves.toBeUndefined();
 
     expect(errorSpy).toHaveBeenCalledOnce();
     expect(errorSpy.mock.calls[0]![0]).toContain('combat.updated');
@@ -510,12 +508,12 @@ describe('RealtimeRouter.publishChatMessageDeleted', () => {
     const errorSpy = vi.spyOn(Logger.prototype, 'error');
 
     await expect(
-      router.publishChatMessageDeleted(
-        'gs-1',
-        'mem-author',
-        null,
-        { id: 'msg-1', gameSessionId: 'gs-1', targetMembershipId: null, deletedAt: '2026-05-20T10:00:00.000Z' },
-      ),
+      router.publishChatMessageDeleted('gs-1', 'mem-author', null, {
+        id: 'msg-1',
+        gameSessionId: 'gs-1',
+        targetMembershipId: null,
+        deletedAt: '2026-05-20T10:00:00.000Z',
+      }),
     ).resolves.toBeUndefined();
 
     expect(errorSpy).toHaveBeenCalledOnce();
