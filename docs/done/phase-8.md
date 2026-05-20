@@ -135,47 +135,36 @@ newMessagesCount` keyed by `(sessionId, conversationId)`. Mobile
 These are tracked here (not in `specs/tasks/active.md`) because they
 are explicit Phase 8 carry-forwards into the Phase 8.5 backlog:
 
-1. **Deep-link configuration (`T-2026-05-17-DEEP-LINK-SETUP`).**
-   Blocked on `APP_LINKS_HOST` env var being provisioned by marketing.
-   Web invite-join page works as a plain link without deep-link
-   binding — this is the correct v1.1 state per design decision #5.
-   Remains in `specs/tasks/active.md` as `blocked`.
-
-2. **Redis-backed chat rate limiter.** Required for multi-node
-   deploy; single-node homelab is unaffected. Drop-in replacement
-   for `ChatRateLimiterService`.
-
-3. **`globalThis.confirm` → `AppConfirm` on the remaining call sites.**
+1. **`globalThis.confirm` → `AppConfirm` on the remaining call sites.**
    Invite revoke (Stream A leftover) and chat-message delete (Stream D).
    Both flows have the primitive available; this is a 5-min sweep.
    **Status:** ✅ Shipped — verified done in prior PRs (no follow-up code change needed).
 
-4. **GM "Kick member" UI on `/app/game-sessions/[id]`.** Backend
+2. **GM "Kick member" UI on `/app/game-sessions/[id]`.** Backend
    `DELETE /game-sessions/:id/members/:membershipId` shipped in
    Stream A; the GM-side button hasn't been wired yet. Mobile has
    parity-pending.
 
-5. **Edit-message inline affordance polish.** Today `@edit-message`
+3. **Edit-message inline affordance polish.** Today `@edit-message`
    prefills the composer; the UX direction is a dedicated banner
    with "Editing message — cancel / save". Inline-edit affordance
    landed for char sheet — porting the pattern is straightforward.
 
-6. **Presence wiring on `AppChatTab`.** The component accepts a
+4. **Presence wiring on `AppChatTab`.** The component accepts a
    `presence` prop; the store leaves it `undefined`/`offline`. Hook
    to Centrifugo's `client_id` map when the presence-tracking spec
    lands.
 
-7. **`MarkReadRequest` derives `lastReadAt` from message `createdAt`.**
+5. **`MarkReadRequest` derives `lastReadAt` from message `createdAt`.**
    Today the mobile repository takes a `messageId` and the impl
    stamps `DateTime.now()` — tightening this avoids cursor drift
    across slow networks.
 
-8. **Web + mobile chat integration tests.** Per-component specs
+6. **Web + mobile chat integration tests.** Per-component specs
    shipped (171 new for web, 21 new for mobile in Streams D); a
    route-level Vitest spec mounting `/app/sessions/[id]` against a
    stubbed SDK + Centrifuge client, and a mobile `integration_test/`
    counterpart, are the next layer.
-
    **Status:** Shipped in PR #55. Web: route-level vitest spec at
    `apps/web/app/pages/__tests__/game-session-chat-integration.spec.ts`
    (4 scenarios: mount / send / whisper-switch / presence flip) mounts
@@ -188,30 +177,42 @@ are explicit Phase 8 carry-forwards into the Phase 8.5 backlog:
    because the project has no macOS/web shell and `flutter test
 integration_test/` requires a real device.
 
-9. **Storybook a11y addon manual sweep.** Per-component a11y assertions
-   shipped; the Storybook a11y addon hasn't been booted as part of
-   CI yet (deferred — addon scaffolding noted in `quality` job
-   today but not yet running against axe-core's full ruleset).
+7. **Storybook a11y addon manual sweep.** Per-component a11y assertions
+   shipped; the Storybook a11y addon is now wired into CI as part of
+   the `quality` job — axe-core sweeps every story fixture with the
+   WCAG 2.1 AA ruleset (wcag2a, wcag2aa, wcag21a, wcag21aa).
+   `AppWhisperPicker` `role="listbox"` missing `aria-labelledby` fixed.
+   **Status:** ✅ Shipped in PR #54.
 
-10. **`chatDockedCollapsed` on mobile from `/me/settings`.** Mobile
-    side of the localStorage → settings migration (web is done).
+8. **`chatDockedCollapsed` on mobile from `/me/settings`.** Mobile
+   side of the localStorage → settings migration (web is done).
+   **Status:** Shipped in PR #54.
 
-    **Status:** Shipped in PR #54.
+9. **System messages for `encounter.advanced` and `encounter.ended`.**
+   4 of 5 originally-listed events shipped; these two were
+   out-of-scope for Stream D and remain follow-ups.
+   **Status:** ✅ Shipped in PR #52 — three new domain events
+   (`EncounterStartedEvent`, `RoundAdvancedEvent`, `EncounterEndedEvent`),
+   emit sites in `UpdateEncounterHandler` and `AdvanceRoundHandler`, three
+   new subscribers in `ChatModule`, +11 unit specs, +3 e2e scenarios.
 
-11. **System messages for `encounter.advanced` and `encounter.ended`.**
-    4 of 5 originally-listed events shipped; these two were
-    out-of-scope for Stream D and remain follow-ups.
-    **Status:** ✅ Shipped in PR #52 — three new domain events
-    (`EncounterStartedEvent`, `RoundAdvancedEvent`, `EncounterEndedEvent`),
-    emit sites in `UpdateEncounterHandler` and `AdvanceRoundHandler`, three
-    new subscribers in `ChatModule`, +11 unit specs, +3 e2e scenarios.
-
-12. **Generic `RealtimeRouter` abstraction.** Chat publisher and DP
+10. **Generic `RealtimeRouter` abstraction.** Chat publisher and DP
     publisher each call `centrifugo.publish` directly. A small
     router would centralize topic naming + payload shape contracts;
-    not blocking but reduces drift risk as more channels ship.
+    not blocking but reduces drift risk as more channels shift.
 
 None of the above blocks the `phase-8-complete` tag.
+
+---
+
+**Dropped from this list** (no longer Phase 8.5 deliverables):
+
+- **Deep-link configuration** — blocked on `APP_LINKS_HOST` env var
+  from marketing; the authoritative tracking location is
+  `specs/tasks/active.md` as `T-2026-05-17-DEEP-LINK-SETUP`
+  (status: blocked). Not a Phase 8.5 deliverable.
+- **Redis-backed chat rate limiter** — required only for multi-node
+  deploy; single-node homelab is unaffected. Post-v1.1 work.
 
 ## Test totals at phase exit
 
