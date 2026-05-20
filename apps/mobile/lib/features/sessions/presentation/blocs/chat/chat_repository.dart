@@ -44,9 +44,15 @@ abstract interface class ChatRepository {
   Future<Set<String>> listBlocks(String gameSessionId);
 
   /// Advance the read cursor for a conversation.
+  ///
+  /// [lastReadAt] must be the [createdAt] of the most-recent visible message,
+  /// NOT `DateTime.now()`. Using the message's own timestamp ensures the
+  /// cursor is stable across clients and avoids drift introduced by network
+  /// latency between the user action and the backend receiving the request.
   Future<void> markRead(
     String gameSessionId, {
     required String conversation,
     required String lastReadMessageId,
+    required DateTime lastReadAt,
   });
 }

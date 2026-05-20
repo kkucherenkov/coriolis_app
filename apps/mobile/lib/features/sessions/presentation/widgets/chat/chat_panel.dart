@@ -73,6 +73,19 @@ class _ChatPanelState extends State<ChatPanel> {
     final atBottom = pos.pixels >= pos.maxScrollExtent - 80;
     if (atBottom) {
       bloc.add(const ChatScrolledToBottom());
+      // Advance the read cursor to the last visible message. Use the
+      // message's own createdAt — not DateTime.now() — to avoid drift.
+      final s = bloc.state;
+      if (s is ChatReady) {
+        final msgs = s.activeConversation?.messages;
+        if (msgs != null && msgs.isNotEmpty) {
+          final last = msgs.last;
+          bloc.add(ChatMarkRead(
+            lastReadMessageId: last.id,
+            lastReadAt: last.createdAt,
+          ));
+        }
+      }
     } else {
       bloc.add(const ChatScrolledAway());
     }

@@ -118,9 +118,9 @@ class ChatRepositoryImpl implements ChatRepository {
     String gameSessionId, {
     required String conversation,
     required String lastReadMessageId,
+    required DateTime lastReadAt,
   }) async {
-    // The REST endpoint uses a lastReadAt timestamp; derive it from now.
-    final req = MarkReadRequest((b) => b..lastReadAt = DateTime.now().toUtc());
+    final req = MarkReadRequest((b) => b..lastReadAt = lastReadAt.toUtc());
     await _gameSessionsApi.markChatConversationRead(
       id: gameSessionId,
       conversationKey: conversation,

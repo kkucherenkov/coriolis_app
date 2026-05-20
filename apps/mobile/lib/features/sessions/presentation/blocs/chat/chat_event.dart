@@ -157,12 +157,24 @@ final class ChatMemberUnblockRequested extends ChatEvent {
 }
 
 /// Advance read cursor for the active conversation.
+///
+/// [lastReadAt] must come from [ChatMessage.createdAt] of the most-recent
+/// visible message — never from `DateTime.now()`.
 final class ChatMarkRead extends ChatEvent {
-  const ChatMarkRead({required this.lastReadMessageId});
+  const ChatMarkRead({
+    required this.lastReadMessageId,
+    required this.lastReadAt,
+  });
   final String lastReadMessageId;
 
+  /// The [createdAt] timestamp of the last read message.
+  ///
+  /// Derived from the message entity so the cursor reflects "I read message M",
+  /// not "I clicked at time X + network latency".
+  final DateTime lastReadAt;
+
   @override
-  List<Object?> get props => [lastReadMessageId];
+  List<Object?> get props => [lastReadMessageId, lastReadAt];
 }
 
 /// List scrolled to (or near) bottom — hide the new-messages pill.
