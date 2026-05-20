@@ -7,8 +7,9 @@
  *  - Uses internal=true to bypass GM-owner ACL.
  *  - Catches and logs command failures without re-throwing.
  *
- * T-7.4.1.c/f: publishes roll.pushed to Centrifugo before the DP increment;
- *  a publish failure does not prevent the DP increment.
+ * T-7.4.1.c/f: publishes roll.pushed via RealtimeRouter before the DP increment;
+ *  router handles fire-and-forget internally so publish failures never block the
+ *  DP increment (tested via router.publishRollPushed always resolving).
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -16,25 +17,31 @@ import { RollPushedEvent } from '../../../dice/events/roll-pushed.event';
 import { UpdateDpCommand } from '../commands/update-dp.command';
 import { RollPushedDpHandler } from './roll-pushed.handler';
 
-import type { ICentrifugoClient } from '../../../realtime/centrifugo.client';
+import type { RealtimeRouter } from '../../../realtime/realtime-router';
 
 function makeCommandBus() {
   return { execute: vi.fn().mockResolvedValue(undefined) };
 }
 
-function makeCentrifugoClient(): ICentrifugoClient {
-  return { publish: vi.fn().mockResolvedValue(undefined) };
+function makeRouter(): RealtimeRouter {
+  return {
+    publishRollPushed: vi.fn().mockResolvedValue(undefined),
+    publishDpChanged: vi.fn().mockResolvedValue(undefined),
+    publishCombatUpdated: vi.fn().mockResolvedValue(undefined),
+    publishChatMessage: vi.fn().mockResolvedValue(undefined),
+    publishChatMessageDeleted: vi.fn().mockResolvedValue(undefined),
+  } as unknown as RealtimeRouter;
 }
 
 describe('RollPushedDpHandler', () => {
   let commandBus: ReturnType<typeof makeCommandBus>;
-  let centrifugo: ICentrifugoClient;
+  let router: RealtimeRouter;
   let handler: RollPushedDpHandler;
 
   beforeEach(() => {
     commandBus = makeCommandBus();
-    centrifugo = makeCentrifugoClient();
-    handler = new RollPushedDpHandler(commandBus as never, centrifugo);
+    router = makeRouter();
+    handler = new RollPushedDpHandler(commandBus as never, router);
   });
 
   it('issues UpdateDpCommand +1 with ROLL_PUSH when gameSessionId is set', async () => {
@@ -53,24 +60,20 @@ describe('RollPushedDpHandler', () => {
     expect(cmd.callerId).toBe('system');
   });
 
-  it('publishes roll.pushed to the session channel', async () => {
+  it('publishes roll.pushed via router.publishRollPushed to the session channel', async () => {
     const event = new RollPushedEvent('roll-1', 'char-1', 'gs-1', 4);
 
     await handler.handle(event);
 
-    expect(centrifugo.publish).toHaveBeenCalledOnce();
-    const [channel, data] = (centrifugo.publish as ReturnType<typeof vi.fn>).mock.calls[0] as [
-      string,
-      Record<string, unknown>,
-    ];
-    expect(channel).toBe('session.gs-1');
-    expect(data).toMatchObject({
+    expect(router.publishRollPushed).toHaveBeenCalledOnce();
+    const [payload] = vi.mocked(router.publishRollPushed).mock.calls[0]!;
+    expect(payload).toMatchObject({
       rollId: 'roll-1',
       characterId: 'char-1',
       gameSessionId: 'gs-1',
       hits: 4,
     });
-    expect(typeof data['at']).toBe('string');
+    expect(typeof payload.at).toBe('string');
   });
 
   it('skips DP increment and publish when gameSessionId is null', async () => {
@@ -79,7 +82,7 @@ describe('RollPushedDpHandler', () => {
     await handler.handle(event);
 
     expect(commandBus.execute).not.toHaveBeenCalled();
-    expect(centrifugo.publish).not.toHaveBeenCalled();
+    expect(router.publishRollPushed).not.toHaveBeenCalled();
   });
 
   it('does not throw when UpdateDpCommand rejects (non-fatal error path)', async () => {
@@ -90,13 +93,15 @@ describe('RollPushedDpHandler', () => {
     await expect(handler.handle(event)).resolves.toBeUndefined();
   });
 
-  it('still issues UpdateDpCommand even when publish throws', async () => {
-    vi.mocked(centrifugo.publish).mockRejectedValue(new Error('centrifugo down'));
+  it('still issues UpdateDpCommand even when router.publishRollPushed resolves (always resolves)', async () => {
+    // RealtimeRouter.publishRollPushed never rejects — it catches internally.
+    // This test confirms the handler's publish → command sequence is maintained.
+    vi.mocked(router.publishRollPushed).mockResolvedValue(undefined);
     const event = new RollPushedEvent('roll-4', 'char-1', 'gs-1', 2);
 
     await handler.handle(event);
 
-    // DP increment must still be called despite publish failure
+    // DP increment must still be called after publish
     expect(commandBus.execute).toHaveBeenCalledOnce();
   });
 

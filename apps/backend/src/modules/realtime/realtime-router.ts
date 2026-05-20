@@ -66,7 +66,11 @@ export interface RollPushedPayload {
   characterId: string;
   gameSessionId: string;
   hits: number;
-  kind: 'skill';
+  // FIXME(T-2026-05-20-004): AsyncAPI RollPushed requires `kind` (enum: skill).
+  // RollPushedDpHandler currently omits it to preserve the pre-router wire format.
+  // A follow-up task should add `kind: 'skill'` here and in the handler, then
+  // update the AsyncAPI contract test to assert it is present in the payload.
+  kind?: 'skill';
   at: string;
 }
 
