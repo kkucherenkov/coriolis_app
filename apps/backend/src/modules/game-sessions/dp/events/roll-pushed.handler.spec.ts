@@ -72,8 +72,21 @@ describe('RollPushedDpHandler', () => {
       characterId: 'char-1',
       gameSessionId: 'gs-1',
       hits: 4,
+      kind: 'skill',
     });
     expect(typeof payload.at).toBe('string');
+  });
+
+  it('always sets payload.kind to "skill" (AsyncAPI contract; ST3001 push rule)', async () => {
+    // Per AsyncAPI RollPushed schema `kind` is a required discriminator with
+    // a fixed value of 'skill' for push events; the rule is encoded in the
+    // producer because RollPushedEvent does not carry kind.
+    const event = new RollPushedEvent('roll-42', 'char-9', 'gs-2', 2);
+
+    await handler.handle(event);
+
+    const [payload] = vi.mocked(router.publishRollPushed).mock.calls[0]!;
+    expect(payload.kind).toBe('skill');
   });
 
   it('skips DP increment and publish when gameSessionId is null', async () => {

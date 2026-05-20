@@ -2,6 +2,25 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-20-004 — RollPushed AsyncAPI contract: emit required `kind: 'skill'`
+
+- Created: 2026-05-20
+- Completed: 2026-05-20
+- Owner: claude
+- Branch: `feat/rollpushed-kind-asyncapi-fix`
+- Result: PR #59 — http://code.homelab.local/kkucherenkov/coriolis_app/pulls/59
+- Trigger: FIXME(T-2026-05-20-004) left in PR #57's RealtimeRouter. AsyncAPI `RollPushed.required = [rollId, characterId, kind, hits]` with `kind` enum locked to `[skill, save, trauma, initiative, darkness]`; per ST3001 ГЛАВА 3 §«Вознесение молитв» only skill rolls are pushable, so the discriminator is hard-coded `'skill'` on the producer.
+- What landed:
+  - `apps/backend/src/modules/realtime/realtime-router.ts` — `RollPushedPayload.kind: 'skill'` (required, was optional); FIXME comment removed; WHY-comment links the choice to the AsyncAPI contract.
+  - `apps/backend/src/modules/game-sessions/dp/events/roll-pushed.handler.ts` — publish call now passes `kind: 'skill'`; WHY-comment explains the value is hard-coded because `RollPushedEvent` does not carry kind.
+  - `apps/backend/src/modules/game-sessions/dp/events/roll-pushed.handler.spec.ts` — existing assertion tightened to include `kind: 'skill'`; new dedicated spec asserts the discriminator on its own so a regression that drops it surfaces independently.
+- Verification:
+  - `pnpm --filter @app/backend lint` clean
+  - `pnpm --filter @app/backend typecheck` clean
+  - `pnpm --filter @app/backend test:coverage` green (36/36 specs in touched files; +1 new)
+  - `pnpm spec:validate` clean (no spec change — contract already required the field)
+  - `pnpm format:check` clean
+
 ## T-2026-05-20-003 — Phase 8.5 follow-up #12: backend RealtimeRouter abstraction
 
 - Created: 2026-05-20
