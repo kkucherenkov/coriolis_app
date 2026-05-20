@@ -8,7 +8,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
 - Completed: 2026-05-20
 - Owner: claude
 - Branch: `feat/storybook-a11y-ci-sweep`
-- Result: PR #54 — http://code.homelab.local/kkucherenkov/coriolis_app/pulls/54
+- Result: PR #58 — http://code.homelab.local/kkucherenkov/coriolis_app/pulls/58
 - What landed:
   - `packages/ui/.storybook/preview.ts`: added `options.runOnly` with WCAG 2.1 AA tags (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`); moved per-rule overrides (color-contrast, nested-interactive) to `options.rules` so they travel as `RunOptions` to axe at runtime.
   - `packages/ui/.storybook/test-runner.ts`: fixed axe options wiring — reads `parameters.a11y.options` (RunOptions) instead of `parameters.a11y.config` (Spec/configure); passes as `axeOptions.axeOptions`; honours `test: 'off'` as equivalent to `disable: true`.

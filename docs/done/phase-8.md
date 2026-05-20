@@ -182,7 +182,7 @@ integration_test/` requires a real device.
    the `quality` job — axe-core sweeps every story fixture with the
    WCAG 2.1 AA ruleset (wcag2a, wcag2aa, wcag21a, wcag21aa).
    `AppWhisperPicker` `role="listbox"` missing `aria-labelledby` fixed.
-   **Status:** ✅ Shipped in PR #54.
+   **Status:** ✅ Shipped in PR #58.
 
 8. **`chatDockedCollapsed` on mobile from `/me/settings`.** Mobile
    side of the localStorage → settings migration (web is done).
