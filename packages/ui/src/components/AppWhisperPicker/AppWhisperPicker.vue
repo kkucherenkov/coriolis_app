@@ -82,11 +82,18 @@
     @update:open="onModalUpdate"
   >
     <div class="app-whisper-picker">
-      <h2 class="app-whisper-picker__title">Whisper to&hellip;</h2>
+      <h2 id="whisper-picker-title" class="app-whisper-picker__title">Whisper to&hellip;</h2>
 
       <p v-if="visibleMembers.length === 0" class="app-whisper-picker__empty">No one available.</p>
 
-      <ul v-else class="app-whisper-picker__list" role="listbox" tabindex="0" @keydown="onKeydown">
+      <ul
+        v-else
+        class="app-whisper-picker__list"
+        role="listbox"
+        tabindex="0"
+        aria-labelledby="whisper-picker-title"
+        @keydown="onKeydown"
+      >
         <li
           v-for="(member, i) in visibleMembers"
           :key="member.membershipId"

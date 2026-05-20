@@ -38,7 +38,17 @@ const preview: Preview = {
       // disable the specific rule in that story's parameters — never widen
       // this global setting.
       test: 'error',
-      config: {
+      // options → axe.run() RunOptions: pin the tested WCAG levels so the
+      // test-runner and the panel agree on scope. 'best-practice' is excluded
+      // from this list intentionally — it generates noise (e.g. redundant
+      // landmark roles from Nuxt UI internals) without being a WCAG failure.
+      // If you want best-practice hints in the panel, enable them locally;
+      // CI only asserts the four WCAG tag families below.
+      options: {
+        runOnly: {
+          type: 'tag',
+          values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'],
+        },
         rules: {
           // Coriolis is dark-first with an intentionally moody brass/teal
           // palette. The high-contrast theme is the AA-passing alternative —

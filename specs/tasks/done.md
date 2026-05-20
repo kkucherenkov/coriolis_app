@@ -2,6 +2,22 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-20-002 — Phase 8.5 follow-up #9: Storybook a11y addon enabled in CI
+
+- Created: 2026-05-20
+- Completed: 2026-05-20
+- Owner: claude
+- Branch: `feat/storybook-a11y-ci-sweep`
+- Result: PR #58 — http://code.homelab.local/kkucherenkov/coriolis_app/pulls/58
+- What landed:
+  - `packages/ui/.storybook/preview.ts`: added `options.runOnly` with WCAG 2.1 AA tags (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`); moved per-rule overrides (color-contrast, nested-interactive) to `options.rules` so they travel as `RunOptions` to axe at runtime.
+  - `packages/ui/.storybook/test-runner.ts`: fixed axe options wiring — reads `parameters.a11y.options` (RunOptions) instead of `parameters.a11y.config` (Spec/configure); passes as `axeOptions.axeOptions`; honours `test: 'off'` as equivalent to `disable: true`.
+  - `AppWhisperPicker.vue`: added `id="whisper-picker-title"` on `<h2>` and `aria-labelledby` on `<ul role="listbox">` — fixes `aria-input-field-name` violation that appeared in Default / AllBlocked / MixedPresences stories.
+  - `docs/done/phase-8.md`: removed follow-up #1 (deep-link) and #2 (Redis rate-limiter); renumbered #3–#12 → #1–#10; added status tick for #7 (this task); appended dropped-items footnote.
+- Axe violations before: 3 (aria-input-field-name on AppWhisperPicker, 3 stories).
+- Axe violations after: 0.
+- Test counts: 427 tests / 55 suites all green.
+
 ## T-2026-05-19-006 — Phase 8.5 follow-up #8: chat route-level integration tests (web + mobile)
 
 - Created: 2026-05-19
