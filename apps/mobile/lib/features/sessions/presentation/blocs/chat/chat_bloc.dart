@@ -468,6 +468,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         s.gameSessionId,
         conversation: s.activeKey,
         lastReadMessageId: event.lastReadMessageId,
+        lastReadAt: event.lastReadAt,
       );
       final existing = s.conversations[s.activeKey];
       if (existing != null) {

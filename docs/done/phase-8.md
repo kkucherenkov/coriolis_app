@@ -159,6 +159,7 @@ are explicit Phase 8 carry-forwards into the Phase 8.5 backlog:
    Today the mobile repository takes a `messageId` and the impl
    stamps `DateTime.now()` — tightening this avoids cursor drift
    across slow networks.
+   **Status:** Shipped in PR #56.
 
 6. **Web + mobile chat integration tests.** Per-component specs
    shipped (171 new for web, 21 new for mobile in Streams D); a
