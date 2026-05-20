@@ -1,18 +1,17 @@
 # Active tasks
 
-## T-2026-05-20-002 — Phase 8.5 follow-up #9: Storybook a11y addon enabled in CI
+## T-2026-05-20-003 — Phase 8.5 follow-up #12: backend RealtimeRouter abstraction
 
 - Created: 2026-05-20
 - Status: in-progress
-- Goal: Wire `@storybook/addon-a11y` + `@storybook/test-runner` axe sweep into the CI Quality job so every story fixture runs axe-core with WCAG 2.1 AA ruleset; zero violations gate.
-- Scope: `packages/ui` only — `.storybook/preview.ts`, `.storybook/test-runner.ts`, `package.json` scripts, `docs/done/phase-8.md` scope cleanup (drop follow-up #1 and #2, add status tick for #9).
-- [ ] Confirm addon/runner config matches WCAG 2.1 AA requirements
-- [ ] Ensure test-runner respects per-story `parameters.a11y.disable` overrides
-- [ ] Verify `test:storybook:ci` script is correct and CI step unchanged
-- [ ] Run storybook:build + test:storybook:ci locally; document violation count before/after
-- [ ] Scope cleanup in docs/done/phase-8.md: remove #1 (deep-link) and #2 (Redis rate-limiter), renumber, add #9 status tick
-- [ ] Update active.md → done.md, open PR
-
+- Goal: Introduce `RealtimeRouter` injectable that centralises channel-name construction and payload envelopes. Refactor `ChatRealtimePublisher`, `CentrifugoCombatPublisher`, `UpdateDpHandler`, and `RollPushedDpHandler` to delegate to it. Add unit spec for the router.
+- Scope: `apps/backend` only — no spec changes, no client changes.
+- [ ] Create branch `feat/backend-realtime-router`
+- [ ] Commit 1: `RealtimeRouter` + channel helpers + unit spec
+- [ ] Commit 2: refactor `ChatRealtimePublisher` to delegate
+- [ ] Commit 3: refactor `CentrifugoCombatPublisher` to delegate
+- [ ] Commit 4: refactor `UpdateDpHandler` + `RollPushedDpHandler` to delegate
+- [ ] Commit 5: docs tick + task move
 
 ## T-2026-05-17-DEEP-LINK-SETUP — Deep-link configuration (mobile + web)
 
