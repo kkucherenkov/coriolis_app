@@ -30,6 +30,7 @@ import * as crypto from 'node:crypto';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { CentrifugoClient } from '../../src/modules/realtime/centrifugo.client';
+import { RealtimeRouter } from '../../src/modules/realtime/realtime-router';
 import { CentrifugoCombatPublisher } from '../../src/modules/encounters/infra/combat.publisher';
 
 import type { AppConfig } from '../../src/common/config/app-config';
@@ -140,7 +141,8 @@ describe('T-007 Block 5 — combat.updated channel delivery', () => {
     // Build publisher with the real CentrifugoClient (talks to Docker stack)
     const config = makeAppConfig();
     const centrifugoClient = new CentrifugoClient(config);
-    const publisher = new CentrifugoCombatPublisher(centrifugoClient);
+    const realtimeRouter = new RealtimeRouter(centrifugoClient);
+    const publisher = new CentrifugoCombatPublisher(realtimeRouter);
 
     const encounter = makeEncounterSnapshot(sessionId, encounterId);
     const combatants = [makeCombatantSnapshot(encounterId)];
