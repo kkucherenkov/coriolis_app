@@ -47,11 +47,18 @@ export class RollPushedDpHandler implements IEventHandler<RollPushedEvent> {
 
     // Publish roll.pushed before the DP increment so subscribers can show
     // the push event in the UI before the counter updates.
+    //
+    // `kind: 'skill'` is hard-coded because only skill rolls can be pushed
+    // per ST3001 ГЛАВА 3 §«Вознесение молитв» — RollPushedEvent does not
+    // carry kind for that reason, but the AsyncAPI contract requires the
+    // field so subscribers can discriminate consistently across all roll
+    // events on the channel.
     await this.realtimeRouter.publishRollPushed({
       rollId,
       characterId,
       gameSessionId,
       hits,
+      kind: 'skill',
       at: new Date().toISOString(),
     });
 
