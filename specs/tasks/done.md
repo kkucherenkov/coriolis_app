@@ -2,6 +2,22 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-20-001 — Phase 8.5 follow-up #7: mobile MarkReadRequest derives lastReadAt from message createdAt
+
+- Created: 2026-05-20
+- Completed: 2026-05-20
+- Owner: claude
+- Branch: `feat/mobile-mark-read-from-created-at`
+- Result: PR #56 — http://code.homelab.local/kkucherenkov/coriolis_app/pulls/56
+- [x] `ChatRepository.markRead` signature updated to accept `DateTime lastReadAt`
+- [x] `ChatRepositoryImpl.markRead` passes `lastReadAt` through (no more `DateTime.now()`)
+- [x] `ChatMarkRead` event carries `DateTime lastReadAt`
+- [x] `ChatBloc._onMarkRead` forwards `event.lastReadAt` to repository
+- [x] `ChatPanel._onScroll` dispatches `ChatMarkRead` with `messages.last.createdAt`
+- [x] Repository-impl unit test: 2 tests asserting `MarkReadRequest.lastReadAt` matches caller value
+- [x] Bloc unit test: 2 tests asserting `event.lastReadAt` passed to repository
+- [x] flutter analyze clean (27 pre-existing infos, zero errors), 491 tests green
+
 ## T-2026-05-20-002 — Phase 8.5 follow-up #9: Storybook a11y addon enabled in CI
 
 - Created: 2026-05-20
