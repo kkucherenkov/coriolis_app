@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-24T00:00:00.000Z",
+  "title": "Design System: Coriolis Companion App",
+  "extensions": {
+    "colorMeta": {
+      "brass": {
+        "role": "primary",
+        "displayName": "Brass",
+        "canonical": "#D4A95C",
+        "tonalRamp": ["#1A1306", "#2D2208", "#4A3712", "#6B4E1A", "#A67C28", "#D4A95C", "#ECD49E", "#F4E4B8"]
+      },
+      "brass-light": { "role": "primary", "displayName": "Brass Light", "canonical": "#F4E4B8" },
+      "brass-deep": { "role": "primary", "displayName": "Brass Deep", "canonical": "#A67C28" },
+      "brass-shadow": { "role": "primary", "displayName": "Brass Shadow", "canonical": "#6B4E1A" },
+      "mystic-teal": {
+        "role": "secondary",
+        "displayName": "Mystic Teal",
+        "canonical": "#2BA3A0",
+        "tonalRamp": ["#0A2B2A", "#103F3E", "#176260", "#1F827F", "#2BA3A0", "#56BDBA", "#8FD6D4", "#C8ECEB"]
+      },
+      "crimson": {
+        "role": "tertiary",
+        "displayName": "Crimson",
+        "canonical": "#A8324A",
+        "tonalRamp": ["#2E0E16", "#4A1623", "#6E2135", "#8C2A43", "#A8324A", "#C53E5C", "#E54E6B", "#F08CA0"]
+      },
+      "crimson-bright": { "role": "tertiary", "displayName": "Crimson Bright", "canonical": "#E54E6B" },
+      "success": {
+        "role": "tertiary",
+        "displayName": "Success Green",
+        "canonical": "#5A8A3A",
+        "tonalRamp": ["#16240D", "#243A15", "#36561F", "#487328", "#5A8A3A", "#73A552", "#94C078", "#BFD9AC"]
+      },
+      "darkness": {
+        "role": "tertiary",
+        "displayName": "The Darkness",
+        "canonical": "#5B2A78",
+        "tonalRamp": ["#1C0E26", "#2E1640", "#42205B", "#522670", "#5B2A78", "#7A45A0", "#A074C4", "#C9ABE0"]
+      },
+      "surface-void": {
+        "role": "neutral",
+        "displayName": "Surface Void",
+        "canonical": "#0B0E2C",
+        "tonalRamp": ["#070920", "#0B0E2C", "#15193F", "#252B5C", "#3A4178", "#5158A0", "#8A90C4", "#C7CAE6"]
+      },
+      "surface-night": { "role": "neutral", "displayName": "Surface Night", "canonical": "#15193F" },
+      "surface-dawn": { "role": "neutral", "displayName": "Surface Dawn", "canonical": "#252B5C" },
+      "surface-parchment": {
+        "role": "neutral",
+        "displayName": "Surface Parchment",
+        "canonical": "#F2E8D0",
+        "tonalRamp": ["#5A5036", "#7A6E4C", "#9C8F68", "#C2B48C", "#DCCFA8", "#F2E8D0", "#F8F1E0", "#FDFAF0"]
+      },
+      "text-primary": { "role": "neutral", "displayName": "Text Primary", "canonical": "#F2E8D0" },
+      "text-secondary": { "role": "neutral", "displayName": "Text Secondary", "canonical": "#D9CDB0" },
+      "text-ink": { "role": "neutral", "displayName": "Text Ink", "canonical": "#1A1810" },
+      "text-on-brass": { "role": "neutral", "displayName": "Text On Brass", "canonical": "#0B0E2C" }
+    },
+    "typographyMeta": {
+      "display-xl": { "displayName": "Display XL", "purpose": "Landing headline only. Forum, the loudest ceremonial voice." },
+      "display-lg": { "displayName": "Display LG", "purpose": "Character name on the sheet header." },
+      "display-md": { "displayName": "Display MD", "purpose": "Section headers (Skills, Inventory)." },
+      "display-sm": { "displayName": "Display SM", "purpose": "Uppercase stat-block labels." },
+      "body-lg": { "displayName": "Body LG", "purpose": "Primary body copy." },
+      "body-md": { "displayName": "Body MD", "purpose": "Default UI body." },
+      "body-sm": { "displayName": "Body SM", "purpose": "Labels and captions." },
+      "label-sm": { "displayName": "Label SM", "purpose": "Uppercase menu eyebrows and dense chrome." },
+      "mono-stat-xl": { "displayName": "Mono Stat XL", "purpose": "HP and MP big counters." },
+      "mono-stat-md": { "displayName": "Mono Stat MD", "purpose": "Skill ranks, item weights, dice values." }
+    },
+    "shadows": [
+      { "name": "brass-bevel", "value": "inset 0 1px 0 rgba(244,228,184,0.4), inset 0 -1px 0 rgba(107,78,26,0.6)", "purpose": "Pressed brass-plate effect on primary buttons and medallions." },
+      { "name": "card-featured", "value": "inset 0 0 0 1px #6B4E1A", "purpose": "Inset brass edge on a selected or active card." },
+      { "name": "panel-rise", "value": "0 8px 24px rgba(11,14,44,0.6)", "purpose": "Subtle indigo lift for elevated panels and modals on light/dawn surfaces." },
+      { "name": "icon-glow", "value": "0 0 24px rgba(43,163,160,0.35)", "purpose": "Mystic teal halo for chosen Icons and active mystic elements." },
+      { "name": "danger-pulse", "value": "0 0 16px rgba(229,78,107,0.45)", "purpose": "Crimson glow for crit-fail and destructive states." }
+    ],
+    "motion": [
+      { "name": "duration-fast", "value": "100ms", "purpose": "Hover, press, dot toggles." },
+      { "name": "duration-default", "value": "200ms", "purpose": "Standard UI transitions." },
+      { "name": "duration-slow", "value": "400ms", "purpose": "Panel enter/exit, drawer slides." },
+      { "name": "duration-ceremony", "value": "600ms", "purpose": "Dice settle, Icon glow pulse, ritual moments." },
+      { "name": "ease-standard", "value": "cubic-bezier(0.2, 0, 0.2, 1)", "purpose": "Default easing for most transitions." },
+      { "name": "ease-emphasis", "value": "cubic-bezier(0.3, 0, 0, 1)", "purpose": "Decisive easing for confirm, commit, apply." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The brass-plate CTA. Save, Create Character, the affirmative commit.",
+      "html": "<button class=\"ds-btn-primary\">Create Character</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #D4A95C; color: #0B0E2C; border: 1px solid transparent; border-radius: 4px; padding: 8px 16px; font-family: Inter, system-ui, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; white-space: nowrap; cursor: pointer; box-shadow: inset 0 1px 0 rgba(244,228,184,0.4), inset 0 -1px 0 rgba(107,78,26,0.6); transition: background-color 100ms cubic-bezier(0.2,0,0.2,1); } .ds-btn-primary:hover { background: #F4E4B8; } .ds-btn-primary:active { background: #A67C28; } .ds-btn-primary:focus-visible { outline: 2px solid #D4A95C; outline-offset: 2px; }"
+    },
+    {
+      "name": "Mystic Button",
+      "kind": "button",
+      "refersTo": "button-mystic",
+      "description": "The ritual CTA. Push the Roll, prayer-eligible confirms. The only teal control.",
+      "html": "<button class=\"ds-btn-mystic\">Push the Roll</button>",
+      "css": ".ds-btn-mystic { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #2BA3A0; color: #0B0E2C; border: 1px solid #2BA3A0; border-radius: 4px; padding: 8px 16px; font-family: Inter, system-ui, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; white-space: nowrap; cursor: pointer; transition: background-color 100ms cubic-bezier(0.2,0,0.2,1), box-shadow 200ms cubic-bezier(0.2,0,0.2,1); } .ds-btn-mystic:hover { background: #3FAEAA; border-color: #3FAEAA; box-shadow: 0 0 24px rgba(43,163,160,0.35); } .ds-btn-mystic:active { background: #1F827F; } .ds-btn-mystic:focus-visible { outline: 2px solid #D4A95C; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outlined brass. Cancel, Skip, Reroll. Sits between filled primary and borderless ghost.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: transparent; color: #D4A95C; border: 1px solid #D4A95C; border-radius: 4px; padding: 8px 16px; font-family: Inter, system-ui, sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; white-space: nowrap; cursor: pointer; transition: background-color 100ms cubic-bezier(0.2,0,0.2,1), color 100ms cubic-bezier(0.2,0,0.2,1), border-color 100ms cubic-bezier(0.2,0,0.2,1); } .ds-btn-secondary:hover { background: rgba(212,169,92,0.1); border-color: #F4E4B8; color: #F4E4B8; } .ds-btn-secondary:active { background: rgba(212,169,92,0.18); } .ds-btn-secondary:focus-visible { outline: 2px solid #D4A95C; outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Night-surface field with a brass-shadow resting border that warms to brass on focus.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Character name\" />",
+      "css": ".ds-input { display: block; width: 100%; min-width: 0; box-sizing: border-box; background: #15193F; border: 1px solid #6B4E1A; border-radius: 4px; color: #F4E4B8; font-family: Inter, system-ui, sans-serif; font-size: 16px; line-height: 24px; padding: 8px 16px; transition: border-color 100ms cubic-bezier(0.2,0,0.2,1); } .ds-input::placeholder { color: #D9CDB0; } .ds-input:hover { border-color: #A67C28; } .ds-input:focus-visible { outline: 2px solid #D4A95C; outline-offset: 2px; border-color: #D4A95C; }"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Pill toggle, outline at rest, solid fill when pressed. The one place a pill radius is allowed.",
+      "html": "<button class=\"ds-chip\" aria-pressed=\"false\">Mysticism</button>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 4px; background: transparent; color: #F4E4B8; border: 1px solid #D4A95C; border-radius: 9999px; padding: 3px 12px; font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 500; line-height: 1; white-space: nowrap; cursor: pointer; transition: background-color 100ms cubic-bezier(0.2,0,0.2,1), color 100ms cubic-bezier(0.2,0,0.2,1); } .ds-chip:hover { background: rgba(212,169,92,0.12); } .ds-chip[aria-pressed=\"true\"] { background: #D4A95C; color: #0B0E2C; } .ds-chip:focus-visible { outline: 2px solid #D4A95C; outline-offset: 2px; }"
+    },
+    {
+      "name": "Featured Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Beveled brass plate for the active session or a selected Icon. Flat-on-dark, depth from the inset bevel.",
+      "html": "<div class=\"ds-card-featured\"><div class=\"ds-card-featured__title\">The Traveler</div><div class=\"ds-card-featured__body\">Patron of explorers and pilots.</div></div>",
+      "css": ".ds-card-featured { background: #15193F; border: 1px solid #A67C28; border-radius: 4px; overflow: hidden; padding: 24px; box-shadow: inset 0 1px 0 rgba(244,228,184,0.4), inset 0 -1px 0 rgba(107,78,26,0.6); transition: box-shadow 100ms cubic-bezier(0.2,0,0.2,1); } .ds-card-featured:hover { box-shadow: inset 0 1px 0 rgba(244,228,184,0.4), inset 0 -1px 0 rgba(107,78,26,0.6), inset 0 0 0 1px #6B4E1A; } .ds-card-featured__title { font-family: Forum, 'Cormorant Garamond', serif; font-size: 28px; line-height: 36px; letter-spacing: 0.04em; color: #F4E4B8; margin-bottom: 8px; } .ds-card-featured__body { font-family: Inter, system-ui, sans-serif; font-size: 16px; line-height: 24px; color: #D9CDB0; }"
+    },
+    {
+      "name": "Hit Die",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "A 48px brass d6 face. A rolled 6 is a success and settles with a ceremonial teal glow.",
+      "html": "<div class=\"ds-die\">6</div>",
+      "css": ".ds-die { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: #15193F; color: #F4E4B8; border: 1px solid #D4A95C; border-radius: 4px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 20px; font-weight: 700; box-shadow: 0 0 24px rgba(43,163,160,0.35); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Brass Astrolabe",
+    "overview": "The Coriolis universe is deep-space science fiction wrapped in pre-modern, sacred, ornate language. Starships wear arabesques on their hulls; pilots whisper to the Icons before they push dice. The companion app is a ceremonial instrument, brass etched on the indigo void, closer to an astrolabe than to a SaaS console. The system is dark-first; light (parchment) is reserved for the share-link viewer and the high-contrast accessibility variant. Ornament is welcome where it carries meaning and goes silent where information density rules. It explicitly rejects the generic dark-mode tool, Notion-grey minimalism, the virtual-tabletop density of Foundry and Roll20, and Western-fantasy parchment-and-dragons.",
+    "keyCharacteristics": [
+      "Brass (#D4A95C) on indigo void (#0B0E2C) is the entire brand; greys are forbidden.",
+      "Ceremonial, restrained motion that eases out, never bounces.",
+      "Display type (Forum) names things; it never labels them.",
+      "Flat on dark. Depth comes from brass borders and inset bevels, not drop shadows.",
+      "Color is never the sole signal; meaning is doubled with icon, prefix, or aria state."
+    ],
+    "rules": [
+      { "name": "The Brass-on-Indigo Rule", "body": "The palette is the brand. No drift toward neutral grey, zinc, slate, or generic dark-mode black. If a surface looks grey, it is wrong; tint it back toward indigo.", "section": "colors" },
+      { "name": "The One Teal Voice Rule", "body": "Mystic teal is the single accent permitted to break the brass monopoly, and only to signal the mystical or the Push.", "section": "colors" },
+      { "name": "The Ornament-with-Purpose Rule", "body": "Decoration appears where it reinforces meaning and is forbidden where it competes with information density.", "section": "colors" },
+      { "name": "The Reserved Display Rule", "body": "Forum names things; it never labels them. Forbidden on buttons, tooltips, and table cells.", "section": "typography" },
+      { "name": "The Single Weight Rule", "body": "Forum ships one weight (Regular 400). Emphasis comes from size and tracking, never from a faked bold.", "section": "typography" },
+      { "name": "The Flat-on-Dark Rule", "body": "No drop shadows on dark surfaces. Convey depth with a brass border plus an inset highlight.", "section": "elevation" },
+      { "name": "The Glow-as-Meaning Rule", "body": "A glow is never ambient polish. Teal glow means mystic, crimson glow means danger. If a glow does not encode state, delete it.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep brass on indigo as the entire brand voice. Tint every neutral toward Coriolis-blue.",
+      "Do reserve mystic teal for the mystical and the Push, and crimson for HP loss and destruction.",
+      "Do convey depth with brass borders and inset bevels; keep dark surfaces flat.",
+      "Do double every color signal. The active combat turn carries a brass left treatment plus a prefix and aria-current, not color alone.",
+      "Do round buttons to 4px and keep them square-shouldered.",
+      "Do use Forum to name things and Inter to label them.",
+      "Do let motion stay restrained and ceremonial, easing out, respecting prefers-reduced-motion."
+    ],
+    "donts": [
+      "Don't build a generic dark mode. The indigo is Coriolis-blue, not zinc, slate, or neutral grey.",
+      "Don't make it a Notion clone: no floating menus, no slash commands, no minimal-grey aesthetic.",
+      "Don't make it a Foundry / Roll20 GM screen: this is a digital character sheet that happens to have a combat tracker, not a virtual tabletop.",
+      "Don't go skeuomorphic. The aesthetic is digital made ceremonial, not digital faking paper or leather.",
+      "Don't use Western-fantasy iconography: no parchment-with-blood-spatter, no dragons, no medieval longswords.",
+      "Don't ship pill-shaped buttons; pills are reserved for status chips.",
+      "Don't put a drop shadow on a dark surface, or any box-shadow outside the defined tokens.",
+      "Don't use Forum for buttons, tooltips, or table cells.",
+      "Don't write a private brand hex into a .vue or .scss file; reference the token.",
+      "Don't use a gradient on text, a side-stripe colored border, or decorative glassmorphism."
+    ]
+  }
+}
