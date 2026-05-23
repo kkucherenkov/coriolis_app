@@ -60,17 +60,21 @@ export interface DpChangedPayload {
   at: string;
 }
 
-/** AsyncAPI: RollPushed message payload (sessionChannel) */
+/**
+ * AsyncAPI: RollPushed message payload (sessionChannel).
+ *
+ * `kind` is hard-coded to `'skill'` on the producer side — only skill rolls
+ * can be pushed per ST3001 ГЛАВА 3 §«Вознесение молитв». The discriminator is
+ * required by the AsyncAPI contract (`packages/specs/asyncapi/centrifugo.yaml`
+ * RollPushed.required = [rollId, characterId, kind, hits]) so subscribers can
+ * route on it consistently with non-push roll events.
+ */
 export interface RollPushedPayload {
   rollId: string;
   characterId: string;
   gameSessionId: string;
   hits: number;
-  // FIXME(T-2026-05-20-004): AsyncAPI RollPushed requires `kind` (enum: skill).
-  // RollPushedDpHandler currently omits it to preserve the pre-router wire format.
-  // A follow-up task should add `kind: 'skill'` here and in the handler, then
-  // update the AsyncAPI contract test to assert it is present in the payload.
-  kind?: 'skill';
+  kind: 'skill';
   at: string;
 }
 
