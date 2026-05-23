@@ -1,6 +1,18 @@
 <script setup lang="ts">
   import { computed } from 'vue';
-  import { AppArabesqueCorner, AppWordmark } from '@app/ui';
+  import {
+    AppArabesqueCorner,
+    AppButton,
+    AppDie,
+    AppIconCoriolis,
+    AppStarOrnament,
+    AppWordmark,
+  } from '@app/ui';
+  // Real product screenshots (docs/screenshots), bundled + hashed by Vite.
+  // Desktop drives the showcase; the phone capture swaps in under 720px so
+  // small viewports see the mobile layout rather than a shrunk desktop one.
+  import sheetDesktop from '~/assets/showcase/character-sheet-desktop.png';
+  import sheetMobile from '~/assets/showcase/character-sheet-mobile.png';
 
   const { t, locale, locales, setLocale } = useI18n({ useScope: 'local' });
   const auth = useAuth();
@@ -39,13 +51,6 @@
   async function onLocaleChange(code: string): Promise<void> {
     await setLocale(code as 'en' | 'ru');
   }
-
-  // Three-feature grid keys. Order matches the handoff: Sheet → Share → Run.
-  const FEATURES = [
-    { id: 'sheet', icon: '✦' },
-    { id: 'share', icon: '☍' },
-    { id: 'run', icon: '⚂' },
-  ] as const;
 </script>
 
 <i18n lang="json">
@@ -55,6 +60,11 @@
     "signIn": "Sign in",
     "createAccount": "Create account",
     "localeSwitcherLabel": "Choose language",
+    "showcase": {
+      "title": "Your operative, at a glance",
+      "blurb": "Attributes, skills, talents, conditions and dice. One screen, read at the speed of play.",
+      "alt": "The Coriolis Companion character sheet for Said al-Khatib, an operative: attributes with rank dots, skills, talents, and conditions on a brass-on-indigo layout."
+    },
     "feature": {
       "sheet": {
         "title": "Sheet",
@@ -79,6 +89,11 @@
     "signIn": "Войти",
     "createAccount": "Создать аккаунт",
     "localeSwitcherLabel": "Выбор языка",
+    "showcase": {
+      "title": "Ваш оперативник как на ладони",
+      "blurb": "Характеристики, навыки, таланты, состояния и кубики. Один экран, читается на скорости игры.",
+      "alt": "Лист персонажа Coriolis Companion для оперативника Саида аль-Хатиба: характеристики с точками рангов, навыки, таланты и состояния на раскладке брасс-по-индиго."
+    },
     "feature": {
       "sheet": {
         "title": "Лист",
@@ -149,38 +164,109 @@
     <main class="page-landing__main">
       <section class="page-landing__hero" aria-labelledby="landing-tagline">
         <AppWordmark :size="88" />
-        <p id="landing-tagline" class="page-landing__tagline">
+        <!-- The wordmark is a role="img" lockup, so the tagline carries the
+             page's h1 (the visible heading text); styling stays on the class. -->
+        <h1 id="landing-tagline" class="page-landing__tagline">
           {{ t('tagline') }}
-        </p>
+        </h1>
 
         <div class="page-landing__cta">
-          <button
-            type="button"
-            class="page-landing__button page-landing__button--primary"
-            @click="onSignIn"
-          >
+          <AppButton variant="primary" size="lg" @click="onSignIn">
             {{ t('signIn') }}
-          </button>
-          <button
-            type="button"
-            class="page-landing__button page-landing__button--ghost"
-            @click="onCreateAccount"
-          >
+          </AppButton>
+          <AppButton variant="ghost" size="lg" @click="onCreateAccount">
             {{ t('createAccount') }}
-          </button>
+          </AppButton>
         </div>
       </section>
 
+      <!--
+        Proof fold: a real product screenshot, the dominant below-hero moment.
+        Heading is left-aligned (continuing the axis break); the framed capture
+        runs wider than the hero column for scale. The desktop capture shows
+        the three-column sheet; the phone capture swaps in under 720px.
+      -->
+      <section class="page-landing__showcase" aria-labelledby="showcase-title">
+        <div class="page-landing__showcase-intro">
+          <h2 id="showcase-title" class="page-landing__showcase-title">
+            {{ t('showcase.title') }}
+          </h2>
+          <p class="page-landing__showcase-blurb">
+            {{ t('showcase.blurb') }}
+          </p>
+        </div>
+        <figure class="page-landing__showcase-frame">
+          <picture>
+            <source media="(max-width: 720px)" :srcset="sheetMobile" />
+            <!-- No width/height attrs: the two sources differ in ratio, so the
+                 box is reserved via per-breakpoint `aspect-ratio` in CSS to
+                 avoid a wrong reservation (CLS) before the swap loads. -->
+            <img
+              class="page-landing__showcase-img"
+              :src="sheetDesktop"
+              :alt="t('showcase.alt')"
+              loading="lazy"
+              decoding="async"
+            />
+          </picture>
+        </figure>
+      </section>
+
+      <!--
+        Asymmetric feature fold, not a 3-up card grid. "Sheet" leads as the
+        framed dominant block; "Share" and "Run" are compact frameless rows.
+        Each glyph is a real brand asset (DESIGN §4), decorative beside its
+        visible title: the eight-pointed star for the sheet, The Messenger
+        Icon for sharing, a glowing success die for play.
+      -->
       <section class="page-landing__features" aria-label="Features">
-        <article v-for="f in FEATURES" :key="f.id" class="page-landing__feature">
-          <span class="page-landing__feature-glyph" aria-hidden="true">{{ f.icon }}</span>
-          <h2 class="page-landing__feature-title">
-            {{ t(`feature.${f.id}.title`) }}
+        <article class="page-landing__feature page-landing__feature--lead">
+          <span class="page-landing__feature-glyph" aria-hidden="true">
+            <AppStarOrnament size="lg" color="brass" />
+          </span>
+          <h2 class="page-landing__feature-title page-landing__feature-title--lead">
+            {{ t('feature.sheet.title') }}
           </h2>
           <p class="page-landing__feature-blurb">
-            {{ t(`feature.${f.id}.blurb`) }}
+            {{ t('feature.sheet.blurb') }}
           </p>
         </article>
+
+        <ul class="page-landing__feature-list">
+          <li class="page-landing__feature page-landing__feature--compact">
+            <span
+              class="page-landing__feature-glyph page-landing__feature-glyph--sm"
+              aria-hidden="true"
+            >
+              <AppIconCoriolis name="messenger" size="md" color="brass" />
+            </span>
+            <div class="page-landing__feature-text">
+              <h2 class="page-landing__feature-title">
+                {{ t('feature.share.title') }}
+              </h2>
+              <p class="page-landing__feature-blurb">
+                {{ t('feature.share.blurb') }}
+              </p>
+            </div>
+          </li>
+
+          <li class="page-landing__feature page-landing__feature--compact">
+            <span
+              class="page-landing__feature-glyph page-landing__feature-glyph--sm"
+              aria-hidden="true"
+            >
+              <AppDie :value="6" state="hit" size="sm" />
+            </span>
+            <div class="page-landing__feature-text">
+              <h2 class="page-landing__feature-title">
+                {{ t('feature.run.title') }}
+              </h2>
+              <p class="page-landing__feature-blurb">
+                {{ t('feature.run.blurb') }}
+              </p>
+            </div>
+          </li>
+        </ul>
       </section>
     </main>
 
@@ -201,6 +287,10 @@
   // layout caps (see stylelint.config.mjs declaration-property-value rule).
   $hero-max-width: 640px;
   $features-max-width: 1080px;
+  // Showcase capture runs wider than the hero column but narrower than the
+  // feature fold, so scale steps up hero → showcase → features.
+  $showcase-max-width: 1000px;
+  $showcase-mobile-max-width: 320px;
   $corner-inset: 16px;
   // Phone-shrunken corner ornament — lg (96px) is too dominant under 540px.
   $corner-mobile-size: 56px;
@@ -211,6 +301,9 @@
   // Starfield density + cycle vars — tuned for ambience without distraction.
   $starfield-density: 240px;
   $starfield-twinkle: 8s;
+  // WCAG 2.5.5 minimum touch target — applied to the locale toggle on
+  // coarse pointers only (no need to inflate it for mouse users).
+  $touch-target-min: 44px;
 
   .page-landing {
     position: relative;
@@ -328,6 +421,9 @@
     }
 
     &__locale {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
       padding: var(--space-1) var(--space-3);
       font-family: var(--font-body);
@@ -341,6 +437,13 @@
       transition:
         color var(--motion-duration-fast) var(--motion-ease-standard),
         background-color var(--motion-duration-fast) var(--motion-ease-standard);
+
+      // Coarse pointers (touch) get the full 44px tap target; mouse keeps the
+      // compact pill.
+      @media (pointer: coarse) {
+        min-width: $touch-target-min;
+        min-height: $touch-target-min;
+      }
 
       &:hover {
         color: var(--brand-brass-light);
@@ -422,6 +525,9 @@
       color: var(--text-secondary);
     }
 
+    // CTAs are AppButton (variant primary / ghost, size lg). The page no
+    // longer hand-rolls button styling; the shared component owns fills,
+    // states, focus ring and the brass-bevel.
     &__cta {
       display: flex;
       gap: var(--space-3);
@@ -430,80 +536,152 @@
       margin-top: var(--space-3);
     }
 
-    &__button {
-      cursor: pointer;
-      padding: var(--space-3) var(--space-6);
+    // ── Showcase ───────────────────────────────────────────────────────────
+    // Real product capture as the proof fold. Left-aligned heading (the axis
+    // break continues), framed wide. Depth is the sanctioned brass-bevel inset,
+    // not a drop shadow (DESIGN §5.4: shadows smudge on dark surfaces).
+
+    &__showcase {
+      width: 100%;
+      max-width: $showcase-max-width;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+    }
+
+    &__showcase-intro {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      text-align: start;
+    }
+
+    &__showcase-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--type-display-md-font-size);
+      line-height: var(--type-display-md-line-height);
+      letter-spacing: 0.04em;
+      color: var(--brand-brass-light);
+    }
+
+    &__showcase-blurb {
+      margin: 0;
+      max-width: 60ch;
       font-family: var(--font-body);
-      font-size: var(--type-body-md-font-size);
-      letter-spacing: 0.06em;
+      font-size: var(--type-body-lg-font-size);
+      line-height: var(--type-body-lg-line-height);
+      color: var(--text-secondary);
+    }
+
+    &__showcase-frame {
+      margin: 0;
+      overflow: hidden;
+      background: var(--surface-night);
+      border: 1px solid var(--brand-brass-deep);
       border-radius: var(--radius-md);
-      transition:
-        background-color var(--motion-duration-fast) var(--motion-ease-standard),
-        border-color var(--motion-duration-fast) var(--motion-ease-standard),
-        color var(--motion-duration-fast) var(--motion-ease-standard);
+      box-shadow: var(--shadow-brass-bevel);
 
-      &:focus-visible {
-        outline: 2px solid var(--brand-brass);
-        outline-offset: 2px;
-      }
-
-      &--primary {
-        background: var(--brand-brass);
-        border: 1px solid var(--brand-brass);
-        color: var(--text-on-brass);
-
-        &:hover {
-          background: var(--brand-brass-light);
-          border-color: var(--brand-brass-light);
-        }
-      }
-
-      &--ghost {
-        background: transparent;
-        border: 1px solid var(--brand-brass-deep);
-        color: var(--brand-brass-light);
-
-        &:hover {
-          border-color: var(--brand-brass);
-          background: color-mix(in srgb, var(--brand-brass) 8%, transparent);
-        }
+      // The phone capture is portrait; cap its width so it reads as a device,
+      // not a wall.
+      @media (max-width: 720px) {
+        max-width: $showcase-mobile-max-width;
+        margin-inline: auto;
       }
     }
 
-    // ── Three-feature grid ─────────────────────────────────────────────────────
+    &__showcase-img {
+      display: block;
+      width: 100%;
+      height: auto;
+      // Intrinsic capture ratios (not design tokens). Reserves correct height
+      // per breakpoint so the <picture> source swap causes no layout shift.
+      aspect-ratio: 1280 / 800;
+
+      @media (max-width: 720px) {
+        aspect-ratio: 828 / 1792;
+      }
+    }
+
+    // ── Feature fold ─────────────────────────────────────────────────────────
+    // Deliberately asymmetric, not a 3-up card grid. "Sheet" leads as the
+    // dominant proof block (left, framed); "Share" and "Run" sit beside it as
+    // compact, frameless rows. The hero above is centred and this section is
+    // left-aligned, so the composition axis breaks between folds instead of
+    // running one dead-centre column.
 
     &__features {
       width: 100%;
       max-width: $features-max-width;
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--space-6);
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      align-items: stretch;
+      gap: var(--space-8);
+      text-align: start;
 
       @media (max-width: 720px) {
         grid-template-columns: 1fr;
+        gap: var(--space-6);
       }
     }
 
-    &__feature {
+    // Lead block — the only framed surface in the fold. Keeping the supporting
+    // rows frameless is what stops this reading as three identical boxes.
+    &__feature--lead {
       display: flex;
       flex-direction: column;
-      gap: var(--space-3);
-      padding: var(--space-6) var(--space-5);
+      gap: var(--space-4);
+      padding: var(--space-7) var(--space-6);
       background: color-mix(in srgb, var(--surface-night) 60%, transparent);
-      border: 1px solid var(--brand-brass-shadow);
-      border-radius: var(--radius-lg);
+      border: 1px solid var(--brand-brass-deep);
+      border-radius: var(--radius-md);
       transition: border-color var(--motion-duration-fast) var(--motion-ease-standard);
 
       &:hover {
-        border-color: var(--brand-brass-deep);
+        border-color: var(--brand-brass);
       }
     }
 
+    &__feature-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: var(--space-5);
+    }
+
+    // Compact supporting row — glyph leading, text trailing. Consecutive rows
+    // are split by a full-width hairline (a top border, never a side stripe).
+    &__feature--compact {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-4);
+      padding-block: var(--space-5);
+
+      & + & {
+        border-top: 1px solid var(--brand-brass-shadow);
+      }
+    }
+
+    &__feature-text {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    // Glyph wrapper now hosts a brand asset (star / Icon / die), so it is
+    // layout-only: each component owns its own size and colour.
     &__feature-glyph {
-      font-family: var(--font-display);
-      font-size: var(--type-display-md-font-size);
-      color: var(--brand-brass);
-      line-height: 1;
+      display: inline-flex;
+      line-height: 0;
+
+      &--sm {
+        flex-shrink: 0;
+        // Optical nudge so the asset sits on the supporting title's cap-height.
+        margin-top: var(--space-1);
+      }
     }
 
     &__feature-title {
@@ -513,10 +691,16 @@
       letter-spacing: 0.06em;
       color: var(--brand-brass-light);
       text-transform: uppercase;
+
+      // Dominant block reads heavier: 28px vs 20px is a 1.4 step.
+      &--lead {
+        font-size: var(--type-display-md-font-size);
+      }
     }
 
     &__feature-blurb {
       margin: 0;
+      max-width: 60ch;
       font-family: var(--font-body);
       font-size: var(--type-body-md-font-size);
       line-height: var(--type-body-md-line-height);
