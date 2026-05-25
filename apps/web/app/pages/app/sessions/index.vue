@@ -138,7 +138,7 @@
     &__empty {
       margin: 0;
       font-family: var(--font-body);
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       font-style: italic;
     }
 
@@ -191,7 +191,7 @@
 
     &__character-label {
       font-weight: var(--fw-medium);
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       flex-shrink: 0;
     }
 
@@ -199,7 +199,7 @@
       align-self: flex-start;
       font-family: var(--font-body);
       font-size: var(--type-body-sm-font-size);
-      color: var(--brand-accent);
+      color: var(--brand-brass);
       text-decoration: none;
 
       &:hover {

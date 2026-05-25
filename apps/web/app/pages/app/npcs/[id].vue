@@ -1041,7 +1041,7 @@
       width: 100%;
 
       &--problems {
-        border-color: var(--color-danger);
+        border-color: var(--state-crimson);
       }
     }
 
@@ -1051,7 +1051,7 @@
       color: var(--brand-brass-light);
 
       &--danger {
-        color: var(--color-danger);
+        color: var(--state-crimson-bright);
       }
     }
 
@@ -1213,7 +1213,7 @@
     &__problems-item {
       font-family: var(--font-body);
       font-size: var(--type-body-sm-font-size);
-      color: var(--color-danger);
+      color: var(--state-crimson-bright);
     }
 
     &__problems-dismiss {

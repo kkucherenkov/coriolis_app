@@ -543,7 +543,7 @@
     &__stat-label {
       font-family: var(--font-mono);
       font-size: var(--type-body-xs-font-size);
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.08em;
     }

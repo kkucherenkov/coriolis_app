@@ -1325,7 +1325,7 @@
       align-self: flex-start;
       font-family: var(--font-body);
       font-size: var(--type-body-sm-font-size);
-      color: var(--brand-accent);
+      color: var(--brand-brass);
       text-decoration: none;
 
       &:hover {
@@ -1603,7 +1603,7 @@
       color: var(--state-success);
 
       &--neg {
-        color: var(--status-danger);
+        color: var(--state-crimson-bright);
       }
     }
 
@@ -1626,13 +1626,13 @@
     &__audit-time {
       font-family: var(--font-mono);
       font-size: var(--type-body-xs-font-size);
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
     }
 
     &__placeholder {
       margin: 0;
       font-family: var(--font-body);
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       font-style: italic;
     }
 

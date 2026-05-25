@@ -1424,7 +1424,7 @@
       width: 100%;
       padding: var(--space-2) var(--space-3);
       background-color: var(--surface-night);
-      border: 1px solid var(--border-default);
+      border: 1px solid var(--brand-brass-shadow);
       border-radius: var(--radius-sm);
       color: var(--text-primary);
       font-family: var(--font-body);
@@ -1477,7 +1477,7 @@
       background-color: color-mix(in srgb, var(--brand-brass-shadow) 30%, transparent);
       font-family: var(--font-mono);
       font-size: var(--type-body-xs-font-size);
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       vertical-align: middle;
     }
 

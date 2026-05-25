@@ -376,7 +376,7 @@
 
       &--hint {
         font-style: italic;
-        color: var(--text-tertiary);
+        color: var(--text-secondary);
       }
     }
 
@@ -422,7 +422,7 @@
     &__filter-meta {
       font-family: var(--font-mono);
       font-size: var(--type-body-xs-font-size);
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
     }
 
     &__grid {

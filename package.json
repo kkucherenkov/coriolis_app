@@ -32,6 +32,7 @@
     "storybook:build": "pnpm --filter @app/ui storybook:build",
     "prepare": "husky",
     "check:i18n": "node --experimental-strip-types scripts/check-i18n-parity.ts",
+    "tokens:check": "node scripts/check-design-tokens.mjs",
     "screenshots:capture": "node --experimental-strip-types scripts/screenshots/capture.ts",
     "e2e": "playwright test --config=tests/e2e/playwright.config.ts"
   },

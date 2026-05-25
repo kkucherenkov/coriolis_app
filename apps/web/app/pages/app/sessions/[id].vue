@@ -635,7 +635,7 @@
     &__placeholder {
       margin: var(--space-6);
       font-family: var(--font-body);
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       font-style: italic;
     }
 
@@ -689,7 +689,7 @@
       border-radius: var(--radius-md);
       font-family: var(--font-body);
       font-size: var(--type-body-sm-font-size);
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       font-style: italic;
     }
 

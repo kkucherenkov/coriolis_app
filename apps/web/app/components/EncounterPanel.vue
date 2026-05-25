@@ -476,7 +476,7 @@
     &__placeholder {
       margin: 0;
       font-family: var(--font-body);
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       font-style: italic;
     }
 

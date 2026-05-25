@@ -278,8 +278,8 @@
       margin: 0;
       padding: var(--space-2) var(--space-3);
       border-radius: var(--radius-sm);
-      background: var(--status-danger-soft);
-      color: var(--status-danger);
+      background: color-mix(in srgb, var(--state-crimson) 14%, transparent);
+      color: var(--state-crimson-bright);
       font-size: var(--type-body-sm-font-size);
     }
 
@@ -348,7 +348,7 @@
     &__row-time {
       font-family: var(--font-mono);
       font-size: var(--type-body-xs-font-size);
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
     }
 
     &__detail {

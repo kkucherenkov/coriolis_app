@@ -643,7 +643,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: var(--type-display-font-family);
+      font-family: var(--font-display);
       font-size: $font-size-portrait;
       font-weight: 700;
       letter-spacing: 0.05em;
@@ -673,7 +673,7 @@
     }
 
     &__name {
-      font-family: var(--type-display-font-family);
+      font-family: var(--font-display);
       font-size: $font-size-name;
       font-weight: 400;
       color: var(--brand-brass-light);
@@ -796,7 +796,7 @@
     }
 
     &__panel-title {
-      font-family: var(--type-display-font-family);
+      font-family: var(--font-display);
       font-size: $font-size-panel-title;
       text-transform: uppercase;
       letter-spacing: 0.14em;

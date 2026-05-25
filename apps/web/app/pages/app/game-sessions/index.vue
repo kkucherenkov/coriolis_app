@@ -423,7 +423,7 @@
     &__placeholder {
       margin: 0;
       font-family: var(--font-body);
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       font-style: italic;
     }
 
@@ -503,7 +503,7 @@
       margin: 0;
       font-family: var(--font-mono);
       font-size: var(--type-body-xs-font-size);
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
     }
 
     &__card-actions {

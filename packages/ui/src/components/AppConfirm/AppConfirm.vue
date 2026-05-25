@@ -96,16 +96,19 @@
 
     &__title {
       margin: 0;
-      font-size: var(--text-lg-size);
-      line-height: var(--text-lg-line);
+      font-family: var(--type-body-lg-font-family);
+      font-size: var(--type-body-lg-font-size);
+      line-height: var(--type-body-lg-line-height);
+      font-weight: var(--fw-semibold);
       color: var(--text-primary);
       letter-spacing: 0.01em;
     }
 
     &__body {
       margin: 0;
-      font-size: var(--text-base-size);
-      line-height: var(--text-base-line);
+      font-family: var(--type-body-md-font-family);
+      font-size: var(--type-body-md-font-size);
+      line-height: var(--type-body-md-line-height);
       color: var(--text-secondary);
     }
   }

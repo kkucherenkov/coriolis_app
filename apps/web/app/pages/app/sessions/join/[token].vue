@@ -230,21 +230,21 @@
     &__loading {
       margin: 0;
       font-family: var(--font-body);
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       font-style: italic;
     }
 
     &__error {
       margin: 0;
       font-family: var(--font-body);
-      color: var(--status-danger);
+      color: var(--state-crimson-bright);
     }
 
     &__join-error {
       margin: 0;
       font-family: var(--font-body);
       font-size: var(--type-body-sm-font-size);
-      color: var(--status-danger);
+      color: var(--state-crimson-bright);
     }
   }
 </style>

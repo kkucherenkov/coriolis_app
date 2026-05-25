@@ -875,7 +875,7 @@
     &__placeholder {
       margin: 0;
       font-family: var(--font-body);
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       font-style: italic;
     }
 
@@ -939,7 +939,7 @@
     &__drag-handle {
       flex-shrink: 0;
       cursor: grab;
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       font-size: var(--type-body-lg-font-size);
       user-select: none;
       padding-top: var(--space-1);
@@ -1105,7 +1105,7 @@
       margin: 0;
       font-family: var(--font-body);
       font-size: var(--type-body-sm-font-size);
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       font-style: italic;
       padding: var(--space-2) 0;
     }
@@ -1114,7 +1114,7 @@
       margin: 0;
       font-family: var(--font-body);
       font-size: var(--type-body-sm-font-size);
-      color: var(--status-danger, var(--brand-crimson));
+      color: var(--state-crimson-bright);
     }
   }
 </style>

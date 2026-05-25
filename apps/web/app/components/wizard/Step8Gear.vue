@@ -211,7 +211,7 @@
 
       &:hover {
         border-color: var(--brand-brass);
-        background-color: var(--surface-dusk);
+        background-color: var(--surface-dawn);
       }
 
       &:focus-visible {
@@ -221,7 +221,7 @@
 
       &--is-picked {
         border-color: var(--brand-brass-deep);
-        background-color: var(--surface-dusk);
+        background-color: var(--surface-dawn);
       }
     }
 

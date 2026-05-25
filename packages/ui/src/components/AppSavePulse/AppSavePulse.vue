@@ -47,9 +47,9 @@
       border-radius: var(--radius-pill);
       background-color: var(--brand-brass-deep);
       transition:
-        background-color var(--motion-duration-standard) var(--motion-ease-standard),
-        opacity var(--motion-duration-standard) var(--motion-ease-standard),
-        transform var(--motion-duration-standard) var(--motion-ease-standard);
+        background-color var(--motion-duration) var(--motion-ease-standard),
+        opacity var(--motion-duration) var(--motion-ease-standard),
+        transform var(--motion-duration) var(--motion-ease-standard);
     }
 
     // ── Idle — dim brass dot ──────────────────────────────────────────────────

@@ -139,7 +139,7 @@
   .app-header {
     position: sticky;
     top: 0;
-    z-index: var(--z-sticky, 10);
+    z-index: var(--z-sticky);
     display: flex;
     align-items: center;
     gap: var(--space-4);
@@ -201,7 +201,7 @@
       text-decoration: none;
       color: var(--brand-brass-light);
       font-family: var(--type-display-md-font-family);
-      font-size: var(--type-display-sm-font-size, 1.125rem);
+      font-size: var(--type-display-sm-font-size);
       font-weight: 700;
       letter-spacing: 0.03em;
       transition: opacity var(--motion-duration-fast) var(--motion-ease-standard);
@@ -213,7 +213,7 @@
       &:focus-visible {
         outline: 2px solid var(--brand-brass);
         outline-offset: 3px;
-        border-radius: var(--radius-sm, 4px);
+        border-radius: var(--radius-sm);
       }
     }
 
@@ -256,8 +256,8 @@
       text-decoration: none;
       color: var(--text-secondary);
       font-family: var(--type-body-md-font-family);
-      font-size: var(--type-body-md-font-size, 0.875rem);
-      border-radius: var(--radius-md, 6px);
+      font-size: var(--type-body-md-font-size);
+      border-radius: var(--radius-md);
       border-bottom: 2px solid transparent;
       transition:
         color var(--motion-duration-fast) var(--motion-ease-standard),

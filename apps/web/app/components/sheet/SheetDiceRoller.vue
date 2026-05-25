@@ -419,7 +419,7 @@
     &__push-hint {
       font-family: var(--font-body);
       font-size: var(--type-body-xs-font-size);
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       font-style: italic;
     }
 
