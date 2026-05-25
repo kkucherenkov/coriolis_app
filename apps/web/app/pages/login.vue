@@ -2,6 +2,8 @@
   import { AppInput, AppField, AppButton } from '@app/ui';
   import { ref, computed } from 'vue';
 
+  import AuthShell from '../components/auth/AuthShell.vue';
+
   const { t } = useI18n({ useScope: 'local' });
   const auth = useAuth();
   const route = useRoute();
@@ -54,7 +56,6 @@
 <i18n lang="json">
 {
   "en": {
-    "wordmark": "Coriolis Companion",
     "title": "Sign in",
     "subtitle": "Enter your email and password to continue.",
     "emailLabel": "Email",
@@ -72,7 +73,6 @@
     "errorGeneric": "Something went wrong. Please try again."
   },
   "ru": {
-    "wordmark": "Coriolis Companion",
     "title": "Войти",
     "subtitle": "Введите email и пароль для входа.",
     "emailLabel": "Email",
@@ -93,197 +93,66 @@
 </i18n>
 
 <template>
-  <div class="page-login" data-testid="page-login">
-    <div class="page-login__shell">
-      <h1 class="page-login__wordmark">
-        {{ t('wordmark') }}
-      </h1>
+  <AuthShell data-testid="page-login" :title="t('title')" :subtitle="t('subtitle')">
+    <p v-if="errorMsg" role="alert" class="auth-error">
+      {{ errorMsg }}
+    </p>
 
-      <div class="page-login__card">
-        <div class="page-login__header">
-          <h2 class="page-login__title">
-            {{ t('title') }}
-          </h2>
-          <p class="page-login__subtitle">
-            {{ t('subtitle') }}
-          </p>
-        </div>
+    <form class="auth-form" novalidate @submit.prevent="onSignIn">
+      <AppField :label="t('emailLabel')" :help-text="t('emailHint')" required>
+        <template #default="slotAttrs">
+          <AppInput
+            v-bind="slotAttrs"
+            v-model="email"
+            type="email"
+            autocomplete="email"
+            inputmode="email"
+            placeholder="user@example.com"
+          />
+        </template>
+      </AppField>
 
-        <p v-if="errorMsg" role="alert" class="page-login__error">
-          {{ errorMsg }}
-        </p>
+      <AppField :label="t('passwordLabel')" :help-text="t('passwordHint')" required>
+        <template #default="slotAttrs">
+          <AppInput
+            v-bind="slotAttrs"
+            v-model="password"
+            type="password"
+            autocomplete="current-password"
+          />
+        </template>
+      </AppField>
 
-        <form class="page-login__form" novalidate @submit.prevent="onSignIn">
-          <AppField :label="t('emailLabel')" :help="t('emailHint')" required>
-            <template #default="slotAttrs">
-              <AppInput
-                v-bind="slotAttrs"
-                v-model="email"
-                type="email"
-                autocomplete="email"
-                inputmode="email"
-                placeholder="user@example.com"
-              />
-            </template>
-          </AppField>
+      <AppButton
+        type="submit"
+        variant="primary"
+        class="auth-submit"
+        :loading="loading"
+        :disabled="loading || !formValid"
+      >
+        {{ t('signInButton') }}
+      </AppButton>
+    </form>
 
-          <AppField :label="t('passwordLabel')" :help="t('passwordHint')" required>
-            <template #default="slotAttrs">
-              <AppInput
-                v-bind="slotAttrs"
-                v-model="password"
-                type="password"
-                autocomplete="current-password"
-              />
-            </template>
-          </AppField>
+    <p class="auth-links auth-links--tight">
+      <NuxtLink to="/forgot-password" class="auth-link">
+        {{ t('forgotLink') }}
+      </NuxtLink>
+    </p>
 
-          <AppButton
-            type="submit"
-            variant="primary"
-            class="page-login__submit"
-            :loading="loading"
-            :disabled="loading || !formValid"
-          >
-            {{ t('signInButton') }}
-          </AppButton>
-        </form>
+    <p class="auth-links">
+      {{ t('noAccount') }}
+      <NuxtLink to="/signup" class="auth-link">
+        {{ t('signUpLink') }}
+      </NuxtLink>
+    </p>
 
-        <p class="page-login__footnote-link page-login__footnote-link--forgot">
-          <NuxtLink to="/forgot-password" class="page-login__link">
-            {{ t('forgotLink') }}
-          </NuxtLink>
-        </p>
-
-        <p class="page-login__footnote-link">
-          {{ t('noAccount') }}
-          <NuxtLink to="/signup" class="page-login__link">
-            {{ t('signUpLink') }}
-          </NuxtLink>
-        </p>
-
-        <p class="page-login__legal">
-          {{ t('legalFootnote') }}
-        </p>
-      </div>
-    </div>
-  </div>
+    <p class="auth-legal">
+      {{ t('legalFootnote') }}
+    </p>
+  </AuthShell>
 </template>
 
 <style lang="scss" scoped>
-  // Page-scoped layout cap. Boilerplate left-over — proper restyling against
-  // Coriolis tokens lands in Phase 1 Epic 4 auth-vertical extensions.
-  $card-max-width: 480px;
-
-  .page-login {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-9) var(--space-6);
-    background: var(--surface-bg);
-
-    @media (max-width: 540px) {
-      padding: var(--space-5) 0;
-    }
-
-    &__shell {
-      width: 100%;
-      max-width: $card-max-width;
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      gap: var(--space-6);
-    }
-
-    &__wordmark {
-      margin: 0;
-      text-align: center;
-      font-family: var(--font-display);
-      font-size: var(--type-display-md-font-size);
-      line-height: var(--type-display-md-line-height);
-      font-weight: var(--type-display-md-font-weight);
-      letter-spacing: var(--type-display-md-letter-spacing);
-      text-transform: uppercase;
-      color: var(--brand-brass-light);
-    }
-
-    &__card {
-      background: var(--surface-surface);
-      border: 1px solid var(--border-default);
-      border-radius: var(--radius-xl);
-      padding: var(--space-10) var(--space-9);
-      box-shadow: var(--shadow-md);
-
-      @media (max-width: 540px) {
-        padding: var(--space-7) var(--space-5);
-      }
-    }
-
-    &__header {
-      margin-bottom: var(--space-6);
-    }
-
-    &__title {
-      margin: 0 0 var(--space-2);
-      font-size: var(--text-2xl);
-      font-weight: var(--fw-bold);
-      letter-spacing: var(--tracking-tight);
-      color: var(--text-fg);
-    }
-
-    &__subtitle {
-      margin: 0;
-      font-size: var(--text-sm);
-      color: var(--text-fg-muted);
-    }
-
-    &__error {
-      margin: 0 0 var(--space-4);
-      padding: var(--space-3) var(--space-4);
-      border-radius: var(--radius-md);
-      background: var(--status-danger-soft);
-      color: var(--status-danger);
-      font-size: var(--text-sm);
-    }
-
-    &__form {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-4);
-    }
-
-    &__submit {
-      width: 100%;
-    }
-
-    &__footnote-link {
-      margin: var(--space-5) 0 0;
-      font-size: var(--text-sm);
-      color: var(--text-fg-muted);
-      text-align: center;
-
-      // Place the standalone "Forgot password?" link tight under the
-      // submit button, then leave the wider gap before "Don't have an
-      // account?". Two stacked links read as one block instead of two.
-      &--forgot {
-        margin-top: var(--space-3);
-      }
-    }
-
-    &__link {
-      color: var(--brand-accent);
-      text-decoration: none;
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-
-    &__legal {
-      margin: var(--space-3) 0 0;
-      font-size: var(--text-xs);
-      color: var(--text-fg-subtle);
-      text-align: center;
-    }
-  }
+  @use '../assets/scss/auth-content';
 </style>

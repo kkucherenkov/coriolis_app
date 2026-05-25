@@ -14,11 +14,14 @@
     options: Option[];
     size?: Size;
     disabled?: boolean;
+    /** Renders the crimson invalid treatment + sets aria-invalid on the group. */
+    invalid?: boolean;
   }
 
   const props = withDefaults(defineProps<Props>(), {
     size: 'md',
     disabled: false,
+    invalid: false,
   });
 
   const emit = defineEmits<{
@@ -137,12 +140,20 @@
   const rootClasses = computed(() => [
     'app-seg-control',
     `app-seg-control--${props.size}`,
-    { 'app-seg-control--disabled': props.disabled },
+    {
+      'app-seg-control--disabled': props.disabled,
+      'app-seg-control--invalid': props.invalid,
+    },
   ]);
 </script>
 
 <template>
-  <div :class="rootClasses" role="radiogroup" :aria-disabled="disabled ? 'true' : undefined">
+  <div
+    :class="rootClasses"
+    role="radiogroup"
+    :aria-disabled="disabled ? 'true' : undefined"
+    :aria-invalid="invalid ? 'true' : undefined"
+  >
     <!--
       Roving focus pattern:
       - Only the checked option has tabindex="0"; all others have tabindex="-1".
@@ -186,6 +197,12 @@
       opacity: var(--opacity-disabled);
       pointer-events: none;
       cursor: not-allowed;
+    }
+
+    // ── Invalid: crimson group border (segment dividers stay brass-deep) ────────
+
+    &--invalid {
+      border-color: var(--state-crimson);
     }
 
     // ── Option button ──────────────────────────────────────────────────────────

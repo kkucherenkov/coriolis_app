@@ -271,4 +271,32 @@ describe('AppSegControl', () => {
     });
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['c']);
   });
+
+  // ── Invalid ─────────────────────────────────────────────────────────────
+
+  const invalidOptions = [
+    { value: 'yes', label: 'Yes' },
+    { value: 'no', label: 'No' },
+  ];
+
+  it('applies --invalid modifier class when invalid=true', () => {
+    const wrapper = mount(AppSegControl, {
+      props: { options: invalidOptions, modelValue: null, invalid: true },
+    });
+    expect(wrapper.find('.app-seg-control--invalid').exists()).toBe(true);
+  });
+
+  it('sets aria-invalid="true" on the radiogroup when invalid=true', () => {
+    const wrapper = mount(AppSegControl, {
+      props: { options: invalidOptions, modelValue: null, invalid: true },
+    });
+    expect(wrapper.find('[role="radiogroup"]').attributes('aria-invalid')).toBe('true');
+  });
+
+  it('omits aria-invalid by default', () => {
+    const wrapper = mount(AppSegControl, {
+      props: { options: invalidOptions, modelValue: 'yes' },
+    });
+    expect(wrapper.find('[role="radiogroup"]').attributes('aria-invalid')).toBeUndefined();
+  });
 });

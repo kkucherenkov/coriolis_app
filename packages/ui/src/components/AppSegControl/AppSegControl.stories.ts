@@ -13,6 +13,7 @@ const meta: Meta<typeof AppSegControl> = {
   argTypes: {
     size: { control: 'select', options: SIZES },
     disabled: { control: 'boolean' },
+    invalid: { control: 'boolean' },
     modelValue: { control: 'text' },
   },
   args: {
@@ -253,6 +254,30 @@ export const AllSizesTernary: Story = {
           <span style="font-size: 11px; color: var(--text-secondary); min-width: 28px;">{{ s }}</span>
           <AppSegControl :options="options" :size="s" v-model="vals[s].value" />
         </div>
+      </div>
+    `,
+  }),
+};
+
+// ── Invalid (failed validation) ───────────────────────────────────────────────
+
+export const Invalid: Story = {
+  name: 'Invalid — failed validation',
+  render: () => ({
+    components: { AppSegControl },
+    setup() {
+      return {
+        value: ref(null),
+        options: [
+          { value: 'yes', label: 'Yes' },
+          { value: 'no', label: 'No' },
+        ],
+      };
+    },
+    template: `
+      <div style="padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+        <AppSegControl :options="options" v-model="value" :invalid="true" />
+        <div style="font-size: 12px; color: var(--state-crimson-bright);">Required — please choose an option.</div>
       </div>
     `,
   }),

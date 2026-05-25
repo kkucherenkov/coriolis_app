@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, nextTick, ref, watch } from 'vue';
+  import { computed, nextTick, ref, useId, watch } from 'vue';
 
   import AppPopover from '../AppPopover/AppPopover.vue';
 
@@ -45,7 +45,8 @@
   }>();
 
   // Stable ID for aria-controls relationship.
-  const menuId = `app-user-menu-panel-${Math.random().toString(36).slice(2, 8)}`;
+  // useId() is Vue 3.5+: SSR-safe + stable across hydration (Math.random would mismatch).
+  const menuId = `app-user-menu-panel-${useId()}`;
 
   const imageError = ref(false);
 

@@ -262,6 +262,16 @@ Foundation primitives are native Vue SFCs with scoped SCSS on tokens (BEM, max 3
 - **Focus:** 2px brass outline at 2px offset plus a brass border. No default web ring.
 - **Error:** crimson border and outline; validation message sits below in crimson-bright, surfaced from the API's RFC 9457 `problem+json` detail via a localized key.
 
+### Component contract & prop conventions
+
+**Validation states.** The `invalid` prop (crimson border + `aria-invalid`) lives on the **form-input controls**: `AppInput`, `AppSelect`, `AppTextarea`, `AppSwitch`, `AppSegControl` — and is wired automatically when they sit inside an `AppField` with an `error`. **Filter / display components are validation-exempt** and intentionally have no `invalid` prop: `AppChip` (filter/toggle affordance), `AppConditionPill`, `AppBadge`, `AppStatBlock`, `AppDots` (read-only display). A control that takes user input carries every interactive state; a control that only filters or displays does not.
+
+**Focus ring.** Every focusable control shows the same ring: `outline: 2px solid var(--brand-brass); outline-offset: 2px`. Compound controls (e.g. `AppChatComposer`) put the ring on the container via `:focus-within` rather than the inner element. There is no second focus idiom.
+
+**`tone` vs `variant`.** `variant` names a **semantic palette** choice on a multi-colour control (`AppChip`, `AppBadge`: brass / mystic / crimson / success / darkness). `tone` names a **two-value brass↔mystic axis** on otherwise monochrome controls (`AppTab`, `AppSkillRow`, `AppStatBlock`, `AppDiePool`). They are distinct concepts, not synonyms; a physical rename is out of scope (breaking change), so the split is documented rather than collapsed.
+
+**Size matrix.** `sm | md | lg` on layout-bearing controls (`AppButton`, `AppInput`, `AppSelect`, `AppTextarea`, `AppSegControl`); `sm | md` only on compact controls (`AppField`, `AppSwitch`, `AppChip`, `AppBadge`, `AppConditionPill`, `AppTab`). `md` is always the default.
+
 ### Navigation
 - Desktop: top tabs in Inter, brass-light active, brass-deep idle. Mobile: bottom bar with iconography (thumb reach beats label clarity at the table).
 

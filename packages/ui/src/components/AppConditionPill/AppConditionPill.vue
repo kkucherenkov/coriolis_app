@@ -23,8 +23,6 @@
     hungry: 'apple',
   };
 
-  const VALID_CONDITIONS: Condition[] = ['exhausted', 'sleepless', 'thirsty', 'hungry'];
-
   interface Props {
     condition: Condition;
     modelValue?: boolean;
@@ -84,7 +82,7 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
-    border: 1px solid var(--state-mystic-teal);
+    border: 1px solid var(--brand-brass-deep);
     border-radius: var(--radius-pill);
     background: transparent;
     color: var(--text-secondary);
@@ -95,8 +93,7 @@
     cursor: pointer;
     transition:
       background-color var(--motion-duration-fast) var(--motion-ease-standard),
-      border-color var(--motion-duration-fast) var(--motion-ease-standard),
-      box-shadow var(--motion-duration-fast) var(--motion-ease-standard);
+      border-color var(--motion-duration-fast) var(--motion-ease-standard);
 
     // ── Focus ───────────────────────────────────────────────────────────────
 
@@ -123,7 +120,7 @@
       display: inline-flex;
       align-items: center;
       flex-shrink: 0;
-      color: var(--state-mystic-teal);
+      color: var(--brand-brass);
     }
 
     &__label {
@@ -134,9 +131,8 @@
     // ── Active state ──────────────────────────────────────────────────────────
 
     &--active {
-      background-color: var(--state-mystic-teal);
-      color: var(--text-primary);
-      box-shadow: var(--shadow-icon-glow);
+      background-color: var(--brand-brass);
+      color: var(--text-on-brass);
 
       .app-condition-pill__icon {
         color: var(--text-on-brass);
@@ -146,11 +142,11 @@
     // ── Hover ─────────────────────────────────────────────────────────────────
 
     &:hover:not(:disabled):not(.app-condition-pill--active) {
-      background-color: color-mix(in srgb, var(--state-mystic-teal) 12%, transparent);
+      background-color: color-mix(in srgb, var(--brand-brass) 12%, transparent);
     }
 
     &--active:hover:not(:disabled) {
-      background-color: color-mix(in srgb, var(--state-mystic-teal) 85%, transparent);
+      background-color: color-mix(in srgb, var(--brand-brass) 85%, transparent);
     }
 
     // ── Disabled state ────────────────────────────────────────────────────────

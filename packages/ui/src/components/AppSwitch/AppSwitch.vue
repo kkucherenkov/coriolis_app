@@ -6,6 +6,8 @@
   interface Props {
     modelValue: boolean;
     disabled?: boolean;
+    /** Renders the crimson invalid treatment + sets aria-invalid. */
+    invalid?: boolean;
     size?: Size;
     label?: string;
     name?: string;
@@ -13,6 +15,7 @@
 
   const props = withDefaults(defineProps<Props>(), {
     disabled: false,
+    invalid: false,
     size: 'md',
     label: undefined,
     name: undefined,
@@ -41,6 +44,7 @@
     {
       'app-switch--checked': props.modelValue,
       'app-switch--disabled': props.disabled,
+      'app-switch--invalid': props.invalid,
     },
   ]);
 
@@ -68,6 +72,7 @@
       role="switch"
       :aria-checked="modelValue"
       :aria-disabled="disabled || undefined"
+      :aria-invalid="invalid || undefined"
       :disabled="disabled"
       :name="name"
       class="app-switch__control"
@@ -93,6 +98,7 @@
     :aria-checked="modelValue"
     :aria-label="ariaLabel"
     :aria-disabled="disabled || undefined"
+    :aria-invalid="invalid || undefined"
     :disabled="disabled"
     :name="name"
     @click="toggle"
@@ -178,6 +184,17 @@
     &--checked .app-switch__track {
       background-color: var(--brand-brass);
       border-color: var(--brand-brass);
+    }
+
+    // ── Invalid state — crimson track border (after --checked so it wins) ───────
+
+    &--invalid .app-switch__track {
+      border-color: var(--state-crimson);
+    }
+
+    &--invalid .app-switch__control:focus-visible,
+    &--invalid:not(label):focus-visible {
+      outline-color: var(--state-crimson);
     }
 
     // ── Internal elements ─────────────────────────────────────────────────────

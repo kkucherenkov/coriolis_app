@@ -150,4 +150,21 @@ describe('AppSwitch', () => {
     });
     expect(wrapper.find('[role="switch"]').attributes('name')).toBe('notifications');
   });
+
+  // ── Invalid ─────────────────────────────────────────────────────────────
+
+  it('applies --invalid modifier class when invalid=true', () => {
+    const wrapper = mount(AppSwitch, { props: { modelValue: false, invalid: true } });
+    expect(wrapper.find('.app-switch--invalid').exists()).toBe(true);
+  });
+
+  it('sets aria-invalid="true" when invalid=true', () => {
+    const wrapper = mount(AppSwitch, { props: { modelValue: false, invalid: true } });
+    expect(wrapper.find('[role="switch"]').attributes('aria-invalid')).toBe('true');
+  });
+
+  it('omits aria-invalid by default', () => {
+    const wrapper = mount(AppSwitch, { props: { modelValue: false } });
+    expect(wrapper.find('[role="switch"]').attributes('aria-invalid')).toBeUndefined();
+  });
 });

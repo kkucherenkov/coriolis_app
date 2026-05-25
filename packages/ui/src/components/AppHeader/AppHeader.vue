@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { ref, useId } from 'vue';
 
   import AppMobileDrawer from '../AppMobileDrawer/AppMobileDrawer.vue';
   import type { DrawerLabels } from '../AppMobileDrawer/AppMobileDrawer.vue';
@@ -58,8 +58,9 @@
    *                             when `mobileDrawerLabels` is provided.
    */
 
-  // Unique id used to link the hamburger button to the drawer via aria-controls.
-  const drawerId = `app-header-drawer-${Math.random().toString(36).slice(2, 8)}`;
+  // Links the hamburger button to the drawer via aria-controls.
+  // useId() is Vue 3.5+: SSR-safe + stable across hydration (Math.random would mismatch).
+  const drawerId = `app-header-drawer-${useId()}`;
 
   const drawerOpen = ref(false);
 </script>

@@ -53,8 +53,7 @@
 
   const emit = defineEmits<{
     (e: 'update:modelValue', v: string): void;
-    (e: 'submit'): void;
-    (e: 'cancel-edit'): void;
+    (e: 'submit' | 'cancel-edit'): void;
   }>();
 
   const isEditing = computed(() => Boolean(props.editingLabel));
@@ -179,8 +178,13 @@
     border-radius: var(--radius-md);
     transition: border-color var(--motion-duration-fast) var(--motion-ease-standard);
 
+    // Focus ring lives on the whole compound control: the inner textarea
+    // sets outline:none, so the composer shows the system 2px brass ring on
+    // :focus-within, matching AppInput / AppTextarea / AppSelect.
     &:focus-within {
       border-color: var(--brand-brass);
+      outline: 2px solid var(--brand-brass);
+      outline-offset: 2px;
     }
 
     // ── Kind modifiers ─────────────────────────────────────────────────────────
@@ -255,6 +259,8 @@
       min-width: 0;
       background: transparent;
       border: none;
+      // Focus is shown on the composer container (:focus-within ring above),
+      // so the inner textarea intentionally has no ring of its own.
       outline: none;
       resize: none;
       color: var(--text-primary);

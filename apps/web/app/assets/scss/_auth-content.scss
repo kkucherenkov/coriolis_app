@@ -1,0 +1,114 @@
+// Shared styling for the content auth pages slot into <AuthShell>.
+// Pulled in per page via `@use` inside a scoped <style> block so the rules
+// inherit each page's scope id and reach its slotted markup. Depends only on
+// global design-token custom properties (no SCSS vars), so it is safe to
+// inline anywhere.
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.auth-submit {
+  width: 100%;
+}
+
+// ── Inline alerts ────────────────────────────────────────────────────────────
+
+.auth-error {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--state-crimson);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--state-crimson) 14%, transparent);
+  color: var(--state-crimson-bright);
+  font-family: var(--font-body);
+  font-size: var(--type-body-sm-font-size);
+  line-height: var(--type-body-sm-line-height);
+}
+
+.auth-success {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--state-success);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--state-success) 14%, transparent);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--type-body-sm-font-size);
+  line-height: var(--type-body-sm-line-height);
+}
+
+// ── Titled note blocks (inbox confirmation, incomplete-link recovery) ────────
+
+.auth-note {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--brand-brass-deep);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--brand-brass) 8%, transparent);
+
+  &--success {
+    border-color: var(--state-success);
+    background: color-mix(in srgb, var(--state-success) 14%, transparent);
+  }
+
+  &--danger {
+    border-color: var(--state-crimson);
+    background: color-mix(in srgb, var(--state-crimson) 14%, transparent);
+  }
+
+  &__title {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--type-body-md-font-size);
+    font-weight: var(--fw-semibold);
+    color: var(--text-primary);
+  }
+
+  &__body {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--type-body-sm-font-size);
+    line-height: var(--type-body-sm-line-height);
+    color: var(--text-secondary);
+  }
+}
+
+// ── Footnote links + legal ───────────────────────────────────────────────────
+
+.auth-links {
+  margin: var(--space-5) 0 0;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--type-body-sm-font-size);
+  color: var(--text-secondary);
+
+  // Two stacked links read as one block: tuck the standalone link directly
+  // under the submit button, then leave the wider gap before the next line.
+  &--tight {
+    margin-top: var(--space-3);
+  }
+}
+
+.auth-link {
+  color: var(--brand-brass);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.auth-legal {
+  margin: var(--space-3) 0 0;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--type-body-xs-font-size);
+  line-height: var(--type-body-xs-line-height);
+  color: var(--text-secondary);
+  opacity: var(--opacity-secondary);
+}

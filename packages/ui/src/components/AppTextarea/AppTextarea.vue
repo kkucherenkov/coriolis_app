@@ -12,9 +12,10 @@
     placeholder?: string;
     inputId?: string;
     rows?: number;
-    /** When true, the textarea grows to fit its content up to maxRows.
-     *  TODO: implement JS grow-to-content polyfill + CSS field-sizing:content.
-     *  Currently only applies the BEM modifier; resize is suppressed. */
+    /** Grows the textarea to fit its content via CSS `field-sizing: content`.
+     *  The `rows` value acts as the minimum height. Progressive enhancement:
+     *  browsers without `field-sizing` keep the fixed `rows` height. Manual
+     *  resize is suppressed so height tracks content. */
     autosize?: boolean;
     maxlength?: number;
   }
@@ -140,11 +141,13 @@
       cursor: not-allowed;
     }
 
-    // ── Autosize — TODO: grow-to-content (field-sizing + JS polyfill) ────────
-    // Currently suppresses manual resize so the future JS recompute is
-    // the sole authority on height. The BEM modifier is already present.
+    // ── Autosize — grow-to-content via CSS field-sizing ─────────────────────
+    // `field-sizing: content` sizes the control to its text; the `rows` attr
+    // stays the minimum height. Manual resize is suppressed so height tracks
+    // content. Browsers without field-sizing keep the fixed rows height.
 
     &--autosize {
+      field-sizing: content;
       resize: none;
     }
   }

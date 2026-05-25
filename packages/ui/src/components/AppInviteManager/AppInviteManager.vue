@@ -158,8 +158,10 @@
       width: $pulse-size;
       height: $pulse-size;
       border-radius: 50%;
+      // Flat-on-dark: the dot + the "SINCE" label + timestamp carry the
+      // live-state signal. No glow (the shadow vocabulary reserves glows for
+      // teal=mystic / crimson=danger only).
       background: var(--state-success);
-      box-shadow: 0 0 8px var(--state-success);
     }
 
     &__since-label {

@@ -238,7 +238,16 @@
               class="page-landing__feature-glyph page-landing__feature-glyph--sm"
               aria-hidden="true"
             >
-              <AppIconCoriolis name="messenger" size="md" color="brass" />
+              <!-- Decorative: the parent span is aria-hidden and the visible
+                   "Share" title carries the meaning, so the glyph is presentational.
+                   v-bind object form sets the required `ariaLabel` prop without
+                   tripping vue/attribute-hyphenation (mirrors Step7Icon.vue). -->
+              <AppIconCoriolis
+                name="messenger"
+                size="md"
+                color="brass"
+                v-bind="{ ariaLabel: '' }"
+              />
             </span>
             <div class="page-landing__feature-text">
               <h2 class="page-landing__feature-title">

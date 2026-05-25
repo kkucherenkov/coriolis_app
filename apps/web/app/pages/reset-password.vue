@@ -2,6 +2,8 @@
   import { AppInput, AppField, AppButton } from '@app/ui';
   import { ref, computed, onMounted } from 'vue';
 
+  import AuthShell from '../components/auth/AuthShell.vue';
+
   const { t } = useI18n({ useScope: 'local' });
   const auth = useAuth();
   const route = useRoute();
@@ -79,7 +81,6 @@
 <i18n lang="json">
 {
   "en": {
-    "wordmark": "Coriolis Companion",
     "title": "Set new password",
     "subtitle": "Choose a new password to regain access to your account.",
     "passwordLabel": "New password",
@@ -99,7 +100,6 @@
     "errorGeneric": "Something went wrong. Please try again."
   },
   "ru": {
-    "wordmark": "Coriolis Companion",
     "title": "Новый пароль",
     "subtitle": "Задайте новый пароль, чтобы восстановить доступ к аккаунту.",
     "passwordLabel": "Новый пароль",
@@ -122,213 +122,68 @@
 </i18n>
 
 <template>
-  <div class="page-reset" data-testid="page-reset">
-    <div class="page-reset__shell">
-      <h1 class="page-reset__wordmark">
-        {{ t('wordmark') }}
-      </h1>
+  <AuthShell data-testid="page-reset" :title="t('title')" :subtitle="t('subtitle')">
+    <p v-if="errorMsg" role="alert" class="auth-error">
+      {{ errorMsg }}
+    </p>
 
-      <div class="page-reset__card">
-        <div class="page-reset__header">
-          <h2 class="page-reset__title">
-            {{ t('title') }}
-          </h2>
-          <p class="page-reset__subtitle">
-            {{ t('subtitle') }}
-          </p>
-        </div>
+    <p v-if="successMsg" role="status" class="auth-success">
+      {{ successMsg }}
+    </p>
 
-        <p v-if="errorMsg" role="alert" class="page-reset__error">
-          {{ errorMsg }}
-        </p>
-
-        <p v-if="successMsg" role="status" class="page-reset__success">
-          {{ successMsg }}
-        </p>
-
-        <div
-          v-if="!tokenPresent"
-          class="page-reset__token-missing"
-          role="alert"
-          data-testid="page-reset-token-missing"
-        >
-          <p class="page-reset__token-missing-title">
-            {{ t('tokenMissingTitle') }}
-          </p>
-          <p class="page-reset__token-missing-body">
-            {{ t('tokenMissingBody') }}
-          </p>
-          <NuxtLink to="/forgot-password" class="page-reset__link">
-            {{ t('requestNew') }}
-          </NuxtLink>
-        </div>
-
-        <form
-          v-else-if="!successMsg"
-          class="page-reset__form"
-          novalidate
-          @submit.prevent="onSubmit"
-        >
-          <AppField :label="t('passwordLabel')" :help="t('passwordHint')" required>
-            <template #default="slotAttrs">
-              <AppInput
-                v-bind="slotAttrs"
-                v-model="password"
-                type="password"
-                autocomplete="new-password"
-              />
-            </template>
-          </AppField>
-
-          <AppField :label="t('confirmLabel')" :help="t('confirmHint')" required>
-            <template #default="slotAttrs">
-              <AppInput
-                v-bind="slotAttrs"
-                v-model="confirmPassword"
-                type="password"
-                autocomplete="new-password"
-              />
-            </template>
-          </AppField>
-
-          <AppButton
-            type="submit"
-            variant="primary"
-            class="page-reset__submit"
-            :loading="loading"
-            :disabled="loading || !formValid"
-          >
-            {{ t('submitButton') }}
-          </AppButton>
-        </form>
-      </div>
+    <div
+      v-if="!tokenPresent"
+      class="auth-note auth-note--danger"
+      role="alert"
+      data-testid="page-reset-token-missing"
+    >
+      <p class="auth-note__title">
+        {{ t('tokenMissingTitle') }}
+      </p>
+      <p class="auth-note__body">
+        {{ t('tokenMissingBody') }}
+      </p>
+      <NuxtLink to="/forgot-password" class="auth-link">
+        {{ t('requestNew') }}
+      </NuxtLink>
     </div>
-  </div>
+
+    <form v-else-if="!successMsg" class="auth-form" novalidate @submit.prevent="onSubmit">
+      <AppField :label="t('passwordLabel')" :help-text="t('passwordHint')" required>
+        <template #default="slotAttrs">
+          <AppInput
+            v-bind="slotAttrs"
+            v-model="password"
+            type="password"
+            autocomplete="new-password"
+          />
+        </template>
+      </AppField>
+
+      <AppField :label="t('confirmLabel')" :help-text="t('confirmHint')" required>
+        <template #default="slotAttrs">
+          <AppInput
+            v-bind="slotAttrs"
+            v-model="confirmPassword"
+            type="password"
+            autocomplete="new-password"
+          />
+        </template>
+      </AppField>
+
+      <AppButton
+        type="submit"
+        variant="primary"
+        class="auth-submit"
+        :loading="loading"
+        :disabled="loading || !formValid"
+      >
+        {{ t('submitButton') }}
+      </AppButton>
+    </form>
+  </AuthShell>
 </template>
 
 <style lang="scss" scoped>
-  // Page-scoped layout cap. Mirrors `login.vue` and `forgot-password.vue`
-  // — see done.md note on T-2026-05-09-004 for the auth-surface proportions.
-  $card-max-width: 480px;
-
-  .page-reset {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-9) var(--space-6);
-    background: var(--surface-bg);
-
-    @media (max-width: 540px) {
-      padding: var(--space-5) 0;
-    }
-
-    &__shell {
-      width: 100%;
-      max-width: $card-max-width;
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      gap: var(--space-6);
-    }
-
-    &__wordmark {
-      margin: 0;
-      text-align: center;
-      font-family: var(--font-display);
-      font-size: var(--type-display-md-font-size);
-      line-height: var(--type-display-md-line-height);
-      font-weight: var(--type-display-md-font-weight);
-      letter-spacing: var(--type-display-md-letter-spacing);
-      text-transform: uppercase;
-      color: var(--brand-brass-light);
-    }
-
-    &__card {
-      background: var(--surface-surface);
-      border: 1px solid var(--border-default);
-      border-radius: var(--radius-xl);
-      padding: var(--space-10) var(--space-9);
-      box-shadow: var(--shadow-md);
-
-      @media (max-width: 540px) {
-        padding: var(--space-7) var(--space-5);
-      }
-    }
-
-    &__header {
-      margin-bottom: var(--space-6);
-    }
-
-    &__title {
-      margin: 0 0 var(--space-2);
-      font-size: var(--text-2xl);
-      font-weight: var(--fw-bold);
-      letter-spacing: var(--tracking-tight);
-      color: var(--text-fg);
-    }
-
-    &__subtitle {
-      margin: 0;
-      font-size: var(--text-sm);
-      color: var(--text-fg-muted);
-    }
-
-    &__error {
-      margin: 0 0 var(--space-4);
-      padding: var(--space-3) var(--space-4);
-      border-radius: var(--radius-md);
-      background: var(--status-danger-soft);
-      color: var(--status-danger);
-      font-size: var(--text-sm);
-    }
-
-    &__success {
-      margin: 0 0 var(--space-4);
-      padding: var(--space-3) var(--space-4);
-      border-radius: var(--radius-md);
-      background: var(--status-success-soft);
-      color: var(--status-success);
-      font-size: var(--text-sm);
-    }
-
-    &__token-missing {
-      padding: var(--space-4);
-      border-radius: var(--radius-md);
-      background: var(--status-warning-soft);
-      color: var(--status-warning);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-2);
-    }
-
-    &__token-missing-title {
-      margin: 0;
-      font-size: var(--text-base);
-      font-weight: var(--fw-bold);
-    }
-
-    &__token-missing-body {
-      margin: 0;
-      font-size: var(--text-sm);
-    }
-
-    &__form {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-4);
-    }
-
-    &__submit {
-      width: 100%;
-    }
-
-    &__link {
-      color: var(--brand-accent);
-      text-decoration: none;
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
+  @use '../assets/scss/auth-content';
 </style>

@@ -20,6 +20,10 @@ const meta: Meta<typeof AppSwitch> = {
         'Accessible label text. Rendered beside the switch. If the default slot is also provided, the slot content wins and this prop is ignored visually.',
     },
     disabled: { control: 'boolean' },
+    invalid: {
+      control: 'boolean',
+      description: 'Crimson invalid treatment + aria-invalid (failed validation).',
+    },
     size: { control: 'select', options: ['sm', 'md'] },
     name: { control: 'text', description: 'Optional form field name attribute.' },
   },
@@ -184,6 +188,22 @@ export const DisabledOn: Story = {
 /** Form usage: name prop forwarded to the button for progressive enhancement. */
 export const FormField: Story = {
   args: { label: 'Agree to terms', name: 'terms' },
+  render: (args) => ({
+    components: { AppSwitch },
+    setup: () => {
+      const checked = ref(false);
+      return { args, checked };
+    },
+    template: `<AppSwitch v-bind="args" v-model="checked" />`,
+  }),
+};
+
+// ── Invalid ──────────────────────────────────────────────────────────────────
+
+/** Invalid: crimson track border + aria-invalid — a required toggle that failed
+ *  validation (e.g. unchecked "Agree to terms" on submit). */
+export const Invalid: Story = {
+  args: { label: 'Agree to terms', invalid: true },
   render: (args) => ({
     components: { AppSwitch },
     setup: () => {
