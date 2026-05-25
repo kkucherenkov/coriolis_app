@@ -157,6 +157,11 @@
   const localHpCurrent = ref(0);
   const localMpCurrent = ref(0);
 
+  // Surfaces a rollback after a failed attribute / skill / HP / MP save so the
+  // value never snaps back silently (critique P0). Cleared on the next attempt
+  // and on any successful mutation.
+  const statError = ref('');
+
   // ── Conditions (Feature 5.3) ─────────────────────────────────────────────────
 
   const localConditions = ref<ConditionFlags>({
@@ -180,6 +185,44 @@
 
   type SheetTab = 'stats' | 'gear' | 'talents' | 'notes' | 'share';
   const activeTab = ref<SheetTab>('stats');
+
+  // Roving-tabindex arrow-key navigation across the enabled tabs, per the
+  // WAI-ARIA tabs pattern. Disabled tabs ([disabled]) are skipped. No per-tab
+  // refs needed: we query the live tablist DOM and move focus + activation.
+  function onTabKeydown(event: KeyboardEvent): void {
+    const navKeys = ['ArrowRight', 'ArrowLeft', 'Home', 'End'];
+    if (!navKeys.includes(event.key)) return;
+    const container = event.currentTarget as HTMLElement;
+    const tabs = [...container.querySelectorAll<HTMLButtonElement>('[role="tab"]:not([disabled])')];
+    if (tabs.length === 0) return;
+    const current = tabs.indexOf(document.activeElement as HTMLButtonElement);
+    let nextIndex = current;
+    switch (event.key) {
+      case 'ArrowRight': {
+        nextIndex = (current + 1) % tabs.length;
+        break;
+      }
+      case 'ArrowLeft': {
+        nextIndex = (current - 1 + tabs.length) % tabs.length;
+        break;
+      }
+      case 'Home': {
+        nextIndex = 0;
+        break;
+      }
+      case 'End': {
+        {
+          nextIndex = tabs.length - 1;
+          // No default
+        }
+        break;
+      }
+    }
+    event.preventDefault();
+    const nextTab = tabs[nextIndex];
+    nextTab?.focus();
+    nextTab?.click();
+  }
 
   // ── Inventory (Feature 5.4) ───────────────────────────────────────────────────
 
@@ -318,12 +361,14 @@
     saveState: _saveState,
     saveError,
     schedule: scheduleIdentitySave,
-    cancel: cancelIdentitySave,
+    flush: flushIdentitySave,
   } = useAutoSave(
     async () => {
       if (!character.value) return;
       const trimmedName = nameValue.value.trim();
-      if (!trimmedName) return;
+      // Nothing to persist if the name is empty or unchanged. The unchanged
+      // guard keeps the unmount flush() cheap (no redundant PATCH).
+      if (!trimmedName || trimmedName === character.value.name) return;
       const updated = await api.update(characterId.value, {
         name: trimmedName,
       });
@@ -379,7 +424,11 @@
   });
 
   onBeforeUnmount(() => {
-    cancelIdentitySave();
+    // Flush (not cancel) so a rename typed right before navigating away is
+    // committed instead of discarded (critique minor). The persist callback
+    // no-ops when the name is unchanged, so this is cheap when nothing is
+    // pending.
+    void flushIdentitySave();
   });
 
   // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -412,6 +461,7 @@
     if (!character.value) return;
     const prev = localAttributes.value[key];
     localAttributes.value = { ...localAttributes.value, [key]: newValue };
+    statError.value = '';
     closeAttrPopover();
     try {
       const updated = await api.update(characterId.value, {
@@ -421,8 +471,9 @@
       localAttributes.value = { ...updated.attributes };
       localHpCurrent.value = updated.hp.current;
       localMpCurrent.value = updated.mp.current;
-    } catch {
+    } catch (error) {
       localAttributes.value = { ...localAttributes.value, [key]: prev };
+      statError.value = (error as Problem).detail ?? t('errorStatSave', { label: attrLabel(key) });
     }
   }
 
@@ -445,6 +496,7 @@
     if (!character.value) return;
     const prev = localSkills.value[key];
     localSkills.value = { ...localSkills.value, [key]: newValue };
+    statError.value = '';
     closeSkillPopover();
     try {
       const updated = await api.update(characterId.value, {
@@ -452,8 +504,9 @@
       });
       character.value = updated;
       localSkills.value = { ...updated.skills };
-    } catch {
+    } catch (error) {
       localSkills.value = { ...localSkills.value, [key]: prev };
+      statError.value = (error as Problem).detail ?? t('errorStatSave', { label: skillLabel(key) });
     }
   }
 
@@ -466,14 +519,16 @@
     const next = Math.max(0, Math.min(max, prev + delta));
     if (next === prev) return;
     localHpCurrent.value = next;
+    statError.value = '';
     try {
       const updated = await api.update(characterId.value, {
         hp: { current: next },
       });
       character.value = updated;
       localHpCurrent.value = updated.hp.current;
-    } catch {
+    } catch (error) {
       localHpCurrent.value = prev;
+      statError.value = (error as Problem).detail ?? t('errorStatSave', { label: t('labelHp') });
     }
   }
 
@@ -484,14 +539,16 @@
     const next = Math.max(0, Math.min(max, prev + delta));
     if (next === prev) return;
     localMpCurrent.value = next;
+    statError.value = '';
     try {
       const updated = await api.update(characterId.value, {
         mp: { current: next },
       });
       character.value = updated;
       localMpCurrent.value = updated.mp.current;
-    } catch {
+    } catch (error) {
       localMpCurrent.value = prev;
+      statError.value = (error as Problem).detail ?? t('errorStatSave', { label: t('labelMp') });
     }
   }
 
@@ -529,6 +586,9 @@
   }
 
   async function confirmAddInjury(): Promise<void> {
+    // Guard against a double-submit (Enter held / button spammed) spawning
+    // multiple optimistic temp entries before the first response lands.
+    if (addInjurySaving.value) return;
     const name = newInjuryName.value.trim();
     if (!name || !character.value) return;
     addInjurySaving.value = true;
@@ -561,6 +621,34 @@
       injuriesError.value = problem.detail ?? t('errorInjuryAdd');
     } finally {
       addInjurySaving.value = false;
+    }
+  }
+
+  // Critical-injury removal is guarded by a confirm (parity with talent delete)
+  // so a stray click on the small × can't silently drop tracked game state.
+  const injuryDeleteConfirmOpen = ref(false);
+  const injuryDeletePending = ref<CriticalInjury | null>(null);
+  const injuryDeleting = ref(false);
+  const injuryDeleteName = computed(() => injuryDeletePending.value?.name ?? '');
+
+  function removeInjuryConfirm(injury: CriticalInjury): void {
+    injuryDeletePending.value = injury;
+    injuryDeleteConfirmOpen.value = true;
+  }
+
+  async function onConfirmRemoveInjury(): Promise<void> {
+    const injury = injuryDeletePending.value;
+    if (!injury) {
+      injuryDeleteConfirmOpen.value = false;
+      return;
+    }
+    injuryDeleting.value = true;
+    try {
+      await removeInjury(injury.id);
+    } finally {
+      injuryDeleting.value = false;
+      injuryDeleteConfirmOpen.value = false;
+      injuryDeletePending.value = null;
     }
   }
 
@@ -681,10 +769,6 @@
     deleteDialogOpen.value = true;
   }
 
-  function closeDeleteDialog(): void {
-    deleteDialogOpen.value = false;
-  }
-
   async function confirmDelete(): Promise<void> {
     deleteLoading.value = true;
     try {
@@ -744,8 +828,10 @@
     "statusSaving": "Saving…",
     "statusSaved": "Saved",
     "statusError": "Save failed",
+    "apply": "Apply",
     "errorLoad": "Failed to load character.",
     "errorSave": "Auto-save failed. Your changes may not have been saved.",
+    "errorStatSave": "Couldn't save {label}. Your change was reverted.",
     "errorDelete": "Failed to delete character. Please try again.",
     "notFoundHeading": "Character not found",
     "notFoundBody": "This character does not exist or you do not have access to it.",
@@ -764,10 +850,12 @@
     "labelHp": "HP",
     "labelMp": "MP",
     "labelEnc": "ENC",
+    "hpHelp": "Hit Points",
+    "mpHelp": "Mind Points",
+    "encHelp": "Encumbrance",
     "labelDecrease": "Decrease",
     "labelIncrease": "Increase",
     "popoverClose": "Close",
-    "comingSoon": "Coming in a future update.",
     "identityConcept": "Concept",
     "concept": {
       "artist": "Artist",
@@ -794,6 +882,8 @@
     "injuryAddCancel": "Cancel",
     "injuryAddSave": "Save",
     "injuryRemoveLabel": "Remove injury",
+    "injuryRemoveConfirmTitle": "Remove this injury?",
+    "injuryRemoveConfirm": "Remove \"{name}\"? This can't be undone.",
     "noInjuries": "No critical injuries.",
     "errorInjuryAdd": "Failed to add injury.",
     "errorInjuryRemove": "Failed to remove injury.",
@@ -809,7 +899,7 @@
     "talentDelete": "Remove talent",
     "talentDeleteConfirmTitle": "Remove this talent?",
     "talentDeleteConfirm": "Remove talent \"{name}\"? This cannot be undone.",
-    "noTalents": "No talents yet.",
+    "noTalents": "No talents yet. Add one to track your character's edges.",
     "errorTalentSave": "Failed to save talent.",
     "errorTalentDelete": "Failed to remove talent.",
     "tabStats": "Stats",
@@ -817,7 +907,7 @@
     "tabTalents": "Talents",
     "tabNotes": "Notes",
     "tabShare": "Share",
-    "tabComingSoon": "Coming in a future update.",
+    "tabSoon": "soon",
     "gearAddButton": "Add item",
     "gearEmpty": "No items yet. Add your first item to get started.",
     "encWarning": "Encumbered (−1 die to physical actions)",
@@ -880,8 +970,10 @@
     "statusSaving": "Сохранение…",
     "statusSaved": "Сохранено",
     "statusError": "Ошибка сохранения",
+    "apply": "Применить",
     "errorLoad": "Не удалось загрузить персонажа.",
     "errorSave": "Автосохранение не удалось. Изменения могут быть потеряны.",
+    "errorStatSave": "Не удалось сохранить «{label}». Изменение отменено.",
     "errorDelete": "Не удалось удалить персонажа. Попробуйте ещё раз.",
     "notFoundHeading": "Персонаж не найден",
     "notFoundBody": "Этот персонаж не существует или у вас нет доступа.",
@@ -900,10 +992,12 @@
     "labelHp": "ОЗ",
     "labelMp": "ОР",
     "labelEnc": "ГР",
+    "hpHelp": "Очки здоровья",
+    "mpHelp": "Очки разума",
+    "encHelp": "Грузоподъёмность",
     "labelDecrease": "Уменьшить",
     "labelIncrease": "Увеличить",
     "popoverClose": "Закрыть",
-    "comingSoon": "Появится в будущем обновлении.",
     "identityConcept": "Амплуа",
     "concept": {
       "artist": "Артист",
@@ -930,6 +1024,8 @@
     "injuryAddCancel": "Отмена",
     "injuryAddSave": "Сохранить",
     "injuryRemoveLabel": "Удалить ранение",
+    "injuryRemoveConfirmTitle": "Удалить ранение?",
+    "injuryRemoveConfirm": "Удалить «{name}»? Это необратимо.",
     "noInjuries": "Нет критических ранений.",
     "errorInjuryAdd": "Не удалось добавить ранение.",
     "errorInjuryRemove": "Не удалось удалить ранение.",
@@ -945,7 +1041,7 @@
     "talentDelete": "Удалить талант",
     "talentDeleteConfirmTitle": "Удалить талант?",
     "talentDeleteConfirm": "Удалить талант «{name}»? Это необратимо.",
-    "noTalents": "Нет талантов.",
+    "noTalents": "Нет талантов. Добавьте, чтобы фиксировать сильные стороны персонажа.",
     "errorTalentSave": "Не удалось сохранить талант.",
     "errorTalentDelete": "Не удалось удалить талант.",
     "tabStats": "Статы",
@@ -953,7 +1049,7 @@
     "tabTalents": "Таланты",
     "tabNotes": "Заметки",
     "tabShare": "Поделиться",
-    "tabComingSoon": "Появится в будущем обновлении.",
+    "tabSoon": "скоро",
     "gearAddButton": "Добавить предмет",
     "gearEmpty": "Нет предметов. Добавьте первый предмет.",
     "encWarning": "Перегружен (−1 кубик на физические действия)",
@@ -1079,7 +1175,7 @@
         <div class="page-sheet__counters">
           <!-- HP -->
           <div class="page-sheet__counter">
-            <span class="page-sheet__counter-label">{{ t('labelHp') }}</span>
+            <span class="page-sheet__counter-label" :title="t('hpHelp')">{{ t('labelHp') }}</span>
             <div class="page-sheet__counter-value">
               {{ localHpCurrent
               }}<span class="page-sheet__counter-max"> / {{ character.hp.max }}</span>
@@ -1106,7 +1202,7 @@
 
           <!-- MP -->
           <div class="page-sheet__counter page-sheet__counter--mystic">
-            <span class="page-sheet__counter-label">{{ t('labelMp') }}</span>
+            <span class="page-sheet__counter-label" :title="t('mpHelp')">{{ t('labelMp') }}</span>
             <div class="page-sheet__counter-value">
               {{ localMpCurrent
               }}<span class="page-sheet__counter-max"> / {{ character.mp.max }}</span>
@@ -1136,7 +1232,7 @@
             class="page-sheet__counter page-sheet__counter--enc"
             :class="{ 'page-sheet__counter--enc-warn': isEncumbered }"
           >
-            <span class="page-sheet__counter-label">{{ t('labelEnc') }}</span>
+            <span class="page-sheet__counter-label" :title="t('encHelp')">{{ t('labelEnc') }}</span>
             <div class="page-sheet__counter-value">
               {{ character.encumbrance.current
               }}<span class="page-sheet__counter-max"> / {{ character.encumbrance.max }}</span>
@@ -1144,6 +1240,11 @@
           </div>
         </div>
       </div>
+
+      <!-- ── Stat save-failure banner (critique P0) ─────────────────────────── -->
+      <AppBanner v-if="statError" tone="danger" class="page-sheet__stat-error" role="alert">
+        {{ statError }}
+      </AppBanner>
 
       <!-- ── Role migration banner ──────────────────────────────────────────── -->
       <RoleUnmigratedBanner
@@ -1160,31 +1261,52 @@
       </AppBanner>
 
       <!-- ── Tab bar ──────────────────────────────────────────────────────────── -->
-      <div class="page-sheet__tabs" role="tablist">
-        <AppTab :active="activeTab === 'stats'" size="md" tone="brass" @click="activeTab = 'stats'">
-          {{ t('tabStats') }}
-        </AppTab>
-        <AppTab :active="activeTab === 'gear'" size="md" tone="brass" @click="activeTab = 'gear'">
-          {{ t('tabGear') }}
-        </AppTab>
+      <div class="page-sheet__tabs" role="tablist" @keydown="onTabKeydown">
         <AppTab
-          :active="activeTab === 'talents'"
+          id="sheet-tab-stats"
+          :active="activeTab === 'stats'"
           size="md"
           tone="brass"
-          @click="activeTab = 'talents'"
+          aria-controls="sheet-panel-stats"
+          @click="activeTab = 'stats'"
         >
+          {{ t('tabStats') }}
+        </AppTab>
+        <AppTab
+          id="sheet-tab-gear"
+          :active="activeTab === 'gear'"
+          size="md"
+          tone="brass"
+          aria-controls="sheet-panel-gear"
+          @click="activeTab = 'gear'"
+        >
+          {{ t('tabGear') }}
+        </AppTab>
+        <!-- Talents / Notes / Share are roadmap surfaces — disabled with a "soon"
+             marker so they don't read as live destinations (critique P1). -->
+        <AppTab disabled size="md" tone="brass">
           {{ t('tabTalents') }}
+          <span class="page-sheet__tab-soon">{{ t('tabSoon') }}</span>
         </AppTab>
-        <AppTab :active="activeTab === 'notes'" size="md" tone="brass" @click="activeTab = 'notes'">
+        <AppTab disabled size="md" tone="brass">
           {{ t('tabNotes') }}
+          <span class="page-sheet__tab-soon">{{ t('tabSoon') }}</span>
         </AppTab>
-        <AppTab :active="activeTab === 'share'" size="md" tone="brass" @click="activeTab = 'share'">
+        <AppTab disabled size="md" tone="brass">
           {{ t('tabShare') }}
+          <span class="page-sheet__tab-soon">{{ t('tabSoon') }}</span>
         </AppTab>
       </div>
 
       <!-- ── Three-column body (Stats tab) ─────────────────────────────────────── -->
-      <div v-show="activeTab === 'stats'" class="page-sheet__columns">
+      <div
+        v-show="activeTab === 'stats'"
+        id="sheet-panel-stats"
+        class="page-sheet__columns"
+        role="tabpanel"
+        aria-labelledby="sheet-tab-stats"
+        tabindex="0"
+      >
         <!-- LEFT column: Identity + Conditions + Critical Injuries -->
         <div class="page-sheet__col page-sheet__col--left">
           <!-- Identity card -->
@@ -1242,7 +1364,7 @@
                 <button
                   class="page-sheet__injury-remove"
                   :aria-label="t('injuryRemoveLabel')"
-                  @click="removeInjury(injury.id)"
+                  @click="removeInjuryConfirm(injury)"
                 >
                   ×
                 </button>
@@ -1357,7 +1479,7 @@
                       {{ t('popoverClose') }}
                     </AppButton>
                     <AppButton variant="primary" size="sm" @click="commitAttr(key, stepperValue)">
-                      {{ t('statusSaved') }}
+                      {{ t('apply') }}
                     </AppButton>
                   </div>
                 </div>
@@ -1459,7 +1581,7 @@
                           size="sm"
                           @click="commitSkill(sk, stepperValue)"
                         >
-                          {{ t('statusSaved') }}
+                          {{ t('apply') }}
                         </AppButton>
                       </div>
                     </div>
@@ -1556,7 +1678,7 @@
                           size="sm"
                           @click="commitSkill(sk, stepperValue)"
                         >
-                          {{ t('statusSaved') }}
+                          {{ t('apply') }}
                         </AppButton>
                       </div>
                     </div>
@@ -1639,7 +1761,14 @@
       </div>
 
       <!-- ── Gear tab ────────────────────────────────────────────────────────── -->
-      <div v-show="activeTab === 'gear'" class="page-sheet__gear-tab">
+      <div
+        v-show="activeTab === 'gear'"
+        id="sheet-panel-gear"
+        class="page-sheet__gear-tab"
+        role="tabpanel"
+        aria-labelledby="sheet-tab-gear"
+        tabindex="0"
+      >
         <!-- Top action row -->
         <div class="page-sheet__gear-header">
           <AppButton variant="primary" size="sm" @click="openCreateItem">
@@ -1710,23 +1839,6 @@
         </AppCard>
       </div>
 
-      <!-- ── Other placeholder tabs ──────────────────────────────────────────── -->
-      <div v-show="activeTab === 'talents'" class="page-sheet__tab-placeholder">
-        <p class="page-sheet__placeholder-text">
-          {{ t('tabComingSoon') }}
-        </p>
-      </div>
-      <div v-show="activeTab === 'notes'" class="page-sheet__tab-placeholder">
-        <p class="page-sheet__placeholder-text">
-          {{ t('tabComingSoon') }}
-        </p>
-      </div>
-      <div v-show="activeTab === 'share'" class="page-sheet__tab-placeholder">
-        <p class="page-sheet__placeholder-text">
-          {{ t('tabComingSoon') }}
-        </p>
-      </div>
-
       <!-- ── Danger zone ─────────────────────────────────────────────────────── -->
       <div class="page-sheet__danger-zone">
         <AppButton variant="danger" size="sm" @click="openDeleteDialog">
@@ -1735,30 +1847,17 @@
       </div>
     </template>
 
-    <!-- ── Delete confirmation dialog ─────────────────────────────────────────── -->
-    <dialog
-      :open="deleteDialogOpen"
-      class="page-sheet__dialog"
-      :aria-label="t('deleteConfirmHeading')"
-      @close="closeDeleteDialog"
-    >
-      <div class="page-sheet__dialog-inner">
-        <p class="page-sheet__dialog-heading">
-          {{ t('deleteConfirmHeading') }}
-        </p>
-        <p class="page-sheet__dialog-body">
-          {{ t('deleteConfirmBody') }}
-        </p>
-        <div class="page-sheet__dialog-actions">
-          <AppButton variant="ghost" size="md" :disabled="deleteLoading" @click="closeDeleteDialog">
-            {{ t('deleteConfirmNo') }}
-          </AppButton>
-          <AppButton variant="danger" size="md" :loading="deleteLoading" @click="confirmDelete">
-            {{ t('deleteConfirmYes') }}
-          </AppButton>
-        </div>
-      </div>
-    </dialog>
+    <!-- ── Delete confirmation (focus-trapping AppModal via AppConfirm) ────────── -->
+    <AppConfirm
+      v-model:open="deleteDialogOpen"
+      tone="danger"
+      :title="t('deleteConfirmHeading')"
+      :body="t('deleteConfirmBody')"
+      :confirm-label="t('deleteConfirmYes')"
+      :cancel-label="t('deleteConfirmNo')"
+      :loading="deleteLoading"
+      @confirm="confirmDelete"
+    />
 
     <!-- ── Feature 5.2 — TalentEditor (migrated to AppModal in Feature 5.4) ──── -->
     <AppModal
@@ -1855,6 +1954,18 @@
       :loading="talentDeleting"
       @confirm="onConfirmDeleteTalent"
     />
+
+    <!-- ── Critical-injury removal confirm (critique P2) ────────────────────── -->
+    <AppConfirm
+      v-model:open="injuryDeleteConfirmOpen"
+      tone="danger"
+      :title="t('injuryRemoveConfirmTitle')"
+      :body="t('injuryRemoveConfirm', { name: injuryDeleteName })"
+      :confirm-label="t('injuryRemoveLabel')"
+      :cancel-label="t('injuryAddCancel')"
+      :loading="injuryDeleting"
+      @confirm="onConfirmRemoveInjury"
+    />
   </section>
 </template>
 
@@ -1868,8 +1979,6 @@
   $skeleton-hero-height: 140px;
   $skeleton-body-height: 400px;
   $skeleton-stagger: 200ms;
-  $dialog-max-width: 400px;
-  $dialog-talent-max-width: 520px;
   $stepper-btn-size: 32px;
   $counter-min-width: 90px;
   $stepper-min-width: 160px;
@@ -1885,7 +1994,7 @@
   $accent-rail-offset: 6px;
   $bp-desktop: 1024px;
   $bp-mobile: 768px;
-  $injury-remove-size: 20px;
+  $injury-remove-size: 32px;
 
   // ── Root ──────────────────────────────────────────────────────────────────────
 
@@ -2571,8 +2680,8 @@
 
     &__skills-advanced-note {
       margin-left: auto;
-      font-size: $font-size-micro;
-      opacity: 0.7;
+      font-size: $font-size-legend;
+      opacity: 0.85;
       letter-spacing: 0.12em;
     }
 
@@ -2751,6 +2860,15 @@
       overflow-x: auto;
     }
 
+    // "soon" marker on roadmap (disabled) tabs.
+    &__tab-soon {
+      margin-left: var(--space-1);
+      font-size: $font-size-micro;
+      letter-spacing: 0.12em;
+      text-transform: lowercase;
+      color: var(--brand-brass);
+    }
+
     // ── Encumbrance warning banner ────────────────────────────────────────────
 
     &__enc-warning {
@@ -2917,13 +3035,6 @@
       font-size: var(--type-body-md-font-size);
     }
 
-    // ── Other placeholder tabs ────────────────────────────────────────────────
-
-    &__tab-placeholder {
-      padding: var(--space-8);
-      text-align: center;
-    }
-
     // ── TalentEditor (AppModal variant) ──────────────────────────────────────
 
     &__talent-editor {
@@ -2934,62 +3045,14 @@
 
     // ── Dialogs ───────────────────────────────────────────────────────────────
 
-    &__dialog {
-      position: fixed;
-      inset: 0;
-      margin: auto;
-      padding: 0;
-      border: 1px solid var(--brand-brass-deep);
-      border-radius: var(--radius-md);
-      background-color: var(--surface-night);
-      color: var(--text-primary);
-      max-width: $dialog-max-width;
-      width: calc(100% - var(--space-8));
-
-      &::backdrop {
-        background-color: color-mix(in srgb, var(--surface-void) 80%, transparent);
-      }
-
-      &:not([open]) {
-        display: none;
-      }
-
-      &--talent {
-        max-width: $dialog-talent-max-width;
-      }
-    }
-
-    &__dialog-inner {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-4);
-      padding: var(--space-6);
-    }
-
+    // Heading shared by the talent editor (AppModal). The delete + injury-remove
+    // confirms now use AppConfirm, which renders its own chrome.
     &__dialog-heading {
       margin: 0;
       font-family: var(--font-display);
       font-size: var(--type-display-sm-font-size);
       line-height: var(--type-display-sm-line-height);
       color: var(--brand-brass-light);
-    }
-
-    &__dialog-body {
-      margin: 0;
-      font-family: var(--font-body);
-      font-size: var(--type-body-md-font-size);
-      color: var(--text-secondary);
-    }
-
-    &__dialog-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: var(--space-3);
-
-      &--talent {
-        justify-content: space-between;
-        align-items: center;
-      }
     }
 
     &__dialog-actions-right {

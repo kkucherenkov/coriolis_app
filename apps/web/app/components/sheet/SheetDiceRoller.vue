@@ -376,9 +376,16 @@
       font-family: var(--font-display);
       font-size: var(--type-body-md-font-size);
       color: var(--brand-brass-light);
+      // Long labels (up to 80 chars) ellipsis instead of pushing the pushed
+      // badge out of the row or overflowing the narrow right column.
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     &__pushed-badge {
+      flex-shrink: 0;
       padding: var(--space-1) var(--space-2);
       background-color: color-mix(in srgb, var(--state-mystic-teal) 15%, transparent);
       border: 1px solid var(--state-mystic-teal);
