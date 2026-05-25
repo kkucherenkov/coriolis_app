@@ -6,7 +6,6 @@
 
   type DieValue = 1 | 2 | 3 | 4 | 5 | 6;
   type DieSize = 'sm' | 'md' | 'lg';
-  type DieTone = 'brass' | 'mystic';
 
   /**
    * Coriolis dice rules (ST3001 ГЛАВА 5):
@@ -29,15 +28,21 @@
     values: DieValue[];
     pushedIndices?: number[];
     size?: DieSize;
-    tone?: DieTone;
     showHitCount?: boolean;
+    /**
+     * Pre-formatted hit-count label, e.g. vue-i18n `t('hits', { n })`. Omitted,
+     * it falls back to an English "N hit"/"N hits" string for standalone use;
+     * a localized app should pass this so plural rules are correct (an English
+     * binary singular/plural cannot express ru's three forms).
+     */
+    countLabel?: string;
   }
 
   const props = withDefaults(defineProps<Props>(), {
     pushedIndices: () => [],
     size: 'md',
-    tone: 'brass',
     showHitCount: true,
+    countLabel: undefined,
   });
 
   const pushedSet = computed(() => new Set(props.pushedIndices));
@@ -49,6 +54,10 @@
    */
   const hitCount = computed(() => props.values.filter((v) => v === 6).length);
 
+  const countText = computed(
+    () => props.countLabel ?? `${String(hitCount.value)} ${hitCount.value === 1 ? 'hit' : 'hits'}`,
+  );
+
   /** Determine display state per die index. */
   function dieState(index: number, value: DieValue): 'normal' | 'hit' | 'pushed' | 'failed' {
     const isPushed = pushedSet.value.has(index);
@@ -58,11 +67,7 @@
     return 'normal';
   }
 
-  const poolClasses = computed(() => [
-    'app-die-pool',
-    `app-die-pool--${props.size}`,
-    `app-die-pool--${props.tone}`,
-  ]);
+  const poolClasses = computed(() => ['app-die-pool', `app-die-pool--${props.size}`]);
 </script>
 
 <template>
@@ -79,7 +84,7 @@
 
     <div v-if="showHitCount" class="app-die-pool__count" aria-live="polite">
       <AppBadge variant="success" size="sm">
-        {{ hitCount }} {{ hitCount === 1 ? 'hit' : 'hits' }}
+        {{ countText }}
       </AppBadge>
     </div>
   </div>
@@ -147,16 +152,6 @@
       .app-die-pool__list {
         gap: var(--space-3);
       }
-    }
-
-    // ── Tone modifiers (reserved for future theming) ──────────────────────────
-
-    &--brass {
-      // No overrides yet; placeholder for "Mystic powers" variant.
-    }
-
-    &--mystic {
-      // Future: teal tint on the pool background.
     }
   }
 </style>

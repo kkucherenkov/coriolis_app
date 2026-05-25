@@ -240,7 +240,7 @@
             :values="asDieValues(modalRoll.dice)"
             :pushed-indices="pushedIndicesFor(modalRoll)"
             size="md"
-            tone="brass"
+            :count-label="t('hits', { n: modalRoll.hits })"
           />
         </div>
       </div>

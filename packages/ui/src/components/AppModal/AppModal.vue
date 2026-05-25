@@ -1,5 +1,7 @@
 <script setup lang="ts">
-  import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
+  import { computed, onUnmounted, ref, watch } from 'vue';
+
+  import { useFocusTrap } from '../../composables/use-focus-trap';
 
   type Size = 'sm' | 'md' | 'lg';
 
@@ -49,9 +51,6 @@
   const panelRef = ref<HTMLElement | null>(null);
   const triggerRef = ref<HTMLElement | null>(null);
 
-  // Track the element that triggered the modal open so focus can be returned.
-  let priorFocus: HTMLElement | null = null;
-
   function close(): void {
     emit('update:open', false);
   }
@@ -75,62 +74,23 @@
     }
   }
 
-  // ── Focus trap ─────────────────────────────────────────────────────────────
+  // ── Focus trap (shared composable) + Esc listener ───────────────────────────
+  // Focus move-in / trap / return lives in useFocusTrap; AppModal owns only the
+  // Escape-to-close behaviour, which the trap deliberately leaves to callers.
 
-  function getFocusable(): HTMLElement[] {
-    if (!panelRef.value) return [];
-    return [
-      ...panelRef.value.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      ),
-    ];
-  }
-
-  function trapFocus(event: KeyboardEvent): void {
-    if (event.key !== 'Tab') return;
-    const focusable = getFocusable();
-    if (focusable.length === 0) return;
-    const first = focusable[0];
-    if (!first) return;
-    const last = focusable.at(-1) ?? first;
-    if (event.shiftKey) {
-      if (document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      }
-    } else {
-      if (document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    }
-  }
+  useFocusTrap(panelRef, () => props.open);
 
   watch(
     () => props.open,
-    async (isOpen) => {
-      if (isOpen) {
-        priorFocus = document.activeElement as HTMLElement | null;
-        document.addEventListener('keydown', onKeydown);
-        // Move focus into the panel on next tick so the DOM is visible.
-        await nextTick();
-        const focusable = getFocusable();
-        if (focusable.length > 0) focusable[0]?.focus();
-        panelRef.value?.addEventListener('keydown', trapFocus);
-      } else {
-        document.removeEventListener('keydown', onKeydown);
-        panelRef.value?.removeEventListener('keydown', trapFocus);
-        // Return focus to the element that opened the modal.
-        priorFocus?.focus();
-        priorFocus = null;
-      }
+    (isOpen) => {
+      if (isOpen) document.addEventListener('keydown', onKeydown);
+      else document.removeEventListener('keydown', onKeydown);
     },
     { immediate: true },
   );
 
   onUnmounted(() => {
     document.removeEventListener('keydown', onKeydown);
-    panelRef.value?.removeEventListener('keydown', trapFocus);
   });
 
   // ── Computed ────────────────────────────────────────────────────────────────

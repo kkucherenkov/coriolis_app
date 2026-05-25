@@ -1,6 +1,7 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
 
+  import { useFocusTrap } from '../../composables/use-focus-trap';
   import { AppButton } from '../AppButton';
   import { AppPanelTitle } from '../AppPanelTitle';
   import { AppSessionShareLinkCard } from '../AppSessionShareLinkCard';
@@ -44,6 +45,13 @@
   const revealTitle = computed(() =>
     props.state === 'just-rotated' ? props.labels.revealTitleRotated : props.labels.revealTitleNew,
   );
+
+  // The reveal is an aria-modal alertdialog showing a secret share link; trap
+  // focus inside it and return focus on close. Esc stays off by design (the
+  // user must act on the link), so the trap composable, which does not bind
+  // Esc, is exactly the right amount of behaviour.
+  const revealPanel = ref<HTMLElement | null>(null);
+  useFocusTrap(revealPanel, () => isReveal.value);
 </script>
 
 <template>
@@ -100,7 +108,7 @@
       aria-modal="true"
       aria-labelledby="app-invite-manager-reveal-title"
     >
-      <div class="app-invite-manager__reveal-panel">
+      <div ref="revealPanel" class="app-invite-manager__reveal-panel">
         <header class="app-invite-manager__reveal-header">
           <h2 id="app-invite-manager-reveal-title" class="app-invite-manager__reveal-title">
             {{ revealTitle }}

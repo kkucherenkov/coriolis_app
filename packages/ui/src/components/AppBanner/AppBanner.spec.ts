@@ -138,6 +138,16 @@ describe('AppBanner', () => {
     expect(wrapper.emitted('dismiss')).toBeUndefined();
   });
 
+  it('defaults the dismiss button aria-label to "Dismiss"', () => {
+    const wrapper = mount(AppBanner, { props: { dismissible: true } });
+    expect(wrapper.find('.app-banner__dismiss').attributes('aria-label')).toBe('Dismiss');
+  });
+
+  it('uses the dismissLabel prop for the dismiss button aria-label', () => {
+    const wrapper = mount(AppBanner, { props: { dismissible: true, dismissLabel: 'Закрыть' } });
+    expect(wrapper.find('.app-banner__dismiss').attributes('aria-label')).toBe('Закрыть');
+  });
+
   // ── Default icon per tone ─────────────────────────────────────────────────
 
   it.each(TONES)('uses default icon "%s" for tone=%s when no icon prop given', (tone) => {

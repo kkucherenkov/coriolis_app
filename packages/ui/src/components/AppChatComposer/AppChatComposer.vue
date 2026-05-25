@@ -40,6 +40,12 @@
     editingPreview?: string;
     /** Label for the Cancel button inside the edit banner. */
     cancelEditLabel?: string;
+    /** Override the textarea placeholder. Defaults to a kind-aware English string. */
+    placeholder?: string;
+    /** Label for the send button. Localize per consumer locale. */
+    sendLabel?: string;
+    /** Label for the save button shown in edit mode. Localize per consumer locale. */
+    saveLabel?: string;
   }
 
   const props = withDefaults(defineProps<Props>(), {
@@ -49,6 +55,9 @@
     editingLabel: '',
     editingPreview: '',
     cancelEditLabel: 'Cancel',
+    placeholder: undefined,
+    sendLabel: 'Send',
+    saveLabel: 'Save',
   });
 
   const emit = defineEmits<{
@@ -70,6 +79,7 @@
   }
 
   const placeholder = computed(() => {
+    if (props.placeholder) return props.placeholder;
     if (props.conversationKind === 'whisper') {
       return `Whisper to ${props.partnerDisplayName ?? '…'}…`;
     }
@@ -161,7 +171,7 @@
         data-testid="submit-btn"
         @click="onSubmitClick"
       >
-        {{ isEditing ? 'Save' : 'Send' }}
+        {{ isEditing ? saveLabel : sendLabel }}
       </AppButton>
     </div>
   </div>
@@ -220,7 +230,7 @@
     }
 
     &__edit-banner-label {
-      font-weight: var(--font-weight-medium, 500);
+      font-weight: var(--fw-medium);
       color: var(--brand-brass);
       letter-spacing: 0.02em;
     }
@@ -289,7 +299,7 @@
     // ── Counter ────────────────────────────────────────────────────────────────
 
     &__counter {
-      font-size: var(--type-body-xs-font-size, 0.75rem);
+      font-size: var(--type-body-xs-font-size);
       color: var(--text-secondary);
       font-variant-numeric: tabular-nums;
 

@@ -10,6 +10,8 @@
     size?: Size;
     disabled?: boolean;
     removable?: boolean;
+    /** Accessible name for the remove control. Localize per consumer locale. */
+    removeLabel?: string;
   }
 
   const props = withDefaults(defineProps<Props>(), {
@@ -18,6 +20,7 @@
     size: 'md',
     disabled: false,
     removable: false,
+    removeLabel: 'Remove',
   });
 
   const emit = defineEmits<{
@@ -65,7 +68,7 @@
       class="app-chip__remove"
       role="button"
       tabindex="0"
-      aria-label="Remove"
+      :aria-label="removeLabel"
       @click.stop="handleRemove"
       @keydown.enter.prevent="handleRemove"
       @keydown.space.prevent="handleRemove"

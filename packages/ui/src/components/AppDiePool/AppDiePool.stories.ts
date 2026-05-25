@@ -10,14 +10,12 @@ const meta: Meta<typeof AppDiePool> = {
     values: { control: 'object' },
     pushedIndices: { control: 'object' },
     size: { control: { type: 'select' }, options: ['sm', 'md', 'lg'] },
-    tone: { control: { type: 'select' }, options: ['brass', 'mystic'] },
     showHitCount: { control: 'boolean' },
   },
   args: {
     values: [6, 3, 1, 5, 4, 6, 2, 4],
     pushedIndices: [],
     size: 'md',
-    tone: 'brass',
     showHitCount: true,
   },
 };

@@ -10,6 +10,8 @@
     title?: string;
     dismissible?: boolean;
     icon?: string;
+    /** Accessible name for the dismiss control. Localize per consumer locale. */
+    dismissLabel?: string;
   }
 
   const props = withDefaults(defineProps<Props>(), {
@@ -17,6 +19,7 @@
     title: undefined,
     dismissible: false,
     icon: undefined,
+    dismissLabel: 'Dismiss',
   });
 
   const emit = defineEmits<{
@@ -65,7 +68,7 @@
       v-if="dismissible"
       type="button"
       class="app-banner__dismiss"
-      :aria-label="'Dismiss'"
+      :aria-label="dismissLabel"
       @click="emit('dismiss')"
     >
       <AppIcon name="x" size="sm" />

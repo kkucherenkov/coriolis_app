@@ -167,7 +167,8 @@
     "exhaustedHint": "Exhausted — push not available.",
     "noRollYet": "No roll yet — describe one above.",
     "errorRoll": "Couldn't roll. Try again.",
-    "errorPush": "Couldn't push that roll."
+    "errorPush": "Couldn't push that roll.",
+    "hits": "{n} hit | {n} hits"
   },
   "ru": {
     "labelLabel": "Название",
@@ -183,7 +184,8 @@
     "exhaustedHint": "Истощение — дожать нельзя.",
     "noRollYet": "Бросков ещё нет — опиши бросок выше.",
     "errorRoll": "Не удалось бросить. Попробуй ещё раз.",
-    "errorPush": "Не удалось дожать."
+    "errorPush": "Не удалось дожать.",
+    "hits": "{n} успех | {n} успеха | {n} успехов"
   }
 }
 </i18n>
@@ -263,7 +265,7 @@
         :values="asDieValues(lastRoll.dice)"
         :pushed-indices="pushedIndices"
         size="md"
-        tone="brass"
+        :count-label="t('hits', { n: lastRoll.hits })"
       />
       <!--
         SURFACES.md §9 — pushed outcome line. Renders only after an

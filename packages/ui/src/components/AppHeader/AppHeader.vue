@@ -202,7 +202,7 @@
       color: var(--brand-brass-light);
       font-family: var(--type-display-md-font-family);
       font-size: var(--type-display-sm-font-size);
-      font-weight: 700;
+      font-weight: var(--fw-regular);
       letter-spacing: 0.03em;
       transition: opacity var(--motion-duration-fast) var(--motion-ease-standard);
 

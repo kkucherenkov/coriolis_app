@@ -211,7 +211,7 @@ Semantic-only, never decorative.
 - **Mono Stat MD** (JetBrains Mono 500, 20px): skill ranks, item weights, dice values.
 
 ### Named Rules
-**The Reserved Display Rule.** Forum names things; it never labels them. It is forbidden on buttons, tooltips, and table cells. Use it for a character's name, a section title, the wordmark, never for a control.
+**The Reserved Display Rule.** Forum is for the noun, Inter for the verb. Forum names and labels things: a character's name, section titles, the wordmark, uppercase stat-block labels (`AppStatBlock`, even when the block is a tappable control), and section eyebrows (`AppLabel` `eyebrow`, menu headers) all use Display SM. It is forbidden on the **actionable text of controls**, the button verb, tab, link, tooltip, and table-data cell, where Inter carries the load. The test: if the text triggers an action, it is Inter; if it names or labels a thing, Forum is allowed.
 
 **The Single Weight Rule.** Forum ships one weight (Regular 400). Emphasis comes from size and tracking (0.04em to 0.10em), never from a non-existent bold. When a heading needs a bold descriptor beside it, pair Forum with Inter Semibold rather than faking weight.
 

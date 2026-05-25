@@ -151,6 +151,27 @@ describe('AppChatComposer', () => {
     expect(wrapper.find('textarea').attributes('placeholder')).toBe('Whisper to ……');
   });
 
+  it('placeholder prop overrides the kind-derived default', () => {
+    const wrapper = mount(AppChatComposer, {
+      props: { ...BASE, placeholder: 'Напишите сообщение…' },
+    });
+    expect(wrapper.find('textarea').attributes('placeholder')).toBe('Напишите сообщение…');
+  });
+
+  // ── Send / Save labels ────────────────────────────────────────────────────
+
+  it('uses sendLabel for the submit button', () => {
+    const wrapper = mount(AppChatComposer, { props: { ...BASE, sendLabel: 'Отправить' } });
+    expect(wrapper.find('[data-testid="submit-btn"]').text()).toBe('Отправить');
+  });
+
+  it('uses saveLabel for the submit button in edit mode', () => {
+    const wrapper = mount(AppChatComposer, {
+      props: { ...BASE, editingLabel: 'Editing message', saveLabel: 'Сохранить' },
+    });
+    expect(wrapper.find('[data-testid="submit-btn"]').text()).toBe('Сохранить');
+  });
+
   // ── BEM root class ────────────────────────────────────────────────────────
 
   it('applies app-chat-composer root BEM class', () => {

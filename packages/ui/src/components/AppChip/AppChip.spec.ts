@@ -174,4 +174,16 @@ describe('AppChip', () => {
     const wrapper = mount(AppChip, { slots: { default: 'Exhausted' } });
     expect(wrapper.find('.app-chip__label').text()).toContain('Exhausted');
   });
+
+  // ── Remove control label ──────────────────────────────────────────────────
+
+  it('defaults the remove control aria-label to "Remove"', () => {
+    const wrapper = mount(AppChip, { props: { removable: true } });
+    expect(wrapper.find('.app-chip__remove').attributes('aria-label')).toBe('Remove');
+  });
+
+  it('uses the removeLabel prop for the remove control aria-label', () => {
+    const wrapper = mount(AppChip, { props: { removable: true, removeLabel: 'Убрать' } });
+    expect(wrapper.find('.app-chip__remove').attributes('aria-label')).toBe('Убрать');
+  });
 });

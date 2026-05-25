@@ -6,7 +6,6 @@ import AppDiePool from './AppDiePool.vue';
 type DieValue = 1 | 2 | 3 | 4 | 5 | 6;
 
 const SIZES = ['sm', 'md', 'lg'] as const;
-const TONES = ['brass', 'mystic'] as const;
 
 describe('AppDiePool', () => {
   // ── Root element ──────────────────────────────────────────────────────────
@@ -90,6 +89,14 @@ describe('AppDiePool', () => {
     expect(wrapper.find('.app-die-pool__count').exists()).toBe(false);
   });
 
+  it('renders countLabel verbatim when provided (overrides the English fallback)', () => {
+    const wrapper = mount(AppDiePool, {
+      props: { values: [6, 6] as DieValue[], countLabel: '2 успеха' },
+    });
+    expect(wrapper.find('.app-die-pool__count').text()).toContain('2 успеха');
+    expect(wrapper.find('.app-die-pool__count').text()).not.toContain('hits');
+  });
+
   // ── Pushed state ──────────────────────────────────────────────────────────
 
   it('applies app-die-pool__item--pushed to items at pushed indices', () => {
@@ -123,20 +130,6 @@ describe('AppDiePool', () => {
   it('defaults to size=md', () => {
     const wrapper = mount(AppDiePool, { props: { values: [6] as DieValue[] } });
     expect(wrapper.classes()).toContain('app-die-pool--md');
-  });
-
-  // ── Tone modifiers ────────────────────────────────────────────────────────
-
-  it.each(TONES)('applies app-die-pool--%s for tone=%s', (tone) => {
-    const wrapper = mount(AppDiePool, {
-      props: { values: [6] as DieValue[], tone },
-    });
-    expect(wrapper.classes()).toContain(`app-die-pool--${tone}`);
-  });
-
-  it('defaults to tone=brass', () => {
-    const wrapper = mount(AppDiePool, { props: { values: [6] as DieValue[] } });
-    expect(wrapper.classes()).toContain('app-die-pool--brass');
   });
 
   // ── aria-live on count ────────────────────────────────────────────────────
