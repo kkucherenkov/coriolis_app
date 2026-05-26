@@ -2,6 +2,16 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-26-001 — Click-the-dot stat editing (AppDotInput)
+
+- Created: 2026-05-26
+- Completed: 2026-05-26
+- Result: PR #65 (merged) — http://code.homelab.local/kkucherenkov/coriolis_app/pulls/65
+- Spec: confirmed shape brief — follow-up to the PR #64 deferral
+- Shipped: new `@app/ui` `AppDotInput` (role=slider, click/keyboard, hover preview, 32px coarse-pointer hit) + story/spec; `AppStatBlock` `editable` mode; sheet attributes + skills edit click-the-dot inline; removed AppPopover steppers + dead state/CSS/keys; 350ms debounced optimistic commit reusing the statError rollback.
+- Verified: 1125 ui + 548 web unit tests; typecheck/lint/stylelint/prettier/i18n clean.
+- Open: manual browser pass (mobile tap targets, click-idiom feel) not yet done.
+
 ## T-2026-05-25-001 — Character sheet impeccable pass (harden/clarify/layout/polish)
 
 - Created: 2026-05-25

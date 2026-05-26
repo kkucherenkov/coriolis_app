@@ -162,6 +162,27 @@
   // and on any successful mutation.
   const statError = ref('');
 
+  // Per-control save feedback for stat/skill edits (critique P2): an AppSavePulse
+  // by the Attributes/Skills headers reflects the optimistic save round-trip.
+  const statSaveState = ref<SaveState>('idle');
+  let statSavedTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function markStatSaving(): void {
+    if (statSavedTimer !== null) {
+      clearTimeout(statSavedTimer);
+      statSavedTimer = null;
+    }
+    statSaveState.value = 'saving';
+  }
+
+  function markStatSaved(): void {
+    statSaveState.value = 'saved';
+    statSavedTimer = setTimeout(() => {
+      if (statSaveState.value === 'saved') statSaveState.value = 'idle';
+      statSavedTimer = null;
+    }, 1500);
+  }
+
   // ── Conditions (Feature 5.3) ─────────────────────────────────────────────────
 
   const localConditions = ref<ConditionFlags>({
@@ -379,6 +400,18 @@
   // Ref<SaveState | undefined> when the generic argument is a union).
   const saveState = computed<SaveState>(() => _saveState.value ?? 'idle');
 
+  // Concept is an enum key (e.g. "pilot") localized via `concept.*`, but legacy
+  // characters may carry free text. Resolve once: localize known keys, fall back
+  // to the raw value otherwise. Used in both the hero eyebrow and the Identity
+  // card so they never diverge (critique P3).
+  const conceptDisplay = computed<string>(() => {
+    const c = conceptValue.value;
+    if (!c) return '';
+    const key = `concept.${c}`;
+    const translated = t(key);
+    return translated === key ? c : translated;
+  });
+
   watch(nameValue, () => {
     if (state.value !== 'loaded') return;
     scheduleIdentitySave();
@@ -424,6 +457,10 @@
     // no-ops when the name is unchanged, so this is cheap when nothing is
     // pending.
     void flushIdentitySave();
+    if (statSavedTimer !== null) {
+      clearTimeout(statSavedTimer);
+      statSavedTimer = null;
+    }
   });
 
   // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -450,6 +487,7 @@
   async function persistAttributes(): Promise<void> {
     if (!character.value) return;
     statError.value = '';
+    markStatSaving();
     try {
       const updated = await api.update(characterId.value, {
         attributes: { ...localAttributes.value },
@@ -458,10 +496,12 @@
       localAttributes.value = { ...updated.attributes };
       localHpCurrent.value = updated.hp.current;
       localMpCurrent.value = updated.mp.current;
+      markStatSaved();
     } catch (error) {
       // Roll back to the last known server truth (guaranteed non-null by the
       // early return above) and surface the failure.
       localAttributes.value = { ...character.value.attributes };
+      statSaveState.value = 'error';
       statError.value =
         (error as Problem).detail ?? t('errorStatSave', { label: t('panelAttributes') });
     }
@@ -481,14 +521,17 @@
   async function persistSkills(): Promise<void> {
     if (!character.value) return;
     statError.value = '';
+    markStatSaving();
     try {
       const updated = await api.update(characterId.value, {
         skills: { ...localSkills.value },
       });
       character.value = updated;
       localSkills.value = { ...updated.skills };
+      markStatSaved();
     } catch (error) {
       localSkills.value = { ...character.value.skills };
+      statSaveState.value = 'error';
       statError.value =
         (error as Problem).detail ?? t('errorStatSave', { label: t('panelSkills') });
     }
@@ -835,6 +878,7 @@
     "skillsGeneral": "General",
     "skillsAdvanced": "Advanced",
     "skillsAdvancedNote": "requires training",
+    "editHint": "Tap a dot to set the value, or use − and +.",
     "labelHp": "HP",
     "labelMp": "MP",
     "labelEnc": "ENC",
@@ -975,6 +1019,7 @@
     "skillsGeneral": "Общие",
     "skillsAdvanced": "Специальные",
     "skillsAdvancedNote": "требует обучения",
+    "editHint": "Нажмите точку, чтобы задать значение, или используйте − и +.",
     "labelHp": "ОЗ",
     "labelMp": "ОР",
     "labelEnc": "ГР",
@@ -1132,7 +1177,7 @@
         <!-- Identity (editable name + read-only concept + save status) -->
         <div class="page-sheet__identity">
           <div class="page-sheet__concept-label">
-            {{ conceptValue ? t(`concept.${conceptValue}`) : t('identityConcept') }}
+            {{ conceptDisplay || t('identityConcept') }}
           </div>
           <AppInput
             v-model="nameValue"
@@ -1302,7 +1347,7 @@
             <div class="page-sheet__identity-rows">
               <div class="page-sheet__identity-row">
                 <span class="page-sheet__identity-key">{{ t('identityConcept') }}</span>
-                <span class="page-sheet__identity-val">{{ character.concept || '—' }}</span>
+                <span class="page-sheet__identity-val">{{ conceptDisplay || '—' }}</span>
               </div>
             </div>
           </AppCard>
@@ -1402,10 +1447,28 @@
           <!-- Attributes panel -->
           <AppCard class="page-sheet__panel">
             <template #header>
-              <span class="page-sheet__panel-title page-sheet__panel-title--lg">{{
-                t('panelAttributes')
-              }}</span>
+              <div class="page-sheet__stat-header">
+                <span class="page-sheet__panel-title page-sheet__panel-title--lg">{{
+                  t('panelAttributes')
+                }}</span>
+                <!-- Per-control save feedback for stat/skill edits (critique P2).
+                     The pulse is decorative; the sr-only live region (here only,
+                     not duplicated in the Skills header) announces the state. -->
+                <span class="page-sheet__stat-save" aria-live="polite" aria-atomic="true">
+                  <AppSavePulse :state="statSaveState" />
+                  <span class="sr-only">
+                    <template v-if="statSaveState === 'saving'">{{ t('statusSaving') }}</template>
+                    <template v-else-if="statSaveState === 'saved'">{{
+                      t('statusSaved')
+                    }}</template>
+                    <template v-else-if="statSaveState === 'error'">{{
+                      t('statusError')
+                    }}</template>
+                  </span>
+                </span>
+              </div>
             </template>
+            <p class="page-sheet__edit-hint">{{ t('editHint') }}</p>
             <div class="page-sheet__attrs">
               <!-- Click-the-dot editing: AppStatBlock editable renders an
                    interactive AppDotInput (min 1 for attributes). -->
@@ -1428,9 +1491,14 @@
           <AppCard class="page-sheet__panel">
             <template #header>
               <div class="page-sheet__skills-header">
-                <span class="page-sheet__panel-title page-sheet__panel-title--lg">{{
-                  t('panelSkills')
-                }}</span>
+                <span class="page-sheet__stat-header">
+                  <span class="page-sheet__panel-title page-sheet__panel-title--lg">{{
+                    t('panelSkills')
+                  }}</span>
+                  <!-- Visual-only pulse; the announced region lives in the
+                       Attributes header to avoid double screen-reader output. -->
+                  <AppSavePulse :state="statSaveState" />
+                </span>
                 <div class="page-sheet__skills-legend">
                   <span
                     class="page-sheet__skills-legend-item page-sheet__skills-legend-item--general"
@@ -2133,6 +2201,27 @@
       &--lg {
         font-size: var(--type-display-sm-font-size);
       }
+    }
+
+    // Header row that pairs a panel title with the stat save-pulse.
+    &__stat-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    &__stat-save {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    // One-time affordance hint that the dots are editable (critique P1).
+    &__edit-hint {
+      margin: 0 0 var(--space-3);
+      font-family: var(--font-body);
+      font-size: $font-size-eyebrow;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
     }
 
     // ── Identity rows ─────────────────────────────────────────────────────────

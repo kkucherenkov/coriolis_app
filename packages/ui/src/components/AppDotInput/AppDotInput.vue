@@ -35,6 +35,9 @@
   const hoverValue = ref<number | null>(null);
   const displayValue = computed(() => hoverValue.value ?? clampedValue.value);
 
+  const canDecrement = computed(() => clampedValue.value > props.min);
+  const canIncrement = computed(() => clampedValue.value < props.max);
+
   const rootClasses = computed(() => [
     'app-dot-input',
     `app-dot-input--${props.size}`,
@@ -42,9 +45,11 @@
     { 'app-dot-input--disabled': props.disabled },
   ]);
 
-  const ariaValueText = computed(() =>
-    props.label ? `${props.label}: ${String(clampedValue.value)}` : String(clampedValue.value),
-  );
+  // Announce the ceiling too ("Force: 3 of 5"), matching AppDots/AppStatBlock.
+  const ariaValueText = computed(() => {
+    const range = `${String(clampedValue.value)} of ${String(props.max)}`;
+    return props.label ? `${props.label}: ${range}` : range;
+  });
 
   function commit(next: number): void {
     if (props.disabled) return;
@@ -52,12 +57,20 @@
     if (clamped !== clampedValue.value) emit('update:modelValue', clamped);
   }
 
-  // Click dot N sets the value to N. Clicking the current top-filled dot steps
-  // down by one (star-rating idiom) so the value can be lowered to min without
-  // a separate stepper control.
+  // Clicking a dot sets the value to exactly that dot (up or down) — no hidden
+  // "click the active dot to decrement" gesture. The explicit − / + controls
+  // are the discoverable step path and the only way to reach 0 (skills), where
+  // the lowest dot is value 1.
   function onDotClick(dot: number): void {
-    if (props.disabled) return;
-    commit(dot === clampedValue.value ? dot - 1 : dot);
+    commit(dot);
+  }
+
+  function stepDown(): void {
+    commit(clampedValue.value - 1);
+  }
+
+  function stepUp(): void {
+    commit(clampedValue.value + 1);
   }
 
   function onKeydown(event: KeyboardEvent): void {
@@ -66,12 +79,12 @@
     switch (event.key) {
       case 'ArrowRight':
       case 'ArrowUp': {
-        commit(clampedValue.value + 1);
+        stepUp();
         break;
       }
       case 'ArrowLeft':
       case 'ArrowDown': {
-        commit(clampedValue.value - 1);
+        stepDown();
         break;
       }
       case 'Home': {
@@ -114,22 +127,41 @@
     @keydown="onKeydown"
     @mouseleave="clearHover"
   >
-    <!-- Dots are pointer affordances only; the slider container carries the
-         accessible name, value, and keyboard control, so each dot is
-         aria-hidden. -->
+    <!-- −/+ and dots are pointer affordances only; the slider container carries
+         the accessible name, value, and keyboard control, so they're
+         aria-hidden. The steppers are always present (and reserve their width)
+         so the control reads as editable at rest and never shifts layout. -->
     <span
-      v-for="dot in max"
-      :key="dot"
-      class="app-dot-input__hit"
+      class="app-dot-input__step app-dot-input__step--dec"
+      :class="{ 'app-dot-input__step--off': !canDecrement }"
       aria-hidden="true"
-      @click="onDotClick(dot)"
-      @mouseenter="onDotEnter(dot)"
+      @click="stepDown"
+      @mousedown.prevent
+      >&#8722;</span
     >
+    <span class="app-dot-input__dots">
       <span
-        class="app-dot-input__dot"
-        :class="{ 'app-dot-input__dot--filled': dot <= displayValue }"
-      />
+        v-for="dot in max"
+        :key="dot"
+        class="app-dot-input__hit"
+        aria-hidden="true"
+        @click="onDotClick(dot)"
+        @mouseenter="onDotEnter(dot)"
+      >
+        <span
+          class="app-dot-input__dot"
+          :class="{ 'app-dot-input__dot--filled': dot <= displayValue }"
+        />
+      </span>
     </span>
+    <span
+      class="app-dot-input__step app-dot-input__step--inc"
+      :class="{ 'app-dot-input__step--off': !canIncrement }"
+      aria-hidden="true"
+      @click="stepUp"
+      @mousedown.prevent
+      >+</span
+    >
   </div>
 </template>
 
@@ -140,28 +172,81 @@
   $dot-size-lg: 12px;
   // Minimum tap target on coarse pointers — WCAG 2.5.5.
   $tap-min: 32px;
+  // Stepper glyph box at rest (fine pointers).
+  $step-size-sm: 14px;
+  $step-size-md: 18px;
 
   .app-dot-input {
     display: inline-flex;
     align-items: center;
-    gap: 0;
+    gap: var(--space-1);
     border-radius: var(--radius-sm);
-    cursor: pointer;
 
     &:focus-visible {
       outline: 2px solid var(--brand-brass);
       outline-offset: 2px;
     }
 
+    // ── Stepper (− / +) ─────────────────────────────────────────────────────────
+    // Always visible so the control advertises that it is editable. Subdued at
+    // rest, brightens when the control is hovered or focused.
+
+    &__step {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: $step-size-md;
+      height: $step-size-md;
+      flex-shrink: 0;
+      cursor: pointer;
+      user-select: none;
+      line-height: 1;
+      color: var(--brand-brass-deep);
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      transition:
+        color var(--motion-duration-fast) var(--motion-ease-standard),
+        border-color var(--motion-duration-fast) var(--motion-ease-standard);
+
+      @media (pointer: coarse) {
+        min-width: $tap-min;
+        min-height: $tap-min;
+      }
+
+      &--off {
+        opacity: var(--opacity-disabled);
+        pointer-events: none;
+      }
+    }
+
+    &--sm .app-dot-input__step {
+      width: $step-size-sm;
+      height: $step-size-sm;
+    }
+
+    @media (hover: hover) {
+      &:hover .app-dot-input__step:not(.app-dot-input__step--off),
+      &:focus-within .app-dot-input__step:not(.app-dot-input__step--off) {
+        color: var(--brand-brass-light);
+        border-color: var(--brand-brass-deep);
+      }
+    }
+
     // ── Hit target (pointer affordance around each dot) ───────────────────────
+
+    &__dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+    }
 
     &__hit {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       padding: var(--space-1);
+      cursor: pointer;
 
-      // Generous tap target on touch devices; visual dot stays small.
       @media (pointer: coarse) {
         min-width: $tap-min;
         min-height: $tap-min;
@@ -169,12 +254,14 @@
     }
 
     // ── Dot ───────────────────────────────────────────────────────────────────
+    // Unfilled dots use a brass-deep ring (higher contrast than the read-only
+    // AppDots meter's brass-shadow) so empty slots read as fillable.
 
     &__dot {
       display: inline-block;
       flex-shrink: 0;
       border-radius: var(--radius-pill);
-      border: 1px solid var(--brand-brass-shadow);
+      border: 1px solid var(--brand-brass-deep);
       background-color: transparent;
       transition:
         background-color var(--motion-duration-fast) var(--motion-ease-standard),
@@ -220,7 +307,7 @@
       border-color: var(--state-darkness);
     }
 
-    // ── Hover affordance (fine pointers) ──────────────────────────────────────
+    // ── Hover affordance on the dots (fine pointers) ──────────────────────────
 
     @media (hover: hover) {
       &:not(.app-dot-input--disabled) .app-dot-input__hit:hover .app-dot-input__dot {
@@ -231,14 +318,17 @@
     // ── Disabled ──────────────────────────────────────────────────────────────
 
     &--disabled {
-      cursor: default;
-      opacity: var(--opacity-disabled);
       pointer-events: none;
+
+      .app-dot-input__step {
+        opacity: var(--opacity-disabled);
+      }
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .app-dot-input__dot {
+    .app-dot-input__dot,
+    .app-dot-input__step {
       transition: none;
     }
   }
