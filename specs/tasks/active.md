@@ -1,5 +1,24 @@
 # Active tasks
 
+## T-2026-05-25-001 — Character sheet impeccable pass (harden/clarify/layout/polish)
+
+- Created: 2026-05-25
+- Owner: claude
+- Spec: design follow-up from `/impeccable critique` snapshot `.impeccable/critique/2026-05-25T15-10-18Z__apps-web-app-pages-app-characters-id-vue.md` (29/40)
+- Goal: resolve the critique's P0/P1/P2 + minor on `apps/web/app/pages/app/characters/[id].vue`.
+- Spec diff: none (no API/route change)
+- Codegen impact: no
+- Sub-steps:
+  - [x] P0: surface silent save failures on attr/skill/HP/MP (no longer roll back silently)
+  - [x] P1: dead tabs Talents/Notes/Share → disabled + "soon" affordance
+  - [x] P1: "Saved" commit-button label → dedicated `apply` key
+  - [x] P2: tab↔panel ARIA (role=tabpanel, aria-controls/labelledby, arrow-key nav)
+  - [x] P2: delete + injury-remove via AppConfirm (focus-trap, confirm)
+  - [x] minor: useAutoSave flush() on unmount; roller __result-label overflow guard; injury rapid-save guard; advanced-note legibility; 44px injury touch target
+  - [x] lint + typecheck + affected specs green (548 web unit tests pass, eslint/stylelint/prettier clean, i18n parity ok)
+- Status: in-progress — awaiting commit/PR
+- Blockers: —
+
 ## T-2026-05-17-DEEP-LINK-SETUP — Deep-link configuration (mobile + web)
 
 - Created: 2026-05-16
