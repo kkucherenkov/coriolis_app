@@ -28,11 +28,9 @@
 
   // We show either the error span or the help span — never both.
   // aria-describedby points at whichever is currently rendered.
-  const activeDescId = computed<string | undefined>(() => {
-    if (props.error) return `${fieldId.value}-error`;
-    if (props.helpText) return `${fieldId.value}-help`;
-    return;
-  });
+  const activeDescId = computed<string | undefined>(() =>
+    props.error ? `${fieldId.value}-error` : props.helpText ? `${fieldId.value}-help` : undefined,
+  );
 
   // Attrs spread onto the slotted control so the consumer wires a11y for free.
   const slotAttrs = computed(() => ({

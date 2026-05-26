@@ -124,7 +124,11 @@
     );
   }
 
-  const svgContent = computed(() => ICON_PATHS[props.name] ?? '');
+  // Guard the (typed-complete) map against runtime-unknown names from JS
+  // callers; an unknown name renders empty rather than `undefined`.
+  const svgContent = computed(() =>
+    VALID_NAMES.includes(props.name) ? ICON_PATHS[props.name] : '',
+  );
 
   const sizePx = computed(() => SIZE_PX[props.size]);
 
@@ -138,7 +142,11 @@
 
 <template>
   <span :class="classes">
-    <!-- eslint-disable-next-line vue/no-v-html -- SVG content is sourced from a closed static map, not user input -->
+    <!-- eslint-disable vue/no-v-html -- svgContent comes from ICON_PATHS, a
+         closed static map keyed by a typed icon name, never user input, so it
+         cannot carry injected script. v-html is the only way to inline the raw
+         <path> set. Block form (not next-line) because the directive is
+         reported on the multi-line element's attribute, not its opening tag. -->
     <svg
       :width="sizePx"
       :height="sizePx"
@@ -154,6 +162,7 @@
       class="app-icon-coriolis__svg"
       v-html="svgContent"
     />
+    <!-- eslint-enable vue/no-v-html -->
   </span>
 </template>
 

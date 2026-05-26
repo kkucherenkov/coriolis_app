@@ -34,7 +34,7 @@
     range.value === 0 ? 0 : ((clampedValue.value - props.min) / range.value) * 100,
   );
 
-  const fillStyle = computed(() => ({ width: `${percentage.value}%` }));
+  const fillStyle = computed(() => ({ width: `${String(percentage.value)}%` }));
 
   const rootClasses = computed(() => [
     'app-progress',
@@ -43,7 +43,7 @@
     `app-progress--${props.size}`,
   ]);
 
-  const labelText = computed(() => `${clampedValue.value} / ${props.max}`);
+  const labelText = computed(() => `${String(clampedValue.value)} / ${String(props.max)}`);
 </script>
 
 <template>
