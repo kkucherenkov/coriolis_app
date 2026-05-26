@@ -2,6 +2,21 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-26-004 — Critique re-run + char-sheet P1/P2 follow-ups
+
+- Created: 2026-05-26
+- Owner: claude
+- PR: [#68](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/68)
+- Spec: `/impeccable critique` re-run on the character sheet scored **27 → 32/40** (snapshot `.impeccable/critique/2026-05-26T11-47-28Z__*`). Addressed the remaining P1s the user asked for.
+- Outcome:
+  - [x] Talent-editor slug leak (residual from #67, list was display-only) → editor pre-fills `displayTalentName`/`displayTalentDescription`; `saveTalent` round-trips the original stored id when unchanged (keeps locale-following). Verified live; landed on #67.
+  - [x] [P1] HP/MP current>max → backend read-clamp (`character.repo.ts`) + derived-max seeding in create/duplicate handlers; no migration. Live: `14/8`→`8/8`, `10/6`→`6/6`. 1180 backend tests green.
+  - [x] [P2] Phone attribute overflow → `__attrs` folds to 2×2 below new `$bp-phone` 640px. Live: 0 overflow at 390px, 4-col at 1440px.
+  - [x] [P1] "dice-roller FAB overlaps content" → **false positive**, it was the Nuxt DevTools overlay (z-index 999999), not a product element. No change.
+- Verification gotcha: scoped-SCSS edits don't HMR over the macOS Docker bind mount — needed `docker compose restart web`; an Assessment-A sub-agent misread stale CSS as an unfixed truncation. See memory `restart-web-for-visual-checks`.
+- Backlog (P3, not done): collapse `soon` tabs / orphan save-pulse label (`distill`); roll-from-skill-row efficiency; surface the chosen Icon on the sheet.
+- Status: open — PR #68
+
 ## T-2026-05-26-003 — Critique re-run P1 fixes (char sheet, ship sheet, @app/ui)
 
 - Created: 2026-05-26
@@ -16,7 +31,7 @@ _Archive of shipped tasks. Never delete entries — cancelled tasks go here with
   - [x] Ship sheet stat divergence → new shared `AppStatPair` (current/max mono + steppers, story+spec, 21 tests, axe-clean); adopted for Hull/Energy
 - Verification: @app/ui 1149 + @app/web 556 tests green; typecheck clean; @app/ui + @app/web lint clean (also cleared 12 pre-existing @app/ui eslint errors in AppAvatar/AppDie/AppField/AppIconCoriolis/AppProgress at root cause).
 - Follow-up (deferred): adopt `AppStatPair` inside the character sheet HP/MP counter (the shared component matches its treatment but the sheet wasn't refactored, to avoid a parallel-edit conflict). Visual confirm + `/impeccable critique` re-run for score deltas.
-- Status: done — pending merge of #67
+- Status: merged (#67)
 
 ## T-2026-05-26-001 — Click-the-dot stat editing (AppDotInput)
 
