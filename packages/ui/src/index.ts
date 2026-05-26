@@ -65,6 +65,7 @@ export { AppSavePulse } from './components/AppSavePulse';
 export { AppSkillRow } from './components/AppSkillRow';
 export { AppStarOrnament } from './components/AppStarOrnament';
 export { AppStatBlock } from './components/AppStatBlock';
+export { AppStatPair } from './components/AppStatPair';
 export { AppSwash } from './components/AppSwash';
 export { AppSwitch } from './components/AppSwitch';
 export { AppTab } from './components/AppTab';

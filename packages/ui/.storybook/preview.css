@@ -1,5 +1,6 @@
 /* Override the dark body background injected by @nuxt/ui/vue-plugin.
-   Use the surface token so the canvas matches the active theme. */
+   --color-bg is the semantic bg token: surface-void (#0B0E2C) in dark,
+   and the light value under high-contrast/light themes automatically. */
 body {
-  background-color: var(--surface-surface) !important;
+  background-color: var(--color-bg) !important;
 }

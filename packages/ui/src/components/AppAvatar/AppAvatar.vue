@@ -25,14 +25,17 @@
   const showImage = computed(() => Boolean(props.src) && !imageError.value);
 
   /**
-   * Compute initials: first character of each whitespace-separated word,
-   * take up to 2, uppercase. Works for any Unicode script.
+   * Compute initials: first grapheme of each whitespace-separated word,
+   * take up to 2, uppercase. Grapheme segmentation keeps emoji and combining
+   * marks intact across any Unicode script (vs. spreading the string, which
+   * splits by code point and can break complex characters).
    */
+  const graphemeSegmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
   const initials = computed(() => {
     const words = props.name.trim().split(/\s+/);
     return words
       .slice(0, 2)
-      .map((w) => [...w][0] ?? '')
+      .map((w) => [...graphemeSegmenter.segment(w)][0]?.segment ?? '')
       .join('')
       .toUpperCase();
   });

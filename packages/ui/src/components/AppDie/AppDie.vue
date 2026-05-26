@@ -54,7 +54,7 @@
     6: [TL, TR, ML, MR, BL, BR],
   };
 
-  const VALID_VALUES: DieValue[] = [1, 2, 3, 4, 5, 6];
+  const VALID_VALUES: ReadonlySet<DieValue> = new Set([1, 2, 3, 4, 5, 6]);
 
   interface Props {
     value: DieValue;
@@ -63,11 +63,13 @@
     ariaLabel?: string;
   }
 
-  if (!VALID_VALUES.includes(props.value)) {
-    console.warn(`[AppDie] Invalid value "${props.value}". Must be 1–6.`);
+  if (!VALID_VALUES.has(props.value)) {
+    console.warn(`[AppDie] Invalid value "${String(props.value)}". Must be 1–6.`);
   }
 
-  const pips = computed<Point[]>(() => PIP_MAP[props.value] ?? []);
+  // Guard the (typed-complete) map against runtime-invalid values from JS
+  // callers; an out-of-range value renders no pips rather than crashing v-for.
+  const pips = computed<Point[]>(() => (VALID_VALUES.has(props.value) ? PIP_MAP[props.value] : []));
 
   const sizePx = computed(() => SIZE_PX[props.size]);
 
@@ -77,7 +79,7 @@
       props.state === 'normal'
         ? ''
         : ` — ${props.state.charAt(0).toUpperCase() + props.state.slice(1)}`;
-    return `Die showing ${props.value}${stateLabel}`;
+    return `Die showing ${String(props.value)}${stateLabel}`;
   });
 
   const classes = computed(() => [
@@ -88,8 +90,10 @@
 
   // Filter ids must be unique per instance when multiple dice render on page.
   // Using a stable derivation from props keeps SSR-safe (no crypto.randomUUID).
-  const filterId = computed(() => `app-die-glow-${props.state}-${props.value}-${props.size}`);
-  const glowId = computed(() => `app-die-halo-${props.state}-${props.value}-${props.size}`);
+  const filterId = computed(
+    () => `app-die-glow-${props.state}-${String(props.value)}-${props.size}`,
+  );
+  const glowId = computed(() => `app-die-halo-${props.state}-${String(props.value)}-${props.size}`);
 </script>
 
 <template>
