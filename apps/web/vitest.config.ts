@@ -16,6 +16,7 @@ export default defineConfig({
       'app/pages/__tests__/**/*.spec.ts',
       'app/utils/__tests__/**/*.spec.ts',
       'app/components/**/__tests__/**/*.spec.ts',
+      'app/composables/__tests__/**/*.spec.ts',
       'app/layouts/__tests__/**/*.spec.ts',
       'app/stores/**/*.spec.ts',
     ],

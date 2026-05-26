@@ -2598,7 +2598,11 @@
     // and interaction. No row-level cursor/hover/focus.
     &__skill-row {
       display: grid;
-      grid-template-columns: 1fr auto auto;
+      // minmax(min-content, 1fr) lets the name column size to the longest word
+      // rather than collapsing to near-zero when the auto columns are wide.
+      // Without it, "Manipulation" / "Infiltration" truncate inside the narrow
+      // skills-col track at desktop and mobile widths.
+      grid-template-columns: minmax(min-content, 1fr) auto auto;
       align-items: center;
       gap: var(--space-2);
       padding: var(--space-1) var(--space-1);
@@ -2628,9 +2632,10 @@
       font-family: var(--font-body);
       font-size: var(--type-body-sm-font-size);
       color: var(--text-primary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      // Allow wrapping instead of clipping — some skill names are long enough
+      // to truncate inside the narrow skills-col track even with minmax on the
+      // grid column. Two lines at line-height 1.3 are more readable than "Mele…".
+      line-height: 1.3;
     }
 
     &__skill-attr {

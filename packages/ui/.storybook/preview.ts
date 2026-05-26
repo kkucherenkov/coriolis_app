@@ -30,7 +30,20 @@ setup((app) => {
 const preview: Preview = {
   parameters: {
     controls: { expanded: true },
-    backgrounds: { disable: true },
+    // Two canonical backgrounds from the design system.
+    // 'void' is the default dark canvas (surface-void #0B0E2C).
+    // 'parchment' is the light share-viewer surface (surface-parchment #F2E8D0).
+    // The body bg is driven by the --color-bg CSS token (preview.css), so
+    // switching the backgrounds toolbar sets the addon-managed bg on the
+    // storybook-root element, not on <body>. The body !important rule applies
+    // for the default load; once the addon sets a bg it applies to #storybook-root.
+    backgrounds: {
+      default: 'void',
+      values: [
+        { name: 'void', value: '#0B0E2C' },
+        { name: 'parchment', value: '#F2E8D0' },
+      ],
+    },
     layout: 'centered',
     a11y: {
       // Blocks the Storybook test-runner in CI: any axe violation fails the

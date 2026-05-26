@@ -21,7 +21,7 @@
  * Used by both the editable character sheet (`[id].vue`) and the public
  * read-only viewer (`AppShareViewer`).
  */
-import { findCatalogTalentByName, pickLocalized } from '@app/specs';
+import { findCatalogTalentById, findCatalogTalentByName, pickLocalized } from '@app/specs';
 import type { CatalogLocale } from '@app/specs';
 import type { Talent } from '@app/api-client-ts';
 
@@ -47,6 +47,27 @@ export function useTalentLocalization(): TalentLocalization {
   // pulled off an object as potentially losing their `this`. None of these
   // helpers reference `this`, so arrow form is both correct and lint-clean.
   const catalogMatchFor = (talent: Talent): { name: string; description: string } | null => {
+    // Path 1: exact catalog-id match (unambiguous — applies to ALL kinds,
+    // including personal). The wizard stores catalog ids when it seeds talents
+    // from the catalog, so `talent.name` may hold a slug like
+    // `personal-menacing` rather than a localized name. An id-match is
+    // unambiguous and skips description verification: the description was also
+    // seeded from the catalog and may likewise be stored as a localized string
+    // from a different locale.
+    // kind must match: an id from a different kind (e.g. `personal-menacing`
+    // stored on a crew row by accident) is not a valid resolution — fall through
+    // to the name-based lookup below.
+    const byId = findCatalogTalentById(talent.name);
+    if (byId?.kind === talent.kind) {
+      return {
+        name: pickLocalized(byId.name, locale.value),
+        description: pickLocalized(byId.description, locale.value),
+      };
+    }
+
+    // Path 2: name-based fuzzy match. Only for non-personal kinds because
+    // personal talent rows are free-form editable after wizard creation — a
+    // name collision with the catalog would incorrectly translate user text.
     if (talent.kind === 'personal') return null;
     const entry = findCatalogTalentByName(talent.name, talent.kind);
     if (!entry) return null;

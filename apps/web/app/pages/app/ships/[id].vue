@@ -11,6 +11,7 @@
     AppTextarea,
     AppSavePulse,
     AppModal,
+    AppStatPair,
   } from '@app/ui';
   import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
   import { useRoute } from 'vue-router';
@@ -80,9 +81,10 @@
   const localHistory = ref<string | null>(null);
   const localProblems = ref('');
 
-  // Collapsible card state
-  const notesOpen = ref(true);
-  const historyOpen = ref(true);
+  // Collapsible card state — default collapsed when the field is empty on load.
+  // Opens automatically once the user has content, stays open until toggled.
+  const notesOpen = ref(false);
+  const historyOpen = ref(false);
 
   function syncLocals(s: Ship): void {
     localName.value = s.name;
@@ -100,6 +102,9 @@
     localNotes.value = s.notes ?? null;
     localHistory.value = s.history ?? null;
     localProblems.value = s.problems.join(', ');
+    // Expand collapsed sections only when there is pre-existing content.
+    notesOpen.value = Boolean(s.notes && s.notes.trim().length > 0);
+    historyOpen.value = Boolean(s.history && s.history.trim().length > 0);
   }
 
   // ── Auto-save plumbing ───────────────────────────────────────────────────────
@@ -463,12 +468,10 @@
     "fieldModel": "Model",
     "fieldRegistry": "Registry",
     "statsCardTitle": "Stats",
-    "statHullCurrent": "Hull (current)",
-    "statHullMax": "Hull (max)",
-    "statEnergyCurrent": "Energy (current)",
-    "statEnergyMax": "Energy (max)",
+    "statHull": "Hull",
+    "statEnergy": "Energy",
     "statArmor": "Armor",
-    "statManeuverability": "Maneuverability",
+    "statManeuverability": "Maneuv.",
     "statSignature": "Signature",
     "statSpeed": "Speed",
     "statCargoCapacity": "Cargo (t)",
@@ -525,12 +528,10 @@
     "fieldModel": "Модель",
     "fieldRegistry": "Реестровый номер",
     "statsCardTitle": "Характеристики",
-    "statHullCurrent": "Корпус (текущий)",
-    "statHullMax": "Корпус (макс.)",
-    "statEnergyCurrent": "Энергия (текущая)",
-    "statEnergyMax": "Энергия (макс.)",
+    "statHull": "Корпус",
+    "statEnergy": "Энергия",
     "statArmor": "Броня",
-    "statManeuverability": "Манёвренность",
+    "statManeuverability": "Манёвр.",
     "statSignature": "Заметность",
     "statSpeed": "Скорость",
     "statCargoCapacity": "Груз (т)",
@@ -692,223 +693,325 @@
         </div>
       </AppCard>
 
-      <!-- ── Stat block card ───────────────────────────────────────────────── -->
-      <AppCard class="page-ship__card">
-        <template #header>
-          <span class="page-ship__card-title">{{ t('statsCardTitle') }}</span>
-        </template>
+      <!-- ── Two-column operational layout ─────────────────────────────────── -->
+      <!-- Primary (left): stats + modules  |  Secondary (right): crew + log   -->
+      <div class="page-ship__columns">
+        <!-- ── PRIMARY column ─────────────────────────────────────────────── -->
+        <div class="page-ship__col page-ship__col--primary">
+          <!-- Stats card — current/max pairs via AppStatPair + scalar stats -->
+          <AppCard class="page-ship__card">
+            <template #header>
+              <span class="page-ship__card-title">{{ t('statsCardTitle') }}</span>
+            </template>
 
-        <div class="page-ship__stats-grid">
-          <!-- Hull current — prominent -->
-          <div class="page-ship__stat page-ship__stat--prominent">
-            <span class="page-ship__stat-label">{{ t('statHullCurrent') }}</span>
-            <div class="page-ship__stat-stepper">
-              <AppButton
-                variant="ghost"
-                size="sm"
-                class="page-ship__stepper-btn"
-                :disabled="localHullCurrent <= 0"
-                @click="
-                  localHullCurrent = Math.max(0, localHullCurrent - 1);
+            <!-- Hull + Energy as large current/max counters -->
+            <div class="page-ship__pair-row">
+              <AppStatPair
+                :label="t('statHull')"
+                :current="localHullCurrent"
+                :max="localHullMax"
+                tone="brass"
+                @update:current="
+                  localHullCurrent = $event;
                   statsSave.schedule();
                 "
-              >
-                −
-              </AppButton>
-              <AppInput
-                v-model="localHullCurrent"
-                type="number"
-                size="md"
-                inputmode="numeric"
-                class="page-ship__stat-input page-ship__stat-input--prominent"
                 @blur="statsSave.schedule()"
               />
-              <AppButton
-                variant="ghost"
-                size="sm"
-                class="page-ship__stepper-btn"
-                @click="
-                  localHullCurrent = localHullCurrent + 1;
+              <AppStatPair
+                :label="t('statEnergy')"
+                :current="localEnergyCurrent"
+                :max="localEnergyMax"
+                tone="brass"
+                @update:current="
+                  localEnergyCurrent = $event;
                   statsSave.schedule();
                 "
-              >
-                +
-              </AppButton>
-            </div>
-          </div>
-
-          <!-- Hull max -->
-          <div class="page-ship__stat">
-            <span class="page-ship__stat-label">{{ t('statHullMax') }}</span>
-            <AppInput
-              v-model="localHullMax"
-              type="number"
-              size="md"
-              inputmode="numeric"
-              class="page-ship__stat-input"
-              @blur="statsSave.schedule()"
-            />
-          </div>
-
-          <!-- Energy current — prominent -->
-          <div class="page-ship__stat page-ship__stat--prominent">
-            <span class="page-ship__stat-label">{{ t('statEnergyCurrent') }}</span>
-            <div class="page-ship__stat-stepper">
-              <AppButton
-                variant="ghost"
-                size="sm"
-                class="page-ship__stepper-btn"
-                :disabled="localEnergyCurrent <= 0"
-                @click="
-                  localEnergyCurrent = Math.max(0, localEnergyCurrent - 1);
-                  statsSave.schedule();
-                "
-              >
-                −
-              </AppButton>
-              <AppInput
-                v-model="localEnergyCurrent"
-                type="number"
-                size="md"
-                inputmode="numeric"
-                class="page-ship__stat-input page-ship__stat-input--prominent"
                 @blur="statsSave.schedule()"
               />
-              <AppButton
-                variant="ghost"
-                size="sm"
-                class="page-ship__stepper-btn"
-                @click="
-                  localEnergyCurrent = localEnergyCurrent + 1;
-                  statsSave.schedule();
-                "
-              >
-                +
-              </AppButton>
             </div>
-          </div>
 
-          <!-- Energy max -->
-          <div class="page-ship__stat">
-            <span class="page-ship__stat-label">{{ t('statEnergyMax') }}</span>
-            <AppInput
-              v-model="localEnergyMax"
-              type="number"
-              size="md"
-              inputmode="numeric"
-              class="page-ship__stat-input"
-              @blur="statsSave.schedule()"
-            />
-          </div>
+            <!-- Scalar stats: armor / maneuverability / signature / speed / cargo -->
+            <div class="page-ship__scalars-grid">
+              <!-- Armor -->
+              <div class="page-ship__scalar">
+                <span class="page-ship__scalar-label">{{ t('statArmor') }}</span>
+                <AppInput
+                  v-model="localArmor"
+                  type="number"
+                  size="md"
+                  inputmode="numeric"
+                  class="page-ship__scalar-input"
+                  @blur="statsSave.schedule()"
+                />
+              </div>
 
-          <!-- Armor -->
-          <div class="page-ship__stat">
-            <span class="page-ship__stat-label">{{ t('statArmor') }}</span>
-            <AppInput
-              v-model="localArmor"
-              type="number"
-              size="md"
-              inputmode="numeric"
-              class="page-ship__stat-input"
-              @blur="statsSave.schedule()"
-            />
-          </div>
+              <!-- Maneuverability -->
+              <div class="page-ship__scalar">
+                <span class="page-ship__scalar-label">{{ t('statManeuverability') }}</span>
+                <AppInput
+                  v-model="localManeuverability"
+                  type="number"
+                  size="md"
+                  inputmode="numeric"
+                  class="page-ship__scalar-input"
+                  @blur="statsSave.schedule()"
+                />
+              </div>
 
-          <!-- Maneuverability (signed) -->
-          <div class="page-ship__stat">
-            <span class="page-ship__stat-label">{{ t('statManeuverability') }}</span>
-            <AppInput
-              v-model="localManeuverability"
-              type="number"
-              size="md"
-              inputmode="numeric"
-              class="page-ship__stat-input"
-              @blur="statsSave.schedule()"
-            />
-          </div>
+              <!-- Signature -->
+              <div class="page-ship__scalar">
+                <span class="page-ship__scalar-label">{{ t('statSignature') }}</span>
+                <AppInput
+                  v-model="localSignature"
+                  type="number"
+                  size="md"
+                  inputmode="numeric"
+                  class="page-ship__scalar-input"
+                  @blur="statsSave.schedule()"
+                />
+              </div>
 
-          <!-- Signature (signed) -->
-          <div class="page-ship__stat">
-            <span class="page-ship__stat-label">{{ t('statSignature') }}</span>
-            <AppInput
-              v-model="localSignature"
-              type="number"
-              size="md"
-              inputmode="numeric"
-              class="page-ship__stat-input"
-              @blur="statsSave.schedule()"
-            />
-          </div>
+              <!-- Speed -->
+              <div class="page-ship__scalar">
+                <span class="page-ship__scalar-label">{{ t('statSpeed') }}</span>
+                <AppInput
+                  v-model="localSpeed"
+                  type="number"
+                  size="md"
+                  inputmode="numeric"
+                  class="page-ship__scalar-input"
+                  @blur="statsSave.schedule()"
+                />
+              </div>
 
-          <!-- Speed -->
-          <div class="page-ship__stat">
-            <span class="page-ship__stat-label">{{ t('statSpeed') }}</span>
-            <AppInput
-              v-model="localSpeed"
-              type="number"
-              size="md"
-              inputmode="numeric"
-              class="page-ship__stat-input"
-              @blur="statsSave.schedule()"
-            />
-          </div>
+              <!-- Cargo capacity — read-only -->
+              <div class="page-ship__scalar">
+                <span class="page-ship__scalar-label">{{ t('statCargoCapacity') }}</span>
+                <AppInput
+                  :model-value="displayCargoCapacity"
+                  type="number"
+                  size="md"
+                  inputmode="numeric"
+                  class="page-ship__scalar-input"
+                  readonly
+                />
+              </div>
+            </div>
+          </AppCard>
 
-          <!-- Cargo capacity — read-only; mutated via HOLD module editor (Block 3) -->
-          <div class="page-ship__stat">
-            <span class="page-ship__stat-label">{{ t('statCargoCapacity') }}</span>
-            <AppInput
-              :model-value="displayCargoCapacity"
-              type="number"
-              size="md"
-              inputmode="numeric"
-              class="page-ship__stat-input"
-              readonly
-            />
-          </div>
-        </div>
-      </AppCard>
+          <!-- Modules card -->
+          <AppCard class="page-ship__card">
+            <template #header>
+              <div class="page-ship__card-header-row">
+                <span class="page-ship__card-title">{{ t('modulesCardTitle') }}</span>
+                <AppButton variant="ghost" size="sm" @click="openModuleCreate">
+                  {{ t('modulesAdd') }}
+                </AppButton>
+              </div>
+            </template>
 
-      <!-- ── Modules card ───────────────────────────────────────────────────── -->
-      <AppCard class="page-ship__card">
-        <template #header>
-          <div class="page-ship__card-header-row">
-            <span class="page-ship__card-title">{{ t('modulesCardTitle') }}</span>
-            <AppButton variant="ghost" size="sm" @click="openModuleCreate">
-              {{ t('modulesAdd') }}
-            </AppButton>
-          </div>
-        </template>
-
-        <ul v-if="modulesGrouped.length > 0" class="page-ship__modules-list" aria-label="Modules">
-          <li
-            v-for="mod in modulesGrouped"
-            :key="mod.id"
-            class="page-ship__module-row"
-            tabindex="0"
-            role="button"
-            @click="openModuleEdit(mod as ShipModule)"
-            @keydown.enter.prevent="openModuleEdit(mod as ShipModule)"
-            @keydown.space.prevent="openModuleEdit(mod as ShipModule)"
-          >
-            <AppBadge variant="darkness" size="sm" class="page-ship__module-slot">
-              {{ mod.slot }}
-            </AppBadge>
-            <span class="page-ship__module-name">{{ mod.name }}</span>
-            <AppBadge
-              v-if="mod.energyUse > 0"
-              variant="mystic"
-              size="sm"
-              class="page-ship__module-energy"
+            <ul
+              v-if="modulesGrouped.length > 0"
+              class="page-ship__modules-list"
+              aria-label="Modules"
             >
-              {{ mod.energyUse }}
-            </AppBadge>
-          </li>
-        </ul>
+              <li
+                v-for="mod in modulesGrouped"
+                :key="mod.id"
+                class="page-ship__module-row"
+                tabindex="0"
+                role="button"
+                @click="openModuleEdit(mod as ShipModule)"
+                @keydown.enter.prevent="openModuleEdit(mod as ShipModule)"
+                @keydown.space.prevent="openModuleEdit(mod as ShipModule)"
+              >
+                <AppBadge variant="darkness" size="sm" class="page-ship__module-slot">
+                  {{ mod.slot }}
+                </AppBadge>
+                <span class="page-ship__module-name">{{ mod.name }}</span>
+                <AppBadge
+                  v-if="mod.energyUse > 0"
+                  variant="mystic"
+                  size="sm"
+                  class="page-ship__module-energy"
+                >
+                  {{ mod.energyUse }}
+                </AppBadge>
+              </li>
+            </ul>
 
-        <p v-else class="page-ship__modules-empty">
-          {{ t('modulesEmptySlot') }}
-        </p>
-      </AppCard>
+            <p v-else class="page-ship__modules-empty">
+              {{ t('modulesEmptySlot') }}
+            </p>
+          </AppCard>
+        </div>
+
+        <!-- ── SECONDARY column ───────────────────────────────────────────── -->
+        <div class="page-ship__col page-ship__col--secondary">
+          <!-- Crew card -->
+          <AppCard class="page-ship__card">
+            <template #header>
+              <span class="page-ship__card-title">{{ t('crewCardTitle') }}</span>
+            </template>
+
+            <AppBanner v-if="crewError" tone="danger" role="alert" class="page-ship__crew-error">
+              {{ crewError }}
+            </AppBanner>
+
+            <ul class="page-ship__crew-list" aria-label="Crew">
+              <li v-for="slot in crewRoster" :key="slot.position" class="page-ship__crew-row">
+                <span class="page-ship__crew-position">
+                  {{ positionLabel(slot.position) }}
+                </span>
+
+                <template v-if="slot.assignedCharacterId">
+                  <span class="page-ship__crew-name">
+                    {{ characterName(slot.assignedCharacterId) }}
+                  </span>
+                  <AppButton
+                    variant="ghost"
+                    size="sm"
+                    class="page-ship__crew-remove"
+                    :disabled="crewBusy[slot.position]"
+                    @click="onUnassign(slot.position, slot.assignedCharacterId)"
+                  >
+                    {{ t('crewRemove') }}
+                  </AppButton>
+                </template>
+
+                <template v-else>
+                  <em class="page-ship__crew-vacant">{{ t('crewVacant') }}</em>
+                  <AppButton
+                    variant="ghost"
+                    size="sm"
+                    class="page-ship__crew-assign-btn"
+                    :disabled="crewBusy[slot.position]"
+                    @click="togglePicker(slot.position)"
+                  >
+                    {{ pickerOpen[slot.position] ? t('crewPickerCancel') : t('crewAssign') }}
+                  </AppButton>
+
+                  <div v-if="pickerOpen[slot.position]" class="page-ship__crew-picker">
+                    <AppField :label="t('crewPickerLabel')">
+                      <template #default="attrs">
+                        <select
+                          v-bind="attrs"
+                          :value="pickerSelected[slot.position] ?? ''"
+                          class="page-ship__crew-select"
+                          @change="
+                            (e) => {
+                              pickerSelected[slot.position] = (e.target as HTMLSelectElement).value;
+                            }
+                          "
+                        >
+                          <option value="" disabled>
+                            {{ t('crewPickerPlaceholder') }}
+                          </option>
+                          <optgroup
+                            v-if="pickableFor(slot.position).free.length > 0"
+                            :label="t('crewPickerGroupFree')"
+                          >
+                            <option
+                              v-for="ch in pickableFor(slot.position).free"
+                              :key="ch.id"
+                              :value="ch.id"
+                            >
+                              {{ ch.name }}
+                            </option>
+                          </optgroup>
+                          <optgroup
+                            v-if="pickableFor(slot.position).onShip.length > 0"
+                            :label="t('crewPickerGroupOnShip')"
+                          >
+                            <option
+                              v-for="ch in pickableFor(slot.position).onShip"
+                              :key="ch.id"
+                              :value="ch.id"
+                            >
+                              {{ ch.name }}
+                            </option>
+                          </optgroup>
+                        </select>
+                      </template>
+                    </AppField>
+                    <AppButton
+                      variant="primary"
+                      size="sm"
+                      class="page-ship__crew-confirm"
+                      :disabled="!pickerSelected[slot.position] || crewBusy[slot.position]"
+                      @click="onAssign(slot.position)"
+                    >
+                      {{ t('crewPickerConfirm') }}
+                    </AppButton>
+                  </div>
+                </template>
+              </li>
+            </ul>
+          </AppCard>
+
+          <!-- Notes card — collapsed by default when empty -->
+          <AppCard class="page-ship__card">
+            <template #header>
+              <div class="page-ship__card-header-row">
+                <span class="page-ship__card-title">{{ t('notesCardTitle') }}</span>
+                <AppButton variant="ghost" size="sm" @click="notesOpen = !notesOpen">
+                  {{ notesOpen ? t('collapseHide') : t('collapseShow') }}
+                </AppButton>
+              </div>
+            </template>
+
+            <div v-if="notesOpen">
+              <AppTextarea
+                v-model="localNotes"
+                :rows="5"
+                :maxlength="4096"
+                :placeholder="t('notesPlaceholder')"
+                @blur="notesSave.schedule()"
+              />
+            </div>
+          </AppCard>
+
+          <!-- History card — collapsed by default when empty -->
+          <AppCard class="page-ship__card">
+            <template #header>
+              <div class="page-ship__card-header-row">
+                <span class="page-ship__card-title">{{ t('historyCardTitle') }}</span>
+                <AppButton variant="ghost" size="sm" @click="historyOpen = !historyOpen">
+                  {{ historyOpen ? t('collapseHide') : t('collapseShow') }}
+                </AppButton>
+              </div>
+            </template>
+
+            <div v-if="historyOpen">
+              <AppTextarea
+                v-model="localHistory"
+                :rows="6"
+                :maxlength="4096"
+                :placeholder="t('historyPlaceholder')"
+                @blur="historySave.schedule()"
+              />
+            </div>
+          </AppCard>
+
+          <!-- Problems card -->
+          <AppCard class="page-ship__card">
+            <template #header>
+              <span class="page-ship__card-title">{{ t('problemsCardTitle') }}</span>
+            </template>
+
+            <AppField :label="t('problemsLabel')" :help-text="t('problemsHelp')">
+              <template #default="attrs">
+                <AppInput
+                  v-bind="attrs"
+                  v-model="localProblems"
+                  type="text"
+                  @blur="problemsSave.schedule()"
+                />
+              </template>
+            </AppField>
+          </AppCard>
+        </div>
+      </div>
 
       <!-- ── Module editor modal ───────────────────────────────────────────── -->
       <ShipModuleEditor
@@ -919,173 +1022,6 @@
         @update:module="onModuleUpdated"
         @delete:module="onModuleDeleted"
       />
-
-      <!-- ── Crew card ──────────────────────────────────────────────────────── -->
-      <AppCard class="page-ship__card">
-        <template #header>
-          <span class="page-ship__card-title">{{ t('crewCardTitle') }}</span>
-        </template>
-
-        <AppBanner v-if="crewError" tone="danger" role="alert" class="page-ship__crew-error">
-          {{ crewError }}
-        </AppBanner>
-
-        <ul class="page-ship__crew-list" aria-label="Crew">
-          <li v-for="slot in crewRoster" :key="slot.position" class="page-ship__crew-row">
-            <!-- Position label -->
-            <span class="page-ship__crew-position">
-              {{ positionLabel(slot.position) }}
-            </span>
-
-            <!-- Assigned: show name + Remove button -->
-            <template v-if="slot.assignedCharacterId">
-              <span class="page-ship__crew-name">
-                {{ characterName(slot.assignedCharacterId) }}
-              </span>
-              <AppButton
-                variant="ghost"
-                size="sm"
-                class="page-ship__crew-remove"
-                :disabled="crewBusy[slot.position]"
-                @click="onUnassign(slot.position, slot.assignedCharacterId)"
-              >
-                {{ t('crewRemove') }}
-              </AppButton>
-            </template>
-
-            <!-- Vacant: show Assign button + inline picker -->
-            <template v-else>
-              <em class="page-ship__crew-vacant">{{ t('crewVacant') }}</em>
-              <AppButton
-                variant="ghost"
-                size="sm"
-                class="page-ship__crew-assign-btn"
-                :disabled="crewBusy[slot.position]"
-                @click="togglePicker(slot.position)"
-              >
-                {{ pickerOpen[slot.position] ? t('crewPickerCancel') : t('crewAssign') }}
-              </AppButton>
-
-              <!-- Inline picker -->
-              <div v-if="pickerOpen[slot.position]" class="page-ship__crew-picker">
-                <AppField :label="t('crewPickerLabel')">
-                  <template #default="attrs">
-                    <select
-                      v-bind="attrs"
-                      :value="pickerSelected[slot.position] ?? ''"
-                      class="page-ship__crew-select"
-                      @change="
-                        (e) => {
-                          pickerSelected[slot.position] = (e.target as HTMLSelectElement).value;
-                        }
-                      "
-                    >
-                      <option value="" disabled>
-                        {{ t('crewPickerPlaceholder') }}
-                      </option>
-                      <optgroup
-                        v-if="pickableFor(slot.position).free.length > 0"
-                        :label="t('crewPickerGroupFree')"
-                      >
-                        <option
-                          v-for="ch in pickableFor(slot.position).free"
-                          :key="ch.id"
-                          :value="ch.id"
-                        >
-                          {{ ch.name }}
-                        </option>
-                      </optgroup>
-                      <optgroup
-                        v-if="pickableFor(slot.position).onShip.length > 0"
-                        :label="t('crewPickerGroupOnShip')"
-                      >
-                        <option
-                          v-for="ch in pickableFor(slot.position).onShip"
-                          :key="ch.id"
-                          :value="ch.id"
-                        >
-                          {{ ch.name }}
-                        </option>
-                      </optgroup>
-                    </select>
-                  </template>
-                </AppField>
-                <AppButton
-                  variant="primary"
-                  size="sm"
-                  class="page-ship__crew-confirm"
-                  :disabled="!pickerSelected[slot.position] || crewBusy[slot.position]"
-                  @click="onAssign(slot.position)"
-                >
-                  {{ t('crewPickerConfirm') }}
-                </AppButton>
-              </div>
-            </template>
-          </li>
-        </ul>
-      </AppCard>
-
-      <!-- ── Notes card ─────────────────────────────────────────────────────── -->
-      <AppCard class="page-ship__card">
-        <template #header>
-          <div class="page-ship__card-header-row">
-            <span class="page-ship__card-title">{{ t('notesCardTitle') }}</span>
-            <AppButton variant="ghost" size="sm" @click="notesOpen = !notesOpen">
-              {{ notesOpen ? t('collapseHide') : t('collapseShow') }}
-            </AppButton>
-          </div>
-        </template>
-
-        <div v-if="notesOpen">
-          <AppTextarea
-            v-model="localNotes"
-            :rows="5"
-            :maxlength="4096"
-            :placeholder="t('notesPlaceholder')"
-            @blur="notesSave.schedule()"
-          />
-        </div>
-      </AppCard>
-
-      <!-- ── History card ───────────────────────────────────────────────────── -->
-      <AppCard class="page-ship__card">
-        <template #header>
-          <div class="page-ship__card-header-row">
-            <span class="page-ship__card-title">{{ t('historyCardTitle') }}</span>
-            <AppButton variant="ghost" size="sm" @click="historyOpen = !historyOpen">
-              {{ historyOpen ? t('collapseHide') : t('collapseShow') }}
-            </AppButton>
-          </div>
-        </template>
-
-        <div v-if="historyOpen">
-          <AppTextarea
-            v-model="localHistory"
-            :rows="6"
-            :maxlength="4096"
-            :placeholder="t('historyPlaceholder')"
-            @blur="historySave.schedule()"
-          />
-        </div>
-      </AppCard>
-
-      <!-- ── Problems card ──────────────────────────────────────────────────── -->
-      <AppCard class="page-ship__card">
-        <template #header>
-          <span class="page-ship__card-title">{{ t('problemsCardTitle') }}</span>
-        </template>
-
-        <AppField :label="t('problemsLabel')" :help-text="t('problemsHelp')">
-          <template #default="attrs">
-            <AppInput
-              v-bind="attrs"
-              v-model="localProblems"
-              type="text"
-              @blur="problemsSave.schedule()"
-            />
-          </template>
-        </AppField>
-      </AppCard>
     </template>
 
     <!-- ── Delete confirmation modal ─────────────────────────────────────────── -->
@@ -1123,10 +1059,12 @@
 
 <style lang="scss" scoped>
   $skeleton-height: 200px;
-  $stat-input-width: 80px;
-  $stat-input-prominent-width: 96px;
-  $page-max-width: 960px;
-  $crew-position-width: 160px;
+  $scalar-input-width: 72px;
+  $scalar-label-font-size: 11px;
+  $page-max-width: 1200px;
+  // Two-column layout breakpoint
+  $bp-two-col: 768px;
+  $crew-position-width: 140px;
 
   .page-ship {
     display: flex;
@@ -1138,7 +1076,7 @@
     margin: 0 auto;
     min-width: 0;
 
-    @media (max-width: 768px) {
+    @media (max-width: #{$bp-two-col}) {
       padding: var(--space-4) var(--space-3);
     }
 
@@ -1250,56 +1188,63 @@
       }
     }
 
-    // ── Stats grid ─────────────────────────────────────────────────────────────
-    // Desktop:  3 columns × 3 rows (9 stats)
-    // Tablet:   2 columns × 5 rows (≤ 768 px)
-    // Mobile:   1 column   (≤ 480 px)
+    // ── Two-column operational layout ──────────────────────────────────────────
+    // Primary (≈60%): stats + modules  |  Secondary (≈40%): crew + log/notes
 
-    &__stats-grid {
+    &__columns {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--space-4);
+      grid-template-columns: 3fr 2fr;
+      gap: var(--space-5);
+      align-items: start;
 
-      @media (max-width: 768px) {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      @media (max-width: 480px) {
+      @media (max-width: #{$bp-two-col}) {
         grid-template-columns: 1fr;
       }
     }
 
-    &__stat {
+    &__col {
       display: flex;
       flex-direction: column;
-      gap: var(--space-2);
+      gap: var(--space-4);
+      min-width: 0;
     }
 
-    &__stat-label {
-      font-family: var(--type-body-sm-font-family);
-      font-size: var(--type-body-sm-font-size);
-      color: var(--text-secondary);
-    }
+    // ── Stat pair row (Hull + Energy as large counters) ────────────────────────
 
-    &__stat-input {
-      width: $stat-input-width;
-      text-align: center;
-    }
-
-    &__stat-input--prominent {
-      width: $stat-input-prominent-width;
-      font-size: var(--type-body-lg-font-size);
-      font-weight: 600;
-    }
-
-    &__stat-stepper {
+    &__pair-row {
       display: flex;
-      align-items: center;
-      gap: var(--space-2);
+      gap: var(--space-8);
+      margin-bottom: var(--space-5);
+      flex-wrap: wrap;
     }
 
-    &__stepper-btn {
-      flex-shrink: 0;
+    // ── Scalar stats grid (armor / maneuv / sig / speed / cargo) ──────────────
+    // Five stats in a wrapping row
+
+    &__scalars-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-4) var(--space-5);
+    }
+
+    &__scalar {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    &__scalar-label {
+      font-family: var(--type-display-sm-font-family);
+      font-size: $scalar-label-font-size;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--brand-brass-light);
+      line-height: 1;
+    }
+
+    &__scalar-input {
+      width: $scalar-input-width;
+      text-align: center;
     }
 
     // ── Modules list ───────────────────────────────────────────────────────────
@@ -1370,7 +1315,7 @@
     &__crew-row {
       display: flex;
       align-items: center;
-      gap: var(--space-4);
+      gap: var(--space-3);
       flex-wrap: wrap;
     }
 
