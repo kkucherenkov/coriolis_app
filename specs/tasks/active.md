@@ -1,23 +1,5 @@
 # Active tasks
 
-## T-2026-05-26-003 — Critique re-run P1 fixes (char sheet, ship sheet, @app/ui)
-
-- Created: 2026-05-26
-- Owner: claude
-- Spec: critique re-run `.impeccable/critique/2026-05-26T10-12..10-15Z__*.md`; user chose blocks 1+2+3 in parallel; P0 (forge `POST items` 400) already fixed separately.
-- Goal: resolve the 5 P1s from the re-run across three surfaces.
-- Spec diff: none
-- Codegen impact: no
-- Sub-steps:
-  - [x] Char sheet [P1] talents render as raw slugs (`personal-menacing`) → id-path via `findCatalogTalentById` in `useTalentLocalization`; spec added (8 tests)
-  - [x] Char sheet [P1] skill names truncate (`Mele…`, `Infiltr…`) → `minmax(min-content, 1fr)` + removed nowrap/ellipsis from `&__skill-name`
-  - [x] @app/ui [P1] Storybook canvas off-brand near-black → `preview.css` fixed to `var(--color-bg)`; backgrounds toolbar void+parchment added
-  - [x] Ship sheet [P1] card monotony + sprawl → two-column composition (3fr|2fr), default-collapse empty Notes/History, tighten rhythm
-  - [x] Ship sheet [P1] stat editing diverges → `AppStatPair` created (story+spec, 21 tests, axe-clean); adopted on ship sheet with Hull+Energy as pair counters
-  - [x] lint + typecheck + ui & web specs green (run in `coriolis-companion-web-1`); scoped format only — UI 1149 / web 556 tests, typecheck clean, changed files lint-clean (12 pre-existing @app/ui lint errors in untouched AppDie/AppField/AppIconCoriolis/AppProgress left as-is)
-- Status: done — pending PR
-- Blockers: —
-
 ## T-2026-05-26-002 — AppDotInput affordance + sheet a11y/concept follow-ups
 
 - Created: 2026-05-26

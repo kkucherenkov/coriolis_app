@@ -2,6 +2,22 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-26-003 — Critique re-run P1 fixes (char sheet, ship sheet, @app/ui)
+
+- Created: 2026-05-26
+- Owner: claude
+- PR: [#67](http://code.homelab.local/kkucherenkov/coriolis_app/pulls/67) (branch `feat/dot-input-affordance`, with af3336d affordance + d9d2b70 lint cleanup)
+- Spec: critique re-run `.impeccable/critique/2026-05-26T10-12..10-15Z__*.md`; user chose blocks 1+2+3 in parallel; P0 (forge `POST items` 400) fixed separately.
+- Outcome — 5/5 P1s resolved:
+  - [x] Char sheet talents raw slugs → id-path via `findCatalogTalentById` in `useTalentLocalization` (all kinds incl. personal on exact id); 8 new tests
+  - [x] Char sheet skill-name truncation → skill-row name col `minmax(min-content, 1fr)` + wrap, removed nowrap/ellipsis
+  - [x] @app/ui Storybook off-brand canvas → `preview.css` undefined `--surface-surface` → `var(--color-bg)`; void/parchment backgrounds toolbar
+  - [x] Ship sheet card monotony/sprawl → two-column composition (3fr|2fr), empty Notes/History default-collapsed
+  - [x] Ship sheet stat divergence → new shared `AppStatPair` (current/max mono + steppers, story+spec, 21 tests, axe-clean); adopted for Hull/Energy
+- Verification: @app/ui 1149 + @app/web 556 tests green; typecheck clean; @app/ui + @app/web lint clean (also cleared 12 pre-existing @app/ui eslint errors in AppAvatar/AppDie/AppField/AppIconCoriolis/AppProgress at root cause).
+- Follow-up (deferred): adopt `AppStatPair` inside the character sheet HP/MP counter (the shared component matches its treatment but the sheet wasn't refactored, to avoid a parallel-edit conflict). Visual confirm + `/impeccable critique` re-run for score deltas.
+- Status: done — pending merge of #67
+
 ## T-2026-05-26-001 — Click-the-dot stat editing (AppDotInput)
 
 - Created: 2026-05-26
