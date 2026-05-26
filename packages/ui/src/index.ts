@@ -31,6 +31,7 @@ export { AppConfirm } from './components/AppConfirm';
 export { AppDie } from './components/AppDie';
 export { AppDiePool } from './components/AppDiePool';
 export { AppDivider } from './components/AppDivider';
+export { AppDotInput } from './components/AppDotInput';
 export { AppDots } from './components/AppDots';
 export { AppField } from './components/AppField';
 export { AppInviteManager } from './components/AppInviteManager';

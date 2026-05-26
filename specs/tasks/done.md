@@ -2,6 +2,15 @@
 
 _Archive of shipped tasks. Never delete entries — cancelled tasks go here with reason._
 
+## T-2026-05-25-001 — Character sheet impeccable pass (harden/clarify/layout/polish)
+
+- Created: 2026-05-25
+- Completed: 2026-05-26
+- Result: PR #64 (merged) — http://code.homelab.local/kkucherenkov/coriolis_app/pulls/64
+- Spec: design follow-up from `/impeccable critique` snapshot `.impeccable/critique/2026-05-25T15-10-18Z__apps-web-app-pages-app-characters-id-vue.md` (29/40)
+- Shipped: P0 silent-save surfacing (attr/skill/HP/MP), P1 disabled "soon" tabs + `apply` label, P2 tab↔panel ARIA + arrow-key nav, delete + injury-remove via AppConfirm, minor (useAutoSave flush, roller overflow guard, double-submit guard, legibility, touch target).
+- Deferred to follow-up: click-the-dot-to-set + popover-stepper removal (needs interactive AppDots variant — see new task).
+
 ## T-2026-05-20-004 — RollPushed AsyncAPI contract: emit required `kind: 'skill'`
 
 - Created: 2026-05-20

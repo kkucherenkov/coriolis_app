@@ -7,10 +7,9 @@
     AppInput,
     AppTextarea,
     AppStatBlock,
-    AppPopover,
+    AppDotInput,
     AppModal,
     AppConfirm,
-    AppDots,
     AppDivider,
     AppConditionPill,
     AppBanner,
@@ -34,6 +33,7 @@
   import { useTalentLocalization } from '~/composables/useTalentLocalization';
   import { useAutoSave } from '~/composables/useAutoSave';
   import type { SaveState } from '~/composables/useAutoSave';
+  import { useDebounceFn } from '~/composables/useDebounceFn';
   import SheetDiceRoller from '~/components/sheet/SheetDiceRoller.vue';
   import SheetRollHistory from '~/components/sheet/SheetRollHistory.vue';
   import type { Roll } from '~/composables/useRollsApi';
@@ -350,11 +350,6 @@
   const deleteDialogOpen = ref(false);
   const deleteLoading = ref(false);
 
-  // ── Popover state ─────────────────────────────────────────────────────────────
-
-  const openPopover = ref<string | null>(null);
-  const stepperValue = ref(0);
-
   // ── Auto-save: name + concept ────────────────────────────────────────────────
 
   const {
@@ -442,27 +437,19 @@
       .join('');
   }
 
-  // ── Attribute inline edit ─────────────────────────────────────────────────────
+  // ── Attribute inline edit (click-the-dot via AppDotInput) ─────────────────────
 
-  function openAttrPopover(key: AttrKey): void {
-    stepperValue.value = localAttributes.value[key];
-    openPopover.value = `attr-${key}`;
-  }
+  // Each change updates the local copy immediately (optimistic) and schedules a
+  // debounced PATCH, so holding an arrow key or rapid dot clicks coalesce into
+  // one request carrying the final value. On failure the local copy rolls back
+  // to the last known server truth and the statError banner surfaces it.
+  const { debouncedFn: scheduleAttrSave } = useDebounceFn(() => {
+    void persistAttributes();
+  }, 350);
 
-  function closeAttrPopover(): void {
-    openPopover.value = null;
-  }
-
-  function attrPopoverOpen(key: AttrKey): boolean {
-    return openPopover.value === `attr-${key}`;
-  }
-
-  async function commitAttr(key: AttrKey, newValue: number): Promise<void> {
+  async function persistAttributes(): Promise<void> {
     if (!character.value) return;
-    const prev = localAttributes.value[key];
-    localAttributes.value = { ...localAttributes.value, [key]: newValue };
     statError.value = '';
-    closeAttrPopover();
     try {
       const updated = await api.update(characterId.value, {
         attributes: { ...localAttributes.value },
@@ -472,32 +459,28 @@
       localHpCurrent.value = updated.hp.current;
       localMpCurrent.value = updated.mp.current;
     } catch (error) {
-      localAttributes.value = { ...localAttributes.value, [key]: prev };
-      statError.value = (error as Problem).detail ?? t('errorStatSave', { label: attrLabel(key) });
+      // Roll back to the last known server truth (guaranteed non-null by the
+      // early return above) and surface the failure.
+      localAttributes.value = { ...character.value.attributes };
+      statError.value =
+        (error as Problem).detail ?? t('errorStatSave', { label: t('panelAttributes') });
     }
   }
 
-  // ── Skill inline edit ──────────────────────────────────────────────────────────
-
-  function openSkillPopover(key: SkillKey): void {
-    stepperValue.value = localSkills.value[key];
-    openPopover.value = `skill-${key}`;
+  function setAttr(key: AttrKey, value: number): void {
+    localAttributes.value = { ...localAttributes.value, [key]: value };
+    scheduleAttrSave();
   }
 
-  function closeSkillPopover(): void {
-    openPopover.value = null;
-  }
+  // ── Skill inline edit (click-the-dot via AppDotInput) ──────────────────────────
 
-  function skillPopoverOpen(key: SkillKey): boolean {
-    return openPopover.value === `skill-${key}`;
-  }
+  const { debouncedFn: scheduleSkillSave } = useDebounceFn(() => {
+    void persistSkills();
+  }, 350);
 
-  async function commitSkill(key: SkillKey, newValue: number): Promise<void> {
+  async function persistSkills(): Promise<void> {
     if (!character.value) return;
-    const prev = localSkills.value[key];
-    localSkills.value = { ...localSkills.value, [key]: newValue };
     statError.value = '';
-    closeSkillPopover();
     try {
       const updated = await api.update(characterId.value, {
         skills: { ...localSkills.value },
@@ -505,9 +488,15 @@
       character.value = updated;
       localSkills.value = { ...updated.skills };
     } catch (error) {
-      localSkills.value = { ...localSkills.value, [key]: prev };
-      statError.value = (error as Problem).detail ?? t('errorStatSave', { label: skillLabel(key) });
+      localSkills.value = { ...character.value.skills };
+      statError.value =
+        (error as Problem).detail ?? t('errorStatSave', { label: t('panelSkills') });
     }
+  }
+
+  function setSkill(key: SkillKey, value: number): void {
+    localSkills.value = { ...localSkills.value, [key]: value };
+    scheduleSkillSave();
   }
 
   // ── HP / MP counter ────────────────────────────────────────────────────────────
@@ -828,7 +817,6 @@
     "statusSaving": "Saving…",
     "statusSaved": "Saved",
     "statusError": "Save failed",
-    "apply": "Apply",
     "errorLoad": "Failed to load character.",
     "errorSave": "Auto-save failed. Your changes may not have been saved.",
     "errorStatSave": "Couldn't save {label}. Your change was reverted.",
@@ -855,7 +843,6 @@
     "encHelp": "Encumbrance",
     "labelDecrease": "Decrease",
     "labelIncrease": "Increase",
-    "popoverClose": "Close",
     "identityConcept": "Concept",
     "concept": {
       "artist": "Artist",
@@ -970,7 +957,6 @@
     "statusSaving": "Сохранение…",
     "statusSaved": "Сохранено",
     "statusError": "Ошибка сохранения",
-    "apply": "Применить",
     "errorLoad": "Не удалось загрузить персонажа.",
     "errorSave": "Автосохранение не удалось. Изменения могут быть потеряны.",
     "errorStatSave": "Не удалось сохранить «{label}». Изменение отменено.",
@@ -997,7 +983,6 @@
     "encHelp": "Грузоподъёмность",
     "labelDecrease": "Уменьшить",
     "labelIncrease": "Увеличить",
-    "popoverClose": "Закрыть",
     "identityConcept": "Амплуа",
     "concept": {
       "artist": "Артист",
@@ -1422,68 +1407,20 @@
               }}</span>
             </template>
             <div class="page-sheet__attrs">
-              <AppPopover
+              <!-- Click-the-dot editing: AppStatBlock editable renders an
+                   interactive AppDotInput (min 1 for attributes). -->
+              <AppStatBlock
                 v-for="key in ATTR_KEYS"
                 :key="key"
-                :open="attrPopoverOpen(key)"
-                placement="bottom"
-                :aria-label="attrLabel(key)"
-                @update:open="
-                  (v) => {
-                    if (!v) closeAttrPopover();
-                  }
-                "
-              >
-                <template #trigger>
-                  <AppStatBlock
-                    :label="attrLabel(key)"
-                    :value="localAttributes[key]"
-                    :max="5"
-                    size="md"
-                    tone="brass"
-                    :aria-label="attrLabel(key) + ': ' + String(localAttributes[key])"
-                    @select="openAttrPopover(key)"
-                  />
-                </template>
-                <!-- Stepper popover -->
-                <div class="page-sheet__stepper">
-                  <span class="page-sheet__stepper-label">{{ attrLabel(key) }}</span>
-                  <div class="page-sheet__stepper-row">
-                    <button
-                      class="page-sheet__stepper-btn"
-                      :aria-label="t('labelDecrease')"
-                      :disabled="stepperValue <= 1"
-                      @click="stepperValue = Math.max(1, stepperValue - 1)"
-                    >
-                      −
-                    </button>
-                    <span class="page-sheet__stepper-val">{{ stepperValue }}</span>
-                    <button
-                      class="page-sheet__stepper-btn"
-                      :aria-label="t('labelIncrease')"
-                      :disabled="stepperValue >= 5"
-                      @click="stepperValue = Math.min(5, stepperValue + 1)"
-                    >
-                      +
-                    </button>
-                  </div>
-                  <AppDots
-                    :value="stepperValue"
-                    :max="5"
-                    size="md"
-                    tone="brass"
-                    :label="attrLabel(key)"
-                  />
-                  <div class="page-sheet__stepper-actions">
-                    <AppButton variant="ghost" size="sm" @click="closeAttrPopover">
-                      {{ t('popoverClose') }}
-                    </AppButton>
-                    <AppButton variant="primary" size="sm" @click="commitAttr(key, stepperValue)">
-                      {{ t('apply') }}
-                    </AppButton>
-                  </div>
-                </div>
-              </AppPopover>
+                editable
+                :label="attrLabel(key)"
+                :value="localAttributes[key]"
+                :min="1"
+                :max="5"
+                size="md"
+                tone="brass"
+                @update:value="setAttr(key, $event)"
+              />
             </div>
           </AppCard>
 
@@ -1515,78 +1452,19 @@
                   {{ t('skillsGeneral') }}
                 </div>
                 <AppDivider tone="brass-deep" />
-                <template v-for="sk in GENERAL_SKILLS" :key="sk">
-                  <AppPopover
-                    :open="skillPopoverOpen(sk)"
-                    placement="bottom"
-                    :aria-label="skillLabel(sk)"
-                    @update:open="
-                      (v) => {
-                        if (!v) closeSkillPopover();
-                      }
-                    "
-                  >
-                    <template #trigger>
-                      <button
-                        class="page-sheet__skill-row"
-                        :aria-label="skillLabel(sk) + ': ' + String(localSkills[sk])"
-                        @click="openSkillPopover(sk)"
-                      >
-                        <span class="page-sheet__skill-name">{{ skillLabel(sk) }}</span>
-                        <span class="page-sheet__skill-attr">{{ SKILL_GOVERNING_ATTR[sk] }}</span>
-                        <AppDots
-                          :value="localSkills[sk]"
-                          :max="5"
-                          size="sm"
-                          tone="brass"
-                          :label="skillLabel(sk)"
-                        />
-                      </button>
-                    </template>
-                    <!-- Skill stepper -->
-                    <div class="page-sheet__stepper">
-                      <span class="page-sheet__stepper-label">{{ skillLabel(sk) }}</span>
-                      <div class="page-sheet__stepper-row">
-                        <button
-                          class="page-sheet__stepper-btn"
-                          :aria-label="t('labelDecrease')"
-                          :disabled="stepperValue <= 0"
-                          @click="stepperValue = Math.max(0, stepperValue - 1)"
-                        >
-                          −
-                        </button>
-                        <span class="page-sheet__stepper-val">{{ stepperValue }}</span>
-                        <button
-                          class="page-sheet__stepper-btn"
-                          :aria-label="t('labelIncrease')"
-                          :disabled="stepperValue >= 5"
-                          @click="stepperValue = Math.min(5, stepperValue + 1)"
-                        >
-                          +
-                        </button>
-                      </div>
-                      <AppDots
-                        :value="stepperValue"
-                        :max="5"
-                        size="md"
-                        tone="brass"
-                        :label="skillLabel(sk)"
-                      />
-                      <div class="page-sheet__stepper-actions">
-                        <AppButton variant="ghost" size="sm" @click="closeSkillPopover">
-                          {{ t('popoverClose') }}
-                        </AppButton>
-                        <AppButton
-                          variant="primary"
-                          size="sm"
-                          @click="commitSkill(sk, stepperValue)"
-                        >
-                          {{ t('apply') }}
-                        </AppButton>
-                      </div>
-                    </div>
-                  </AppPopover>
-                </template>
+                <div v-for="sk in GENERAL_SKILLS" :key="sk" class="page-sheet__skill-row">
+                  <span class="page-sheet__skill-name">{{ skillLabel(sk) }}</span>
+                  <span class="page-sheet__skill-attr">{{ SKILL_GOVERNING_ATTR[sk] }}</span>
+                  <AppDotInput
+                    :model-value="localSkills[sk]"
+                    :min="0"
+                    :max="5"
+                    size="sm"
+                    tone="brass"
+                    :label="skillLabel(sk)"
+                    @update:model-value="setSkill(sk, $event)"
+                  />
+                </div>
               </div>
 
               <!-- Advanced column -->
@@ -1601,89 +1479,30 @@
                   }}</span>
                 </div>
                 <AppDivider tone="brass" />
-                <template v-for="sk in ADVANCED_SKILLS" :key="sk">
-                  <AppPopover
-                    :open="skillPopoverOpen(sk)"
-                    placement="bottom"
-                    :aria-label="skillLabel(sk)"
-                    @update:open="
-                      (v) => {
-                        if (!v) closeSkillPopover();
-                      }
-                    "
-                  >
-                    <template #trigger>
-                      <button
-                        class="page-sheet__skill-row page-sheet__skill-row--advanced"
-                        :aria-label="skillLabel(sk) + ': ' + String(localSkills[sk])"
-                        @click="openSkillPopover(sk)"
-                      >
-                        <span
-                          class="page-sheet__skill-accent-rail"
-                          :class="
-                            localSkills[sk] > 0 ? 'page-sheet__skill-accent-rail--active' : ''
-                          "
-                          aria-hidden="true"
-                        />
-                        <span class="page-sheet__skill-name">{{ skillLabel(sk) }}</span>
-                        <span class="page-sheet__skill-attr page-sheet__skill-attr--advanced">{{
-                          SKILL_GOVERNING_ATTR[sk]
-                        }}</span>
-                        <AppDots
-                          :value="localSkills[sk]"
-                          :max="5"
-                          size="sm"
-                          tone="mystic"
-                          :label="skillLabel(sk)"
-                        />
-                      </button>
-                    </template>
-                    <!-- Advanced skill stepper -->
-                    <div class="page-sheet__stepper page-sheet__stepper--mystic">
-                      <span class="page-sheet__stepper-label page-sheet__stepper-label--mystic">{{
-                        skillLabel(sk)
-                      }}</span>
-                      <div class="page-sheet__stepper-row">
-                        <button
-                          class="page-sheet__stepper-btn page-sheet__stepper-btn--mystic"
-                          :aria-label="t('labelDecrease')"
-                          :disabled="stepperValue <= 0"
-                          @click="stepperValue = Math.max(0, stepperValue - 1)"
-                        >
-                          −
-                        </button>
-                        <span class="page-sheet__stepper-val">{{ stepperValue }}</span>
-                        <button
-                          class="page-sheet__stepper-btn page-sheet__stepper-btn--mystic"
-                          :aria-label="t('labelIncrease')"
-                          :disabled="stepperValue >= 5"
-                          @click="stepperValue = Math.min(5, stepperValue + 1)"
-                        >
-                          +
-                        </button>
-                      </div>
-                      <AppDots
-                        :value="stepperValue"
-                        :max="5"
-                        size="md"
-                        tone="mystic"
-                        :label="skillLabel(sk)"
-                      />
-                      <div class="page-sheet__stepper-actions">
-                        <AppButton variant="ghost" size="sm" @click="closeSkillPopover">
-                          {{ t('popoverClose') }}
-                        </AppButton>
-                        <AppButton
-                          variant="primary"
-                          size="sm"
-                          @click="commitSkill(sk, stepperValue)"
-                        >
-                          {{ t('apply') }}
-                        </AppButton>
-                      </div>
-                    </div>
-                  </AppPopover>
-                </template>
+                <div
+                  v-for="sk in ADVANCED_SKILLS"
+                  :key="sk"
+                  class="page-sheet__skill-row page-sheet__skill-row--advanced"
+                >
+                  <span
+                    class="page-sheet__skill-accent-rail"
+                    :class="localSkills[sk] > 0 ? 'page-sheet__skill-accent-rail--active' : ''"
+                    aria-hidden="true"
+                  />
+                  <span class="page-sheet__skill-name">{{ skillLabel(sk) }}</span>
+                  <span class="page-sheet__skill-attr page-sheet__skill-attr--advanced">{{
+                    SKILL_GOVERNING_ATTR[sk]
+                  }}</span>
+                  <AppDotInput
+                    :model-value="localSkills[sk]"
+                    :min="0"
+                    :max="5"
+                    size="sm"
+                    tone="mystic"
+                    :label="skillLabel(sk)"
+                    @update:model-value="setSkill(sk, $event)"
+                  />
+                </div>
               </div>
             </div>
           </AppCard>
@@ -1981,7 +1800,6 @@
   $skeleton-stagger: 200ms;
   $stepper-btn-size: 32px;
   $counter-min-width: 90px;
-  $stepper-min-width: 160px;
   // Fractional units (not %): percentages summing to 100% + 24px gaps overflowed
   // the grid container by 48px on desktop. fr distributes after gap accounting.
   $col-left-fr: 28fr;
@@ -2687,30 +2505,15 @@
 
     // ── Skill row ─────────────────────────────────────────────────────────────
 
+    // The row is a static container now; the AppDotInput it holds owns focus
+    // and interaction. No row-level cursor/hover/focus.
     &__skill-row {
       display: grid;
       grid-template-columns: 1fr auto auto;
       align-items: center;
       gap: var(--space-2);
-      padding: var(--space-2) var(--space-1);
+      padding: var(--space-1) var(--space-1);
       border-bottom: 1px solid color-mix(in srgb, var(--brand-brass-deep) 60%, transparent);
-      background: transparent;
-      border-left: none;
-      border-right: none;
-      border-top: none;
-      cursor: pointer;
-      width: 100%;
-      text-align: left;
-      transition: background-color var(--motion-duration-fast) var(--motion-ease-standard);
-
-      &:hover {
-        background-color: color-mix(in srgb, var(--brand-brass) 5%, transparent);
-      }
-
-      &:focus-visible {
-        outline: 2px solid var(--brand-brass);
-        outline-offset: 2px;
-      }
 
       &--advanced {
         position: relative;
@@ -2752,93 +2555,6 @@
       &--advanced {
         color: var(--state-mystic-teal);
       }
-    }
-
-    // ── Stepper popover content ───────────────────────────────────────────────
-
-    &__stepper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--space-3);
-      min-width: $stepper-min-width;
-
-      &--mystic {
-        background: color-mix(in srgb, var(--state-mystic-teal) 4%, var(--surface-night));
-      }
-    }
-
-    &__stepper-label {
-      font-family: var(--font-display);
-      font-size: var(--type-display-sm-font-size);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--brand-brass-light);
-
-      &--mystic {
-        color: var(--state-mystic-teal);
-      }
-    }
-
-    &__stepper-row {
-      display: flex;
-      align-items: center;
-      gap: var(--space-4);
-    }
-
-    &__stepper-val {
-      font-family: var(--type-mono-stat-md-font-family);
-      font-size: var(--type-mono-stat-md-font-size);
-      font-weight: 700;
-      color: var(--text-primary);
-      min-width: var(--space-6);
-      text-align: center;
-    }
-
-    &__stepper-btn {
-      width: $stepper-btn-size;
-      height: $stepper-btn-size;
-      border: 1px solid var(--brand-brass-deep);
-      background: transparent;
-      color: var(--brand-brass);
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      font-size: var(--type-body-md-font-size);
-      line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background-color var(--motion-duration-fast) var(--motion-ease-standard);
-
-      &:hover:not([disabled]) {
-        background-color: color-mix(in srgb, var(--brand-brass) 10%, transparent);
-      }
-
-      &:focus-visible {
-        outline: 2px solid var(--brand-brass);
-        outline-offset: 2px;
-      }
-
-      &[disabled] {
-        opacity: var(--opacity-disabled);
-        cursor: not-allowed;
-      }
-
-      &--mystic {
-        border-color: color-mix(in srgb, var(--state-mystic-teal) 50%, transparent);
-        color: var(--state-mystic-teal);
-
-        &:hover:not([disabled]) {
-          background-color: color-mix(in srgb, var(--state-mystic-teal) 10%, transparent);
-        }
-      }
-    }
-
-    &__stepper-actions {
-      display: flex;
-      gap: var(--space-2);
-      width: 100%;
-      justify-content: flex-end;
     }
 
     // ── Danger zone ───────────────────────────────────────────────────────────

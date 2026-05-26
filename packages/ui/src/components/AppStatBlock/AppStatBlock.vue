@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { computed } from 'vue';
 
+  import AppDotInput from '../AppDotInput/AppDotInput.vue';
   import AppDots from '../AppDots/AppDots.vue';
 
   type Tone = 'brass' | 'mystic';
@@ -10,37 +11,54 @@
     label: string;
     value: number;
     max?: number;
+    /** Lowest selectable value when `editable` (attributes use 1). */
+    min?: number;
     hideDots?: boolean;
     tone?: Tone;
     size?: Size;
     disabled?: boolean;
+    /**
+     * When true the block becomes an inline editor: the dots render as an
+     * interactive `AppDotInput` (role=slider) and the block emits
+     * `update:value` instead of `select`. The root is no longer a button.
+     */
+    editable?: boolean;
     ariaLabel?: string;
   }
 
   const props = withDefaults(defineProps<Props>(), {
     max: 5,
+    min: 0,
     hideDots: false,
     tone: 'brass',
     size: 'md',
     disabled: false,
+    editable: false,
     ariaLabel: undefined,
   });
 
-  const emit = defineEmits<{ select: [] }>();
+  const emit = defineEmits<{ select: []; 'update:value': [value: number] }>();
 
   const computedAriaLabel = computed(
     () => props.ariaLabel ?? `${props.label} ${String(props.value)} of ${String(props.max)}`,
   );
 
+  // Non-editable blocks are <button>s; editable and disabled blocks are plain
+  // <div>s (the inner AppDotInput owns focus + keyboard in the editable case).
+  const isButton = computed(() => !props.disabled && !props.editable);
+
   const rootClasses = computed(() => [
     'app-stat-block',
     `app-stat-block--${props.tone}`,
     `app-stat-block--${props.size}`,
-    { 'app-stat-block--disabled': props.disabled },
+    {
+      'app-stat-block--disabled': props.disabled,
+      'app-stat-block--editable': props.editable,
+    },
   ]);
 
   function onClick(): void {
-    if (!props.disabled) {
+    if (!props.disabled && !props.editable) {
       emit('select');
     }
   }
@@ -48,17 +66,29 @@
 
 <template>
   <component
-    :is="disabled ? 'div' : 'button'"
-    :type="disabled ? undefined : 'button'"
+    :is="isButton ? 'button' : 'div'"
+    :type="isButton ? 'button' : undefined"
     :class="rootClasses"
-    :aria-label="computedAriaLabel"
-    :aria-disabled="disabled || undefined"
+    :aria-label="editable ? undefined : computedAriaLabel"
+    :aria-disabled="!editable && disabled ? true : undefined"
     @click="onClick"
   >
     <span class="app-stat-block__label">{{ label }}</span>
     <span class="app-stat-block__value">{{ value }}</span>
+    <AppDotInput
+      v-if="!hideDots && editable"
+      class="app-stat-block__dots"
+      :model-value="value"
+      :min="min"
+      :max="max"
+      :tone="tone"
+      :size="size === 'sm' ? 'sm' : 'md'"
+      :disabled="disabled"
+      :label="ariaLabel ?? label"
+      @update:model-value="emit('update:value', $event)"
+    />
     <AppDots
-      v-if="!hideDots"
+      v-else-if="!hideDots"
       class="app-stat-block__dots"
       :value="value"
       :max="max"
@@ -114,11 +144,11 @@
         color: var(--text-primary);
       }
 
-      &:hover:not(.app-stat-block--disabled) {
+      &:hover:not(.app-stat-block--disabled):not(.app-stat-block--editable) {
         background-color: color-mix(in srgb, var(--brand-brass) 8%, transparent);
       }
 
-      &:active:not(.app-stat-block--disabled) {
+      &:active:not(.app-stat-block--disabled):not(.app-stat-block--editable) {
         background-color: color-mix(in srgb, var(--brand-brass) 14%, transparent);
       }
     }
@@ -134,11 +164,11 @@
         color: var(--text-primary);
       }
 
-      &:hover:not(.app-stat-block--disabled) {
+      &:hover:not(.app-stat-block--disabled):not(.app-stat-block--editable) {
         background-color: color-mix(in srgb, var(--state-mystic-teal) 8%, transparent);
       }
 
-      &:active:not(.app-stat-block--disabled) {
+      &:active:not(.app-stat-block--disabled):not(.app-stat-block--editable) {
         background-color: color-mix(in srgb, var(--state-mystic-teal) 14%, transparent);
       }
     }
@@ -188,6 +218,12 @@
       cursor: default;
       opacity: var(--opacity-disabled);
       pointer-events: none;
+    }
+
+    // ── Editable state (inner AppDotInput owns the interaction) ─────────────────
+
+    &--editable {
+      cursor: default;
     }
 
     // ── Inner elements ─────────────────────────────────────────────────────────

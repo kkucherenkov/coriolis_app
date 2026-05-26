@@ -1,3 +1,5 @@
+import { ref } from 'vue';
+
 import AppStatBlock from './AppStatBlock.vue';
 
 import type { Meta, StoryObj } from '@storybook/vue3';
@@ -141,5 +143,39 @@ export const AttributesPanel: Story = {
         onSelect: (_label: string) => undefined,
       };
     },
+  }),
+};
+
+// ── Editable (inline AppDotInput) ───────────────────────────────────────────────
+
+export const Editable: Story = {
+  name: 'Editable (click-the-dot, attribute min 1)',
+  render: () => ({
+    components: { AppStatBlock },
+    setup() {
+      const attrs = ref([
+        { label: 'STR', value: 3 },
+        { label: 'AGI', value: 5 },
+        { label: 'WIT', value: 2 },
+        { label: 'EMP', value: 4 },
+      ]);
+      return { attrs };
+    },
+    template: `
+      <div style="display: flex; gap: var(--space-4); background: var(--surface-night); border: 1px solid var(--brand-brass-deep); border-radius: var(--radius-md); padding: var(--space-5);">
+        <AppStatBlock
+          v-for="attr in attrs"
+          :key="attr.label"
+          editable
+          :label="attr.label"
+          :value="attr.value"
+          :min="1"
+          :max="5"
+          tone="brass"
+          size="md"
+          @update:value="attr.value = $event"
+        />
+      </div>
+    `,
   }),
 };
