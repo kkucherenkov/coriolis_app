@@ -50,41 +50,64 @@ describe('AppDotInput', () => {
     expect(wrapper.attributes('aria-valuenow')).toBe('3');
   });
 
-  it('builds aria-valuetext from the label', () => {
-    const wrapper = mount(AppDotInput, { props: { modelValue: 3, label: 'Strength' } });
-    expect(wrapper.attributes('aria-valuetext')).toBe('Strength: 3');
+  it('builds aria-valuetext with the range and label', () => {
+    const wrapper = mount(AppDotInput, { props: { modelValue: 3, max: 5, label: 'Strength' } });
+    expect(wrapper.attributes('aria-valuetext')).toBe('Strength: 3 of 5');
   });
 
-  // ── Click to set ────────────────────────────────────────────────────────────
+  it('builds aria-valuetext without a label', () => {
+    const wrapper = mount(AppDotInput, { props: { modelValue: 3, max: 5 } });
+    expect(wrapper.attributes('aria-valuetext')).toBe('3 of 5');
+  });
 
-  it('sets the value to the clicked dot', async () => {
+  // ── Click a dot to set exactly that value ─────────────────────────────────────
+
+  it('sets the value to the clicked dot (higher)', async () => {
     const wrapper = mount(AppDotInput, { props: { modelValue: 2, max: 5 } });
     await wrapper.findAll('.app-dot-input__hit')[3]!.trigger('click'); // dot 4
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([4]);
   });
 
-  it('steps down by one when clicking the current top dot (star idiom)', async () => {
-    const wrapper = mount(AppDotInput, { props: { modelValue: 3, max: 5 } });
-    await wrapper.findAll('.app-dot-input__hit')[2]!.trigger('click'); // dot 3 == value
-    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([2]);
-  });
-
-  it('can set a lower value by clicking a lower dot', async () => {
+  it('sets the value to the clicked dot (lower)', async () => {
     const wrapper = mount(AppDotInput, { props: { modelValue: 4, max: 5 } });
     await wrapper.findAll('.app-dot-input__hit')[1]!.trigger('click'); // dot 2
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([2]);
   });
 
-  it('respects min when stepping down past it', async () => {
-    const wrapper = mount(AppDotInput, { props: { modelValue: 1, min: 1, max: 5 } });
-    await wrapper.findAll('.app-dot-input__hit')[0]!.trigger('click'); // dot 1 == value → 0, clamped to 1
+  it('does not emit when clicking the dot at the current value (no footgun step-down)', async () => {
+    const wrapper = mount(AppDotInput, { props: { modelValue: 3, max: 5 } });
+    await wrapper.findAll('.app-dot-input__hit')[2]!.trigger('click'); // dot 3 == value
     expect(wrapper.emitted('update:modelValue')).toBeUndefined();
   });
 
-  it('allows skills (min 0) to reach 0', async () => {
+  // ── Explicit − / + steppers ───────────────────────────────────────────────────
+
+  it('decrements via the − stepper', async () => {
+    const wrapper = mount(AppDotInput, { props: { modelValue: 3, min: 0, max: 5 } });
+    await wrapper.find('.app-dot-input__step--dec').trigger('click');
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([2]);
+  });
+
+  it('increments via the + stepper', async () => {
+    const wrapper = mount(AppDotInput, { props: { modelValue: 3, min: 0, max: 5 } });
+    await wrapper.find('.app-dot-input__step--inc').trigger('click');
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([4]);
+  });
+
+  it('reaches 0 (skills) via the − stepper', async () => {
     const wrapper = mount(AppDotInput, { props: { modelValue: 1, min: 0, max: 5 } });
-    await wrapper.findAll('.app-dot-input__hit')[0]!.trigger('click'); // dot 1 == value → 0
+    await wrapper.find('.app-dot-input__step--dec').trigger('click');
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([0]);
+  });
+
+  it('marks − as off at min and + as off at max', () => {
+    const atMin = mount(AppDotInput, { props: { modelValue: 1, min: 1, max: 5 } });
+    expect(atMin.find('.app-dot-input__step--dec').classes()).toContain('app-dot-input__step--off');
+    expect(atMin.find('.app-dot-input__step--inc').classes()).not.toContain(
+      'app-dot-input__step--off',
+    );
+    const atMax = mount(AppDotInput, { props: { modelValue: 5, min: 1, max: 5 } });
+    expect(atMax.find('.app-dot-input__step--inc').classes()).toContain('app-dot-input__step--off');
   });
 
   // ── Keyboard ──────────────────────────────────────────────────────────────

@@ -1,21 +1,21 @@
 # Active tasks
 
-## T-2026-05-26-001 — Click-the-dot stat editing (AppDotInput)
+## T-2026-05-26-002 — AppDotInput affordance + sheet a11y/concept follow-ups
 
 - Created: 2026-05-26
 - Owner: claude
-- Spec: confirmed shape brief (this session) — follow-up to PR #64 deferral
-- Goal: replace the popover-stepper edit on attributes + skills with direct click-the-dot via a new interactive `AppDotInput` (role=slider).
-- Spec diff: none (no API/route change)
+- Spec: `/impeccable critique` re-run snapshot `.impeccable/critique/2026-05-26T09-01-10Z__apps-web-app-pages-app-characters-id-vue.md` (34/40); user chose "affordance + hover −", scope "all".
+- Goal: resolve the click-the-dot discoverability/decrement regression + P2/P3/Sam a11y from the re-critique.
+- Spec diff: none
 - Codegen impact: no
 - Sub-steps:
-  - [x] new `@app/ui` `AppDotInput` (role=slider, click/keyboard, hover preview, enlarged touch hit) + story + spec + index export
-  - [x] `AppStatBlock` gains `editable` mode (renders AppDotInput, emits update:value) + story/spec
-  - [x] integrate into sheet: attributes + skills use AppDotInput; remove popovers/steppers + dead state
-  - [x] debounced optimistic commit (350ms) reusing the statError rollback path
-  - [x] lint + typecheck + ui & web specs green (1125 ui + 548 web; eslint/stylelint/prettier clean on touched files; i18n parity ok)
-  - [x] polish pass (slider aria-valuetext, dead CSS/keys/SCSS-vars removed)
-- Status: in-progress — awaiting commit/PR. Remaining: manual browser pass (mobile tap targets, click-idiom feel) — flagged risk in brief.
+  - [ ] AppDotInput: visible affordance (empty-dot rings, whole-control hover), explicit −/+ stepper (hover/focus reveal on fine, always on coarse, space reserved — no layout shift), click-dot = set-exactly (remove footgun step-down)
+  - [ ] AppDotInput a11y: aria-valuetext "{label}: {n} of {max}", roledescription/instructions, unfilled-dot contrast ≥3:1
+  - [ ] update AppDotInput + AppStatBlock story/spec
+  - [ ] sheet: one-time inline edit hint near Attributes/Skills; per-control save pulse (P2)
+  - [ ] P3 bug: concept rendered via t() in hero vs raw in identity card → one localized computed
+  - [ ] lint + typecheck + ui & web specs green; impeccable detect clean
+- Status: in-progress
 - Blockers: —
 
 ## T-2026-05-17-DEEP-LINK-SETUP — Deep-link configuration (mobile + web)
