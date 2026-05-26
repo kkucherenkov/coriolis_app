@@ -118,4 +118,42 @@ describe('AppStatBlock', () => {
     await wrapper.trigger('click');
     expect(wrapper.emitted('select')).toBeUndefined();
   });
+
+  // ── Editable mode ─────────────────────────────────────────────────────────
+
+  it('renders the read-only AppDots meter when not editable', () => {
+    const wrapper = mount(AppStatBlock, { props: { label: 'STR', value: 3 } });
+    expect(wrapper.find('.app-dots').exists()).toBe(true);
+    expect(wrapper.find('.app-dot-input').exists()).toBe(false);
+  });
+
+  it('renders the interactive AppDotInput when editable', () => {
+    const wrapper = mount(AppStatBlock, { props: { label: 'STR', value: 3, editable: true } });
+    expect(wrapper.find('.app-dot-input').exists()).toBe(true);
+    expect(wrapper.find('.app-dots').exists()).toBe(false);
+  });
+
+  it('renders as <div> (not a button) when editable', () => {
+    const wrapper = mount(AppStatBlock, { props: { label: 'STR', value: 3, editable: true } });
+    expect(wrapper.element.tagName).toBe('DIV');
+  });
+
+  it('does NOT emit select when editable and clicked', async () => {
+    const wrapper = mount(AppStatBlock, { props: { label: 'STR', value: 3, editable: true } });
+    await wrapper.trigger('click');
+    expect(wrapper.emitted('select')).toBeUndefined();
+  });
+
+  it('emits update:value from the inner AppDotInput', async () => {
+    const wrapper = mount(AppStatBlock, {
+      props: { label: 'STR', value: 2, min: 1, max: 5, editable: true },
+    });
+    await wrapper.findAll('.app-dot-input__hit')[3]!.trigger('click'); // dot 4
+    expect(wrapper.emitted('update:value')?.[0]).toEqual([4]);
+  });
+
+  it('applies the --editable modifier when editable', () => {
+    const wrapper = mount(AppStatBlock, { props: { label: 'STR', value: 3, editable: true } });
+    expect(wrapper.classes()).toContain('app-stat-block--editable');
+  });
 });
