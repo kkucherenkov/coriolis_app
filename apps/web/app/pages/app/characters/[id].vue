@@ -40,7 +40,7 @@
   import RoleUnmigratedBanner from '~/components/RoleUnmigratedBanner.vue';
 
   const { t } = useI18n({ useScope: 'local' });
-  const { displayTalentName } = useTalentLocalization();
+  const { displayTalentName, displayTalentDescription } = useTalentLocalization();
   const api = useCharactersApi();
   const talentsApi = useTalentsApi();
   const route = useRoute();
@@ -715,8 +715,13 @@
 
   function openEditTalent(talent: Talent): void {
     talentEditorTalent.value = talent;
-    talentEditorName.value = talent.name;
-    talentEditorDescription.value = talent.description;
+    // Pre-fill with the localized display strings, not the stored value — a
+    // built-in talent stores its catalog id (e.g. `personal-menacing`) in
+    // `name`, which the composable localizes at render. Editing must never
+    // expose that slug. saveTalent() re-checks against the display value so an
+    // untouched field round-trips the original stored id (keeps locale-following).
+    talentEditorName.value = displayTalentName(talent);
+    talentEditorDescription.value = displayTalentDescription(talent);
     talentEditorError.value = '';
     talentEditorOpen.value = true;
   }
@@ -735,10 +740,20 @@
 
     try {
       if (talentEditorTalent.value) {
-        // Update existing
-        const updated = await talentsApi.updateTalent(talentEditorTalent.value.id, {
-          name,
-          description,
+        // Update existing. If the field still matches the localized display
+        // text (user only viewed, didn't rename/rewrite), persist the ORIGINAL
+        // stored value — for a built-in talent that's the catalog id, and
+        // round-tripping it keeps render-time localization intact instead of
+        // freezing the talent to one locale.
+        const original = talentEditorTalent.value;
+        const nameToSave = name === displayTalentName(original).trim() ? original.name : name;
+        const descriptionToSave =
+          description === displayTalentDescription(original).trim()
+            ? original.description
+            : description;
+        const updated = await talentsApi.updateTalent(original.id, {
+          name: nameToSave,
+          description: descriptionToSave,
         });
         localTalents.value = localTalents.value.map((t) => (t.id === updated.id ? updated : t));
       } else {
