@@ -6,6 +6,8 @@ import {
   CONCEPT_BY_ROLE,
   CONCEPT_KEYS,
   UPBRINGING_BUDGETS,
+  computeHpMax,
+  computeMpMax,
   getRoleKeySkills,
   sumAttributes,
   sumSkills,
@@ -213,6 +215,12 @@ export class CreateCharacterHandler implements ICommandHandler<
       });
     }
 
+    // Derive HP/MP maxima from the validated attributes so the stored current
+    // is always ≤ max from the first moment. Any caller-supplied current is
+    // clamped to the derived max; if omitted, it defaults to full health.
+    const hpMax = computeHpMax(attributes.strength, attributes.agility);
+    const mpMax = computeMpMax(attributes.wits, attributes.empathy);
+
     const character = await this.repo.create({
       ownerId,
       name: dto.name.trim(),
@@ -235,8 +243,8 @@ export class CreateCharacterHandler implements ICommandHandler<
       mutantLineage,
       attributes,
       skills,
-      hpCurrent: dto.hp?.current ?? 14,
-      mpCurrent: dto.mp?.current ?? 10,
+      hpCurrent: Math.min(dto.hp?.current ?? hpMax, hpMax),
+      mpCurrent: Math.min(dto.mp?.current ?? mpMax, mpMax),
       experience: dto.experience ?? 0,
       conditions,
       notes: dto.notes ?? null,
