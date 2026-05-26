@@ -136,6 +136,12 @@
 </template>
 
 <style lang="scss" scoped>
+  // The horizontal nav (brand + N links + a possibly-long user-menu email)
+  // needs real room; below this it collapses into the hamburger + drawer so the
+  // header never overflows on tablet/narrow-desktop widths. Phone-specific
+  // tightening (gaps, brand-name ellipsis) keeps its own 768px breakpoint.
+  $bp-nav-collapse: 1024px;
+
   .app-header {
     position: sticky;
     top: 0;
@@ -160,9 +166,9 @@
     // ── Hamburger ────────────────────────────────────────────────────────────
 
     &__hamburger {
-      display: none; // visible only at the mobile breakpoint
+      display: none; // visible only once the desktop nav collapses
 
-      @media (max-width: 768px) {
+      @media (max-width: #{$bp-nav-collapse}) {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -242,8 +248,8 @@
       flex: 1;
       justify-content: center;
 
-      // Hide below mobile breakpoint — mobile nav lives inside the drawer
-      @media (max-width: 768px) {
+      // Hide once the desktop nav collapses — nav lives inside the drawer
+      @media (max-width: #{$bp-nav-collapse}) {
         display: none;
       }
     }

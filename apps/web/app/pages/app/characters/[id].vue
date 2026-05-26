@@ -1880,9 +1880,12 @@
   $accent-rail-offset: 6px;
   $bp-desktop: 1024px;
   $bp-mobile: 768px;
-  // Below this the 4-across attribute row can't fit four md dot-inputs
-  // (~124px each) inside the card; it folds to a 2×2 grid.
-  $bp-phone: 640px;
+  // Below this the centre column is too narrow (in both the 3-col and 2-col
+  // layouts, and on mobile) to hold the full stat grids without clipping the
+  // dot-input steppers, so the attribute row folds to 2×2 and the skills grid
+  // to a single column. Chosen so the full grids only show when the 3-col
+  // centre track is genuinely wide enough (~1400px viewport and up).
+  $bp-stats-stack: 1400px;
   $injury-remove-size: 32px;
 
   // ── Root ──────────────────────────────────────────────────────────────────────
@@ -2499,13 +2502,10 @@
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: var(--space-3);
 
-      @media (max-width: #{$bp-mobile - 1px}) {
-        gap: var(--space-2);
-      }
-
-      // Four md dot-inputs overflow a phone-width card; fold to 2×2 so each
-      // attribute keeps its full stepper + dot track inside the card gutter.
-      @media (max-width: #{$bp-phone}) {
+      // Fold to 2×2 whenever the column is too narrow for four md dot-inputs
+      // (~124px each) — the tablet 2-col layout, the sub-1400 3-col centre, and
+      // mobile all hit this. Keeps every stepper inside the card gutter.
+      @media (max-width: #{$bp-stats-stack}) {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: var(--space-4) var(--space-3);
       }
@@ -2562,7 +2562,9 @@
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       gap: var(--space-6);
 
-      @media (max-width: #{$bp-mobile - 1px}) {
+      // Single column whenever the centre track is narrow (tablet 2-col,
+      // sub-1400 3-col, mobile) — two skill columns only fit on a wide sheet.
+      @media (max-width: #{$bp-stats-stack}) {
         grid-template-columns: minmax(0, 1fr);
         gap: var(--space-4);
       }

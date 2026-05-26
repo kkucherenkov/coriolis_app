@@ -3,9 +3,9 @@
    Tailwind's `--color-*` / `--radius-*` namespaces so utility classes resolve
    to Coriolis values. */
 
-@import "tailwindcss";
-@import "@nuxt/ui";
-@import "./tokens.generated.css";
+@import 'tailwindcss';
+@import '@nuxt/ui';
+@import './tokens.generated.css';
 
 @theme inline {
   /* Semantic surfaces — Coriolis is dark-first; light only ships in the
@@ -54,6 +54,14 @@
 
 :root {
   color-scheme: dark;
+}
+
+/* Dark-first: paint the document surface itself, not just the app shell. The
+   layout fills 100dvh, but any horizontal overflow, overscroll bounce, or
+   short page would otherwise reveal the browser's default white behind it. */
+html,
+body {
+  background-color: var(--surface-void);
 }
 
 html[data-theme='high-contrast'] {
