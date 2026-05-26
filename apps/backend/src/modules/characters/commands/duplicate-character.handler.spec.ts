@@ -113,18 +113,34 @@ describe('DuplicateCharacterHandler', () => {
     );
   });
 
-  it('resets hp/mp to placeholder constants', async () => {
-    vi.mocked(repo.findActiveById).mockResolvedValue(
-      makeCharacter({ hp: { current: 5, max: 14 } }),
-    );
+  it('seeds hpCurrent and mpCurrent to the derived max for the source attributes', async () => {
+    // makeCharacter default: strength=4, agility=3, wits=2, empathy=3
+    // → hpMax = 4+3 = 7, mpMax = 2+3 = 5
+    vi.mocked(repo.findActiveById).mockResolvedValue(makeCharacter({ hp: { current: 5, max: 7 } }));
     const copy = makeCharacter({ id: 'char-2', name: 'Kalim al-Rashid (copy)', experience: 0 });
     vi.mocked(repo.create).mockResolvedValue(copy);
 
     await handler.execute(new DuplicateCharacterCommand('char-1', 'user-1'));
 
     expect(repo.create).toHaveBeenCalledWith(
-      expect.objectContaining({ hpCurrent: 14, mpCurrent: 10 }),
+      expect.objectContaining({ hpCurrent: 7, mpCurrent: 5 }),
     );
+  });
+
+  it('produces hpCurrent ≤ hpMax even when source had an over-max stored current', async () => {
+    // strength=4, agility=3 → hpMax=7; the read-model already has current clamped
+    // to max by the repo, so duplicate sources from the already-clamped value
+    vi.mocked(repo.findActiveById).mockResolvedValue(
+      makeCharacter({ hp: { current: 7, max: 7 }, mp: { current: 5, max: 5 } }),
+    );
+    const copy = makeCharacter({ id: 'char-2', name: 'Kalim al-Rashid (copy)', experience: 0 });
+    vi.mocked(repo.create).mockResolvedValue(copy);
+
+    await handler.execute(new DuplicateCharacterCommand('char-1', 'user-1'));
+
+    const args = vi.mocked(repo.create).mock.calls[0]?.[0];
+    expect(args?.hpCurrent).toBeLessThanOrEqual(7);
+    expect(args?.mpCurrent).toBeLessThanOrEqual(5);
   });
 
   it('throws CharacterNotFoundError when source does not exist', async () => {

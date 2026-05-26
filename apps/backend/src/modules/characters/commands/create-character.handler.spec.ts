@@ -723,6 +723,72 @@ describe('CreateCharacterHandler', () => {
     });
   });
 
+  // -------- HP / MP seeding (data-integrity) --------
+
+  describe('hp/mp seeding at creation', () => {
+    it('seeds hpCurrent to the derived max (STR+AGI) when dto.hp is omitted', async () => {
+      // DEFAULT_ATTRIBUTES: strength=2, agility=2 → hpMax=4
+      vi.mocked(repo.create).mockResolvedValue(makeCharacter({ hp: { current: 4, max: 4 } }));
+
+      await handler.execute(new CreateCharacterCommand('user-1', makeDto()));
+
+      expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ hpCurrent: 4 }));
+    });
+
+    it('seeds mpCurrent to the derived max (WIT+EMP) when dto.mp is omitted', async () => {
+      // DEFAULT_ATTRIBUTES: wits=2, empathy=2 → mpMax=4
+      vi.mocked(repo.create).mockResolvedValue(makeCharacter({ mp: { current: 4, max: 4 } }));
+
+      await handler.execute(new CreateCharacterCommand('user-1', makeDto()));
+
+      expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ mpCurrent: 4 }));
+    });
+
+    it('clamps dto.hp.current down to the derived max when it exceeds it', async () => {
+      // DEFAULT_ATTRIBUTES: strength=2, agility=2 → hpMax=4; caller asks for current=14 → clamped to 4
+      vi.mocked(repo.create).mockResolvedValue(makeCharacter({ hp: { current: 4, max: 4 } }));
+
+      await handler.execute(new CreateCharacterCommand('user-1', makeDto({ hp: { current: 14 } })));
+
+      expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ hpCurrent: 4 }));
+    });
+
+    it('clamps dto.mp.current down to the derived max when it exceeds it', async () => {
+      // DEFAULT_ATTRIBUTES: wits=2, empathy=2 → mpMax=4; caller asks for current=10 → clamped to 4
+      vi.mocked(repo.create).mockResolvedValue(makeCharacter({ mp: { current: 4, max: 4 } }));
+
+      await handler.execute(new CreateCharacterCommand('user-1', makeDto({ mp: { current: 10 } })));
+
+      expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ mpCurrent: 4 }));
+    });
+
+    it('passes dto.hp.current through unchanged when it is within the derived max', async () => {
+      // DEFAULT_ATTRIBUTES: strength=2, agility=2 → hpMax=4; current=3 is valid
+      vi.mocked(repo.create).mockResolvedValue(makeCharacter({ hp: { current: 3, max: 4 } }));
+
+      await handler.execute(new CreateCharacterCommand('user-1', makeDto({ hp: { current: 3 } })));
+
+      expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ hpCurrent: 3 }));
+    });
+
+    it('derives higher hpMax from higher attributes (strength=4, agility=4 → max=8)', async () => {
+      // aristocrat budget = 13; 4+4+3+2 = 13 → valid
+      vi.mocked(repo.create).mockResolvedValue(makeCharacter());
+
+      await handler.execute(
+        new CreateCharacterCommand(
+          'user-1',
+          makeDto({
+            upbringing: 'aristocrat',
+            attributes: { strength: 4, agility: 4, wits: 3, empathy: 2 },
+          }),
+        ),
+      );
+
+      expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ hpCurrent: 8 }));
+    });
+  });
+
   describe('mutant flag (ST3001 ch.4)', () => {
     it('persists mutant=true with a lineage', async () => {
       vi.mocked(repo.create).mockResolvedValue(makeCharacter());

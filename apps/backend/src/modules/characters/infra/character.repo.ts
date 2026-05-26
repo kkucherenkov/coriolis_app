@@ -208,6 +208,12 @@ function fromCrewConceptEnum(s: string | null): CrewConcept | null {
 function toReadModel(row: PrismaCharacterFull): CharacterReadModel {
   const attrs = row.attributes as Attributes;
   const inventory = row.items.map((it) => mapItem(it));
+  // Clamp stored current against the derived max so that over-max rows (e.g.
+  // from the legacy hard-coded seed of 14/10) render correctly and never
+  // produce current > max. This is purely a read-boundary guard; the stored
+  // value is NOT modified here.
+  const hpMax = computeHpMax(attrs.strength, attrs.agility);
+  const mpMax = computeMpMax(attrs.wits, attrs.empathy);
   return {
     id: row.id,
     ownerId: row.ownerId,
@@ -226,14 +232,8 @@ function toReadModel(row: PrismaCharacterFull): CharacterReadModel {
     mutantLineage: row.mutantLineage as MutantLineage | null,
     attributes: attrs,
     skills: row.skills as Skills,
-    hp: {
-      current: row.hpCurrent,
-      max: computeHpMax(attrs.strength, attrs.agility),
-    },
-    mp: {
-      current: row.mpCurrent,
-      max: computeMpMax(attrs.wits, attrs.empathy),
-    },
+    hp: { current: Math.min(row.hpCurrent, hpMax), max: hpMax },
+    mp: { current: Math.min(row.mpCurrent, mpMax), max: mpMax },
     encumbrance: {
       current: computeEncumbranceCurrent(inventory),
       max: computeEncumbranceMax(attrs.strength, sumArmorExtraSlots(inventory)),

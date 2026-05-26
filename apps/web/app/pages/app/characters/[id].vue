@@ -1880,6 +1880,9 @@
   $accent-rail-offset: 6px;
   $bp-desktop: 1024px;
   $bp-mobile: 768px;
+  // Below this the 4-across attribute row can't fit four md dot-inputs
+  // (~124px each) inside the card; it folds to a 2×2 grid.
+  $bp-phone: 640px;
   $injury-remove-size: 32px;
 
   // ── Root ──────────────────────────────────────────────────────────────────────
@@ -2498,6 +2501,13 @@
 
       @media (max-width: #{$bp-mobile - 1px}) {
         gap: var(--space-2);
+      }
+
+      // Four md dot-inputs overflow a phone-width card; fold to 2×2 so each
+      // attribute keeps its full stepper + dot track inside the card gutter.
+      @media (max-width: #{$bp-phone}) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-4) var(--space-3);
       }
     }
 

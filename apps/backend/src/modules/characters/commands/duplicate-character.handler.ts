@@ -13,6 +13,7 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 
+import { computeHpMax, computeMpMax } from '../../rules-engine';
 import { CharacterNotFoundError, CharacterNotOwnedError } from '../domain/character.errors';
 import { CHARACTER_REPO, CharacterReadModel } from '../domain/character.ports';
 import { CharacterUpdatedEvent } from '../events/character-updated.event';
@@ -57,9 +58,11 @@ export class DuplicateCharacterHandler implements ICommandHandler<
       mutantLineage: source.mutantLineage,
       attributes: source.attributes,
       skills: source.skills,
-      // TODO(rules-engine, T-3.2.2): replace constants with computeHpMax / computeMpMax
-      hpCurrent: 14,
-      mpCurrent: 10,
+      // Seed to full health at max derived from the copied attributes so
+      // the duplicate never starts with current > max (read-clamp in the
+      // repo is an additional safety net).
+      hpCurrent: computeHpMax(source.attributes.strength, source.attributes.agility),
+      mpCurrent: computeMpMax(source.attributes.wits, source.attributes.empathy),
       experience: 0,
       conditions: source.conditions,
       notes: source.notes,
